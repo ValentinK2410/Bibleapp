@@ -34,6 +34,7 @@ import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items as gridItems
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.rememberLazyListState
@@ -65,6 +66,11 @@ import androidx.compose.material.icons.filled.History
 import androidx.compose.material.icons.filled.Pause
 import androidx.compose.material.icons.automirrored.filled.MenuBook
 import androidx.compose.material.icons.filled.MoreVert
+import java.time.Instant
+import java.time.ZoneId
+import java.time.format.DateTimeFormatter
+import java.time.format.FormatStyle
+import java.util.Locale
 import androidx.compose.material.icons.filled.Schedule
 import androidx.compose.material.icons.filled.Save
 import androidx.compose.material.icons.filled.School
@@ -161,6 +167,7 @@ import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import com.example.bible.data.AudioPlaybackState
 import com.example.bible.data.BibleCanon
+import com.example.bible.data.BibleSearchHistoryEntry
 import com.example.bible.data.BibleBook
 import com.example.bible.data.BibleChapter
 import com.example.bible.data.BibleDictionary
@@ -203,6 +210,7 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.emptyFlow
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.LinearProgressIndicator
@@ -555,6 +563,7 @@ private fun BibleNavHost(
     val searchListState by viewModel.searchListState.collectAsStateWithLifecycle(
         initialValue = BibleSearchListState(),
     )
+    val bibleSearchHistory by viewModel.bibleSearchHistory.collectAsStateWithLifecycle()
     val textHighlights by viewModel.textHighlights.collectAsStateWithLifecycle()
     val wordSpanMediaAttachments by viewModel.wordSpanMediaAttachments.collectAsStateWithLifecycle()
     val readerFontScale by viewModel.readerFontScale.collectAsStateWithLifecycle()
@@ -2542,6 +2551,7 @@ private fun BibleNavHost(
         composable("search") {
             val searchSettings by viewModel.searchSettings.collectAsStateWithLifecycle()
             var showSettings by remember { mutableStateOf(false) }
+            var bibleSearchHistoryMenu by remember { mutableStateOf(false) }
             val scopeLabel = when (searchSettings.scope) {
                 SearchScope.ALL -> "Быт-Откр"
                 SearchScope.OLD_TESTAMENT -> "Быт-Мал"
@@ -2575,6 +2585,28 @@ private fun BibleNavHost(
                                     }
                                 },
                                 actions = {
+                                    if (bibleSearchHistory.isNotEmpty()) {
+                                        Box {
+                                            IconButton(onClick = { bibleSearchHistoryMenu = true }) {
+                                                Icon(
+                                                    Icons.Default.MoreVert,
+                                                    contentDescription = stringResource(R.string.bible_search_history_menu_cd),
+                                                )
+                                            }
+                                            DropdownMenu(
+                                                expanded = bibleSearchHistoryMenu,
+                                                onDismissRequest = { bibleSearchHistoryMenu = false },
+                                            ) {
+                                                DropdownMenuItem(
+                                                    text = { Text(stringResource(R.string.bible_search_history_clear)) },
+                                                    onClick = {
+                                                        bibleSearchHistoryMenu = false
+                                                        viewModel.clearBibleSearchHistory()
+                                                    },
+                                                )
+                                            }
+                                        }
+                                    }
                                     IconButton(onClick = {}) {
                                         Icon(Icons.Default.Search, contentDescription = null, tint = MaterialTheme.colorScheme.primary)
                                     }
@@ -2595,6 +2627,10 @@ private fun BibleNavHost(
                         settings = searchSettings,
                         readerTranslation = translation,
                         scopeLabel = scopeLabel,
+                        searchHistory = bibleSearchHistory,
+                        onApplyHistoryQuery = { viewModel.setSearchQuery(it.query) },
+                        onRemoveHistoryEntry = { viewModel.removeBibleSearchHistoryEntry(it) },
+                        onRecordSearchHistory = { viewModel.recordBibleSearchHistory(it) },
                         onSettingsClick = { showSettings = true },
                         onSettingsChange = { viewModel.updateSearchSettings(it) },
                         onResultClick = { hit ->
@@ -2750,14 +2786,27 @@ private fun SearchScreen(
     settings: SearchSettings,
     readerTranslation: TranslationId,
     scopeLabel: String,
+    searchHistory: List<BibleSearchHistoryEntry>,
+    onApplyHistoryQuery: (BibleSearchHistoryEntry) -> Unit,
+    onRemoveHistoryEntry: (BibleSearchHistoryEntry) -> Unit,
+    onRecordSearchHistory: (String) -> Unit,
     onSettingsClick: () -> Unit,
     onSettingsChange: (SearchSettings) -> Unit,
     onResultClick: (SearchHit) -> Unit,
 ) {
+    LaunchedEffect(query, searchInProgress) {
+        val trimmed = query.trim()
+        if (trimmed.isEmpty() || searchInProgress) return@LaunchedEffect
+        delay(1100)
+        if (query.trim() != trimmed) return@LaunchedEffect
+        if (searchInProgress) return@LaunchedEffect
+        onRecordSearchHistory(trimmed)
+    }
     val accentColor = MaterialTheme.colorScheme.primary
     var showScopePicker by remember { mutableStateOf(false) }
     var showTranslationPicker by remember { mutableStateOf(false) }
     val translationChipScroll = rememberScrollState()
+    val historyShown = remember(searchHistory) { searchHistory.reversed().take(12) }
 
     Column(
         modifier = modifier
@@ -2917,26 +2966,63 @@ private fun SearchScreen(
             )
         }
 
-        if (query.isBlank()) {
-            Text(
-                text = stringResource(R.string.search_empty_hint),
-                style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                modifier = Modifier.padding(horizontal = 20.dp, vertical = 16.dp),
-            )
-        }
-        if (query.isNotBlank() && searchInProgress && results.isEmpty()) {
-            Text(
-                text = stringResource(R.string.bible_search_loading),
-                style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                modifier = Modifier.padding(horizontal = 20.dp, vertical = 12.dp),
-            )
-        }
         LazyColumn(
-            modifier = Modifier.fillMaxSize(),
+            modifier = Modifier
+                .weight(1f)
+                .fillMaxWidth(),
             contentPadding = PaddingValues(bottom = 16.dp),
         ) {
+            if (historyShown.isNotEmpty()) {
+                item {
+                    Text(
+                        text = stringResource(R.string.bible_search_history_title),
+                        style = MaterialTheme.typography.titleSmall,
+                        color = MaterialTheme.colorScheme.primary,
+                        modifier = Modifier
+                            .padding(horizontal = 20.dp)
+                            .padding(top = 8.dp),
+                    )
+                    Spacer(Modifier.height(6.dp))
+                }
+                items(
+                    items = historyShown,
+                    key = { "${it.timestamp}|${it.dedupKey}" },
+                ) { entry ->
+                    BibleSearchHistoryRow(
+                        entry = entry,
+                        onApply = { onApplyHistoryQuery(entry) },
+                        onRemove = { onRemoveHistoryEntry(entry) },
+                    )
+                    Spacer(Modifier.height(6.dp))
+                }
+                item {
+                    Spacer(Modifier.height(4.dp))
+                    HorizontalDivider(
+                        color = MaterialTheme.colorScheme.outlineVariant,
+                        modifier = Modifier.padding(horizontal = 12.dp),
+                    )
+                }
+            }
+            if (query.isBlank()) {
+                item {
+                    Text(
+                        text = stringResource(R.string.search_empty_hint),
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        modifier = Modifier.padding(horizontal = 20.dp, vertical = 16.dp),
+                    )
+                }
+            }
+            if (query.isNotBlank() && searchInProgress && results.isEmpty()) {
+                item {
+                    Text(
+                        text = stringResource(R.string.bible_search_loading),
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        modifier = Modifier.padding(horizontal = 20.dp, vertical = 12.dp),
+                    )
+                }
+            }
             itemsIndexed(
                 results,
                 key = { index, hit ->
@@ -2954,6 +3040,62 @@ private fun SearchScreen(
             }
         }
     }
+}
+
+@Composable
+private fun BibleSearchHistoryRow(
+    entry: BibleSearchHistoryEntry,
+    onApply: () -> Unit,
+    onRemove: () -> Unit,
+) {
+    Card(
+        onClick = onApply,
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 12.dp),
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.45f),
+        ),
+    ) {
+        Row(
+            Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 4.dp, vertical = 2.dp),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            Column(
+                Modifier
+                    .weight(1f)
+                    .padding(start = 12.dp, end = 4.dp, top = 10.dp, bottom = 10.dp),
+            ) {
+                Text(
+                    entry.query,
+                    style = MaterialTheme.typography.bodyMedium,
+                    maxLines = 3,
+                    overflow = TextOverflow.Ellipsis,
+                )
+                Text(
+                    formatBibleSearchHistoryTime(entry.timestamp),
+                    style = MaterialTheme.typography.labelSmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    modifier = Modifier.padding(top = 4.dp),
+                )
+            }
+            IconButton(onClick = onRemove) {
+                Icon(
+                    Icons.Default.Close,
+                    contentDescription = stringResource(R.string.bible_search_history_remove_cd),
+                )
+            }
+        }
+    }
+}
+
+private fun formatBibleSearchHistoryTime(epochMs: Long): String {
+    val fmt = DateTimeFormatter.ofLocalizedDateTime(FormatStyle.SHORT)
+        .withZone(ZoneId.systemDefault())
+        .withLocale(Locale.getDefault())
+    return fmt.format(Instant.ofEpochMilli(epochMs))
 }
 
 @Composable

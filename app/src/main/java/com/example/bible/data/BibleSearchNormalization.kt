@@ -31,6 +31,18 @@ val BibleVerseSearchNormSettings = SearchSettings(
 fun verseSearchNormForStored(text: String): String =
     normalizeVerseForCompare(text, BibleVerseSearchNormSettings)
 
+/** Ключ для дедупликации записей в истории поиска по Библии (совпадает с нормализацией индекса [searchNorm]). */
+fun bibleSearchHistoryDedupKey(raw: String): String {
+    val t = raw.trim()
+    if (t.isEmpty()) return ""
+    val k = normalizeSearchQueryForCompare(t, BibleVerseSearchNormSettings)
+    if (k.isNotEmpty()) return k
+    return t.lowercase(Locale.ROOT)
+        .replace('ё', 'е')
+        .replace(Regex("\\s+"), " ")
+        .trim()
+}
+
 /** Быстрый путь FTS5 даёт те же результаты, что и полный перебор, только при этих флагах. */
 fun canUseFtsFastPath(settings: SearchSettings): Boolean =
     !settings.wholeWords &&

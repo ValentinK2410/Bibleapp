@@ -803,6 +803,10 @@
     <string name="bible_search_pick_translation">Выберите перевод</string>
     <string name="bible_search_title">Поиск в Библии</string>
     <string name="bible_search_loading">Выполняется поиск…</string>
+    <string name="bible_search_history_title">Недавние запросы</string>
+    <string name="bible_search_history_clear">Очистить историю</string>
+    <string name="bible_search_history_remove_cd">Удалить запрос из истории</string>
+    <string name="bible_search_history_menu_cd">Меню истории поиска</string>
     <string name="quran_reader_remote_hint">Тафсир подгружается при открытии блоков (нужен интернет). Чтение аята: наушники — из сети или с устройства, если файл скачан (иконка загрузки у аята).</string>
     <string name="quran_tafsir_saadi_title">Пояснение: тафсир ас-Саади (рус.)</string>
     <string name="quran_tafsir_ibn_kathir_title">Тафсир Ибн Касира (араб., сокр. при показе)</string>

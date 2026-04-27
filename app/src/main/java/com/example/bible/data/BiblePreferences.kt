@@ -86,6 +86,8 @@ private object Keys {
     val MIMIC_MEDIAPIPE_FACE_GEOMETRY = booleanPreferencesKey("mimic_mediapipe_face_geometry")
     /** JSON-массив: история поиска по переводу Корана (запрос + время). */
     val QURAN_SEARCH_HISTORY_JSON = stringPreferencesKey("quran_search_history_json")
+    /** JSON-массив: история поиска по текстам Библии. */
+    val BIBLE_SEARCH_HISTORY_JSON = stringPreferencesKey("bible_search_history_json")
     /** Множитель размера шрифта текста аятов Корана (арабский, транслит., перевод, тафсир в карточке). */
     val QURAN_READER_TEXT_SCALE = floatPreferencesKey("quran_reader_text_scale")
     /** Множитель размера арабского текста на экране «Песочница: арабское слово». */
@@ -148,6 +150,54 @@ data class QuranSearchHistoryEntry(
         }
 
         fun toJsonArray(list: List<QuranSearchHistoryEntry>): String {
+            val arr = JSONArray()
+            list.takeLast(MAX_ENTRIES).forEach { arr.put(it.toJson()) }
+            return arr.toString()
+        }
+    }
+}
+
+/** Запись истории поиска по Библии (локально в DataStore). */
+data class BibleSearchHistoryEntry(
+    val query: String,
+    val timestamp: Long,
+    val dedupKey: String,
+) {
+    fun toJson(): JSONObject = JSONObject().apply {
+        put("q", query)
+        put("ts", timestamp)
+        put("k", dedupKey)
+    }
+
+    companion object {
+        private const val MAX_ENTRIES = 80
+
+        fun fromJson(j: JSONObject): BibleSearchHistoryEntry {
+            val q = j.getString("q")
+            val k = j.optString("k").ifBlank {
+                q.lowercase()
+                    .replace('ё', 'е')
+                    .replace(Regex("\\s+"), " ")
+                    .trim()
+            }
+            return BibleSearchHistoryEntry(
+                query = q,
+                timestamp = j.getLong("ts"),
+                dedupKey = k,
+            )
+        }
+
+        fun parseList(json: String): List<BibleSearchHistoryEntry> {
+            if (json.isBlank()) return emptyList()
+            return try {
+                val arr = JSONArray(json)
+                (0 until arr.length()).map { fromJson(arr.getJSONObject(it)) }
+            } catch (_: Exception) {
+                emptyList()
+            }
+        }
+
+        fun toJsonArray(list: List<BibleSearchHistoryEntry>): String {
             val arr = JSONArray()
             list.takeLast(MAX_ENTRIES).forEach { arr.put(it.toJson()) }
             return arr.toString()
@@ -662,6 +712,11 @@ class BiblePreferences(
         QuranSearchHistoryEntry.parseList(prefs[Keys.QURAN_SEARCH_HISTORY_JSON].orEmpty())
     }
 
+    /** История поиска по Библии; порядок — по времени добавления (старые первыми). */
+    val bibleSearchHistory: Flow<List<BibleSearchHistoryEntry>> = appContext.bibleDataStore.data.map { prefs ->
+        BibleSearchHistoryEntry.parseList(prefs[Keys.BIBLE_SEARCH_HISTORY_JSON].orEmpty())
+    }
+
     suspend fun appendQuranSearchHistory(displayQuery: String, dedupKey: String) {
         val q = displayQuery.trim()
         if (dedupKey.isBlank() || q.isEmpty()) return
@@ -690,6 +745,37 @@ class BiblePreferences(
     suspend fun clearQuranSearchHistory() {
         appContext.bibleDataStore.edit { prefs ->
             prefs[Keys.QURAN_SEARCH_HISTORY_JSON] = "[]"
+        }
+    }
+
+    suspend fun appendBibleSearchHistory(displayQuery: String, dedupKey: String) {
+        val q = displayQuery.trim()
+        if (dedupKey.isBlank() || q.isEmpty()) return
+        appContext.bibleDataStore.edit { prefs ->
+            val cur = BibleSearchHistoryEntry.parseList(prefs[Keys.BIBLE_SEARCH_HISTORY_JSON].orEmpty()).toMutableList()
+            cur.removeAll { it.dedupKey == dedupKey }
+            cur.add(
+                BibleSearchHistoryEntry(
+                    query = q,
+                    timestamp = System.currentTimeMillis(),
+                    dedupKey = dedupKey,
+                ),
+            )
+            prefs[Keys.BIBLE_SEARCH_HISTORY_JSON] = BibleSearchHistoryEntry.toJsonArray(cur)
+        }
+    }
+
+    suspend fun removeBibleSearchHistoryEntry(entry: BibleSearchHistoryEntry) {
+        appContext.bibleDataStore.edit { prefs ->
+            val cur = BibleSearchHistoryEntry.parseList(prefs[Keys.BIBLE_SEARCH_HISTORY_JSON].orEmpty())
+                .filterNot { it.timestamp == entry.timestamp && it.dedupKey == entry.dedupKey }
+            prefs[Keys.BIBLE_SEARCH_HISTORY_JSON] = BibleSearchHistoryEntry.toJsonArray(cur)
+        }
+    }
+
+    suspend fun clearBibleSearchHistory() {
+        appContext.bibleDataStore.edit { prefs ->
+            prefs[Keys.BIBLE_SEARCH_HISTORY_JSON] = "[]"
         }
     }
 

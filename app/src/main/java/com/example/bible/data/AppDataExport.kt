@@ -63,6 +63,7 @@ private val USER_DATA_KEYS = setOf(
     "lexicon_user_enabled",
     "lexicon_user_tones",
     "word_span_media_json",
+    "bible_search_history_json",
 )
 
 /**
@@ -289,6 +290,7 @@ object AppDataExport {
                     "reading_history_json",
                     "reading_trace_json",
                     "bookmark_tags_json",
+                    "bible_search_history_json",
                 )
             }
             if (options.personalNotes) userKeys += "user_notes_json"

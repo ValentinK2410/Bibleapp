@@ -9,6 +9,8 @@ import com.example.bible.data.AppDataExport
 import com.example.bible.data.BibleCanon
 import com.example.bible.data.BibleLibrary
 import com.example.bible.data.BiblePreferences
+import com.example.bible.data.BibleSearchHistoryEntry
+import com.example.bible.data.bibleSearchHistoryDedupKey
 import com.example.bible.data.BibleRepository
 import com.example.bible.data.BibleTtsController
 import com.example.bible.data.TtsUserSettings
@@ -572,9 +574,38 @@ class BibleViewModel(
         _searchQuery.value = q
     }
 
+    /** Сохранить запрос в историю поиска по Библии (после стабилизации строки и завершения поиска). */
+    fun recordBibleSearchHistory(trimmedDisplayQuery: String) {
+        val q = trimmedDisplayQuery.trim()
+        if (q.isEmpty()) return
+        val dk = bibleSearchHistoryDedupKey(q)
+        if (dk.isEmpty()) return
+        viewModelScope.launch {
+            preferences.appendBibleSearchHistory(q, dk)
+        }
+    }
+
+    fun removeBibleSearchHistoryEntry(entry: BibleSearchHistoryEntry) {
+        viewModelScope.launch {
+            preferences.removeBibleSearchHistoryEntry(entry)
+        }
+    }
+
+    fun clearBibleSearchHistory() {
+        viewModelScope.launch {
+            preferences.clearBibleSearchHistory()
+        }
+    }
+
     fun updateSearchSettings(s: SearchSettings) {
         _searchSettings.value = s
     }
+
+    val bibleSearchHistory: StateFlow<List<BibleSearchHistoryEntry>> = preferences.bibleSearchHistory.stateIn(
+        viewModelScope,
+        SharingStarted.WhileSubscribed(5000),
+        emptyList(),
+    )
 
     val searchListState: StateFlow<BibleSearchListState> = combine(
         state,
