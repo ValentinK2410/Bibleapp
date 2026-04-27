@@ -2966,9 +2966,10 @@ private fun SearchResultItem(
 ) {
     val canon = BibleCanon.byId(hit.bookId)
     val abbr = canon?.abbrRu ?: hit.bookId
-    val tertiaryColor = MaterialTheme.colorScheme.tertiary
-    val annotated = remember(hit.text, query, settings, tertiaryColor) {
-        buildHighlightedText(hit.text, query, settings, tertiaryColor)
+    val highlightBg = MaterialTheme.colorScheme.tertiaryContainer
+    val highlightFg = MaterialTheme.colorScheme.onTertiaryContainer
+    val annotated = remember(hit.text, query, settings, highlightBg, highlightFg) {
+        buildHighlightedText(hit.text, query, settings, highlightFg, highlightBg)
     }
     Row(
         modifier = Modifier
@@ -3008,23 +3009,38 @@ private fun buildHighlightedText(
     text: String,
     query: String,
     settings: SearchSettings,
-    highlightColor: Color = Color(0xFF00BCD4),
+    highlightForeground: Color,
+    highlightBackground: Color,
 ): AnnotatedString = runCatching {
     buildAnnotatedString {
         if (query.isBlank() || !settings.highlightMatches) {
             append(text)
             return@buildAnnotatedString
         }
-        val ranges = computeSearchHighlightRanges(text, query, settings)
+        var ranges = computeSearchHighlightRanges(text, query, settings)
+        if (ranges.isEmpty()) {
+            val q = query.trim()
+            if (q.isNotEmpty()) {
+                val idx = if (settings.caseSensitive) text.indexOf(q) else text.indexOf(q, ignoreCase = true)
+                if (idx >= 0) {
+                    ranges = listOf(idx until (idx + q.length).coerceAtMost(text.length))
+                }
+            }
+        }
         if (ranges.isEmpty()) {
             append(text)
             return@buildAnnotatedString
         }
+        val spanStyle = SpanStyle(
+            color = highlightForeground,
+            background = highlightBackground,
+            fontWeight = FontWeight.SemiBold,
+        )
         var idx = 0
         for (r in ranges) {
             if (r.first < 0 || r.last >= text.length || r.first > r.last) continue
             if (r.first > idx) append(text.substring(idx, r.first))
-            withStyle(SpanStyle(color = highlightColor, fontWeight = FontWeight.Bold)) {
+            withStyle(spanStyle) {
                 append(text.substring(r.first, r.last + 1))
             }
             idx = r.last + 1
