@@ -101,7 +101,7 @@ abstract class BibleDao {
     abstract fun deleteBook(code: String, bookId: String)
 
     @RawQuery
-    abstract fun searchVersesFts(query: SupportSQLiteQuery): List<BibleVerseSearchRow>
+    abstract fun searchVersesFastSql(query: SupportSQLiteQuery): List<BibleVerseSearchRow>
 
     @Transaction
     open fun replaceBook(

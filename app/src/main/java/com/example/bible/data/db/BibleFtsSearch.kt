@@ -6,36 +6,38 @@ import com.example.bible.data.BibleCanon
 import com.example.bible.ui.SearchScope
 import com.example.bible.ui.SearchSettings
 
-internal object BibleFtsSearch {
+/**
+ * Один SQL-запрос по [BibleVerseEntity.searchNorm] с LIKE (без FTS5 — совместимо со всеми сборками SQLite).
+ */
+internal object BibleNormLikeSearch {
 
-    /** FTS5 phrase: смежные токены как в [com.example.bible.data.verseSearchNormForStored]. */
-    fun phraseMatch(normalizedQuery: String): String? {
+    fun likePatternForNormalizedQuery(normalizedQuery: String): String? {
         val t = normalizedQuery.trim()
         if (t.isEmpty()) return null
-        val escaped = t.replace("\"", "\"\"")
-        return "\"$escaped\""
+        val escaped = t
+            .replace("\\", "\\\\")
+            .replace("%", "\\%")
+            .replace("_", "\\_")
+        return "%$escaped%"
     }
 
-    fun buildFtsQuery(
+    fun buildLikeQuery(
         translationCodes: List<String>,
         settings: SearchSettings,
         limit: Int,
-        matchPhrase: String,
+        likePattern: String,
     ): SupportSQLiteQuery? {
         if (translationCodes.isEmpty()) return null
         if (settings.scope == SearchScope.SINGLE_BOOK && settings.singleBookId == null) return null
         val sql = StringBuilder(
             "SELECT v.translationCode, v.bookId, v.chapterNumber, v.verseNumber, v.text " +
-                "FROM bible_verses_fts fts INNER JOIN bible_verses v ON " +
-                "v.translationCode = fts.translationCode AND v.bookId = fts.bookId AND " +
-                "v.chapterNumber = fts.chapterNumber AND v.verseNumber = fts.verseNumber " +
-                "WHERE fts MATCH ? AND v.translationCode IN (",
+                "FROM bible_verses v WHERE v.translationCode IN (",
         )
-        val bind = ArrayList<Any>(32)
-        bind.add(matchPhrase)
+        val bind = ArrayList<Any>(48)
         sql.append(translationCodes.joinToString(",") { "?" })
-        sql.append(") ")
+        sql.append(") AND v.searchNorm LIKE ? ESCAPE '\\' ")
         translationCodes.forEach { bind.add(it) }
+        bind.add(likePattern)
 
         when (settings.scope) {
             SearchScope.ALL -> { }
@@ -58,7 +60,9 @@ internal object BibleFtsSearch {
                 bind.add(settings.singleBookId!!)
             }
         }
-        sql.append("ORDER BY bm25(fts) LIMIT ?")
+        sql.append(
+            "ORDER BY v.translationCode, v.bookId, v.chapterNumber, v.verseNumber LIMIT ?",
+        )
         bind.add(limit)
         return SimpleSQLiteQuery(sql.toString(), bind.toTypedArray())
     }

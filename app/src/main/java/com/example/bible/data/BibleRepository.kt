@@ -3,8 +3,7 @@ package com.example.bible.data
 import android.content.Context
 import com.example.bible.data.db.BibleDatabase
 import com.example.bible.data.db.BibleFtsMaintainer
-import com.example.bible.data.db.BibleFtsNative
-import com.example.bible.data.db.BibleFtsSearch
+import com.example.bible.data.db.BibleNormLikeSearch
 import com.example.bible.data.db.BibleJsonImporter
 import com.example.bible.data.db.BibleVerseSearchRow
 import com.example.bible.ui.SearchSettings
@@ -100,8 +99,8 @@ class BibleRepository(
         dao.getBookTitlesForTranslation(translation.code).associate { it.bookId to it.name }
 
     /**
-     * FTS5 по нескольким переводам одним запросом.
-     * @return null — индекс пуст или ошибка SQL (вызывающий делает полный перебор).
+     * Быстрый поиск по [searchNorm] (LIKE), все переводы одним запросом — без FTS5.
+     * @return null при ошибке SQL (вызывающий делает полный перебор по стихам).
      */
     fun trySearchFts(
         translations: List<TranslationId>,
@@ -109,14 +108,14 @@ class BibleRepository(
         settings: SearchSettings,
         limit: Int,
     ): List<SearchHit>? {
-        if (BibleFtsNative.countRows(database.openHelper.writableDatabase) == 0L) return null
+        if (dao.countAllVerses() == 0) return null
         val norm = normalizeSearchQueryForCompare(query, BibleVerseSearchNormSettings)
         if (norm.isEmpty()) return emptyList()
-        val phrase = BibleFtsSearch.phraseMatch(norm) ?: return emptyList()
+        val pattern = BibleNormLikeSearch.likePatternForNormalizedQuery(norm) ?: return emptyList()
         val codes = translations.map { it.code }
-        val sqliteQuery = BibleFtsSearch.buildFtsQuery(codes, settings, limit, phrase) ?: return null
+        val sqliteQuery = BibleNormLikeSearch.buildLikeQuery(codes, settings, limit, pattern) ?: return null
         return try {
-            val rows = dao.searchVersesFts(sqliteQuery)
+            val rows = dao.searchVersesFastSql(sqliteQuery)
             val titleRows = dao.getBookTitlesForTranslations(codes)
             val titleMap = titleRows.associate { Pair(it.translationCode, it.bookId) to it.name }
             rows.map { r ->

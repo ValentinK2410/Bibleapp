@@ -1,0 +1,218 @@
+{
+  "formatVersion": 1,
+  "database": {
+    "version": 3,
+    "identityHash": "79d0c0b7c326035b04c459c6651ac5c6",
+    "entities": [
+      {
+        "tableName": "bible_books",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`translationCode` TEXT NOT NULL, `bookId` TEXT NOT NULL, `name` TEXT NOT NULL, PRIMARY KEY(`translationCode`, `bookId`))",
+        "fields": [
+          {
+            "fieldPath": "translationCode",
+            "columnName": "translationCode",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "bookId",
+            "columnName": "bookId",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "name",
+            "columnName": "name",
+            "affinity": "TEXT",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "translationCode",
+            "bookId"
+          ]
+        },
+        "indices": [
+          {
+            "name": "index_bible_books_translationCode",
+            "unique": false,
+            "columnNames": [
+              "translationCode"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_bible_books_translationCode` ON `${TABLE_NAME}` (`translationCode`)"
+          }
+        ],
+        "foreignKeys": []
+      },
+      {
+        "tableName": "bible_verses",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`translationCode` TEXT NOT NULL, `bookId` TEXT NOT NULL, `chapterNumber` INTEGER NOT NULL, `verseNumber` INTEGER NOT NULL, `text` TEXT NOT NULL, `imageUrl` TEXT, `searchNorm` TEXT NOT NULL, PRIMARY KEY(`translationCode`, `bookId`, `chapterNumber`, `verseNumber`))",
+        "fields": [
+          {
+            "fieldPath": "translationCode",
+            "columnName": "translationCode",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "bookId",
+            "columnName": "bookId",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "chapterNumber",
+            "columnName": "chapterNumber",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "verseNumber",
+            "columnName": "verseNumber",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "text",
+            "columnName": "text",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "imageUrl",
+            "columnName": "imageUrl",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "searchNorm",
+            "columnName": "searchNorm",
+            "affinity": "TEXT",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "translationCode",
+            "bookId",
+            "chapterNumber",
+            "verseNumber"
+          ]
+        },
+        "indices": [
+          {
+            "name": "index_bible_verses_translationCode_bookId",
+            "unique": false,
+            "columnNames": [
+              "translationCode",
+              "bookId"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_bible_verses_translationCode_bookId` ON `${TABLE_NAME}` (`translationCode`, `bookId`)"
+          }
+        ],
+        "foreignKeys": []
+      },
+      {
+        "tableName": "bible_interlinear_words",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`translationCode` TEXT NOT NULL, `bookId` TEXT NOT NULL, `chapterNumber` INTEGER NOT NULL, `verseNumber` INTEGER NOT NULL, `wordIndex` INTEGER NOT NULL, `original` TEXT NOT NULL, `transliteration` TEXT NOT NULL, `gloss` TEXT NOT NULL, `strong` TEXT, `morph` TEXT, PRIMARY KEY(`translationCode`, `bookId`, `chapterNumber`, `verseNumber`, `wordIndex`))",
+        "fields": [
+          {
+            "fieldPath": "translationCode",
+            "columnName": "translationCode",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "bookId",
+            "columnName": "bookId",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "chapterNumber",
+            "columnName": "chapterNumber",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "verseNumber",
+            "columnName": "verseNumber",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "wordIndex",
+            "columnName": "wordIndex",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "original",
+            "columnName": "original",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "transliteration",
+            "columnName": "transliteration",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "gloss",
+            "columnName": "gloss",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "strong",
+            "columnName": "strong",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "morph",
+            "columnName": "morph",
+            "affinity": "TEXT",
+            "notNull": false
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "translationCode",
+            "bookId",
+            "chapterNumber",
+            "verseNumber",
+            "wordIndex"
+          ]
+        },
+        "indices": [
+          {
+            "name": "index_bible_interlinear_words_translationCode_bookId_chapterNumber_verseNumber",
+            "unique": false,
+            "columnNames": [
+              "translationCode",
+              "bookId",
+              "chapterNumber",
+              "verseNumber"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_bible_interlinear_words_translationCode_bookId_chapterNumber_verseNumber` ON `${TABLE_NAME}` (`translationCode`, `bookId`, `chapterNumber`, `verseNumber`)"
+          }
+        ],
+        "foreignKeys": []
+      }
+    ],
+    "views": [],
+    "setupQueries": [
+      "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '79d0c0b7c326035b04c459c6651ac5c6')"
+    ]
+  }
+}

@@ -4,11 +4,10 @@ import android.content.Context
 import androidx.room.Database
 import androidx.room.Room
 import androidx.room.RoomDatabase
-import androidx.sqlite.db.SupportSQLiteDatabase
 
 @Database(
     entities = [BibleBookEntity::class, BibleVerseEntity::class, BibleInterlinearWordEntity::class],
-    version = 2,
+    version = 3,
     exportSchema = true,
 )
 abstract class BibleDatabase : RoomDatabase() {
@@ -28,16 +27,8 @@ abstract class BibleDatabase : RoomDatabase() {
                     DB_NAME,
                 )
                     .allowMainThreadQueries()
-                    .addMigrations(MIGRATION_1_2)
+                    .addMigrations(MIGRATION_1_2, MIGRATION_2_3)
                     .fallbackToDestructiveMigration()
-                    .addCallback(
-                        object : Callback() {
-                            override fun onCreate(db: SupportSQLiteDatabase) {
-                                super.onCreate(db)
-                                db.execSQL(BibleFtsSql.CREATE_FTS_TABLE)
-                            }
-                        },
-                    )
                     .build()
                     .also { instance = it }
             }

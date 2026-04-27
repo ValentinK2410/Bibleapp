@@ -27,11 +27,6 @@ object BibleJsonImporter {
                             val json = readAssetString(context, path)
                             val parsed = parseSingleBookToRows(t, json) ?: continue
                             dao.replaceBook(parsed.book, parsed.verses, parsed.interlinear)
-                            BibleFtsNative.syncBook(
-                                database.openHelper.writableDatabase,
-                                parsed.book.translationCode,
-                                parsed.book.bookId,
-                            )
                         }
                     }
                 } else {
@@ -52,10 +47,8 @@ object BibleJsonImporter {
         if (hasTranslationFolder(context, translation)) return
         val data = readAssetString(context, assetName)
         val books = parseLegacyWholeToBooks(translation, data) ?: return
-        val db = database.openHelper.writableDatabase
         for (b in books) {
             dao.replaceBook(b.book, b.verses, b.interlinear)
-            BibleFtsNative.syncBook(db, b.book.translationCode, b.book.bookId)
         }
     }
 

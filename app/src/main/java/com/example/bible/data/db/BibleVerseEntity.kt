@@ -15,6 +15,6 @@ data class BibleVerseEntity(
     val verseNumber: Int,
     val text: String,
     val imageUrl: String?,
-    /** Нормализованный текст для индекса FTS5. */
+    /** Нормализованный текст для быстрого поиска (LIKE по этой колонке). */
     val searchNorm: String = "",
 )

@@ -3,7 +3,7 @@ package com.example.bible.data.db
 import com.example.bible.data.verseSearchNormForStored
 
 /**
- * После миграции 1→2 заполняет [BibleVerseEntity.searchNorm] и пересобирает FTS.
+ * Заполняет пустые [BibleVerseEntity.searchNorm] после миграций (нужно для LIKE-поиска).
  */
 object BibleFtsMaintainer {
 
@@ -23,15 +23,6 @@ object BibleFtsMaintainer {
                         r.verseNumber,
                     )
                 }
-            }
-        }
-        val verses = dao.countAllVerses()
-        val fts = BibleFtsNative.countRows(database.openHelper.writableDatabase).toInt()
-        if (verses > 0 && fts != verses) {
-            database.runInTransaction {
-                val db = database.openHelper.writableDatabase
-                BibleFtsNative.clear(db)
-                BibleFtsNative.populateAll(db)
             }
         }
     }
