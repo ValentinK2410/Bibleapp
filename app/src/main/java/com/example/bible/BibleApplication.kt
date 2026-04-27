@@ -2,10 +2,14 @@ package com.example.bible
 
 import android.app.Application
 import com.example.bible.data.MediaCatalogMigration
+import com.example.bible.data.db.StrongsImporter
+import com.example.bible.data.db.StudyDatabase
+import com.example.bible.data.db.StudyLegacyFilesystemMigration
 import coil.ImageLoader
 import coil.ImageLoaderFactory
 import coil.decode.SvgDecoder
 import okhttp3.OkHttpClient
+import java.util.concurrent.Executors
 
 /**
  * Глобальный Coil: Wikimedia и часть CDN отклоняют запросы без «человеческого» User-Agent;
@@ -16,6 +20,12 @@ class BibleApplication : Application(), ImageLoaderFactory {
     override fun onCreate() {
         super.onCreate()
         MediaCatalogMigration.migrateIfNeeded(this)
+        val app = this
+        studySqliteInitExecutor.execute {
+            val db = StudyDatabase.getInstance(app)
+            StudyLegacyFilesystemMigration.runIfNeeded(app, db)
+            StrongsImporter.importFromAssetsIfEmpty(app, db)
+        }
     }
 
     override fun newImageLoader(): ImageLoader {
@@ -42,6 +52,10 @@ class BibleApplication : Application(), ImageLoaderFactory {
     }
 
     companion object {
+        private val studySqliteInitExecutor = Executors.newSingleThreadExecutor { r ->
+            Thread(r, "study-sqlite-init").apply { isDaemon = true }
+        }
+
         private const val USER_AGENT =
             "BibleApp/1.0 (Android; offline Bible reader; image search and thumbnails)"
     }

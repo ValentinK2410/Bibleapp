@@ -1,6 +1,8 @@
 package com.example.bible.data
 
 import android.content.Context
+import com.example.bible.data.db.StrongsEntryEntity
+import com.example.bible.data.db.StudyDatabase
 import org.json.JSONObject
 
 data class StrongsEntry(
@@ -35,36 +37,39 @@ data class StrongsEntry(
     }
 }
 
-class StrongsDictionary(private val context: Context) {
-    private var cache: MutableMap<String, StrongsEntry> = mutableMapOf()
-    private var loaded = false
-    private var rawJson: JSONObject? = null
+private fun StrongsEntryEntity.toStrongsEntry(): StrongsEntry =
+    StrongsEntry(
+        code = code,
+        lemma = lemma,
+        translit = translit,
+        pronunciation = pronunciation,
+        definition = definition,
+        kjvUsage = kjvUsage,
+        origin = origin,
+    )
 
-    private fun ensureLoaded() {
-        if (loaded) return
-        loaded = true
-        try {
-            val text = context.assets.open("strongs_dictionary.json")
-                .bufferedReader().use { it.readText() }
-            rawJson = JSONObject(text)
+class StrongsDictionary(private val context: Context) {
+    private val dao = StudyDatabase.getInstance(context.applicationContext).studyDao()
+    private val cache: MutableMap<String, StrongsEntry> = mutableMapOf()
+    private var jsonFallback: JSONObject? = null
+    private var jsonFallbackTried = false
+
+    private fun assetsJsonFallback(): JSONObject? {
+        if (jsonFallbackTried) return jsonFallback
+        jsonFallbackTried = true
+        jsonFallback = try {
+            JSONObject(
+                context.assets.open("strongs_dictionary.json").bufferedReader().use { it.readText() },
+            )
         } catch (_: Exception) {
-            rawJson = null
+            null
         }
+        return jsonFallback
     }
 
-    fun lookup(strongCode: String?): StrongsEntry? {
-        if (strongCode.isNullOrBlank()) return null
-
-        cache[strongCode]?.let { return it }
-
-        ensureLoaded()
-        val json = rawJson ?: return null
-
-        val normalized = normalizeStrongCode(strongCode)
-        val obj = json.optJSONObject(normalized) ?: return null
-
-        val entry = StrongsEntry(
-            code = normalized,
+    private fun entryFromJsonObject(code: String, obj: JSONObject): StrongsEntry =
+        StrongsEntry(
+            code = code,
             lemma = obj.optString("l", ""),
             translit = obj.optString("t", ""),
             pronunciation = obj.optString("p", ""),
@@ -72,9 +77,28 @@ class StrongsDictionary(private val context: Context) {
             kjvUsage = obj.optString("k", ""),
             origin = obj.optString("o", ""),
         )
-        cache[strongCode] = entry
-        cache[normalized] = entry
-        return entry
+
+    fun lookup(strongCode: String?): StrongsEntry? {
+        if (strongCode.isNullOrBlank()) return null
+
+        cache[strongCode]?.let { return it }
+
+        val normalized = normalizeStrongCode(strongCode)
+        cache[normalized]?.let { return it }
+
+        dao.getStrongsEntry(normalized)?.let { row ->
+            val e = row.toStrongsEntry()
+            cache[strongCode] = e
+            cache[normalized] = e
+            return e
+        }
+
+        val json = assetsJsonFallback() ?: return null
+        val obj = json.optJSONObject(normalized) ?: return null
+        val e = entryFromJsonObject(normalized, obj)
+        cache[strongCode] = e
+        cache[normalized] = e
+        return e
     }
 
     companion object {
