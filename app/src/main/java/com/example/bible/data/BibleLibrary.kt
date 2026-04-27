@@ -1,5 +1,6 @@
 package com.example.bible.data
 
+import com.example.bible.data.db.BibleVerseSearchRow
 import com.example.bible.ui.SearchScope
 import com.example.bible.ui.SearchSettings
 
@@ -73,22 +74,20 @@ class BibleLibrary(
         limit: Int = 400,
         settings: SearchSettings = SearchSettings(),
     ): List<SearchHit> {
+        val q = query.trim()
+        if (q.isEmpty()) return emptyList()
+
         val leg = legacy?.get(translation)
-        val books: List<BibleBook> = if (leg != null && !hasPerBookAssets(translation)) {
-            leg.books
-        } else {
-            val q = query.trim()
-            if (q.isEmpty()) return emptyList()
-            val rawIds = repository.listBookIds(translation)
-            val ids = if (rawIds.isNullOrEmpty()) {
-                BibleCanon.allBooks.map { it.id }
-            } else {
-                rawIds
-            }
-            ids.mapNotNull { getBook(translation, it) }
+        if (leg != null && !hasPerBookAssets(translation)) {
+            val filtered = filterByScope(leg.books, settings)
+            return searchInData(translation, filtered, query, limit, settings)
         }
-        val filtered = filterByScope(books, settings)
-        return searchInData(translation, filtered, query, limit, settings)
+
+        val rows = repository.getVersesForSearch(translation)
+        if (rows.isEmpty()) return emptyList()
+        val bookNames = repository.getBookTitlesForSearch(translation)
+        val filteredRows = filterVerseRowsByScope(rows, settings)
+        return searchInVerseRows(translation, filteredRows, bookNames, query, limit, settings)
     }
 
     private fun filterByScope(books: List<BibleBook>, settings: SearchSettings): List<BibleBook> =
@@ -101,6 +100,49 @@ class BibleLibrary(
                 books.filter { it.id == id }
             }
         }
+
+    private fun filterVerseRowsByScope(
+        rows: List<BibleVerseSearchRow>,
+        settings: SearchSettings,
+    ): List<BibleVerseSearchRow> =
+        when (settings.scope) {
+            SearchScope.ALL -> rows
+            SearchScope.OLD_TESTAMENT -> rows.filter { BibleCanon.isOldTestament(it.bookId) }
+            SearchScope.NEW_TESTAMENT -> rows.filter { BibleCanon.isNewTestament(it.bookId) }
+            SearchScope.SINGLE_BOOK -> {
+                val id = settings.singleBookId ?: return rows
+                rows.filter { it.bookId == id }
+            }
+        }
+
+    private fun searchInVerseRows(
+        translation: TranslationId,
+        rows: List<BibleVerseSearchRow>,
+        bookNames: Map<String, String>,
+        query: String,
+        limit: Int,
+        settings: SearchSettings,
+    ): List<SearchHit> {
+        val prepared = prepareSearchQuery(query, settings) ?: return emptyList()
+        val out = ArrayList<SearchHit>(64)
+        for (row in rows) {
+            val normalizedVerse = normalizeVerseForSearch(row.text, settings)
+            if (matchesPrepared(normalizedVerse, prepared, settings)) {
+                out.add(
+                    SearchHit(
+                        translation = translation,
+                        bookId = row.bookId,
+                        bookName = bookNames[row.bookId] ?: row.bookId,
+                        chapter = row.chapterNumber,
+                        verse = row.verseNumber,
+                        text = row.text,
+                    ),
+                )
+                if (out.size >= limit) break
+            }
+        }
+        return out
+    }
 
     private fun hasPerBookAssets(translation: TranslationId): Boolean =
         repository.listBookIds(translation)?.isNotEmpty() == true

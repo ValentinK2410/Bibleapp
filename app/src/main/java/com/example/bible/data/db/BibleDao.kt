@@ -24,6 +24,15 @@ interface BibleDao {
     fun hasBook(code: String, bookId: String): Boolean
 
     @Query(
+        "SELECT translationCode, bookId, chapterNumber, verseNumber, text FROM bible_verses " +
+            "WHERE translationCode = :code ORDER BY bookId, chapterNumber, verseNumber",
+    )
+    fun getVersesForSearchByTranslation(code: String): List<BibleVerseSearchRow>
+
+    @Query("SELECT bookId, name FROM bible_books WHERE translationCode = :code ORDER BY bookId")
+    fun getBookTitlesForTranslation(code: String): List<BibleBookTitleRow>
+
+    @Query(
         "SELECT * FROM bible_verses WHERE translationCode = :code AND bookId = :bookId " +
             "ORDER BY chapterNumber, verseNumber",
     )

@@ -3,6 +3,7 @@ package com.example.bible.data
 import android.content.Context
 import com.example.bible.data.db.BibleDatabase
 import com.example.bible.data.db.BibleJsonImporter
+import com.example.bible.data.db.BibleVerseSearchRow
 
 /**
  * Тексты Библии в [BibleDatabase] (Room). JSON в assets используется только при первом запуске (импорт).
@@ -85,4 +86,11 @@ class BibleRepository(
         val ids = dao.listBookIds(translation.code)
         return if (ids.isEmpty()) null else ids
     }
+
+    /** Все стихи перевода одним запросом — для поиска по SQLite без загрузки подстрочника. */
+    fun getVersesForSearch(translation: TranslationId): List<BibleVerseSearchRow> =
+        dao.getVersesForSearchByTranslation(translation.code)
+
+    fun getBookTitlesForSearch(translation: TranslationId): Map<String, String> =
+        dao.getBookTitlesForTranslation(translation.code).associate { it.bookId to it.name }
 }
