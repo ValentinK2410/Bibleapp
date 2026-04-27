@@ -14,6 +14,7 @@ import android.graphics.Paint
 import android.graphics.RectF
 import android.graphics.Typeface
 import android.os.Looper
+import android.view.Choreographer
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.layout.Box
@@ -105,15 +106,16 @@ import kotlin.math.max
 import kotlin.math.pow
 import kotlin.math.roundToInt
 
-/**
- * Интервал GPS при следовании за пользователем: реже, чем «каждые кадр», иначе новые
- * [Map.move] накладываются на незавершённую анимацию — карта дёргается.
- */
+/** Интервал обновления GPS при следовании за пользователем. */
 private const val TRAVEL_FOLLOW_LOCATION_INTERVAL_MS = 100L
-/** SMOOTH-анимация камеры: заметно дольше тика, чтобы плавно догонять цель, не срываться рывками. */
-private const val TRAVEL_CAMERA_MOVE_DURATION_SEC = 0.28f
-/** Экспоненциальное сглаживание широты/долготы (0..1) — съедает скачки GPS между тиками. */
-private const val TRAVEL_CAMERA_POS_SMOOTH = 0.32f
+/**
+ * Сглаживание координат в тике GPS (0..1) — убирает выбросы; основная плавность — покадрово в [Choreographer].
+ */
+private const val TRAVEL_CAMERA_POS_SMOOTH = 0.38f
+/** λ (1/с) для экспоненциального сближения «экранной» камеры с целью GPS за один кадр. */
+private const val TRAVEL_FOLLOW_DISPLAY_POS_LAMBDA = 16.0
+private const val TRAVEL_FOLLOW_DISPLAY_ZOOM_LAMBDA = 11.0
+private const val TRAVEL_FOLLOW_DISPLAY_ANGLE_LAMBDA = 14.0
 /** Наклон в режиме навигатора, как у наклонённой 3D-карты. */
 private const val TRAVEL_NAV_TARGET_TILT = 52f
 private const val TRAVEL_NAV_TILT_SMOOTH = 0.10f
@@ -171,6 +173,21 @@ private fun targetViewSpanMeters(speedKmh: Float): Double {
 
 private const val USER_CHOSEN_MIN_SPAN_PRESERVE_M = 2000
 private const val RECENTER_VIEW_SPAN_M = 900.0
+
+/** Цель с GPS и текущее отображаемое положение камеры — обновляется на каждом кадре. */
+private class TravelFollowCameraTargets {
+    var tLat = 0.0
+    var tLon = 0.0
+    var tZoom = 15f
+    var tAzimuth = 0f
+    var tTilt = 0f
+    var dLat = Double.NaN
+    var dLon = Double.NaN
+    var dZoom = Float.NaN
+    var dAzimuth = Float.NaN
+    var dTilt = Float.NaN
+    var lastFrameNs = 0L
+}
 
 @Composable
 fun YandexTravelMap(
@@ -545,6 +562,53 @@ private fun YandexTravelMapContent(
         var smoothedLat: Double? = null
         var smoothedLon: Double? = null
         var prevLoc: Location? = null
+        val followTargets = TravelFollowCameraTargets()
+        var gpsTargetReady = false
+        val choreographer = Choreographer.getInstance()
+        val frameCallback = object : Choreographer.FrameCallback {
+            override fun doFrame(frameTimeNanos: Long) {
+                if (!followCamera) return
+                if (!gpsTargetReady) {
+                    choreographer.postFrameCallback(this)
+                    return
+                }
+                val map = mapView.mapWindow.map
+                val dt = if (followTargets.lastFrameNs == 0L) {
+                    1.0 / 60.0
+                } else {
+                    ((frameTimeNanos - followTargets.lastFrameNs) / 1e9).coerceIn(0.001, 0.08)
+                }
+                followTargets.lastFrameNs = frameTimeNanos
+                val aPos = travelExpSmoothAlpha(TRAVEL_FOLLOW_DISPLAY_POS_LAMBDA, dt).toFloat()
+                val aZm = travelExpSmoothAlpha(TRAVEL_FOLLOW_DISPLAY_ZOOM_LAMBDA, dt).toFloat()
+                val aAng = travelExpSmoothAlpha(TRAVEL_FOLLOW_DISPLAY_ANGLE_LAMBDA, dt).toFloat()
+                if (followTargets.dLat.isNaN()) {
+                    val cp = map.cameraPosition
+                    val p = cp.target
+                    followTargets.dLat = p.latitude
+                    followTargets.dLon = p.longitude
+                    followTargets.dZoom = cp.zoom
+                    followTargets.dAzimuth = cp.azimuth
+                    followTargets.dTilt = cp.tilt
+                }
+                followTargets.dLat = travelLerpD(followTargets.dLat, followTargets.tLat, aPos)
+                followTargets.dLon = travelLerpD(followTargets.dLon, followTargets.tLon, aPos)
+                followTargets.dZoom += (followTargets.tZoom - followTargets.dZoom) * aZm
+                followTargets.dAzimuth = lerpAngleDegrees(followTargets.dAzimuth, followTargets.tAzimuth, aAng)
+                followTargets.dTilt += (followTargets.tTilt - followTargets.dTilt) * aAng
+                map.move(
+                    CameraPosition(
+                        Point(followTargets.dLat, followTargets.dLon),
+                        followTargets.dZoom,
+                        followTargets.dAzimuth,
+                        followTargets.dTilt,
+                    ),
+                    Animation(Animation.Type.SMOOTH, 0f),
+                    null,
+                )
+                choreographer.postFrameCallback(this)
+            }
+        }
         /** Азимут компаса (0° — север), обновляется сенсором между тиками GPS. */
         val compassDeg = FloatArray(1).apply { this[0] = Float.NaN }
         val sensorManager = context.getSystemService(Context.SENSOR_SERVICE) as SensorManager
@@ -598,7 +662,6 @@ private fun YandexTravelMapContent(
                 }
                 smoothedLat = targetLat
                 smoothedLon = targetLon
-                val userPoint = Point(targetLat, targetLon)
                 val z = if (userLockedWideView.get()) {
                     cp.zoom.also { smoothedZoom = it }
                 } else {
@@ -621,12 +684,16 @@ private fun YandexTravelMapContent(
                     else -> cp.azimuth
                 }
                 smoothedTilt = smoothedTilt + (TRAVEL_NAV_TARGET_TILT - smoothedTilt) * TRAVEL_NAV_TILT_SMOOTH
-                map.move(
-                    CameraPosition(userPoint, z, azimuth, smoothedTilt),
-                    Animation(Animation.Type.SMOOTH, TRAVEL_CAMERA_MOVE_DURATION_SEC),
-                    null,
-                )
+                followTargets.tLat = targetLat
+                followTargets.tLon = targetLon
+                followTargets.tZoom = z
+                followTargets.tAzimuth = azimuth
+                followTargets.tTilt = smoothedTilt
+                gpsTargetReady = true
             }
+        }
+        if (followCamera) {
+            choreographer.postFrameCallback(frameCallback)
         }
         val request = LocationRequest.Builder(
             Priority.PRIORITY_HIGH_ACCURACY,
@@ -637,6 +704,7 @@ private fun YandexTravelMapContent(
             .build()
         client.requestLocationUpdates(request, callback, Looper.getMainLooper())
         onDispose {
+            choreographer.removeFrameCallback(frameCallback)
             if (followCamera && rotationSensor != null) {
                 sensorManager.unregisterListener(sensorListener)
             }
@@ -917,6 +985,10 @@ private fun YandexTravelMapContent(
 
 private fun travelLerpD(from: Double, to: Double, t: Float): Double =
     from + (to - from) * t.toDouble()
+
+/** Доля приближения к цели за кадр при экспоненциальном сглаживании (устойчиво к разному FPS). */
+private fun travelExpSmoothAlpha(lambdaPerSec: Double, dtSec: Double): Double =
+    (1.0 - kotlin.math.exp(-lambdaPerSec * dtSec)).coerceIn(0.0001, 1.0)
 
 /** Линейная интерполяция угла в градусах с учётом перехода через 0/360. */
 private fun lerpAngleDegrees(from: Float, to: Float, t: Float): Float {
