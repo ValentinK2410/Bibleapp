@@ -2,8 +2,12 @@ package com.example.bible.data
 
 import android.content.Context
 import com.example.bible.data.db.BibleDatabase
+import com.example.bible.data.db.BibleFtsMaintainer
+import com.example.bible.data.db.BibleFtsNative
+import com.example.bible.data.db.BibleFtsSearch
 import com.example.bible.data.db.BibleJsonImporter
 import com.example.bible.data.db.BibleVerseSearchRow
+import com.example.bible.ui.SearchSettings
 
 /**
  * Тексты Библии в [BibleDatabase] (Room). JSON в assets используется только при первом запуске (импорт).
@@ -23,6 +27,7 @@ class BibleRepository(
     fun loadLibrary(): BibleLibrary {
         librarySingleton?.let { return it }
         BibleJsonImporter.importFromAssetsIfNeeded(context, database)
+        BibleFtsMaintainer.ensureFtsUpToDate(database)
         val hasAny = TranslationId.entries.any { dao.countBooksForTranslation(it.code) > 0 }
         if (!hasAny) {
             throw IllegalStateException("Нет текстов Библии: добавьте папки переводов в assets/bible/ или sample JSON.")
@@ -93,4 +98,39 @@ class BibleRepository(
 
     fun getBookTitlesForSearch(translation: TranslationId): Map<String, String> =
         dao.getBookTitlesForTranslation(translation.code).associate { it.bookId to it.name }
+
+    /**
+     * FTS5 по нескольким переводам одним запросом.
+     * @return null — индекс пуст или ошибка SQL (вызывающий делает полный перебор).
+     */
+    fun trySearchFts(
+        translations: List<TranslationId>,
+        query: String,
+        settings: SearchSettings,
+        limit: Int,
+    ): List<SearchHit>? {
+        if (BibleFtsNative.countRows(database.openHelper.writableDatabase) == 0L) return null
+        val norm = normalizeSearchQueryForCompare(query, BibleVerseSearchNormSettings)
+        if (norm.isEmpty()) return emptyList()
+        val phrase = BibleFtsSearch.phraseMatch(norm) ?: return emptyList()
+        val codes = translations.map { it.code }
+        val sqliteQuery = BibleFtsSearch.buildFtsQuery(codes, settings, limit, phrase) ?: return null
+        return try {
+            val rows = dao.searchVersesFts(sqliteQuery)
+            val titleRows = dao.getBookTitlesForTranslations(codes)
+            val titleMap = titleRows.associate { Pair(it.translationCode, it.bookId) to it.name }
+            rows.map { r ->
+                SearchHit(
+                    translation = TranslationId.fromCode(r.translationCode),
+                    bookId = r.bookId,
+                    bookName = titleMap[r.translationCode to r.bookId] ?: r.bookId,
+                    chapter = r.chapterNumber,
+                    verse = r.verseNumber,
+                    text = r.text,
+                )
+            }
+        } catch (_: Throwable) {
+            null
+        }
+    }
 }

@@ -1,5 +1,6 @@
 package com.example.bible.data
 
+import com.example.bible.ui.SearchScope
 import com.example.bible.ui.SearchSettings
 import java.text.Normalizer
 import kotlin.math.max
@@ -8,6 +9,35 @@ import android.util.Log
 private const val TAG_SEARCH_HIGHLIGHT = "BibleSearchHighlight"
 
 internal val BibleSearchWhitespaceSplit = Regex("\\s+")
+
+/**
+ * Настройки, с которыми в БД хранится [com.example.bible.data.db.BibleVerseEntity.searchNorm]
+ * и строится быстрый FTS5-поиск (должны совпадать с [canUseFtsFastPath]).
+ */
+val BibleVerseSearchNormSettings = SearchSettings(
+    wholeWords = false,
+    orderedWords = false,
+    ignoreSeparators = true,
+    accentSensitive = false,
+    caseSensitive = false,
+    punctuationSensitive = false,
+    highlightMatches = true,
+    scope = SearchScope.ALL,
+    singleBookId = null,
+)
+
+/** Нормализация текста стиха для индекса FTS (тот же алгоритм, что и при типичном поиске). */
+fun verseSearchNormForStored(text: String): String =
+    normalizeVerseForCompare(text, BibleVerseSearchNormSettings)
+
+/** Быстрый путь FTS5 даёт те же результаты, что и полный перебор, только при этих флагах. */
+fun canUseFtsFastPath(settings: SearchSettings): Boolean =
+    !settings.wholeWords &&
+        !settings.orderedWords &&
+        settings.ignoreSeparators &&
+        !settings.accentSensitive &&
+        !settings.caseSensitive &&
+        !settings.punctuationSensitive
 
 internal fun stripAccentsForSearch(s: String): String =
     Normalizer.normalize(s, Normalizer.Form.NFD).replace("\\p{M}".toRegex(), "")

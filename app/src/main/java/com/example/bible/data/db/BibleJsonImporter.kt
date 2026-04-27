@@ -2,6 +2,7 @@ package com.example.bible.data.db
 
 import android.content.Context
 import com.example.bible.data.TranslationId
+import com.example.bible.data.verseSearchNormForStored
 import org.json.JSONArray
 import org.json.JSONObject
 
@@ -26,11 +27,16 @@ object BibleJsonImporter {
                             val json = readAssetString(context, path)
                             val parsed = parseSingleBookToRows(t, json) ?: continue
                             dao.replaceBook(parsed.book, parsed.verses, parsed.interlinear)
+                            BibleFtsNative.syncBook(
+                                database.openHelper.writableDatabase,
+                                parsed.book.translationCode,
+                                parsed.book.bookId,
+                            )
                         }
                     }
                 } else {
-                    importLegacyIfPresent(context, TranslationId.WEB, "bible_web_sample.json", dao)
-                    importLegacyIfPresent(context, TranslationId.SYNODAL, "bible_synodal_sample.json", dao)
+                    importLegacyIfPresent(context, database, TranslationId.WEB, "bible_web_sample.json", dao)
+                    importLegacyIfPresent(context, database, TranslationId.SYNODAL, "bible_synodal_sample.json", dao)
                 }
             }
         }
@@ -38,6 +44,7 @@ object BibleJsonImporter {
 
     private fun importLegacyIfPresent(
         context: Context,
+        database: BibleDatabase,
         translation: TranslationId,
         assetName: String,
         dao: BibleDao,
@@ -45,8 +52,10 @@ object BibleJsonImporter {
         if (hasTranslationFolder(context, translation)) return
         val data = readAssetString(context, assetName)
         val books = parseLegacyWholeToBooks(translation, data) ?: return
+        val db = database.openHelper.writableDatabase
         for (b in books) {
             dao.replaceBook(b.book, b.verses, b.interlinear)
+            BibleFtsNative.syncBook(db, b.book.translationCode, b.book.bookId)
         }
     }
 
@@ -77,7 +86,10 @@ object BibleJsonImporter {
                     val text = verse.getString("text")
                     val imageUrl = if (verse.has("imageUrl")) verse.getString("imageUrl") else null
                     verses.add(
-                        BibleVerseEntity(code, bookId, chNum, vNum, text, imageUrl),
+                        BibleVerseEntity(
+                            code, bookId, chNum, vNum, text, imageUrl,
+                            searchNorm = verseSearchNormForStored(text),
+                        ),
                     )
                     val words = verse.optJSONArray("words")
                     if (words != null && words.length() > 0) {
@@ -128,7 +140,10 @@ object BibleJsonImporter {
                         val text = verse.getString("text")
                         val imageUrl = if (verse.has("imageUrl")) verse.getString("imageUrl") else null
                         verses.add(
-                            BibleVerseEntity(code, bookId, chNum, vNum, text, imageUrl),
+                            BibleVerseEntity(
+                                code, bookId, chNum, vNum, text, imageUrl,
+                                searchNorm = verseSearchNormForStored(text),
+                            ),
                         )
                     }
                 }

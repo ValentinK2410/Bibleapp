@@ -58,6 +58,11 @@ class BibleLibrary(
         settings: SearchSettings = SearchSettings(),
     ): List<SearchHit> {
         if (translations.isEmpty()) return emptyList()
+        val q = query.trim()
+        if (q.isEmpty()) return emptyList()
+        if (canUseFtsFastPath(settings)) {
+            repository.trySearchFts(translations, q, settings, limit)?.let { return it }
+        }
         if (translations.size == 1) return search(translations.first(), query, limit, settings)
         val out = ArrayList<SearchHit>(minOf(limit, 64))
         for (t in translations) {
@@ -81,6 +86,10 @@ class BibleLibrary(
         if (leg != null && !hasPerBookAssets(translation)) {
             val filtered = filterByScope(leg.books, settings)
             return searchInData(translation, filtered, query, limit, settings)
+        }
+
+        if (canUseFtsFastPath(settings)) {
+            repository.trySearchFts(listOf(translation), q, settings, limit)?.let { return it }
         }
 
         val rows = repository.getVersesForSearch(translation)

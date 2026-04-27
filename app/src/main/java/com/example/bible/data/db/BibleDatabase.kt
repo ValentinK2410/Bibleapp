@@ -4,10 +4,11 @@ import android.content.Context
 import androidx.room.Database
 import androidx.room.Room
 import androidx.room.RoomDatabase
+import androidx.sqlite.db.SupportSQLiteDatabase
 
 @Database(
     entities = [BibleBookEntity::class, BibleVerseEntity::class, BibleInterlinearWordEntity::class],
-    version = 1,
+    version = 2,
     exportSchema = true,
 )
 abstract class BibleDatabase : RoomDatabase() {
@@ -26,10 +27,17 @@ abstract class BibleDatabase : RoomDatabase() {
                     BibleDatabase::class.java,
                     DB_NAME,
                 )
-                    // BibleLibrary.getBook() вызывается из Compose на main; иначе Room падает с
-                    // "Cannot access database on the main thread".
                     .allowMainThreadQueries()
+                    .addMigrations(MIGRATION_1_2)
                     .fallbackToDestructiveMigration()
+                    .addCallback(
+                        object : Callback() {
+                            override fun onCreate(db: SupportSQLiteDatabase) {
+                                super.onCreate(db)
+                                db.execSQL(BibleFtsSql.CREATE_FTS_TABLE)
+                            }
+                        },
+                    )
                     .build()
                     .also { instance = it }
             }
