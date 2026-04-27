@@ -1,0 +1,545 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Ночное чтение — слово за словом</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;1,500&family=IBM+Plex+Sans:wght@400;500&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --void: #06080f;
+      --bg: #0c1018;
+      --surface: #121826;
+      --border: #1e2838;
+      --text: #d4dbe8;
+      --muted: #6b7a94;
+      --moon: #9eb6e8;
+      --moon-glow: rgba(158, 182, 232, 0.22);
+      --word-active: #f0f4ff;
+      --radius: 14px;
+    }
+
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: "Cormorant Garamond", Georgia, serif;
+      background: radial-gradient(ellipse 120% 80% at 50% -20%, #152238 0%, var(--void) 55%);
+      color: var(--text);
+      line-height: 1.75;
+      font-size: 1.35rem;
+    }
+
+    .layout {
+      max-width: 720px;
+      margin: 0 auto;
+      padding: 1.5rem 1.1rem 3rem;
+    }
+
+    header {
+      margin-bottom: 1.5rem;
+      padding-bottom: 1.25rem;
+      border-bottom: 1px solid var(--border);
+    }
+
+    h1 {
+      font-size: 1.55rem;
+      font-weight: 600;
+      margin: 0 0 0.4rem;
+      letter-spacing: 0.02em;
+      color: var(--moon);
+    }
+
+    .sub {
+      font-family: "IBM Plex Sans", sans-serif;
+      font-size: 0.82rem;
+      color: var(--muted);
+      line-height: 1.5;
+    }
+
+    .panel {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 1rem 1.15rem;
+      margin-bottom: 1rem;
+    }
+
+    .row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.55rem;
+      align-items: center;
+    }
+
+    label.file-btn {
+      font-family: "IBM Plex Sans", sans-serif;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.35rem;
+      padding: 0.45rem 0.85rem;
+      background: var(--border);
+      border-radius: 9px;
+      font-size: 0.78rem;
+      cursor: pointer;
+      border: 1px solid transparent;
+      color: var(--text);
+    }
+
+    label.file-btn:hover {
+      border-color: var(--moon);
+      color: var(--moon);
+    }
+
+    input[type="file"] { display: none; }
+
+    button {
+      font-family: "IBM Plex Sans", sans-serif;
+      font-size: 0.78rem;
+      padding: 0.45rem 0.85rem;
+      border-radius: 9px;
+      border: 1px solid var(--border);
+      background: var(--bg);
+      color: var(--text);
+      cursor: pointer;
+    }
+
+    button.primary {
+      background: linear-gradient(145deg, #2a3a58, #1e2a42);
+      border-color: #3d4f6e;
+      color: var(--word-active);
+    }
+
+    button:disabled {
+      opacity: 0.45;
+      cursor: not-allowed;
+    }
+
+    .audio-bar {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      flex-wrap: wrap;
+      margin-top: 0.85rem;
+    }
+
+    audio {
+      flex: 1;
+      min-width: 220px;
+      height: 40px;
+      filter: contrast(1.05) saturate(0.85);
+    }
+
+    .time {
+      font-family: "IBM Plex Sans", monospace;
+      font-size: 0.8rem;
+      color: var(--muted);
+      white-space: nowrap;
+    }
+
+    textarea.setup {
+      width: 100%;
+      min-height: 140px;
+      font-family: "Cormorant Garamond", Georgia, serif;
+      font-size: 1.05rem;
+      padding: 0.85rem;
+      border-radius: 10px;
+      border: 1px solid var(--border);
+      background: var(--bg);
+      color: var(--text);
+      resize: vertical;
+    }
+
+    .hint {
+      font-family: "IBM Plex Sans", sans-serif;
+      font-size: 0.78rem;
+      color: var(--muted);
+      margin: 0.5rem 0 0.65rem;
+      line-height: 1.45;
+    }
+
+    .tabs {
+      display: flex;
+      gap: 0.35rem;
+      margin-bottom: 0.75rem;
+      flex-wrap: wrap;
+    }
+
+    .tabs button {
+      background: transparent;
+    }
+
+    .tabs button.on {
+      border-color: var(--moon);
+      color: var(--moon);
+    }
+
+    .hidden { display: none !important; }
+
+    .text-scroll {
+      max-height: min(58vh, 560px);
+      overflow-y: auto;
+      padding: 1.25rem 1rem 1.1rem 1.1rem;
+      border-radius: var(--radius);
+      border: 1px solid var(--border);
+      background: linear-gradient(180deg, #0e1420 0%, var(--bg) 100%);
+      box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.02);
+    }
+
+    .text-scroll .word {
+      display: inline;
+      padding: 0.12em 0.08em;
+      margin: 0 -0.02em;
+      border-radius: 4px;
+      transition: background 0.12s ease, color 0.12s ease, box-shadow 0.12s ease;
+    }
+
+    .text-scroll .word.active {
+      background: var(--moon-glow);
+      color: var(--word-active);
+      box-shadow: 0 0 20px rgba(158, 182, 232, 0.22);
+    }
+
+    .empty-state {
+      font-family: "IBM Plex Sans", sans-serif;
+      font-size: 0.9rem;
+      color: var(--muted);
+      font-style: italic;
+      text-align: center;
+      padding: 2.5rem 1rem;
+    }
+
+    code {
+      font-size: 0.85em;
+      color: var(--moon);
+    }
+  </style>
+</head>
+<body>
+  <div class="layout">
+    <header>
+      <h1>Ночное чтение</h1>
+      <p class="sub">Подсветка слова по времени воспроизведения. Точные метки — в JSON (Whisper, Audacity и т.д.); без файла меток — равномерное распределение длительности по словам.</p>
+    </header>
+
+    <div class="panel">
+      <div class="row">
+        <label class="file-btn">
+          Аудио
+          <input type="file" id="audioFile" accept="audio/*" />
+        </label>
+        <label class="file-btn">
+          Текст (.txt)
+          <input type="file" id="textFile" accept=".txt,text/plain" />
+        </label>
+        <label class="file-btn">
+          Метки JSON
+          <input type="file" id="jsonFile" accept=".json,application/json" />
+        </label>
+        <span id="audioName" class="sub"></span>
+      </div>
+      <div class="audio-bar">
+        <audio id="player" controls></audio>
+        <span class="time" id="clock">0:00 / 0:00</span>
+      </div>
+    </div>
+
+    <div class="panel">
+      <div class="tabs">
+        <button type="button" class="on" id="tabEven" data-tab="even">Текст → равномерно по словам</button>
+        <button type="button" id="tabJson" data-tab="json">JSON с метками</button>
+      </div>
+
+      <div id="paneEven">
+        <p class="hint">Вставьте текст или загрузите <code>01.txt</code> и нажмите «Разметить» — каждое слово получит долю длительности трека.</p>
+        <textarea class="setup" id="plainInput" spellcheck="false" placeholder="Вставьте текст главы…"></textarea>
+        <div class="row" style="margin-top:0.65rem">
+          <button type="button" class="primary" id="applyEven">Разметить слова</button>
+        </div>
+      </div>
+
+      <div id="paneJson" class="hidden">
+        <p class="hint">Формат: массив объектов <code>{"start": сек, "end": сек, "text": "слово"}</code> или <code>{"words": [...]}</code>. Поля <code>start</code>/<code>end</code> обязательны.</p>
+        <textarea class="setup" id="jsonInput" spellcheck="false" placeholder='[{"start":0,"end":0.4,"text":"В"},{"start":0.4,"end":0.7,"text":"начале"}]'></textarea>
+        <div class="row" style="margin-top:0.65rem">
+          <button type="button" class="primary" id="applyJson">Применить JSON</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="panel text-scroll" id="textContainer">
+      <p class="empty-state" id="placeholder">Загрузите аудио и текст, затем «Разметить слова» или примените JSON с метками.</p>
+    </div>
+  </div>
+
+  <script>
+    (function () {
+      const player = document.getElementById("player");
+      const audioFile = document.getElementById("audioFile");
+      const textFile = document.getElementById("textFile");
+      const jsonFile = document.getElementById("jsonFile");
+      const audioName = document.getElementById("audioName");
+      const clock = document.getElementById("clock");
+      const plainInput = document.getElementById("plainInput");
+      const jsonInput = document.getElementById("jsonInput");
+      const applyEven = document.getElementById("applyEven");
+      const applyJson = document.getElementById("applyJson");
+      const textContainer = document.getElementById("textContainer");
+      const placeholder = document.getElementById("placeholder");
+      const tabEven = document.getElementById("tabEven");
+      const tabJson = document.getElementById("tabJson");
+      const paneEven = document.getElementById("paneEven");
+      const paneJson = document.getElementById("paneJson");
+
+      /** @type {{ start: number, end: number, text: string }[]} */
+      let segments = [];
+      let rafId = 0;
+      let lastWordIdx = -1;
+
+      function tokenize(text) {
+        const lines = text.replace(/\r\n/g, "\n").trim();
+        if (!lines) return [];
+        const parts = lines.split(/(\s+)/);
+        const out = [];
+        for (const p of parts) {
+          if (!p) continue;
+          if (/^\s+$/.test(p)) {
+            out.push({ type: "ws", text: p });
+          } else {
+            out.push({ type: "word", text: p });
+          }
+        }
+        return out;
+      }
+
+      function buildEvenSegments(plain, durationSec) {
+        const tokens = tokenize(plain);
+        const words = tokens.filter((t) => t.type === "word");
+        const n = words.length;
+        if (!n || !durationSec || durationSec <= 0) return [];
+        const step = durationSec / n;
+        const segs = [];
+        let i = 0;
+        for (const t of tokens) {
+          if (t.type !== "word") continue;
+          segs.push({
+            start: i * step,
+            end: (i + 1) * step,
+            text: t.text,
+          });
+          i++;
+        }
+        return segs;
+      }
+
+      function parseJsonPayload(raw) {
+        const data = JSON.parse(raw);
+        let arr = Array.isArray(data) ? data : data.words || data.segments;
+        if (!Array.isArray(arr)) throw new Error("Ожидается массив или поле words");
+        return arr.map((item, idx) => {
+          const start = Number(item.start);
+          const end = Number(item.end ?? item.endTime ?? item.t1);
+          const text = String(item.text ?? item.word ?? item.w ?? "").trim();
+          if (!Number.isFinite(start)) throw new Error("Нет start у элемента " + idx);
+          const endVal = Number.isFinite(end) ? end : start + 0.05;
+          if (!text) return null;
+          return { start, end: endVal, text };
+        }).filter(Boolean);
+      }
+
+      function renderWordsFromSegmentsOnly() {
+        if (!segments.length) {
+          textContainer.innerHTML = "";
+          textContainer.appendChild(placeholder);
+          placeholder.classList.remove("hidden");
+          return;
+        }
+        placeholder.classList.add("hidden");
+        textContainer.innerHTML = "";
+        segments.forEach((seg, idx) => {
+          if (idx > 0) textContainer.appendChild(document.createTextNode(" "));
+          const span = document.createElement("span");
+          span.className = "word";
+          span.dataset.index = String(idx);
+          span.textContent = seg.text;
+          textContainer.appendChild(span);
+        });
+      }
+
+      function renderWordsWithPlain(plain) {
+        if (!segments.length) {
+          textContainer.innerHTML = "";
+          textContainer.appendChild(placeholder);
+          placeholder.classList.remove("hidden");
+          return;
+        }
+        placeholder.classList.add("hidden");
+        textContainer.innerHTML = "";
+        const tokens = tokenize(plain);
+        const nWords = tokens.filter((x) => x.type === "word").length;
+        if (nWords !== segments.length) {
+          renderWordsFromSegmentsOnly();
+          return;
+        }
+        let wIdx = 0;
+        for (const t of tokens) {
+          if (t.type === "ws") {
+            const s = document.createElement("span");
+            s.className = "space";
+            s.textContent = t.text;
+            textContainer.appendChild(s);
+          } else {
+            const span = document.createElement("span");
+            span.className = "word";
+            span.dataset.index = String(wIdx);
+            span.textContent = segments[wIdx].text;
+            textContainer.appendChild(span);
+            wIdx++;
+          }
+        }
+      }
+
+      function currentWordIndex(t) {
+        if (!segments.length) return -1;
+        const dur = player.duration;
+        for (let i = 0; i < segments.length; i++) {
+          const seg = segments[i];
+          const end = i === segments.length - 1 && isFinite(dur)
+            ? Math.max(seg.end, dur)
+            : seg.end;
+          if (t >= seg.start && t < end) return i;
+        }
+        for (let i = segments.length - 1; i >= 0; i--) {
+          if (t >= segments[i].start) return i;
+        }
+        return 0;
+      }
+
+      function formatTime(sec) {
+        if (!isFinite(sec)) return "—";
+        const s = Math.floor(sec % 60);
+        const m = Math.floor(sec / 60) % 60;
+        const h = Math.floor(sec / 3600);
+        const pad = (n) => String(n).padStart(2, "0");
+        if (h > 0) return `${h}:${pad(m)}:${pad(s)}`;
+        return `${m}:${pad(s)}`;
+      }
+
+      function tick() {
+        rafId = 0;
+        const t = player.currentTime;
+        const idx = currentWordIndex(t);
+        const nodes = textContainer.querySelectorAll(".word");
+        nodes.forEach((el, i) => {
+          el.classList.toggle("active", i === idx);
+        });
+        const prev = lastWordIdx;
+        lastWordIdx = idx;
+        if (idx >= 0 && nodes[idx] && idx !== prev) {
+          nodes[idx].scrollIntoView({ block: "nearest", behavior: "smooth" });
+        }
+        const dur = player.duration;
+        clock.textContent = `${formatTime(t)} / ${isFinite(dur) ? formatTime(dur) : "—"}`;
+      }
+
+      function scheduleTick() {
+        if (rafId) return;
+        rafId = requestAnimationFrame(tick);
+      }
+
+      function setSegments(next, plainForLayout) {
+        segments = next;
+        lastWordIdx = -1;
+        if (plainForLayout !== undefined) {
+          renderWordsWithPlain(plainForLayout);
+        } else {
+          renderWordsFromSegmentsOnly();
+        }
+        tick();
+      }
+
+      audioFile.addEventListener("change", () => {
+        const f = audioFile.files && audioFile.files[0];
+        if (!f) return;
+        player.src = URL.createObjectURL(f);
+        audioName.textContent = f.name;
+        player.load();
+      });
+
+      textFile.addEventListener("change", () => {
+        const f = textFile.files && textFile.files[0];
+        if (!f) return;
+        const r = new FileReader();
+        r.onload = () => {
+          plainInput.value = String(r.result || "");
+        };
+        r.readAsText(f, "UTF-8");
+      });
+
+      jsonFile.addEventListener("change", () => {
+        const f = jsonFile.files && jsonFile.files[0];
+        if (!f) return;
+        const r = new FileReader();
+        r.onload = () => {
+          jsonInput.value = String(r.result || "");
+        };
+        r.readAsText(f, "UTF-8");
+      });
+
+      applyEven.addEventListener("click", () => {
+        const dur = player.duration;
+        if (!isFinite(dur) || dur <= 0) {
+          alert("Сначала загрузите аудио и дождитесь, пока браузер определит длительность (нажмите Play на секунду).");
+          return;
+        }
+        const plain = plainInput.value;
+        const segs = buildEvenSegments(plain, dur);
+        if (!segs.length) {
+          alert("Введите непустой текст.");
+          return;
+        }
+        setSegments(segs, plain);
+      });
+
+      applyJson.addEventListener("click", () => {
+        try {
+          const segs = parseJsonPayload(jsonInput.value.trim());
+          if (!segs.length) {
+            alert("JSON не содержит слов.");
+            return;
+          }
+          segs.sort((a, b) => a.start - b.start);
+          setSegments(segs);
+        } catch (e) {
+          alert("Ошибка JSON: " + (e && e.message ? e.message : e));
+        }
+      });
+
+      player.addEventListener("timeupdate", scheduleTick);
+      player.addEventListener("seeked", tick);
+      player.addEventListener("play", tick);
+      player.addEventListener("loadedmetadata", () => {
+        clock.textContent = `0:00 / ${formatTime(player.duration)}`;
+      });
+
+      tabEven.addEventListener("click", () => {
+        tabEven.classList.add("on");
+        tabJson.classList.remove("on");
+        paneEven.classList.remove("hidden");
+        paneJson.classList.add("hidden");
+      });
+
+      tabJson.addEventListener("click", () => {
+        tabJson.classList.add("on");
+        tabEven.classList.remove("on");
+        paneJson.classList.remove("hidden");
+        paneEven.classList.add("hidden");
+      });
+
+      tick();
+    })();
+  </script>
+</body>
+</html>

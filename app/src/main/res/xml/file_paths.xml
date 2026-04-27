@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8"?>
+<paths>
+    <cache-path
+        name="cache"
+        path="." />
+    <files-path
+        name="verse_attachments"
+        path="verse_attachments/" />
+    <files-path
+        name="timemark_attachments"
+        path="timemark_attachments/" />
+    <files-path
+        name="media_catalog"
+        path="media_catalog/" />
+    <files-path
+        name="media_library"
+        path="media_library/" />
+    <files-path
+        name="video_library"
+        path="video_library/" />
+    <files-path
+        name="audio_library"
+        path="audio_library/" />
+    <external-path
+        name="downloads"
+        path="Download/Bible/" />
+    <external-path
+        name="all_downloads"
+        path="Download/" />
+</paths>

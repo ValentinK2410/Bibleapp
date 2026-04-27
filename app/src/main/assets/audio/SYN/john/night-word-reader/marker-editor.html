@@ -1,0 +1,517 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Разметка слов по клику</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;1,500&family=IBM+Plex+Sans:wght@400;500&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --void: #06080f;
+      --bg: #0c1018;
+      --surface: #121826;
+      --border: #1e2838;
+      --text: #d4dbe8;
+      --muted: #6b7a94;
+      --moon: #9eb6e8;
+      --marked: #3d5a8a;
+      --marked-text: #c8d8f8;
+      --radius: 14px;
+    }
+
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: "Cormorant Garamond", Georgia, serif;
+      background: radial-gradient(ellipse 120% 80% at 50% -20%, #152238 0%, var(--void) 55%);
+      color: var(--text);
+      line-height: 1.75;
+      font-size: 1.3rem;
+    }
+
+    .layout {
+      max-width: 800px;
+      margin: 0 auto;
+      padding: 1.5rem 1.1rem 3rem;
+    }
+
+    header {
+      margin-bottom: 1.25rem;
+      padding-bottom: 1rem;
+      border-bottom: 1px solid var(--border);
+    }
+
+    h1 {
+      font-size: 1.45rem;
+      font-weight: 600;
+      margin: 0 0 0.4rem;
+      color: var(--moon);
+    }
+
+    .sub {
+      font-family: "IBM Plex Sans", sans-serif;
+      font-size: 0.8rem;
+      color: var(--muted);
+      line-height: 1.5;
+    }
+
+    .panel {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 1rem 1.15rem;
+      margin-bottom: 1rem;
+    }
+
+    .row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+      align-items: center;
+    }
+
+    label.file-btn {
+      font-family: "IBM Plex Sans", sans-serif;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.35rem;
+      padding: 0.45rem 0.85rem;
+      background: var(--border);
+      border-radius: 9px;
+      font-size: 0.78rem;
+      cursor: pointer;
+      border: 1px solid transparent;
+      color: var(--text);
+    }
+
+    label.file-btn:hover {
+      border-color: var(--moon);
+      color: var(--moon);
+    }
+
+    input[type="file"] { display: none; }
+
+    button {
+      font-family: "IBM Plex Sans", sans-serif;
+      font-size: 0.78rem;
+      padding: 0.45rem 0.85rem;
+      border-radius: 9px;
+      border: 1px solid var(--border);
+      background: var(--bg);
+      color: var(--text);
+      cursor: pointer;
+    }
+
+    button.primary {
+      background: linear-gradient(145deg, #2a3a58, #1e2a42);
+      border-color: #3d4f6e;
+      color: #f0f4ff;
+    }
+
+    button.danger {
+      border-color: #5a3030;
+      color: #e8a0a0;
+    }
+
+    audio {
+      width: 100%;
+      max-width: 100%;
+      height: 40px;
+      margin-top: 0.65rem;
+    }
+
+    .hint {
+      font-family: "IBM Plex Sans", sans-serif;
+      font-size: 0.76rem;
+      color: var(--muted);
+      margin: 0.5rem 0 0.75rem;
+      line-height: 1.45;
+    }
+
+    textarea.setup {
+      width: 100%;
+      min-height: 120px;
+      font-family: "Cormorant Garamond", Georgia, serif;
+      font-size: 1rem;
+      padding: 0.75rem;
+      border-radius: 10px;
+      border: 1px solid var(--border);
+      background: var(--bg);
+      color: var(--text);
+      resize: vertical;
+    }
+
+    .text-scroll {
+      max-height: min(50vh, 480px);
+      overflow-y: auto;
+      padding: 1.1rem 1rem;
+      border-radius: var(--radius);
+      border: 1px solid var(--border);
+      background: linear-gradient(180deg, #0e1420 0%, var(--bg) 100%);
+      user-select: none;
+    }
+
+    .text-scroll .w {
+      display: inline;
+      padding: 0.1em 0.12em;
+      margin: 0 -0.02em;
+      border-radius: 5px;
+      cursor: pointer;
+      transition: background 0.12s ease, color 0.12s ease;
+    }
+
+    .text-scroll .w:hover {
+      outline: 1px solid rgba(158, 182, 232, 0.45);
+    }
+
+    .text-scroll .w.marked {
+      background: rgba(61, 90, 138, 0.45);
+      color: var(--marked-text);
+    }
+
+    .text-scroll .w.flash {
+      animation: flash 0.35s ease;
+    }
+
+    @keyframes flash {
+      from { background: rgba(158, 182, 232, 0.55); }
+      to { background: inherit; }
+    }
+
+    .status {
+      font-family: "IBM Plex Sans", monospace;
+      font-size: 0.78rem;
+      color: var(--muted);
+      margin-top: 0.5rem;
+    }
+
+    .last {
+      font-family: "IBM Plex Sans", sans-serif;
+      font-size: 0.8rem;
+      color: var(--moon);
+      margin-top: 0.35rem;
+    }
+
+    code { font-size: 0.85em; color: var(--moon); }
+
+    .empty-state {
+      font-family: "IBM Plex Sans", sans-serif;
+      font-size: 0.88rem;
+      color: var(--muted);
+      font-style: italic;
+      text-align: center;
+      padding: 2rem;
+    }
+
+    #jsonPreview {
+      width: 100%;
+      min-height: 160px;
+      font-family: "IBM Plex Mono", "JetBrains Mono", monospace;
+      font-size: 0.72rem;
+      padding: 0.75rem;
+      border-radius: 10px;
+      border: 1px solid var(--border);
+      background: #0a0d14;
+      color: #b8c5e0;
+      resize: vertical;
+    }
+  </style>
+</head>
+<body>
+  <div class="layout">
+    <header>
+      <h1>Разметка слов по клику</h1>
+      <p class="sub">Клик по слову без метки — записать текущее время дорожки. Клик по слову с меткой — воспроизвести файл с этой отметки. Ctrl+клик — перезаписать метку. Shift+клик — сбросить. Экспорт — JSON для «Ночное чтение».</p>
+    </header>
+
+    <div class="panel">
+      <div class="row">
+        <label class="file-btn">Аудио<input type="file" id="audioFile" accept="audio/*" /></label>
+        <label class="file-btn">Текст .txt<input type="file" id="textFile" accept=".txt,text/plain" /></label>
+        <label class="file-btn">Импорт JSON<input type="file" id="jsonFile" accept=".json,application/json" /></label>
+        <span id="audioName" class="sub"></span>
+      </div>
+      <audio id="player" controls></audio>
+    </div>
+
+    <div class="panel">
+      <p class="hint">Вставьте текст и нажмите «Разбить на слова». Клик по слову записывает <code>текущее время</code> дорожки в миллисекундах.</p>
+      <textarea class="setup" id="plainInput" spellcheck="false" placeholder="Текст главы…"></textarea>
+      <div class="row" style="margin-top:0.65rem">
+        <button type="button" class="primary" id="splitBtn">Разбить на слова</button>
+        <button type="button" class="danger" id="clearMarksBtn">Сбросить все метки</button>
+      </div>
+      <p class="status" id="stats"></p>
+      <p class="last" id="lastClick"></p>
+    </div>
+
+    <div class="panel text-scroll" id="wordBox">
+      <p class="empty-state" id="placeholder">Сначала разбейте текст на слова.</p>
+    </div>
+
+    <div class="panel">
+      <div class="row">
+        <button type="button" class="primary" id="exportBtn">Скачать JSON</button>
+        <button type="button" id="copyBtn">Копировать в буфер</button>
+        <span class="sub" id="copyNote"></span>
+      </div>
+      <p class="hint">Файл содержит <code>marks</code> (сырые клики) и <code>words</code> для плеера: <code>start</code>/<code>end</code> в секундах.</p>
+      <textarea id="jsonPreview" readonly spellcheck="false"></textarea>
+    </div>
+  </div>
+
+  <script>
+    (function () {
+      const player = document.getElementById("player");
+      const audioFile = document.getElementById("audioFile");
+      const textFile = document.getElementById("textFile");
+      const jsonFile = document.getElementById("jsonFile");
+      const audioName = document.getElementById("audioName");
+      const plainInput = document.getElementById("plainInput");
+      const splitBtn = document.getElementById("splitBtn");
+      const clearMarksBtn = document.getElementById("clearMarksBtn");
+      const wordBox = document.getElementById("wordBox");
+      const placeholder = document.getElementById("placeholder");
+      const stats = document.getElementById("stats");
+      const lastClick = document.getElementById("lastClick");
+      const exportBtn = document.getElementById("exportBtn");
+      const copyBtn = document.getElementById("copyBtn");
+      const copyNote = document.getElementById("copyNote");
+      const jsonPreview = document.getElementById("jsonPreview");
+
+      /** @type {{ type: 'word'|'ws', text: string, wordIndex?: number }[]} */
+      let tokens = [];
+      /** @type {string[]} */
+      let words = [];
+      /** @type {(number|null)[]} startMs per word index */
+      let startMs = [];
+
+      function tokenize(text) {
+        const lines = text.replace(/\r\n/g, "\n");
+        if (!lines.trim()) return [];
+        const parts = lines.split(/(\s+)/);
+        const out = [];
+        let wi = 0;
+        for (const p of parts) {
+          if (!p) continue;
+          if (/^\s+$/.test(p)) out.push({ type: "ws", text: p });
+          else out.push({ type: "word", text: p, wordIndex: wi++ });
+        }
+        return out;
+      }
+
+      function rebuildWordsFromTokens() {
+        words = tokens.filter((t) => t.type === "word").map((t) => t.text);
+        startMs = words.map(() => null);
+      }
+
+      function renderWords() {
+        wordBox.innerHTML = "";
+        if (!tokens.length) {
+          wordBox.appendChild(placeholder);
+          placeholder.classList.remove("hidden");
+          updateStats();
+          return;
+        }
+        placeholder.classList.add("hidden");
+        for (const t of tokens) {
+          if (t.type === "ws") {
+            wordBox.appendChild(document.createTextNode(t.text));
+            continue;
+          }
+          const span = document.createElement("span");
+          span.className = "w";
+          span.textContent = t.text;
+          span.dataset.index = String(t.wordIndex);
+          if (startMs[t.wordIndex] != null) span.classList.add("marked");
+          span.title =
+            "Без метки: записать время · С меткой: играть с отметки · Ctrl — перезаписать · Shift — сброс";
+          wordBox.appendChild(span);
+        }
+        updateStats();
+        jsonPreview.value = buildJsonString();
+      }
+
+      function updateStats() {
+        const n = words.length;
+        const m = startMs.filter((x) => x != null).length;
+        stats.textContent = n ? `Слов: ${n} · с метками: ${m}` : "Нет слов.";
+      }
+
+      function buildExportObject() {
+        const marks = [];
+        for (let i = 0; i < words.length; i++) {
+          if (startMs[i] != null) {
+            marks.push({
+              index: i,
+              text: words[i],
+              startMs: startMs[i],
+            });
+          }
+        }
+        const durSec = player.duration;
+        const wordsOut = [];
+        for (let i = 0; i < words.length; i++) {
+          if (startMs[i] == null) continue;
+          const start = startMs[i] / 1000;
+          let end;
+          let j = i + 1;
+          while (j < words.length && startMs[j] == null) j++;
+          if (j < words.length && startMs[j] != null) end = startMs[j] / 1000;
+          else if (isFinite(durSec) && durSec > start) end = durSec;
+          else end = start + 0.35;
+          wordsOut.push({ start, end, text: words[i] });
+        }
+        return {
+          version: 1,
+          exportedAt: new Date().toISOString(),
+          audioFileName: audioName.textContent || null,
+          durationSec: isFinite(player.duration) ? player.duration : null,
+          marks,
+          words: wordsOut,
+        };
+      }
+
+      function buildJsonString() {
+        try {
+          return JSON.stringify(buildExportObject(), null, 2);
+        } catch (e) {
+          return String(e);
+        }
+      }
+
+      wordBox.addEventListener("click", (e) => {
+        const el = e.target.closest(".w");
+        if (!el) return;
+        const idx = parseInt(el.dataset.index, 10);
+        if (Number.isNaN(idx)) return;
+
+        if (e.shiftKey) {
+          startMs[idx] = null;
+          el.classList.remove("marked");
+          lastClick.textContent = "Сброшено: «" + words[idx] + "»";
+          jsonPreview.value = buildJsonString();
+          updateStats();
+          return;
+        }
+
+        const hasMark = startMs[idx] != null;
+        const overwrite = e.ctrlKey || e.metaKey;
+
+        if (hasMark && !overwrite) {
+          const sec = startMs[idx] / 1000;
+          player.currentTime = sec;
+          lastClick.textContent =
+            "Воспроизведение с «" + words[idx] + "»: " + startMs[idx] + " мс";
+          player.play().catch(function () {});
+          return;
+        }
+
+        const ms = Math.round(player.currentTime * 1000);
+        startMs[idx] = ms;
+        el.classList.add("marked");
+        el.classList.remove("flash");
+        void el.offsetWidth;
+        el.classList.add("flash");
+        lastClick.textContent =
+          (overwrite && hasMark ? "Перезаписано: " : "Записано: ") +
+          "«" +
+          words[idx] +
+          "» → " +
+          ms +
+          " мс (" +
+          (ms / 1000).toFixed(3) +
+          " с)";
+        jsonPreview.value = buildJsonString();
+        updateStats();
+      });
+
+      splitBtn.addEventListener("click", () => {
+        tokens = tokenize(plainInput.value);
+        rebuildWordsFromTokens();
+        renderWords();
+      });
+
+      clearMarksBtn.addEventListener("click", () => {
+        startMs = words.map(() => null);
+        renderWords();
+        lastClick.textContent = "Все метки сброшены.";
+      });
+
+      audioFile.addEventListener("change", () => {
+        const f = audioFile.files && audioFile.files[0];
+        if (!f) return;
+        player.src = URL.createObjectURL(f);
+        audioName.textContent = f.name;
+        player.load();
+        jsonPreview.value = buildJsonString();
+      });
+
+      textFile.addEventListener("change", () => {
+        const f = textFile.files && textFile.files[0];
+        if (!f) return;
+        const r = new FileReader();
+        r.onload = () => {
+          plainInput.value = String(r.result || "");
+        };
+        r.readAsText(f, "UTF-8");
+      });
+
+      jsonFile.addEventListener("change", () => {
+        const f = jsonFile.files && jsonFile.files[0];
+        if (!f) return;
+        const r = new FileReader();
+        r.onload = () => {
+          try {
+            const data = JSON.parse(String(r.result || "{}"));
+            const marks = data.marks || [];
+            if (Array.isArray(marks) && marks.length) {
+              for (const m of marks) {
+                const i = Number(m.index);
+                const ms = Number(m.startMs);
+                if (i >= 0 && i < startMs.length && Number.isFinite(ms)) startMs[i] = ms;
+              }
+            } else if (Array.isArray(data.words)) {
+              data.words.forEach((w, i) => {
+                const t = w.start != null ? Math.round(Number(w.start) * 1000) : null;
+                const idx = w.index != null ? Number(w.index) : i;
+                if (t != null && idx >= 0 && idx < startMs.length) startMs[idx] = t;
+              });
+            }
+            renderWords();
+            lastClick.textContent = "Импорт меток из JSON.";
+          } catch (err) {
+            alert("Не удалось разобрать JSON: " + err.message);
+          }
+        };
+        r.readAsText(f, "UTF-8");
+      });
+
+      exportBtn.addEventListener("click", () => {
+        const blob = new Blob([buildJsonString()], { type: "application/json;charset=utf-8" });
+        const a = document.createElement("a");
+        const base = (audioName.textContent || "marks").replace(/\.[^.]+$/, "");
+        a.download = base + "-word-marks.json";
+        a.href = URL.createObjectURL(blob);
+        a.click();
+        URL.revokeObjectURL(a.href);
+      });
+
+      copyBtn.addEventListener("click", async () => {
+        try {
+          await navigator.clipboard.writeText(buildJsonString());
+          copyNote.textContent = "Скопировано.";
+          setTimeout(() => { copyNote.textContent = ""; }, 2000);
+        } catch {
+          copyNote.textContent = "Буфер недоступен — выделите поле вручную.";
+        }
+      });
+
+      jsonPreview.value = buildJsonString();
+    })();
+  </script>
+</body>
+</html>

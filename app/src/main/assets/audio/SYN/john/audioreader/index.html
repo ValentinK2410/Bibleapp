@@ -1,0 +1,455 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Аудио + текст</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Literata:ital,opsz,wght@0,7..72,400;0,7..72,600;1,7..72,400&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --bg: #141210;
+      --surface: #1e1c19;
+      --border: #2d2a26;
+      --text: #e8e4dc;
+      --muted: #8a847a;
+      --accent: #c9a227;
+      --accent-dim: rgba(201, 162, 39, 0.14);
+      --active-bg: rgba(201, 162, 39, 0.12);
+      --radius: 12px;
+    }
+
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: "Literata", Georgia, serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.65;
+    }
+
+    .layout {
+      max-width: 920px;
+      margin: 0 auto;
+      padding: 1.25rem 1rem 3rem;
+    }
+
+    header {
+      margin-bottom: 1.25rem;
+      border-bottom: 1px solid var(--border);
+      padding-bottom: 1rem;
+    }
+
+    h1 {
+      font-size: 1.35rem;
+      font-weight: 600;
+      margin: 0 0 0.35rem;
+      letter-spacing: -0.02em;
+    }
+
+    .sub {
+      font-size: 0.88rem;
+      color: var(--muted);
+    }
+
+    .panel {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 1rem 1.1rem;
+      margin-bottom: 1rem;
+    }
+
+    .row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.65rem;
+      align-items: center;
+    }
+
+    label.file-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
+      padding: 0.45rem 0.85rem;
+      background: var(--border);
+      border-radius: 8px;
+      font-size: 0.85rem;
+      cursor: pointer;
+      border: 1px solid transparent;
+    }
+
+    label.file-btn:hover {
+      border-color: var(--accent);
+      color: var(--accent);
+    }
+
+    input[type="file"] { display: none; }
+
+    select, button {
+      font-family: "JetBrains Mono", monospace;
+      font-size: 0.8rem;
+      padding: 0.45rem 0.7rem;
+      border-radius: 8px;
+      border: 1px solid var(--border);
+      background: var(--bg);
+      color: var(--text);
+      cursor: pointer;
+    }
+
+    button.primary {
+      background: var(--accent);
+      color: #1a1608;
+      border-color: var(--accent);
+      font-weight: 500;
+    }
+
+    button:disabled {
+      opacity: 0.45;
+      cursor: not-allowed;
+    }
+
+    .audio-bar {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      flex-wrap: wrap;
+      margin-top: 0.75rem;
+    }
+
+    audio {
+      flex: 1;
+      min-width: 200px;
+      height: 40px;
+    }
+
+    .time {
+      font-family: "JetBrains Mono", monospace;
+      font-size: 0.78rem;
+      color: var(--muted);
+      white-space: nowrap;
+    }
+
+    textarea.setup {
+      width: 100%;
+      min-height: 140px;
+      font-family: "Literata", Georgia, serif;
+      font-size: 0.95rem;
+      padding: 0.75rem;
+      border-radius: 8px;
+      border: 1px solid var(--border);
+      background: var(--bg);
+      color: var(--text);
+      resize: vertical;
+    }
+
+    .hint {
+      font-size: 0.8rem;
+      color: var(--muted);
+      margin-top: 0.5rem;
+    }
+
+    .text-scroll {
+      max-height: min(62vh, 640px);
+      overflow-y: auto;
+      padding: 0.5rem 0.25rem 0.5rem 0.75rem;
+      border-radius: var(--radius);
+      border: 1px solid var(--border);
+      background: linear-gradient(180deg, #181614 0%, #141210 100%);
+    }
+
+    .line {
+      margin: 0 0 0.85rem;
+      padding: 0.35rem 0.5rem 0.35rem 0.65rem;
+      border-radius: 6px;
+      border-left: 3px solid transparent;
+      transition: background 0.15s ease, border-color 0.15s ease;
+    }
+
+    .line:last-child { margin-bottom: 0; }
+
+    .line.active {
+      background: var(--active-bg);
+      border-left-color: var(--accent);
+    }
+
+    .line .meta {
+      font-family: "JetBrains Mono", monospace;
+      font-size: 0.68rem;
+      color: var(--muted);
+      margin-bottom: 0.2rem;
+      opacity: 0.85;
+    }
+
+    .empty-state {
+      color: var(--muted);
+      font-style: italic;
+      padding: 2rem 1rem;
+      text-align: center;
+    }
+
+    .tabs {
+      display: flex;
+      gap: 0.25rem;
+      margin-bottom: 0.65rem;
+    }
+
+    .tabs button {
+      background: transparent;
+      border: 1px solid var(--border);
+    }
+
+    .tabs button.on {
+      border-color: var(--accent);
+      color: var(--accent);
+    }
+
+    .hidden { display: none !important; }
+  </style>
+</head>
+<body>
+  <div class="layout">
+    <header>
+      <h1>Проигрыватель с текстом</h1>
+      <p class="sub">Подсветка строки по времени: LRC-файл с метками или равномерное разбиение текста на длину трека.</p>
+    </header>
+
+    <div class="panel">
+      <div class="row">
+        <label class="file-btn">
+          Аудио (MP3)
+          <input type="file" id="audioFile" accept="audio/*" />
+        </label>
+        <label class="file-btn">
+          LRC (опционально)
+          <input type="file" id="lrcFile" accept=".lrc,.txt,text/plain" />
+        </label>
+        <span id="audioName" class="sub"></span>
+      </div>
+      <div class="audio-bar">
+        <audio id="player" controls></audio>
+        <span class="time" id="clock">0:00 / 0:00</span>
+      </div>
+    </div>
+
+    <div class="panel">
+      <div class="tabs" role="tablist">
+        <button type="button" class="on" id="tabLrc" data-tab="lrc">Текст + LRC вручную</button>
+        <button type="button" id="tabPlain" data-tab="plain">Только текст (равномерно)</button>
+      </div>
+
+      <div id="paneLrc">
+        <p class="hint">Вставьте текст с метками LRC (каждая строка: <code>[мм:сс.сс]текст</code>) или загрузите .lrc. Время — секунды с начала записи.</p>
+        <textarea class="setup" id="lrcInput" spellcheck="false" placeholder="[00:00.00]Первая строка&#10;[00:05.20]Вторая строка"></textarea>
+      </div>
+
+      <div id="panePlain" class="hidden">
+        <p class="hint">Разбейте текст на абзацы клавишей Enter — каждый абзац получит равную долю длительности трека после нажатия «Применить».</p>
+        <textarea class="setup" id="plainInput" spellcheck="false" placeholder="Первый абзац...
+
+Второй абзац..."></textarea>
+        <div class="row" style="margin-top:0.65rem">
+          <button type="button" class="primary" id="applyPlain">Применить равномерную разметку</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="panel text-scroll" id="textContainer">
+      <p class="empty-state" id="placeholder">Загрузите аудио и задайте LRC или текст с равномерной разметкой.</p>
+    </div>
+  </div>
+
+  <script>
+    (function () {
+      const player = document.getElementById("player");
+      const audioFile = document.getElementById("audioFile");
+      const lrcFile = document.getElementById("lrcFile");
+      const audioName = document.getElementById("audioName");
+      const clock = document.getElementById("clock");
+      const lrcInput = document.getElementById("lrcInput");
+      const plainInput = document.getElementById("plainInput");
+      const applyPlain = document.getElementById("applyPlain");
+      const textContainer = document.getElementById("textContainer");
+      const placeholder = document.getElementById("placeholder");
+      const tabLrc = document.getElementById("tabLrc");
+      const tabPlain = document.getElementById("tabPlain");
+      const paneLrc = document.getElementById("paneLrc");
+      const panePlain = document.getElementById("panePlain");
+
+      /** @type {{ start: number, text: string }[]} */
+      let segments = [];
+      let rafScheduled = false;
+      let lastHighlightIndex = -1;
+
+      const LRC_LINE = /^\[(\d{1,3}):(\d{2})(?:\.(\d{1,3}))?\]\s*(.*)$/;
+
+      function parseLrcFrac(raw) {
+        if (!raw) return 0;
+        const d = String(raw);
+        if (d.length <= 2) return parseInt(d.padEnd(2, "0").slice(0, 2), 10) / 100;
+        return parseInt(d.slice(0, 3).padEnd(3, "0"), 10) / 1000;
+      }
+
+      function parseLrc(text) {
+        const lines = text.replace(/\r\n/g, "\n").split("\n");
+        const out = [];
+        for (const line of lines) {
+          const m = line.trim().match(LRC_LINE);
+          if (!m) continue;
+          const min = parseInt(m[1], 10);
+          const sec = parseInt(m[2], 10);
+          const start = min * 60 + sec + parseLrcFrac(m[3]);
+          const t = (m[4] || "").trim();
+          if (t) out.push({ start, text: t });
+        }
+        out.sort((a, b) => a.start - b.start);
+        return out;
+      }
+
+      function buildEvenSegments(plain, durationSec) {
+        const blocks = plain
+          .split(/\n\s*\n/)
+          .map((s) => s.trim())
+          .filter(Boolean);
+        if (!blocks.length || !durationSec || durationSec <= 0) return [];
+        const step = durationSec / blocks.length;
+        return blocks.map((text, i) => ({
+          start: i * step,
+          text,
+        }));
+      }
+
+      function renderSegments() {
+        placeholder.classList.toggle("hidden", segments.length > 0);
+        const existing = textContainer.querySelectorAll(".line");
+        existing.forEach((n) => n.remove());
+
+        segments.forEach((seg, i) => {
+          const div = document.createElement("div");
+          div.className = "line";
+          div.dataset.index = String(i);
+          const meta = document.createElement("div");
+          meta.className = "meta";
+          meta.textContent = formatTime(seg.start);
+          const body = document.createElement("div");
+          body.textContent = seg.text;
+          div.appendChild(meta);
+          div.appendChild(body);
+          textContainer.appendChild(div);
+        });
+      }
+
+      function formatTime(sec) {
+        if (!isFinite(sec)) return "—";
+        const s = Math.floor(sec % 60);
+        const m = Math.floor(sec / 60) % 60;
+        const h = Math.floor(sec / 3600);
+        const pad = (n) => String(n).padStart(2, "0");
+        if (h > 0) return `${h}:${pad(m)}:${pad(s)}`;
+        return `${m}:${pad(s)}`;
+      }
+
+      function currentIndex(t) {
+        if (!segments.length) return -1;
+        let idx = 0;
+        for (let i = 0; i < segments.length; i++) {
+          if (segments[i].start <= t) idx = i;
+          else break;
+        }
+        return idx;
+      }
+
+      function updateHighlight() {
+        const t = player.currentTime;
+        const idx = currentIndex(t);
+        const nodes = textContainer.querySelectorAll(".line");
+        nodes.forEach((el, i) => {
+          el.classList.toggle("active", i === idx);
+        });
+        if (idx >= 0 && idx !== lastHighlightIndex && nodes[idx]) {
+          lastHighlightIndex = idx;
+          nodes[idx].scrollIntoView({ block: "nearest", behavior: "smooth" });
+        }
+        const dur = player.duration;
+        clock.textContent =
+          `${formatTime(t)} / ${isFinite(dur) ? formatTime(dur) : "—"}`;
+        rafScheduled = false;
+      }
+
+      function scheduleUpdate() {
+        if (rafScheduled) return;
+        rafScheduled = true;
+        requestAnimationFrame(updateHighlight);
+      }
+
+      function setSegments(next) {
+        segments = next;
+        lastHighlightIndex = -1;
+        renderSegments();
+        updateHighlight();
+      }
+
+      audioFile.addEventListener("change", () => {
+        const f = audioFile.files && audioFile.files[0];
+        if (!f) return;
+        player.src = URL.createObjectURL(f);
+        audioName.textContent = f.name;
+        player.load();
+      });
+
+      lrcFile.addEventListener("change", () => {
+        const f = lrcFile.files && lrcFile.files[0];
+        if (!f) return;
+        const r = new FileReader();
+        r.onload = () => {
+          lrcInput.value = String(r.result || "");
+          setSegments(parseLrc(lrcInput.value));
+        };
+        r.readAsText(f, "UTF-8");
+      });
+
+      lrcInput.addEventListener("input", () => {
+        setSegments(parseLrc(lrcInput.value));
+      });
+
+      applyPlain.addEventListener("click", () => {
+        const dur = player.duration;
+        if (!isFinite(dur) || dur <= 0) {
+          alert("Сначала загрузите аудио и дождитесь, пока браузер определит длительность (нажмите Play на секунду или подождите).");
+          return;
+        }
+        const segs = buildEvenSegments(plainInput.value, dur);
+        if (!segs.length) {
+          alert("Введите хотя бы один непустой абзац (блоки разделяются пустой строкой).");
+          return;
+        }
+        setSegments(segs);
+      });
+
+      player.addEventListener("timeupdate", scheduleUpdate);
+      player.addEventListener("seeked", updateHighlight);
+      player.addEventListener("loadedmetadata", () => {
+        clock.textContent = `0:00 / ${formatTime(player.duration)}`;
+      });
+
+      tabLrc.addEventListener("click", () => {
+        tabLrc.classList.add("on");
+        tabPlain.classList.remove("on");
+        paneLrc.classList.remove("hidden");
+        panePlain.classList.add("hidden");
+      });
+
+      tabPlain.addEventListener("click", () => {
+        tabPlain.classList.add("on");
+        tabLrc.classList.remove("on");
+        panePlain.classList.remove("hidden");
+        paneLrc.classList.add("hidden");
+      });
+
+      setSegments([]);
+    })();
+  </script>
+</body>
+</html>

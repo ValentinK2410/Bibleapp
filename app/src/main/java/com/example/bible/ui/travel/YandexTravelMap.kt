@@ -1,0 +1,1242 @@
+package com.example.bible.ui.travel
+
+import android.annotation.SuppressLint
+import android.content.Context
+import android.hardware.Sensor
+import android.hardware.SensorEvent
+import android.hardware.SensorEventListener
+import android.hardware.SensorManager
+import android.location.Location
+import android.graphics.Bitmap
+import android.graphics.Canvas
+import android.graphics.Color
+import android.graphics.Paint
+import android.graphics.RectF
+import android.graphics.Typeface
+import android.os.Looper
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.tween
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Navigation
+import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.FloatingActionButton
+import androidx.compose.material3.FloatingActionButtonDefaults
+import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableFloatStateOf
+import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.rememberUpdatedState
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import androidx.compose.ui.viewinterop.AndroidView
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleEventObserver
+import androidx.lifecycle.compose.LocalLifecycleOwner
+import com.example.bible.R
+import com.example.bible.data.travel.TravelGeoPoint
+import com.example.bible.data.travel.TravelManeuverInfo
+import com.example.bible.data.travel.TravelManeuvers
+import com.example.bible.data.travel.TravelMapIncident
+import com.example.bible.data.travel.TravelRouteGuidanceSession
+import com.example.bible.data.travel.TravelTriggerAction
+import com.example.bible.data.travel.TravelZone
+import com.example.bible.data.travel.TravelZoneKind
+import com.example.bible.map.MapKitBootstrap
+import com.google.android.gms.location.LocationCallback
+import com.google.android.gms.location.LocationRequest
+import com.google.android.gms.location.LocationResult
+import com.google.android.gms.location.LocationServices
+import com.google.android.gms.location.Priority
+import com.yandex.mapkit.Animation
+import com.yandex.mapkit.MapKitFactory
+import com.yandex.mapkit.RequestPoint
+import com.yandex.mapkit.RequestPointType
+import com.yandex.mapkit.directions.DirectionsFactory
+import com.yandex.mapkit.directions.driving.DrivingOptions
+import com.yandex.mapkit.directions.driving.DrivingRoute
+import com.yandex.mapkit.directions.driving.DrivingRouterType
+import com.yandex.mapkit.directions.driving.DrivingSession
+import com.yandex.mapkit.directions.driving.VehicleOptions
+import com.yandex.mapkit.geometry.Circle
+import com.yandex.mapkit.geometry.Geometry
+import com.yandex.mapkit.geometry.LinearRing
+import com.yandex.mapkit.geometry.Point
+import com.yandex.mapkit.geometry.Polygon
+import com.yandex.mapkit.map.CameraListener
+import com.yandex.mapkit.map.CameraPosition
+import com.yandex.mapkit.map.CameraUpdateReason
+import com.yandex.mapkit.map.InputListener
+import com.yandex.mapkit.map.Map
+import com.yandex.mapkit.map.MapObjectCollection
+import com.yandex.mapkit.map.TextStyle
+import com.yandex.mapkit.mapview.MapView
+import com.yandex.runtime.Error
+import com.yandex.runtime.image.ImageProvider
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.tasks.await
+import java.util.concurrent.atomic.AtomicBoolean
+import java.util.concurrent.atomic.AtomicLong
+import kotlin.math.cos
+import kotlin.math.ln
+import kotlin.math.max
+import kotlin.math.pow
+import kotlin.math.roundToInt
+
+/**
+ * Интервал GPS при следовании за пользователем: реже, чем «каждые кадр», иначе новые
+ * [Map.move] накладываются на незавершённую анимацию — карта дёргается.
+ */
+private const val TRAVEL_FOLLOW_LOCATION_INTERVAL_MS = 100L
+/** SMOOTH-анимация камеры: заметно дольше тика, чтобы плавно догонять цель, не срываться рывками. */
+private const val TRAVEL_CAMERA_MOVE_DURATION_SEC = 0.28f
+/** Экспоненциальное сглаживание широты/долготы (0..1) — съедает скачки GPS между тиками. */
+private const val TRAVEL_CAMERA_POS_SMOOTH = 0.32f
+/** Наклон в режиме навигатора, как у наклонённой 3D-карты. */
+private const val TRAVEL_NAV_TARGET_TILT = 52f
+private const val TRAVEL_NAV_TILT_SMOOTH = 0.10f
+
+/**
+ * Вертикальный охват в метрах для плоского вида сверху (оценка по Web Mercator и зуму MapKit);
+ * сопоставима с «высотой» виртуальной камеры над плоскостью карты.
+ */
+private fun travelVerticalViewSpanMeters(
+    mapView: MapView,
+    zoom: Float,
+    centerLatDeg: Double,
+): Int {
+    val hPx = when {
+        mapView.height > 0 -> mapView.height
+        else -> 800
+    }
+    if (zoom <= 0.5f) return 0
+    val mpp = 156543.03392 * cos(Math.toRadians(centerLatDeg)) / 2.0.pow(zoom.toDouble())
+    return (hPx * mpp).roundToInt().coerceIn(0, 1_000_000)
+}
+
+/**
+ * Подбор зума MapKit под заданный вертикальный охват (м) и широту.
+ * 2^z = 156543.03392 * cos(lat) * hPx / vSpan
+ */
+private fun zoomForViewSpanMeters(
+    mapView: MapView,
+    centerLatDeg: Double,
+    verticalSpanM: Double,
+): Float {
+    val hPx = (if (mapView.height > 0) mapView.height else 800).toDouble().coerceAtLeast(1.0)
+    if (verticalSpanM < 1.0) return 15f
+    val cosLat = cos(Math.toRadians(centerLatDeg))
+    val twoPowZ = 156543.03392 * cosLat * hPx / verticalSpanM
+    if (twoPowZ <= 0) return 15f
+    val z = ln(twoPowZ) / ln(2.0)
+    return z.toFloat().coerceIn(2f, 20.5f)
+}
+
+/**
+ * «Высота» / охват: до 10 км/ч (пешком / очень тихо) — ~200 м; 10–57 км/ч — 400 м; 58–62 — 1100 м;
+ * 63–100 — 1500 м; выше 100 — 2000 м.
+ */
+private fun targetViewSpanMeters(speedKmh: Float): Double {
+    val v = speedKmh.coerceAtLeast(0f)
+    return when {
+        v < 10f -> 200.0
+        v < 58f -> 400.0
+        v in 58f..62f -> 1100.0
+        v < 100f -> 1500.0
+        else -> 2000.0
+    }
+}
+
+private const val USER_CHOSEN_MIN_SPAN_PRESERVE_M = 2000
+private const val RECENTER_VIEW_SPAN_M = 900.0
+
+@Composable
+fun YandexTravelMap(
+    mapKitApiKey: String,
+    modifier: Modifier = Modifier,
+    zones: List<TravelZone>,
+    polygonDraft: List<TravelGeoPoint>,
+    userLocationEnabled: Boolean,
+    /** Режим как в навигаторе Яндекса: стрелка «вверх», карта вращается по курсу. */
+    headingModeActive: Boolean,
+    /** Снимок камеры до поворота экрана / ухода с экрана (восстанавливается в новом [MapView]). */
+    mapCameraSnapshot: TravelSavedMapCamera?,
+    onPersistMapCamera: (TravelSavedMapCamera) -> Unit,
+    territoryEditMode: Boolean,
+    selectedZoneId: String?,
+    omitPolygonZoneId: String?,
+    onMapTap: (TravelGeoPoint) -> Unit,
+    cameraJumpTo: TravelGeoPoint?,
+    onCameraJumpConsumed: () -> Unit,
+    routePickMode: Boolean,
+    routeClearNonce: Long,
+    hasFineLocation: Boolean,
+    onTravelRouteMessage: (Int) -> Unit,
+    onTravelRouteBuilt: () -> Unit,
+    activeTravelRoute: DrivingRoute?,
+    onActiveTravelRouteChange: (DrivingRoute?) -> Unit,
+    mapIncidents: List<TravelMapIncident>,
+    incidentPlaceMode: Boolean,
+    onIncidentPlaced: (TravelGeoPoint) -> Unit,
+) {
+    val context = LocalContext.current
+    var mapReady by remember { mutableStateOf<Boolean?>(null) }
+
+    LaunchedEffect(mapKitApiKey) {
+        mapReady = null
+        mapReady = MapKitBootstrap.ensure(context.applicationContext, mapKitApiKey)
+    }
+
+    when (mapReady) {
+        null -> {
+            Box(modifier = modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                CircularProgressIndicator()
+            }
+        }
+        false -> {
+            val message = if (mapKitApiKey.isBlank()) {
+                stringResource(R.string.travel_maps_key_missing)
+            } else {
+                stringResource(R.string.travel_map_init_failed)
+            }
+            Box(
+                modifier = modifier
+                    .fillMaxSize()
+                    .padding(16.dp),
+                contentAlignment = Alignment.Center,
+            ) {
+                Text(
+                    text = message,
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurface,
+                )
+            }
+        }
+        true -> {
+            YandexTravelMapContent(
+                modifier = modifier,
+                zones = zones,
+                polygonDraft = polygonDraft,
+                userLocationEnabled = userLocationEnabled,
+                headingModeActive = headingModeActive,
+                mapCameraSnapshot = mapCameraSnapshot,
+                onPersistMapCamera = onPersistMapCamera,
+                territoryEditMode = territoryEditMode,
+                selectedZoneId = selectedZoneId,
+                omitPolygonZoneId = omitPolygonZoneId,
+                onMapTap = onMapTap,
+                cameraJumpTo = cameraJumpTo,
+                onCameraJumpConsumed = onCameraJumpConsumed,
+                routePickMode = routePickMode,
+                routeClearNonce = routeClearNonce,
+                hasFineLocation = hasFineLocation,
+                onTravelRouteMessage = onTravelRouteMessage,
+                onTravelRouteBuilt = onTravelRouteBuilt,
+                activeTravelRoute = activeTravelRoute,
+                onActiveTravelRouteChange = onActiveTravelRouteChange,
+                mapIncidents = mapIncidents,
+                incidentPlaceMode = incidentPlaceMode,
+                onIncidentPlaced = onIncidentPlaced,
+            )
+        }
+    }
+}
+
+@Composable
+private fun YandexTravelMapContent(
+    modifier: Modifier,
+    zones: List<TravelZone>,
+    polygonDraft: List<TravelGeoPoint>,
+    userLocationEnabled: Boolean,
+    headingModeActive: Boolean,
+    mapCameraSnapshot: TravelSavedMapCamera?,
+    onPersistMapCamera: (TravelSavedMapCamera) -> Unit,
+    territoryEditMode: Boolean,
+    selectedZoneId: String?,
+    omitPolygonZoneId: String?,
+    onMapTap: (TravelGeoPoint) -> Unit,
+    cameraJumpTo: TravelGeoPoint?,
+    onCameraJumpConsumed: () -> Unit,
+    routePickMode: Boolean,
+    routeClearNonce: Long,
+    hasFineLocation: Boolean,
+    onTravelRouteMessage: (Int) -> Unit,
+    onTravelRouteBuilt: () -> Unit,
+    activeTravelRoute: DrivingRoute?,
+    onActiveTravelRouteChange: (DrivingRoute?) -> Unit,
+    mapIncidents: List<TravelMapIncident>,
+    incidentPlaceMode: Boolean,
+    onIncidentPlaced: (TravelGeoPoint) -> Unit,
+) {
+    val context = LocalContext.current
+    val lifecycleOwner = LocalLifecycleOwner.current
+    val scope = rememberCoroutineScope()
+
+    /** Следование GPS/компасу только после нажатия на стрелку; жесты по карте отключают следование. */
+    var followUserActive by remember { mutableStateOf(false) }
+    var recenterFabAlphaTarget by remember { mutableFloatStateOf(0f) }
+    val hideRecenterFabJob = remember { mutableStateOf<Job?>(null) }
+
+    LaunchedEffect(headingModeActive) {
+        if (!headingModeActive) {
+            followUserActive = false
+            hideRecenterFabJob.value?.cancel()
+            hideRecenterFabJob.value = null
+            recenterFabAlphaTarget = 0f
+        }
+    }
+
+    /** [applicationContext]: при смене конфигурации MapView не пересоздаётся зря. */
+    val mapView = remember {
+        MapView(context.applicationContext)
+    }
+    val hudSpeedKmh = remember { mutableFloatStateOf(0f) }
+    val hudViewSpanM = remember { mutableIntStateOf(0) }
+    /** Ручной зум с «высотой» от 2000 м — не подменяем авто-высотой по скорости, пока не сброс курса. */
+    val userLockedWideView = remember { AtomicBoolean(false) }
+
+    val zoneOverlay = remember(mapView) {
+        mapView.mapWindow.map.mapObjects.addCollection()
+    }
+    val routeOverlay = remember(mapView) {
+        mapView.mapWindow.map.mapObjects.addCollection().apply { zIndex = 5f }
+    }
+    val routeLineLayer = remember(mapView) {
+        routeOverlay.addCollection().apply { zIndex = 4.2f }
+    }
+    val routeManeuverLayer = remember(mapView) {
+        routeOverlay.addCollection().apply { zIndex = 5.6f }
+    }
+    val pinsOverlay = remember(mapView) {
+        mapView.mapWindow.map.mapObjects.addCollection().apply { zIndex = 6f }
+    }
+    /** Отмена устаревших ответов [DrivingSession] при новом запросе или [routeClearNonce]. */
+    val routeRequestGeneration = remember { AtomicLong(0L) }
+    val drivingRouter = remember(mapView) {
+        DirectionsFactory.getInstance().createDrivingRouter(DrivingRouterType.ONLINE)
+    }
+    val routeSession = remember { mutableStateOf<DrivingSession?>(null) }
+
+    val routePickActive = rememberUpdatedState(routePickMode)
+    val incidentPickActive = rememberUpdatedState(incidentPlaceMode)
+    val onIncidentTap = rememberUpdatedState(onIncidentPlaced)
+    val hasLocationState = rememberUpdatedState(hasFineLocation)
+    val onRouteMsg = rememberUpdatedState(onTravelRouteMessage)
+    val onRouteBuilt = rememberUpdatedState(onTravelRouteBuilt)
+    val onActiveRoute = rememberUpdatedState(onActiveTravelRouteChange)
+
+    LaunchedEffect(activeTravelRoute, mapView, routeLineLayer, routeManeuverLayer) {
+        val r = activeTravelRoute
+        if (r == null) {
+            routeLineLayer.clear()
+            routeManeuverLayer.clear()
+            return@LaunchedEffect
+        }
+        val geometry = r.geometry
+        routeLineLayer.clear()
+        val line = routeLineLayer.addPolyline(geometry)
+        line.setStrokeColor(0xFF00C853.toInt())
+        line.strokeWidth = 6.5f
+        line.zIndex = 4f
+        val mapInst = mapView.mapWindow.map
+        val g = Geometry.fromPolyline(geometry)
+        val pos = mapInst.cameraPosition(g)
+        mapInst.move(pos, Animation(Animation.Type.SMOOTH, 0.35f), null)
+    }
+
+    @SuppressLint("MissingPermission")
+    suspend fun requestDrivingRouteTo(dest: Point) {
+        followUserActive = false
+        if (!hasLocationState.value) {
+            onRouteMsg.value(R.string.travel_need_location)
+            return
+        }
+        val client = LocationServices.getFusedLocationProviderClient(context)
+        var loc = client.getCurrentLocation(
+            Priority.PRIORITY_HIGH_ACCURACY,
+            com.google.android.gms.tasks.CancellationTokenSource().token,
+        ).await()
+        if (loc == null) {
+            loc = client.lastLocation.await()
+        }
+        if (loc == null) {
+            onRouteMsg.value(R.string.travel_gps_failed)
+            return
+        }
+        val start = Point(loc.latitude, loc.longitude)
+        val myGen = routeRequestGeneration.incrementAndGet()
+        routeSession.value?.cancel()
+        routeSession.value = drivingRouter.requestRoutes(
+            listOf(
+                RequestPoint(start, RequestPointType.WAYPOINT, "", "", ""),
+                RequestPoint(dest, RequestPointType.WAYPOINT, "", "", ""),
+            ),
+            DrivingOptions().setRoutesCount(1),
+            VehicleOptions(),
+            object : DrivingSession.DrivingRouteListener {
+                override fun onDrivingRoutes(routes: MutableList<DrivingRoute>) {
+                    if (myGen != routeRequestGeneration.get()) return
+                    val route = routes.firstOrNull()
+                    val geometry = route?.geometry
+                    if (route == null || geometry == null) {
+                        onActiveRoute.value(null)
+                        onRouteMsg.value(R.string.travel_route_failed)
+                        return
+                    }
+                    onActiveRoute.value(route)
+                    routeSession.value = null
+                    onRouteBuilt.value()
+                }
+
+                override fun onDrivingRoutesError(error: Error) {
+                    if (myGen != routeRequestGeneration.get()) return
+                    onActiveRoute.value(null)
+                    routeSession.value = null
+                    onRouteMsg.value(R.string.travel_route_failed)
+                }
+            },
+        )
+    }
+
+    val transparentLabelIcon = remember(context) {
+        val bmp = Bitmap.createBitmap(1, 1, Bitmap.Config.ARGB_8888)
+        bmp.eraseColor(Color.TRANSPARENT)
+        ImageProvider.fromBitmap(bmp)
+    }
+
+    val incidentPinIcon = remember(context) {
+        incidentPinImageProvider(context)
+    }
+    val incidentPinWithAudioIcon = remember(context) {
+        incidentPinWithAudioImageProvider(context)
+    }
+    val zoneAudioBadgeIcon = remember(context) {
+        zoneAudioBadgeImageProvider(context)
+    }
+
+    val onTapState = rememberUpdatedState(onMapTap)
+    val inputListener = remember(scope, hideRecenterFabJob) {
+        object : InputListener {
+            override fun onMapTap(map: Map, point: Point) {
+                if (routePickActive.value) {
+                    scope.launch {
+                        requestDrivingRouteTo(point)
+                    }
+                    return
+                }
+                if (incidentPickActive.value) {
+                    followUserActive = false
+                    onIncidentTap.value(TravelGeoPoint(point.latitude, point.longitude))
+                    return
+                }
+                hideRecenterFabJob.value?.cancel()
+                recenterFabAlphaTarget = 1f
+                hideRecenterFabJob.value = scope.launch {
+                    delay(1700)
+                    recenterFabAlphaTarget = 0f
+                }
+                onTapState.value(TravelGeoPoint(point.latitude, point.longitude))
+            }
+
+            override fun onMapLongTap(map: Map, point: Point) = Unit
+        }
+    }
+
+    val onPersistState = rememberUpdatedState(onPersistMapCamera)
+    DisposableEffect(lifecycleOwner, mapView) {
+        val observer = LifecycleEventObserver { _, event ->
+            when (event) {
+                Lifecycle.Event.ON_START -> {
+                    if (MapKitBootstrap.isReady) {
+                        MapKitFactory.getInstance().onStart()
+                        mapView.onStart()
+                    }
+                }
+                Lifecycle.Event.ON_STOP -> {
+                    if (MapKitBootstrap.isReady) {
+                        runCatching {
+                            val cp = mapView.mapWindow.map.cameraPosition
+                            val t = cp.target
+                            onPersistState.value(
+                                TravelSavedMapCamera(
+                                    latitude = t.latitude,
+                                    longitude = t.longitude,
+                                    zoom = cp.zoom,
+                                    azimuth = cp.azimuth,
+                                    tilt = cp.tilt,
+                                ),
+                            )
+                        }
+                        mapView.onStop()
+                        MapKitFactory.getInstance().onStop()
+                    }
+                }
+                else -> Unit
+            }
+        }
+        lifecycleOwner.lifecycle.addObserver(observer)
+        onDispose {
+            lifecycleOwner.lifecycle.removeObserver(observer)
+        }
+    }
+
+    val userLocationLayer = remember(mapView) {
+        if (MapKitBootstrap.isReady) {
+            MapKitFactory.getInstance().createUserLocationLayer(mapView.mapWindow)
+        } else {
+            null
+        }
+    }
+
+    LaunchedEffect(userLocationEnabled, headingModeActive, userLocationLayer) {
+        val layer = userLocationLayer ?: return@LaunchedEffect
+        layer.isVisible = userLocationEnabled
+        if (userLocationEnabled) {
+            // Поворот и центрирование задаём сами (компас + bearing), иначе дублируется с UserLocationLayer.
+            layer.isHeadingModeActive = false
+            // Автомасштаб MapKit отключён: при режиме «навигатор» масштаб задаётся по GPS-скорости.
+            layer.isAutoZoomEnabled = false
+        } else {
+            layer.isHeadingModeActive = false
+            layer.isAutoZoomEnabled = false
+        }
+    }
+
+    @SuppressLint("MissingPermission")
+    DisposableEffect(
+        headingModeActive,
+        userLocationEnabled,
+        hasFineLocation,
+        routePickMode,
+        incidentPlaceMode,
+        followUserActive,
+        mapView,
+    ) {
+        // Скорость: пока тапаем маршрут/инцидент, не подписываемся на GPS, чтобы не мешать.
+        if (!userLocationEnabled || !hasFineLocation || routePickMode || incidentPlaceMode) {
+            return@DisposableEffect onDispose { }
+        }
+        val followCamera = headingModeActive && followUserActive
+        val client = LocationServices.getFusedLocationProviderClient(context)
+        var smoothedZoom = mapView.mapWindow.map.cameraPosition.zoom
+        var smoothedTilt = mapView.mapWindow.map.cameraPosition.tilt
+        var smoothedLat: Double? = null
+        var smoothedLon: Double? = null
+        var prevLoc: Location? = null
+        /** Азимут компаса (0° — север), обновляется сенсором между тиками GPS. */
+        val compassDeg = FloatArray(1).apply { this[0] = Float.NaN }
+        val sensorManager = context.getSystemService(Context.SENSOR_SERVICE) as SensorManager
+        val rotationSensor = sensorManager.getDefaultSensor(Sensor.TYPE_ROTATION_VECTOR)
+        val sensorListener = object : SensorEventListener {
+            private val rMat = FloatArray(9)
+            private val orient = FloatArray(3)
+            override fun onSensorChanged(event: SensorEvent) {
+                if (event.sensor.type != Sensor.TYPE_ROTATION_VECTOR) return
+                SensorManager.getRotationMatrixFromVector(rMat, event.values)
+                SensorManager.getOrientation(rMat, orient)
+                var az = Math.toDegrees(orient[0].toDouble()).toFloat()
+                if (az < 0f) az += 360f
+                val prev = compassDeg[0]
+                compassDeg[0] = if (prev.isNaN()) {
+                    az
+                } else {
+                    lerpAngleDegrees(prev, az, 0.12f)
+                }
+            }
+            override fun onAccuracyChanged(sensor: Sensor?, accuracy: Int) = Unit
+        }
+        if (followCamera && rotationSensor != null) {
+            sensorManager.registerListener(
+                sensorListener,
+                rotationSensor,
+                SensorManager.SENSOR_DELAY_GAME,
+            )
+        }
+        val callback = object : LocationCallback() {
+            override fun onLocationResult(result: LocationResult) {
+                val loc = result.lastLocation ?: return
+                val speedMps = effectiveSpeedMps(loc, prevLoc)
+                prevLoc = Location(loc)
+                val kmh = (speedMps * 3.6f).coerceIn(0f, 400f)
+                hudSpeedKmh.floatValue = hudSpeedKmh.floatValue * 0.5f + kmh * 0.5f
+                if (!followCamera) return
+                val map = mapView.mapWindow.map
+                val cp = map.cameraPosition
+                // Сглаживание цели: без этого каждый скачок GPS даёт рывок, даже при длинной анимации.
+                val sLat0 = smoothedLat
+                val sLon0 = smoothedLon
+                val targetLat: Double
+                val targetLon: Double
+                if (sLat0 == null || sLon0 == null) {
+                    targetLat = loc.latitude
+                    targetLon = loc.longitude
+                } else {
+                    targetLat = travelLerpD(sLat0, loc.latitude, TRAVEL_CAMERA_POS_SMOOTH)
+                    targetLon = travelLerpD(sLon0, loc.longitude, TRAVEL_CAMERA_POS_SMOOTH)
+                }
+                smoothedLat = targetLat
+                smoothedLon = targetLon
+                val userPoint = Point(targetLat, targetLon)
+                val z = if (userLockedWideView.get()) {
+                    cp.zoom.also { smoothedZoom = it }
+                } else {
+                    val targetZoom = zoomForViewSpanMeters(
+                        mapView,
+                        loc.latitude,
+                        targetViewSpanMeters(kmh),
+                    )
+                    smoothedZoom = smoothedZoom * 0.84f + targetZoom * 0.16f
+                    smoothedZoom.coerceIn(2f, 20.5f)
+                }
+                val azimuth = when {
+                    speedMps > 0.85f && loc.hasBearing() -> {
+                        val br = (loc.bearing % 360f + 360f) % 360f
+                        val prevA = cp.azimuth
+                        if (prevA.isNaN()) br else lerpAngleDegrees(prevA, br, 0.22f)
+                    }
+                    !compassDeg[0].isNaN() -> compassDeg[0]
+                    loc.hasBearing() -> (loc.bearing % 360f + 360f) % 360f
+                    else -> cp.azimuth
+                }
+                smoothedTilt = smoothedTilt + (TRAVEL_NAV_TARGET_TILT - smoothedTilt) * TRAVEL_NAV_TILT_SMOOTH
+                map.move(
+                    CameraPosition(userPoint, z, azimuth, smoothedTilt),
+                    Animation(Animation.Type.SMOOTH, TRAVEL_CAMERA_MOVE_DURATION_SEC),
+                    null,
+                )
+            }
+        }
+        val request = LocationRequest.Builder(
+            Priority.PRIORITY_HIGH_ACCURACY,
+            TRAVEL_FOLLOW_LOCATION_INTERVAL_MS,
+        )
+            .setMinUpdateIntervalMillis(TRAVEL_FOLLOW_LOCATION_INTERVAL_MS)
+            .setMaxUpdateDelayMillis(120L)
+            .build()
+        client.requestLocationUpdates(request, callback, Looper.getMainLooper())
+        onDispose {
+            if (followCamera && rotationSensor != null) {
+                sensorManager.unregisterListener(sensorListener)
+            }
+            client.removeLocationUpdates(callback)
+        }
+    }
+
+    LaunchedEffect(routeClearNonce) {
+        if (routeClearNonce == 0L) return@LaunchedEffect
+        routeRequestGeneration.incrementAndGet()
+        routeSession.value?.cancel()
+        routeSession.value = null
+    }
+
+    DisposableEffect(activeTravelRoute, hasFineLocation) {
+        val route = activeTravelRoute
+        if (route == null || !hasFineLocation) {
+            return@DisposableEffect onDispose { }
+        }
+        val session = TravelRouteGuidanceSession(context.applicationContext, route)
+        session.start()
+        onDispose { session.stop() }
+    }
+
+    DisposableEffect(mapView) {
+        onDispose {
+            routeSession.value?.cancel()
+        }
+    }
+
+    DisposableEffect(mapView, inputListener) {
+        val map = mapView.mapWindow.map
+        map.addInputListener(inputListener)
+        onDispose {
+            map.removeInputListener(inputListener)
+        }
+    }
+
+    var mapZoom by remember(mapView) { mutableStateOf(mapView.mapWindow.map.cameraPosition.zoom) }
+    val animatedRecenterFabAlpha by animateFloatAsState(
+        targetValue = recenterFabAlphaTarget,
+        animationSpec = tween(420),
+        label = "travel_recenter_fab_alpha",
+    )
+    DisposableEffect(mapView, scope) {
+        val map = mapView.mapWindow.map
+        val listener = object : CameraListener {
+            override fun onCameraPositionChanged(
+                mapInstance: Map,
+                cameraPosition: CameraPosition,
+                cameraUpdateReason: CameraUpdateReason,
+                finished: Boolean,
+            ) {
+                mapZoom = cameraPosition.zoom
+                hudViewSpanM.intValue = travelVerticalViewSpanMeters(
+                    mapView,
+                    cameraPosition.zoom,
+                    cameraPosition.target.latitude,
+                )
+                if (cameraUpdateReason == CameraUpdateReason.GESTURES) {
+                    hideRecenterFabJob.value?.cancel()
+                    followUserActive = false
+                    recenterFabAlphaTarget = 1f
+                    if (finished) {
+                        val spanM = travelVerticalViewSpanMeters(
+                            mapView,
+                            cameraPosition.zoom,
+                            cameraPosition.target.latitude,
+                        )
+                        userLockedWideView.set(spanM >= USER_CHOSEN_MIN_SPAN_PRESERVE_M)
+                        hideRecenterFabJob.value = scope.launch {
+                            delay(1700)
+                            recenterFabAlphaTarget = 0f
+                        }
+                    }
+                }
+            }
+        }
+        map.addCameraListener(listener)
+        mapZoom = map.cameraPosition.zoom
+        onDispose {
+            hideRecenterFabJob.value?.cancel()
+            map.removeCameraListener(listener)
+        }
+    }
+
+    LaunchedEffect(activeTravelRoute, mapZoom, routeManeuverLayer, transparentLabelIcon) {
+        val r = activeTravelRoute
+        if (r == null) {
+            routeManeuverLayer.clear()
+            return@LaunchedEffect
+        }
+        routeManeuverLayer.clear()
+        val poly = r.geometry
+        val z = mapZoom
+        for ((i, m) in TravelManeuvers.buildList(r).withIndex()) {
+            val pt = runCatching { TravelManeuvers.pointOnRoute(poly, m.position) }.getOrNull() ?: continue
+            val p = routeManeuverLayer.addPlacemark(pt, transparentLabelIcon)
+            p.setText(maneuverMapCaption(i + 1, m), travelManeuverTextStyle(z))
+            p.zIndex = 5.7f
+        }
+    }
+
+    var initialCameraPlaced by remember(mapView, userLocationEnabled) { mutableStateOf(false) }
+
+    LaunchedEffect(userLocationEnabled, mapCameraSnapshot, mapView) {
+        if (initialCameraPlaced) return@LaunchedEffect
+        val map = mapView.mapWindow.map
+        val snapshot = mapCameraSnapshot
+        if (snapshot != null) {
+            map.move(
+                CameraPosition(
+                    Point(snapshot.latitude, snapshot.longitude),
+                    snapshot.zoom,
+                    snapshot.azimuth,
+                    snapshot.tilt,
+                ),
+                Animation(Animation.Type.SMOOTH, 0f),
+                null,
+            )
+            initialCameraPlaced = true
+            return@LaunchedEffect
+        }
+        // Без сохранённого вида: общий ракурс; «я по центру» — только после нажатия на стрелку.
+        map.move(
+            CameraPosition(Point(31.78, 35.23), 8f, 0f, 0f),
+            Animation(Animation.Type.SMOOTH, 0f),
+            null,
+        )
+        initialCameraPlaced = true
+    }
+
+    LaunchedEffect(cameraJumpTo, mapView) {
+        val target = cameraJumpTo ?: return@LaunchedEffect
+        followUserActive = false
+        val map = mapView.mapWindow.map
+        map.move(
+            CameraPosition(Point(target.latitude, target.longitude), 14f, 0f, 0f),
+            Animation(Animation.Type.SMOOTH, 0.35f),
+            null,
+        )
+        onCameraJumpConsumed()
+    }
+
+    LaunchedEffect(
+        zones,
+        polygonDraft,
+        mapView,
+        zoneOverlay,
+        transparentLabelIcon,
+        territoryEditMode,
+        selectedZoneId,
+        omitPolygonZoneId,
+        mapZoom,
+    ) {
+        redrawZoneOverlays(
+            zoneOverlay,
+            zones,
+            polygonDraft,
+            transparentLabelIcon,
+            zoneAudioBadgeIcon,
+            territoryEditMode,
+            selectedZoneId,
+            omitPolygonZoneId,
+            mapZoom,
+        )
+    }
+
+    LaunchedEffect(mapIncidents, pinsOverlay, incidentPinIcon, incidentPinWithAudioIcon, mapZoom) {
+        redrawIncidentPins(
+            pinsOverlay,
+            mapIncidents,
+            incidentPinIcon,
+            incidentPinWithAudioIcon,
+            mapZoom,
+        )
+    }
+
+    val showRecenterFab = headingModeActive && userLocationEnabled && hasFineLocation
+    val showMapHud = userLocationEnabled && hasFineLocation && !routePickMode && !incidentPlaceMode
+
+    Box(modifier = modifier) {
+        AndroidView(
+            factory = { mapView },
+            modifier = Modifier.fillMaxSize(),
+        )
+        if (showMapHud) {
+            Surface(
+                modifier = Modifier
+                    .align(Alignment.TopStart)
+                    .padding(12.dp, 8.dp, 4.dp, 4.dp),
+                shape = RoundedCornerShape(10.dp),
+                color = MaterialTheme.colorScheme.surface.copy(alpha = 0.92f),
+                shadowElevation = 3.dp,
+            ) {
+                Column(Modifier.padding(horizontal = 14.dp, vertical = 10.dp)) {
+                    Text(
+                        stringResource(R.string.travel_map_hud_speed, hudSpeedKmh.floatValue),
+                        style = MaterialTheme.typography.titleLarge.copy(
+                            fontSize = 24.sp,
+                            lineHeight = 30.sp,
+                            fontWeight = FontWeight.SemiBold,
+                        ),
+                        color = MaterialTheme.colorScheme.onSurface,
+                    )
+                    Text(
+                        stringResource(
+                            R.string.travel_map_hud_view_from_above,
+                            hudViewSpanM.intValue,
+                            mapZoom,
+                        ),
+                        style = MaterialTheme.typography.bodyMedium.copy(fontSize = 15.sp),
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                }
+            }
+        }
+        if (showRecenterFab && (animatedRecenterFabAlpha > 0.02f || recenterFabAlphaTarget > 0.02f)) {
+            FloatingActionButton(
+                onClick = {
+                    hideRecenterFabJob.value?.cancel()
+                    followUserActive = true
+                    recenterFabAlphaTarget = 0f
+                    userLockedWideView.set(false)
+                    scope.launch {
+                        @SuppressLint("MissingPermission")
+                        runCatching {
+                            val client = LocationServices.getFusedLocationProviderClient(context)
+                            var loc = client.getCurrentLocation(
+                                Priority.PRIORITY_HIGH_ACCURACY,
+                                com.google.android.gms.tasks.CancellationTokenSource().token,
+                            ).await()
+                            if (loc == null) {
+                                loc = client.lastLocation.await()
+                            }
+                            if (loc != null) {
+                                val map = mapView.mapWindow.map
+                                val cp = map.cameraPosition
+                                val zoom = zoomForViewSpanMeters(
+                                    mapView,
+                                    loc.latitude,
+                                    RECENTER_VIEW_SPAN_M,
+                                )
+                                val az = if (loc.hasBearing()) {
+                                    (loc.bearing % 360f + 360f) % 360f
+                                } else {
+                                    cp.azimuth
+                                }
+                                map.move(
+                                    CameraPosition(
+                                        Point(loc.latitude, loc.longitude),
+                                        zoom,
+                                        az,
+                                        TRAVEL_NAV_TARGET_TILT,
+                                    ),
+                                    Animation(Animation.Type.SMOOTH, 0.35f),
+                                    null,
+                                )
+                            }
+                        }
+                    }
+                },
+                modifier = Modifier
+                    .align(Alignment.BottomEnd)
+                    .padding(20.dp)
+                    .alpha(animatedRecenterFabAlpha),
+                containerColor = MaterialTheme.colorScheme.surface,
+                contentColor = MaterialTheme.colorScheme.primary,
+            ) {
+                Icon(
+                    Icons.Filled.Navigation,
+                    contentDescription = stringResource(R.string.travel_recenter_map_cd),
+                )
+            }
+        }
+    }
+}
+
+private fun travelLerpD(from: Double, to: Double, t: Float): Double =
+    from + (to - from) * t.toDouble()
+
+/** Линейная интерполяция угла в градусах с учётом перехода через 0/360. */
+private fun lerpAngleDegrees(from: Float, to: Float, t: Float): Float {
+    var d = (to - from) % 360f
+    if (d < -180f) d += 360f
+    if (d > 180f) d -= 360f
+    var r = from + d * t
+    r %= 360f
+    if (r < 0f) r += 360f
+    return r
+}
+
+/** Скорость в м/с; если датчик не даёт [Location.hasSpeed], оцениваем по смещению от предыдущей точки. */
+private fun effectiveSpeedMps(loc: Location, prev: Location?): Float {
+    if (loc.hasSpeed()) {
+        return loc.speed.coerceAtLeast(0f)
+    }
+    if (prev != null) {
+        val dtSec = (loc.elapsedRealtimeNanos - prev.elapsedRealtimeNanos) / 1_000_000_000f
+        if (dtSec > 0.04f) {
+            return (loc.distanceTo(prev) / dtSec).coerceAtLeast(0f)
+        }
+    }
+    return 0f
+}
+
+private fun maneuverMapCaption(index: Int, m: TravelManeuverInfo): String {
+    val base = "$index. ${m.shortPhrase}"
+    return if (base.length <= 32) base else base.take(29) + "…"
+}
+
+/** Подписи поворотов / перекрёстков на маршруте. */
+private fun travelManeuverTextStyle(zoom: Float): TextStyle {
+    val z = zoom.coerceIn(2f, 21f)
+    val fontSize = (8f + (z - 3f) * 0.48f).coerceIn(7f, 16f)
+    val outlineWidth = (1.1f + (z - 3f) * 0.07f).coerceIn(1f, 3f)
+    return TextStyle(
+        fontSize,
+        0xE51A237E.toInt(),
+        outlineWidth,
+        0xFFFFFFFF.toInt(),
+        TextStyle.Placement.CENTER,
+        0f,
+        false,
+        false,
+    )
+}
+
+/** Размер подписи от масштаба: дальше отдаление — мельче текст (меньше наложений). */
+private fun travelZoneNameTextStyle(zoom: Float): TextStyle {
+    val z = zoom.coerceIn(2f, 21f)
+    val fontSize = (8f + (z - 3f) * 0.52f).coerceIn(8f, 17f)
+    val outlineWidth = (1.2f + (z - 3f) * 0.08f).coerceIn(1f, 3.5f)
+    return TextStyle(
+        fontSize,
+        0xE6000000.toInt(),
+        outlineWidth,
+        0xFFFFFFFF.toInt(),
+        TextStyle.Placement.CENTER,
+        0f,
+        false,
+        false,
+    )
+}
+
+private fun polygonVertexLabelStyle(zoom: Float): TextStyle {
+    val z = zoom.coerceIn(2f, 21f)
+    val fontSize = (10f + (z - 3f) * 0.45f).coerceIn(9f, 18f)
+    val outlineWidth = (1f + (z - 3f) * 0.07f).coerceIn(1f, 3f)
+    return TextStyle(
+        fontSize,
+        0xE6000000.toInt(),
+        outlineWidth,
+        0xFFFFFFFF.toInt(),
+        TextStyle.Placement.CENTER,
+        0f,
+        false,
+        false,
+    )
+}
+
+private fun addZoneNameInside(
+    zonesCollection: MapObjectCollection,
+    lat: Double,
+    lng: Double,
+    name: String,
+    transparentIcon: ImageProvider,
+    zoom: Float,
+) {
+    val label = name.trim()
+    if (label.isEmpty()) return
+    val placemark = zonesCollection.addPlacemark(Point(lat, lng))
+    placemark.setIcon(transparentIcon)
+    placemark.setText(label, travelZoneNameTextStyle(zoom))
+}
+
+private fun redrawZoneOverlays(
+    zonesCollection: MapObjectCollection,
+    zones: List<TravelZone>,
+    polygonDraft: List<TravelGeoPoint>,
+    transparentLabelIcon: ImageProvider,
+    zoneAudioBadgeIcon: ImageProvider,
+    territoryEditMode: Boolean,
+    selectedZoneId: String?,
+    omitPolygonZoneId: String?,
+    mapZoom: Float,
+) {
+    zonesCollection.clear()
+    val toShow = if (territoryEditMode) zones else zones.filter { it.enabled }
+    toShow.forEach { z ->
+        val isSelected = z.id == selectedZoneId
+        val isDisabled = !z.enabled
+        when (z.kind) {
+            TravelZoneKind.CIRCLE -> {
+                val circle = zonesCollection.addCircle(
+                    Circle(Point(z.centerLat, z.centerLng), max(z.radiusMeters, 100f)),
+                )
+                circle.strokeWidth = if (isSelected) 4f else 2f
+                when {
+                    isSelected -> {
+                        circle.strokeColor = 0xFFFFC107.toInt()
+                        circle.fillColor = 0x44FFC107.toInt()
+                    }
+                    territoryEditMode && isDisabled -> {
+                        circle.strokeColor = 0xFF78909C.toInt()
+                        circle.fillColor = 0x2278909C.toInt()
+                    }
+                    else -> {
+                        circle.strokeColor = 0xFF00BCD4.toInt()
+                        circle.fillColor = 0x3300BCD4.toInt()
+                    }
+                }
+                addZoneNameInside(zonesCollection, z.centerLat, z.centerLng, z.name, transparentLabelIcon, mapZoom)
+                addZoneAudioBadgeIfNeeded(
+                    zonesCollection,
+                    z,
+                    z.centerLat + 0.00007,
+                    z.centerLng + 0.00011,
+                    zoneAudioBadgeIcon,
+                )
+            }
+            TravelZoneKind.POLYGON -> {
+                if (z.id == omitPolygonZoneId) return@forEach
+                if (z.polygonPoints.size >= 3) {
+                    val pts = ArrayList<Point>()
+                    z.polygonPoints.forEach { pts.add(Point(it.latitude, it.longitude)) }
+                    val ring = LinearRing(pts)
+                    val poly = zonesCollection.addPolygon(Polygon(ring, ArrayList()))
+                    poly.strokeWidth = if (isSelected) 4f else 2f
+                    when {
+                        isSelected -> {
+                            poly.strokeColor = 0xFFFFC107.toInt()
+                            poly.fillColor = 0x44FFC107.toInt()
+                        }
+                        territoryEditMode && isDisabled -> {
+                            poly.strokeColor = 0xFF78909C.toInt()
+                            poly.fillColor = 0x2278909C.toInt()
+                        }
+                        else -> {
+                            poly.strokeColor = 0xFF4CAF50.toInt()
+                            poly.fillColor = 0x334CAF50.toInt()
+                        }
+                    }
+                    val (iLat, iLng) = polygonInteriorPoint(z.polygonPoints)
+                    addZoneNameInside(zonesCollection, iLat, iLng, z.name, transparentLabelIcon, mapZoom)
+                    addZoneAudioBadgeIfNeeded(
+                        zonesCollection,
+                        z,
+                        iLat + 0.00007,
+                        iLng + 0.00011,
+                        zoneAudioBadgeIcon,
+                    )
+                }
+            }
+        }
+    }
+    val vertexStyle = polygonVertexLabelStyle(mapZoom)
+    polygonDraft.forEachIndexed { i, pt ->
+        val pm = zonesCollection.addPlacemark(Point(pt.latitude, pt.longitude))
+        pm.setText("${i + 1}", vertexStyle)
+    }
+    if (polygonDraft.size >= 3) {
+        val pts = ArrayList<Point>()
+        polygonDraft.forEach { pts.add(Point(it.latitude, it.longitude)) }
+        val ring = LinearRing(pts)
+        val poly = zonesCollection.addPolygon(Polygon(ring, ArrayList()))
+        poly.strokeWidth = 2f
+        poly.strokeColor = 0xFFFF9800.toInt()
+        poly.fillColor = 0x44FF9800.toInt()
+    }
+}
+
+private fun incidentPinImageProvider(context: android.content.Context): ImageProvider {
+    val d = (44 * context.resources.displayMetrics.density).toInt().coerceIn(36, 72)
+    val bmp = Bitmap.createBitmap(d, d, Bitmap.Config.ARGB_8888)
+    val canvas = Canvas(bmp)
+    val fill = Paint(Paint.ANTI_ALIAS_FLAG).apply { color = 0xFFE53935.toInt() }
+    val stroke = Paint(Paint.ANTI_ALIAS_FLAG).apply {
+        color = Color.WHITE
+        style = Paint.Style.STROKE
+        strokeWidth = d * 0.1f
+    }
+    val pad = d * 0.12f
+    canvas.drawOval(RectF(pad, pad, d - pad, d - pad), fill)
+    canvas.drawOval(RectF(pad, pad, d - pad, d - pad), stroke)
+    return ImageProvider.fromBitmap(bmp)
+}
+
+/** Метка с личным звуком: красный кружок + синий бейдж «♪». */
+private fun incidentPinWithAudioImageProvider(context: android.content.Context): ImageProvider {
+    val d = (44 * context.resources.displayMetrics.density).toInt().coerceIn(36, 72)
+    val bmp = Bitmap.createBitmap(d, d, Bitmap.Config.ARGB_8888)
+    val canvas = Canvas(bmp)
+    val fill = Paint(Paint.ANTI_ALIAS_FLAG).apply { color = 0xFFE53935.toInt() }
+    val stroke = Paint(Paint.ANTI_ALIAS_FLAG).apply {
+        color = Color.WHITE
+        style = Paint.Style.STROKE
+        strokeWidth = d * 0.1f
+    }
+    val pad = d * 0.12f
+    canvas.drawOval(RectF(pad, pad, d - pad, d - pad), fill)
+    canvas.drawOval(RectF(pad, pad, d - pad, d - pad), stroke)
+    val badgeR = d * 0.24f
+    val cx = d - pad - badgeR * 0.35f
+    val cy = d - pad - badgeR * 0.35f
+    val badgeBg = Paint(Paint.ANTI_ALIAS_FLAG).apply { color = 0xFF1565C0.toInt() }
+    val badgeStroke = Paint(Paint.ANTI_ALIAS_FLAG).apply {
+        color = Color.WHITE
+        style = Paint.Style.STROKE
+        strokeWidth = d * 0.06f
+    }
+    canvas.drawCircle(cx, cy, badgeR, badgeBg)
+    canvas.drawCircle(cx, cy, badgeR, badgeStroke)
+    val note = Paint(Paint.ANTI_ALIAS_FLAG).apply {
+        color = Color.WHITE
+        textSize = badgeR * 1.35f
+        typeface = Typeface.DEFAULT_BOLD
+        textAlign = Paint.Align.CENTER
+    }
+    val fm = note.fontMetrics
+    canvas.drawText("♪", cx, cy - (fm.ascent + fm.descent) / 2f, note)
+    return ImageProvider.fromBitmap(bmp)
+}
+
+/** Маленький значок у зоны с собственным звуковым файлом. */
+private fun zoneAudioBadgeImageProvider(context: android.content.Context): ImageProvider {
+    val d = (30 * context.resources.displayMetrics.density).toInt().coerceIn(26, 44)
+    val bmp = Bitmap.createBitmap(d, d, Bitmap.Config.ARGB_8888)
+    val canvas = Canvas(bmp)
+    val cx = d / 2f
+    val cy = d / 2f
+    val r = d * 0.42f
+    val badgeBg = Paint(Paint.ANTI_ALIAS_FLAG).apply { color = 0xE61565C0.toInt() }
+    val badgeStroke = Paint(Paint.ANTI_ALIAS_FLAG).apply {
+        color = Color.WHITE
+        style = Paint.Style.STROKE
+        strokeWidth = d * 0.08f
+    }
+    canvas.drawCircle(cx, cy, r, badgeBg)
+    canvas.drawCircle(cx, cy, r, badgeStroke)
+    val note = Paint(Paint.ANTI_ALIAS_FLAG).apply {
+        color = Color.WHITE
+        textSize = r * 1.5f
+        typeface = Typeface.DEFAULT_BOLD
+        textAlign = Paint.Align.CENTER
+    }
+    val fm = note.fontMetrics
+    canvas.drawText("♪", cx, cy - (fm.ascent + fm.descent) / 2f, note)
+    return ImageProvider.fromBitmap(bmp)
+}
+
+private fun addZoneAudioBadgeIfNeeded(
+    zonesCollection: MapObjectCollection,
+    zone: TravelZone,
+    badgeLat: Double,
+    badgeLng: Double,
+    badgeIcon: ImageProvider,
+) {
+    if (zone.action != TravelTriggerAction.PLAY_SOUND || zone.mediaUri.isNullOrBlank()) return
+    zonesCollection.addPlacemark(Point(badgeLat, badgeLng), badgeIcon)
+}
+
+private fun incidentLabelStyle(zoom: Float): TextStyle {
+    val z = zoom.coerceIn(2f, 21f)
+    val fontSize = (11f + (z - 3f) * 0.5f).coerceIn(10f, 19f)
+    val outlineWidth = (1.2f + (z - 3f) * 0.08f).coerceIn(1f, 3f)
+    return TextStyle(
+        fontSize,
+        0xE6FFFFFF.toInt(),
+        outlineWidth,
+        0xFF212121.toInt(),
+        TextStyle.Placement.BOTTOM,
+        0f,
+        false,
+        false,
+    )
+}
+
+private fun redrawIncidentPins(
+    pinsCollection: MapObjectCollection,
+    incidents: List<TravelMapIncident>,
+    iconNormal: ImageProvider,
+    iconWithAudio: ImageProvider,
+    mapZoom: Float,
+) {
+    pinsCollection.clear()
+    val style = incidentLabelStyle(mapZoom)
+    for (inc in incidents) {
+        val icon = if (inc.soundUri.isNullOrBlank()) iconNormal else iconWithAudio
+        val pm = pinsCollection.addPlacemark(Point(inc.latitude, inc.longitude), icon)
+        val label = inc.note.trim().ifEmpty { "!" }
+        val short = if (label.length > 18) label.take(17) + "…" else label
+        pm.setText(short, style)
+    }
+}
+
+/** Центр подписи полигона — среднее координат вершин (совпадает с логикой сохранения зоны). */
+private fun polygonInteriorPoint(points: List<TravelGeoPoint>): Pair<Double, Double> {
+    if (points.isEmpty()) return 0.0 to 0.0
+    val cLat = points.sumOf { it.latitude } / points.size
+    val cLng = points.sumOf { it.longitude } / points.size
+    return cLat to cLng
+}
