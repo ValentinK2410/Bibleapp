@@ -26,6 +26,9 @@ abstract class BibleDatabase : RoomDatabase() {
                     BibleDatabase::class.java,
                     DB_NAME,
                 )
+                    // BibleLibrary.getBook() вызывается из Compose на main; иначе Room падает с
+                    // "Cannot access database on the main thread".
+                    .allowMainThreadQueries()
                     .fallbackToDestructiveMigration()
                     .build()
                     .also { instance = it }
