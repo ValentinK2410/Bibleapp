@@ -3,10 +3,11 @@ package com.example.bible.data
 import android.content.Context
 import com.example.bible.data.db.BibleDatabase
 import com.example.bible.data.db.BibleFtsMaintainer
-import com.example.bible.data.db.BibleNormLikeSearch
 import com.example.bible.data.db.BibleJsonImporter
+import com.example.bible.data.db.BibleNormLikeSearch
 import com.example.bible.data.db.BibleVerseSearchRow
 import com.example.bible.ui.SearchSettings
+import java.util.concurrent.Executors
 
 /**
  * Тексты Библии в [BibleDatabase] (Room). JSON в assets используется только при первом запуске (импорт).
@@ -18,6 +19,12 @@ class BibleRepository(
     private val dao = database.bibleDao()
     private var librarySingleton: BibleLibrary? = null
 
+    companion object {
+        private val searchNormBackfillExecutor = Executors.newSingleThreadExecutor { r ->
+            Thread(r, "bible-searchnorm-backfill").apply { isDaemon = true }
+        }
+    }
+
     fun clearCache() {
         librarySingleton?.invalidate()
         librarySingleton = null
@@ -26,13 +33,17 @@ class BibleRepository(
     fun loadLibrary(): BibleLibrary {
         librarySingleton?.let { return it }
         BibleJsonImporter.importFromAssetsIfNeeded(context, database)
-        BibleFtsMaintainer.ensureFtsUpToDate(database)
         val hasAny = TranslationId.entries.any { dao.countBooksForTranslation(it.code) > 0 }
         if (!hasAny) {
             throw IllegalStateException("Нет текстов Библии: добавьте папки переводов в assets/bible/ или sample JSON.")
         }
         val lib = BibleLibrary(this)
         librarySingleton = lib
+        // Заполнение searchNorm — долго на больших БД; не блокируем экран «Загрузка…».
+        val db = database
+        searchNormBackfillExecutor.execute {
+            BibleFtsMaintainer.ensureFtsUpToDate(db)
+        }
         return lib
     }
 
@@ -109,6 +120,7 @@ class BibleRepository(
         limit: Int,
     ): List<SearchHit>? {
         if (dao.countAllVerses() == 0) return null
+        if (dao.countVersesWithEmptyNorm() > 0) return null
         val norm = normalizeSearchQueryForCompare(query, BibleVerseSearchNormSettings)
         if (norm.isEmpty()) return emptyList()
         val pattern = BibleNormLikeSearch.likePatternForNormalizedQuery(norm) ?: return emptyList()
