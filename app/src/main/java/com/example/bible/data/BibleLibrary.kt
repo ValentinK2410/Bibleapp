@@ -132,7 +132,7 @@ class BibleLibrary(
         limit: Int,
         settings: SearchSettings,
     ): List<SearchHit> {
-        val prepared = prepareSearchQuery(query, settings) ?: return emptyList()
+        val prepared = prepareBibleSearchQuery(query, settings) ?: return emptyList()
         val out = ArrayList<SearchHit>(64)
         for (row in rows) {
             val normalizedVerse = normalizeVerseForSearch(row.text, settings)
@@ -163,7 +163,7 @@ class BibleLibrary(
         limit: Int,
         settings: SearchSettings,
     ): List<SearchHit> {
-        val prepared = prepareSearchQuery(query, settings) ?: return emptyList()
+        val prepared = prepareBibleSearchQuery(query, settings) ?: return emptyList()
         val out = ArrayList<SearchHit>(64)
         outer@ for (book in books) {
             for (ch in book.chapters) {
@@ -188,42 +188,12 @@ class BibleLibrary(
         return out
     }
 
-    /**
-     * Запрос после нормализации (регистр, акценты, пунктуация) и заранее разбитый на части —
-     * не пересчитывается на каждом стихе.
-     */
-    private data class PreparedSearchQuery(
-        val needle: String,
-        val wholeWordTokens: List<String>?,
-        val orderedParts: List<String>?,
-    )
-
-    private fun prepareSearchQuery(raw: String, settings: SearchSettings): PreparedSearchQuery? {
-        val q = normalizeSearchQueryForCompare(raw, settings)
-        if (q.isEmpty()) return null
-        val wholeWordTokens = if (settings.wholeWords) {
-            q.split(BibleSearchWhitespaceSplit).filter { it.isNotEmpty() }
-        } else {
-            null
-        }
-        val orderedParts = if (settings.orderedWords && !settings.wholeWords) {
-            q.split(BibleSearchWhitespaceSplit).filter { it.isNotEmpty() }
-        } else {
-            null
-        }
-        return PreparedSearchQuery(
-            needle = q,
-            wholeWordTokens = wholeWordTokens,
-            orderedParts = orderedParts,
-        )
-    }
-
     private fun normalizeVerseForSearch(text: String, settings: SearchSettings): String =
         normalizeVerseForCompare(text, settings)
 
     private fun matchesPrepared(
         t: String,
-        pq: PreparedSearchQuery,
+        pq: BiblePreparedSearchQuery,
         settings: SearchSettings,
     ): Boolean {
         pq.wholeWordTokens?.let { words ->
@@ -231,13 +201,13 @@ class BibleLibrary(
             if (settings.orderedWords) {
                 var searchFrom = 0
                 for (word in words) {
-                    val idx = findWholeWord(t, word, searchFrom)
+                    val idx = findWholeWordInNormalizedText(t, word, searchFrom)
                     if (idx < 0) return false
                     searchFrom = idx + word.length
                 }
                 return true
             }
-            return words.all { findWholeWord(t, it, 0) >= 0 }
+            return words.all { findWholeWordInNormalizedText(t, it, 0) >= 0 }
         }
         pq.orderedParts?.let { parts ->
             var searchFrom = 0
@@ -249,17 +219,5 @@ class BibleLibrary(
             return true
         }
         return t.contains(pq.needle)
-    }
-
-    private fun findWholeWord(text: String, word: String, startIndex: Int): Int {
-        var idx = startIndex
-        while (true) {
-            val found = text.indexOf(word, idx)
-            if (found < 0) return -1
-            val before = found == 0 || !text[found - 1].isLetterOrDigit()
-            val after = (found + word.length) >= text.length || !text[found + word.length].isLetterOrDigit()
-            if (before && after) return found
-            idx = found + 1
-        }
     }
 }
