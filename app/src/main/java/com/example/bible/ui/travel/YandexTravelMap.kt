@@ -58,6 +58,8 @@ import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -1071,7 +1073,10 @@ private fun TravelNavigatorHud(
     val over = navHud?.isOverSpeedLimit == true
     val ring = if (over) Color(0xFFE53935) else Color(0xFFE0E0E0)
     val fill = Color(0xFF1E1E1E)
-    Column(modifier) {
+    val hudCd = stringResource(R.string.travel_nav_speed_cd)
+    Column(
+        modifier.semantics { contentDescription = hudCd },
+    ) {
         Row(verticalAlignment = Alignment.CenterVertically) {
             Box(
                 modifier = Modifier
