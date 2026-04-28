@@ -31,6 +31,7 @@ import androidx.compose.material.icons.filled.Headphones
 import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material.icons.filled.School
 import androidx.compose.material.icons.filled.Search
+import androidx.compose.material.icons.filled.Stop
 import androidx.compose.material.icons.filled.Translate
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Card
@@ -869,6 +870,8 @@ private fun QuranVerseCard(
             Toast.LENGTH_SHORT,
         ).show()
     }
+    val activeAyahKey by ayahPlayer.activeAyahKey.collectAsStateWithLifecycle()
+    val isThisAyahMp3Playing = activeAyahKey == surahNumber to verse.number
     Card(
         modifier = Modifier.fillMaxWidth(),
         elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
@@ -890,37 +893,61 @@ private fun QuranVerseCard(
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     IconButton(
                         onClick = {
+                            if (isThisAyahMp3Playing) {
+                                ayahPlayer.stop()
+                                return@IconButton
+                            }
                             scope.launch {
                                 audioBusy = true
                                 val appCtx = context.applicationContext
                                 val local = QuranAyahAudioStorage.localFileIfReady(appCtx, surahNumber, verse.number)
                                 if (local != null) {
                                     audioBusy = false
-                                    ayahPlayer.playLocalFile(local.absolutePath, audioErrorToast)
+                                    ayahPlayer.playLocalFile(
+                                        surahNumber,
+                                        verse.number,
+                                        local.absolutePath,
+                                        audioErrorToast,
+                                    )
                                 } else {
                                     val urls = QuranAyahAudioApi.fetchAlafasyAudioUrls(surahNumber, verse.number)
                                     audioBusy = false
                                     if (urls.isNotEmpty()) {
-                                        ayahPlayer.playStreamUrls(urls, audioErrorToast)
+                                        ayahPlayer.playStreamUrls(
+                                            urls,
+                                            surahNumber,
+                                            verse.number,
+                                            audioErrorToast,
+                                        )
                                     } else {
                                         audioErrorToast()
                                     }
                                 }
                             }
                         },
-                        enabled = !audioBusy && !downloadBusy,
+                        enabled = (!audioBusy && !downloadBusy) || isThisAyahMp3Playing,
                     ) {
-                        if (audioBusy) {
-                            CircularProgressIndicator(
-                                modifier = Modifier.padding(10.dp),
-                                strokeWidth = 2.dp,
-                            )
-                        } else {
-                            Icon(
-                                Icons.Filled.Headphones,
-                                contentDescription = stringResource(R.string.quran_ayah_recitation_cd),
-                                tint = MaterialTheme.colorScheme.tertiary,
-                            )
+                        when {
+                            audioBusy && !isThisAyahMp3Playing -> {
+                                CircularProgressIndicator(
+                                    modifier = Modifier.padding(10.dp),
+                                    strokeWidth = 2.dp,
+                                )
+                            }
+                            isThisAyahMp3Playing -> {
+                                Icon(
+                                    Icons.Filled.Stop,
+                                    contentDescription = stringResource(R.string.quran_ayah_recitation_stop_cd),
+                                    tint = MaterialTheme.colorScheme.error,
+                                )
+                            }
+                            else -> {
+                                Icon(
+                                    Icons.Filled.Headphones,
+                                    contentDescription = stringResource(R.string.quran_ayah_recitation_cd),
+                                    tint = MaterialTheme.colorScheme.tertiary,
+                                )
+                            }
                         }
                     }
                     IconButton(

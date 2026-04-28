@@ -8,6 +8,9 @@ import android.os.Handler
 import android.os.Looper
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import org.json.JSONObject
 import java.net.HttpURLConnection
 import java.net.URL
@@ -155,6 +158,11 @@ class QuranAyahStreamingPlayer(context: Context) {
     private val appContext = context.applicationContext
     private var player: MediaPlayer? = null
     private val mainHandler = Handler(Looper.getMainLooper())
+    private var prepareTimeoutRunnable: Runnable? = null
+
+    private val _activeAyahKey = MutableStateFlow<Pair<Int, Int>?>(null)
+    /** Какой аят сейчас проигрывается MP3 (сура, аят); null — нет воспроизведения. */
+    val activeAyahKey: StateFlow<Pair<Int, Int>?> = _activeAyahKey.asStateFlow()
 
     /** Заголовки для CDN: без User-Agent часть устройств получает пустой ответ / сбой MediaPlayer. */
     private val streamHeaders: Map<String, String> = mapOf(
@@ -176,33 +184,36 @@ class QuranAyahStreamingPlayer(context: Context) {
     }
 
     private fun releaseInternal() {
+        prepareTimeoutRunnable?.let { mainHandler.removeCallbacks(it) }
+        prepareTimeoutRunnable = null
         try {
             player?.release()
         } catch (_: Exception) {
         }
         player = null
+        _activeAyahKey.value = null
     }
 
     /**
      * Потоковое MP3 по списку URL (основной и запасные битрейты). [onError] — на UI-потоке, если все варианты не удались.
      */
-    fun playStreamUrls(urls: List<String>, onError: () -> Unit) {
+    fun playStreamUrls(urls: List<String>, surah: Int, ayah: Int, onError: () -> Unit) {
         if (urls.isEmpty()) {
             runOnMain { onError() }
             return
         }
-        runOnMain { playStreamUrlsOnMain(urls, 0, onError) }
+        runOnMain { playStreamUrlsOnMain(urls, 0, surah, ayah, onError) }
     }
 
     /**
      * @param onError вызывается в UI-потоке при сбое подготовки/воспроизведения.
      */
-    fun playUrl(url: String, onError: () -> Unit) {
-        playStreamUrls(listOf(url), onError)
+    fun playUrl(surah: Int, ayah: Int, url: String, onError: () -> Unit) {
+        playStreamUrls(listOf(url), surah, ayah, onError)
     }
 
     /** Воспроизведение сохранённого MP3 (абсолютный путь). */
-    fun playLocalFile(absolutePath: String, onError: () -> Unit) {
+    fun playLocalFile(surah: Int, ayah: Int, absolutePath: String, onError: () -> Unit) {
         runOnMain {
             releaseInternal()
             val mp = try {
@@ -220,6 +231,7 @@ class QuranAyahStreamingPlayer(context: Context) {
                     onError()
                 }
             }
+            prepareTimeoutRunnable = timeoutRunnable
             try {
                 val attrs = AudioAttributes.Builder()
                     .setUsage(AudioAttributes.USAGE_MEDIA)
@@ -230,6 +242,7 @@ class QuranAyahStreamingPlayer(context: Context) {
             } catch (_: Exception) {
                 if (terminal.compareAndSet(false, true)) {
                     mainHandler.removeCallbacks(timeoutRunnable)
+                    prepareTimeoutRunnable = null
                     releaseInternal()
                     onError()
                 }
@@ -238,6 +251,8 @@ class QuranAyahStreamingPlayer(context: Context) {
             mp.setOnPreparedListener {
                 if (terminal.compareAndSet(false, true)) {
                     mainHandler.removeCallbacks(timeoutRunnable)
+                    prepareTimeoutRunnable = null
+                    _activeAyahKey.value = surah to ayah
                     it.start()
                 } else {
                     runCatching { it.release() }
@@ -245,11 +260,13 @@ class QuranAyahStreamingPlayer(context: Context) {
             }
             mp.setOnCompletionListener {
                 mainHandler.removeCallbacks(timeoutRunnable)
+                prepareTimeoutRunnable = null
                 releaseInternal()
             }
             mp.setOnErrorListener { _, _, _ ->
                 if (terminal.compareAndSet(false, true)) {
                     mainHandler.removeCallbacks(timeoutRunnable)
+                    prepareTimeoutRunnable = null
                     releaseInternal()
                     onError()
                 }
@@ -261,6 +278,7 @@ class QuranAyahStreamingPlayer(context: Context) {
             } catch (_: Exception) {
                 if (terminal.compareAndSet(false, true)) {
                     mainHandler.removeCallbacks(timeoutRunnable)
+                    prepareTimeoutRunnable = null
                     releaseInternal()
                     onError()
                 }
@@ -268,7 +286,7 @@ class QuranAyahStreamingPlayer(context: Context) {
         }
     }
 
-    private fun playStreamUrlsOnMain(urls: List<String>, index: Int, onError: () -> Unit) {
+    private fun playStreamUrlsOnMain(urls: List<String>, index: Int, surah: Int, ayah: Int, onError: () -> Unit) {
         if (index >= urls.size) {
             onError()
             return
@@ -278,7 +296,7 @@ class QuranAyahStreamingPlayer(context: Context) {
         val mp = try {
             MediaPlayer()
         } catch (_: Exception) {
-            playStreamUrlsOnMain(urls, index + 1, onError)
+            playStreamUrlsOnMain(urls, index + 1, surah, ayah, onError)
             return
         }
         player = mp
@@ -287,9 +305,10 @@ class QuranAyahStreamingPlayer(context: Context) {
         val timeoutRunnable = Runnable {
             if (terminal.compareAndSet(false, true)) {
                 releaseInternal()
-                playStreamUrlsOnMain(urls, index + 1, onError)
+                playStreamUrlsOnMain(urls, index + 1, surah, ayah, onError)
             }
         }
+        prepareTimeoutRunnable = timeoutRunnable
         try {
             val attrs = AudioAttributes.Builder()
                 .setUsage(AudioAttributes.USAGE_MEDIA)
@@ -300,14 +319,17 @@ class QuranAyahStreamingPlayer(context: Context) {
         } catch (_: Exception) {
             if (terminal.compareAndSet(false, true)) {
                 mainHandler.removeCallbacks(timeoutRunnable)
+                prepareTimeoutRunnable = null
                 releaseInternal()
-                playStreamUrlsOnMain(urls, index + 1, onError)
+                playStreamUrlsOnMain(urls, index + 1, surah, ayah, onError)
             }
             return
         }
         mp.setOnPreparedListener {
             if (terminal.compareAndSet(false, true)) {
                 mainHandler.removeCallbacks(timeoutRunnable)
+                prepareTimeoutRunnable = null
+                _activeAyahKey.value = surah to ayah
                 it.start()
             } else {
                 runCatching { it.release() }
@@ -315,13 +337,15 @@ class QuranAyahStreamingPlayer(context: Context) {
         }
         mp.setOnCompletionListener {
             mainHandler.removeCallbacks(timeoutRunnable)
+            prepareTimeoutRunnable = null
             releaseInternal()
         }
         mp.setOnErrorListener { _, _, _ ->
             if (terminal.compareAndSet(false, true)) {
                 mainHandler.removeCallbacks(timeoutRunnable)
+                prepareTimeoutRunnable = null
                 releaseInternal()
-                playStreamUrlsOnMain(urls, index + 1, onError)
+                playStreamUrlsOnMain(urls, index + 1, surah, ayah, onError)
             }
             true
         }
@@ -331,8 +355,9 @@ class QuranAyahStreamingPlayer(context: Context) {
         } catch (_: Exception) {
             if (terminal.compareAndSet(false, true)) {
                 mainHandler.removeCallbacks(timeoutRunnable)
+                prepareTimeoutRunnable = null
                 releaseInternal()
-                playStreamUrlsOnMain(urls, index + 1, onError)
+                playStreamUrlsOnMain(urls, index + 1, surah, ayah, onError)
             }
         }
     }

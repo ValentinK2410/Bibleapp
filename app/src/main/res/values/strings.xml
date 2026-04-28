@@ -785,6 +785,7 @@
     <string name="quran_ayah_speak_arabic_words_cd">Озвучить аят на арабском по словам (синтез речи устройства)</string>
     <string name="quran_ayah_speak_russian_cd">Озвучить перевод аята на русском (синтез речи устройства)</string>
     <string name="quran_ayah_recitation_cd">Прослушать чтение аята (Мишари аль-Афаси, MP3 из сети или из памяти)</string>
+    <string name="quran_ayah_recitation_stop_cd">Остановить воспроизведение MP3 аята</string>
     <string name="quran_ayah_download_cd">Скачать MP3 чтения аята для прослушивания без интернета</string>
     <string name="quran_ayah_download_ok">Аудио аята сохранено</string>
     <string name="quran_ayah_download_already">Этот аят уже сохранён на устройстве</string>
