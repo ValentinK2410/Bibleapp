@@ -20,8 +20,10 @@ import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -39,6 +41,7 @@ import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.FilterChip
 import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
@@ -48,11 +51,13 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Slider
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -80,11 +85,102 @@ import kotlinx.coroutines.withContext
 import kotlinx.coroutines.withTimeout
 import kotlinx.coroutines.TimeoutCancellationException
 import kotlin.coroutines.resume
+import kotlin.math.roundToInt
 
 /** Один запрос подключения: на части устройств ассоциация занимает дольше 15–20 с. */
 private const val BRUTE_ATTEMPT_TIMEOUT_MS = 42_000L
-private const val BRUTE_MAX_PASSWORDS = 40
 private const val BRUTE_DELAY_MS = 2_500L
+private const val BRUTE_MAX_PASSWORDS = 500
+private const val WPA_PSK_MIN_LEN = 8
+private const val WPA_PSK_MAX_LEN = 63
+private const val GEN_LENGTH_MIN = 3
+private const val GEN_LENGTH_MAX = 80
+private const val GEN_RANDOM_MAX_BATCH = 1_000
+private const val GEN_SEQUENTIAL_MAX_STEPS = 100_000
+private const val GEN_FULL_ENUM_MAX = 200_000
+
+private const val WIFI_SPECIAL_CHARSET = "!@#\$%&*+-_=.,?^~`|:;/()[]{}"
+
+private enum class WifiPasswordGenMode {
+    RANDOM,
+    SEQUENTIAL_DIGITS,
+    FULL_ENUMERATION,
+}
+
+private fun buildWifiCharset(
+    digits: Boolean,
+    lower: Boolean,
+    upper: Boolean,
+    special: Boolean,
+): CharArray {
+    val sb = StringBuilder()
+    if (digits) sb.append("0123456789")
+    if (lower) for (c in 'a'..'z') sb.append(c)
+    if (upper) for (c in 'A'..'Z') sb.append(c)
+    if (special) sb.append(WIFI_SPECIAL_CHARSET)
+    return sb.toString().toCharArray()
+}
+
+private fun effectiveWpaGenLength(requested: Int): Int =
+    requested.coerceIn(GEN_LENGTH_MIN, GEN_LENGTH_MAX).coerceAtMost(WPA_PSK_MAX_LEN)
+
+private fun generateRandomWifiPasswords(
+    charset: CharArray,
+    length: Int,
+    count: Int,
+): List<String> {
+    val rnd = java.security.SecureRandom()
+    val target = count.coerceIn(1, GEN_RANDOM_MAX_BATCH)
+    val out = LinkedHashSet<String>()
+    var guard = 0
+    while (out.size < target && guard < target * 100) {
+        guard++
+        val s = buildString(length) {
+            repeat(length) { append(charset[rnd.nextInt(charset.size)]) }
+        }
+        out.add(s)
+    }
+    return out.toList()
+}
+
+private fun generateSequentialDigitPasswords(length: Int, steps: Int): List<String> {
+    val n = steps.coerceIn(1, GEN_SEQUENTIAL_MAX_STEPS)
+    return (0 until n).map { i ->
+        val s = i.toString().padStart(length, '0')
+        if (s.length <= length) s else s.substring(s.length - length)
+    }
+}
+
+private fun fullEnumerationCount(charsetSize: Int, length: Int): Long {
+    if (charsetSize <= 0 || length <= 0) return 0L
+    var p = 1L
+    repeat(length) {
+        p *= charsetSize
+        if (p > GEN_FULL_ENUM_MAX * 10L) return Long.MAX_VALUE
+    }
+    return p
+}
+
+private fun generateFullEnumeration(charset: CharArray, length: Int): List<String>? {
+    val base = charset.size
+    val total = fullEnumerationCount(base, length)
+    if (total > GEN_FULL_ENUM_MAX) return null
+    val out = ArrayList<String>()
+    var n = 0L
+    while (n < total) {
+        var x = n
+        out.add(
+            buildString(length) {
+                for (pos in length - 1 downTo 0) {
+                    append(charset[(x % base).toInt()])
+                    x /= base.toLong()
+                }
+            },
+        )
+        n++
+    }
+    return out
+}
 
 private enum class WifiApSecurity {
     OPEN,
@@ -147,6 +243,12 @@ private fun startWifiConnectionRequest(
         return null
     }
     val pwd = password.trim()
+    if (linkSecurity != WifiApSecurity.OPEN &&
+        (pwd.length < WPA_PSK_MIN_LEN || pwd.length > WPA_PSK_MAX_LEN)
+    ) {
+        onStatus(WifiConnectUiStatus.Unavailable)
+        return null
+    }
     val cm = appContext.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
     val builder = WifiNetworkSpecifier.Builder()
     val ssidFromScan = scan.displaySsid().trim()
@@ -664,11 +766,24 @@ private fun WifiConnectDialog(
     var candidateLines by remember(scan) { mutableStateOf("") }
     var fieldError by remember(scan) { mutableStateOf<String?>(null) }
 
+    var genDigit by remember(scan) { mutableStateOf(true) }
+    var genLower by remember(scan) { mutableStateOf(true) }
+    var genUpper by remember(scan) { mutableStateOf(true) }
+    var genSpecial by remember(scan) { mutableStateOf(true) }
+    var genLen by remember(scan) { mutableIntStateOf(8) }
+    var genMode by remember(scan) { mutableStateOf(WifiPasswordGenMode.RANDOM) }
+    var genRandomCount by remember(scan) { mutableStateOf("200") }
+    var genSeqSteps by remember(scan) { mutableStateOf("10000") }
+
     val titleSsid = scan.displaySsid().ifBlank { stringResource(R.string.experiment_wifi_hidden_ssid) }
     val errPasswordShort = stringResource(R.string.experiment_wifi_error_password_short)
     val errSsidRequired = stringResource(R.string.experiment_wifi_error_ssid_required)
     val bruteNoCandidates = stringResource(R.string.experiment_wifi_brute_no_candidates)
     val bruteLimitFmt = stringResource(R.string.experiment_wifi_brute_limit, BRUTE_MAX_PASSWORDS)
+    val genCharsetEmpty = stringResource(R.string.experiment_wifi_gen_charset_empty)
+    val genSeqDigitsOnly = stringResource(R.string.experiment_wifi_gen_seq_digits_only)
+    val genFullTooLarge = stringResource(R.string.experiment_wifi_gen_full_too_large, GEN_FULL_ENUM_MAX)
+    val genInvalidCount = stringResource(R.string.experiment_wifi_gen_invalid_count)
     val scroll = rememberScrollState()
 
     AlertDialog(
@@ -717,7 +832,162 @@ private fun WifiConnectDialog(
                             style = MaterialTheme.typography.labelSmall,
                             color = MaterialTheme.colorScheme.error,
                         )
+                        Spacer(Modifier.height(8.dp))
+                        Text(
+                            text = stringResource(R.string.experiment_wifi_gen_title),
+                            style = MaterialTheme.typography.titleSmall,
+                        )
                         Spacer(Modifier.height(6.dp))
+                        Row(
+                            modifier = Modifier.horizontalScroll(rememberScrollState()),
+                            horizontalArrangement = Arrangement.spacedBy(8.dp),
+                        ) {
+                            FilterChip(
+                                selected = genDigit,
+                                onClick = { genDigit = !genDigit; fieldError = null },
+                                label = { Text(stringResource(R.string.experiment_wifi_gen_digits)) },
+                            )
+                            FilterChip(
+                                selected = genLower,
+                                onClick = { genLower = !genLower; fieldError = null },
+                                label = { Text(stringResource(R.string.experiment_wifi_gen_lower)) },
+                            )
+                            FilterChip(
+                                selected = genUpper,
+                                onClick = { genUpper = !genUpper; fieldError = null },
+                                label = { Text(stringResource(R.string.experiment_wifi_gen_upper)) },
+                            )
+                            FilterChip(
+                                selected = genSpecial,
+                                onClick = { genSpecial = !genSpecial; fieldError = null },
+                                label = { Text(stringResource(R.string.experiment_wifi_gen_special)) },
+                            )
+                        }
+                        Text(
+                            text = stringResource(R.string.experiment_wifi_gen_length, genLen),
+                            style = MaterialTheme.typography.bodySmall,
+                        )
+                        Slider(
+                            value = genLen.toFloat(),
+                            onValueChange = {
+                                genLen = it.roundToInt().coerceIn(GEN_LENGTH_MIN, GEN_LENGTH_MAX)
+                                fieldError = null
+                            },
+                            valueRange = GEN_LENGTH_MIN.toFloat()..GEN_LENGTH_MAX.toFloat(),
+                        )
+                        Text(
+                            text = stringResource(R.string.experiment_wifi_gen_mode_label),
+                            style = MaterialTheme.typography.labelMedium,
+                        )
+                        Row(
+                            modifier = Modifier.horizontalScroll(rememberScrollState()),
+                            horizontalArrangement = Arrangement.spacedBy(8.dp),
+                        ) {
+                            FilterChip(
+                                selected = genMode == WifiPasswordGenMode.RANDOM,
+                                onClick = { genMode = WifiPasswordGenMode.RANDOM; fieldError = null },
+                                label = { Text(stringResource(R.string.experiment_wifi_gen_mode_random)) },
+                            )
+                            FilterChip(
+                                selected = genMode == WifiPasswordGenMode.SEQUENTIAL_DIGITS,
+                                onClick = {
+                                    genMode = WifiPasswordGenMode.SEQUENTIAL_DIGITS
+                                    fieldError = null
+                                },
+                                label = { Text(stringResource(R.string.experiment_wifi_gen_mode_sequential)) },
+                            )
+                            FilterChip(
+                                selected = genMode == WifiPasswordGenMode.FULL_ENUMERATION,
+                                onClick = {
+                                    genMode = WifiPasswordGenMode.FULL_ENUMERATION
+                                    fieldError = null
+                                },
+                                label = { Text(stringResource(R.string.experiment_wifi_gen_mode_full)) },
+                            )
+                        }
+                        when (genMode) {
+                            WifiPasswordGenMode.RANDOM -> {
+                                OutlinedTextField(
+                                    value = genRandomCount,
+                                    onValueChange = { genRandomCount = it; fieldError = null },
+                                    label = { Text(stringResource(R.string.experiment_wifi_gen_count_random)) },
+                                    singleLine = true,
+                                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                                    modifier = Modifier.fillMaxWidth(),
+                                )
+                            }
+                            WifiPasswordGenMode.SEQUENTIAL_DIGITS -> {
+                                OutlinedTextField(
+                                    value = genSeqSteps,
+                                    onValueChange = { genSeqSteps = it; fieldError = null },
+                                    label = { Text(stringResource(R.string.experiment_wifi_gen_count_sequential)) },
+                                    singleLine = true,
+                                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                                    modifier = Modifier.fillMaxWidth(),
+                                )
+                            }
+                            WifiPasswordGenMode.FULL_ENUMERATION -> Unit
+                        }
+                        OutlinedButton(
+                            onClick = {
+                                fieldError = null
+                                val effLen = effectiveWpaGenLength(genLen)
+                                val charset = buildWifiCharset(genDigit, genLower, genUpper, genSpecial)
+                                if (charset.isEmpty()) {
+                                    fieldError = genCharsetEmpty
+                                    return@OutlinedButton
+                                }
+                                val generated: List<String> = when (genMode) {
+                                    WifiPasswordGenMode.RANDOM -> {
+                                        val c = genRandomCount.toIntOrNull()?.coerceIn(1, GEN_RANDOM_MAX_BATCH)
+                                        if (c == null) {
+                                            fieldError = genInvalidCount
+                                            return@OutlinedButton
+                                        }
+                                        generateRandomWifiPasswords(charset, effLen, c)
+                                    }
+                                    WifiPasswordGenMode.SEQUENTIAL_DIGITS -> {
+                                        if (!genDigit || genLower || genUpper || genSpecial) {
+                                            fieldError = genSeqDigitsOnly
+                                            return@OutlinedButton
+                                        }
+                                        val steps = genSeqSteps.toIntOrNull()?.coerceIn(1, GEN_SEQUENTIAL_MAX_STEPS)
+                                        if (steps == null) {
+                                            fieldError = genInvalidCount
+                                            return@OutlinedButton
+                                        }
+                                        generateSequentialDigitPasswords(effLen, steps)
+                                    }
+                                    WifiPasswordGenMode.FULL_ENUMERATION -> {
+                                        val cnt = fullEnumerationCount(charset.size, effLen)
+                                        if (cnt > GEN_FULL_ENUM_MAX) {
+                                            fieldError = genFullTooLarge
+                                            return@OutlinedButton
+                                        }
+                                        generateFullEnumeration(charset, effLen) ?: emptyList()
+                                    }
+                                }
+                                if (generated.isEmpty()) {
+                                    fieldError = bruteNoCandidates
+                                    return@OutlinedButton
+                                }
+                                val existing = candidateLines.lines()
+                                    .map { it.trim() }
+                                    .filter { it.isNotEmpty() }
+                                    .toMutableSet()
+                                for (p in generated) existing.add(p)
+                                candidateLines = existing.joinToString("\n")
+                            },
+                            modifier = Modifier.fillMaxWidth(),
+                        ) {
+                            Text(stringResource(R.string.experiment_wifi_gen_add))
+                        }
+                        Text(
+                            text = stringResource(R.string.experiment_wifi_brute_wpa_len_note),
+                            style = MaterialTheme.typography.labelSmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        )
+                        Spacer(Modifier.height(8.dp))
                         OutlinedTextField(
                             value = candidateLines,
                             onValueChange = { candidateLines = it; fieldError = null },
@@ -736,7 +1006,7 @@ private fun WifiConnectDialog(
                                 }
                                 val list = candidateLines.lines()
                                     .map { it.trim() }
-                                    .filter { it.length >= 8 }
+                                    .filter { it.length in WPA_PSK_MIN_LEN..WPA_PSK_MAX_LEN }
                                     .distinct()
                                 if (list.isEmpty()) {
                                     fieldError = bruteNoCandidates
@@ -776,7 +1046,8 @@ private fun WifiConnectDialog(
                                 WifiApSecurity.WPA2,
                                 WifiApSecurity.WPA3,
                                 -> {
-                                    if (password.length < 8) {
+                                    val pw = password.trim()
+                                    if (pw.length !in WPA_PSK_MIN_LEN..WPA_PSK_MAX_LEN) {
                                         fieldError = errPasswordShort
                                         return@TextButton
                                     }
@@ -784,7 +1055,7 @@ private fun WifiConnectDialog(
                                         fieldError = errSsidRequired
                                         return@TextButton
                                     }
-                                    onConnect(manualSsid, password)
+                                    onConnect(manualSsid, pw)
                                 }
                                 WifiApSecurity.UNSUPPORTED -> Unit
                             }
