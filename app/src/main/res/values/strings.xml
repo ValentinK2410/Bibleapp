@@ -52,6 +52,8 @@
     <string name="experiment_wifi_scan">Сканировать сети</string>
     <string name="experiment_wifi_scanning">Сканирование…</string>
     <string name="experiment_wifi_need_location">Нужно разрешение «Точное местоположение» — без него система не отдаёт список сетей Wi‑Fi.</string>
+    <string name="experiment_wifi_need_nearby">На Android 13 и новее для подключения к Wi‑Fi также включите разрешение «Устройства Wi‑Fi поблизости».</string>
+    <string name="experiment_wifi_grant_permissions">Разрешить доступ (геолокация и Wi‑Fi)</string>
     <string name="experiment_wifi_disabled">Включите Wi‑Fi в настройках системы.</string>
     <string name="experiment_wifi_empty">Точки доступа не найдены. Нажмите «Сканировать» или повторите через несколько секунд.</string>
     <string name="experiment_wifi_grant_location">Разрешить местоположение</string>
@@ -71,7 +73,7 @@
     <string name="experiment_wifi_unsupported_security">Подключение из приложения не поддерживается для этой сети (WEP, 802.1x и т.п.). Подключитесь через настройки системы.</string>
     <string name="experiment_wifi_status_pending">Запрос подключения отправлен…</string>
     <string name="experiment_wifi_status_ok">Подключение к точке доступа установлено.</string>
-    <string name="experiment_wifi_status_fail">Не удалось подключиться (проверьте пароль или выберите сеть в настройках).</string>
+    <string name="experiment_wifi_status_fail">Не удалось подключиться. Проверьте пароль; на Android 13+ нужны разрешения геолокации и «Wi‑Fi поблизости»; подтвердите системный запрос на подключение, если он появился.</string>
     <string name="experiment_wifi_status_lost">Соединение с сетью прервано.</string>
     <string name="experiment_wifi_request_cancelled">Запрос подключения отменён.</string>
     <string name="experiment_wifi_got_it">Понятно</string>

@@ -13,6 +13,8 @@ import android.net.wifi.ScanResult
 import android.net.wifi.WifiManager
 import android.net.wifi.WifiNetworkSpecifier
 import android.os.Build
+import android.os.Handler
+import android.os.Looper
 import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
@@ -66,6 +68,7 @@ import androidx.core.content.ContextCompat
 import androidx.core.content.ContextCompat.getMainExecutor
 import com.example.bible.R
 import java.util.Locale
+import java.util.concurrent.atomic.AtomicBoolean
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -78,7 +81,8 @@ import kotlinx.coroutines.withTimeout
 import kotlinx.coroutines.TimeoutCancellationException
 import kotlin.coroutines.resume
 
-private const val BRUTE_ATTEMPT_TIMEOUT_MS = 18_000L
+/** Один запрос подключения: на части устройств ассоциация занимает дольше 15–20 с. */
+private const val BRUTE_ATTEMPT_TIMEOUT_MS = 42_000L
 private const val BRUTE_MAX_PASSWORDS = 40
 private const val BRUTE_DELAY_MS = 2_500L
 
@@ -102,14 +106,32 @@ private data class WifiRequestHandle(
     val cb: ConnectivityManager.NetworkCallback,
 )
 
-private fun ScanResult.apSecurity(): WifiApSecurity {
+/** Тип шифрования для [WifiNetworkSpecifier]: для WPA2/WPA3 transition сначала PSK, при неудаче — SAE. */
+private fun ScanResult.preferredLinkSecurity(): WifiApSecurity {
     val c = capabilities.uppercase(Locale.US)
     if (c.contains("8021X") || c.contains("EAP")) return WifiApSecurity.UNSUPPORTED
     if (c.contains("WEP")) return WifiApSecurity.UNSUPPORTED
-    if (c.contains("SAE") || c.contains("WPA3")) return WifiApSecurity.WPA3
-    if (c.contains("WPA2") || c.contains("WPA") || c.contains("PSK")) return WifiApSecurity.WPA2
+    val hasSae = c.contains("SAE") || c.contains("WPA3")
+    val hasPsk = c.contains("PSK") || c.contains("WPA2") || c.contains("WPA-") || c.contains("[WPA")
+    if (hasSae && hasPsk) return WifiApSecurity.WPA2
+    if (hasSae) return WifiApSecurity.WPA3
+    if (hasPsk || c.contains("WPA")) return WifiApSecurity.WPA2
     return WifiApSecurity.OPEN
 }
+
+private fun ScanResult.alternateLinkSecurity(primary: WifiApSecurity): WifiApSecurity? {
+    val c = capabilities.uppercase(Locale.US)
+    val hasSae = c.contains("SAE") || c.contains("WPA3")
+    val hasPsk = c.contains("PSK") || c.contains("WPA2") || c.contains("WPA-") || c.contains("[WPA")
+    return when (primary) {
+        WifiApSecurity.WPA2 -> if (hasSae) WifiApSecurity.WPA3 else null
+        WifiApSecurity.WPA3 -> if (hasPsk) WifiApSecurity.WPA2 else null
+        else -> null
+    }
+}
+
+/** Для UI диалога — то же, что [preferredLinkSecurity]. */
+private fun ScanResult.apSecurity(): WifiApSecurity = preferredLinkSecurity()
 
 @SuppressLint("MissingPermission")
 private fun startWifiConnectionRequest(
@@ -117,13 +139,14 @@ private fun startWifiConnectionRequest(
     scan: ScanResult,
     manualSsid: String,
     password: String,
+    linkSecurity: WifiApSecurity,
     onStatus: (WifiConnectUiStatus) -> Unit,
 ): WifiRequestHandle? {
-    val security = scan.apSecurity()
-    if (security == WifiApSecurity.UNSUPPORTED) {
+    if (scan.preferredLinkSecurity() == WifiApSecurity.UNSUPPORTED) {
         onStatus(WifiConnectUiStatus.Unsupported)
         return null
     }
+    val pwd = password.trim()
     val cm = appContext.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
     val builder = WifiNetworkSpecifier.Builder()
     val ssidFromScan = scan.displaySsid().trim()
@@ -131,7 +154,7 @@ private fun startWifiConnectionRequest(
     val ssid = ssidFromScan.ifBlank { ssidManual }
     when {
         ssid.isNotBlank() -> builder.setSsid(ssid)
-        security == WifiApSecurity.OPEN -> {
+        linkSecurity == WifiApSecurity.OPEN -> {
             try {
                 builder.setBssid(MacAddress.fromString(scan.BSSID))
             } catch (_: IllegalArgumentException) {
@@ -144,10 +167,10 @@ private fun startWifiConnectionRequest(
             return null
         }
     }
-    when (security) {
+    when (linkSecurity) {
         WifiApSecurity.OPEN -> Unit
-        WifiApSecurity.WPA2 -> builder.setWpa2Passphrase(password)
-        WifiApSecurity.WPA3 -> builder.setWpa3Passphrase(password)
+        WifiApSecurity.WPA2 -> builder.setWpa2Passphrase(pwd)
+        WifiApSecurity.WPA3 -> builder.setWpa3Passphrase(pwd)
         WifiApSecurity.UNSUPPORTED -> return null
     }
     val specifier = try {
@@ -174,7 +197,7 @@ private fun startWifiConnectionRequest(
         }
     }
     try {
-        cm.requestNetwork(request, callback)
+        cm.requestNetwork(request, callback, Handler(Looper.getMainLooper()))
     } catch (_: SecurityException) {
         onStatus(WifiConnectUiStatus.Unavailable)
         return null
@@ -183,34 +206,41 @@ private fun startWifiConnectionRequest(
     return WifiRequestHandle(cm, callback)
 }
 
-private suspend fun tryWifiPassword(
+private suspend fun trySingleWifiConnect(
     appContext: Context,
     scan: ScanResult,
     manualSsid: String,
     password: String,
+    linkSecurity: WifiApSecurity,
 ): Pair<Boolean, WifiRequestHandle?> = withContext(Dispatchers.Main.immediate) {
     var handle: WifiRequestHandle? = null
     val ok = try {
         withTimeout(BRUTE_ATTEMPT_TIMEOUT_MS) {
             suspendCancellableCoroutine { cont ->
+                val finished = AtomicBoolean(false)
                 val h = startWifiConnectionRequest(
                     appContext,
                     scan,
                     manualSsid,
                     password,
+                    linkSecurity,
                 ) { status ->
                     when (status) {
                         WifiConnectUiStatus.Pending -> Unit
                         WifiConnectUiStatus.Available ->
-                            if (cont.isActive) cont.resume(true)
+                            if (cont.isActive && finished.compareAndSet(false, true)) {
+                                cont.resume(true)
+                            }
                         WifiConnectUiStatus.Unavailable,
                         WifiConnectUiStatus.Lost,
                         WifiConnectUiStatus.Unsupported,
-                        -> if (cont.isActive) cont.resume(false)
+                        -> if (cont.isActive && finished.compareAndSet(false, true)) {
+                            cont.resume(false)
+                        }
                     }
                 }
                 if (h == null) {
-                    if (cont.isActive) cont.resume(false)
+                    if (cont.isActive && finished.compareAndSet(false, true)) cont.resume(false)
                     return@suspendCancellableCoroutine
                 }
                 handle = h
@@ -232,6 +262,37 @@ private suspend fun tryWifiPassword(
     }
 }
 
+private suspend fun connectWithWpaFallback(
+    appContext: Context,
+    scan: ScanResult,
+    manualSsid: String,
+    password: String,
+): Pair<Boolean, WifiRequestHandle?> {
+    val pwd = password.trim()
+    val primary = scan.preferredLinkSecurity()
+    if (primary == WifiApSecurity.UNSUPPORTED) {
+        return false to null
+    }
+    if (primary == WifiApSecurity.OPEN) {
+        return trySingleWifiConnect(appContext, scan, manualSsid, pwd, WifiApSecurity.OPEN)
+    }
+    var result = trySingleWifiConnect(appContext, scan, manualSsid, pwd, primary)
+    if (result.first) return result
+    val alt = scan.alternateLinkSecurity(primary)
+    if (alt != null) {
+        delay(1_800)
+        result = trySingleWifiConnect(appContext, scan, manualSsid, pwd, alt)
+    }
+    return result
+}
+
+private suspend fun tryWifiPassword(
+    appContext: Context,
+    scan: ScanResult,
+    manualSsid: String,
+    password: String,
+): Pair<Boolean, WifiRequestHandle?> = connectWithWpaFallback(appContext, scan, manualSsid, password)
+
 private fun clearPendingWifiConnect(
     pair: Pair<ConnectivityManager, ConnectivityManager.NetworkCallback>?,
 ) {
@@ -250,17 +311,34 @@ fun ExperimentWifiScreen(onBack: () -> Unit) {
         appContext.getSystemService(Context.WIFI_SERVICE) as WifiManager
     }
 
+    val needNearbyWifi = Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU
     var hasFineLocation by remember {
         mutableStateOf(
             ContextCompat.checkSelfPermission(context, Manifest.permission.ACCESS_FINE_LOCATION) ==
                 PackageManager.PERMISSION_GRANTED,
         )
     }
-    val permLauncher = rememberLauncherForActivityResult(
-        ActivityResultContracts.RequestPermission(),
-    ) { granted ->
-        hasFineLocation = granted
+    var hasNearbyWifi by remember {
+        mutableStateOf(
+            if (needNearbyWifi) {
+                ContextCompat.checkSelfPermission(
+                    context,
+                    Manifest.permission.NEARBY_WIFI_DEVICES,
+                ) == PackageManager.PERMISSION_GRANTED
+            } else {
+                true
+            },
+        )
     }
+    val wifiPermLauncher = rememberLauncherForActivityResult(
+        ActivityResultContracts.RequestMultiplePermissions(),
+    ) { result ->
+        hasFineLocation = result[Manifest.permission.ACCESS_FINE_LOCATION] == true
+        if (needNearbyWifi) {
+            hasNearbyWifi = result[Manifest.permission.NEARBY_WIFI_DEVICES] == true
+        }
+    }
+    val canUseWifiApis = hasFineLocation && (!needNearbyWifi || hasNearbyWifi)
 
     var scanResults by remember { mutableStateOf<List<ScanResult>>(emptyList()) }
     var scanning by remember { mutableStateOf(false) }
@@ -280,8 +358,8 @@ fun ExperimentWifiScreen(onBack: () -> Unit) {
         }
     }
 
-    DisposableEffect(wifiManager, hasFineLocation) {
-        if (!hasFineLocation) {
+    DisposableEffect(wifiManager, canUseWifiApis) {
+        if (!canUseWifiApis) {
             scanResults = emptyList()
             return@DisposableEffect onDispose { }
         }
@@ -314,32 +392,31 @@ fun ExperimentWifiScreen(onBack: () -> Unit) {
             scan = scan,
             onDismiss = { pickedScan = null },
             onConnect = { manualSsid, password ->
-                clearPendingWifiConnect(pendingWifiConnect)
-                pendingWifiConnect = null
-                val h = startWifiConnectionRequest(appContext, scan, manualSsid, password) { status ->
-                    val msg = when (status) {
-                        WifiConnectUiStatus.Unsupported ->
-                            appContext.getString(R.string.experiment_wifi_unsupported_security)
-                        WifiConnectUiStatus.Pending ->
-                            appContext.getString(R.string.experiment_wifi_status_pending)
-                        WifiConnectUiStatus.Available ->
-                            appContext.getString(R.string.experiment_wifi_status_ok)
-                        WifiConnectUiStatus.Unavailable ->
-                            appContext.getString(R.string.experiment_wifi_status_fail)
-                        WifiConnectUiStatus.Lost ->
-                            appContext.getString(R.string.experiment_wifi_status_lost)
-                    }
-                    val len = if (status == WifiConnectUiStatus.Pending) {
-                        Toast.LENGTH_SHORT
-                    } else {
-                        Toast.LENGTH_LONG
-                    }
-                    Toast.makeText(appContext, msg, len).show()
-                }
-                if (h != null) {
-                    pendingWifiConnect = h.cm to h.cb
-                }
                 pickedScan = null
+                scope.launch {
+                    clearPendingWifiConnect(pendingWifiConnect)
+                    pendingWifiConnect = null
+                    Toast.makeText(
+                        appContext,
+                        appContext.getString(R.string.experiment_wifi_status_pending),
+                        Toast.LENGTH_SHORT,
+                    ).show()
+                    val (ok, handle) = connectWithWpaFallback(appContext, scan, manualSsid, password)
+                    if (ok && handle != null) {
+                        pendingWifiConnect = handle.cm to handle.cb
+                        Toast.makeText(
+                            appContext,
+                            appContext.getString(R.string.experiment_wifi_status_ok),
+                            Toast.LENGTH_LONG,
+                        ).show()
+                    } else {
+                        Toast.makeText(
+                            appContext,
+                            appContext.getString(R.string.experiment_wifi_status_fail),
+                            Toast.LENGTH_LONG,
+                        ).show()
+                    }
+                }
             },
             onBruteForce = { manualSsid, candidates ->
                 pickedScan = null
@@ -431,17 +508,30 @@ fun ExperimentWifiScreen(onBack: () -> Unit) {
                 )
             }
 
-            if (!hasFineLocation) {
+            if (!canUseWifiApis) {
                 Text(
                     text = stringResource(R.string.experiment_wifi_need_location),
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
+                if (needNearbyWifi && hasFineLocation && !hasNearbyWifi) {
+                    Text(
+                        text = stringResource(R.string.experiment_wifi_need_nearby),
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                }
                 FilledTonalButton(
-                    onClick = { permLauncher.launch(Manifest.permission.ACCESS_FINE_LOCATION) },
+                    onClick = {
+                        val perms = buildList {
+                            add(Manifest.permission.ACCESS_FINE_LOCATION)
+                            if (needNearbyWifi) add(Manifest.permission.NEARBY_WIFI_DEVICES)
+                        }.toTypedArray()
+                        wifiPermLauncher.launch(perms)
+                    },
                     modifier = Modifier.fillMaxWidth(),
                 ) {
-                    Text(stringResource(R.string.experiment_wifi_grant_location))
+                    Text(stringResource(R.string.experiment_wifi_grant_permissions))
                 }
             } else {
                 FilledTonalButton(
@@ -497,7 +587,7 @@ fun ExperimentWifiScreen(onBack: () -> Unit) {
 
             HorizontalDivider()
 
-            if (hasFineLocation && wifiOn && scanResults.isEmpty() && !scanning) {
+            if (canUseWifiApis && wifiOn && scanResults.isEmpty() && !scanning) {
                 Text(
                     text = stringResource(R.string.experiment_wifi_empty),
                     style = MaterialTheme.typography.bodyMedium,
