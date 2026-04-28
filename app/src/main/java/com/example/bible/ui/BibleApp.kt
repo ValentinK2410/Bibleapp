@@ -1009,6 +1009,7 @@ private fun BibleNavHost(
                 onOpenCallsSms = { navController.navigate("experiment_calls_sms") },
                 onOpenSensorLab = { navController.navigate("experiment_sensor_lab") },
                 onOpenSoundLab = { navController.navigate("experiment_sound_lab") },
+                onOpenWifi = { navController.navigate("experiment_wifi") },
             )
         }
         composable("experiment_camera") {
@@ -1044,6 +1045,11 @@ private fun BibleNavHost(
         }
         composable("experiment_sound_lab") {
             ExperimentSoundLabScreen(
+                onBack = { navController.navigateUp() },
+            )
+        }
+        composable("experiment_wifi") {
+            ExperimentWifiScreen(
                 onBack = { navController.navigateUp() },
             )
         }

@@ -21,6 +21,7 @@ import androidx.compose.material.icons.filled.Phone
 import androidx.compose.material.icons.filled.Sensors
 import androidx.compose.material.icons.automirrored.filled.VolumeUp
 import androidx.compose.material.icons.filled.Videocam
+import androidx.compose.material.icons.filled.Wifi
 import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilledTonalButton
@@ -47,6 +48,7 @@ fun ExperimentHubScreen(
     onOpenCallsSms: () -> Unit,
     onOpenSensorLab: () -> Unit,
     onOpenSoundLab: () -> Unit,
+    onOpenWifi: () -> Unit,
 ) {
     Scaffold(
         topBar = {
@@ -112,6 +114,12 @@ fun ExperimentHubScreen(
                 title = stringResource(R.string.experiment_hub_section_sensor_lab),
                 description = stringResource(R.string.experiment_hub_section_sensor_lab_desc),
                 onClick = onOpenSensorLab,
+            )
+            ExperimentHubSectionButton(
+                icon = { Icon(Icons.Filled.Wifi, contentDescription = null, modifier = Modifier.size(28.dp)) },
+                title = stringResource(R.string.experiment_hub_section_wifi),
+                description = stringResource(R.string.experiment_hub_section_wifi_desc),
+                onClick = onOpenWifi,
             )
             ExperimentHubSectionButton(
                 icon = { Icon(Icons.AutoMirrored.Filled.VolumeUp, contentDescription = null, modifier = Modifier.size(28.dp)) },
