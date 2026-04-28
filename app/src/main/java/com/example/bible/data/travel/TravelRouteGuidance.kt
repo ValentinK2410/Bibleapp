@@ -2,6 +2,7 @@ package com.example.bible.data.travel
 
 import android.annotation.SuppressLint
 import android.content.Context
+import android.location.Location
 import android.os.Looper
 import com.google.android.gms.location.LocationCallback
 import com.google.android.gms.location.LocationRequest
@@ -19,12 +20,13 @@ import kotlin.math.max
 import kotlin.math.roundToInt
 
 /**
- * Озвучка манёвров, ограничений скорости и камер вдоль построенного [DrivingRoute].
+ * Озвучка манёвров, ограничений скорости, камер и опасных участков вдоль [DrivingRoute].
  * Обновления GPS через Fused Location; привязка к полилинии через [PolylineIndex].
  */
 class TravelRouteGuidanceSession(
     context: Context,
     private val route: DrivingRoute,
+    private val onHudState: ((TravelNavHudState) -> Unit)? = null,
 ) {
     private val app = context.applicationContext
     private val fused = LocationServices.getFusedLocationProviderClient(app)
@@ -36,6 +38,7 @@ class TravelRouteGuidanceSession(
     private val maneuvers: List<TravelManeuverInfo> = TravelManeuvers.buildList(route)
     private val speedCues: List<SpeedCue> = buildSpeedCues(route, polyline)
     private val cameraCues: List<CameraCue> = buildCameraCues(route)
+    private val hazardCues: List<HazardCue> = buildHazardCues(route, polyline)
 
     private var maneuverIndex = 0
     private var announcedFarForCurrent = false
@@ -45,6 +48,9 @@ class TravelRouteGuidanceSession(
     private val announcedSpeedCueIndices = HashSet<Int>()
     private val announcedCameraFar = HashSet<String>()
     private val announcedCameraNear = HashSet<String>()
+    private val announcedHazardFar = HashSet<String>()
+    private val announcedHazardNear = HashSet<String>()
+    private var prevGuidanceLoc: Location? = null
 
     private val callback = object : LocationCallback() {
         override fun onLocationResult(result: LocationResult) {
@@ -59,9 +65,12 @@ class TravelRouteGuidanceSession(
             if (dAlong + 35.0 >= maxDistanceAlong) {
                 maxDistanceAlong = max(maxDistanceAlong, dAlong)
             }
+            val speedKmh = speedKmhFromLoc(loc)
             processManeuvers()
             processSpeedLimits()
             processCameras()
+            processHazards(dAlong)
+            pushHud(speedKmh, dAlong)
         }
 
         private fun processManeuvers() {
@@ -126,7 +135,64 @@ class TravelRouteGuidanceSession(
                 }
             }
         }
+
+        private fun processHazards(dAlong: Double) {
+            for (cue in hazardCues) {
+                val dist = cue.distanceAlong - dAlong
+                if (dist in HAZARD_NEAR..HAZARD_FAR && cue.id !in announcedHazardFar) {
+                    announcedHazardFar.add(cue.id)
+                    val m = roundMeters(dist.roundToInt().coerceAtLeast(1))
+                    TravelVoicePrompter.speak(app, "Через $m — ${cue.voiceShort}")
+                }
+                if (dist in 1.0..<HAZARD_NEAR && cue.id !in announcedHazardNear) {
+                    announcedHazardNear.add(cue.id)
+                    TravelVoicePrompter.speak(app, cue.voiceNear)
+                }
+            }
+        }
+
+        private fun pushHud(speedKmh: Int, dAlong: Double) {
+            val listener = onHudState ?: return
+            val limit = currentSpeedLimitKmh(dAlong)
+            val over = limit != null && speedKmh > limit + SPEED_OVER_MARGIN_KMH
+            val next = hazardCues
+                .filter { it.distanceAlong > dAlong + 12.0 }
+                .minByOrNull { it.distanceAlong }
+            val distNext = next?.let {
+                (it.distanceAlong - dAlong).roundToInt().coerceAtLeast(1)
+            }
+            listener(
+                TravelNavHudState(
+                    speedKmh = speedKmh,
+                    speedLimitKmh = limit,
+                    isOverSpeedLimit = over,
+                    nextRoadNote = next?.hudLabel,
+                    nextRoadNoteDistanceM = if (next != null) distNext else null,
+                ),
+            )
+        }
+
+        private fun currentSpeedLimitKmh(dAlong: Double): Int? {
+            var current: Int? = null
+            for (cue in speedCuesSorted) {
+                if (cue.distanceAlong <= dAlong + 1.5) {
+                    current = cue.kmh
+                } else {
+                    break
+                }
+            }
+            return current
+        }
     }
+
+    private val speedCuesSorted: List<SpeedCueIndexed> =
+        speedCues.map {
+            SpeedCueIndexed(
+                position = it.position,
+                kmh = it.kmh,
+                distanceAlong = distanceAlong(it.position),
+            )
+        }.sortedBy { it.distanceAlong }
 
     @SuppressLint("MissingPermission")
     fun start() {
@@ -147,9 +213,36 @@ class TravelRouteGuidanceSession(
     private fun distanceAlong(pos: PolylinePosition): Double =
         PolylineUtils.distanceBetweenPolylinePositions(polyline, routeStart, pos)
 
+    private fun speedKmhFromLoc(loc: Location): Int {
+        val mps = when {
+            loc.hasSpeed() -> loc.speed.coerceAtLeast(0f)
+            else -> {
+                val prev = prevGuidanceLoc
+                if (prev != null) {
+                    val dtSec = (loc.elapsedRealtimeNanos - prev.elapsedRealtimeNanos) / 1_000_000_000f
+                    if (dtSec > 0.04f) {
+                        loc.distanceTo(prev) / dtSec
+                    } else {
+                        0f
+                    }
+                } else {
+                    0f
+                }
+            }
+        }
+        prevGuidanceLoc = Location(loc)
+        return (mps * 3.6f).roundToInt().coerceIn(0, 400)
+    }
+
     private data class SpeedCue(
         val position: PolylinePosition,
         val kmh: Int,
+    )
+
+    private data class SpeedCueIndexed(
+        val position: PolylinePosition,
+        val kmh: Int,
+        val distanceAlong: Double,
     )
 
     private data class CameraCue(
@@ -159,6 +252,15 @@ class TravelRouteGuidanceSession(
         val nearPhrase: String,
     )
 
+    private data class HazardCue(
+        val id: String,
+        val position: PolylinePosition,
+        val distanceAlong: Double,
+        val voiceShort: String,
+        val voiceNear: String,
+        val hudLabel: String,
+    )
+
     companion object {
         private const val PREVIEW_METERS = 320.0
         private const val FAR_MIN = 95.0
@@ -166,6 +268,9 @@ class TravelRouteGuidanceSession(
         private const val ANNOUNCE_SPEED_METERS = 220.0
         private const val CAMERA_FAR = 380.0
         private const val CAMERA_NEAR = 95.0
+        private const val HAZARD_FAR = 380.0
+        private const val HAZARD_NEAR = 95.0
+        private const val SPEED_OVER_MARGIN_KMH = 3
         /** 10–20 Гц, чтобы дистанция/привязка к треку шли плавно вместе с картой. */
         private const val UPDATE_MS = 50L
 
@@ -269,6 +374,135 @@ class TravelRouteGuidanceSession(
                 )
             }
             return out
+        }
+
+        private fun buildHazardCues(route: DrivingRoute, polyline: Polyline): List<HazardCue> {
+            val start = PolylinePosition(0, 0.0)
+            fun dist(pos: PolylinePosition) =
+                PolylineUtils.distanceBetweenPolylinePositions(polyline, start, pos)
+
+            val raw = ArrayList<HazardCue>()
+            route.speedBumps?.forEachIndexed { i, bump ->
+                val pos = bump.position ?: return@forEachIndexed
+                raw.add(
+                    HazardCue(
+                        id = "bump_$i",
+                        position = pos,
+                        distanceAlong = dist(pos),
+                        voiceShort = "лежачий полицейский",
+                        voiceNear = "Лежачий полицейский",
+                        hudLabel = "Лежачий полицейский",
+                    ),
+                )
+            }
+            route.directionSigns?.forEachIndexed { i, sign ->
+                val pos = sign.position ?: return@forEachIndexed
+                raw.add(
+                    HazardCue(
+                        id = "dirsign_$i",
+                        position = pos,
+                        distanceAlong = dist(pos),
+                        voiceShort = "дорожный знак",
+                        voiceNear = "Дорожный знак",
+                        hudLabel = "Дорожный знак",
+                    ),
+                )
+            }
+            route.events?.forEachIndexed { idx, ev ->
+                val pos = ev.polylinePosition ?: return@forEachIndexed
+                val tags = ev.tags ?: emptyList()
+                val desc = ev.descriptionText?.trim().orEmpty()
+                when {
+                    tags.contains(EventTag.SCHOOL) -> {
+                        val label = if (desc.isNotEmpty()) desc else "Школа"
+                        raw.add(
+                            HazardCue(
+                                id = "school_${ev.eventId}_$idx",
+                                position = pos,
+                                distanceAlong = dist(pos),
+                                voiceShort = label.lowercase(),
+                                voiceNear = label,
+                                hudLabel = label,
+                            ),
+                        )
+                    }
+                    tags.contains(EventTag.PEDESTRIAN_DANGER) || tags.contains(EventTag.DANGER) -> {
+                        val label = if (desc.isNotEmpty()) desc else "Опасный участок"
+                        raw.add(
+                            HazardCue(
+                                id = "danger_${ev.eventId}_$idx",
+                                position = pos,
+                                distanceAlong = dist(pos),
+                                voiceShort = label.lowercase(),
+                                voiceNear = label,
+                                hudLabel = label,
+                            ),
+                        )
+                    }
+                }
+            }
+            return dedupeHazards(raw.sortedBy { it.distanceAlong })
+        }
+
+        /** Сливаем объекты ближе 22 м по дистанции вдоль маршрута (одна озвучка/подпись). */
+        private fun dedupeHazards(sorted: List<HazardCue>): List<HazardCue> {
+            if (sorted.isEmpty()) return sorted
+            val out = ArrayList<HazardCue>()
+            var prev: HazardCue? = null
+            for (h in sorted) {
+                val p = prev
+                if (p != null && h.distanceAlong - p.distanceAlong < 22.0) {
+                    val merged = if (h.voiceNear.length >= p.voiceNear.length) h else p
+                    out[out.lastIndex] = merged
+                    prev = merged
+                } else {
+                    out.add(h)
+                    prev = h
+                }
+            }
+            return out
+        }
+
+        /** Точки для карты: школа, лежачий, знак. */
+        fun hazardMapItems(route: DrivingRoute): List<TravelHazardMapItem> {
+            val poly = route.geometry
+            val items = ArrayList<TravelHazardMapItem>()
+            route.speedBumps?.forEach { bump ->
+                val pos = bump.position ?: return@forEach
+                val pt = TravelManeuvers.pointOnRoute(poly, pos)
+                items.add(
+                    TravelHazardMapItem(
+                        point = pt,
+                        label = "Лежачий",
+                        kind = TravelHazardMapKind.SPEED_BUMP,
+                    ),
+                )
+            }
+            route.directionSigns?.forEach { sign ->
+                val pos = sign.position ?: return@forEach
+                val pt = TravelManeuvers.pointOnRoute(poly, pos)
+                items.add(
+                    TravelHazardMapItem(
+                        point = pt,
+                        label = "Знак",
+                        kind = TravelHazardMapKind.DIRECTION_SIGN,
+                    ),
+                )
+            }
+            route.events?.forEach { ev ->
+                if (ev.tags?.contains(EventTag.SCHOOL) != true) return@forEach
+                val pos = ev.polylinePosition ?: return@forEach
+                val pt = TravelManeuvers.pointOnRoute(poly, pos)
+                val label = ev.descriptionText?.trim()?.take(24)?.ifEmpty { null } ?: "Школа"
+                items.add(
+                    TravelHazardMapItem(
+                        point = pt,
+                        label = label,
+                        kind = TravelHazardMapKind.SCHOOL,
+                    ),
+                )
+            }
+            return items
         }
     }
 }

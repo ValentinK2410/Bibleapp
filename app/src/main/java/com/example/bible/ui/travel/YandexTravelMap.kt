@@ -9,7 +9,7 @@ import android.hardware.SensorManager
 import android.location.Location
 import android.graphics.Bitmap
 import android.graphics.Canvas
-import android.graphics.Color
+import android.graphics.Color as AndroidColor
 import android.graphics.Paint
 import android.graphics.Path
 import android.graphics.PointF
@@ -19,10 +19,15 @@ import android.os.Looper
 import android.view.Choreographer
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
+import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Navigation
@@ -47,9 +52,14 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.viewinterop.AndroidView
@@ -58,9 +68,11 @@ import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import com.example.bible.R
 import com.example.bible.data.travel.TravelGeoPoint
+import com.example.bible.data.travel.TravelHazardMapKind
 import com.example.bible.data.travel.TravelManeuverInfo
 import com.example.bible.data.travel.TravelManeuvers
 import com.example.bible.data.travel.TravelMapIncident
+import com.example.bible.data.travel.TravelNavHudState
 import com.example.bible.data.travel.TravelRouteGuidanceSession
 import com.example.bible.data.travel.TravelTriggerAction
 import com.example.bible.data.travel.TravelZone
@@ -336,6 +348,7 @@ private fun YandexTravelMapContent(
     }
     val hudSpeedKmh = remember { mutableFloatStateOf(0f) }
     val hudViewSpanM = remember { mutableIntStateOf(0) }
+    var navHudState by remember { mutableStateOf<TravelNavHudState?>(null) }
     /** Ручной зум с «высотой» от 2000 м — не подменяем авто-высотой по скорости, пока не сброс курса. */
     val userLockedWideView = remember { AtomicBoolean(false) }
 
@@ -350,6 +363,9 @@ private fun YandexTravelMapContent(
     }
     val routeManeuverLayer = remember(mapView) {
         routeOverlay.addCollection().apply { zIndex = 5.6f }
+    }
+    val routeHazardLayer = remember(mapView) {
+        routeOverlay.addCollection().apply { zIndex = 5.55f }
     }
     val pinsOverlay = remember(mapView) {
         mapView.mapWindow.map.mapObjects.addCollection().apply { zIndex = 6f }
@@ -369,11 +385,12 @@ private fun YandexTravelMapContent(
     val onRouteBuilt = rememberUpdatedState(onTravelRouteBuilt)
     val onActiveRoute = rememberUpdatedState(onActiveTravelRouteChange)
 
-    LaunchedEffect(activeTravelRoute, mapView, routeLineLayer, routeManeuverLayer) {
+    LaunchedEffect(activeTravelRoute, mapView, routeLineLayer, routeManeuverLayer, routeHazardLayer) {
         val r = activeTravelRoute
         if (r == null) {
             routeLineLayer.clear()
             routeManeuverLayer.clear()
+            routeHazardLayer.clear()
             return@LaunchedEffect
         }
         val geometry = r.geometry
@@ -444,7 +461,7 @@ private fun YandexTravelMapContent(
 
     val transparentLabelIcon = remember(context) {
         val bmp = Bitmap.createBitmap(1, 1, Bitmap.Config.ARGB_8888)
-        bmp.eraseColor(Color.TRANSPARENT)
+        bmp.eraseColor(AndroidColor.TRANSPARENT)
         ImageProvider.fromBitmap(bmp)
     }
 
@@ -755,11 +772,19 @@ private fun YandexTravelMapContent(
     DisposableEffect(activeTravelRoute, hasFineLocation) {
         val route = activeTravelRoute
         if (route == null || !hasFineLocation) {
+            navHudState = null
             return@DisposableEffect onDispose { }
         }
-        val session = TravelRouteGuidanceSession(context.applicationContext, route)
+        val session = TravelRouteGuidanceSession(
+            context.applicationContext,
+            route,
+            onHudState = { navHudState = it },
+        )
         session.start()
-        onDispose { session.stop() }
+        onDispose {
+            session.stop()
+            navHudState = null
+        }
     }
 
     DisposableEffect(mapView) {
@@ -824,6 +849,10 @@ private fun YandexTravelMapContent(
         }
     }
 
+    val hazardSchoolIcon = remember(context) { travelHazardDotProvider(context, 0xFFFFC107.toInt()) }
+    val hazardBumpIcon = remember(context) { travelHazardDotProvider(context, 0xFFFF6F00.toInt()) }
+    val hazardSignIcon = remember(context) { travelHazardDotProvider(context, 0xFF1976D2.toInt()) }
+
     LaunchedEffect(activeTravelRoute, mapZoom, routeManeuverLayer, transparentLabelIcon) {
         val r = activeTravelRoute
         if (r == null) {
@@ -838,6 +867,31 @@ private fun YandexTravelMapContent(
             val p = routeManeuverLayer.addPlacemark(pt, transparentLabelIcon)
             p.setText(maneuverMapCaption(i + 1, m), travelManeuverTextStyle(z))
             p.zIndex = 5.7f
+        }
+    }
+
+    LaunchedEffect(
+        activeTravelRoute,
+        mapZoom,
+        routeHazardLayer,
+        hazardSchoolIcon,
+        hazardBumpIcon,
+        hazardSignIcon,
+    ) {
+        val r = activeTravelRoute
+        routeHazardLayer.clear()
+        if (r == null) return@LaunchedEffect
+        val z = mapZoom
+        val style = travelHazardTextStyle(z)
+        for (h in TravelRouteGuidanceSession.hazardMapItems(r)) {
+            val icon = when (h.kind) {
+                TravelHazardMapKind.SCHOOL -> hazardSchoolIcon
+                TravelHazardMapKind.SPEED_BUMP -> hazardBumpIcon
+                TravelHazardMapKind.DIRECTION_SIGN -> hazardSignIcon
+            }
+            val pm = routeHazardLayer.addPlacemark(h.point, icon)
+            pm.setText(h.label, style)
+            pm.zIndex = 5.56f
         }
     }
 
@@ -933,26 +987,13 @@ private fun YandexTravelMapContent(
                 color = MaterialTheme.colorScheme.surface.copy(alpha = 0.92f),
                 shadowElevation = 3.dp,
             ) {
-                Column(Modifier.padding(horizontal = 14.dp, vertical = 10.dp)) {
-                    Text(
-                        stringResource(R.string.travel_map_hud_speed, hudSpeedKmh.floatValue),
-                        style = MaterialTheme.typography.titleLarge.copy(
-                            fontSize = 24.sp,
-                            lineHeight = 30.sp,
-                            fontWeight = FontWeight.SemiBold,
-                        ),
-                        color = MaterialTheme.colorScheme.onSurface,
-                    )
-                    Text(
-                        stringResource(
-                            R.string.travel_map_hud_view_from_above,
-                            hudViewSpanM.intValue,
-                            mapZoom,
-                        ),
-                        style = MaterialTheme.typography.bodyMedium.copy(fontSize = 15.sp),
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    )
-                }
+                TravelNavigatorHud(
+                    navHud = if (activeTravelRoute != null) navHudState else null,
+                    fallbackSpeedKmh = hudSpeedKmh.floatValue,
+                    viewSpanM = hudViewSpanM.intValue,
+                    mapZoom = mapZoom,
+                    modifier = Modifier.padding(horizontal = 12.dp, vertical = 10.dp),
+                )
             }
         }
         if (showRecenterFab && (animatedRecenterFabAlpha > 0.02f || recenterFabAlphaTarget > 0.02f)) {
@@ -1014,6 +1055,136 @@ private fun YandexTravelMapContent(
             }
         }
     }
+}
+
+@Composable
+private fun TravelNavigatorHud(
+    navHud: TravelNavHudState?,
+    fallbackSpeedKmh: Float,
+    viewSpanM: Int,
+    mapZoom: Float,
+    modifier: Modifier = Modifier,
+) {
+    val density = LocalDensity.current
+    val speedKmh = navHud?.speedKmh ?: fallbackSpeedKmh.roundToInt()
+    val limit = navHud?.speedLimitKmh
+    val over = navHud?.isOverSpeedLimit == true
+    val ring = if (over) Color(0xFFE53935) else Color(0xFFE0E0E0)
+    val fill = Color(0xFF1E1E1E)
+    Column(modifier) {
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            Box(
+                modifier = Modifier
+                    .size(88.dp)
+                    .padding(2.dp),
+                contentAlignment = Alignment.Center,
+            ) {
+                val strokePx = with(density) { 4.dp.toPx() }
+                Canvas(Modifier.fillMaxSize()) {
+                    val c = Offset(size.width / 2f, size.height / 2f)
+                    val r = size.minDimension / 2f - strokePx * 0.5f
+                    drawCircle(color = fill, radius = r, center = c)
+                    drawCircle(color = ring, radius = r, center = c, style = Stroke(width = strokePx))
+                }
+                Text(
+                    text = "$speedKmh",
+                    fontSize = 32.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = Color.White,
+                    textAlign = TextAlign.Center,
+                    lineHeight = 34.sp,
+                )
+            }
+            if (limit != null) {
+                Spacer(Modifier.width(8.dp))
+                Box(
+                    modifier = Modifier
+                        .size(48.dp)
+                        .padding(1.dp),
+                    contentAlignment = Alignment.Center,
+                ) {
+                    val strokePx = with(density) { 2.5.dp.toPx() }
+                    Canvas(Modifier.fillMaxSize()) {
+                        val c = Offset(size.width / 2f, size.height / 2f)
+                        val r = size.minDimension / 2f - strokePx * 0.5f
+                        drawCircle(color = fill, radius = r, center = c)
+                        drawCircle(
+                            color = Color(0xFFBDBDBD),
+                            radius = r,
+                            center = c,
+                            style = Stroke(width = strokePx),
+                        )
+                    }
+                    Text(
+                        text = "$limit",
+                        fontSize = 17.sp,
+                        fontWeight = FontWeight.Medium,
+                        color = Color.White,
+                    )
+                }
+            }
+        }
+        if (over) {
+            Text(
+                stringResource(R.string.travel_nav_slow_down),
+                color = Color(0xFFE53935),
+                fontSize = 14.sp,
+                fontWeight = FontWeight.SemiBold,
+                modifier = Modifier.padding(top = 6.dp),
+            )
+        }
+        val next = navHud?.nextRoadNote
+        val dM = navHud?.nextRoadNoteDistanceM
+        if (next != null && dM != null) {
+            Text(
+                stringResource(R.string.travel_nav_next_road_note, dM, next),
+                style = MaterialTheme.typography.bodyMedium.copy(fontSize = 14.sp),
+                color = MaterialTheme.colorScheme.onSurface,
+                modifier = Modifier.padding(top = 4.dp),
+            )
+        }
+        Text(
+            stringResource(R.string.travel_map_hud_view_from_above, viewSpanM, mapZoom),
+            style = MaterialTheme.typography.bodyMedium.copy(fontSize = 13.sp),
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            modifier = Modifier.padding(top = 4.dp),
+        )
+    }
+}
+
+/** Метка на карте: школа / лежачий / знак. */
+private fun travelHazardDotProvider(context: Context, argb: Int): ImageProvider {
+    val d = (28 * context.resources.displayMetrics.density).toInt().coerceIn(24, 40)
+    val bmp = Bitmap.createBitmap(d, d, Bitmap.Config.ARGB_8888)
+    val canvas = Canvas(bmp)
+    val cx = d / 2f
+    val cy = d / 2f
+    val r = d * 0.38f
+    val fill = Paint(Paint.ANTI_ALIAS_FLAG).apply { color = argb }
+    val stroke = Paint(Paint.ANTI_ALIAS_FLAG).apply {
+        color = AndroidColor.WHITE
+        style = Paint.Style.STROKE
+        strokeWidth = d * 0.1f
+    }
+    canvas.drawCircle(cx, cy, r, fill)
+    canvas.drawCircle(cx, cy, r, stroke)
+    return ImageProvider.fromBitmap(bmp)
+}
+
+private fun travelHazardTextStyle(zoom: Float): TextStyle {
+    val z = zoom.coerceIn(2f, 21f)
+    val fontSize = (7.5f + (z - 3f) * 0.42f).coerceIn(7f, 14f)
+    val outlineWidth = (1f + (z - 3f) * 0.07f).coerceIn(1f, 2.8f)
+    return TextStyle(
+        fontSize,
+        0xE61A237E.toInt(),
+        outlineWidth,
+        0xFFFFFFFF.toInt(),
+        TextStyle.Placement.BOTTOM,
+        0f,
+        false,
+        false,
+    )
 }
 
 private fun travelLerpD(from: Double, to: Double, t: Float): Double =
@@ -1235,7 +1406,7 @@ private fun userNavigationArrowImageProvider(context: android.content.Context): 
         style = Paint.Style.FILL
     }
     val stroke = Paint(Paint.ANTI_ALIAS_FLAG).apply {
-        color = Color.WHITE
+        color = AndroidColor.WHITE
         style = Paint.Style.STROKE
         strokeWidth = d * 0.08f
     }
@@ -1250,7 +1421,7 @@ private fun incidentPinImageProvider(context: android.content.Context): ImagePro
     val canvas = Canvas(bmp)
     val fill = Paint(Paint.ANTI_ALIAS_FLAG).apply { color = 0xFFE53935.toInt() }
     val stroke = Paint(Paint.ANTI_ALIAS_FLAG).apply {
-        color = Color.WHITE
+        color = AndroidColor.WHITE
         style = Paint.Style.STROKE
         strokeWidth = d * 0.1f
     }
@@ -1267,7 +1438,7 @@ private fun incidentPinWithAudioImageProvider(context: android.content.Context):
     val canvas = Canvas(bmp)
     val fill = Paint(Paint.ANTI_ALIAS_FLAG).apply { color = 0xFFE53935.toInt() }
     val stroke = Paint(Paint.ANTI_ALIAS_FLAG).apply {
-        color = Color.WHITE
+        color = AndroidColor.WHITE
         style = Paint.Style.STROKE
         strokeWidth = d * 0.1f
     }
@@ -1279,14 +1450,14 @@ private fun incidentPinWithAudioImageProvider(context: android.content.Context):
     val cy = d - pad - badgeR * 0.35f
     val badgeBg = Paint(Paint.ANTI_ALIAS_FLAG).apply { color = 0xFF1565C0.toInt() }
     val badgeStroke = Paint(Paint.ANTI_ALIAS_FLAG).apply {
-        color = Color.WHITE
+        color = AndroidColor.WHITE
         style = Paint.Style.STROKE
         strokeWidth = d * 0.06f
     }
     canvas.drawCircle(cx, cy, badgeR, badgeBg)
     canvas.drawCircle(cx, cy, badgeR, badgeStroke)
     val note = Paint(Paint.ANTI_ALIAS_FLAG).apply {
-        color = Color.WHITE
+        color = AndroidColor.WHITE
         textSize = badgeR * 1.35f
         typeface = Typeface.DEFAULT_BOLD
         textAlign = Paint.Align.CENTER
@@ -1306,14 +1477,14 @@ private fun zoneAudioBadgeImageProvider(context: android.content.Context): Image
     val r = d * 0.42f
     val badgeBg = Paint(Paint.ANTI_ALIAS_FLAG).apply { color = 0xE61565C0.toInt() }
     val badgeStroke = Paint(Paint.ANTI_ALIAS_FLAG).apply {
-        color = Color.WHITE
+        color = AndroidColor.WHITE
         style = Paint.Style.STROKE
         strokeWidth = d * 0.08f
     }
     canvas.drawCircle(cx, cy, r, badgeBg)
     canvas.drawCircle(cx, cy, r, badgeStroke)
     val note = Paint(Paint.ANTI_ALIAS_FLAG).apply {
-        color = Color.WHITE
+        color = AndroidColor.WHITE
         textSize = r * 1.5f
         typeface = Typeface.DEFAULT_BOLD
         textAlign = Paint.Align.CENTER
