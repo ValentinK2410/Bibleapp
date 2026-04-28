@@ -27,7 +27,9 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.AlertDialog
@@ -51,6 +53,7 @@ import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
@@ -63,6 +66,21 @@ import androidx.core.content.ContextCompat
 import androidx.core.content.ContextCompat.getMainExecutor
 import com.example.bible.R
 import java.util.Locale
+import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.isActive
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.suspendCancellableCoroutine
+import kotlinx.coroutines.withContext
+import kotlinx.coroutines.withTimeout
+import kotlinx.coroutines.TimeoutCancellationException
+import kotlin.coroutines.resume
+
+private const val BRUTE_ATTEMPT_TIMEOUT_MS = 18_000L
+private const val BRUTE_MAX_PASSWORDS = 40
+private const val BRUTE_DELAY_MS = 2_500L
 
 private enum class WifiApSecurity {
     OPEN,
@@ -79,6 +97,11 @@ private enum class WifiConnectUiStatus {
     Lost,
 }
 
+private data class WifiRequestHandle(
+    val cm: ConnectivityManager,
+    val cb: ConnectivityManager.NetworkCallback,
+)
+
 private fun ScanResult.apSecurity(): WifiApSecurity {
     val c = capabilities.uppercase(Locale.US)
     if (c.contains("8021X") || c.contains("EAP")) return WifiApSecurity.UNSUPPORTED
@@ -89,13 +112,13 @@ private fun ScanResult.apSecurity(): WifiApSecurity {
 }
 
 @SuppressLint("MissingPermission")
-private fun requestWifiConnection(
+private fun startWifiConnectionRequest(
     appContext: Context,
     scan: ScanResult,
     manualSsid: String,
     password: String,
     onStatus: (WifiConnectUiStatus) -> Unit,
-): ConnectivityManager.NetworkCallback? {
+): WifiRequestHandle? {
     val security = scan.apSecurity()
     if (security == WifiApSecurity.UNSUPPORTED) {
         onStatus(WifiConnectUiStatus.Unsupported)
@@ -157,7 +180,56 @@ private fun requestWifiConnection(
         return null
     }
     onStatus(WifiConnectUiStatus.Pending)
-    return callback
+    return WifiRequestHandle(cm, callback)
+}
+
+private suspend fun tryWifiPassword(
+    appContext: Context,
+    scan: ScanResult,
+    manualSsid: String,
+    password: String,
+): Pair<Boolean, WifiRequestHandle?> = withContext(Dispatchers.Main.immediate) {
+    var handle: WifiRequestHandle? = null
+    val ok = try {
+        withTimeout(BRUTE_ATTEMPT_TIMEOUT_MS) {
+            suspendCancellableCoroutine { cont ->
+                val h = startWifiConnectionRequest(
+                    appContext,
+                    scan,
+                    manualSsid,
+                    password,
+                ) { status ->
+                    when (status) {
+                        WifiConnectUiStatus.Pending -> Unit
+                        WifiConnectUiStatus.Available ->
+                            if (cont.isActive) cont.resume(true)
+                        WifiConnectUiStatus.Unavailable,
+                        WifiConnectUiStatus.Lost,
+                        WifiConnectUiStatus.Unsupported,
+                        -> if (cont.isActive) cont.resume(false)
+                    }
+                }
+                if (h == null) {
+                    if (cont.isActive) cont.resume(false)
+                    return@suspendCancellableCoroutine
+                }
+                handle = h
+                cont.invokeOnCancellation {
+                    runCatching { h.cm.unregisterNetworkCallback(h.cb) }
+                }
+            }
+        }
+    } catch (_: TimeoutCancellationException) {
+        handle?.let { runCatching { it.cm.unregisterNetworkCallback(it.cb) } }
+        handle = null
+        false
+    }
+    if (ok) {
+        true to handle
+    } else {
+        handle?.let { runCatching { it.cm.unregisterNetworkCallback(it.cb) } }
+        false to null
+    }
 }
 
 private fun clearPendingWifiConnect(
@@ -173,6 +245,7 @@ private fun clearPendingWifiConnect(
 fun ExperimentWifiScreen(onBack: () -> Unit) {
     val context = LocalContext.current
     val appContext = remember { context.applicationContext }
+    val scope = rememberCoroutineScope()
     val wifiManager = remember(appContext) {
         appContext.getSystemService(Context.WIFI_SERVICE) as WifiManager
     }
@@ -196,9 +269,13 @@ fun ExperimentWifiScreen(onBack: () -> Unit) {
     var pendingWifiConnect by remember {
         mutableStateOf<Pair<ConnectivityManager, ConnectivityManager.NetworkCallback>?>(null)
     }
+    var bruteJob by remember { mutableStateOf<Job?>(null) }
+    var bruteProgress by remember { mutableStateOf<Pair<Int, Int>?>(null) }
     val pendingForDispose = rememberUpdatedState(pendingWifiConnect)
+    val bruteJobForDispose = rememberUpdatedState(bruteJob)
     DisposableEffect(Unit) {
         onDispose {
+            bruteJobForDispose.value?.cancel()
             clearPendingWifiConnect(pendingForDispose.value)
         }
     }
@@ -224,6 +301,14 @@ fun ExperimentWifiScreen(onBack: () -> Unit) {
     @Suppress("DEPRECATION")
     val wifiOn = wifiManager.isWifiEnabled
 
+    fun cancelActiveConnection() {
+        bruteJob?.cancel()
+        bruteJob = null
+        clearPendingWifiConnect(pendingWifiConnect)
+        pendingWifiConnect = null
+        bruteProgress = null
+    }
+
     pickedScan?.let { scan ->
         WifiConnectDialog(
             scan = scan,
@@ -231,8 +316,7 @@ fun ExperimentWifiScreen(onBack: () -> Unit) {
             onConnect = { manualSsid, password ->
                 clearPendingWifiConnect(pendingWifiConnect)
                 pendingWifiConnect = null
-                val cm = appContext.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
-                val cb = requestWifiConnection(appContext, scan, manualSsid, password) { status ->
+                val h = startWifiConnectionRequest(appContext, scan, manualSsid, password) { status ->
                     val msg = when (status) {
                         WifiConnectUiStatus.Unsupported ->
                             appContext.getString(R.string.experiment_wifi_unsupported_security)
@@ -252,10 +336,56 @@ fun ExperimentWifiScreen(onBack: () -> Unit) {
                     }
                     Toast.makeText(appContext, msg, len).show()
                 }
-                if (cb != null) {
-                    pendingWifiConnect = cm to cb
+                if (h != null) {
+                    pendingWifiConnect = h.cm to h.cb
                 }
                 pickedScan = null
+            },
+            onBruteForce = { manualSsid, candidates ->
+                pickedScan = null
+                bruteJob?.cancel()
+                bruteJob = scope.launch {
+                    bruteProgress = 0 to candidates.size
+                    try {
+                        for ((index, pwd) in candidates.withIndex()) {
+                            if (!isActive) break
+                            bruteProgress = (index + 1) to candidates.size
+                            clearPendingWifiConnect(pendingWifiConnect)
+                            pendingWifiConnect = null
+                            val (ok, handle) = tryWifiPassword(appContext, scan, manualSsid, pwd)
+                            if (ok && handle != null) {
+                                pendingWifiConnect = handle.cm to handle.cb
+                                Toast.makeText(
+                                    appContext,
+                                    appContext.getString(R.string.experiment_wifi_brute_ok, pwd),
+                                    Toast.LENGTH_LONG,
+                                ).show()
+                                return@launch
+                            }
+                            if (index < candidates.lastIndex) {
+                                delay(BRUTE_DELAY_MS)
+                            }
+                        }
+                        if (isActive) {
+                            Toast.makeText(
+                                appContext,
+                                appContext.getString(R.string.experiment_wifi_brute_fail),
+                                Toast.LENGTH_LONG,
+                            ).show()
+                        }
+                    } catch (_: CancellationException) {
+                        clearPendingWifiConnect(pendingWifiConnect)
+                        pendingWifiConnect = null
+                        Toast.makeText(
+                            appContext,
+                            appContext.getString(R.string.experiment_wifi_brute_cancelled),
+                            Toast.LENGTH_SHORT,
+                        ).show()
+                    } finally {
+                        bruteProgress = null
+                        bruteJob = null
+                    }
+                }
             },
         )
     }
@@ -333,16 +463,27 @@ fun ExperimentWifiScreen(onBack: () -> Unit) {
                 }
             }
 
-            if (pendingWifiConnect != null) {
+            bruteProgress?.let { (cur, total) ->
+                Text(
+                    text = stringResource(R.string.experiment_wifi_brute_progress, cur, total),
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.primary,
+                )
+                LinearProgressIndicator(Modifier.fillMaxWidth())
+            }
+
+            if (pendingWifiConnect != null || bruteJob?.isActive == true) {
                 OutlinedButton(
                     onClick = {
-                        clearPendingWifiConnect(pendingWifiConnect)
-                        pendingWifiConnect = null
-                        Toast.makeText(
-                            appContext,
-                            appContext.getString(R.string.experiment_wifi_request_cancelled),
-                            Toast.LENGTH_SHORT,
-                        ).show()
+                        val wasBrute = bruteJob?.isActive == true
+                        cancelActiveConnection()
+                        if (!wasBrute) {
+                            Toast.makeText(
+                                appContext,
+                                appContext.getString(R.string.experiment_wifi_request_cancelled),
+                                Toast.LENGTH_SHORT,
+                            ).show()
+                        }
                     },
                     modifier = Modifier.fillMaxWidth(),
                 ) {
@@ -425,21 +566,26 @@ private fun WifiConnectDialog(
     scan: ScanResult,
     onDismiss: () -> Unit,
     onConnect: (manualSsid: String, password: String) -> Unit,
+    onBruteForce: (manualSsid: String, passwords: List<String>) -> Unit,
 ) {
     val security = remember(scan) { scan.apSecurity() }
     var password by remember(scan) { mutableStateOf("") }
     var manualSsid by remember(scan) { mutableStateOf("") }
+    var candidateLines by remember(scan) { mutableStateOf("") }
     var fieldError by remember(scan) { mutableStateOf<String?>(null) }
 
     val titleSsid = scan.displaySsid().ifBlank { stringResource(R.string.experiment_wifi_hidden_ssid) }
     val errPasswordShort = stringResource(R.string.experiment_wifi_error_password_short)
     val errSsidRequired = stringResource(R.string.experiment_wifi_error_ssid_required)
+    val bruteNoCandidates = stringResource(R.string.experiment_wifi_brute_no_candidates)
+    val bruteLimitFmt = stringResource(R.string.experiment_wifi_brute_limit, BRUTE_MAX_PASSWORDS)
+    val scroll = rememberScrollState()
 
     AlertDialog(
         onDismissRequest = onDismiss,
         title = { Text(stringResource(R.string.experiment_wifi_connect_dialog_title)) },
         text = {
-            Column {
+            Column(Modifier.verticalScroll(scroll)) {
                 Text(
                     text = titleSsid,
                     style = MaterialTheme.typography.titleSmall,
@@ -475,6 +621,47 @@ private fun WifiConnectDialog(
                             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
                             modifier = Modifier.fillMaxWidth(),
                         )
+                        Spacer(Modifier.height(10.dp))
+                        Text(
+                            text = stringResource(R.string.experiment_wifi_brute_disclaimer),
+                            style = MaterialTheme.typography.labelSmall,
+                            color = MaterialTheme.colorScheme.error,
+                        )
+                        Spacer(Modifier.height(6.dp))
+                        OutlinedTextField(
+                            value = candidateLines,
+                            onValueChange = { candidateLines = it; fieldError = null },
+                            label = { Text(stringResource(R.string.experiment_wifi_brute_list_hint)) },
+                            minLines = 4,
+                            maxLines = 8,
+                            modifier = Modifier.fillMaxWidth(),
+                        )
+                        Spacer(Modifier.height(8.dp))
+                        OutlinedButton(
+                            onClick = {
+                                fieldError = null
+                                if (scan.displaySsid().isBlank() && manualSsid.isBlank()) {
+                                    fieldError = errSsidRequired
+                                    return@OutlinedButton
+                                }
+                                val list = candidateLines.lines()
+                                    .map { it.trim() }
+                                    .filter { it.length >= 8 }
+                                    .distinct()
+                                if (list.isEmpty()) {
+                                    fieldError = bruteNoCandidates
+                                    return@OutlinedButton
+                                }
+                                if (list.size > BRUTE_MAX_PASSWORDS) {
+                                    fieldError = bruteLimitFmt
+                                    return@OutlinedButton
+                                }
+                                onBruteForce(manualSsid, list)
+                            },
+                            modifier = Modifier.fillMaxWidth(),
+                        ) {
+                            Text(stringResource(R.string.experiment_wifi_brute_run))
+                        }
                     }
                 }
                 fieldError?.let { err ->

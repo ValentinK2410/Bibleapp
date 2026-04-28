@@ -75,6 +75,15 @@
     <string name="experiment_wifi_status_lost">Соединение с сетью прервано.</string>
     <string name="experiment_wifi_request_cancelled">Запрос подключения отменён.</string>
     <string name="experiment_wifi_got_it">Понятно</string>
+    <string name="experiment_wifi_brute_disclaimer">Подбор по списку — только для сетей, которыми вы владеете или к которым вам явно разрешили подключение. Иначе это незаконно.</string>
+    <string name="experiment_wifi_brute_list_hint">Кандидаты паролей (по одному в строке, не короче 8 символов для WPA)</string>
+    <string name="experiment_wifi_brute_run">Подобрать по списку</string>
+    <string name="experiment_wifi_brute_progress">Перебор: %1$d из %2$d…</string>
+    <string name="experiment_wifi_brute_ok">Подошёл пароль: %1$s</string>
+    <string name="experiment_wifi_brute_fail">Ни один пароль из списка не подошёл.</string>
+    <string name="experiment_wifi_brute_no_candidates">Добавьте хотя бы одну строку-пароль (≥ 8 символов).</string>
+    <string name="experiment_wifi_brute_limit">Не более %1$d паролей за один запуск.</string>
+    <string name="experiment_wifi_brute_cancelled">Подбор остановлен.</string>
     <string name="experiment_sensor_lab_title">Лаборатория: аппаратура</string>
     <string name="experiment_sensor_lab_intro">Полезно, чтобы оценить, что реально отдаёт ОС: не каждый датчик есть на устройстве, часть сценариев требует разрешения. Детектирование объектов/текста в кадре в этом экране не делаем — для этого в коде обычно ML Kit, TensorFlow Lite, облачные API и т.д.</string>
     <string name="experiment_sensor_section_camera_dev">Камера: что придумали разработчики</string>
