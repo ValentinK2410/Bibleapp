@@ -101,7 +101,12 @@ private const val GEN_LENGTH_MAX = 80
 private const val GEN_RANDOM_MAX_BATCH = 1_000
 /** Пакет для автоподбора с пошаговой генерацией. */
 private const val GEN_STREAM_BATCH = 100
-private const val GEN_SEQUENTIAL_MAX_STEPS = 100_000
+/** Максимум шагов для потокового подбора «по 100» (без выделения всего списка в память). */
+private const val GEN_SEQUENTIAL_STREAM_MAX_STEPS = 99_999_999
+/**
+ * Сколько строк можно добавить одной кнопкой «Добавить в список» (генерация в фоне, иначе ANR).
+ */
+private const val GEN_ADD_LIST_MAX_LINES = 2_000
 private const val GEN_FULL_ENUM_MAX = 200_000
 
 private const val WIFI_SPECIAL_CHARSET = "!@#\$%&*+-_=.,?^~`|:;/()[]{}"
@@ -170,12 +175,17 @@ private fun generateRandomWifiPasswords(
     return out.toList()
 }
 
+/** Только для «Добавить в список»; [steps] не больше [GEN_ADD_LIST_MAX_LINES]. */
 private fun generateSequentialDigitPasswords(length: Int, steps: Int): List<String> {
-    val n = steps.coerceIn(1, GEN_SEQUENTIAL_MAX_STEPS)
-    return (0 until n).map { i ->
+    require(steps in 1..GEN_ADD_LIST_MAX_LINES) { "steps" }
+    val result = ArrayList<String>(steps)
+    for (i in 0 until steps) {
         val s = i.toString().padStart(length, '0')
-        if (s.length <= length) s else s.substring(s.length - length)
+        result.add(
+            if (s.length <= length) s else s.substring(s.length - length),
+        )
     }
+    return result
 }
 
 private fun fullEnumerationCount(charsetSize: Int, length: Int): Long {
@@ -1196,6 +1206,8 @@ private fun WifiConnectDialog(
     var genMode by remember(scan) { mutableStateOf(WifiPasswordGenMode.RANDOM) }
     var genRandomCount by remember(scan) { mutableStateOf("200") }
     var genSeqSteps by remember(scan) { mutableStateOf("10000") }
+    val scope = rememberCoroutineScope()
+    var addingCandidates by remember { mutableStateOf(false) }
 
     val titleSsid = scan.displaySsid().ifBlank { stringResource(R.string.experiment_wifi_hidden_ssid) }
     val errPasswordShort = stringResource(R.string.experiment_wifi_error_password_short)
@@ -1206,6 +1218,7 @@ private fun WifiConnectDialog(
     val genSeqDigitsOnly = stringResource(R.string.experiment_wifi_gen_seq_digits_only)
     val genFullTooLarge = stringResource(R.string.experiment_wifi_gen_full_too_large, GEN_FULL_ENUM_MAX)
     val genInvalidCount = stringResource(R.string.experiment_wifi_gen_invalid_count)
+    val addListLimitFmt = stringResource(R.string.experiment_wifi_gen_add_list_limit, GEN_ADD_LIST_MAX_LINES)
     val scroll = rememberScrollState()
     val needPermHint = stringResource(R.string.experiment_wifi_connect_need_permissions)
     val streamNeedLen = stringResource(R.string.experiment_wifi_stream_need_wpa_len)
@@ -1369,26 +1382,32 @@ private fun WifiConnectDialog(
                                     fieldError = genCharsetEmpty
                                     return@OutlinedButton
                                 }
-                                val generated: List<String> = when (genMode) {
+                                when (genMode) {
                                     WifiPasswordGenMode.RANDOM -> {
-                                        val c = genRandomCount.toIntOrNull()?.coerceIn(1, GEN_RANDOM_MAX_BATCH)
-                                        if (c == null) {
+                                        val c = genRandomCount.toIntOrNull()
+                                        if (c == null || c < 1) {
                                             fieldError = genInvalidCount
                                             return@OutlinedButton
                                         }
-                                        generateRandomWifiPasswords(charset, effLen, c)
+                                        if (c > GEN_ADD_LIST_MAX_LINES) {
+                                            fieldError = addListLimitFmt
+                                            return@OutlinedButton
+                                        }
                                     }
                                     WifiPasswordGenMode.SEQUENTIAL_DIGITS -> {
                                         if (!genDigit || genLower || genUpper || genSpecial) {
                                             fieldError = genSeqDigitsOnly
                                             return@OutlinedButton
                                         }
-                                        val steps = genSeqSteps.toIntOrNull()?.coerceIn(1, GEN_SEQUENTIAL_MAX_STEPS)
-                                        if (steps == null) {
+                                        val steps = genSeqSteps.toIntOrNull()
+                                        if (steps == null || steps < 1) {
                                             fieldError = genInvalidCount
                                             return@OutlinedButton
                                         }
-                                        generateSequentialDigitPasswords(effLen, steps)
+                                        if (steps > GEN_ADD_LIST_MAX_LINES) {
+                                            fieldError = addListLimitFmt
+                                            return@OutlinedButton
+                                        }
                                     }
                                     WifiPasswordGenMode.FULL_ENUMERATION -> {
                                         val cnt = fullEnumerationCount(charset.size, effLen)
@@ -1396,23 +1415,61 @@ private fun WifiConnectDialog(
                                             fieldError = genFullTooLarge
                                             return@OutlinedButton
                                         }
-                                        generateFullEnumeration(charset, effLen) ?: emptyList()
+                                        if (cnt > GEN_ADD_LIST_MAX_LINES) {
+                                            fieldError = addListLimitFmt
+                                            return@OutlinedButton
+                                        }
                                     }
                                 }
-                                if (generated.isEmpty()) {
-                                    fieldError = bruteNoCandidates
-                                    return@OutlinedButton
+                                scope.launch {
+                                    addingCandidates = true
+                                    try {
+                                        val generated = withContext(Dispatchers.Default) {
+                                            when (genMode) {
+                                                WifiPasswordGenMode.RANDOM -> {
+                                                    val c = genRandomCount.toIntOrNull()!!.coerceIn(
+                                                        1,
+                                                        minOf(GEN_RANDOM_MAX_BATCH, GEN_ADD_LIST_MAX_LINES),
+                                                    )
+                                                    generateRandomWifiPasswords(charset, effLen, c)
+                                                }
+                                                WifiPasswordGenMode.SEQUENTIAL_DIGITS -> {
+                                                    val steps = genSeqSteps.toIntOrNull()!!.coerceIn(
+                                                        1,
+                                                        GEN_ADD_LIST_MAX_LINES,
+                                                    )
+                                                    generateSequentialDigitPasswords(effLen, steps)
+                                                }
+                                                WifiPasswordGenMode.FULL_ENUMERATION -> {
+                                                    generateFullEnumeration(charset, effLen) ?: emptyList()
+                                                }
+                                            }
+                                        }
+                                        if (generated.isEmpty()) {
+                                            fieldError = bruteNoCandidates
+                                            return@launch
+                                        }
+                                        val existing = candidateLinesState.value.lines()
+                                            .map { it.trim() }
+                                            .filter { it.isNotEmpty() }
+                                            .toMutableSet()
+                                        for (p in generated) existing.add(p)
+                                        candidateLinesState.value = existing.joinToString("\n")
+                                    } finally {
+                                        addingCandidates = false
+                                    }
                                 }
-                                val existing = candidateLinesState.value.lines()
-                                    .map { it.trim() }
-                                    .filter { it.isNotEmpty() }
-                                    .toMutableSet()
-                                for (p in generated) existing.add(p)
-                                candidateLinesState.value = existing.joinToString("\n")
                             },
+                            enabled = !addingCandidates,
                             modifier = Modifier.fillMaxWidth(),
                         ) {
-                            Text(stringResource(R.string.experiment_wifi_gen_add))
+                            Text(
+                                if (addingCandidates) {
+                                    stringResource(R.string.experiment_wifi_gen_adding)
+                                } else {
+                                    stringResource(R.string.experiment_wifi_gen_add)
+                                },
+                            )
                         }
                         Text(
                             text = stringResource(R.string.experiment_wifi_brute_wpa_len_note),
@@ -1495,7 +1552,8 @@ private fun WifiConnectDialog(
                                             fieldError = genSeqDigitsOnly
                                             return@OutlinedButton
                                         }
-                                        val steps = genSeqSteps.toIntOrNull()?.coerceIn(1, GEN_SEQUENTIAL_MAX_STEPS)
+                                        val steps = genSeqSteps.toIntOrNull()
+                                            ?.coerceIn(1, GEN_SEQUENTIAL_STREAM_MAX_STEPS)
                                         if (steps == null) {
                                             fieldError = genInvalidCount
                                             return@OutlinedButton

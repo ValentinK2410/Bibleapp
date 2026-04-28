@@ -111,6 +111,8 @@
     <string name="experiment_wifi_gen_count_random">Сколько строк (случайно)</string>
     <string name="experiment_wifi_gen_count_sequential">Сколько шагов (000…, 001…)</string>
     <string name="experiment_wifi_gen_add">Добавить в список</string>
+    <string name="experiment_wifi_gen_adding">Генерация…</string>
+    <string name="experiment_wifi_gen_add_list_limit">За одно нажатие не более %1$d строк (иначе зависание). Для миллионов комбинаций нажмите «Подбирать, генерируя по 100».</string>
     <string name="experiment_wifi_gen_charset_empty">Отметьте хотя бы один набор символов.</string>
     <string name="experiment_wifi_gen_seq_digits_only">Режим «Подряд» — включите только «Цифры».</string>
     <string name="experiment_wifi_gen_full_too_large">Слишком много комбинаций (лимит %1$d). Укоротите алфавит или длину.</string>
