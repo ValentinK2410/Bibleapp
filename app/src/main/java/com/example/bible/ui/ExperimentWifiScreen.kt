@@ -2,6 +2,8 @@ package com.example.bible.ui
 
 import android.Manifest
 import android.annotation.SuppressLint
+import android.content.ClipData
+import android.content.ClipboardManager
 import android.content.Context
 import android.content.pm.PackageManager
 import android.net.ConnectivityManager
@@ -99,6 +101,18 @@ private const val GEN_SEQUENTIAL_MAX_STEPS = 100_000
 private const val GEN_FULL_ENUM_MAX = 200_000
 
 private const val WIFI_SPECIAL_CHARSET = "!@#\$%&*+-_=.,?^~`|:;/()[]{}"
+
+/** Ход перебора паролей по списку: текущий кандидат и сколько ещё в очереди. */
+private data class BruteProgressState(
+    val currentPassword: String,
+    val remainingInList: Int,
+    val initialTotal: Int,
+)
+
+private fun copyTextToClipboard(context: Context, label: String, text: String) {
+    val cm = context.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
+    cm.setPrimaryClip(ClipData.newPlainText(label, text))
+}
 
 private enum class WifiPasswordGenMode {
     RANDOM,
@@ -573,7 +587,8 @@ fun ExperimentWifiScreen(onBack: () -> Unit) {
         mutableStateOf<Pair<ConnectivityManager, ConnectivityManager.NetworkCallback>?>(null)
     }
     var bruteJob by remember { mutableStateOf<Job?>(null) }
-    var bruteProgress by remember { mutableStateOf<Pair<Int, Int>?>(null) }
+    var bruteProgress by remember { mutableStateOf<BruteProgressState?>(null) }
+    var bruteFoundPassword by remember { mutableStateOf<String?>(null) }
     val pendingForDispose = rememberUpdatedState(pendingWifiConnect)
     val bruteJobForDispose = rememberUpdatedState(bruteJob)
     DisposableEffect(Unit) {
@@ -610,6 +625,47 @@ fun ExperimentWifiScreen(onBack: () -> Unit) {
         clearPendingWifiConnect(pendingWifiConnect)
         pendingWifiConnect = null
         bruteProgress = null
+    }
+
+    bruteFoundPassword?.let { foundPwd ->
+        AlertDialog(
+            onDismissRequest = { bruteFoundPassword = null },
+            title = { Text(stringResource(R.string.experiment_wifi_brute_found_title)) },
+            text = {
+                Column {
+                    Text(stringResource(R.string.experiment_wifi_brute_found_body))
+                    Spacer(Modifier.height(8.dp))
+                    Text(
+                        text = foundPwd,
+                        style = MaterialTheme.typography.titleMedium,
+                        color = MaterialTheme.colorScheme.primary,
+                    )
+                }
+            },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        copyTextToClipboard(
+                            appContext,
+                            appContext.getString(R.string.experiment_wifi_clipboard_label_password),
+                            foundPwd,
+                        )
+                        Toast.makeText(
+                            appContext,
+                            appContext.getString(R.string.experiment_wifi_password_copied),
+                            Toast.LENGTH_SHORT,
+                        ).show()
+                    },
+                ) {
+                    Text(stringResource(R.string.experiment_wifi_copy_password))
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { bruteFoundPassword = null }) {
+                    Text(stringResource(R.string.experiment_wifi_brute_dialog_close))
+                }
+            },
+        )
     }
 
     pickedScan?.let { scan ->
@@ -671,26 +727,35 @@ fun ExperimentWifiScreen(onBack: () -> Unit) {
             },
             onBruteForce = { manualSsid, candidates ->
                 pickedScan = null
+                bruteFoundPassword = null
                 bruteJob?.cancel()
                 bruteJob = scope.launch {
-                    bruteProgress = 0 to candidates.size
+                    val remaining = candidates.map { it.trim() }.filter { it.isNotEmpty() }.toMutableList()
+                    val initialTotal = remaining.size
                     try {
-                        for ((index, pwd) in candidates.withIndex()) {
-                            if (!isActive) break
-                            bruteProgress = (index + 1) to candidates.size
+                        while (remaining.isNotEmpty() && isActive) {
+                            val pwd = remaining.first()
+                            bruteProgress = BruteProgressState(
+                                currentPassword = pwd,
+                                remainingInList = remaining.size,
+                                initialTotal = initialTotal,
+                            )
                             clearPendingWifiConnect(pendingWifiConnect)
                             pendingWifiConnect = null
                             val attempt = tryWifiPassword(appContext, scan, manualSsid, pwd)
                             if (attempt.ok && attempt.handle != null) {
                                 pendingWifiConnect = attempt.handle.cm to attempt.handle.cb
+                                bruteProgress = null
+                                bruteFoundPassword = pwd
                                 Toast.makeText(
                                     appContext,
-                                    appContext.getString(R.string.experiment_wifi_brute_ok, pwd),
+                                    appContext.getString(R.string.experiment_wifi_status_ok),
                                     Toast.LENGTH_LONG,
                                 ).show()
                                 return@launch
                             }
-                            if (index < candidates.lastIndex) {
+                            remaining.removeAt(0)
+                            if (remaining.isNotEmpty()) {
                                 delay(BRUTE_DELAY_MS)
                             }
                         }
@@ -804,13 +869,31 @@ fun ExperimentWifiScreen(onBack: () -> Unit) {
                 }
             }
 
-            bruteProgress?.let { (cur, total) ->
+            bruteProgress?.let { st ->
                 Text(
-                    text = stringResource(R.string.experiment_wifi_brute_progress, cur, total),
+                    text = stringResource(R.string.experiment_wifi_brute_trying, st.currentPassword),
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.primary,
                 )
-                LinearProgressIndicator(Modifier.fillMaxWidth())
+                Text(
+                    text = stringResource(
+                        R.string.experiment_wifi_brute_queue,
+                        st.remainingInList,
+                        st.initialTotal,
+                    ),
+                    style = MaterialTheme.typography.labelSmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+                val doneFrac =
+                    if (st.initialTotal > 0) {
+                        (st.initialTotal - st.remainingInList).toFloat() / st.initialTotal
+                    } else {
+                        0f
+                    }
+                LinearProgressIndicator(
+                    progress = { doneFrac },
+                    modifier = Modifier.fillMaxWidth(),
+                )
             }
 
             if (pendingWifiConnect != null) {
