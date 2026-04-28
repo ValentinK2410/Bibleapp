@@ -72,8 +72,12 @@
     <string name="experiment_wifi_error_ssid_required">Укажите SSID скрытой сети.</string>
     <string name="experiment_wifi_unsupported_security">Подключение из приложения не поддерживается для этой сети (WEP, 802.1x и т.п.). Подключитесь через настройки системы.</string>
     <string name="experiment_wifi_status_pending">Запрос подключения отправлен…</string>
-    <string name="experiment_wifi_status_ok">Подключение к точке доступа установлено.</string>
-    <string name="experiment_wifi_status_fail">Не удалось подключиться. Проверьте пароль; на Android 13+ нужны разрешения геолокации и «Wi‑Fi поблизости»; подтвердите системный запрос на подключение, если он появился.</string>
+    <string name="experiment_wifi_status_ok">Wi‑Fi подключён для всего телефона: другие приложения тоже могут пользоваться интернетом через эту сеть (если у роутера есть доступ в интернет).</string>
+    <string name="experiment_wifi_active_connection_hint">Сеть закреплена запросом приложения: телефон может пользоваться ею для интернета. Чтобы снять запрос, нажмите «Отменить запрос».</string>
+    <string name="experiment_wifi_status_fail">Не удалось подключиться. Проверьте пароль; подтвердите системный запрос на подключение, если он появился. Убедитесь, что в настройках приложения включены «Точное местоположение» и (Android 13+) «Устройства Wi‑Fi поблизости».</string>
+    <string name="experiment_wifi_connect_need_permissions">Сначала на экране сканера нажмите «Разрешить доступ» и выдайте геолокацию и (на Android 13+) «Wi‑Fi поблизости».</string>
+    <string name="experiment_wifi_fail_security">Система отклонила запрос: нужны разрешения «Точное местоположение» и на Android 13+ «Устройства Wi‑Fi поблизости». Откройте настройки приложения и включите их.</string>
+    <string name="experiment_wifi_suggestion_sent">Сеть отправлена в систему как предложение. Проверьте уведомление или Настройки → Интернет и подтвердите подключение к этой сети.</string>
     <string name="experiment_wifi_status_lost">Соединение с сетью прервано.</string>
     <string name="experiment_wifi_request_cancelled">Запрос подключения отменён.</string>
     <string name="experiment_wifi_got_it">Понятно</string>
@@ -81,7 +85,7 @@
     <string name="experiment_wifi_brute_list_hint">Список паролей (по одному в строке; для перебора — 8–63 символа)</string>
     <string name="experiment_wifi_brute_run">Подобрать по списку</string>
     <string name="experiment_wifi_brute_progress">Перебор: %1$d из %2$d…</string>
-    <string name="experiment_wifi_brute_ok">Подошёл пароль: %1$s</string>
+    <string name="experiment_wifi_brute_ok">Подошёл пароль: %1$s. Wi‑Fi активен для системы; интернет в приложениях будет доступен, если сеть его обеспечивает.</string>
     <string name="experiment_wifi_brute_fail">Ни один пароль из списка не подошёл.</string>
     <string name="experiment_wifi_brute_no_candidates">В списке нет паролей длиной 8–63 символа (таков лимит WPA2/WPA3).</string>
     <string name="experiment_wifi_brute_limit">Не более %1$d паролей за один запуск.</string>
