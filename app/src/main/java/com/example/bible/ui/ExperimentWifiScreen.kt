@@ -4,21 +4,33 @@ import android.Manifest
 import android.annotation.SuppressLint
 import android.content.Context
 import android.content.pm.PackageManager
+import android.net.ConnectivityManager
+import android.net.MacAddress
+import android.net.Network
+import android.net.NetworkCapabilities
+import android.net.NetworkRequest
 import android.net.wifi.ScanResult
 import android.net.wifi.WifiManager
+import android.net.wifi.WifiNetworkSpecifier
 import android.os.Build
+import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CenterAlignedTopAppBar
@@ -29,21 +41,132 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedButton
+import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat
 import androidx.core.content.ContextCompat.getMainExecutor
 import com.example.bible.R
+import java.util.Locale
+
+private enum class WifiApSecurity {
+    OPEN,
+    WPA2,
+    WPA3,
+    UNSUPPORTED,
+}
+
+private enum class WifiConnectUiStatus {
+    Unsupported,
+    Pending,
+    Available,
+    Unavailable,
+    Lost,
+}
+
+private fun ScanResult.apSecurity(): WifiApSecurity {
+    val c = capabilities.uppercase(Locale.US)
+    if (c.contains("8021X") || c.contains("EAP")) return WifiApSecurity.UNSUPPORTED
+    if (c.contains("WEP")) return WifiApSecurity.UNSUPPORTED
+    if (c.contains("SAE") || c.contains("WPA3")) return WifiApSecurity.WPA3
+    if (c.contains("WPA2") || c.contains("WPA") || c.contains("PSK")) return WifiApSecurity.WPA2
+    return WifiApSecurity.OPEN
+}
+
+@SuppressLint("MissingPermission")
+private fun requestWifiConnection(
+    appContext: Context,
+    scan: ScanResult,
+    manualSsid: String,
+    password: String,
+    onStatus: (WifiConnectUiStatus) -> Unit,
+): ConnectivityManager.NetworkCallback? {
+    val security = scan.apSecurity()
+    if (security == WifiApSecurity.UNSUPPORTED) {
+        onStatus(WifiConnectUiStatus.Unsupported)
+        return null
+    }
+    val cm = appContext.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
+    val builder = WifiNetworkSpecifier.Builder()
+    val ssidFromScan = scan.displaySsid().trim()
+    val ssidManual = manualSsid.trim()
+    val ssid = ssidFromScan.ifBlank { ssidManual }
+    when {
+        ssid.isNotBlank() -> builder.setSsid(ssid)
+        security == WifiApSecurity.OPEN -> {
+            try {
+                builder.setBssid(MacAddress.fromString(scan.BSSID))
+            } catch (_: IllegalArgumentException) {
+                onStatus(WifiConnectUiStatus.Unavailable)
+                return null
+            }
+        }
+        else -> {
+            onStatus(WifiConnectUiStatus.Unavailable)
+            return null
+        }
+    }
+    when (security) {
+        WifiApSecurity.OPEN -> Unit
+        WifiApSecurity.WPA2 -> builder.setWpa2Passphrase(password)
+        WifiApSecurity.WPA3 -> builder.setWpa3Passphrase(password)
+        WifiApSecurity.UNSUPPORTED -> return null
+    }
+    val specifier = try {
+        builder.build()
+    } catch (_: Exception) {
+        onStatus(WifiConnectUiStatus.Unavailable)
+        return null
+    }
+    val request = NetworkRequest.Builder()
+        .addTransportType(NetworkCapabilities.TRANSPORT_WIFI)
+        .setNetworkSpecifier(specifier)
+        .build()
+    val callback = object : ConnectivityManager.NetworkCallback() {
+        override fun onAvailable(network: Network) {
+            onStatus(WifiConnectUiStatus.Available)
+        }
+
+        override fun onUnavailable() {
+            onStatus(WifiConnectUiStatus.Unavailable)
+        }
+
+        override fun onLost(network: Network) {
+            onStatus(WifiConnectUiStatus.Lost)
+        }
+    }
+    try {
+        cm.requestNetwork(request, callback)
+    } catch (_: SecurityException) {
+        onStatus(WifiConnectUiStatus.Unavailable)
+        return null
+    }
+    onStatus(WifiConnectUiStatus.Pending)
+    return callback
+}
+
+private fun clearPendingWifiConnect(
+    pair: Pair<ConnectivityManager, ConnectivityManager.NetworkCallback>?,
+) {
+    pair?.let { (cm, cb) ->
+        runCatching { cm.unregisterNetworkCallback(cb) }
+    }
+}
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -69,6 +192,17 @@ fun ExperimentWifiScreen(onBack: () -> Unit) {
     var scanResults by remember { mutableStateOf<List<ScanResult>>(emptyList()) }
     var scanning by remember { mutableStateOf(false) }
 
+    var pickedScan by remember { mutableStateOf<ScanResult?>(null) }
+    var pendingWifiConnect by remember {
+        mutableStateOf<Pair<ConnectivityManager, ConnectivityManager.NetworkCallback>?>(null)
+    }
+    val pendingForDispose = rememberUpdatedState(pendingWifiConnect)
+    DisposableEffect(Unit) {
+        onDispose {
+            clearPendingWifiConnect(pendingForDispose.value)
+        }
+    }
+
     DisposableEffect(wifiManager, hasFineLocation) {
         if (!hasFineLocation) {
             scanResults = emptyList()
@@ -89,6 +223,42 @@ fun ExperimentWifiScreen(onBack: () -> Unit) {
 
     @Suppress("DEPRECATION")
     val wifiOn = wifiManager.isWifiEnabled
+
+    pickedScan?.let { scan ->
+        WifiConnectDialog(
+            scan = scan,
+            onDismiss = { pickedScan = null },
+            onConnect = { manualSsid, password ->
+                clearPendingWifiConnect(pendingWifiConnect)
+                pendingWifiConnect = null
+                val cm = appContext.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
+                val cb = requestWifiConnection(appContext, scan, manualSsid, password) { status ->
+                    val msg = when (status) {
+                        WifiConnectUiStatus.Unsupported ->
+                            appContext.getString(R.string.experiment_wifi_unsupported_security)
+                        WifiConnectUiStatus.Pending ->
+                            appContext.getString(R.string.experiment_wifi_status_pending)
+                        WifiConnectUiStatus.Available ->
+                            appContext.getString(R.string.experiment_wifi_status_ok)
+                        WifiConnectUiStatus.Unavailable ->
+                            appContext.getString(R.string.experiment_wifi_status_fail)
+                        WifiConnectUiStatus.Lost ->
+                            appContext.getString(R.string.experiment_wifi_status_lost)
+                    }
+                    val len = if (status == WifiConnectUiStatus.Pending) {
+                        Toast.LENGTH_SHORT
+                    } else {
+                        Toast.LENGTH_LONG
+                    }
+                    Toast.makeText(appContext, msg, len).show()
+                }
+                if (cb != null) {
+                    pendingWifiConnect = cm to cb
+                }
+                pickedScan = null
+            },
+        )
+    }
 
     Scaffold(
         topBar = {
@@ -116,6 +286,11 @@ fun ExperimentWifiScreen(onBack: () -> Unit) {
                 text = stringResource(R.string.experiment_wifi_intro),
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+            Text(
+                text = stringResource(R.string.experiment_wifi_tap_to_connect),
+                style = MaterialTheme.typography.labelLarge,
+                color = MaterialTheme.colorScheme.primary,
             )
 
             if (!wifiOn) {
@@ -158,6 +333,23 @@ fun ExperimentWifiScreen(onBack: () -> Unit) {
                 }
             }
 
+            if (pendingWifiConnect != null) {
+                OutlinedButton(
+                    onClick = {
+                        clearPendingWifiConnect(pendingWifiConnect)
+                        pendingWifiConnect = null
+                        Toast.makeText(
+                            appContext,
+                            appContext.getString(R.string.experiment_wifi_request_cancelled),
+                            Toast.LENGTH_SHORT,
+                        ).show()
+                    },
+                    modifier = Modifier.fillMaxWidth(),
+                ) {
+                    Text(stringResource(R.string.experiment_wifi_cancel_connect))
+                }
+            }
+
             if (scanning) {
                 LinearProgressIndicator(Modifier.fillMaxWidth())
             }
@@ -181,7 +373,10 @@ fun ExperimentWifiScreen(onBack: () -> Unit) {
                     items = scanResults,
                     key = { "${it.BSSID}_${it.frequency}_${it.level}_${it.displaySsid()}" },
                 ) { scan ->
-                    WifiScanResultCard(scan = scan)
+                    WifiScanResultCard(
+                        scan = scan,
+                        onClick = { pickedScan = scan },
+                    )
                 }
             }
         }
@@ -226,7 +421,118 @@ private fun wifiChannelFromFrequencyMhz(frequency: Int): String {
 }
 
 @Composable
-private fun WifiScanResultCard(scan: ScanResult) {
+private fun WifiConnectDialog(
+    scan: ScanResult,
+    onDismiss: () -> Unit,
+    onConnect: (manualSsid: String, password: String) -> Unit,
+) {
+    val security = remember(scan) { scan.apSecurity() }
+    var password by remember(scan) { mutableStateOf("") }
+    var manualSsid by remember(scan) { mutableStateOf("") }
+    var fieldError by remember(scan) { mutableStateOf<String?>(null) }
+
+    val titleSsid = scan.displaySsid().ifBlank { stringResource(R.string.experiment_wifi_hidden_ssid) }
+    val errPasswordShort = stringResource(R.string.experiment_wifi_error_password_short)
+    val errSsidRequired = stringResource(R.string.experiment_wifi_error_ssid_required)
+
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = { Text(stringResource(R.string.experiment_wifi_connect_dialog_title)) },
+        text = {
+            Column {
+                Text(
+                    text = titleSsid,
+                    style = MaterialTheme.typography.titleSmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+                Spacer(Modifier.height(8.dp))
+                when (security) {
+                    WifiApSecurity.UNSUPPORTED -> {
+                        Text(stringResource(R.string.experiment_wifi_unsupported_security))
+                    }
+                    WifiApSecurity.OPEN -> {
+                        Text(stringResource(R.string.experiment_wifi_open_network))
+                    }
+                    WifiApSecurity.WPA2,
+                    WifiApSecurity.WPA3,
+                    -> {
+                        if (scan.displaySsid().isBlank()) {
+                            OutlinedTextField(
+                                value = manualSsid,
+                                onValueChange = { manualSsid = it; fieldError = null },
+                                label = { Text(stringResource(R.string.experiment_wifi_ssid_manual)) },
+                                singleLine = true,
+                                modifier = Modifier.fillMaxWidth(),
+                            )
+                            Spacer(Modifier.height(8.dp))
+                        }
+                        OutlinedTextField(
+                            value = password,
+                            onValueChange = { password = it; fieldError = null },
+                            label = { Text(stringResource(R.string.experiment_wifi_password)) },
+                            singleLine = true,
+                            visualTransformation = PasswordVisualTransformation(),
+                            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
+                            modifier = Modifier.fillMaxWidth(),
+                        )
+                    }
+                }
+                fieldError?.let { err ->
+                    Spacer(Modifier.height(8.dp))
+                    Text(err, color = MaterialTheme.colorScheme.error, style = MaterialTheme.typography.bodySmall)
+                }
+            }
+        },
+        confirmButton = {
+            when (security) {
+                WifiApSecurity.UNSUPPORTED -> {
+                    TextButton(onClick = onDismiss) {
+                        Text(stringResource(R.string.experiment_wifi_got_it))
+                    }
+                }
+                else -> {
+                    TextButton(
+                        onClick = {
+                            fieldError = null
+                            when (security) {
+                                WifiApSecurity.OPEN -> onConnect("", "")
+                                WifiApSecurity.WPA2,
+                                WifiApSecurity.WPA3,
+                                -> {
+                                    if (password.length < 8) {
+                                        fieldError = errPasswordShort
+                                        return@TextButton
+                                    }
+                                    if (scan.displaySsid().isBlank() && manualSsid.isBlank()) {
+                                        fieldError = errSsidRequired
+                                        return@TextButton
+                                    }
+                                    onConnect(manualSsid, password)
+                                }
+                                WifiApSecurity.UNSUPPORTED -> Unit
+                            }
+                        },
+                    ) {
+                        Text(stringResource(R.string.experiment_wifi_connect))
+                    }
+                }
+            }
+        },
+        dismissButton = {
+            if (security != WifiApSecurity.UNSUPPORTED) {
+                TextButton(onClick = onDismiss) {
+                    Text(stringResource(R.string.experiment_wifi_cancel))
+                }
+            }
+        },
+    )
+}
+
+@Composable
+private fun WifiScanResultCard(
+    scan: ScanResult,
+    onClick: () -> Unit,
+) {
     val ssidRaw = scan.displaySsid()
     val title = if (ssidRaw.isBlank()) {
         stringResource(R.string.experiment_wifi_hidden_ssid)
@@ -237,7 +543,9 @@ private fun WifiScanResultCard(scan: ScanResult) {
     val signalLabel = stringResource(R.string.experiment_wifi_signal_dbm)
     val channelLabel = stringResource(R.string.experiment_wifi_channel)
     Card(
-        modifier = Modifier.fillMaxWidth(),
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable(onClick = onClick),
         colors = CardDefaults.cardColors(
             containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.42f),
         ),
