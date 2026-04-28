@@ -83,6 +83,7 @@
     <string name="experiment_wifi_got_it">Понятно</string>
     <string name="experiment_wifi_brute_disclaimer">Подбор по списку — только для сетей, которыми вы владеете или к которым вам явно разрешили подключение. Иначе это незаконно.</string>
     <string name="experiment_wifi_brute_list_hint">Список паролей (по одному в строке; для перебора — 8–63 символа)</string>
+    <string name="experiment_wifi_clear_list">Очистить список</string>
     <string name="experiment_wifi_brute_run">Подобрать по списку</string>
     <string name="experiment_wifi_stream_brute_run">Подбирать, генерируя по 100 (список пополняется, неудачные убираются)</string>
     <string name="experiment_wifi_stream_need_wpa_len">Для автогенерации выставьте длину пароля не меньше 8 символов (требование WPA2/WPA3).</string>

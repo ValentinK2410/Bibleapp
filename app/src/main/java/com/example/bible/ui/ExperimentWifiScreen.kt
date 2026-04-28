@@ -1506,7 +1506,20 @@ private fun WifiConnectDialog(
                             style = MaterialTheme.typography.labelSmall,
                             color = MaterialTheme.colorScheme.onSurfaceVariant,
                         )
-                        Spacer(Modifier.height(8.dp))
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.End,
+                        ) {
+                            TextButton(
+                                onClick = {
+                                    candidateLinesState.value = ""
+                                    fieldError = null
+                                },
+                                enabled = candidateLinesState.value.isNotBlank(),
+                            ) {
+                                Text(stringResource(R.string.experiment_wifi_clear_list))
+                            }
+                        }
                         OutlinedTextField(
                             value = candidateLinesState.value,
                             onValueChange = { candidateLinesState.value = it; fieldError = null },
