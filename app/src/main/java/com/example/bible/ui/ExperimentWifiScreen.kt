@@ -90,9 +90,16 @@ import kotlinx.coroutines.TimeoutCancellationException
 import kotlin.coroutines.resume
 import kotlin.math.roundToInt
 
-/** Один запрос подключения: на части устройств ассоциация занимает дольше 15–20 с. */
+/** Один запрос подключения из диалога «Подключиться»: надёжный таймаут. */
 private const val BRUTE_ATTEMPT_TIMEOUT_MS = 42_000L
-private const val BRUTE_DELAY_MS = 2_500L
+/**
+ * Перебор паролей: быстрее отрубаем зависшие попытки (часто отказ при неверном PSK приходит за несколько секунд).
+ */
+private const val BRUTE_FAST_ATTEMPT_TIMEOUT_MS = 18_000L
+/** Короткая пауза между двумя подпопытками перебора (с BSSID / без). */
+private const val BRUTE_FAST_SUB_DELAY_MS = 400L
+/** Пауза между разными паролями при переборе (радиомодулю нужно время сбросить запрос). */
+private const val BRUTE_DELAY_MS = 700L
 private const val BRUTE_MAX_PASSWORDS = 500
 private const val WPA_PSK_MIN_LEN = 8
 private const val WPA_PSK_MAX_LEN = 63
@@ -466,11 +473,12 @@ private suspend fun trySingleWifiConnect(
     password: String,
     linkSecurity: WifiApSecurity,
     attachBssid: Boolean = true,
+    attemptTimeoutMs: Long = BRUTE_ATTEMPT_TIMEOUT_MS,
 ): WifiLinkOutcome = withContext(Dispatchers.Main.immediate) {
     var handle: WifiRequestHandle? = null
     var permissionDenied = false
     val ok = try {
-        withTimeout(BRUTE_ATTEMPT_TIMEOUT_MS) {
+        withTimeout(attemptTimeoutMs) {
             suspendCancellableCoroutine { cont ->
                 val finished = AtomicBoolean(false)
                 fun finishFail() {
@@ -531,6 +539,8 @@ private suspend fun connectWithWpaFallback(
     manualSsid: String,
     password: String,
     postSuggestionIfAllFail: Boolean = true,
+    /** Только для перебора: меньше таймаут, 2 попытки (BSSID / без), без смены WPA2↔WPA3. */
+    bruteFastMode: Boolean = false,
 ): WifiLinkOutcome {
     val pwd = password.trim()
     val primary = scan.preferredLinkSecurity()
@@ -545,6 +555,7 @@ private suspend fun connectWithWpaFallback(
             pwd,
             WifiApSecurity.OPEN,
             attachBssid = true,
+            attemptTimeoutMs = if (bruteFastMode) BRUTE_FAST_ATTEMPT_TIMEOUT_MS else BRUTE_ATTEMPT_TIMEOUT_MS,
         )
     }
 
@@ -552,10 +563,28 @@ private suspend fun connectWithWpaFallback(
     suspend fun runAttempt(
         sec: WifiApSecurity,
         attachBssid: Boolean,
+        timeoutMs: Long = BRUTE_ATTEMPT_TIMEOUT_MS,
     ): WifiLinkOutcome {
-        val o = trySingleWifiConnect(appContext, scan, manualSsid, pwd, sec, attachBssid)
+        val o = trySingleWifiConnect(
+            appContext,
+            scan,
+            manualSsid,
+            pwd,
+            sec,
+            attachBssid,
+            attemptTimeoutMs = timeoutMs,
+        )
         if (o.permissionDenied) anyPermDenied = true
         return o
+    }
+
+    if (bruteFastMode) {
+        var r = runAttempt(primary, attachBssid = true, timeoutMs = BRUTE_FAST_ATTEMPT_TIMEOUT_MS)
+        if (r.ok) return r
+        delay(BRUTE_FAST_SUB_DELAY_MS)
+        r = runAttempt(primary, attachBssid = false, timeoutMs = BRUTE_FAST_ATTEMPT_TIMEOUT_MS)
+        if (r.ok) return r
+        return WifiLinkOutcome(false, null, permissionDenied = anyPermDenied, networkSuggestionPosted = false)
     }
 
     var r = runAttempt(primary, attachBssid = true)
@@ -603,6 +632,7 @@ private suspend fun tryWifiPassword(
         manualSsid,
         password,
         postSuggestionIfAllFail = false,
+        bruteFastMode = true,
     )
 
 private fun clearPendingWifiConnect(
