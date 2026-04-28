@@ -5,7 +5,9 @@
 (com.example.bible.sqlite), чтобы перенести файлы на устройство (adb push).
 
 Важно:
-  • Объём — многие ГБ; не для включения в Git/APK.
+  • Объём — многие ГБ; в Git обычно не коммитят. Для вшивания в APK без сети скопируйте
+    дерево bible_audio в app/src/main/assets/bible_audio/ (те же пути, что в
+    BibleAudio.kt: bible_audio/<narratorId>/<book>_<chapter>.mp3).
   • Права на распространение озвучек — у правообладателей источников (4bbl.ru,
     WordProject, Mechon Mamre, alquran.cloud и т.д.). Скрипт только повторяет
     публичные URL, как в BibleAudio.kt / QuranAyahAudioApi.

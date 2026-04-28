@@ -1,6 +1,7 @@
 package com.example.bible.data
 
 import android.content.Context
+import android.content.res.AssetFileDescriptor
 import android.media.PlaybackParams
 import android.media.MediaPlayer
 import android.os.Build
@@ -16,6 +17,7 @@ import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.withContext
 import java.io.File
+import java.io.FileOutputStream
 import java.net.HttpURLConnection
 import java.net.URL
 
@@ -249,9 +251,34 @@ fun localAudioFile(context: Context, narratorId: String, bookId: String, chapter
     return File(dir, "${bookNum}_${chapNum}.mp3")
 }
 
+/**
+ * Путь к MP3 в assets: `bible_audio/{narratorId}/{bookNum}_{chapter}.mp3` — как у кэша в [localAudioFile].
+ * Положите файлы в `app/src/main/assets/…` перед сборкой релиза, чтобы озвучка шла без скачивания.
+ */
+fun bibleChapterAudioAssetPath(narratorId: String, bookId: String, chapter: Int): String? {
+    val bookNum = bookAudioNumber(narratorId, bookId) ?: return null
+    val chapNum = "%02d".format(chapter)
+    return "bible_audio/$narratorId/${bookNum}_$chapNum.mp3"
+}
+
+fun openBundledBibleChapterAudio(
+    context: Context,
+    narratorId: String,
+    bookId: String,
+    chapter: Int,
+): AssetFileDescriptor? {
+    val path = bibleChapterAudioAssetPath(narratorId, bookId, chapter) ?: return null
+    return try {
+        context.assets.openFd(path)
+    } catch (_: Exception) {
+        null
+    }
+}
+
 fun isChapterDownloaded(context: Context, narratorId: String, bookId: String, chapter: Int): Boolean {
     val f = localAudioFile(context, narratorId, bookId, chapter)
-    return f.exists() && f.length() > 1024
+    if (f.exists() && f.length() > 1024) return true
+    return openBundledBibleChapterAudio(context, narratorId, bookId, chapter)?.use { true } ?: false
 }
 
 fun downloadedChapters(context: Context, narratorId: String, bookId: String): Set<Int> {
@@ -465,22 +492,38 @@ object BibleAudioPlayer {
         )
 
         val local = localAudioFile(context, narrator.id, bookId, chapter)
-        val source = when {
-            local.exists() && local.length() > 1024 -> local.absolutePath
-            narrator.id == "web" -> webChapterAudioUrl(bookId, chapter)
-            narrator.id == "hebrew-ot" -> hebrewOtChapterAudioUrl(bookId, chapter)
-            narrator.id == "greek-nt" -> greekNtChapterAudioUrl(bookId, chapter)
-            else -> chapterAudioUrl(narrator, bookId, chapter)
+        val bundledAfd = if (local.exists() && local.length() > 1024) {
+            null
+        } else {
+            openBundledBibleChapterAudio(context, narrator.id, bookId, chapter)
+        }
+        val remoteUrl: String? = if ((local.exists() && local.length() > 1024) || bundledAfd != null) {
+            null
+        } else {
+            when {
+                narrator.id == "web" -> webChapterAudioUrl(bookId, chapter)
+                narrator.id == "hebrew-ot" -> hebrewOtChapterAudioUrl(bookId, chapter)
+                narrator.id == "greek-nt" -> greekNtChapterAudioUrl(bookId, chapter)
+                else -> chapterAudioUrl(narrator, bookId, chapter)
+            }
         }
 
-        if (source == null) {
-            _state.value = _state.value.copy(isLoading = false, error = "Аудио недоступно")
-            return
+        if (!local.exists() || local.length() <= 1024) {
+            if (bundledAfd == null && remoteUrl == null) {
+                _state.value = _state.value.copy(isLoading = false, error = "Аудио недоступно")
+                return
+            }
         }
 
         try {
             val mp = MediaPlayer()
-            mp.setDataSource(source)
+            when {
+                local.exists() && local.length() > 1024 -> mp.setDataSource(local.absolutePath)
+                bundledAfd != null -> bundledAfd.use {
+                    mp.setDataSource(it.fileDescriptor, it.startOffset, it.length)
+                }
+                else -> mp.setDataSource(remoteUrl!!)
+            }
             mp.setOnPreparedListener { prepared ->
                 applyPlaybackSpeed(prepared)
                 prepared.start()
@@ -598,6 +641,23 @@ object BibleAudioPlayer {
         if (dest.exists() && dest.length() > 1024) {
             onProgress(100)
             return@withContext dest
+        }
+
+        val assetPath = bibleChapterAudioAssetPath(narrator.id, bookId, chapter)
+        if (assetPath != null) {
+            try {
+                dest.parentFile?.mkdirs()
+                context.assets.open(assetPath).use { input ->
+                    FileOutputStream(dest).use { output -> input.copyTo(output) }
+                }
+                if (dest.length() > 1024) {
+                    onProgress(100)
+                    _downloadTick.value++
+                    return@withContext dest
+                }
+            } catch (_: Exception) {
+                runCatching { dest.delete() }
+            }
         }
 
         val url = when {

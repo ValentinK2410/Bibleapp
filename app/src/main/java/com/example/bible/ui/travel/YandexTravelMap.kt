@@ -11,6 +11,8 @@ import android.graphics.Bitmap
 import android.graphics.Canvas
 import android.graphics.Color
 import android.graphics.Paint
+import android.graphics.Path
+import android.graphics.PointF
 import android.graphics.RectF
 import android.graphics.Typeface
 import android.os.Looper
@@ -87,9 +89,12 @@ import com.yandex.mapkit.geometry.Polygon
 import com.yandex.mapkit.map.CameraListener
 import com.yandex.mapkit.map.CameraPosition
 import com.yandex.mapkit.map.CameraUpdateReason
+import com.yandex.mapkit.map.IconStyle
 import com.yandex.mapkit.map.InputListener
 import com.yandex.mapkit.map.Map
 import com.yandex.mapkit.map.MapObjectCollection
+import com.yandex.mapkit.map.PlacemarkMapObject
+import com.yandex.mapkit.map.RotationType
 import com.yandex.mapkit.map.TextStyle
 import com.yandex.mapkit.mapview.MapView
 import com.yandex.runtime.Error
@@ -452,6 +457,9 @@ private fun YandexTravelMapContent(
     val zoneAudioBadgeIcon = remember(context) {
         zoneAudioBadgeImageProvider(context)
     }
+    val userNavArrowIcon = remember(context) {
+        userNavigationArrowImageProvider(context)
+    }
 
     val onTapState = rememberUpdatedState(onMapTap)
     val inputListener = remember(scope, hideRecenterFabJob) {
@@ -527,9 +535,10 @@ private fun YandexTravelMapContent(
         }
     }
 
-    LaunchedEffect(userLocationEnabled, headingModeActive, userLocationLayer) {
+    LaunchedEffect(userLocationEnabled, headingModeActive, followUserActive, userLocationLayer) {
         val layer = userLocationLayer ?: return@LaunchedEffect
-        layer.isVisible = userLocationEnabled
+        val useSmoothedFollowPin = userLocationEnabled && headingModeActive && followUserActive
+        layer.isVisible = userLocationEnabled && !useSmoothedFollowPin
         if (userLocationEnabled) {
             // Поворот и центрирование задаём сами (компас + bearing), иначе дублируется с UserLocationLayer.
             layer.isHeadingModeActive = false
@@ -550,6 +559,7 @@ private fun YandexTravelMapContent(
         incidentPlaceMode,
         followUserActive,
         mapView,
+        userNavArrowIcon,
     ) {
         // Скорость: пока тапаем маршрут/инцидент, не подписываемся на GPS, чтобы не мешать.
         if (!userLocationEnabled || !hasFineLocation || routePickMode || incidentPlaceMode) {
@@ -565,6 +575,22 @@ private fun YandexTravelMapContent(
         val followTargets = TravelFollowCameraTargets()
         var gpsTargetReady = false
         val choreographer = Choreographer.getInstance()
+        var smoothFollowUserColl: MapObjectCollection? = null
+        var smoothFollowUserPin: PlacemarkMapObject? = null
+        if (followCamera) {
+            val map = mapView.mapWindow.map
+            val coll = map.mapObjects.addCollection().apply { zIndex = 7.35f }
+            smoothFollowUserColl = coll
+            val pm = coll.addPlacemark(Point(0.0, 0.0), userNavArrowIcon)
+            pm.setIconStyle(
+                IconStyle().apply {
+                    anchor = PointF(0.5f, 0.5f)
+                    rotationType = RotationType.ROTATE
+                    scale = 1.08f
+                },
+            )
+            smoothFollowUserPin = pm
+        }
         val frameCallback = object : Choreographer.FrameCallback {
             override fun doFrame(frameTimeNanos: Long) {
                 if (!followCamera) return
@@ -596,6 +622,8 @@ private fun YandexTravelMapContent(
                 followTargets.dZoom += (followTargets.tZoom - followTargets.dZoom) * aZm
                 followTargets.dAzimuth = lerpAngleDegrees(followTargets.dAzimuth, followTargets.tAzimuth, aAng)
                 followTargets.dTilt += (followTargets.tTilt - followTargets.dTilt) * aAng
+                smoothFollowUserPin?.geometry = Point(followTargets.dLat, followTargets.dLon)
+                smoothFollowUserPin?.direction = followTargets.dAzimuth
                 map.move(
                     CameraPosition(
                         Point(followTargets.dLat, followTargets.dLon),
@@ -705,6 +733,11 @@ private fun YandexTravelMapContent(
         client.requestLocationUpdates(request, callback, Looper.getMainLooper())
         onDispose {
             choreographer.removeFrameCallback(frameCallback)
+            smoothFollowUserColl?.let { coll ->
+                runCatching { mapView.mapWindow.map.mapObjects.remove(coll) }
+            }
+            smoothFollowUserColl = null
+            smoothFollowUserPin = null
             if (followCamera && rotationSensor != null) {
                 sensorManager.unregisterListener(sensorListener)
             }
@@ -1179,6 +1212,36 @@ private fun redrawZoneOverlays(
         poly.strokeColor = 0xFFFF9800.toInt()
         poly.fillColor = 0x44FF9800.toInt()
     }
+}
+
+/**
+ * Стрелка вверх по bitmap: при [RotationType.ROTATE] и direction, совпадающем с азимутом камеры,
+ * метка визуально совпадает с режимом навигатора (нет «ползущего» нативного GPS-пина).
+ */
+private fun userNavigationArrowImageProvider(context: android.content.Context): ImageProvider {
+    val d = (52 * context.resources.displayMetrics.density).toInt().coerceIn(44, 88)
+    val bmp = Bitmap.createBitmap(d, d, Bitmap.Config.ARGB_8888)
+    val canvas = Canvas(bmp)
+    val cx = d / 2f
+    val cy = d / 2f
+    val tri = Path().apply {
+        moveTo(cx, cy - d * 0.38f)
+        lineTo(cx - d * 0.24f, cy + d * 0.28f)
+        lineTo(cx + d * 0.24f, cy + d * 0.28f)
+        close()
+    }
+    val fill = Paint(Paint.ANTI_ALIAS_FLAG).apply {
+        color = 0xFF1E88E5.toInt()
+        style = Paint.Style.FILL
+    }
+    val stroke = Paint(Paint.ANTI_ALIAS_FLAG).apply {
+        color = Color.WHITE
+        style = Paint.Style.STROKE
+        strokeWidth = d * 0.08f
+    }
+    canvas.drawPath(tri, fill)
+    canvas.drawPath(tri, stroke)
+    return ImageProvider.fromBitmap(bmp)
 }
 
 private fun incidentPinImageProvider(context: android.content.Context): ImageProvider {
