@@ -605,8 +605,10 @@
     <string name="backup_opt_bible_audio">Скачанная озвучка глав (может быть очень тяжёлой)</string>
     <string name="backup_export_nothing_selected">Отметьте хотя бы один пункт</string>
     <string name="backup_done">Копия сохранена</string>
-    <string name="backup_import_ok">Данные восстановлены</string>
-    <string name="backup_import_fail">Не удалось импортировать</string>
+    <string name="backup_import_ok">Импорт завершён: данные восстановлены</string>
+    <string name="backup_import_fail">Импорт не выполнен: проверьте, что это ZIP резервной копии этого приложения</string>
+    <string name="backup_import_pick_file">Выберите ZIP-архив в проводнике</string>
+    <string name="backup_import_working">Идёт импорт… Подождите (большие архивы с озвучкой могут занять несколько минут).</string>
     <string name="bookmarks_tags">Теги</string>
     <string name="bookmarks_filter_all">Все</string>
     <string name="font_decrease">Уменьшить шрифт</string>

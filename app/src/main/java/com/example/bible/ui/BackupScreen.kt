@@ -22,6 +22,7 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
@@ -82,18 +83,37 @@ fun BackupScreen(
     var timemark by remember { mutableStateOf(true) }
     var verseAttachments by remember { mutableStateOf(true) }
     var bibleAudio by remember { mutableStateOf(false) }
+    var importInProgress by remember { mutableStateOf(false) }
 
     val importLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.OpenDocument(),
     ) { uri ->
         if (uri == null) return@rememberLauncherForActivityResult
         scope.launch {
-            val ok = withContext(Dispatchers.IO) {
-                context.contentResolver.openInputStream(uri)?.use { input ->
+            importInProgress = true
+            Toast.makeText(
+                context,
+                context.getString(R.string.backup_import_working),
+                Toast.LENGTH_LONG,
+            ).show()
+            val ok = try {
+                withContext(Dispatchers.IO) {
+                    val stream = context.contentResolver.openInputStream(uri)
+                        ?: return@withContext false
                     val tmp = java.io.File(context.cacheDir, "import_${System.currentTimeMillis()}.zip")
-                    tmp.outputStream().use { out -> input.copyTo(out) }
-                    importZip(tmp)
-                } ?: false
+                    try {
+                        stream.use { input ->
+                            tmp.outputStream().use { out -> input.copyTo(out) }
+                        }
+                        importZip(tmp)
+                    } finally {
+                        tmp.delete()
+                    }
+                }
+            } catch (_: Exception) {
+                false
+            } finally {
+                importInProgress = false
             }
             Toast.makeText(
                 context,
@@ -137,6 +157,16 @@ fun BackupScreen(
                 .padding(16.dp)
                 .verticalScroll(rememberScrollState()),
         ) {
+            if (importInProgress) {
+                LinearProgressIndicator(Modifier.fillMaxWidth())
+                Spacer(Modifier.height(8.dp))
+                Text(
+                    stringResource(R.string.backup_import_working),
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.primary,
+                )
+                Spacer(Modifier.height(12.dp))
+            }
             Text(
                 stringResource(R.string.backup_hint),
                 style = MaterialTheme.typography.bodyMedium,
@@ -182,6 +212,7 @@ fun BackupScreen(
                         shareZip(file)
                     }
                 },
+                enabled = !importInProgress,
                 modifier = Modifier.fillMaxWidth(),
             ) {
                 Text(stringResource(R.string.backup_export))
@@ -196,6 +227,7 @@ fun BackupScreen(
                         shareZip(file)
                     }
                 },
+                enabled = !importInProgress,
                 modifier = Modifier.fillMaxWidth(),
             ) {
                 Text(stringResource(R.string.backup_export_full_legacy))
@@ -203,8 +235,19 @@ fun BackupScreen(
             Spacer(Modifier.height(8.dp))
             Button(
                 onClick = {
-                    importLauncher.launch(arrayOf("application/zip"))
+                    Toast.makeText(
+                        context,
+                        context.getString(R.string.backup_import_pick_file),
+                        Toast.LENGTH_SHORT,
+                    ).show()
+                    importLauncher.launch(
+                        arrayOf(
+                            "application/zip",
+                            "application/x-zip-compressed",
+                        ),
+                    )
                 },
+                enabled = !importInProgress,
                 modifier = Modifier.fillMaxWidth(),
             ) {
                 Text(stringResource(R.string.backup_import))
