@@ -568,7 +568,6 @@ object AppDataExport {
                 var dsFull: JSONObject? = null
                 var dsSettings: JSONObject? = null
                 var dsUser: JSONObject? = null
-                val fileEntries = mutableListOf<Pair<String, ByteArray>>()
 
                 ZipInputStream(FileInputStream(zipFile)).use { zis ->
                     var entry = zis.nextEntry
@@ -594,12 +593,27 @@ object AppDataExport {
                             }
                             name == "verse_attachments_index.json" -> {
                                 val bytes = zis.readBytes()
-                                File(context.filesDir, "verse_attachments_index.json").writeBytes(bytes)
+                                safeChildFile(context.filesDir, "verse_attachments_index.json")?.let { idx ->
+                                    idx.parentFile?.mkdirs()
+                                    idx.writeBytes(bytes)
+                                }
                             }
                             name.startsWith("files/") -> {
-                                val bytes = zis.readBytes()
                                 val rel = name.removePrefix("files/")
-                                fileEntries.add(rel to bytes)
+                                    .replace('\\', '/')
+                                    .trimStart('/')
+                                val target = safeChildFile(context.filesDir, rel)
+                                if (target == null) {
+                                    zis.drainZipEntry()
+                                } else if (entry.isDirectory) {
+                                    target.mkdirs()
+                                    zis.drainZipEntry()
+                                } else {
+                                    target.parentFile?.mkdirs()
+                                    FileOutputStream(target).use { out ->
+                                        zis.copyTo(out, bufferSize = 256 * 1024)
+                                    }
+                                }
                             }
                             else -> zis.drainZipEntry()
                         }
@@ -609,21 +623,17 @@ object AppDataExport {
 
                 if (manifest == null && dsFull != null) {
                     preferences.replaceAllFromJson(dsFull)
-                    extractFiles(context, fileEntries)
                     VerseAttachmentStore.invalidateCache()
                     return@withContext true
                 }
 
                 if (manifest != null && manifest!!.optBoolean("fullDataStore", false) && dsFull != null) {
                     preferences.replaceAllFromJson(dsFull)
-                    extractFiles(context, fileEntries)
                     VerseAttachmentStore.invalidateCache()
                     return@withContext true
                 }
 
                 if (manifest == null) return@withContext false
-
-                extractFiles(context, fileEntries)
 
                 dsSettings?.let { preferences.mergePreferencesFromJson(it) }
                 dsUser?.let { jo ->
@@ -638,7 +648,7 @@ object AppDataExport {
 
                 VerseAttachmentStore.invalidateCache()
                 true
-            } catch (_: Exception) {
+            } catch (_: Throwable) {
                 false
             }
         }
@@ -652,11 +662,21 @@ object AppDataExport {
         }
     }
 
-    private fun extractFiles(context: Context, entries: List<Pair<String, ByteArray>>) {
-        for ((rel, bytes) in entries) {
-            val out = File(context.filesDir, rel)
-            out.parentFile?.mkdirs()
-            out.writeBytes(bytes)
+    /**
+     * Путь внутри [filesDir] без выхода за пределы каталога (защита от `../` в ZIP).
+     */
+    private fun safeChildFile(filesDir: File, relativePath: String): File? {
+        if (relativePath.isBlank()) return null
+        val norm = relativePath.replace('\\', '/').trimStart('/')
+        if (norm.contains("..")) return null
+        return try {
+            val base = filesDir.canonicalFile
+            val child = File(filesDir, norm).canonicalFile
+            val basePath = base.path
+            val childPath = child.path
+            if (childPath == basePath || childPath.startsWith("$basePath/")) child else null
+        } catch (_: Exception) {
+            null
         }
     }
 
