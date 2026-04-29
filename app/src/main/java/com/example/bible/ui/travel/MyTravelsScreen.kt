@@ -43,6 +43,7 @@ import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.RadioButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Slider
+import androidx.compose.material3.SmallFloatingActionButton
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -95,6 +96,30 @@ import kotlinx.coroutines.tasks.await
 import kotlinx.coroutines.withContext
 import java.util.Locale
 import kotlin.math.max
+import androidx.camera.core.ImageCapture
+import androidx.compose.foundation.background
+import androidx.compose.foundation.border
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.filled.CameraAlt
+import androidx.compose.material.icons.filled.SkipNext
+import androidx.compose.material.icons.filled.Stop
+import androidx.compose.material.icons.filled.VideoLibrary
+import androidx.compose.runtime.mutableStateListOf
+import androidx.compose.runtime.rememberUpdatedState
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.layout.ContentScale
+import coil.compose.AsyncImage
+import com.example.bible.data.travel.TravelPhotoStorage
+import com.example.bible.data.travel.TravelRoutePhotoPoint
+import com.example.bible.data.travel.TravelRoutePhotoSession
+import com.example.bible.data.travel.nearestRoutePhotoPoint
+import java.util.UUID
+import java.util.concurrent.Executors
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -132,7 +157,35 @@ fun MyTravelsScreen(
     val pendingCircleRecenterZoneId by vm.pendingCircleRecenterZoneId.collectAsStateWithLifecycle()
     val polygonRedraftZoneId by vm.polygonRedraftZoneId.collectAsStateWithLifecycle()
     val zonePropertiesEditId by vm.zonePropertiesEditId.collectAsStateWithLifecycle()
+    val routePhotoSessions by vm.routePhotoSessions.collectAsStateWithLifecycle()
+    val routeBurstActive by vm.routeBurstActive.collectAsStateWithLifecycle()
+    val routePlaybackActive by vm.routePlaybackActive.collectAsStateWithLifecycle()
+    val routePlaybackSessionIndex by vm.routePlaybackSessionIndex.collectAsStateWithLifecycle()
+    val lastUserGeo by vm.lastUserGeo.collectAsStateWithLifecycle()
     val scope = rememberCoroutineScope()
+
+    var burstSessionIdLocal by remember { mutableStateOf<String?>(null) }
+    val burstDraftPoints = remember { mutableStateListOf<TravelRoutePhotoPoint>() }
+    var burstImageCapture by remember { mutableStateOf<ImageCapture?>(null) }
+    val burstCaptureExecutor = remember { Executors.newSingleThreadExecutor() }
+    DisposableEffect(Unit) {
+        onDispose { burstCaptureExecutor.shutdown() }
+    }
+
+    var camGranted by remember {
+        mutableStateOf(
+            ContextCompat.checkSelfPermission(context, Manifest.permission.CAMERA) ==
+                PackageManager.PERMISSION_GRANTED,
+        )
+    }
+    val camPermLauncher = rememberLauncherForActivityResult(
+        ActivityResultContracts.RequestPermission(),
+    ) { ok ->
+        camGranted = ok
+        if (!ok) {
+            Toast.makeText(context, R.string.travel_camera_permission_denied, Toast.LENGTH_LONG).show()
+        }
+    }
     val lifecycleOwner = LocalLifecycleOwner.current
 
     val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
@@ -186,6 +239,10 @@ fun MyTravelsScreen(
         val observer = LifecycleEventObserver { _, event ->
             if (event == Lifecycle.Event.ON_RESUME) {
                 refreshLocationPermissions()
+                camGranted = ContextCompat.checkSelfPermission(
+                    context,
+                    Manifest.permission.CAMERA,
+                ) == PackageManager.PERMISSION_GRANTED
             }
         }
         lifecycleOwner.lifecycle.addObserver(observer)
@@ -261,6 +318,75 @@ fun MyTravelsScreen(
         showFloatingToolbar = true
         delay(4200)
         showFloatingToolbar = false
+    }
+
+    val burstActiveRef = rememberUpdatedState(routeBurstActive)
+    val burstSidRef = rememberUpdatedState(burstSessionIdLocal)
+    val lastGeoRef = rememberUpdatedState(lastUserGeo)
+
+    LaunchedEffect(routeBurstActive, burstImageCapture, burstSessionIdLocal) {
+        if (!routeBurstActive) return@LaunchedEffect
+        val sid = burstSessionIdLocal ?: return@LaunchedEffect
+        while (burstActiveRef.value && burstSidRef.value == sid) {
+            val ic = burstImageCapture ?: break
+            val geo = lastGeoRef.value
+            val file = TravelPhotoStorage.createRouteBurstImageFile(context, sid)
+            val ok = ic.captureToFileSuspend(file, burstCaptureExecutor)
+            if (ok && geo != null) {
+                burstDraftPoints.add(
+                    TravelRoutePhotoPoint(
+                        latitude = geo.latitude,
+                        longitude = geo.longitude,
+                        photoUri = TravelPhotoStorage.toFileUriString(file.absolutePath),
+                        capturedAtMs = System.currentTimeMillis(),
+                    ),
+                )
+            }
+            delay(500)
+        }
+    }
+
+    val sortedPhotoSessions = remember(routePhotoSessions) {
+        routePhotoSessions.sortedByDescending { it.createdAtMs }
+    }
+    val playbackPoints = remember(sortedPhotoSessions, routePlaybackSessionIndex) {
+        if (sortedPhotoSessions.isEmpty()) emptyList()
+        else sortedPhotoSessions[routePlaybackSessionIndex % sortedPhotoSessions.size].points
+    }
+    val playbackNearestUri = remember(lastUserGeo, routePlaybackActive, playbackPoints) {
+        if (!routePlaybackActive || lastUserGeo == null) null
+        else nearestRoutePhotoPoint(lastUserGeo!!, playbackPoints)?.photoUri
+    }
+
+    val stopRouteBurstAndSave: () -> Unit = {
+        vm.setRouteBurstActive(false)
+        val sid = burstSessionIdLocal
+        val pts = burstDraftPoints.toList()
+        burstSessionIdLocal = null
+        burstDraftPoints.clear()
+        scope.launch {
+            if (sid != null && pts.isNotEmpty()) {
+                vm.saveRouteBurstSession(TravelRoutePhotoSession(id = sid, points = pts))
+            }
+        }
+    }
+
+    val requestStartRouteBurst: () -> Unit = {
+        bumpFloatingToolbar()
+        when {
+            !hasFineLocation -> {
+                Toast.makeText(context, R.string.travel_need_location, Toast.LENGTH_LONG).show()
+            }
+            !camGranted -> {
+                camPermLauncher.launch(Manifest.permission.CAMERA)
+            }
+            else -> {
+                vm.setRoutePlaybackActive(false)
+                burstDraftPoints.clear()
+                burstSessionIdLocal = UUID.randomUUID().toString()
+                vm.setRouteBurstActive(true)
+            }
+        }
     }
 
     var incidentDraftPoint by remember { mutableStateOf<TravelGeoPoint?>(null) }
@@ -639,7 +765,99 @@ fun MyTravelsScreen(
                             incidentDraftPoint = pt
                             incidentNoteDraft = ""
                         },
+                        onUserLocationUpdated = { lat, lng -> vm.reportUserLocation(lat, lng) },
                     )
+                    TravelBurstCameraPreview(
+                        enabled = routeBurstActive && camGranted,
+                        modifier = Modifier.align(Alignment.TopStart),
+                        onImageCaptureReady = { burstImageCapture = it },
+                    )
+                    Column(
+                        modifier = Modifier
+                            .align(Alignment.TopEnd)
+                            .padding(top = 8.dp, end = 8.dp),
+                        verticalArrangement = Arrangement.spacedBy(8.dp),
+                        horizontalAlignment = Alignment.End,
+                    ) {
+                        SmallFloatingActionButton(
+                            onClick = {
+                                if (routeBurstActive) stopRouteBurstAndSave() else requestStartRouteBurst()
+                            },
+                            containerColor = if (routeBurstActive) {
+                                MaterialTheme.colorScheme.errorContainer
+                            } else {
+                                MaterialTheme.colorScheme.primaryContainer
+                            },
+                        ) {
+                            Icon(
+                                if (routeBurstActive) Icons.Default.Stop else Icons.Default.CameraAlt,
+                                contentDescription = stringResource(
+                                    if (routeBurstActive) {
+                                        R.string.travel_route_burst_stop_cd
+                                    } else {
+                                        R.string.travel_route_burst_start_cd
+                                    },
+                                ),
+                            )
+                        }
+                        SmallFloatingActionButton(
+                            onClick = {
+                                bumpFloatingToolbar()
+                                if (routeBurstActive) stopRouteBurstAndSave()
+                                if (!routePlaybackActive && sortedPhotoSessions.isEmpty()) {
+                                    Toast.makeText(
+                                        context,
+                                        R.string.travel_route_photo_no_sessions,
+                                        Toast.LENGTH_SHORT,
+                                    ).show()
+                                } else {
+                                    vm.setRoutePlaybackActive(!routePlaybackActive)
+                                }
+                            },
+                            containerColor = if (routePlaybackActive) {
+                                MaterialTheme.colorScheme.tertiaryContainer
+                            } else {
+                                MaterialTheme.colorScheme.surfaceVariant
+                            },
+                        ) {
+                            Icon(
+                                Icons.Default.VideoLibrary,
+                                contentDescription = stringResource(R.string.travel_route_playback_cd),
+                            )
+                        }
+                        if (routePlaybackActive && sortedPhotoSessions.size > 1) {
+                            SmallFloatingActionButton(
+                                onClick = {
+                                    bumpFloatingToolbar()
+                                    vm.cycleRoutePlaybackSession()
+                                },
+                            ) {
+                                Icon(
+                                    Icons.Default.SkipNext,
+                                    contentDescription = stringResource(
+                                        R.string.travel_route_playback_next_session_cd,
+                                    ),
+                                )
+                            }
+                        }
+                    }
+                    playbackNearestUri?.let { uriStr ->
+                        Card(
+                            modifier = Modifier
+                                .align(Alignment.BottomStart)
+                                .padding(12.dp)
+                                .width(220.dp)
+                                .height(140.dp),
+                            shape = RoundedCornerShape(12.dp),
+                        ) {
+                            AsyncImage(
+                                model = Uri.parse(uriStr),
+                                contentDescription = null,
+                                modifier = Modifier.fillMaxSize(),
+                                contentScale = ContentScale.Crop,
+                            )
+                        }
+                    }
                     TravelMapFloatingToolbar(
                         modifier = Modifier
                             .align(Alignment.BottomCenter)

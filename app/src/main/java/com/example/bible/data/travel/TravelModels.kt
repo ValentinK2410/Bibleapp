@@ -130,6 +130,8 @@ data class TravelMapIncident(
     val note: String = "",
     /** file:// или content:// — звук при приближении / тапе рядом с отметкой. */
     val soundUri: String? = null,
+    /** Снимки метки (пути file:// во внутреннем хранилище). */
+    val photoUris: List<String> = emptyList(),
     val createdAt: Long = System.currentTimeMillis(),
 ) {
     fun toJson(): JSONObject = JSONObject().apply {
@@ -138,18 +140,34 @@ data class TravelMapIncident(
         put("longitude", longitude)
         put("note", note)
         soundUri?.let { put("soundUri", it) }
+        if (photoUris.isNotEmpty()) {
+            val arr = JSONArray()
+            photoUris.forEach { arr.put(it) }
+            put("photos", arr)
+        }
         put("createdAt", createdAt)
     }
 
     companion object {
-        fun fromJson(j: JSONObject): TravelMapIncident = TravelMapIncident(
-            id = j.optString("id").ifBlank { UUID.randomUUID().toString() },
-            latitude = j.optDouble("latitude", 0.0),
-            longitude = j.optDouble("longitude", 0.0),
-            note = j.optString("note", ""),
-            soundUri = j.optString("soundUri").takeIf { it.isNotBlank() },
-            createdAt = j.optLong("createdAt", System.currentTimeMillis()),
-        )
+        fun fromJson(j: JSONObject): TravelMapIncident {
+            val photos = mutableListOf<String>()
+            val arr = j.optJSONArray("photos")
+            if (arr != null) {
+                for (i in 0 until arr.length()) {
+                    val s = arr.optString(i).trim()
+                    if (s.isNotEmpty()) photos.add(s)
+                }
+            }
+            return TravelMapIncident(
+                id = j.optString("id").ifBlank { UUID.randomUUID().toString() },
+                latitude = j.optDouble("latitude", 0.0),
+                longitude = j.optDouble("longitude", 0.0),
+                note = j.optString("note", ""),
+                soundUri = j.optString("soundUri").takeIf { it.isNotBlank() },
+                photoUris = photos,
+                createdAt = j.optLong("createdAt", System.currentTimeMillis()),
+            )
+        }
 
         fun parseList(json: String): List<TravelMapIncident> {
             if (json.isBlank()) return emptyList()

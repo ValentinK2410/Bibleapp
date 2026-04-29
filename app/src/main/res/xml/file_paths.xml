@@ -21,6 +21,12 @@
     <files-path
         name="audio_library"
         path="audio_library/" />
+    <files-path
+        name="travel_marker_photos"
+        path="travel_marker_photos/" />
+    <files-path
+        name="travel_route_photos"
+        path="travel_route_photos/" />
     <external-path
         name="downloads"
         path="Download/Bible/" />

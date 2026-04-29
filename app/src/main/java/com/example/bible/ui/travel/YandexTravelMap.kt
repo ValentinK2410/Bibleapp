@@ -274,6 +274,7 @@ fun YandexTravelMap(
     mapIncidents: List<TravelMapIncident>,
     incidentPlaceMode: Boolean,
     onIncidentPlaced: (TravelGeoPoint) -> Unit,
+    onUserLocationUpdated: ((Double, Double) -> Unit)? = null,
 ) {
     val context = LocalContext.current
     var mapReady by remember { mutableStateOf<Boolean?>(null) }
@@ -333,6 +334,7 @@ fun YandexTravelMap(
                 mapIncidents = mapIncidents,
                 incidentPlaceMode = incidentPlaceMode,
                 onIncidentPlaced = onIncidentPlaced,
+                onUserLocationUpdated = onUserLocationUpdated,
             )
         }
     }
@@ -363,6 +365,7 @@ private fun YandexTravelMapContent(
     mapIncidents: List<TravelMapIncident>,
     incidentPlaceMode: Boolean,
     onIncidentPlaced: (TravelGeoPoint) -> Unit,
+    onUserLocationUpdated: ((Double, Double) -> Unit)? = null,
 ) {
     val context = LocalContext.current
     val lifecycleOwner = LocalLifecycleOwner.current
@@ -424,6 +427,7 @@ private fun YandexTravelMapContent(
     val onRouteMsg = rememberUpdatedState(onTravelRouteMessage)
     val onRouteBuilt = rememberUpdatedState(onTravelRouteBuilt)
     val onActiveRoute = rememberUpdatedState(onActiveTravelRouteChange)
+    val onUserLocation = rememberUpdatedState(onUserLocationUpdated)
 
     LaunchedEffect(activeTravelRoute, mapView, routeLineLayer, routeManeuverLayer, routeHazardLayer) {
         val r = activeTravelRoute
@@ -617,6 +621,7 @@ private fun YandexTravelMapContent(
         followUserActive,
         mapView,
         userNavArrowIcon,
+        onUserLocation,
     ) {
         // Скорость: пока тапаем маршрут/инцидент, не подписываемся на GPS, чтобы не мешать.
         if (!userLocationEnabled || !hasFineLocation || routePickMode || incidentPlaceMode) {
@@ -743,6 +748,7 @@ private fun YandexTravelMapContent(
         val callback = object : LocationCallback() {
             override fun onLocationResult(result: LocationResult) {
                 val loc = result.lastLocation ?: return
+                onUserLocation.value?.invoke(loc.latitude, loc.longitude)
                 val speedMps = effectiveSpeedMps(loc, prevLoc)
                 prevLoc = Location(loc)
                 val kmh = (speedMps * 3.6f).coerceIn(0f, 400f)

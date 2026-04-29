@@ -2,18 +2,28 @@ package com.example.bible.ui.travel
 
 import android.net.Uri
 import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.PickVisualMediaRequest
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Close
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Switch
@@ -28,15 +38,21 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import androidx.core.content.FileProvider
+import coil.compose.AsyncImage
 import com.example.bible.R
 import com.example.bible.data.travel.TravelMapIncident
+import com.example.bible.data.travel.TravelPhotoStorage
 import com.example.bible.data.travel.TravelUserSoundStorage
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import java.io.File
 import java.util.Locale
 
 private const val PICK_MARKER_DEFAULT = "__def_marker__"
@@ -78,6 +94,49 @@ fun TravelMarkersEditorSheet(
         }
     }
 
+    var pendingGalleryIncidentId by remember { mutableStateOf<String?>(null) }
+    var cameraIncidentId by remember { mutableStateOf<String?>(null) }
+    var cameraOutFile by remember { mutableStateOf<File?>(null) }
+
+    val pickMarkerPhotos = rememberLauncherForActivityResult(
+        ActivityResultContracts.PickMultipleVisualMedia(24),
+    ) { uris: List<Uri> ->
+        val id = pendingGalleryIncidentId
+        pendingGalleryIncidentId = null
+        if (id == null || uris.isEmpty()) return@rememberLauncherForActivityResult
+        val inc = mapIncidents.find { it.id == id } ?: return@rememberLauncherForActivityResult
+        scope.launch {
+            val added = mutableListOf<String>()
+            for (u in uris) {
+                val dest = TravelPhotoStorage.createMarkerImageFile(context)
+                val ok = withContext(Dispatchers.IO) {
+                    TravelPhotoStorage.copyUriToJpegFile(context, u, dest)
+                }
+                if (ok) added.add(TravelPhotoStorage.toFileUriString(dest.absolutePath))
+            }
+            if (added.isNotEmpty()) {
+                vm.replaceMapIncident(inc.copy(photoUris = inc.photoUris + added))
+            }
+        }
+    }
+
+    val takeMarkerPhoto = rememberLauncherForActivityResult(
+        ActivityResultContracts.TakePicture(),
+    ) { ok ->
+        val id = cameraIncidentId
+        cameraIncidentId = null
+        val file = cameraOutFile
+        cameraOutFile = null
+        if (id == null || file == null) return@rememberLauncherForActivityResult
+        val inc = mapIncidents.find { it.id == id } ?: return@rememberLauncherForActivityResult
+        if (!ok) {
+            if (file.exists()) file.delete()
+            return@rememberLauncherForActivityResult
+        }
+        val uriStr = TravelPhotoStorage.toFileUriString(file.absolutePath)
+        vm.replaceMapIncident(inc.copy(photoUris = inc.photoUris + uriStr))
+    }
+
     fun applyStoredSound(stored: String) {
         val target = recordTarget ?: return
         recordTarget = null
@@ -89,6 +148,25 @@ fun TravelMarkersEditorSheet(
                 vm.replaceMapIncident(inc.copy(soundUri = stored))
             }
         }
+    }
+
+    fun requestMarkerGallery(incidentId: String) {
+        pendingGalleryIncidentId = incidentId
+        pickMarkerPhotos.launch(
+            PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly),
+        )
+    }
+
+    fun requestMarkerCamera(incidentId: String) {
+        val file = TravelPhotoStorage.createMarkerImageFile(context)
+        cameraOutFile = file
+        cameraIncidentId = incidentId
+        val uri = FileProvider.getUriForFile(
+            context,
+            "${context.packageName}.provider",
+            file,
+        )
+        takeMarkerPhoto.launch(uri)
     }
 
     if (recordTarget != null) {
@@ -234,6 +312,13 @@ fun TravelMarkersEditorSheet(
                     onSaveNote = { note ->
                         vm.replaceMapIncident(inc.copy(note = note.trim()))
                     },
+                    onPickPhotosFromGallery = { requestMarkerGallery(inc.id) },
+                    onTakePhoto = { requestMarkerCamera(inc.id) },
+                    onRemovePhotoAt = { idx ->
+                        vm.replaceMapIncident(
+                            inc.copy(photoUris = inc.photoUris.filterIndexed { i, _ -> i != idx }),
+                        )
+                    },
                     onDelete = {
                         vm.removeMapIncident(inc.id)
                     },
@@ -255,6 +340,9 @@ private fun IncidentEditorCard(
     onRecordSound: () -> Unit,
     onClearSound: () -> Unit,
     onSaveNote: (String) -> Unit,
+    onPickPhotosFromGallery: () -> Unit,
+    onTakePhoto: () -> Unit,
+    onRemovePhotoAt: (Int) -> Unit,
     onDelete: () -> Unit,
 ) {
     var noteDraft by remember(incident.id) { mutableStateOf(incident.note) }
@@ -286,6 +374,43 @@ private fun IncidentEditorCard(
             )
             TextButton(onClick = { onSaveNote(noteDraft) }) {
                 Text(stringResource(R.string.travel_marker_save_note))
+            }
+            Text(
+                stringResource(R.string.travel_marker_photos_label),
+                style = MaterialTheme.typography.titleSmall,
+            )
+            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                TextButton(onClick = onPickPhotosFromGallery) {
+                    Text(stringResource(R.string.travel_marker_photo_from_gallery))
+                }
+                TextButton(onClick = onTakePhoto) {
+                    Text(stringResource(R.string.travel_marker_photo_camera))
+                }
+            }
+            if (incident.photoUris.isNotEmpty()) {
+                LazyRow(
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                    modifier = Modifier.fillMaxWidth(),
+                ) {
+                    itemsIndexed(incident.photoUris, key = { ix, u -> "${incident.id}_$ix$u" }) { ix, uriStr ->
+                        Box {
+                            AsyncImage(
+                                model = Uri.parse(uriStr),
+                                contentDescription = null,
+                                modifier = Modifier
+                                    .size(76.dp)
+                                    .clip(RoundedCornerShape(8.dp)),
+                                contentScale = ContentScale.Crop,
+                            )
+                            IconButton(
+                                onClick = { onRemovePhotoAt(ix) },
+                                modifier = Modifier.align(Alignment.TopEnd),
+                            ) {
+                                Icon(Icons.Default.Close, contentDescription = stringResource(R.string.travel_marker_photo_remove))
+                            }
+                        }
+                    }
+                }
             }
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                 TextButton(onClick = onPickSound) {

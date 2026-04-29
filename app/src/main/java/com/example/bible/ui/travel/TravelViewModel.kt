@@ -8,6 +8,7 @@ import com.example.bible.data.travel.TravelGeoPoint
 import com.example.bible.data.travel.TravelGeofenceManager
 import com.example.bible.data.travel.TravelMapIncident
 import com.example.bible.data.travel.TravelMapKitSettingsRepository
+import com.example.bible.data.travel.TravelRoutePhotoSession
 import com.example.bible.data.travel.TravelZone
 import com.example.bible.data.travel.TravelZoneKind
 import com.example.bible.data.travel.TravelZoneRepository
@@ -156,6 +157,25 @@ class TravelViewModel(
         SharingStarted.WhileSubscribed(5_000),
         emptyList(),
     )
+
+    val routePhotoSessions: StateFlow<List<TravelRoutePhotoSession>> = repo.routePhotoSessions.stateIn(
+        viewModelScope,
+        SharingStarted.WhileSubscribed(5_000),
+        emptyList(),
+    )
+
+    private val _lastUserGeo = MutableStateFlow<TravelGeoPoint?>(null)
+    val lastUserGeo: StateFlow<TravelGeoPoint?> = _lastUserGeo.asStateFlow()
+
+    private val _routeBurstActive = MutableStateFlow(false)
+    val routeBurstActive: StateFlow<Boolean> = _routeBurstActive.asStateFlow()
+
+    private val _routePlaybackActive = MutableStateFlow(false)
+    val routePlaybackActive: StateFlow<Boolean> = _routePlaybackActive.asStateFlow()
+
+    /** Индекс сессии среди списка отсортированных по времени (новые первые). */
+    private val _routePlaybackSessionIndex = MutableStateFlow(0)
+    val routePlaybackSessionIndex: StateFlow<Int> = _routePlaybackSessionIndex.asStateFlow()
 
     val polygonEntrySoundUri: StateFlow<String?> = repo.polygonEntrySoundUri.stateIn(
         viewModelScope,
@@ -487,5 +507,31 @@ class TravelViewModel(
         val newEffective = typed.trim().ifBlank { BuildConfig.MAPKIT_API_KEY }
         mapKitSettings.setUserMapKitApiKey(typed)
         return MapKitBootstrap.isReady && oldEffective != newEffective
+    }
+
+    fun reportUserLocation(latitude: Double, longitude: Double) {
+        _lastUserGeo.value = TravelGeoPoint(latitude, longitude)
+    }
+
+    fun setRouteBurstActive(active: Boolean) {
+        _routeBurstActive.value = active
+    }
+
+    fun setRoutePlaybackActive(active: Boolean) {
+        _routePlaybackActive.value = active
+        if (!active) {
+            _routePlaybackSessionIndex.value = 0
+        }
+    }
+
+    fun cycleRoutePlaybackSession() {
+        val n = routePhotoSessions.value.size
+        if (n <= 1) return
+        _routePlaybackSessionIndex.update { (it + 1) % n }
+    }
+
+    suspend fun saveRouteBurstSession(session: TravelRoutePhotoSession) {
+        if (session.points.isEmpty()) return
+        repo.addRoutePhotoSession(session)
     }
 }

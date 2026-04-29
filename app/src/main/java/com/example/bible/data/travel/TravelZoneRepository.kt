@@ -25,6 +25,8 @@ private object TravelKeys {
     val MARKER_DEFAULT_SOUND_URI = stringPreferencesKey("travel_marker_default_sound_uri")
     /** Оповещать при GPS-приближении к отметкам (если задан звук). */
     val MARKER_PROXIMITY_ENABLED = booleanPreferencesKey("travel_marker_proximity_enabled")
+    /** Серии фото по GPS-маршруту (JSON-массив сессий). */
+    val ROUTE_PHOTO_SESSIONS_JSON = stringPreferencesKey("travel_route_photo_sessions_json")
 }
 
 class TravelZoneRepository(
@@ -69,6 +71,34 @@ class TravelZoneRepository(
 
     val markerProximityEnabled: Flow<Boolean> = app.travelZonesDataStore.data.map { prefs ->
         prefs[TravelKeys.MARKER_PROXIMITY_ENABLED] ?: true
+    }
+
+    val routePhotoSessions: Flow<List<TravelRoutePhotoSession>> = app.travelZonesDataStore.data.map { prefs ->
+        TravelRoutePhotoSession.parseList(prefs[TravelKeys.ROUTE_PHOTO_SESSIONS_JSON] ?: "[]")
+    }
+
+    suspend fun snapshotRoutePhotoSessions(): List<TravelRoutePhotoSession> =
+        routePhotoSessions.first()
+
+    suspend fun saveRoutePhotoSessions(list: List<TravelRoutePhotoSession>) {
+        app.travelZonesDataStore.edit { prefs ->
+            prefs[TravelKeys.ROUTE_PHOTO_SESSIONS_JSON] = TravelRoutePhotoSession.toJsonArray(list)
+        }
+    }
+
+    suspend fun addRoutePhotoSession(session: TravelRoutePhotoSession) {
+        val cur = snapshotRoutePhotoSessions()
+        saveRoutePhotoSessions(cur + session)
+    }
+
+    suspend fun removeRoutePhotoSession(id: String) {
+        val cur = snapshotRoutePhotoSessions()
+        saveRoutePhotoSessions(cur.filter { it.id != id })
+    }
+
+    suspend fun replaceRoutePhotoSession(updated: TravelRoutePhotoSession) {
+        val cur = snapshotRoutePhotoSessions()
+        saveRoutePhotoSessions(cur.map { if (it.id == updated.id) updated else it })
     }
 
     suspend fun snapshot(): List<TravelZone> = zones.first()

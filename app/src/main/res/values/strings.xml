@@ -989,6 +989,16 @@
     <string name="travel_incident_saved">Отметка сохранена</string>
     <string name="travel_incidents_header">Отметки на карте</string>
     <string name="travel_incident_delete">Убрать отметку</string>
+    <string name="travel_route_burst_start_cd">Начать съёмку по маршруту каждые 0,5 с</string>
+    <string name="travel_route_burst_stop_cd">Закончить съёмку и сохранить серию</string>
+    <string name="travel_route_playback_cd">Просмотр фото по маршруту при движении</string>
+    <string name="travel_route_playback_next_session_cd">Другая серия снимков</string>
+    <string name="travel_route_photo_no_sessions">Нет сохранённых серий фото по маршруту</string>
+    <string name="travel_camera_permission_denied">Нужен доступ к камере для съёмки по маршруту</string>
+    <string name="travel_marker_photos_label">Фото у метки</string>
+    <string name="travel_marker_photo_from_gallery">Из галереи</string>
+    <string name="travel_marker_photo_camera">Снять камерой</string>
+    <string name="travel_marker_photo_remove">Удалить фото</string>
     <string name="travel_incident_mode_stop">Закончить расстановку знаков</string>
     <string name="travel_mapkit_settings_title">Ключ MapKit</string>
     <string name="travel_mapkit_key_label">API-ключ</string>
