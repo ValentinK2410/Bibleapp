@@ -72,6 +72,7 @@ import kotlinx.coroutines.launch
 fun MapsScreen(
     onBack: () -> Unit,
 ) {
+    KeepScreenOnEffect()
     val context = LocalContext.current
     val downloadErrorText = stringResource(R.string.maps_download_error)
     val imageLoader = remember(context) {

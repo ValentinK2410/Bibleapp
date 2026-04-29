@@ -84,6 +84,7 @@ import com.example.bible.data.travel.TravelZone
 import com.example.bible.data.travel.TravelZoneKind
 import com.example.bible.data.travel.travelDistanceMeters
 import com.example.bible.data.travel.travelZonesAtPoint
+import com.example.bible.ui.KeepScreenOnEffect
 import com.google.android.gms.location.LocationServices
 import com.google.android.gms.tasks.CancellationTokenSource
 import com.google.android.gms.location.Priority
@@ -100,6 +101,7 @@ import kotlin.math.max
 fun MyTravelsScreen(
     onBack: () -> Unit,
 ) {
+    KeepScreenOnEffect()
     val context = LocalContext.current
     val vm: TravelViewModel = viewModel()
     val zones by vm.zones.collectAsStateWithLifecycle()
