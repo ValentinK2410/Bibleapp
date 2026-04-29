@@ -25,8 +25,11 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
@@ -92,6 +95,7 @@ import com.example.bible.data.travel.TravelUserSoundStorage
 import com.example.bible.data.travel.TravelZone
 import com.example.bible.data.travel.TravelZoneKind
 import com.example.bible.data.travel.travelDistanceMeters
+import com.example.bible.data.travel.parseLatLonManualLine
 import com.example.bible.data.travel.travelZonesAtPoint
 import com.example.bible.ui.KeepScreenOnEffect
 import com.google.android.gms.location.LocationServices
@@ -104,12 +108,10 @@ import kotlinx.coroutines.tasks.await
 import kotlinx.coroutines.withContext
 import java.util.Locale
 import kotlin.math.max
+import kotlin.math.roundToInt
 import androidx.camera.core.ImageCapture
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -171,6 +173,10 @@ fun MyTravelsScreen(
     val routePlaybackSessionIndex by vm.routePlaybackSessionIndex.collectAsStateWithLifecycle()
     val routePlaybackSim by vm.routePlaybackSim.collectAsStateWithLifecycle()
     val routePlaybackSpeedMps by vm.routePlaybackSpeedMps.collectAsStateWithLifecycle()
+    val friendPeerLocation by vm.friendPeerLocation.collectAsStateWithLifecycle()
+    val friendPeerPollUrl by vm.friendPeerPollUrl.collectAsStateWithLifecycle()
+    val friendPeerPollIntervalSec by vm.friendPeerPollIntervalSec.collectAsStateWithLifecycle()
+    val friendPeerPollEnabled by vm.friendPeerPollEnabled.collectAsStateWithLifecycle()
     val lastUserGeo by vm.lastUserGeo.collectAsStateWithLifecycle()
     val lastUserHeadingDeg by vm.lastUserHeadingDeg.collectAsStateWithLifecycle()
     val scope = rememberCoroutineScope()
@@ -179,6 +185,11 @@ fun MyTravelsScreen(
     var deleteRouteSessionDialog by remember { mutableStateOf(false) }
     var deleteAllRouteSessionsConfirm by remember { mutableStateOf(false) }
     var showRoutePhotosManageSheet by remember { mutableStateOf(false) }
+    var showFriendPeerSheet by remember { mutableStateOf(false) }
+    var friendPeerManualDialog by remember { mutableStateOf(false) }
+    var friendPeerUrlDraft by remember { mutableStateOf("") }
+    var friendPeerManualLine by remember { mutableStateOf("") }
+    var friendPeerManualLabel by remember { mutableStateOf("") }
     val burstDraftPoints = remember { mutableStateListOf<TravelRoutePhotoPoint>() }
     var burstImageCapture by remember { mutableStateOf<ImageCapture?>(null) }
     val burstCaptureExecutor = remember { Executors.newSingleThreadExecutor() }
@@ -207,6 +218,10 @@ fun MyTravelsScreen(
 
     val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
     val markersSheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
+
+    LaunchedEffect(showFriendPeerSheet) {
+        if (showFriendPeerSheet) friendPeerUrlDraft = friendPeerPollUrl
+    }
 
     var hasFineLocation by remember {
         mutableStateOf(
@@ -679,6 +694,13 @@ fun MyTravelsScreen(
                                 },
                             )
                             DropdownMenuItem(
+                                text = { Text(stringResource(R.string.travel_friend_peer_menu)) },
+                                onClick = {
+                                    vm.setTravelMenuExpanded(false)
+                                    showFriendPeerSheet = true
+                                },
+                            )
+                            DropdownMenuItem(
                                 text = { Text(stringResource(R.string.travel_route_delete_all_sessions_menu)) },
                                 onClick = {
                                     vm.setTravelMenuExpanded(false)
@@ -820,6 +842,7 @@ fun MyTravelsScreen(
                         onUserLocationUpdated = { lat, lng -> vm.reportUserLocation(lat, lng) },
                         routePhotoSessions = routePhotoSessions,
                         routePlaybackSim = routePlaybackSim,
+                        friendPeerLocation = friendPeerLocation,
                     )
                     TravelBurstCameraPreview(
                         enabled = routeBurstActive && camGranted,
@@ -1407,6 +1430,180 @@ fun MyTravelsScreen(
             },
             dismissButton = {
                 TextButton(onClick = { deleteAllRouteSessionsConfirm = false }) {
+                    Text(stringResource(R.string.travel_cancel))
+                }
+            },
+        )
+    }
+
+    if (showFriendPeerSheet) {
+        ModalBottomSheet(onDismissRequest = { showFriendPeerSheet = false }) {
+            Column(
+                Modifier
+                    .fillMaxWidth()
+                    .verticalScroll(rememberScrollState())
+                    .padding(horizontal = 16.dp, vertical = 8.dp),
+            ) {
+                Text(
+                    stringResource(R.string.travel_friend_peer_sheet_title),
+                    style = MaterialTheme.typography.titleMedium,
+                    modifier = Modifier.padding(bottom = 8.dp),
+                )
+                Text(
+                    stringResource(R.string.travel_friend_peer_json_hint),
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    modifier = Modifier.padding(bottom = 12.dp),
+                )
+                Row(
+                    Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
+                    Text(stringResource(R.string.travel_friend_peer_poll_switch))
+                    Switch(
+                        checked = friendPeerPollEnabled,
+                        onCheckedChange = { vm.setFriendPeerPollEnabled(it) },
+                    )
+                }
+                OutlinedTextField(
+                    value = friendPeerUrlDraft,
+                    onValueChange = { friendPeerUrlDraft = it },
+                    label = { Text(stringResource(R.string.travel_friend_peer_url_label)) },
+                    modifier = Modifier.fillMaxWidth(),
+                    singleLine = false,
+                    minLines = 2,
+                )
+                TextButton(
+                    onClick = {
+                        vm.setFriendPeerPollUrl(friendPeerUrlDraft.trim())
+                        Toast.makeText(context, R.string.travel_saved, Toast.LENGTH_SHORT).show()
+                    },
+                    modifier = Modifier.align(Alignment.End),
+                ) {
+                    Text(stringResource(R.string.travel_friend_peer_save_url))
+                }
+                Text(
+                    stringResource(R.string.travel_friend_peer_interval_label, friendPeerPollIntervalSec),
+                    style = MaterialTheme.typography.bodyMedium,
+                    modifier = Modifier.padding(top = 8.dp),
+                )
+                Slider(
+                    value = friendPeerPollIntervalSec.toFloat(),
+                    onValueChange = {
+                        vm.setFriendPeerPollIntervalSec(it.roundToInt().coerceIn(5, 300))
+                    },
+                    valueRange = 5f..300f,
+                    modifier = Modifier.fillMaxWidth(),
+                )
+                val loc = friendPeerLocation
+                if (loc != null) {
+                    Text(
+                        stringResource(
+                            R.string.travel_friend_peer_current_fmt,
+                            loc.latitude,
+                            loc.longitude,
+                        ),
+                        style = MaterialTheme.typography.bodyMedium,
+                        modifier = Modifier.padding(top = 8.dp),
+                    )
+                    loc.label?.takeIf { it.isNotBlank() }?.let { lb ->
+                        Text(
+                            lb,
+                            style = MaterialTheme.typography.labelMedium,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        )
+                    }
+                } else {
+                    Text(
+                        stringResource(R.string.travel_friend_peer_none),
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        modifier = Modifier.padding(top = 8.dp),
+                    )
+                }
+                FilledTonalButton(
+                    onClick = {
+                        vm.centerMapOnFriendPeer()
+                        showFriendPeerSheet = false
+                    },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(top = 12.dp),
+                    enabled = friendPeerLocation != null,
+                ) {
+                    Text(stringResource(R.string.travel_friend_peer_center_map))
+                }
+                TextButton(
+                    onClick = {
+                        friendPeerManualLine = ""
+                        friendPeerManualLabel = ""
+                        friendPeerManualDialog = true
+                    },
+                    modifier = Modifier.fillMaxWidth(),
+                ) {
+                    Text(stringResource(R.string.travel_friend_peer_manual))
+                }
+                TextButton(
+                    onClick = { vm.clearFriendPeerManual() },
+                    modifier = Modifier.fillMaxWidth(),
+                ) {
+                    Text(stringResource(R.string.travel_friend_peer_clear_manual))
+                }
+                Spacer(Modifier.height(28.dp))
+            }
+        }
+    }
+
+    if (friendPeerManualDialog) {
+        AlertDialog(
+            onDismissRequest = { friendPeerManualDialog = false },
+            title = { Text(stringResource(R.string.travel_friend_peer_manual_dialog_title)) },
+            text = {
+                Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
+                    OutlinedTextField(
+                        value = friendPeerManualLine,
+                        onValueChange = { friendPeerManualLine = it },
+                        label = { Text(stringResource(R.string.travel_friend_peer_manual_coords_hint)) },
+                        modifier = Modifier.fillMaxWidth(),
+                        singleLine = false,
+                        maxLines = 2,
+                    )
+                    OutlinedTextField(
+                        value = friendPeerManualLabel,
+                        onValueChange = { friendPeerManualLabel = it },
+                        label = { Text(stringResource(R.string.travel_friend_peer_manual_label_hint)) },
+                        modifier = Modifier.fillMaxWidth(),
+                        singleLine = true,
+                    )
+                }
+            },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        val pair = parseLatLonManualLine(friendPeerManualLine)
+                        if (pair == null) {
+                            Toast.makeText(
+                                context,
+                                R.string.travel_friend_peer_invalid_coords,
+                                Toast.LENGTH_LONG,
+                            ).show()
+                        } else {
+                            vm.setFriendPeerManual(
+                                pair.first,
+                                pair.second,
+                                friendPeerManualLabel.trim().takeIf { it.isNotEmpty() },
+                            )
+                            friendPeerManualDialog = false
+                            Toast.makeText(context, R.string.travel_saved, Toast.LENGTH_SHORT).show()
+                        }
+                    },
+                ) {
+                    Text(stringResource(R.string.travel_save))
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { friendPeerManualDialog = false }) {
                     Text(stringResource(R.string.travel_cancel))
                 }
             },

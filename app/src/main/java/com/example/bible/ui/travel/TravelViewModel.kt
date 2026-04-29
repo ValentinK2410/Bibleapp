@@ -4,6 +4,9 @@ import android.app.Application
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.bible.BuildConfig
+import com.example.bible.data.travel.FriendPeerLocation
+import com.example.bible.data.travel.FriendPeerLocationRepository
+import com.example.bible.data.travel.pollOnce
 import com.example.bible.data.travel.TravelGeoPoint
 import com.example.bible.data.travel.TravelGeofenceManager
 import com.example.bible.data.travel.TravelMapIncident
@@ -29,9 +32,11 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 enum class TravelMapEditMode {
     VIEW,
@@ -61,6 +66,7 @@ class TravelViewModel(
 ) : AndroidViewModel(app) {
 
     private val repo = TravelZoneRepository(app)
+    private val friendPeerRepo = FriendPeerLocationRepository(app)
     private val mapKitSettings = TravelMapKitSettingsRepository(app)
 
     val mapKitApiKeyForMap: StateFlow<String> = mapKitSettings.userMapKitApiKey
@@ -201,6 +207,32 @@ class TravelViewModel(
 
     private var playbackSimJob: Job? = null
 
+    private val _friendPeerLocationPoll = MutableStateFlow<FriendPeerLocation?>(null)
+    private val _friendPeerLocationManual = MutableStateFlow<FriendPeerLocation?>(null)
+    private var friendPeerPollJob: Job? = null
+
+    val friendPeerPollUrl: StateFlow<String> = friendPeerRepo.pollUrl.stateIn(
+        viewModelScope,
+        SharingStarted.WhileSubscribed(5_000),
+        "",
+    )
+    val friendPeerPollIntervalSec: StateFlow<Int> = friendPeerRepo.pollIntervalSec.stateIn(
+        viewModelScope,
+        SharingStarted.WhileSubscribed(5_000),
+        20,
+    )
+    val friendPeerPollEnabled: StateFlow<Boolean> = friendPeerRepo.pollEnabled.stateIn(
+        viewModelScope,
+        SharingStarted.WhileSubscribed(5_000),
+        false,
+    )
+
+    val friendPeerLocation: StateFlow<FriendPeerLocation?> = combine(
+        _friendPeerLocationManual,
+        _friendPeerLocationPoll,
+    ) { manual, poll -> manual ?: poll }
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), null)
+
     val polygonEntrySoundUri: StateFlow<String?> = repo.polygonEntrySoundUri.stateIn(
         viewModelScope,
         SharingStarted.WhileSubscribed(5_000),
@@ -266,6 +298,36 @@ class TravelViewModel(
                     }
                 }
         }
+        viewModelScope.launch {
+            combine(
+                friendPeerRepo.pollEnabled,
+                friendPeerRepo.pollUrl,
+                friendPeerRepo.pollIntervalSec,
+            ) { _, _, _ -> Unit }
+                .collect {
+                    restartFriendPeerPolling()
+                }
+        }
+    }
+
+    private fun restartFriendPeerPolling() {
+        friendPeerPollJob?.cancel()
+        friendPeerPollJob = viewModelScope.launch {
+            _friendPeerLocationPoll.value = null
+            while (isActive) {
+                val enabled = friendPeerRepo.pollEnabled.first()
+                val url = friendPeerRepo.pollUrl.first().trim()
+                if (!enabled || url.isEmpty() || !url.startsWith("https://")) {
+                    return@launch
+                }
+                val snap = withContext(Dispatchers.IO) {
+                    friendPeerRepo.pollOnce()
+                }
+                _friendPeerLocationPoll.value = snap
+                val intervalSec = friendPeerRepo.pollIntervalSec.first().coerceIn(5, 300)
+                delay(intervalSec * 1000L)
+            }
+        }
     }
 
     /** Зацикленная симуляция вдоль полилинии; скорость задаётся [routePlaybackSpeedMps]. */
@@ -319,6 +381,36 @@ class TravelViewModel(
             ROUTE_PLAYBACK_SPEED_MIN_MPS,
             ROUTE_PLAYBACK_SPEED_MAX_MPS,
         )
+    }
+
+    fun setFriendPeerPollUrl(url: String) {
+        viewModelScope.launch { friendPeerRepo.setPollUrl(url) }
+    }
+
+    fun setFriendPeerPollIntervalSec(sec: Int) {
+        viewModelScope.launch { friendPeerRepo.setPollIntervalSec(sec) }
+    }
+
+    fun setFriendPeerPollEnabled(enabled: Boolean) {
+        viewModelScope.launch { friendPeerRepo.setPollEnabled(enabled) }
+    }
+
+    fun setFriendPeerManual(latitude: Double, longitude: Double, label: String?) {
+        _friendPeerLocationManual.value = FriendPeerLocation(
+            latitude = latitude,
+            longitude = longitude,
+            label = label?.trim()?.takeIf { it.isNotEmpty() },
+            updatedAtMs = System.currentTimeMillis(),
+        )
+    }
+
+    fun clearFriendPeerManual() {
+        _friendPeerLocationManual.value = null
+    }
+
+    fun centerMapOnFriendPeer() {
+        val loc = friendPeerLocation.value ?: return
+        setCameraJump(TravelGeoPoint(loc.latitude, loc.longitude))
     }
 
     fun setShowMarkersEditSheet(show: Boolean) {

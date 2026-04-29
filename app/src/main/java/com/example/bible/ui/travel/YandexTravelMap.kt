@@ -81,6 +81,7 @@ import com.example.bible.data.travel.TravelRouteGuidanceSession
 import com.example.bible.data.travel.TravelTriggerAction
 import com.example.bible.data.travel.TravelZone
 import com.example.bible.data.travel.TravelZoneKind
+import com.example.bible.data.travel.FriendPeerLocation
 import com.example.bible.data.travel.RoutePlaybackSimState
 import com.example.bible.data.travel.TravelRoutePhotoSession
 import com.example.bible.data.travel.bearingDegreesLatLon
@@ -295,6 +296,7 @@ fun YandexTravelMap(
     onUserLocationUpdated: ((Double, Double) -> Unit)? = null,
     routePhotoSessions: List<TravelRoutePhotoSession> = emptyList(),
     routePlaybackSim: RoutePlaybackSimState? = null,
+    friendPeerLocation: FriendPeerLocation? = null,
 ) {
     val context = LocalContext.current
     var mapReady by remember { mutableStateOf<Boolean?>(null) }
@@ -357,6 +359,7 @@ fun YandexTravelMap(
                 onUserLocationUpdated = onUserLocationUpdated,
                 routePhotoSessions = routePhotoSessions,
                 routePlaybackSim = routePlaybackSim,
+                friendPeerLocation = friendPeerLocation,
             )
         }
     }
@@ -390,6 +393,7 @@ private fun YandexTravelMapContent(
     onUserLocationUpdated: ((Double, Double) -> Unit)? = null,
     routePhotoSessions: List<TravelRoutePhotoSession> = emptyList(),
     routePlaybackSim: RoutePlaybackSimState? = null,
+    friendPeerLocation: FriendPeerLocation? = null,
 ) {
     val context = LocalContext.current
     val lifecycleOwner = LocalLifecycleOwner.current
@@ -449,6 +453,9 @@ private fun YandexTravelMapContent(
     val routePlaybackWalkerLayer = remember(mapView) {
         routeOverlay.addCollection().apply { zIndex = 6.48f }
     }
+    val friendPeerLayer = remember(mapView) {
+        routeOverlay.addCollection().apply { zIndex = 6.49f }
+    }
     /** Отмена устаревших ответов [DrivingSession] при новом запросе или [routeClearNonce]. */
     val routeRequestGeneration = remember { AtomicLong(0L) }
     val drivingRouter = remember(mapView) {
@@ -465,6 +472,7 @@ private fun YandexTravelMapContent(
     val onActiveRoute = rememberUpdatedState(onActiveTravelRouteChange)
     val onUserLocation = rememberUpdatedState(onUserLocationUpdated)
     val routePlaybackSimState = rememberUpdatedState(routePlaybackSim)
+    val friendPeerLocationState = rememberUpdatedState(friendPeerLocation)
 
     LaunchedEffect(routePhotoSessions, routePhotoBurstLayer, mapView) {
         routePhotoBurstLayer.clear()
@@ -1238,6 +1246,31 @@ private fun YandexTravelMapContent(
         )
     }
 
+    LaunchedEffect(friendPeerLayer, mapView, context, mapZoom) {
+        val icon = friendPeerPinImageProvider(context)
+        val pm = friendPeerLayer.addPlacemark(Point(0.0, 0.0), icon)
+        pm.setIconStyle(
+            IconStyle().apply {
+                anchor = PointF(0.5f, 1f)
+                rotationType = RotationType.NO_ROTATION
+                scale = 1f
+            },
+        )
+        pm.setVisible(false)
+        snapshotFlow { friendPeerLocationState.value to mapZoom }.collect { (loc, z) ->
+            if (loc == null) {
+                pm.setVisible(false)
+                return@collect
+            }
+            pm.setVisible(true)
+            pm.geometry = Point(loc.latitude, loc.longitude)
+            val raw = loc.label?.trim()?.takeIf { it.isNotEmpty() }
+            val caption = raw ?: context.getString(R.string.travel_friend_peer_pin_default)
+            val short = if (caption.length > 22) caption.take(21) + "…" else caption
+            pm.setText(short, incidentLabelStyle(z))
+        }
+    }
+
     val showRecenterFab = headingModeActive && userLocationEnabled && hasFineLocation
     val showMapHud = userLocationEnabled && hasFineLocation && !routePickMode && !incidentPlaceMode
 
@@ -1788,6 +1821,22 @@ private fun userNavigationArrowImageProvider(context: android.content.Context): 
     }
     canvas.drawPath(tri, fill)
     canvas.drawPath(tri, stroke)
+    return ImageProvider.fromBitmap(bmp)
+}
+
+private fun friendPeerPinImageProvider(context: android.content.Context): ImageProvider {
+    val d = (44 * context.resources.displayMetrics.density).toInt().coerceIn(36, 72)
+    val bmp = Bitmap.createBitmap(d, d, Bitmap.Config.ARGB_8888)
+    val canvas = Canvas(bmp)
+    val fill = Paint(Paint.ANTI_ALIAS_FLAG).apply { color = 0xFF1E88E5.toInt() }
+    val stroke = Paint(Paint.ANTI_ALIAS_FLAG).apply {
+        color = AndroidColor.WHITE
+        style = Paint.Style.STROKE
+        strokeWidth = d * 0.1f
+    }
+    val pad = d * 0.12f
+    canvas.drawOval(RectF(pad, pad, d - pad, d - pad), fill)
+    canvas.drawOval(RectF(pad, pad, d - pad, d - pad), stroke)
     return ImageProvider.fromBitmap(bmp)
 }
 
