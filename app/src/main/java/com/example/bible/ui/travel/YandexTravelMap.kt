@@ -127,8 +127,8 @@ import kotlin.math.pow
 import kotlin.math.roundToInt
 import kotlin.math.sin
 
-/** Интервал обновления GPS при следовании за пользователем. */
-private const val TRAVEL_FOLLOW_LOCATION_INTERVAL_MS = 100L
+/** Интервал запроса к Fused Location при следовании (реальная частота часто ~1 Гц на телефоне). */
+private const val TRAVEL_FOLLOW_LOCATION_INTERVAL_MS = 33L
 /**
  * Сглаживание координат в тике GPS при малой скорости (пешком / стоянка) — без выбросов.
  * При движении доля к новой точке резко повышается, а между фиксами позиция догоняется экстраполяцией в [Choreographer].
@@ -139,7 +139,9 @@ private const val TRAVEL_FOLLOW_DISPLAY_POS_LAMBDA = 28.0
 private const val TRAVEL_FOLLOW_DISPLAY_ZOOM_LAMBDA = 14.0
 private const val TRAVEL_FOLLOW_DISPLAY_ANGLE_LAMBDA = 18.0
 /** Максимум метров «вперёд» по последнему курсу между двумя фиксами GPS (страховка от скачков часов). */
-private const val TRAVEL_FOLLOW_MAX_EXTRAPOLATE_M = 42f
+private const val TRAVEL_FOLLOW_MAX_EXTRAPOLATE_M = 55f
+/** Макс. «возраст» последней фиксации для экстраполяции — должен перекрывать типичный интервал GPS (~1 с). */
+private const val TRAVEL_FOLLOW_MAX_GPS_AGE_SEC = 1.05
 /** Наклон в режиме навигатора, как у наклонённой 3D-карты. */
 private const val TRAVEL_NAV_TARGET_TILT = 52f
 private const val TRAVEL_NAV_TILT_SMOOTH = 0.10f
@@ -677,7 +679,7 @@ private fun YandexTravelMapContent(
                 val ageSec =
                     ((SystemClock.elapsedRealtimeNanos() - navFixElapsedRealtimeNs) / 1e9).toDouble().coerceIn(
                         0.0,
-                        0.35,
+                        TRAVEL_FOLLOW_MAX_GPS_AGE_SEC,
                     )
                 val extrapDist =
                     (navSpeedMps * ageSec.toFloat()).coerceAtMost(TRAVEL_FOLLOW_MAX_EXTRAPOLATE_M)
@@ -819,6 +821,8 @@ private fun YandexTravelMapContent(
         )
             .setMinUpdateIntervalMillis(TRAVEL_FOLLOW_LOCATION_INTERVAL_MS)
             .setMaxUpdateDelayMillis(0)
+            .setMinUpdateDistanceMeters(0f)
+            .setWaitForAccurateLocation(false)
             .build()
         client.requestLocationUpdates(request, callback, Looper.getMainLooper())
         onDispose {
