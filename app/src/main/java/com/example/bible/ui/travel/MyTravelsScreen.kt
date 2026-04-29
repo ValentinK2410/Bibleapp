@@ -1,5 +1,6 @@
 package com.example.bible.ui.travel
 
+import android.content.Intent
 import android.Manifest
 import android.annotation.SuppressLint
 import android.content.pm.PackageManager
@@ -17,22 +18,15 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.widthIn
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.automirrored.filled.FormatListBulleted
 import androidx.compose.material.icons.filled.AddLocationAlt
-import androidx.compose.material.icons.filled.Circle
-import androidx.compose.material.icons.filled.GpsFixed
 import androidx.compose.material.icons.filled.MoreVert
-import androidx.compose.material.icons.filled.Polyline
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
@@ -59,6 +53,7 @@ import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
+import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -90,8 +85,10 @@ import com.example.bible.data.travel.TravelZoneKind
 import com.example.bible.data.travel.travelDistanceMeters
 import com.example.bible.data.travel.travelZonesAtPoint
 import com.google.android.gms.location.LocationServices
+import com.google.android.gms.tasks.CancellationTokenSource
 import com.google.android.gms.location.Priority
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.tasks.await
 import kotlinx.coroutines.withContext
@@ -234,8 +231,35 @@ fun MyTravelsScreen(
     val apiKeyPresent = mapKitApiKey.isNotBlank()
     val configuration = LocalConfiguration.current
     val isLandscape = configuration.orientation == Configuration.ORIENTATION_LANDSCAPE
-    val bottomBarMaxHeight = (configuration.screenHeightDp * if (isLandscape) 0.34f else 0.48f).dp.coerceAtLeast(96.dp)
-    val bottomBarScroll = rememberScrollState()
+
+    var toolbarInteractionNonce by remember { mutableLongStateOf(0L) }
+    var showFloatingToolbar by remember { mutableStateOf(false) }
+    val stickyFloatingToolbar =
+        territoryEditEnabled ||
+            editMode != TravelMapEditMode.VIEW ||
+            incidentPlaceMode ||
+            routePickDestination
+
+    LaunchedEffect(territoryPanelBelowMap) {
+        if (!territoryPanelBelowMap) {
+            showFloatingToolbar = false
+            toolbarInteractionNonce = 0L
+        }
+    }
+
+    val bumpFloatingToolbar: () -> Unit = { toolbarInteractionNonce++ }
+
+    LaunchedEffect(toolbarInteractionNonce, stickyFloatingToolbar, territoryPanelBelowMap, apiKeyPresent) {
+        if (!territoryPanelBelowMap || !apiKeyPresent) return@LaunchedEffect
+        if (toolbarInteractionNonce == 0L && !stickyFloatingToolbar) return@LaunchedEffect
+        if (stickyFloatingToolbar) {
+            showFloatingToolbar = true
+            return@LaunchedEffect
+        }
+        showFloatingToolbar = true
+        delay(4200)
+        showFloatingToolbar = false
+    }
 
     var incidentDraftPoint by remember { mutableStateOf<TravelGeoPoint?>(null) }
     var incidentNoteDraft by remember { mutableStateOf("") }
@@ -247,7 +271,7 @@ fun MyTravelsScreen(
         }
     }
 
-    val centerMapOnMyLocation: () -> Unit = {
+    val jumpCameraToMyLocation: () -> Unit = {
         scope.launch {
             if (!hasFineLocation) {
                 Toast.makeText(context, R.string.travel_need_location, Toast.LENGTH_LONG).show()
@@ -258,17 +282,49 @@ fun MyTravelsScreen(
                 val client = LocationServices.getFusedLocationProviderClient(context)
                 val loc = client.getCurrentLocation(
                     Priority.PRIORITY_HIGH_ACCURACY,
-                    com.google.android.gms.tasks.CancellationTokenSource().token,
+                    CancellationTokenSource().token,
                 ).await()
                 if (loc != null) {
-                    val ll = TravelGeoPoint(loc.latitude, loc.longitude)
-                    vm.setPendingSave(TravelPendingZoneSave.CircleZone(ll, 150f))
-                    vm.setCameraJump(ll)
+                    vm.setCameraJump(TravelGeoPoint(loc.latitude, loc.longitude))
                 } else {
                     Toast.makeText(context, R.string.travel_gps_failed, Toast.LENGTH_SHORT).show()
                 }
             }.onFailure {
                 Toast.makeText(context, R.string.travel_gps_failed, Toast.LENGTH_SHORT).show()
+            }
+        }
+    }
+
+    val shareMyCoordinates: () -> Unit = {
+        bumpFloatingToolbar()
+        scope.launch {
+            if (!hasFineLocation) {
+                Toast.makeText(context, R.string.travel_need_location, Toast.LENGTH_LONG).show()
+                return@launch
+            }
+            @SuppressLint("MissingPermission")
+            runCatching {
+                val client = LocationServices.getFusedLocationProviderClient(context)
+                val loc = client.getCurrentLocation(
+                    Priority.PRIORITY_HIGH_ACCURACY,
+                    CancellationTokenSource().token,
+                ).await()
+                if (loc != null) {
+                    val text =
+                        "${String.format(Locale.US, "%.6f", loc.latitude)}, ${String.format(Locale.US, "%.6f", loc.longitude)}"
+                    val intent = Intent(Intent.ACTION_SEND).apply {
+                        type = "text/plain"
+                        putExtra(Intent.EXTRA_TEXT, text)
+                        putExtra(Intent.EXTRA_SUBJECT, context.getString(R.string.travel_share_coords_subject))
+                    }
+                    context.startActivity(
+                        Intent.createChooser(intent, context.getString(R.string.travel_share_coords_subject)),
+                    )
+                } else {
+                    Toast.makeText(context, R.string.travel_share_coords_failed, Toast.LENGTH_SHORT).show()
+                }
+            }.onFailure {
+                Toast.makeText(context, R.string.travel_share_coords_failed, Toast.LENGTH_SHORT).show()
             }
         }
     }
@@ -319,6 +375,53 @@ fun MyTravelsScreen(
                                 },
                             )
                             DropdownMenuItem(
+                                text = {
+                                    Row(
+                                        Modifier.fillMaxWidth(),
+                                        horizontalArrangement = Arrangement.SpaceBetween,
+                                        verticalAlignment = Alignment.CenterVertically,
+                                    ) {
+                                        Text(stringResource(R.string.travel_polygon_monitor), Modifier.weight(1f))
+                                        Text(if (polyMonitor) "✓" else "")
+                                    }
+                                },
+                                onClick = {
+                                    vm.setTravelMenuExpanded(false)
+                                    if (!polyMonitor) {
+                                        if (!hasFineLocation) {
+                                            Toast.makeText(
+                                                context,
+                                                R.string.travel_need_location,
+                                                Toast.LENGTH_LONG,
+                                            ).show()
+                                        } else {
+                                            vm.setPolygonMonitor(true)
+                                            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q && !hasBackgroundLocation) {
+                                                backgroundPermLauncher.launch(Manifest.permission.ACCESS_BACKGROUND_LOCATION)
+                                            }
+                                        }
+                                    } else {
+                                        vm.setPolygonMonitor(false)
+                                    }
+                                },
+                            )
+                            DropdownMenuItem(
+                                text = {
+                                    Row(
+                                        Modifier.fillMaxWidth(),
+                                        horizontalArrangement = Arrangement.SpaceBetween,
+                                        verticalAlignment = Alignment.CenterVertically,
+                                    ) {
+                                        Text(stringResource(R.string.travel_voice_hints), Modifier.weight(1f))
+                                        Text(if (voiceHints) "✓" else "")
+                                    }
+                                },
+                                onClick = {
+                                    vm.setTravelMenuExpanded(false)
+                                    vm.setPolygonVoiceHints(!voiceHints)
+                                },
+                            )
+                            DropdownMenuItem(
                                 text = { Text(stringResource(R.string.travel_list)) },
                                 onClick = {
                                     vm.setTravelMenuExpanded(false)
@@ -336,7 +439,7 @@ fun MyTravelsScreen(
                                 text = { Text(stringResource(R.string.travel_menu_center_gps)) },
                                 onClick = {
                                     vm.setTravelMenuExpanded(false)
-                                    centerMapOnMyLocation()
+                                    jumpCameraToMyLocation()
                                 },
                             )
                             DropdownMenuItem(
@@ -407,170 +510,7 @@ fun MyTravelsScreen(
                 },
             )
         },
-        bottomBar = {
-            if (territoryPanelBelowMap) {
-                Column(
-                    Modifier
-                        .padding(horizontal = 8.dp, vertical = if (isLandscape) 2.dp else 6.dp)
-                        .fillMaxWidth()
-                        .heightIn(max = bottomBarMaxHeight)
-                        .verticalScroll(bottomBarScroll),
-                ) {
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.spacedBy(if (isLandscape) 4.dp else 6.dp),
-                    ) {
-                    FilledTonalButton(
-                        onClick = { vm.toggleCircleDrawMode() },
-                        enabled = !territoryEditEnabled,
-                        modifier = Modifier.weight(1f),
-                    ) {
-                        Icon(
-                            Icons.Default.Circle,
-                            null,
-                            Modifier.padding(end = if (isLandscape) 2.dp else 4.dp),
-                        )
-                        Text(
-                            stringResource(R.string.travel_mode_circle),
-                            style = if (isLandscape) {
-                                MaterialTheme.typography.labelLarge
-                            } else {
-                                MaterialTheme.typography.bodyMedium
-                            },
-                        )
-                    }
-                    FilledTonalButton(
-                        onClick = { vm.togglePolygonDrawMode() },
-                        enabled = !territoryEditEnabled,
-                        modifier = Modifier.weight(1f),
-                    ) {
-                        Icon(
-                            Icons.Default.Polyline,
-                            null,
-                            Modifier.padding(end = if (isLandscape) 2.dp else 4.dp),
-                        )
-                        Text(
-                            stringResource(R.string.travel_mode_polygon),
-                            style = if (isLandscape) {
-                                MaterialTheme.typography.labelLarge
-                            } else {
-                                MaterialTheme.typography.bodyMedium
-                            },
-                        )
-                    }
-                }
-                Spacer(Modifier.height(if (isLandscape) 4.dp else 6.dp))
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.spacedBy(6.dp),
-                ) {
-                    FilledTonalButton(
-                        onClick = centerMapOnMyLocation,
-                        modifier = Modifier.weight(1f),
-                    ) {
-                        Icon(
-                            Icons.Default.GpsFixed,
-                            null,
-                            Modifier.padding(end = if (isLandscape) 2.dp else 4.dp),
-                        )
-                        Text(
-                            stringResource(R.string.travel_gps_here),
-                            style = if (isLandscape) {
-                                MaterialTheme.typography.labelLarge
-                            } else {
-                                MaterialTheme.typography.bodyMedium
-                            },
-                        )
-                    }
-                    FilledTonalButton(
-                        onClick = { vm.setShowListSheet(true) },
-                        modifier = Modifier.weight(1f),
-                    ) {
-                        Icon(
-                            Icons.AutoMirrored.Filled.FormatListBulleted,
-                            null,
-                            Modifier.padding(end = if (isLandscape) 2.dp else 4.dp),
-                        )
-                        Text(
-                            stringResource(R.string.travel_list),
-                            style = if (isLandscape) {
-                                MaterialTheme.typography.labelLarge
-                            } else {
-                                MaterialTheme.typography.bodyMedium
-                            },
-                        )
-                    }
-                }
-                Spacer(Modifier.height(if (isLandscape) 4.dp else 8.dp))
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    modifier = Modifier.fillMaxWidth(),
-                ) {
-                    Text(
-                        stringResource(R.string.travel_polygon_monitor),
-                        style = if (isLandscape) {
-                            MaterialTheme.typography.labelLarge
-                        } else {
-                            MaterialTheme.typography.bodyMedium
-                        },
-                        modifier = Modifier.weight(1f),
-                    )
-                    Switch(
-                        checked = polyMonitor,
-                        onCheckedChange = { enable ->
-                            if (enable) {
-                                if (!hasFineLocation) {
-                                    Toast.makeText(context, R.string.travel_need_location, Toast.LENGTH_LONG).show()
-                                    return@Switch
-                                }
-                                vm.setPolygonMonitor(true)
-                                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q && !hasBackgroundLocation) {
-                                    backgroundPermLauncher.launch(Manifest.permission.ACCESS_BACKGROUND_LOCATION)
-                                }
-                            } else {
-                                vm.setPolygonMonitor(false)
-                            }
-                        },
-                    )
-                }
-                Text(
-                    stringResource(R.string.travel_polygon_monitor_hint),
-                    style = MaterialTheme.typography.labelSmall.copy(
-                        fontSize = if (isLandscape) 9.5.sp else MaterialTheme.typography.labelSmall.fontSize,
-                        lineHeight = if (isLandscape) 12.sp else MaterialTheme.typography.labelSmall.lineHeight,
-                    ),
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                )
-                Spacer(Modifier.height(if (isLandscape) 4.dp else 8.dp))
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    modifier = Modifier.fillMaxWidth(),
-                ) {
-                    Text(
-                        stringResource(R.string.travel_voice_hints),
-                        style = if (isLandscape) {
-                            MaterialTheme.typography.labelLarge
-                        } else {
-                            MaterialTheme.typography.bodyMedium
-                        },
-                        modifier = Modifier.weight(1f),
-                    )
-                    Switch(
-                        checked = voiceHints,
-                        onCheckedChange = { vm.setPolygonVoiceHints(it) },
-                    )
-                }
-                Text(
-                    stringResource(R.string.travel_voice_hints_hint),
-                    style = MaterialTheme.typography.labelSmall.copy(
-                        fontSize = if (isLandscape) 9.5.sp else MaterialTheme.typography.labelSmall.fontSize,
-                        lineHeight = if (isLandscape) 12.sp else MaterialTheme.typography.labelSmall.lineHeight,
-                    ),
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                )
-                }
-            }
-        },
+        bottomBar = {},
     ) { padding ->
         Column(
             Modifier
@@ -612,6 +552,7 @@ fun MyTravelsScreen(
                         selectedZoneId = selectedZoneIdForEdit,
                         omitPolygonZoneId = polygonRedraftZoneId,
                         onMapTap = { pt ->
+                            bumpFloatingToolbar()
                             if (editMode == TravelMapEditMode.VIEW && !territoryEditEnabled &&
                                 pendingCircleRecenterZoneId == null && !routePickDestination && !incidentPlaceMode
                             ) {
@@ -695,6 +636,67 @@ fun MyTravelsScreen(
                         onIncidentPlaced = { pt ->
                             incidentDraftPoint = pt
                             incidentNoteDraft = ""
+                        },
+                    )
+                    TravelMapFloatingToolbar(
+                        modifier = Modifier
+                            .align(Alignment.BottomCenter)
+                            .padding(bottom = 8.dp),
+                        visible = showFloatingToolbar,
+                        enabled = territoryPanelBelowMap,
+                        polygonSelected = editMode == TravelMapEditMode.POLYGON_DRAW,
+                        markerModeActive = incidentPlaceMode,
+                        routePickActive = routePickDestination,
+                        circleModeActive = editMode == TravelMapEditMode.CIRCLE_TAP,
+                        onPolygonClick = {
+                            bumpFloatingToolbar()
+                            vm.setIncidentPlaceMode(false)
+                            vm.setRoutePickMode(false)
+                            incidentDraftPoint = null
+                            vm.togglePolygonDrawMode()
+                        },
+                        onMarkersClick = {
+                            bumpFloatingToolbar()
+                            if (!hasFineLocation) {
+                                Toast.makeText(
+                                    context,
+                                    R.string.travel_need_location,
+                                    Toast.LENGTH_LONG,
+                                ).show()
+                            } else {
+                                val turningOff = incidentPlaceMode
+                                vm.setIncidentPlaceMode(!incidentPlaceMode)
+                                if (turningOff) {
+                                    incidentDraftPoint = null
+                                }
+                            }
+                        },
+                        onRouteClick = {
+                            bumpFloatingToolbar()
+                            if (routePickDestination) {
+                                vm.clearTravelRoute()
+                            } else if (!hasFineLocation) {
+                                Toast.makeText(
+                                    context,
+                                    R.string.travel_need_location,
+                                    Toast.LENGTH_LONG,
+                                ).show()
+                            } else {
+                                vm.setRoutePickMode(true)
+                                Toast.makeText(
+                                    context,
+                                    R.string.travel_route_tap_destination,
+                                    Toast.LENGTH_LONG,
+                                ).show()
+                            }
+                        },
+                        onShareClick = shareMyCoordinates,
+                        onCircleClick = {
+                            bumpFloatingToolbar()
+                            vm.setIncidentPlaceMode(false)
+                            vm.setRoutePickMode(false)
+                            incidentDraftPoint = null
+                            vm.toggleCircleDrawMode()
                         },
                     )
                     if (pendingCircleRecenterZoneId != null) {

@@ -968,6 +968,13 @@
     <string name="travel_menu_map_key">Ключ для карты</string>
     <string name="travel_menu_show_territory_panel">Показать панель территорий под картой</string>
     <string name="travel_menu_hide_territory_panel">Скрыть панель территорий под картой</string>
+    <string name="travel_fab_polygon_cd">Режим рисования полигона</string>
+    <string name="travel_fab_marker_cd">Пользовательские метки на карте</string>
+    <string name="travel_fab_route_cd">Маршрут до точки на карте</string>
+    <string name="travel_fab_share_cd">Поделиться координатами</string>
+    <string name="travel_fab_circle_cd">Режим круга на карте</string>
+    <string name="travel_share_coords_subject">Мои координаты</string>
+    <string name="travel_share_coords_failed">Не удалось получить координаты для отправки</string>
     <string name="travel_menu_center_gps">Моё положение на карте</string>
     <string name="travel_menu_build_route">Проложить маршрут</string>
     <string name="travel_menu_clear_route">Убрать маршрут</string>
