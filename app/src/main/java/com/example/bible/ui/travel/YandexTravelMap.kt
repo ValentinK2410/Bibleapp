@@ -81,6 +81,7 @@ import com.example.bible.data.travel.TravelTriggerAction
 import com.example.bible.data.travel.TravelZone
 import com.example.bible.data.travel.TravelZoneKind
 import com.example.bible.data.travel.TravelRoutePhotoSession
+import com.example.bible.data.travel.bearingDegreesLatLon
 import com.example.bible.data.travel.buildRoutePhotoDirectionSegments
 import com.example.bible.map.MapKitBootstrap
 import com.google.android.gms.location.LocationCallback
@@ -155,6 +156,8 @@ private const val TRAVEL_FOLLOW_MAX_GPS_AGE_SEC = 1.05
 /** Наклон в режиме навигатора, как у наклонённой 3D-карты. */
 private const val TRAVEL_NAV_TARGET_TILT = 52f
 private const val TRAVEL_NAV_TILT_SMOOTH = 0.10f
+/** Шаг между стрелками направления движения вдоль полилинии маршрута (м). */
+private const val TRAVEL_ROUTE_LANE_ARROW_SPACING_M = 38f
 
 /**
  * Вертикальный охват в метрах для плоского вида сверху (оценка по Web Mercator и зуму MapKit);
@@ -420,6 +423,9 @@ private fun YandexTravelMapContent(
     val routeLineLayer = remember(mapView) {
         routeOverlay.addCollection().apply { zIndex = 4.2f }
     }
+    val routeArrowLayer = remember(mapView) {
+        routeOverlay.addCollection().apply { zIndex = 4.35f }
+    }
     val routeManeuverLayer = remember(mapView) {
         routeOverlay.addCollection().apply { zIndex = 5.6f }
     }
@@ -460,20 +466,38 @@ private fun YandexTravelMapContent(
         }
     }
 
-    LaunchedEffect(activeTravelRoute, mapView, routeLineLayer, routeManeuverLayer, routeHazardLayer) {
+    LaunchedEffect(activeTravelRoute, mapView, routeLineLayer, routeArrowLayer, routeManeuverLayer, routeHazardLayer) {
         val r = activeTravelRoute
         if (r == null) {
             routeLineLayer.clear()
+            routeArrowLayer.clear()
             routeManeuverLayer.clear()
             routeHazardLayer.clear()
             return@LaunchedEffect
         }
         val geometry = r.geometry
         routeLineLayer.clear()
+        routeArrowLayer.clear()
         val line = routeLineLayer.addPolyline(geometry)
         line.setStrokeColor(0xFF00C853.toInt())
         line.strokeWidth = 6.5f
         line.zIndex = 4f
+
+        val laneArrowIcon = laneDirectionArrowImageProvider(context)
+        val arrows = sampleLaneArrowsAlongPolyline(geometry, TRAVEL_ROUTE_LANE_ARROW_SPACING_M)
+        for ((pt, bearingDeg) in arrows) {
+            val pm = routeArrowLayer.addPlacemark(pt, laneArrowIcon)
+            pm.direction = bearingDeg
+            pm.setIconStyle(
+                IconStyle().apply {
+                    anchor = PointF(0.5f, 0.5f)
+                    rotationType = RotationType.ROTATE
+                    scale = 1f
+                    zIndex = 4.34f
+                },
+            )
+        }
+
         val mapInst = mapView.mapWindow.map
         val g = Geometry.fromPolyline(geometry)
         val pos = mapInst.cameraPosition(g)
@@ -1585,6 +1609,73 @@ private fun redrawZoneOverlays(
         poly.strokeColor = 0xFFFF9800.toInt()
         poly.fillColor = 0x44FF9800.toInt()
     }
+}
+
+/**
+ * Равномерные точки вдоль маршрута с азимутом сегмента — тонкие стрелки как у навигатора в полосах.
+ */
+private fun sampleLaneArrowsAlongPolyline(polyline: Polyline, spacingM: Float): List<Pair<Point, Float>> {
+    val pts = polyline.points
+    if (pts.size < 2) return emptyList()
+    val spacing = spacingM.coerceAtLeast(10f)
+    val segments = ArrayList<Triple<Point, Point, Float>>()
+    var totalLen = 0f
+    for (i in 0 until pts.size - 1) {
+        val a = pts[i]
+        val b = pts[i + 1]
+        val dist = FloatArray(1)
+        Location.distanceBetween(a.latitude, a.longitude, b.latitude, b.longitude, dist)
+        val len = dist[0]
+        if (len > 0.5f) {
+            segments += Triple(a, b, len)
+            totalLen += len
+        }
+    }
+    if (segments.isEmpty() || totalLen <= 0f) return emptyList()
+    val out = ArrayList<Pair<Point, Float>>()
+    var cursor = spacing * 0.35f
+    var cumulative = 0f
+    var si = 0
+    while (cursor <= totalLen && si < segments.size) {
+        while (si < segments.size && cumulative + segments[si].third < cursor) {
+            cumulative += segments[si].third
+            si++
+        }
+        if (si >= segments.size) break
+        val (a, b, len) = segments[si]
+        val t = ((cursor - cumulative) / len).coerceIn(0f, 1f)
+        val lat = a.latitude + (b.latitude - a.latitude) * t
+        val lon = a.longitude + (b.longitude - a.longitude) * t
+        val bearingDeg = bearingDegreesLatLon(a.latitude, a.longitude, b.latitude, b.longitude)
+        out.add(Point(lat, lon) to bearingDeg)
+        cursor += spacing
+    }
+    return out
+}
+
+/** Компактная тёмная стрелка «вверх» по экрану bitmap для [RotationType.ROTATE] и [bearingDegreesLatLon]. */
+private fun laneDirectionArrowImageProvider(context: android.content.Context): ImageProvider {
+    val d = (28 * context.resources.displayMetrics.density).toInt().coerceIn(22, 44)
+    val bmp = Bitmap.createBitmap(d, d, Bitmap.Config.ARGB_8888)
+    val canvas = Canvas(bmp)
+    val cx = d / 2f
+    val cy = d / 2f
+    val stroke = Paint(Paint.ANTI_ALIAS_FLAG).apply {
+        color = 0xDD212121.toInt()
+        style = Paint.Style.STROKE
+        strokeWidth = max(1f, d * 0.048f)
+        strokeCap = Paint.Cap.ROUND
+        strokeJoin = Paint.Join.ROUND
+    }
+    val stemHalf = d * 0.34f
+    val tipY = cy - stemHalf * 0.85f
+    val stemBot = cy + stemHalf * 0.55f
+    canvas.drawLine(cx, stemBot, cx, tipY + d * 0.06f, stroke)
+    val wing = d * 0.13f
+    val wingBase = tipY + d * 0.11f
+    canvas.drawLine(cx - wing * 0.15f, wingBase, cx - wing, wingBase + wing * 0.95f, stroke)
+    canvas.drawLine(cx + wing * 0.15f, wingBase, cx + wing, wingBase + wing * 0.95f, stroke)
+    return ImageProvider.fromBitmap(bmp)
 }
 
 /**
