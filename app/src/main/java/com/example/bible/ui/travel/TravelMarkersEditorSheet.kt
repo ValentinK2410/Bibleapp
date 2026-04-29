@@ -234,6 +234,9 @@ fun TravelMarkersEditorSheet(
                     onSaveNote = { note ->
                         vm.replaceMapIncident(inc.copy(note = note.trim()))
                     },
+                    onDelete = {
+                        vm.removeMapIncident(inc.id)
+                    },
                 )
             }
         }
@@ -252,6 +255,7 @@ private fun IncidentEditorCard(
     onRecordSound: () -> Unit,
     onClearSound: () -> Unit,
     onSaveNote: (String) -> Unit,
+    onDelete: () -> Unit,
 ) {
     var noteDraft by remember(incident.id) { mutableStateOf(incident.note) }
     LaunchedEffect(incident.id, incident.note) {
@@ -301,6 +305,12 @@ private fun IncidentEditorCard(
                 Text(
                     stringResource(R.string.travel_media_picked, u.take(40)),
                     style = MaterialTheme.typography.labelSmall,
+                )
+            }
+            TextButton(onClick = onDelete) {
+                Text(
+                    text = stringResource(R.string.travel_incident_delete),
+                    color = MaterialTheme.colorScheme.error,
                 )
             }
         }

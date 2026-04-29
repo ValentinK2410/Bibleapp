@@ -955,6 +955,7 @@
     <string name="travel_nav_next_road_note">Через %1$d м: %2$s</string>
     <string name="travel_nav_speed_cd">Текущая скорость и лимит по маршруту</string>
     <string name="travel_list">Список</string>
+    <string name="travel_list_sheet_hint">У каждой строки справа: для территории — выключить или удалить полигон/круг; для метки — убрать отметку. Текст и звук метки правятся в меню «⋯» → «Редактировать метки».</string>
     <string name="travel_polygon_monitor">Отслеживать полигоны в фоне</string>
     <string name="travel_polygon_monitor_hint">Нужны геолокация, по возможности разрешение «Всегда» (Android 10+) для работы в фоне, и уведомления. Круги — через системные геозоны; полигоны — сервис с постоянным уведомлением.</string>
     <string name="travel_background_denied">Без геолокации «Всегда» отслеживание полигонов в фоне может работать нестабильно. Вы можете включить разрешение в настройках приложения.</string>
@@ -1056,7 +1057,7 @@
     <string name="travel_marker_sound_pick">Выбрать аудиофайл…</string>
     <string name="travel_marker_sound_record">Записать звук…</string>
     <string name="travel_marker_sound_clear">Сбросить звук</string>
-    <string name="travel_markers_list_edit_hint">Для каждой отметки: текст и свой звук — файл или запись (необязательно).</string>
+    <string name="travel_markers_list_edit_hint">Для каждой отметки: текст и свой звук — файл или запись (необязательно). Удалить отметку — красная кнопка «Убрать отметку» внизу карточки или пункт «Список» в меню «⋯».</string>
     <string name="travel_markers_empty_hint">Отметок пока нет — включите «Поставить отметку» в меню и тапните по карте.</string>
     <string name="travel_marker_save_note">Сохранить текст</string>
     <string name="kids_hub_menu_cd">Меню раздела Детям</string>

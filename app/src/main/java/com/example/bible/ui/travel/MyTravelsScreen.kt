@@ -1029,6 +1029,14 @@ fun MyTravelsScreen(
                 contentPadding = PaddingValues(16.dp),
                 verticalArrangement = Arrangement.spacedBy(8.dp),
             ) {
+                item {
+                    Text(
+                        stringResource(R.string.travel_list_sheet_hint),
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        modifier = Modifier.padding(bottom = 8.dp),
+                    )
+                }
                 if (mapIncidents.isNotEmpty()) {
                     item {
                         Text(
