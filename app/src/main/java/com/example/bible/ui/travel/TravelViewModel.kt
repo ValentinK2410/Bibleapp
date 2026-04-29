@@ -8,8 +8,12 @@ import com.example.bible.data.travel.TravelGeoPoint
 import com.example.bible.data.travel.TravelGeofenceManager
 import com.example.bible.data.travel.TravelMapIncident
 import com.example.bible.data.travel.TravelMapKitSettingsRepository
+import com.example.bible.data.travel.RoutePlaybackSimState
 import com.example.bible.data.travel.TravelRoutePhotoSession
 import com.example.bible.data.travel.TravelZone
+import com.example.bible.data.travel.buildRoutePlaybackPolyline
+import com.example.bible.data.travel.interpolateRoutePlayback
+import com.example.bible.data.travel.routePlaybackPhotoUriAtDistance
 import com.example.bible.data.travel.TravelZoneKind
 import com.example.bible.data.travel.TravelZoneRepository
 import com.example.bible.map.MapKitBootstrap
@@ -24,6 +28,9 @@ import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.isActive
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 
 enum class TravelMapEditMode {
@@ -181,6 +188,11 @@ class TravelViewModel(
     private val _routePlaybackSessionIndex = MutableStateFlow(0)
     val routePlaybackSessionIndex: StateFlow<Int> = _routePlaybackSessionIndex.asStateFlow()
 
+    private val _routePlaybackSim = MutableStateFlow<RoutePlaybackSimState?>(null)
+    val routePlaybackSim: StateFlow<RoutePlaybackSimState?> = _routePlaybackSim.asStateFlow()
+
+    private var playbackSimJob: Job? = null
+
     val polygonEntrySoundUri: StateFlow<String?> = repo.polygonEntrySoundUri.stateIn(
         viewModelScope,
         SharingStarted.WhileSubscribed(5_000),
@@ -229,6 +241,65 @@ class TravelViewModel(
                     TravelMonitorService.stop(getApplication())
                 }
             }.collect { }
+        }
+        viewModelScope.launch {
+            combine(
+                _routePlaybackActive,
+                _routePlaybackSessionIndex,
+                routePhotoSessions,
+            ) { _, _, _ -> Unit }
+                .collect {
+                    if (_routePlaybackActive.value) {
+                        restartRoutePlaybackSimulation()
+                    } else {
+                        playbackSimJob?.cancel()
+                        playbackSimJob = null
+                        _routePlaybackSim.value = null
+                    }
+                }
+        }
+    }
+
+    /** Скорость виртуального движения по сохранённой полилинии (~6 м/с ≈ 22 км/ч; зацикливание пути). */
+    private fun restartRoutePlaybackSimulation() {
+        playbackSimJob?.cancel()
+        playbackSimJob = null
+        if (!_routePlaybackActive.value) {
+            _routePlaybackSim.value = null
+            return
+        }
+        val sortedSessions = routePhotoSessions.value.sortedByDescending { it.createdAtMs }
+        if (sortedSessions.isEmpty()) {
+            _routePlaybackSim.value = null
+            return
+        }
+        val idx = _routePlaybackSessionIndex.value % sortedSessions.size
+        val session = sortedSessions[idx]
+        val poly = buildRoutePlaybackPolyline(session.points) ?: run {
+            _routePlaybackSim.value = null
+            return
+        }
+        val total = poly.totalLengthM.coerceAtLeast(1f)
+        val speed = 6f
+        playbackSimJob = viewModelScope.launch {
+            var dist = 0f
+            while (isActive && _routePlaybackActive.value) {
+                val (lat, lon, bear) = interpolateRoutePlayback(poly, dist)
+                val uri = routePlaybackPhotoUriAtDistance(poly, dist)
+                _routePlaybackSim.value = RoutePlaybackSimState(
+                    latitude = lat,
+                    longitude = lon,
+                    bearingDeg = bear,
+                    progress = (dist / total).coerceIn(0f, 1f),
+                    distanceAlongMeters = dist,
+                    totalPathMeters = total,
+                    currentPhotoUri = uri,
+                )
+                delay(33)
+                if (!_routePlaybackActive.value) break
+                dist += speed * 0.033f
+                if (dist >= total) dist %= total
+            }
         }
     }
 
@@ -534,13 +605,10 @@ class TravelViewModel(
 
     fun setRoutePlaybackActive(active: Boolean) {
         _routePlaybackActive.value = active
-        if (!active) {
-            _routePlaybackSessionIndex.value = 0
-        }
     }
 
     fun cycleRoutePlaybackSession() {
-        val n = routePhotoSessions.value.size
+        val n = routePhotoSessions.value.sortedByDescending { it.createdAtMs }.size
         if (n <= 1) return
         _routePlaybackSessionIndex.update { (it + 1) % n }
     }
@@ -558,6 +626,24 @@ class TravelViewModel(
                 if (remaining.isEmpty()) 0
                 else idx.coerceIn(0, (remaining.size - 1).coerceAtLeast(0))
             }
+        }
+    }
+
+    fun deleteAllRoutePhotoSessions() {
+        viewModelScope.launch {
+            repo.clearAllRoutePhotoSessions()
+            playbackSimJob?.cancel()
+            playbackSimJob = null
+            _routePlaybackActive.value = false
+            _routePlaybackSim.value = null
+            _routePlaybackSessionIndex.value = 0
+        }
+    }
+
+    fun removePhotosFromRouteSession(sessionId: String, photoUris: Set<String>) {
+        if (photoUris.isEmpty()) return
+        viewModelScope.launch {
+            repo.removePhotoPointsFromSession(sessionId, photoUris)
         }
     }
 }

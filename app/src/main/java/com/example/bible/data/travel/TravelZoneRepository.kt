@@ -1,6 +1,7 @@
 package com.example.bible.data.travel
 
 import android.content.Context
+import android.net.Uri
 import androidx.datastore.preferences.core.booleanPreferencesKey
 import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.stringPreferencesKey
@@ -8,6 +9,7 @@ import androidx.datastore.preferences.preferencesDataStore
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
+import java.io.File
 
 private val Context.travelZonesDataStore by preferencesDataStore(name = "travel_zones")
 
@@ -100,6 +102,36 @@ class TravelZoneRepository(
     suspend fun replaceRoutePhotoSession(updated: TravelRoutePhotoSession) {
         val cur = snapshotRoutePhotoSessions()
         saveRoutePhotoSessions(cur.map { if (it.id == updated.id) updated else it })
+    }
+
+    suspend fun clearAllRoutePhotoSessions() {
+        val cur = snapshotRoutePhotoSessions()
+        cur.forEach { TravelPhotoStorage.deleteRouteSessionDir(app, it.id) }
+        saveRoutePhotoSessions(emptyList())
+    }
+
+    /** Удалить выбранные кадры из серии (по URI); при пустом списке точек удаляется серия целиком. */
+    suspend fun removePhotoPointsFromSession(sessionId: String, photoUris: Set<String>) {
+        if (photoUris.isEmpty()) return
+        val cur = snapshotRoutePhotoSessions()
+        val session = cur.find { it.id == sessionId } ?: return
+        val removed = session.points.filter { it.photoUri in photoUris }
+        val remaining = session.points.filter { it.photoUri !in photoUris }
+        for (p in removed) {
+            runCatching {
+                val path = Uri.parse(p.photoUri).path ?: return@runCatching
+                File(path).takeIf { it.exists() }?.delete()
+            }
+        }
+        val nextList = if (remaining.isEmpty()) {
+            TravelPhotoStorage.deleteRouteSessionDir(app, sessionId)
+            cur.filter { it.id != sessionId }
+        } else {
+            cur.map {
+                if (it.id == sessionId) session.copy(points = remaining) else it
+            }
+        }
+        saveRoutePhotoSessions(nextList)
     }
 
     suspend fun snapshot(): List<TravelZone> = zones.first()

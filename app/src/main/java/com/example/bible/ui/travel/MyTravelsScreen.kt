@@ -24,6 +24,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -47,6 +48,7 @@ import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.RadioButton
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Slider
 import androidx.compose.material3.SmallFloatingActionButton
 import androidx.compose.material3.Switch
@@ -123,7 +125,6 @@ import coil.compose.AsyncImage
 import com.example.bible.data.travel.TravelPhotoStorage
 import com.example.bible.data.travel.TravelRoutePhotoPoint
 import com.example.bible.data.travel.TravelRoutePhotoSession
-import com.example.bible.data.travel.nearestRoutePhotoPoint
 import java.util.UUID
 import java.util.concurrent.Executors
 
@@ -167,12 +168,15 @@ fun MyTravelsScreen(
     val routeBurstActive by vm.routeBurstActive.collectAsStateWithLifecycle()
     val routePlaybackActive by vm.routePlaybackActive.collectAsStateWithLifecycle()
     val routePlaybackSessionIndex by vm.routePlaybackSessionIndex.collectAsStateWithLifecycle()
+    val routePlaybackSim by vm.routePlaybackSim.collectAsStateWithLifecycle()
     val lastUserGeo by vm.lastUserGeo.collectAsStateWithLifecycle()
     val lastUserHeadingDeg by vm.lastUserHeadingDeg.collectAsStateWithLifecycle()
     val scope = rememberCoroutineScope()
 
     var burstSessionIdLocal by remember { mutableStateOf<String?>(null) }
     var deleteRouteSessionDialog by remember { mutableStateOf(false) }
+    var deleteAllRouteSessionsConfirm by remember { mutableStateOf(false) }
+    var showRoutePhotosManageSheet by remember { mutableStateOf(false) }
     val burstDraftPoints = remember { mutableStateListOf<TravelRoutePhotoPoint>() }
     var burstImageCapture by remember { mutableStateOf<ImageCapture?>(null) }
     val burstCaptureExecutor = remember { Executors.newSingleThreadExecutor() }
@@ -243,8 +247,8 @@ fun MyTravelsScreen(
         }
     }
 
-    DisposableEffect(routePlaybackActive, routeBurstActive, hasFineLocation) {
-        if ((!routePlaybackActive && !routeBurstActive) || !hasFineLocation) {
+    DisposableEffect(routeBurstActive, hasFineLocation) {
+        if (!routeBurstActive || !hasFineLocation) {
             vm.clearUserHeading()
             return@DisposableEffect onDispose { }
         }
@@ -391,15 +395,6 @@ fun MyTravelsScreen(
     val sortedPhotoSessions = remember(routePhotoSessions) {
         routePhotoSessions.sortedByDescending { it.createdAtMs }
     }
-    val playbackPoints = remember(sortedPhotoSessions, routePlaybackSessionIndex) {
-        if (sortedPhotoSessions.isEmpty()) emptyList()
-        else sortedPhotoSessions[routePlaybackSessionIndex % sortedPhotoSessions.size].points
-    }
-    val playbackNearestUri = remember(lastUserGeo, routePlaybackActive, playbackPoints, lastUserHeadingDeg) {
-        if (!routePlaybackActive || lastUserGeo == null) null
-        else nearestRoutePhotoPoint(lastUserGeo!!, playbackPoints, viewerHeadingDeg = lastUserHeadingDeg)?.photoUri
-    }
-
     val stopRouteBurstAndSave: () -> Unit = {
         vm.setRouteBurstActive(false)
         val sid = burstSessionIdLocal
@@ -678,6 +673,13 @@ fun MyTravelsScreen(
                                     vm.clearMapIncidents()
                                 },
                             )
+                            DropdownMenuItem(
+                                text = { Text(stringResource(R.string.travel_route_delete_all_sessions_menu)) },
+                                onClick = {
+                                    vm.setTravelMenuExpanded(false)
+                                    deleteAllRouteSessionsConfirm = true
+                                },
+                            )
                         }
                     }
                 },
@@ -812,6 +814,7 @@ fun MyTravelsScreen(
                         },
                         onUserLocationUpdated = { lat, lng -> vm.reportUserLocation(lat, lng) },
                         routePhotoSessions = routePhotoSessions,
+                        routePlaybackSim = routePlaybackSim,
                     )
                     TravelBurstCameraPreview(
                         enabled = routeBurstActive && camGranted,
@@ -909,21 +912,35 @@ fun MyTravelsScreen(
                             }
                         }
                     }
-                    playbackNearestUri?.let { uriStr ->
-                        Card(
-                            modifier = Modifier
-                                .align(Alignment.BottomStart)
-                                .padding(12.dp)
-                                .width(220.dp)
-                                .height(140.dp),
-                            shape = RoundedCornerShape(12.dp),
-                        ) {
-                            AsyncImage(
-                                model = Uri.parse(uriStr),
-                                contentDescription = null,
-                                modifier = Modifier.fillMaxSize(),
-                                contentScale = ContentScale.Crop,
-                            )
+                    routePlaybackSim?.let { sim ->
+                        sim.currentPhotoUri?.let { uriStr ->
+                            Card(
+                                modifier = Modifier
+                                    .align(Alignment.BottomStart)
+                                    .padding(12.dp)
+                                    .width(220.dp)
+                                    .height(140.dp),
+                                shape = RoundedCornerShape(12.dp),
+                            ) {
+                                Box(Modifier.fillMaxSize()) {
+                                    AsyncImage(
+                                        model = Uri.parse(uriStr),
+                                        contentDescription = null,
+                                        modifier = Modifier.fillMaxSize(),
+                                        contentScale = ContentScale.Crop,
+                                    )
+                                    Surface(
+                                        modifier = Modifier.align(Alignment.BottomCenter),
+                                        color = MaterialTheme.colorScheme.surface.copy(alpha = 0.88f),
+                                    ) {
+                                        Text(
+                                            "${(sim.progress * 100f).toInt()}% · ${sim.distanceAlongMeters.toInt()} м / ${sim.totalPathMeters.toInt()} м",
+                                            style = MaterialTheme.typography.labelSmall,
+                                            modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
+                                        )
+                                    }
+                                }
+                            }
                         }
                     }
                     TravelMapFloatingToolbar(
@@ -1255,10 +1272,29 @@ fun MyTravelsScreen(
     if (deleteRouteSessionDialog && sortedPhotoSessions.isNotEmpty()) {
         val deleteSid =
             sortedPhotoSessions[routePlaybackSessionIndex % sortedPhotoSessions.size].id
+        val selSession = sortedPhotoSessions[routePlaybackSessionIndex % sortedPhotoSessions.size]
         AlertDialog(
             onDismissRequest = { deleteRouteSessionDialog = false },
             title = { Text(stringResource(R.string.travel_route_delete_session_title)) },
-            text = { Text(stringResource(R.string.travel_route_delete_session_message)) },
+            text = {
+                Column {
+                    Text(stringResource(R.string.travel_route_delete_session_message))
+                    Text(
+                        stringResource(R.string.travel_route_delete_session_hint_detail),
+                        style = MaterialTheme.typography.bodySmall,
+                        modifier = Modifier.padding(top = 8.dp),
+                    )
+                    TextButton(
+                        onClick = {
+                            deleteRouteSessionDialog = false
+                            showRoutePhotosManageSheet = true
+                        },
+                        modifier = Modifier.padding(top = 4.dp),
+                    ) {
+                        Text(stringResource(R.string.travel_route_delete_session_manage_points))
+                    }
+                }
+            },
             confirmButton = {
                 TextButton(
                     onClick = {
@@ -1267,7 +1303,12 @@ fun MyTravelsScreen(
                         vm.setRoutePlaybackActive(false)
                     },
                 ) {
-                    Text(stringResource(R.string.travel_delete))
+                    Text(
+                        stringResource(
+                            R.string.travel_route_delete_session_confirm_fmt,
+                            selSession.points.size,
+                        ),
+                    )
                 }
             },
             dismissButton = {
@@ -1276,6 +1317,90 @@ fun MyTravelsScreen(
                 }
             },
         )
+    }
+
+    if (deleteAllRouteSessionsConfirm) {
+        AlertDialog(
+            onDismissRequest = { deleteAllRouteSessionsConfirm = false },
+            title = { Text(stringResource(R.string.travel_route_delete_all_sessions_title)) },
+            text = { Text(stringResource(R.string.travel_route_delete_all_sessions_message)) },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        vm.deleteAllRoutePhotoSessions()
+                        deleteAllRouteSessionsConfirm = false
+                    },
+                ) {
+                    Text(stringResource(R.string.travel_delete))
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { deleteAllRouteSessionsConfirm = false }) {
+                    Text(stringResource(R.string.travel_cancel))
+                }
+            },
+        )
+    }
+
+    if (showRoutePhotosManageSheet && sortedPhotoSessions.isNotEmpty()) {
+        val sessionForManage =
+            sortedPhotoSessions[routePlaybackSessionIndex % sortedPhotoSessions.size]
+        ModalBottomSheet(
+            onDismissRequest = { showRoutePhotosManageSheet = false },
+        ) {
+            LazyColumn(
+                Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 16.dp, vertical = 8.dp),
+            ) {
+                item {
+                    Text(
+                        stringResource(R.string.travel_route_manage_photos_title),
+                        style = MaterialTheme.typography.titleMedium,
+                        modifier = Modifier.padding(bottom = 8.dp),
+                    )
+                }
+                items(sessionForManage.points, key = { it.photoUri }) { pt ->
+                    Row(
+                        Modifier
+                            .fillMaxWidth()
+                            .padding(vertical = 6.dp),
+                        horizontalArrangement = Arrangement.spacedBy(12.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                    ) {
+                        AsyncImage(
+                            model = Uri.parse(pt.photoUri),
+                            contentDescription = null,
+                            modifier = Modifier
+                                .size(72.dp)
+                                .clip(RoundedCornerShape(8.dp)),
+                            contentScale = ContentScale.Crop,
+                        )
+                        Text(
+                            stringResource(
+                                R.string.travel_route_photo_point_short,
+                                pt.latitude,
+                                pt.longitude,
+                            ),
+                            style = MaterialTheme.typography.bodySmall,
+                            modifier = Modifier.weight(1f),
+                        )
+                        IconButton(
+                            onClick = {
+                                scope.launch {
+                                    vm.removePhotosFromRouteSession(
+                                        sessionForManage.id,
+                                        setOf(pt.photoUri),
+                                    )
+                                }
+                            },
+                        ) {
+                            Icon(Icons.Default.Delete, contentDescription = stringResource(R.string.travel_delete))
+                        }
+                    }
+                }
+            }
+        }
     }
 
     incidentDraftPoint?.let { pt ->

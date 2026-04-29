@@ -47,6 +47,7 @@ import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.snapshotFlow
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.setValue
@@ -80,6 +81,7 @@ import com.example.bible.data.travel.TravelRouteGuidanceSession
 import com.example.bible.data.travel.TravelTriggerAction
 import com.example.bible.data.travel.TravelZone
 import com.example.bible.data.travel.TravelZoneKind
+import com.example.bible.data.travel.RoutePlaybackSimState
 import com.example.bible.data.travel.TravelRoutePhotoSession
 import com.example.bible.data.travel.bearingDegreesLatLon
 import com.example.bible.data.travel.buildRoutePhotoDirectionSegments
@@ -292,6 +294,7 @@ fun YandexTravelMap(
     onIncidentPlaced: (TravelGeoPoint) -> Unit,
     onUserLocationUpdated: ((Double, Double) -> Unit)? = null,
     routePhotoSessions: List<TravelRoutePhotoSession> = emptyList(),
+    routePlaybackSim: RoutePlaybackSimState? = null,
 ) {
     val context = LocalContext.current
     var mapReady by remember { mutableStateOf<Boolean?>(null) }
@@ -353,6 +356,7 @@ fun YandexTravelMap(
                 onIncidentPlaced = onIncidentPlaced,
                 onUserLocationUpdated = onUserLocationUpdated,
                 routePhotoSessions = routePhotoSessions,
+                routePlaybackSim = routePlaybackSim,
             )
         }
     }
@@ -385,6 +389,7 @@ private fun YandexTravelMapContent(
     onIncidentPlaced: (TravelGeoPoint) -> Unit,
     onUserLocationUpdated: ((Double, Double) -> Unit)? = null,
     routePhotoSessions: List<TravelRoutePhotoSession> = emptyList(),
+    routePlaybackSim: RoutePlaybackSimState? = null,
 ) {
     val context = LocalContext.current
     val lifecycleOwner = LocalLifecycleOwner.current
@@ -438,6 +443,12 @@ private fun YandexTravelMapContent(
     val routePhotoBurstLayer = remember(mapView) {
         routeOverlay.addCollection().apply { zIndex = 4.08f }
     }
+    val routePhotoArrowLayer = remember(mapView) {
+        routeOverlay.addCollection().apply { zIndex = 4.38f }
+    }
+    val routePlaybackWalkerLayer = remember(mapView) {
+        routeOverlay.addCollection().apply { zIndex = 6.48f }
+    }
     /** Отмена устаревших ответов [DrivingSession] при новом запросе или [routeClearNonce]. */
     val routeRequestGeneration = remember { AtomicLong(0L) }
     val drivingRouter = remember(mapView) {
@@ -453,6 +464,7 @@ private fun YandexTravelMapContent(
     val onRouteBuilt = rememberUpdatedState(onTravelRouteBuilt)
     val onActiveRoute = rememberUpdatedState(onActiveTravelRouteChange)
     val onUserLocation = rememberUpdatedState(onUserLocationUpdated)
+    val routePlaybackSimState = rememberUpdatedState(routePlaybackSim)
 
     LaunchedEffect(routePhotoSessions, routePhotoBurstLayer, mapView) {
         routePhotoBurstLayer.clear()
@@ -463,6 +475,57 @@ private fun YandexTravelMapContent(
             line.setStrokeColor(seg.colorArgb)
             line.strokeWidth = 11f
             line.zIndex = 4.06f
+        }
+    }
+
+    LaunchedEffect(routePhotoSessions, routePhotoArrowLayer, mapView, context) {
+        routePhotoArrowLayer.clear()
+        val segments = buildRoutePhotoDirectionSegments(routePhotoSessions)
+        val laneArrowIcon = laneDirectionArrowImageProvider(context)
+        for (seg in segments) {
+            val poly = Polyline(listOf(Point(seg.lat1, seg.lon1), Point(seg.lat2, seg.lon2)))
+            val arrows = sampleLaneArrowsAlongPolyline(poly, TRAVEL_ROUTE_LANE_ARROW_SPACING_M)
+            for ((pt, bearingDeg) in arrows) {
+                val pm = routePhotoArrowLayer.addPlacemark(pt, laneArrowIcon)
+                pm.direction = bearingDeg
+                pm.setIconStyle(
+                    IconStyle().apply {
+                        anchor = PointF(0.5f, 0.5f)
+                        rotationType = RotationType.ROTATE
+                        scale = 1.18f
+                        zIndex = 4.37f
+                    },
+                )
+            }
+        }
+    }
+
+    LaunchedEffect(routePlaybackWalkerLayer, mapView, context) {
+        val icon = routePlaybackWalkerImageProvider(context)
+        val pm = routePlaybackWalkerLayer.addPlacemark(Point(0.0, 0.0), icon)
+        pm.setIconStyle(
+            IconStyle().apply {
+                anchor = PointF(0.5f, 0.5f)
+                rotationType = RotationType.ROTATE
+                scale = 1.12f
+            },
+        )
+        pm.setVisible(false)
+        snapshotFlow { routePlaybackSimState.value }.collect { sim ->
+            if (sim == null) {
+                pm.setVisible(false)
+                return@collect
+            }
+            pm.setVisible(true)
+            pm.geometry = Point(sim.latitude, sim.longitude)
+            pm.direction = sim.bearingDeg
+            val mapInst = mapView.mapWindow.map
+            val cp = mapInst.cameraPosition
+            mapInst.move(
+                CameraPosition(Point(sim.latitude, sim.longitude), cp.zoom, cp.azimuth, cp.tilt),
+                Animation(Animation.Type.SMOOTH, 0.16f),
+                null,
+            )
         }
     }
 
@@ -1675,6 +1738,26 @@ private fun laneDirectionArrowImageProvider(context: android.content.Context): I
     val wingBase = tipY + d * 0.11f
     canvas.drawLine(cx - wing * 0.15f, wingBase, cx - wing, wingBase + wing * 0.95f, stroke)
     canvas.drawLine(cx + wing * 0.15f, wingBase, cx + wing, wingBase + wing * 0.95f, stroke)
+    return ImageProvider.fromBitmap(bmp)
+}
+
+/** Маркер виртуального проезда по сохранённому GPS-маршруту (фигурка поверх полос направления). */
+private fun routePlaybackWalkerImageProvider(context: android.content.Context): ImageProvider {
+    val d = (38 * context.resources.displayMetrics.density).toInt().coerceIn(30, 56)
+    val bmp = Bitmap.createBitmap(d, d, Bitmap.Config.ARGB_8888)
+    val canvas = Canvas(bmp)
+    val cx = d / 2f
+    val cy = d / 2f - d * 0.06f
+    val body = Paint(Paint.ANTI_ALIAS_FLAG).apply { color = 0xFFFF6F00.toInt() }
+    val rim = Paint(Paint.ANTI_ALIAS_FLAG).apply {
+        color = AndroidColor.WHITE
+        style = Paint.Style.STROKE
+        strokeWidth = max(1f, d * 0.07f)
+    }
+    canvas.drawCircle(cx, cy, d * 0.3f, body)
+    canvas.drawCircle(cx, cy, d * 0.3f, rim)
+    val head = Paint(Paint.ANTI_ALIAS_FLAG).apply { color = AndroidColor.WHITE }
+    canvas.drawCircle(cx, cy - d * 0.34f, d * 0.11f, head)
     return ImageProvider.fromBitmap(bmp)
 }
 
