@@ -142,7 +142,8 @@ private const val TRAVEL_FOLLOW_LOCATION_INTERVAL_MS = 33L
 private const val TRAVEL_CAMERA_POS_SMOOTH_SLOW = 0.42f
 /** λ (1/с) для экспоненциального сближения «экранной» камеры с целью GPS за один кадр (выше — меньше отставание от экстраполированной точки). */
 private const val TRAVEL_FOLLOW_DISPLAY_POS_LAMBDA = 28.0
-private const val TRAVEL_FOLLOW_DISPLAY_ZOOM_LAMBDA = 14.0
+/** Меньше λ — экранный зум медленнее тянется к цели (меньше рывков при авто-сближении/отдалении). */
+private const val TRAVEL_FOLLOW_DISPLAY_ZOOM_LAMBDA = 8.5
 private const val TRAVEL_FOLLOW_DISPLAY_ANGLE_LAMBDA = 18.0
 /** Максимум метров «вперёд» по последнему курсу между двумя фиксами GPS (страховка от скачков часов). */
 private const val TRAVEL_FOLLOW_MAX_EXTRAPOLATE_M = 55f
@@ -189,17 +190,18 @@ private fun zoomForViewSpanMeters(
 }
 
 /**
- * «Высота» / охват: до 10 км/ч (пешком / очень тихо) — ~200 м; 10–57 км/ч — 400 м; 58–62 — 1100 м;
- * 63–100 — 1500 м; выше 100 — 2000 м.
+ * Целевой вертикальный охват по скорости без резких ступеней (ступени давали рывки зума у порогов ~58 км/ч).
  */
-private fun targetViewSpanMeters(speedKmh: Float): Double {
-    val v = speedKmh.coerceAtLeast(0f)
+private fun targetViewSpanMetersSmooth(speedKmh: Float): Double {
+    val v = speedKmh.coerceIn(0f, 140f)
+    fun lerp(a: Double, b: Double, t: Float): Double =
+        a + (b - a) * t.toDouble().coerceIn(0.0, 1.0)
     return when {
-        v < 10f -> 200.0
-        v < 58f -> 400.0
-        v in 58f..62f -> 1100.0
-        v < 100f -> 1500.0
-        else -> 2000.0
+        v < 12f -> lerp(200.0, 400.0, v / 12f)
+        v < 54f -> 400.0
+        v < 70f -> lerp(400.0, 1100.0, (v - 54f) / 16f)
+        v < 98f -> lerp(1100.0, 1500.0, (v - 70f) / 28f)
+        else -> lerp(1500.0, 2000.0, ((v - 98f) / 42f).coerceIn(0f, 1f))
     }
 }
 
@@ -638,6 +640,8 @@ private fun YandexTravelMapContent(
         }
         val followCamera = headingModeActive && followUserActive
         var smoothedZoom = mapView.mapWindow.map.cameraPosition.zoom
+        /** Доп. сглаживание цели зума по тикам GPS (поверх [smoothedZoom]), чтобы [followTargets.tZoom] не прыгала. */
+        var smoothFollowZoomTarget = Float.NaN
         var smoothedTilt = mapView.mapWindow.map.cameraPosition.tilt
         var smoothedLat: Double? = null
         var smoothedLon: Double? = null
@@ -771,6 +775,7 @@ private fun YandexTravelMapContent(
             }
             hudSpeedKmh.floatValue = hudSpeedKmh.floatValue * (1f - hudBlend) + kmh * hudBlend
             if (!followCamera) return
+            val zoomKmh = hudSpeedKmh.floatValue.coerceIn(0f, 400f)
             val map = mapView.mapWindow.map
             val cp = map.cameraPosition
             val blend = travelGpsPosBlend(speedMps)
@@ -805,15 +810,25 @@ private fun YandexTravelMapContent(
             navBearingDeg = azimuth
             navAnchorInitialized = true
             val z = if (userLockedWideView.get()) {
-                cp.zoom.also { smoothedZoom = it }
+                cp.zoom.also {
+                    smoothedZoom = it
+                    smoothFollowZoomTarget = it
+                }
             } else {
                 val targetZoom = zoomForViewSpanMeters(
                     mapView,
                     latitude,
-                    targetViewSpanMeters(kmh),
+                    targetViewSpanMetersSmooth(zoomKmh),
                 )
-                smoothedZoom = smoothedZoom * 0.84f + targetZoom * 0.16f
-                smoothedZoom.coerceIn(2f, 20.5f)
+                smoothedZoom = smoothedZoom * 0.88f + targetZoom * 0.12f
+                val blended = smoothedZoom.coerceIn(2f, 20.5f)
+                smoothFollowZoomTarget =
+                    if (smoothFollowZoomTarget.isNaN()) {
+                        blended
+                    } else {
+                        smoothFollowZoomTarget * 0.82f + blended * 0.18f
+                    }
+                smoothFollowZoomTarget.coerceIn(2f, 20.5f)
             }
             smoothedTilt = smoothedTilt + (TRAVEL_NAV_TARGET_TILT - smoothedTilt) * TRAVEL_NAV_TILT_SMOOTH
             followTargets.tZoom = z
@@ -832,6 +847,7 @@ private fun YandexTravelMapContent(
                 override fun onLocationUpdated(location: com.yandex.mapkit.location.Location) {
                     val pos = location.position
                     val lat = pos.latitude
+                    val lon = pos.longitude
                     val speedMps = effectiveSpeedMpsMapKit(location, prevMkPrev)
                     prevMkPrev = MkLocPrev(lat, lon, location.relativeTimestamp)
                     val hd = location.heading
