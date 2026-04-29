@@ -191,7 +191,11 @@ import com.example.bible.data.AttachmentKind
 import com.example.bible.data.VerseAttachment
 import com.example.bible.data.VerseAttachmentStore
 import com.example.bible.data.HistoryEntry
+import com.example.bible.data.LastSessionResumeKind
 import com.example.bible.data.ReadingTraceEntry
+import com.example.bible.data.isValidForRestore
+import com.example.bible.data.ResumePersistAction
+import com.example.bible.data.resumePersistActionForNavDestination
 import com.example.bible.data.InterlinearTts
 import com.example.bible.data.UserNote
 import com.example.bible.data.VerseRef
@@ -582,6 +586,20 @@ private fun BibleNavHost(
     val kidsUserSections by viewModel.kidsUserSections.collectAsStateWithLifecycle()
     val ttsUserSettings by viewModel.ttsUserSettings.collectAsStateWithLifecycle()
     val scope = rememberCoroutineScope()
+    val navLifecycleOwner = LocalLifecycleOwner.current
+
+    DisposableEffect(navLifecycleOwner, navController, translation) {
+        val observer = LifecycleEventObserver { _, event ->
+            if (event == Lifecycle.Event.ON_STOP) {
+                scope.launch {
+                    val action = resumePersistActionForNavDestination(navController, translation)
+                    preferences.applyResumePersistAction(action)
+                }
+            }
+        }
+        navLifecycleOwner.lifecycle.addObserver(observer)
+        onDispose { navLifecycleOwner.lifecycle.removeObserver(observer) }
+    }
 
     NavHost(
         navController = navController,
@@ -2782,6 +2800,37 @@ private fun BibleNavHost(
                 onBack = { navController.navigateUp() },
             )
         }
+    }
+
+    LaunchedEffect(Unit) {
+        val saved = preferences.loadLastSessionResume() ?: return@LaunchedEffect
+        if (!saved.isValidForRestore()) {
+            preferences.applyResumePersistAction(ResumePersistAction.ClearStored)
+            return@LaunchedEffect
+        }
+        when (saved.kind) {
+            LastSessionResumeKind.READ -> {
+                viewModel.setTranslation(TranslationId.fromCode(saved.translationCode))
+                navController.navigate("read/${saved.bookId}/${saved.chapter}/${saved.scrollVerse}") {
+                    popUpTo("books") { inclusive = false }
+                    launchSingleTop = true
+                }
+            }
+            LastSessionResumeKind.DUAL -> {
+                viewModel.setTranslation(TranslationId.fromCode(saved.translationCode))
+                navController.navigate("dual") {
+                    popUpTo("books") { inclusive = false }
+                    launchSingleTop = true
+                }
+            }
+            LastSessionResumeKind.NOTE -> {
+                navController.navigate("note_edit/${saved.noteId}") {
+                    popUpTo("books") { inclusive = false }
+                    launchSingleTop = true
+                }
+            }
+        }
+        preferences.applyResumePersistAction(ResumePersistAction.ClearStored)
     }
 }
 

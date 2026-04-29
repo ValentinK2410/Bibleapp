@@ -108,6 +108,8 @@ private object Keys {
     val TTS_ENGINE_PACKAGE = stringPreferencesKey("tts_engine_package")
     /** Подбирать максимальное качество голоса для языка, если движок отдаёт несколько. */
     val TTS_PREFER_HQ = booleanPreferencesKey("tts_prefer_hq_voice")
+    /** Последнее место чтения Библии или редактора заметки для возобновления после выхода из приложения. */
+    val LAST_SESSION_RESUME_JSON = stringPreferencesKey("last_session_resume_json")
 }
 
 /** Запись истории поиска по русскому переводу Корана (локально в DataStore). */
@@ -1142,6 +1144,23 @@ class BiblePreferences(
     suspend fun mergePreferencesFromJson(root: JSONObject) {
         appContext.bibleDataStore.edit { prefs ->
             applyJsonToMutablePreferences(prefs, root)
+        }
+    }
+
+    suspend fun loadLastSessionResume(): LastSessionResume? {
+        val raw = appContext.bibleDataStore.data.first()[Keys.LAST_SESSION_RESUME_JSON].orEmpty()
+        return LastSessionResume.fromJson(raw)
+    }
+
+    suspend fun applyResumePersistAction(action: ResumePersistAction) {
+        appContext.bibleDataStore.edit { prefs ->
+            when (action) {
+                ResumePersistAction.KeepExisting -> Unit
+                ResumePersistAction.ClearStored -> prefs.remove(Keys.LAST_SESSION_RESUME_JSON)
+                is ResumePersistAction.Store -> {
+                    prefs[Keys.LAST_SESSION_RESUME_JSON] = action.resume.toJson().toString()
+                }
+            }
         }
     }
 
