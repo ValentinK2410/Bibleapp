@@ -3,7 +3,12 @@ package com.example.bible.ui.travel
 import android.content.Intent
 import android.Manifest
 import android.annotation.SuppressLint
+import android.content.Context
 import android.content.pm.PackageManager
+import android.hardware.Sensor
+import android.hardware.SensorEvent
+import android.hardware.SensorEventListener
+import android.hardware.SensorManager
 import android.net.Uri
 import android.os.Build
 import android.widget.Toast
@@ -162,6 +167,7 @@ fun MyTravelsScreen(
     val routePlaybackActive by vm.routePlaybackActive.collectAsStateWithLifecycle()
     val routePlaybackSessionIndex by vm.routePlaybackSessionIndex.collectAsStateWithLifecycle()
     val lastUserGeo by vm.lastUserGeo.collectAsStateWithLifecycle()
+    val lastUserHeadingDeg by vm.lastUserHeadingDeg.collectAsStateWithLifecycle()
     val scope = rememberCoroutineScope()
 
     var burstSessionIdLocal by remember { mutableStateOf<String?>(null) }
@@ -232,6 +238,38 @@ fun MyTravelsScreen(
             ) == PackageManager.PERMISSION_GRANTED
         } else {
             true
+        }
+    }
+
+    DisposableEffect(routePlaybackActive, routeBurstActive, hasFineLocation) {
+        if ((!routePlaybackActive && !routeBurstActive) || !hasFineLocation) {
+            vm.clearUserHeading()
+            return@DisposableEffect onDispose { }
+        }
+        val sensorManager = context.getSystemService(Context.SENSOR_SERVICE) as SensorManager
+        val sensor = sensorManager.getDefaultSensor(Sensor.TYPE_ROTATION_VECTOR)
+        if (sensor == null) {
+            vm.clearUserHeading()
+            return@DisposableEffect onDispose { }
+        }
+        val rMat = FloatArray(9)
+        val orient = FloatArray(3)
+        val listener = object : SensorEventListener {
+            override fun onSensorChanged(event: SensorEvent) {
+                if (event.sensor.type != Sensor.TYPE_ROTATION_VECTOR) return
+                SensorManager.getRotationMatrixFromVector(rMat, event.values)
+                SensorManager.getOrientation(rMat, orient)
+                var az = Math.toDegrees(orient[0].toDouble()).toFloat()
+                if (az < 0f) az += 360f
+                vm.reportUserHeading(az)
+            }
+
+            override fun onAccuracyChanged(sensor: Sensor?, accuracy: Int) = Unit
+        }
+        sensorManager.registerListener(listener, sensor, SensorManager.SENSOR_DELAY_GAME)
+        onDispose {
+            sensorManager.unregisterListener(listener)
+            vm.clearUserHeading()
         }
     }
 
@@ -323,6 +361,7 @@ fun MyTravelsScreen(
     val burstActiveRef = rememberUpdatedState(routeBurstActive)
     val burstSidRef = rememberUpdatedState(burstSessionIdLocal)
     val lastGeoRef = rememberUpdatedState(lastUserGeo)
+    val headingRef = rememberUpdatedState(lastUserHeadingDeg)
 
     LaunchedEffect(routeBurstActive, burstImageCapture, burstSessionIdLocal) {
         if (!routeBurstActive) return@LaunchedEffect
@@ -339,6 +378,7 @@ fun MyTravelsScreen(
                         longitude = geo.longitude,
                         photoUri = TravelPhotoStorage.toFileUriString(file.absolutePath),
                         capturedAtMs = System.currentTimeMillis(),
+                        headingDeg = headingRef.value,
                     ),
                 )
             }
@@ -353,9 +393,9 @@ fun MyTravelsScreen(
         if (sortedPhotoSessions.isEmpty()) emptyList()
         else sortedPhotoSessions[routePlaybackSessionIndex % sortedPhotoSessions.size].points
     }
-    val playbackNearestUri = remember(lastUserGeo, routePlaybackActive, playbackPoints) {
+    val playbackNearestUri = remember(lastUserGeo, routePlaybackActive, playbackPoints, lastUserHeadingDeg) {
         if (!routePlaybackActive || lastUserGeo == null) null
-        else nearestRoutePhotoPoint(lastUserGeo!!, playbackPoints)?.photoUri
+        else nearestRoutePhotoPoint(lastUserGeo!!, playbackPoints, viewerHeadingDeg = lastUserHeadingDeg)?.photoUri
     }
 
     val stopRouteBurstAndSave: () -> Unit = {

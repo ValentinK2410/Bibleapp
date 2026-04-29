@@ -167,6 +167,10 @@ class TravelViewModel(
     private val _lastUserGeo = MutableStateFlow<TravelGeoPoint?>(null)
     val lastUserGeo: StateFlow<TravelGeoPoint?> = _lastUserGeo.asStateFlow()
 
+    /** Азимут «куда смотрит» пользователь (0° — север), с [android.hardware.Sensor.TYPE_ROTATION_VECTOR] при просмотре/съёмке. */
+    private val _lastUserHeadingDeg = MutableStateFlow<Float?>(null)
+    val lastUserHeadingDeg: StateFlow<Float?> = _lastUserHeadingDeg.asStateFlow()
+
     private val _routeBurstActive = MutableStateFlow(false)
     val routeBurstActive: StateFlow<Boolean> = _routeBurstActive.asStateFlow()
 
@@ -511,6 +515,17 @@ class TravelViewModel(
 
     fun reportUserLocation(latitude: Double, longitude: Double) {
         _lastUserGeo.value = TravelGeoPoint(latitude, longitude)
+    }
+
+    fun reportUserHeading(degrees: Float) {
+        if (!degrees.isFinite()) return
+        var v = degrees % 360f
+        if (v < 0f) v += 360f
+        _lastUserHeadingDeg.value = v
+    }
+
+    fun clearUserHeading() {
+        _lastUserHeadingDeg.value = null
     }
 
     fun setRouteBurstActive(active: Boolean) {
