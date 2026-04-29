@@ -999,6 +999,7 @@
     <string name="travel_marker_photo_from_gallery">Из галереи</string>
     <string name="travel_marker_photo_camera">Снять камерой</string>
     <string name="travel_marker_photo_remove">Удалить фото</string>
+    <string name="travel_route_photo_modes_conflict">Отключите режим метки или выбор маршрута по карте</string>
     <string name="travel_incident_mode_stop">Закончить расстановку знаков</string>
     <string name="travel_mapkit_settings_title">Ключ MapKit</string>
     <string name="travel_mapkit_key_label">API-ключ</string>

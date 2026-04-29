@@ -377,6 +377,9 @@ fun MyTravelsScreen(
             !hasFineLocation -> {
                 Toast.makeText(context, R.string.travel_need_location, Toast.LENGTH_LONG).show()
             }
+            incidentPlaceMode || routePickDestination -> {
+                Toast.makeText(context, R.string.travel_route_photo_modes_conflict, Toast.LENGTH_SHORT).show()
+            }
             !camGranted -> {
                 camPermLauncher.launch(Manifest.permission.CAMERA)
             }
@@ -804,14 +807,22 @@ fun MyTravelsScreen(
                             onClick = {
                                 bumpFloatingToolbar()
                                 if (routeBurstActive) stopRouteBurstAndSave()
-                                if (!routePlaybackActive && sortedPhotoSessions.isEmpty()) {
-                                    Toast.makeText(
-                                        context,
-                                        R.string.travel_route_photo_no_sessions,
-                                        Toast.LENGTH_SHORT,
-                                    ).show()
-                                } else {
-                                    vm.setRoutePlaybackActive(!routePlaybackActive)
+                                when {
+                                    incidentPlaceMode || routePickDestination -> {
+                                        Toast.makeText(
+                                            context,
+                                            R.string.travel_route_photo_modes_conflict,
+                                            Toast.LENGTH_SHORT,
+                                        ).show()
+                                    }
+                                    !routePlaybackActive && sortedPhotoSessions.isEmpty() -> {
+                                        Toast.makeText(
+                                            context,
+                                            R.string.travel_route_photo_no_sessions,
+                                            Toast.LENGTH_SHORT,
+                                        ).show()
+                                    }
+                                    else -> vm.setRoutePlaybackActive(!routePlaybackActive)
                                 }
                             },
                             containerColor = if (routePlaybackActive) {
