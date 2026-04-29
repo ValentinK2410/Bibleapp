@@ -80,6 +80,8 @@ import com.example.bible.data.travel.TravelRouteGuidanceSession
 import com.example.bible.data.travel.TravelTriggerAction
 import com.example.bible.data.travel.TravelZone
 import com.example.bible.data.travel.TravelZoneKind
+import com.example.bible.data.travel.TravelRoutePhotoSession
+import com.example.bible.data.travel.buildRoutePhotoDirectionSegments
 import com.example.bible.map.MapKitBootstrap
 import com.google.android.gms.location.LocationCallback
 import com.google.android.gms.location.LocationRequest
@@ -100,6 +102,7 @@ import com.yandex.mapkit.geometry.Circle
 import com.yandex.mapkit.geometry.Geometry
 import com.yandex.mapkit.geometry.LinearRing
 import com.yandex.mapkit.geometry.Point
+import com.yandex.mapkit.geometry.Polyline
 import com.yandex.mapkit.geometry.Polygon
 import com.yandex.mapkit.location.LocationListener as YandexLocationListener
 import com.yandex.mapkit.location.LocationStatus
@@ -285,6 +288,7 @@ fun YandexTravelMap(
     incidentPlaceMode: Boolean,
     onIncidentPlaced: (TravelGeoPoint) -> Unit,
     onUserLocationUpdated: ((Double, Double) -> Unit)? = null,
+    routePhotoSessions: List<TravelRoutePhotoSession> = emptyList(),
 ) {
     val context = LocalContext.current
     var mapReady by remember { mutableStateOf<Boolean?>(null) }
@@ -345,6 +349,7 @@ fun YandexTravelMap(
                 incidentPlaceMode = incidentPlaceMode,
                 onIncidentPlaced = onIncidentPlaced,
                 onUserLocationUpdated = onUserLocationUpdated,
+                routePhotoSessions = routePhotoSessions,
             )
         }
     }
@@ -376,6 +381,7 @@ private fun YandexTravelMapContent(
     incidentPlaceMode: Boolean,
     onIncidentPlaced: (TravelGeoPoint) -> Unit,
     onUserLocationUpdated: ((Double, Double) -> Unit)? = null,
+    routePhotoSessions: List<TravelRoutePhotoSession> = emptyList(),
 ) {
     val context = LocalContext.current
     val lifecycleOwner = LocalLifecycleOwner.current
@@ -423,6 +429,9 @@ private fun YandexTravelMapContent(
     val pinsOverlay = remember(mapView) {
         mapView.mapWindow.map.mapObjects.addCollection().apply { zIndex = 6f }
     }
+    val routePhotoBurstLayer = remember(mapView) {
+        routeOverlay.addCollection().apply { zIndex = 4.08f }
+    }
     /** Отмена устаревших ответов [DrivingSession] при новом запросе или [routeClearNonce]. */
     val routeRequestGeneration = remember { AtomicLong(0L) }
     val drivingRouter = remember(mapView) {
@@ -438,6 +447,18 @@ private fun YandexTravelMapContent(
     val onRouteBuilt = rememberUpdatedState(onTravelRouteBuilt)
     val onActiveRoute = rememberUpdatedState(onActiveTravelRouteChange)
     val onUserLocation = rememberUpdatedState(onUserLocationUpdated)
+
+    LaunchedEffect(routePhotoSessions, routePhotoBurstLayer, mapView) {
+        routePhotoBurstLayer.clear()
+        val segments = buildRoutePhotoDirectionSegments(routePhotoSessions)
+        for (seg in segments) {
+            val poly = Polyline(listOf(Point(seg.lat1, seg.lon1), Point(seg.lat2, seg.lon2)))
+            val line = routePhotoBurstLayer.addPolyline(poly)
+            line.setStrokeColor(seg.colorArgb)
+            line.strokeWidth = 11f
+            line.zIndex = 4.06f
+        }
+    }
 
     LaunchedEffect(activeTravelRoute, mapView, routeLineLayer, routeManeuverLayer, routeHazardLayer) {
         val r = activeTravelRoute

@@ -41,4 +41,9 @@ object TravelPhotoStorage {
     }
 
     fun toFileUriString(absolutePath: String): String = Uri.fromFile(File(absolutePath)).toString()
+
+    /** Удалить каталог файлов серии снимков по маршруту (после удаления сессии из хранилища). */
+    fun deleteRouteSessionDir(context: Context, sessionId: String) {
+        runCatching { routeSessionDir(context, sessionId).deleteRecursively() }
+    }
 }

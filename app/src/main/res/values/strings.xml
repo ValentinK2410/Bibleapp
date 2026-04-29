@@ -993,6 +993,9 @@
     <string name="travel_route_burst_stop_cd">Закончить съёмку и сохранить серию</string>
     <string name="travel_route_playback_cd">Просмотр фото по маршруту при движении</string>
     <string name="travel_route_playback_next_session_cd">Другая серия снимков</string>
+    <string name="travel_route_delete_session_cd">Удалить текущую серию фото по маршруту</string>
+    <string name="travel_route_delete_session_title">Удалить серию снимков?</string>
+    <string name="travel_route_delete_session_message">Файлы снимков будут удалены; можно будет заново записать маршрут. Полосы направлений на карте обновятся.</string>
     <string name="travel_route_photo_no_sessions">Нет сохранённых серий фото по маршруту</string>
     <string name="travel_camera_permission_denied">Нужен доступ к камере для съёмки по маршруту</string>
     <string name="travel_marker_photos_label">Фото у метки</string>

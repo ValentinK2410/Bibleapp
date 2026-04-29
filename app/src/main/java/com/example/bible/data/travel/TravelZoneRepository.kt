@@ -93,6 +93,7 @@ class TravelZoneRepository(
 
     suspend fun removeRoutePhotoSession(id: String) {
         val cur = snapshotRoutePhotoSessions()
+        TravelPhotoStorage.deleteRouteSessionDir(app, id)
         saveRoutePhotoSessions(cur.filter { it.id != id })
     }
 

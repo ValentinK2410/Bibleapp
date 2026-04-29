@@ -4,6 +4,9 @@ import org.json.JSONArray
 import org.json.JSONObject
 import java.util.UUID
 import kotlin.math.abs
+import kotlin.math.atan2
+import kotlin.math.cos
+import kotlin.math.sin
 
 /** Одна точка серии фото по GPS с файлом изображения во внутреннем хранилище. */
 data class TravelRoutePhotoPoint(
@@ -57,6 +60,104 @@ fun headingAngularDifferenceDeg(a: Float, b: Float): Float {
     var d = abs(na - nb)
     if (d > 180f) d = 360f - d
     return d
+}
+
+private const val EARTH_RADIUS_M_ROUTE_LINE = 6371009.0
+
+/** Азимут от точки A к B (0° — север), для участков без сохранённого heading. */
+fun bearingDegreesLatLon(lat1: Double, lon1: Double, lat2: Double, lon2: Double): Float {
+    val φ1 = Math.toRadians(lat1)
+    val φ2 = Math.toRadians(lat2)
+    val Δλ = Math.toRadians(lon2 - lon1)
+    val y = sin(Δλ) * cos(φ2)
+    val x = cos(φ1) * sin(φ2) - sin(φ1) * cos(φ2) * cos(Δλ)
+    val θ = atan2(y, x)
+    return normalizeHeadingDeg(Math.toDegrees(θ).toFloat())
+}
+
+/** Смещение точки по азимуту на короткую дистанцию (метры). */
+fun extrapolateLatLonMeters(latDeg: Double, lonDeg: Double, bearingDeg: Float, distanceM: Float): Pair<Double, Double> {
+    if (distanceM <= 0f) return latDeg to lonDeg
+    val br = Math.toRadians(bearingDeg.toDouble())
+    val latRad = Math.toRadians(latDeg)
+    val d = distanceM.toDouble().coerceAtMost(120.0)
+    val north = d * cos(br)
+    val east = d * sin(br)
+    val dLat = north / EARTH_RADIUS_M_ROUTE_LINE * (180.0 / Math.PI)
+    val dLon = east / (EARTH_RADIUS_M_ROUTE_LINE * cos(latRad).coerceAtLeast(1e-6)) * (180.0 / Math.PI)
+    return (latDeg + dLat) to (lonDeg + dLon)
+}
+
+/** Индекс сектора по 45° (0…7): примерно С, СВ, В, ЮВ, Ю, ЮЗ, З, СЗ. */
+fun headingSector8(headingDeg: Float): Int {
+    val n = normalizeHeadingDeg(headingDeg)
+    return (n / 45f).toInt().coerceIn(0, 7)
+}
+
+fun headingSectorColorArgb(sector: Int): Int {
+    val palette = intArrayOf(
+        0xFFE53935.toInt(),
+        0xFFFF7043.toInt(),
+        0xFFFFCA28.toInt(),
+        0xFF66BB6A.toInt(),
+        0xFF29B6F6.toInt(),
+        0xFF7E57C2.toInt(),
+        0xFFEC407A.toInt(),
+        0xFF26A69A.toInt(),
+    )
+    return palette[sector % 8]
+}
+
+/** Сегмент полилинии для карты: цвет соответствует направлению съёмки / ходу между точками. */
+data class RoutePhotoLineSegment(
+    val lat1: Double,
+    val lon1: Double,
+    val lat2: Double,
+    val lon2: Double,
+    val colorArgb: Int,
+)
+
+/** Строит сегменты по временному порядку точек в каждой серии; одиночная точка даёт короткий штрих по heading. */
+fun buildRoutePhotoDirectionSegments(sessions: List<TravelRoutePhotoSession>): List<RoutePhotoLineSegment> {
+    val out = ArrayList<RoutePhotoLineSegment>(64)
+    for (session in sessions) {
+        val pts = session.points.sortedBy { it.capturedAtMs }
+        if (pts.isEmpty()) continue
+        if (pts.size == 1) {
+            val p = pts[0]
+            val h = p.headingDeg
+            if (h != null && h.isFinite()) {
+                val (lat2, lon2) = extrapolateLatLonMeters(p.latitude, p.longitude, h, 24f)
+                out.add(
+                    RoutePhotoLineSegment(
+                        p.latitude,
+                        p.longitude,
+                        lat2,
+                        lon2,
+                        headingSectorColorArgb(headingSector8(h)),
+                    ),
+                )
+            }
+            continue
+        }
+        for (i in 0 until pts.lastIndex) {
+            val a = pts[i]
+            val b = pts[i + 1]
+            val motionBearing = bearingDegreesLatLon(a.latitude, a.longitude, b.latitude, b.longitude)
+            val heading = a.headingDeg?.takeIf { it.isFinite() }
+            val sectorDeg = heading ?: motionBearing
+            out.add(
+                RoutePhotoLineSegment(
+                    a.latitude,
+                    a.longitude,
+                    b.latitude,
+                    b.longitude,
+                    headingSectorColorArgb(headingSector8(sectorDeg)),
+                ),
+            )
+        }
+    }
+    return out
 }
 
 /** Серия снимков по маршруту (пользователь включил съёмку и двигался по карте). */

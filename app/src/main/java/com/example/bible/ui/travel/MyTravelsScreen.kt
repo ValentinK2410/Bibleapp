@@ -111,6 +111,7 @@ import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.filled.CameraAlt
+import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.SkipNext
 import androidx.compose.material.icons.filled.Stop
 import androidx.compose.material.icons.filled.VideoLibrary
@@ -171,6 +172,7 @@ fun MyTravelsScreen(
     val scope = rememberCoroutineScope()
 
     var burstSessionIdLocal by remember { mutableStateOf<String?>(null) }
+    var deleteRouteSessionDialog by remember { mutableStateOf(false) }
     val burstDraftPoints = remember { mutableStateListOf<TravelRoutePhotoPoint>() }
     var burstImageCapture by remember { mutableStateOf<ImageCapture?>(null) }
     val burstCaptureExecutor = remember { Executors.newSingleThreadExecutor() }
@@ -809,6 +811,7 @@ fun MyTravelsScreen(
                             incidentNoteDraft = ""
                         },
                         onUserLocationUpdated = { lat, lng -> vm.reportUserLocation(lat, lng) },
+                        routePhotoSessions = routePhotoSessions,
                     )
                     TravelBurstCameraPreview(
                         enabled = routeBurstActive && camGranted,
@@ -888,6 +891,20 @@ fun MyTravelsScreen(
                                     contentDescription = stringResource(
                                         R.string.travel_route_playback_next_session_cd,
                                     ),
+                                )
+                            }
+                        }
+                        if (sortedPhotoSessions.isNotEmpty()) {
+                            SmallFloatingActionButton(
+                                onClick = {
+                                    bumpFloatingToolbar()
+                                    deleteRouteSessionDialog = true
+                                },
+                                containerColor = MaterialTheme.colorScheme.errorContainer,
+                            ) {
+                                Icon(
+                                    Icons.Default.Delete,
+                                    contentDescription = stringResource(R.string.travel_route_delete_session_cd),
                                 )
                             }
                         }
@@ -1231,6 +1248,32 @@ fun MyTravelsScreen(
                 vm.setPendingSave(null)
                 vm.clearPolygonDraftAndViewMode()
                 Toast.makeText(context, R.string.travel_saved, Toast.LENGTH_SHORT).show()
+            },
+        )
+    }
+
+    if (deleteRouteSessionDialog && sortedPhotoSessions.isNotEmpty()) {
+        val deleteSid =
+            sortedPhotoSessions[routePlaybackSessionIndex % sortedPhotoSessions.size].id
+        AlertDialog(
+            onDismissRequest = { deleteRouteSessionDialog = false },
+            title = { Text(stringResource(R.string.travel_route_delete_session_title)) },
+            text = { Text(stringResource(R.string.travel_route_delete_session_message)) },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        vm.deleteRoutePhotoSession(deleteSid)
+                        deleteRouteSessionDialog = false
+                        vm.setRoutePlaybackActive(false)
+                    },
+                ) {
+                    Text(stringResource(R.string.travel_delete))
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { deleteRouteSessionDialog = false }) {
+                    Text(stringResource(R.string.travel_cancel))
+                }
             },
         )
     }

@@ -549,4 +549,15 @@ class TravelViewModel(
         if (session.points.isEmpty()) return
         repo.addRoutePhotoSession(session)
     }
+
+    fun deleteRoutePhotoSession(sessionId: String) {
+        viewModelScope.launch {
+            repo.removeRoutePhotoSession(sessionId)
+            val remaining = repo.snapshotRoutePhotoSessions()
+            _routePlaybackSessionIndex.update { idx ->
+                if (remaining.isEmpty()) 0
+                else idx.coerceIn(0, (remaining.size - 1).coerceAtLeast(0))
+            }
+        }
+    }
 }
