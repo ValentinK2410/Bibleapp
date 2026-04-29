@@ -65,6 +65,7 @@ import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -169,6 +170,7 @@ fun MyTravelsScreen(
     val routePlaybackActive by vm.routePlaybackActive.collectAsStateWithLifecycle()
     val routePlaybackSessionIndex by vm.routePlaybackSessionIndex.collectAsStateWithLifecycle()
     val routePlaybackSim by vm.routePlaybackSim.collectAsStateWithLifecycle()
+    val routePlaybackSpeedMps by vm.routePlaybackSpeedMps.collectAsStateWithLifecycle()
     val lastUserGeo by vm.lastUserGeo.collectAsStateWithLifecycle()
     val lastUserHeadingDeg by vm.lastUserHeadingDeg.collectAsStateWithLifecycle()
     val scope = rememberCoroutineScope()
@@ -199,6 +201,9 @@ fun MyTravelsScreen(
         }
     }
     val lifecycleOwner = LocalLifecycleOwner.current
+
+    /** Масштаб карточки превью виртуального проезда (сохраняется при повороте экрана). */
+    var routePlaybackPreviewScale by rememberSaveable { mutableFloatStateOf(1f) }
 
     val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
     val markersSheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
@@ -912,32 +917,98 @@ fun MyTravelsScreen(
                             }
                         }
                     }
-                    routePlaybackSim?.let { sim ->
-                        sim.currentPhotoUri?.let { uriStr ->
+                    Column(
+                        modifier = Modifier
+                            .align(Alignment.BottomStart)
+                            .padding(12.dp),
+                        verticalArrangement = Arrangement.spacedBy(8.dp),
+                    ) {
+                        if (routePlaybackActive) {
                             Card(
-                                modifier = Modifier
-                                    .align(Alignment.BottomStart)
-                                    .padding(12.dp)
-                                    .width(220.dp)
-                                    .height(140.dp),
-                                shape = RoundedCornerShape(12.dp),
+                                modifier = Modifier.widthIn(max = 280.dp),
+                                colors = CardDefaults.cardColors(
+                                    containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.94f),
+                                ),
                             ) {
-                                Box(Modifier.fillMaxSize()) {
-                                    AsyncImage(
-                                        model = Uri.parse(uriStr),
-                                        contentDescription = null,
-                                        modifier = Modifier.fillMaxSize(),
-                                        contentScale = ContentScale.Crop,
+                                Column(Modifier.padding(horizontal = 12.dp, vertical = 10.dp)) {
+                                    Text(
+                                        stringResource(R.string.travel_route_playback_speed_label),
+                                        style = MaterialTheme.typography.labelMedium,
                                     )
-                                    Surface(
-                                        modifier = Modifier.align(Alignment.BottomCenter),
-                                        color = MaterialTheme.colorScheme.surface.copy(alpha = 0.88f),
-                                    ) {
-                                        Text(
-                                            "${(sim.progress * 100f).toInt()}% · ${sim.distanceAlongMeters.toInt()} м / ${sim.totalPathMeters.toInt()} м",
-                                            style = MaterialTheme.typography.labelSmall,
-                                            modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
+                                    Slider(
+                                        value = routePlaybackSpeedMps,
+                                        onValueChange = vm::setRoutePlaybackSpeedMps,
+                                        valueRange = 0.5f..28f,
+                                        modifier = Modifier.fillMaxWidth(),
+                                    )
+                                    Text(
+                                        stringResource(
+                                            R.string.travel_route_playback_speed_fmt,
+                                            routePlaybackSpeedMps,
+                                            (routePlaybackSpeedMps * 3.6f).toInt(),
+                                        ),
+                                        style = MaterialTheme.typography.labelSmall,
+                                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                    )
+                                }
+                            }
+                        }
+                        if (routePlaybackSim?.currentPhotoUri != null) {
+                            Card(
+                                modifier = Modifier.widthIn(max = 280.dp),
+                                colors = CardDefaults.cardColors(
+                                    containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.94f),
+                                ),
+                            ) {
+                                Column(Modifier.padding(horizontal = 12.dp, vertical = 10.dp)) {
+                                    Text(
+                                        stringResource(R.string.travel_route_preview_scale_label),
+                                        style = MaterialTheme.typography.labelMedium,
+                                    )
+                                    Slider(
+                                        value = routePlaybackPreviewScale,
+                                        onValueChange = { v ->
+                                            routePlaybackPreviewScale = v.coerceIn(0.5f, 2.5f)
+                                        },
+                                        valueRange = 0.5f..2.5f,
+                                        modifier = Modifier.fillMaxWidth(),
+                                    )
+                                    Text(
+                                        stringResource(
+                                            R.string.travel_route_preview_scale_fmt,
+                                            (routePlaybackPreviewScale * 100f).toInt(),
+                                        ),
+                                        style = MaterialTheme.typography.labelSmall,
+                                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                    )
+                                }
+                            }
+                        }
+                        routePlaybackSim?.let { sim ->
+                            sim.currentPhotoUri?.let { uriStr ->
+                                Card(
+                                    modifier = Modifier
+                                        .width((220 * routePlaybackPreviewScale).dp)
+                                        .height((140 * routePlaybackPreviewScale).dp),
+                                    shape = RoundedCornerShape(12.dp),
+                                ) {
+                                    Box(Modifier.fillMaxSize()) {
+                                        AsyncImage(
+                                            model = Uri.parse(uriStr),
+                                            contentDescription = null,
+                                            modifier = Modifier.fillMaxSize(),
+                                            contentScale = ContentScale.Crop,
                                         )
+                                        Surface(
+                                            modifier = Modifier.align(Alignment.BottomCenter),
+                                            color = MaterialTheme.colorScheme.surface.copy(alpha = 0.88f),
+                                        ) {
+                                            Text(
+                                                "${(sim.progress * 100f).toInt()}% · ${sim.distanceAlongMeters.toInt()} м / ${sim.totalPathMeters.toInt()} м",
+                                                style = MaterialTheme.typography.labelSmall,
+                                                modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
+                                            )
+                                        }
                                     }
                                 }
                             }

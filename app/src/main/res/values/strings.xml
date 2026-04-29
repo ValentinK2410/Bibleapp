@@ -992,6 +992,10 @@
     <string name="travel_route_burst_start_cd">Начать съёмку по маршруту каждые 0,5 с</string>
     <string name="travel_route_burst_stop_cd">Закончить съёмку и сохранить серию</string>
     <string name="travel_route_playback_cd">Виртуальный проезд и кадры по записанному маршруту</string>
+    <string name="travel_route_playback_speed_label">Скорость виртуального проезда</string>
+    <string name="travel_route_playback_speed_fmt">%1$.1f м/с (~%2$d км/ч)</string>
+    <string name="travel_route_preview_scale_label">Размер превью фото</string>
+    <string name="travel_route_preview_scale_fmt">Масштаб: %1$d%%</string>
     <string name="travel_route_playback_next_session_cd">Другая серия снимков</string>
     <string name="travel_route_delete_session_cd">Удалить текущую серию фото по маршруту</string>
     <string name="travel_route_delete_session_title">Удалить серию снимков?</string>
@@ -1003,7 +1007,7 @@
     <string name="travel_route_delete_all_sessions_title">Удалить все записи маршрута?</string>
     <string name="travel_route_delete_all_sessions_message">Будут удалены все сохранённые серии и файлы снимков на устройстве. Отменить будет нельзя.</string>
     <string name="travel_route_manage_photos_title">Кадры текущей серии</string>
-    <string name="travel_route_photo_point_short">%.5f · %.5f</string>
+    <string name="travel_route_photo_point_short">%1$.5f · %2$.5f</string>
     <string name="travel_route_photo_no_sessions">Нет сохранённых серий фото по маршруту</string>
     <string name="travel_camera_permission_denied">Нужен доступ к камере для съёмки по маршруту</string>
     <string name="travel_marker_photos_label">Фото у метки</string>

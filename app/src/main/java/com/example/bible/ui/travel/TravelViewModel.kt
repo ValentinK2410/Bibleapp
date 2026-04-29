@@ -39,6 +39,10 @@ enum class TravelMapEditMode {
     POLYGON_DRAW,
 }
 
+private const val ROUTE_PLAYBACK_SPEED_DEFAULT_MPS = 6f
+private const val ROUTE_PLAYBACK_SPEED_MIN_MPS = 0.5f
+private const val ROUTE_PLAYBACK_SPEED_MAX_MPS = 28f
+
 data class TravelSavedMapCamera(
     val latitude: Double,
     val longitude: Double,
@@ -191,6 +195,10 @@ class TravelViewModel(
     private val _routePlaybackSim = MutableStateFlow<RoutePlaybackSimState?>(null)
     val routePlaybackSim: StateFlow<RoutePlaybackSimState?> = _routePlaybackSim.asStateFlow()
 
+    /** Скорость виртуального проезда по полилинии (м/с); применяется на каждом тике симуляции. */
+    private val _routePlaybackSpeedMps = MutableStateFlow(ROUTE_PLAYBACK_SPEED_DEFAULT_MPS)
+    val routePlaybackSpeedMps: StateFlow<Float> = _routePlaybackSpeedMps.asStateFlow()
+
     private var playbackSimJob: Job? = null
 
     val polygonEntrySoundUri: StateFlow<String?> = repo.polygonEntrySoundUri.stateIn(
@@ -260,7 +268,7 @@ class TravelViewModel(
         }
     }
 
-    /** Скорость виртуального движения по сохранённой полилинии (~6 м/с ≈ 22 км/ч; зацикливание пути). */
+    /** Зацикленная симуляция вдоль полилинии; скорость задаётся [routePlaybackSpeedMps]. */
     private fun restartRoutePlaybackSimulation() {
         playbackSimJob?.cancel()
         playbackSimJob = null
@@ -280,10 +288,13 @@ class TravelViewModel(
             return
         }
         val total = poly.totalLengthM.coerceAtLeast(1f)
-        val speed = 6f
         playbackSimJob = viewModelScope.launch {
             var dist = 0f
             while (isActive && _routePlaybackActive.value) {
+                val speed = _routePlaybackSpeedMps.value.coerceIn(
+                    ROUTE_PLAYBACK_SPEED_MIN_MPS,
+                    ROUTE_PLAYBACK_SPEED_MAX_MPS,
+                )
                 val (lat, lon, bear) = interpolateRoutePlayback(poly, dist)
                 val uri = routePlaybackPhotoUriAtDistance(poly, dist)
                 _routePlaybackSim.value = RoutePlaybackSimState(
@@ -301,6 +312,13 @@ class TravelViewModel(
                 if (dist >= total) dist %= total
             }
         }
+    }
+
+    fun setRoutePlaybackSpeedMps(mps: Float) {
+        _routePlaybackSpeedMps.value = mps.coerceIn(
+            ROUTE_PLAYBACK_SPEED_MIN_MPS,
+            ROUTE_PLAYBACK_SPEED_MAX_MPS,
+        )
     }
 
     fun setShowMarkersEditSheet(show: Boolean) {
