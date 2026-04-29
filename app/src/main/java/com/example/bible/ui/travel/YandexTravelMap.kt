@@ -101,6 +101,12 @@ import com.yandex.mapkit.geometry.Geometry
 import com.yandex.mapkit.geometry.LinearRing
 import com.yandex.mapkit.geometry.Point
 import com.yandex.mapkit.geometry.Polygon
+import com.yandex.mapkit.location.LocationListener as YandexLocationListener
+import com.yandex.mapkit.location.LocationStatus
+import com.yandex.mapkit.location.LocationViewSourceFactory
+import com.yandex.mapkit.location.Purpose
+import com.yandex.mapkit.location.SubscriptionSettings
+import com.yandex.mapkit.location.UseInBackground
 import com.yandex.mapkit.map.CameraListener
 import com.yandex.mapkit.map.CameraPosition
 import com.yandex.mapkit.map.CameraUpdateReason
@@ -624,18 +630,19 @@ private fun YandexTravelMapContent(
         mapView,
         userNavArrowIcon,
         onUserLocation,
+        userLocationLayer,
     ) {
         // Скорость: пока тапаем маршрут/инцидент, не подписываемся на GPS, чтобы не мешать.
         if (!userLocationEnabled || !hasFineLocation || routePickMode || incidentPlaceMode) {
             return@DisposableEffect onDispose { }
         }
         val followCamera = headingModeActive && followUserActive
-        val client = LocationServices.getFusedLocationProviderClient(context)
         var smoothedZoom = mapView.mapWindow.map.cameraPosition.zoom
         var smoothedTilt = mapView.mapWindow.map.cameraPosition.tilt
         var smoothedLat: Double? = null
         var smoothedLon: Double? = null
-        var prevLoc: Location? = null
+        var prevAndroidLoc: Location? = null
+        var prevMkPrev: MkLocPrev? = null
         val followTargets = TravelFollowCameraTargets()
         var gpsTargetReady = false
         val choreographer = Choreographer.getInstance()
@@ -747,84 +754,144 @@ private fun YandexTravelMapContent(
                 SensorManager.SENSOR_DELAY_GAME,
             )
         }
-        val callback = object : LocationCallback() {
-            override fun onLocationResult(result: LocationResult) {
-                val loc = result.lastLocation ?: return
-                onUserLocation.value?.invoke(loc.latitude, loc.longitude)
-                val speedMps = effectiveSpeedMps(loc, prevLoc)
-                prevLoc = Location(loc)
-                val kmh = (speedMps * 3.6f).coerceIn(0f, 400f)
-                val hudBlend = when {
-                    kmh < 10f -> 0.48f
-                    kmh < 55f -> 0.68f
-                    else -> 0.84f
+        fun notifyLocation(
+            latitude: Double,
+            longitude: Double,
+            speedMps: Float,
+            hasBearing: Boolean,
+            bearingRaw: Float,
+            elapsedRealtimeNs: Long,
+        ) {
+            onUserLocation.value?.invoke(latitude, longitude)
+            val kmh = (speedMps * 3.6f).coerceIn(0f, 400f)
+            val hudBlend = when {
+                kmh < 10f -> 0.48f
+                kmh < 55f -> 0.68f
+                else -> 0.84f
+            }
+            hudSpeedKmh.floatValue = hudSpeedKmh.floatValue * (1f - hudBlend) + kmh * hudBlend
+            if (!followCamera) return
+            val map = mapView.mapWindow.map
+            val cp = map.cameraPosition
+            val blend = travelGpsPosBlend(speedMps)
+            val sLat0 = smoothedLat
+            val sLon0 = smoothedLon
+            val anchorLat: Double
+            val anchorLon: Double
+            if (sLat0 == null || sLon0 == null) {
+                anchorLat = latitude
+                anchorLon = longitude
+            } else {
+                anchorLat = travelLerpD(sLat0, latitude, blend)
+                anchorLon = travelLerpD(sLon0, longitude, blend)
+            }
+            smoothedLat = anchorLat
+            smoothedLon = anchorLon
+            val bearingT = (0.2f + 0.58f * (speedMps / 26f).coerceIn(0f, 1f)).coerceIn(0.2f, 0.78f)
+            val azimuth = when {
+                speedMps > 0.85f && hasBearing -> {
+                    val br = (bearingRaw % 360f + 360f) % 360f
+                    val prevA = cp.azimuth
+                    if (prevA.isNaN()) br else lerpAngleDegrees(prevA, br, bearingT)
                 }
-                hudSpeedKmh.floatValue = hudSpeedKmh.floatValue * (1f - hudBlend) + kmh * hudBlend
-                if (!followCamera) return
-                val map = mapView.mapWindow.map
-                val cp = map.cameraPosition
-                val blend = travelGpsPosBlend(speedMps)
-                val sLat0 = smoothedLat
-                val sLon0 = smoothedLon
-                val anchorLat: Double
-                val anchorLon: Double
-                if (sLat0 == null || sLon0 == null) {
-                    anchorLat = loc.latitude
-                    anchorLon = loc.longitude
-                } else {
-                    anchorLat = travelLerpD(sLat0, loc.latitude, blend)
-                    anchorLon = travelLerpD(sLon0, loc.longitude, blend)
+                !compassDeg[0].isNaN() -> compassDeg[0]
+                hasBearing -> (bearingRaw % 360f + 360f) % 360f
+                else -> cp.azimuth
+            }
+            navFixElapsedRealtimeNs = elapsedRealtimeNs
+            navFixLat = anchorLat
+            navFixLon = anchorLon
+            navSpeedMps = speedMps
+            navBearingDeg = azimuth
+            navAnchorInitialized = true
+            val z = if (userLockedWideView.get()) {
+                cp.zoom.also { smoothedZoom = it }
+            } else {
+                val targetZoom = zoomForViewSpanMeters(
+                    mapView,
+                    latitude,
+                    targetViewSpanMeters(kmh),
+                )
+                smoothedZoom = smoothedZoom * 0.84f + targetZoom * 0.16f
+                smoothedZoom.coerceIn(2f, 20.5f)
+            }
+            smoothedTilt = smoothedTilt + (TRAVEL_NAV_TARGET_TILT - smoothedTilt) * TRAVEL_NAV_TILT_SMOOTH
+            followTargets.tZoom = z
+            followTargets.tAzimuth = azimuth
+            followTargets.tTilt = smoothedTilt
+            gpsTargetReady = true
+        }
+
+        var stopLocationUpdates: () -> Unit = {}
+        if (MapKitBootstrap.isReady) {
+            val mkLm = MapKitFactory.getInstance().createLocationManager()
+            userLocationLayer?.setSource(LocationViewSourceFactory.createLocationViewSource(mkLm))
+            val purpose = if (followCamera) Purpose.AUTOMOTIVE_NAVIGATION else Purpose.GENERAL
+            val settings = SubscriptionSettings(UseInBackground.DISALLOW, purpose)
+            val mkListener = object : YandexLocationListener {
+                override fun onLocationUpdated(location: com.yandex.mapkit.location.Location) {
+                    val pos = location.position
+                    val lat = pos.latitude
+                    val speedMps = effectiveSpeedMpsMapKit(location, prevMkPrev)
+                    prevMkPrev = MkLocPrev(lat, lon, location.relativeTimestamp)
+                    val hd = location.heading
+                    val hasBearing = hd != null
+                    val bearingRaw = hd?.toFloat() ?: 0f
+                    notifyLocation(lat, lon, speedMps, hasBearing, bearingRaw, location.relativeTimestamp)
                 }
-                smoothedLat = anchorLat
-                smoothedLon = anchorLon
-                val bearingT = (0.2f + 0.58f * (speedMps / 26f).coerceIn(0f, 1f)).coerceIn(0.2f, 0.78f)
-                val azimuth = when {
-                    speedMps > 0.85f && loc.hasBearing() -> {
-                        val br = (loc.bearing % 360f + 360f) % 360f
-                        val prevA = cp.azimuth
-                        if (prevA.isNaN()) br else lerpAngleDegrees(prevA, br, bearingT)
+
+                override fun onLocationStatusUpdated(status: LocationStatus) {
+                    if (status == LocationStatus.NOT_AVAILABLE) {
+                        gpsTargetReady = false
                     }
-                    !compassDeg[0].isNaN() -> compassDeg[0]
-                    loc.hasBearing() -> (loc.bearing % 360f + 360f) % 360f
-                    else -> cp.azimuth
                 }
-                navFixElapsedRealtimeNs = loc.elapsedRealtimeNanos
-                navFixLat = anchorLat
-                navFixLon = anchorLon
-                navSpeedMps = speedMps
-                navBearingDeg = azimuth
-                navAnchorInitialized = true
-                val z = if (userLockedWideView.get()) {
-                    cp.zoom.also { smoothedZoom = it }
-                } else {
-                    val targetZoom = zoomForViewSpanMeters(
-                        mapView,
-                        loc.latitude,
-                        targetViewSpanMeters(kmh),
-                    )
-                    smoothedZoom = smoothedZoom * 0.84f + targetZoom * 0.16f
-                    smoothedZoom.coerceIn(2f, 20.5f)
+            }
+            mkLm.subscribeForLocationUpdates(settings, mkListener)
+            stopLocationUpdates = {
+                runCatching { mkLm.unsubscribe(mkListener) }
+                runCatching { userLocationLayer?.setDefaultSource() }
+            }
+        } else {
+            val client = LocationServices.getFusedLocationProviderClient(context)
+            val callback = object : LocationCallback() {
+                override fun onLocationResult(result: LocationResult) {
+                    fun applyAndroidLocation(loc: Location) {
+                        val speedMps = effectiveSpeedMps(loc, prevAndroidLoc)
+                        prevAndroidLoc = Location(loc)
+                        notifyLocation(
+                            loc.latitude,
+                            loc.longitude,
+                            speedMps,
+                            loc.hasBearing(),
+                            loc.bearing,
+                            loc.elapsedRealtimeNanos,
+                        )
+                    }
+                    val locs = result.locations
+                    if (locs.isNotEmpty()) {
+                        for (loc in locs) applyAndroidLocation(loc)
+                    } else {
+                        result.lastLocation?.let { applyAndroidLocation(it) }
+                    }
                 }
-                smoothedTilt = smoothedTilt + (TRAVEL_NAV_TARGET_TILT - smoothedTilt) * TRAVEL_NAV_TILT_SMOOTH
-                followTargets.tZoom = z
-                followTargets.tAzimuth = azimuth
-                followTargets.tTilt = smoothedTilt
-                gpsTargetReady = true
+            }
+            val request = LocationRequest.Builder(
+                Priority.PRIORITY_HIGH_ACCURACY,
+                TRAVEL_FOLLOW_LOCATION_INTERVAL_MS,
+            )
+                .setMinUpdateIntervalMillis(TRAVEL_FOLLOW_LOCATION_INTERVAL_MS)
+                .setMaxUpdateDelayMillis(0)
+                .setMinUpdateDistanceMeters(0f)
+                .setWaitForAccurateLocation(false)
+                .build()
+            client.requestLocationUpdates(request, callback, Looper.getMainLooper())
+            stopLocationUpdates = {
+                client.removeLocationUpdates(callback)
             }
         }
         if (followCamera) {
             choreographer.postFrameCallback(frameCallback)
         }
-        val request = LocationRequest.Builder(
-            Priority.PRIORITY_HIGH_ACCURACY,
-            TRAVEL_FOLLOW_LOCATION_INTERVAL_MS,
-        )
-            .setMinUpdateIntervalMillis(TRAVEL_FOLLOW_LOCATION_INTERVAL_MS)
-            .setMaxUpdateDelayMillis(0)
-            .setMinUpdateDistanceMeters(0f)
-            .setWaitForAccurateLocation(false)
-            .build()
-        client.requestLocationUpdates(request, callback, Looper.getMainLooper())
         onDispose {
             choreographer.removeFrameCallback(frameCallback)
             smoothFollowUserColl?.let { coll ->
@@ -835,7 +902,7 @@ private fun YandexTravelMapContent(
             if (followCamera && rotationSensor != null) {
                 sensorManager.unregisterListener(sensorListener)
             }
-            client.removeLocationUpdates(callback)
+            stopLocationUpdates()
         }
     }
 
@@ -1294,6 +1361,24 @@ private fun effectiveSpeedMps(loc: Location, prev: Location?): Float {
         val dtSec = (loc.elapsedRealtimeNanos - prev.elapsedRealtimeNanos) / 1_000_000_000f
         if (dtSec > 0.04f) {
             return (loc.distanceTo(prev) / dtSec).coerceAtLeast(0f)
+        }
+    }
+    return 0f
+}
+
+private data class MkLocPrev(val lat: Double, val lon: Double, val relativeNs: Long)
+
+/** Аналог [effectiveSpeedMps] для локаций MapKit (тяга Яндекса к навигатору — свой пайплайн). */
+private fun effectiveSpeedMpsMapKit(loc: com.yandex.mapkit.location.Location, prev: MkLocPrev?): Float {
+    val spd = loc.speed
+    if (spd != null && spd >= 0.0) return spd.toFloat().coerceAtLeast(0f)
+    val pos = loc.position
+    if (prev != null) {
+        val dtSec = (loc.relativeTimestamp - prev.relativeNs) / 1e9f
+        if (dtSec > 0.04f) {
+            val results = FloatArray(1)
+            Location.distanceBetween(prev.lat, prev.lon, pos.latitude, pos.longitude, results)
+            return (results[0] / dtSec).coerceAtLeast(0f)
         }
     }
     return 0f
