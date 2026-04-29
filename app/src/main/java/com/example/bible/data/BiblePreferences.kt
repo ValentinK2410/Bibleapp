@@ -38,6 +38,8 @@ private object Keys {
     /** Хронология: какие стихи открывались и сколько на них задерживались (порядок по времени). */
     val READING_TRACE_JSON = stringPreferencesKey("reading_trace_json")
     val NOTES_JSON = stringPreferencesKey("user_notes_json")
+    /** JSON-массив строк — пользовательские названия типов заметок (чипы в редакторе). */
+    val NOTES_CUSTOM_KINDS_JSON = stringPreferencesKey("note_custom_kinds_json")
     val SONGS_JSON = stringPreferencesKey("user_songs_json")
     val SONG_TAGS = stringSetPreferencesKey("user_song_tags")
     val AUDIO_NARRATOR = stringPreferencesKey("audio_narrator_id")
@@ -894,6 +896,33 @@ class BiblePreferences(
 
     val userNotes: Flow<List<UserNote>> = appContext.bibleDataStore.data.map { prefs ->
         UserNote.parseList(prefs[Keys.NOTES_JSON].orEmpty())
+    }
+
+    /** Пользовательские подписи типов записей для чипов в редакторе заметок. */
+    val noteCustomKinds: Flow<List<String>> = appContext.bibleDataStore.data.map { prefs ->
+        parseJsonStringArray(prefs[Keys.NOTES_CUSTOM_KINDS_JSON]).distinct()
+    }
+
+    suspend fun addNoteCustomKind(label: String) {
+        val trimmed = label.trim().take(48)
+        if (trimmed.isBlank()) return
+        appContext.bibleDataStore.edit { prefs ->
+            val cur = parseJsonStringArray(prefs[Keys.NOTES_CUSTOM_KINDS_JSON]).toMutableList()
+            if (!cur.any { it.equals(trimmed, ignoreCase = true) }) {
+                cur.add(trimmed)
+                prefs[Keys.NOTES_CUSTOM_KINDS_JSON] = JSONArray(cur).toString()
+            }
+        }
+    }
+
+    private fun parseJsonStringArray(raw: String?): List<String> {
+        if (raw.isNullOrBlank()) return emptyList()
+        return try {
+            val arr = JSONArray(raw)
+            (0 until arr.length()).mapNotNull { arr.optString(it).trim().takeIf { s -> s.isNotEmpty() } }
+        } catch (_: Exception) {
+            emptyList()
+        }
     }
 
     suspend fun saveNote(note: UserNote) {

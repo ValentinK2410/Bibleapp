@@ -1066,6 +1066,18 @@ class BibleViewModel(
         emptyList(),
     )
 
+    val noteCustomKinds: StateFlow<List<String>> = preferences.noteCustomKinds.stateIn(
+        viewModelScope,
+        SharingStarted.WhileSubscribed(5000),
+        emptyList(),
+    )
+
+    fun addNoteCustomKind(label: String) {
+        viewModelScope.launch {
+            preferences.addNoteCustomKind(label)
+        }
+    }
+
     fun saveNote(note: UserNote) {
         viewModelScope.launch {
             preferences.saveNote(note)

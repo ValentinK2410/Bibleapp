@@ -49,6 +49,8 @@ enum class UserNoteKind {
     ANSWER,
     /** Размышление, впечатление */
     REFLECTION,
+    /** Пользовательский тип ([UserNote.customKindLabel]) */
+    CUSTOM,
     ;
 
     fun toJson(): String = name
@@ -59,9 +61,25 @@ enum class UserNoteKind {
             "QUESTION" -> QUESTION
             "ANSWER" -> ANSWER
             "REFLECTION" -> REFLECTION
+            "CUSTOM" -> CUSTOM
             else -> NOTE
         }
     }
+}
+
+/** Короткая подпись встроенного типа для чипов и списка. */
+fun UserNoteKind.labelRu(): String = when (this) {
+    UserNoteKind.NOTE -> "Заметка"
+    UserNoteKind.QUESTION -> "Вопрос"
+    UserNoteKind.ANSWER -> "Ответ"
+    UserNoteKind.REFLECTION -> "Размышление"
+    UserNoteKind.CUSTOM -> "Свой тип"
+}
+
+/** Строка типа в списке заметок (для CUSTOM — пользовательское название). */
+fun UserNote.kindDisplayShort(): String = when (kind) {
+    UserNoteKind.CUSTOM -> customKindLabel?.trim()?.takeIf { it.isNotEmpty() } ?: "Свой тип"
+    else -> kind.labelRu()
 }
 
 /**
@@ -95,6 +113,8 @@ data class UserNote(
     val createdAt: Long = System.currentTimeMillis(),
     val updatedAt: Long = System.currentTimeMillis(),
     val kind: UserNoteKind = UserNoteKind.NOTE,
+    /** Для [UserNoteKind.CUSTOM] — название типа, заданное пользователем */
+    val customKindLabel: String? = null,
     /** Для [UserNoteKind.ANSWER] — id заметки-вопроса */
     val linkedQuestionId: String? = null,
     val verseTranslationCode: String? = null,
@@ -141,6 +161,7 @@ data class UserNote(
         put("ca", createdAt)
         put("ua", updatedAt)
         put("kind", kind.toJson())
+        if (kind == UserNoteKind.CUSTOM && !customKindLabel.isNullOrBlank()) put("ck", customKindLabel.trim())
         if (linkedQuestionId != null) put("lq", linkedQuestionId)
         if (verseTranslationCode != null) put("vt", verseTranslationCode)
         if (verseBookId != null) put("vb", verseBookId)
@@ -177,6 +198,7 @@ data class UserNote(
                 createdAt = j.optLong("ca", 0L),
                 updatedAt = j.optLong("ua", 0L),
                 kind = UserNoteKind.fromJson(j.optString("kind", "")),
+                customKindLabel = j.optString("ck").trim().takeIf { it.isNotEmpty() },
                 linkedQuestionId = if (j.has("lq")) j.getString("lq") else null,
                 verseTranslationCode = if (j.has("vt")) j.getString("vt") else null,
                 verseBookId = if (j.has("vb")) j.getString("vb") else null,

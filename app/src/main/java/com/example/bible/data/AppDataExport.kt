@@ -293,7 +293,10 @@ object AppDataExport {
                     "bible_search_history_json",
                 )
             }
-            if (options.personalNotes) userKeys += "user_notes_json"
+            if (options.personalNotes) {
+                userKeys += "user_notes_json"
+                userKeys += "note_custom_kinds_json"
+            }
             if (options.semanticLexicon) {
                 userKeys += setOf(
                     "user_semantic_lexicon_json",

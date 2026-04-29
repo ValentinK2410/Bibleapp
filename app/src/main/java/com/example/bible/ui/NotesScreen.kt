@@ -33,6 +33,8 @@ import androidx.compose.material.icons.filled.History
 import androidx.compose.material.icons.filled.FormatBold
 import androidx.compose.material.icons.filled.FormatItalic
 import androidx.compose.material.icons.filled.FormatSize
+import androidx.compose.material.icons.filled.FormatListBulleted
+import androidx.compose.material.icons.filled.FormatListNumbered
 import androidx.compose.material.icons.filled.FormatUnderlined
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.CenterAlignedTopAppBar
@@ -87,6 +89,8 @@ import com.example.bible.data.TranslationId
 import com.example.bible.data.UserNote
 import com.example.bible.data.UserNoteKind
 import com.example.bible.data.previewText
+import com.example.bible.data.kindDisplayShort
+import com.example.bible.data.labelRu
 
 private enum class NotesListFilter {
     ALL,
@@ -102,13 +106,6 @@ private fun UserNote.matchesFilter(f: NotesListFilter): Boolean = when (f) {
     NotesListFilter.QUESTIONS -> kind == UserNoteKind.QUESTION
     NotesListFilter.REFLECTIONS -> kind == UserNoteKind.REFLECTION
     NotesListFilter.WITH_JOURNAL -> journalEntries.isNotEmpty()
-}
-
-private fun UserNoteKind.labelRu(): String = when (this) {
-    UserNoteKind.NOTE -> "Заметка"
-    UserNoteKind.QUESTION -> "Вопрос"
-    UserNoteKind.ANSWER -> "Ответ"
-    UserNoteKind.REFLECTION -> "Размышление"
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -253,7 +250,7 @@ private fun NoteListItem(
             }
             Text(
                 text = buildString {
-                    append(note.kind.labelRu())
+                    append(note.kindDisplayShort())
                     note.displayVerseLabel()?.let { append(" · "); append(it) }
                     if (note.journalEntries.isNotEmpty()) {
                         append(" · хронология: ")
@@ -327,6 +324,8 @@ private val fontSizeOptions = listOf(12, 14, 16, 18, 20, 24, 28, 32)
 fun NoteEditorScreen(
     initialNote: UserNote,
     allNotes: List<UserNote> = emptyList(),
+    customKinds: List<String> = emptyList(),
+    onAddCustomKind: (String) -> Unit = {},
     onSave: (UserNote) -> Unit,
     onBack: () -> Unit,
 ) {
@@ -336,6 +335,19 @@ fun NoteEditorScreen(
     }
     var spans by remember { mutableStateOf(initialNote.spans.toMutableList()) }
     var kind by remember(initialNote.id) { mutableStateOf(initialNote.kind) }
+    var customKindLabel by remember(initialNote.id) {
+        mutableStateOf(initialNote.customKindLabel.orEmpty())
+    }
+    var showAddKindDialog by remember { mutableStateOf(false) }
+    var newKindDraft by remember { mutableStateOf("") }
+    val customKindChips = remember(customKinds, initialNote.id, initialNote.customKindLabel) {
+        val fromNote = initialNote.customKindLabel?.trim()?.takeIf { it.isNotEmpty() }
+        val merged = customKinds.toMutableList()
+        if (fromNote != null && merged.none { it.equals(fromNote, ignoreCase = true) }) {
+            merged.add(0, fromNote)
+        }
+        merged.distinct()
+    }
     var linkedQuestionId by remember(initialNote.id) { mutableStateOf(initialNote.linkedQuestionId) }
     var journalEntries by remember(initialNote.id) {
         mutableStateOf(initialNote.journalEntries.toMutableList())
@@ -387,6 +399,17 @@ fun NoteEditorScreen(
         spans = updated
     }
 
+    fun insertListPrefix(numbered: Boolean) {
+        val fullText = textFieldValue.text
+        val cursor = textFieldValue.selection.min.coerceIn(0, fullText.length)
+        val insertion =
+            if (numbered) buildNumberedInsertion(fullText, cursor) else buildBulletInsertion(fullText, cursor)
+        val newText = fullText.substring(0, cursor) + insertion + fullText.substring(cursor)
+        val newCursor = cursor + insertion.length
+        spans = adjustSpansAfterEdit(spans, cursor, insertion.length)
+        textFieldValue = TextFieldValue(newText, TextRange(newCursor))
+    }
+
     val spanVisualTransformation = remember(spans) {
         NoteSpanVisualTransformation(spans)
     }
@@ -402,12 +425,19 @@ fun NoteEditorScreen(
                 },
                 actions = {
                     IconButton(onClick = {
+                        val trimmedCustom = customKindLabel.trim()
+                        val resolvedKind = when {
+                            kind == UserNoteKind.CUSTOM && trimmedCustom.isEmpty() -> UserNoteKind.NOTE
+                            kind == UserNoteKind.CUSTOM -> UserNoteKind.CUSTOM
+                            else -> kind
+                        }
                         val note = initialNote.copy(
                             title = title,
                             body = textFieldValue.text,
                             spans = spans.filter { it.end <= textFieldValue.text.length },
                             updatedAt = System.currentTimeMillis(),
-                            kind = kind,
+                            kind = resolvedKind,
+                            customKindLabel = if (resolvedKind == UserNoteKind.CUSTOM) trimmedCustom else null,
                             linkedQuestionId = if (kind == UserNoteKind.ANSWER) linkedQuestionId else null,
                             journalEntries = journalEntries.toList(),
                             verseTextSnapshot = initialNote.verseTextSnapshot,
@@ -493,6 +523,7 @@ fun NoteEditorScreen(
                         .fillMaxWidth()
                         .horizontalScroll(rememberScrollState())
                         .padding(horizontal = 8.dp, vertical = 4.dp),
+                    verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.spacedBy(6.dp),
                 ) {
                     listOf(
@@ -505,10 +536,32 @@ fun NoteEditorScreen(
                             selected = kind == k,
                             onClick = {
                                 kind = k
+                                customKindLabel = ""
                                 if (k != UserNoteKind.ANSWER) linkedQuestionId = null
                             },
                             label = { Text(k.labelRu(), style = MaterialTheme.typography.labelMedium) },
                         )
+                    }
+                    customKindChips.forEach { chipLabel ->
+                        FilterChip(
+                            selected = kind == UserNoteKind.CUSTOM &&
+                                customKindLabel.trim().equals(chipLabel.trim(), ignoreCase = true),
+                            onClick = {
+                                kind = UserNoteKind.CUSTOM
+                                customKindLabel = chipLabel
+                                linkedQuestionId = null
+                            },
+                            label = { Text(chipLabel, style = MaterialTheme.typography.labelMedium) },
+                        )
+                    }
+                    IconButton(
+                        onClick = {
+                            newKindDraft = ""
+                            showAddKindDialog = true
+                        },
+                        modifier = Modifier.size(40.dp),
+                    ) {
+                        Icon(Icons.Default.Add, contentDescription = "Добавить тип записи")
                     }
                 }
                 if (kind == UserNoteKind.ANSWER && linkCandidates.isNotEmpty()) {
@@ -676,6 +729,8 @@ fun NoteEditorScreen(
                 onItalicChange = { isItalic = it },
                 isUnderline = isUnderline,
                 onUnderlineChange = { isUnderline = it },
+                onBulletList = { insertListPrefix(false) },
+                onNumberedList = { insertListPrefix(true) },
                 currentFontSize = currentFontSize,
                 onFontSizeClick = { showFontSizePicker = !showFontSizePicker },
                 currentColorArgb = currentColorArgb,
@@ -687,6 +742,42 @@ fun NoteEditorScreen(
                 onApplyFormat = { applyFormatToSelection() },
             )
         }
+    }
+    if (showAddKindDialog) {
+        AlertDialog(
+            onDismissRequest = { showAddKindDialog = false },
+            title = { Text("Новый тип записи") },
+            text = {
+                OutlinedTextField(
+                    value = newKindDraft,
+                    onValueChange = { newKindDraft = it },
+                    label = { Text("Название типа") },
+                    singleLine = true,
+                    modifier = Modifier.fillMaxWidth(),
+                )
+            },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        val t = newKindDraft.trim().take(48)
+                        if (t.isNotEmpty()) {
+                            onAddCustomKind(t)
+                            customKindLabel = t
+                            kind = UserNoteKind.CUSTOM
+                            linkedQuestionId = null
+                        }
+                        showAddKindDialog = false
+                    },
+                ) {
+                    Text("Добавить")
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { showAddKindDialog = false }) {
+                    Text("Отмена")
+                }
+            },
+        )
     }
 }
 
@@ -700,6 +791,8 @@ private fun FormatToolbar(
     onItalicChange: (Boolean) -> Unit,
     isUnderline: Boolean,
     onUnderlineChange: (Boolean) -> Unit,
+    onBulletList: () -> Unit,
+    onNumberedList: () -> Unit,
     currentFontSize: Int,
     onFontSizeClick: () -> Unit,
     currentColorArgb: Int,
@@ -752,6 +845,21 @@ private fun FormatToolbar(
                     Icons.Default.FormatUnderlined,
                     contentDescription = "Подчёркнутый",
                     tint = if (isUnderline) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+            }
+
+            IconButton(onClick = onBulletList, modifier = Modifier.size(36.dp)) {
+                Icon(
+                    Icons.Default.FormatListBulleted,
+                    contentDescription = "Маркированный список",
+                    tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+            }
+            IconButton(onClick = onNumberedList, modifier = Modifier.size(36.dp)) {
+                Icon(
+                    Icons.Default.FormatListNumbered,
+                    contentDescription = "Нумерованный список",
+                    tint = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
             }
 
@@ -906,6 +1014,25 @@ private fun FontSizePicker(
             }
         }
     }
+}
+
+private fun buildBulletInsertion(fullText: String, cursor: Int): String {
+    val pos = cursor.coerceIn(0, fullText.length)
+    val atLineStart = pos == 0 || fullText[pos - 1] == '\n'
+    return if (atLineStart) "• " else "\n• "
+}
+
+private fun buildNumberedInsertion(fullText: String, cursor: Int): String {
+    val pos = cursor.coerceIn(0, fullText.length)
+    val before = fullText.substring(0, pos)
+    val lastNl = before.lastIndexOf('\n')
+    val prevLine = before.substring(lastNl + 1)
+    val trimmedPrev = prevLine.trimStart()
+    val match = Regex("^(\\d+)\\.\\s").find(trimmedPrev)
+    val nextNum = match?.groupValues?.get(1)?.toIntOrNull()?.plus(1) ?: 1
+    val prefix = "$nextNum. "
+    val atLineStart = pos == 0 || fullText.getOrNull(pos - 1) == '\n'
+    return if (atLineStart) prefix else "\n$prefix"
 }
 
 private fun adjustSpansAfterEdit(

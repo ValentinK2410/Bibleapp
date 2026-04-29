@@ -2771,10 +2771,13 @@ private fun BibleNavHost(
         composable("note_edit/{noteId}") { entry ->
             val noteId = entry.arguments?.getString("noteId") ?: return@composable
             val notes by viewModel.userNotes.collectAsStateWithLifecycle()
+            val noteCustomKinds by viewModel.noteCustomKinds.collectAsStateWithLifecycle()
             val note = notes.find { it.id == noteId } ?: UserNote(id = noteId)
             NoteEditorScreen(
                 initialNote = note,
                 allNotes = notes,
+                customKinds = noteCustomKinds,
+                onAddCustomKind = { viewModel.addNoteCustomKind(it) },
                 onSave = { viewModel.saveNote(it) },
                 onBack = { navController.navigateUp() },
             )
