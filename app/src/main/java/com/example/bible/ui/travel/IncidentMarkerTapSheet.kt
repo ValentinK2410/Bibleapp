@@ -13,23 +13,19 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Delete
-import androidx.compose.material.icons.filled.Edit
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.FilledTonalIconButton
+import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.HorizontalDivider
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButtonDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
@@ -58,7 +54,7 @@ import java.util.Locale
 
 /**
  * Нижний лист при тапе по метке: превью фото, автоматически звук или озвучка текста (TTS),
- * сбоку кнопки удалить и редактировать.
+ * внизу кнопки «Редактировать» и «Удалить».
  */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -132,18 +128,13 @@ private fun IncidentMarkerTapSheetBody(
     val photos = incident.photoUris
     var previewIndex by remember(incident.id) { mutableIntStateOf(0) }
 
-    Row(
+    Column(
         modifier
             .fillMaxWidth()
-            .padding(start = 12.dp, end = 8.dp, top = 8.dp),
-        horizontalArrangement = Arrangement.spacedBy(4.dp),
-        verticalAlignment = Alignment.Top,
+            .padding(start = 12.dp, end = 12.dp, top = 8.dp, bottom = 8.dp),
     ) {
         Column(
-            Modifier
-                .weight(1f)
-                .verticalScroll(rememberScrollState())
-                .padding(end = 4.dp),
+            Modifier.verticalScroll(rememberScrollState()),
             verticalArrangement = Arrangement.spacedBy(10.dp),
         ) {
             Text(
@@ -232,49 +223,37 @@ private fun IncidentMarkerTapSheetBody(
                 )
             }
 
-            Spacer(Modifier.height(16.dp))
+            Spacer(Modifier.height(8.dp))
         }
 
-        Column(
-            Modifier
-                .padding(top = 24.dp)
-                .width(56.dp),
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.spacedBy(12.dp),
-        ) {
-            val deleteCd = stringResource(R.string.travel_incident_sheet_cd_delete)
-            FilledTonalIconButton(
-                onClick = { onDelete(incident) },
-                modifier = Modifier
-                    .size(52.dp)
-                    .semantics { contentDescription = deleteCd },
-                colors = IconButtonDefaults.filledTonalIconButtonColors(
-                    containerColor = MaterialTheme.colorScheme.errorContainer,
-                    contentColor = MaterialTheme.colorScheme.onErrorContainer,
-                ),
-            ) {
-                Icon(Icons.Default.Delete, contentDescription = null)
-            }
-            Text(
-                stringResource(R.string.travel_incident_sheet_side_delete),
-                style = MaterialTheme.typography.labelSmall,
-                color = MaterialTheme.colorScheme.error,
-            )
+        HorizontalDivider(Modifier.padding(vertical = 8.dp))
 
+        Row(
+            Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.spacedBy(8.dp),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
             val editCd = stringResource(R.string.travel_incident_sheet_cd_edit)
-            FilledTonalIconButton(
+            FilledTonalButton(
                 onClick = onOpenFullEditor,
                 modifier = Modifier
-                    .size(52.dp)
+                    .weight(1f)
                     .semantics { contentDescription = editCd },
             ) {
-                Icon(Icons.Default.Edit, contentDescription = null)
+                Text(stringResource(R.string.travel_zone_action_edit))
             }
-            Text(
-                stringResource(R.string.travel_incident_sheet_side_edit),
-                style = MaterialTheme.typography.labelSmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-            )
+            val deleteCd = stringResource(R.string.travel_incident_sheet_cd_delete)
+            TextButton(
+                onClick = { onDelete(incident) },
+                modifier = Modifier
+                    .weight(1f)
+                    .semantics { contentDescription = deleteCd },
+                colors = ButtonDefaults.textButtonColors(
+                    contentColor = MaterialTheme.colorScheme.error,
+                ),
+            ) {
+                Text(stringResource(R.string.travel_delete))
+            }
         }
     }
 }

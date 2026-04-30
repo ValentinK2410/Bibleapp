@@ -92,7 +92,6 @@ import com.example.bible.data.travel.TravelGeoPoint
 import com.example.bible.data.travel.TravelMapIncident
 import com.example.bible.data.travel.TravelMarkerSoundTrigger
 import com.example.bible.data.travel.TravelTriggerAction
-import com.example.bible.data.travel.TravelZoneTapSound
 import com.example.bible.data.travel.TravelUserSoundStorage
 import com.example.bible.data.travel.TravelZone
 import com.example.bible.data.travel.TravelZoneKind
@@ -759,47 +758,35 @@ fun MyTravelsScreen(
                         omitPolygonZoneId = polygonRedraftZoneId,
                         onMapTap = mapTap@{ pt ->
                             bumpFloatingToolbar()
-                            if (editMode == TravelMapEditMode.VIEW && !territoryEditEnabled &&
-                                pendingCircleRecenterZoneId == null && !routePickDestination && !incidentPlaceMode
-                            ) {
-                                val hit = mapIncidents.mapNotNull { inc ->
-                                    val d = travelDistanceMeters(
-                                        pt,
-                                        TravelGeoPoint(inc.latitude, inc.longitude),
-                                    )
-                                    if (d <= TravelMarkerSoundTrigger.TAP_MAX_DISTANCE_METERS) {
-                                        inc to d
-                                    } else {
-                                        null
-                                    }
-                                }.minByOrNull { it.second }?.first
-                                if (hit != null) {
-                                    incidentTapSheetIncident = hit
-                                    return@mapTap
-                                }
-                                val zoneAudio = travelZonesAtPoint(
-                                    zones.filter { it.enabled },
+                            val incidentHit = mapIncidents.mapNotNull { inc ->
+                                val d = travelDistanceMeters(
                                     pt,
-                                ).firstOrNull {
-                                    it.action == TravelTriggerAction.PLAY_SOUND &&
-                                        !it.mediaUri.isNullOrBlank()
+                                    TravelGeoPoint(inc.latitude, inc.longitude),
+                                )
+                                if (d <= TravelMarkerSoundTrigger.TAP_MAX_DISTANCE_METERS) {
+                                    inc to d
+                                } else {
+                                    null
                                 }
-                                if (zoneAudio != null) {
-                                    TravelZoneTapSound.onMapTapInZone(
-                                        context,
-                                        zoneAudio.id,
-                                        zoneAudio.mediaUri!!,
-                                        zoneAudio.name,
-                                    )
-                                }
+                            }.minByOrNull { it.second }?.first
+                            if (incidentHit != null) {
+                                incidentTapSheetIncident = incidentHit
+                                return@mapTap
                             }
                             val recId = pendingCircleRecenterZoneId
                             when {
                                 recId != null -> vm.applyCircleRecenter(recId, pt)
-                                territoryEditEnabled && editMode == TravelMapEditMode.POLYGON_DRAW &&
+                                territoryEditEnabled &&
+                                    editMode == TravelMapEditMode.POLYGON_DRAW &&
                                     polygonRedraftZoneId != null -> vm.addPolygonDraftPoint(pt)
-                                territoryEditEnabled -> {
-                                    val hit = travelZonesAtPoint(zones, pt).firstOrNull()
+                                territoryEditEnabled ||
+                                    editMode == TravelMapEditMode.VIEW -> {
+                                    val zoneList = if (territoryEditEnabled) {
+                                        zones
+                                    } else {
+                                        zones.filter { it.enabled }
+                                    }
+                                    val hit = travelZonesAtPoint(zoneList, pt).firstOrNull()
                                     vm.selectZoneForEdit(hit?.id)
                                 }
                                 else -> when (editMode) {
@@ -809,7 +796,7 @@ fun MyTravelsScreen(
                                     TravelMapEditMode.POLYGON_DRAW -> {
                                         vm.addPolygonDraftPoint(pt)
                                     }
-                                    TravelMapEditMode.VIEW -> {}
+                                    TravelMapEditMode.VIEW -> Unit
                                 }
                             }
                         },
