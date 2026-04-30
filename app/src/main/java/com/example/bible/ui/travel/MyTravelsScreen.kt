@@ -126,6 +126,7 @@ import androidx.compose.material.icons.filled.CameraAlt
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.SkipNext
 import androidx.compose.material.icons.filled.Stop
+import androidx.compose.material.icons.filled.Tune
 import androidx.compose.material.icons.filled.VideoLibrary
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.rememberUpdatedState
@@ -243,6 +244,7 @@ fun MyTravelsScreen(
     var deleteRouteSessionDialog by remember { mutableStateOf(false) }
     var deleteAllRouteSessionsConfirm by remember { mutableStateOf(false) }
     var showRoutePhotosManageSheet by remember { mutableStateOf(false) }
+    var showRoutePlaybackControlsSheet by remember { mutableStateOf(false) }
     var showFriendPeerSheet by remember { mutableStateOf(false) }
     var friendPeerManualDialog by remember { mutableStateOf(false) }
     var friendPeerUrlDraft by remember { mutableStateOf("") }
@@ -278,6 +280,11 @@ fun MyTravelsScreen(
 
     val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
     val markersSheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
+    val playbackControlsSheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
+
+    LaunchedEffect(routePlaybackActive) {
+        if (!routePlaybackActive) showRoutePlaybackControlsSheet = false
+    }
 
     LaunchedEffect(showFriendPeerSheet) {
         if (showFriendPeerSheet) friendPeerUrlDraft = friendPeerPollUrl
@@ -913,6 +920,7 @@ fun MyTravelsScreen(
                         routeBurstDraftPoints = burstDraftPoints.toList(),
                         routePlaybackSim = routePlaybackSim,
                         friendPeerLocation = friendPeerLocation,
+                        hideNavigatorHud = routePlaybackActive,
                     )
                     if (routeBurstActive && camGranted) {
                         Column(
@@ -1056,135 +1064,51 @@ fun MyTravelsScreen(
                             }
                         }
                     }
-                    Column(
-                        modifier = Modifier
-                            .align(Alignment.BottomStart)
-                            .padding(12.dp),
-                        verticalArrangement = Arrangement.spacedBy(8.dp),
-                    ) {
-                        if (routePlaybackActive) {
-                            Card(
-                                modifier = Modifier.widthIn(max = 280.dp),
-                                colors = CardDefaults.cardColors(
-                                    containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.94f),
-                                ),
-                            ) {
-                                Column(Modifier.padding(horizontal = 12.dp, vertical = 10.dp)) {
-                                    Text(
-                                        stringResource(R.string.travel_route_playback_speed_label),
-                                        style = MaterialTheme.typography.labelMedium,
-                                    )
-                                    Slider(
-                                        value = routePlaybackSpeedMps,
-                                        onValueChange = vm::setRoutePlaybackSpeedMps,
-                                        valueRange = 0.5f..28f,
-                                        modifier = Modifier.fillMaxWidth(),
-                                    )
-                                    Text(
-                                        stringResource(
-                                            R.string.travel_route_playback_speed_fmt,
-                                            routePlaybackSpeedMps,
-                                            (routePlaybackSpeedMps * 3.6f).toInt(),
-                                        ),
-                                        style = MaterialTheme.typography.labelSmall,
-                                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                                    )
-                                    HorizontalDivider(Modifier.padding(vertical = 8.dp))
-                                    Row(
-                                        Modifier.fillMaxWidth(),
-                                        verticalAlignment = Alignment.CenterVertically,
-                                        horizontalArrangement = Arrangement.SpaceBetween,
-                                    ) {
-                                        Text(
-                                            stringResource(R.string.travel_route_playback_reverse_label),
-                                            style = MaterialTheme.typography.labelSmall,
-                                            modifier = Modifier.weight(1f),
-                                        )
-                                        Switch(
-                                            checked = routePlaybackReverse,
-                                            onCheckedChange = vm::setRoutePlaybackReverse,
-                                        )
-                                    }
-                                    Text(
-                                        stringResource(
-                                            R.string.travel_route_playback_start_fmt,
-                                            routePlaybackStartDistanceM,
-                                        ),
-                                        style = MaterialTheme.typography.labelSmall,
-                                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                                    )
-                                    Row(
-                                        Modifier.fillMaxWidth(),
-                                        horizontalArrangement = Arrangement.spacedBy(4.dp),
-                                    ) {
-                                        TextButton(
-                                            onClick = { vm.setRoutePlaybackPickStartActive(true) },
-                                            modifier = Modifier.weight(1f),
-                                        ) {
-                                            Text(stringResource(R.string.travel_route_playback_pick_toggle))
-                                        }
-                                        TextButton(onClick = { vm.resetRoutePlaybackStartOnPath() }) {
-                                            Text(stringResource(R.string.travel_route_playback_start_reset))
-                                        }
-                                    }
-                                }
-                            }
+                    if (routePlaybackActive) {
+                        SmallFloatingActionButton(
+                            onClick = {
+                                bumpFloatingToolbar()
+                                showRoutePlaybackControlsSheet = true
+                            },
+                            modifier = Modifier
+                                .align(Alignment.BottomStart)
+                                .padding(start = 12.dp, bottom = 88.dp),
+                            containerColor = MaterialTheme.colorScheme.secondaryContainer,
+                        ) {
+                            Icon(
+                                Icons.Default.Tune,
+                                contentDescription = stringResource(R.string.travel_route_playback_settings_fab_cd),
+                            )
                         }
-                        if (routePlaybackSim?.currentPhotoUri != null) {
-                            Card(
-                                modifier = Modifier.widthIn(max = 280.dp),
-                                colors = CardDefaults.cardColors(
-                                    containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.94f),
-                                ),
+                    }
+                    routePlaybackSim?.let { sim ->
+                        sim.currentPhotoUri?.let { uriStr ->
+                            val pbScale = routePlaybackPreviewScale.coerceIn(0.5f, 2.5f)
+                            val thumbW = (128f * pbScale).dp.coerceIn(88.dp, 188.dp)
+                            val thumbH = (82f * pbScale).dp.coerceIn(56.dp, 120.dp)
+                            Box(
+                                modifier = Modifier
+                                    .align(Alignment.BottomEnd)
+                                    .padding(end = 12.dp, bottom = 88.dp)
+                                    .width(thumbW)
+                                    .height(thumbH)
+                                    .clip(RoundedCornerShape(12.dp)),
                             ) {
-                                Column(Modifier.padding(horizontal = 12.dp, vertical = 10.dp)) {
-                                    Text(
-                                        stringResource(R.string.travel_route_preview_scale_label),
-                                        style = MaterialTheme.typography.labelMedium,
-                                    )
-                                    Slider(
-                                        value = routePlaybackPreviewScale,
-                                        onValueChange = { v ->
-                                            routePlaybackPreviewScale = v.coerceIn(0.5f, 2.5f)
-                                        },
-                                        valueRange = 0.5f..2.5f,
-                                        modifier = Modifier.fillMaxWidth(),
-                                    )
-                                    Text(
-                                        stringResource(
-                                            R.string.travel_route_preview_scale_fmt,
-                                            (routePlaybackPreviewScale * 100f).toInt(),
-                                        ),
-                                        style = MaterialTheme.typography.labelSmall,
-                                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                                    )
-                                }
-                            }
-                        }
-                        routePlaybackSim?.let { sim ->
-                            sim.currentPhotoUri?.let { uriStr ->
-                                Box(
-                                    modifier = Modifier
-                                        .width((220 * routePlaybackPreviewScale).dp)
-                                        .height((140 * routePlaybackPreviewScale).dp)
-                                        .clip(RoundedCornerShape(12.dp)),
+                                RoutePlaybackSmoothPhoto(
+                                    uriStr = uriStr,
+                                    modifier = Modifier.fillMaxSize(),
+                                    contentScale = ContentScale.Crop,
+                                )
+                                Surface(
+                                    modifier = Modifier.align(Alignment.BottomCenter),
+                                    color = MaterialTheme.colorScheme.surface.copy(alpha = 0.88f),
+                                    shape = RoundedCornerShape(bottomStart = 12.dp, bottomEnd = 12.dp),
                                 ) {
-                                    RoutePlaybackSmoothPhoto(
-                                        uriStr = uriStr,
-                                        modifier = Modifier.fillMaxSize(),
-                                        contentScale = ContentScale.Crop,
+                                    Text(
+                                        "${(sim.progress * 100f).toInt()}% · ${sim.distanceAlongMeters.toInt()} м / ${sim.totalPathMeters.toInt()} м",
+                                        style = MaterialTheme.typography.labelSmall,
+                                        modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
                                     )
-                                    Surface(
-                                        modifier = Modifier.align(Alignment.BottomCenter),
-                                        color = MaterialTheme.colorScheme.surface.copy(alpha = 0.88f),
-                                        shape = RoundedCornerShape(bottomStart = 12.dp, bottomEnd = 12.dp),
-                                    ) {
-                                        Text(
-                                            "${(sim.progress * 100f).toInt()}% · ${sim.distanceAlongMeters.toInt()} м / ${sim.totalPathMeters.toInt()} м",
-                                            style = MaterialTheme.typography.labelSmall,
-                                            modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
-                                        )
-                                    }
                                 }
                             }
                         }
@@ -1643,6 +1567,124 @@ fun MyTravelsScreen(
                 }
             },
         )
+    }
+
+    if (showRoutePlaybackControlsSheet && routePlaybackActive) {
+        ModalBottomSheet(
+            onDismissRequest = { showRoutePlaybackControlsSheet = false },
+            sheetState = playbackControlsSheetState,
+        ) {
+            Column(
+                Modifier
+                    .fillMaxWidth()
+                    .verticalScroll(rememberScrollState())
+                    .padding(horizontal = 16.dp, vertical = 12.dp),
+                verticalArrangement = Arrangement.spacedBy(10.dp),
+            ) {
+                Text(
+                    stringResource(R.string.travel_route_playback_sheet_title),
+                    style = MaterialTheme.typography.titleMedium,
+                )
+                routePlaybackSim?.currentPhotoUri?.let { uriStr ->
+                    Box(
+                        Modifier
+                            .fillMaxWidth()
+                            .height(160.dp)
+                            .clip(RoundedCornerShape(12.dp)),
+                    ) {
+                        RoutePlaybackSmoothPhoto(
+                            uriStr = uriStr,
+                            modifier = Modifier.fillMaxSize(),
+                            contentScale = ContentScale.Crop,
+                        )
+                    }
+                    Text(
+                        stringResource(R.string.travel_route_preview_scale_label),
+                        style = MaterialTheme.typography.labelMedium,
+                    )
+                    Slider(
+                        value = routePlaybackPreviewScale,
+                        onValueChange = { routePlaybackPreviewScale = it.coerceIn(0.5f, 2.5f) },
+                        valueRange = 0.5f..2.5f,
+                        modifier = Modifier.fillMaxWidth(),
+                    )
+                    Text(
+                        stringResource(
+                            R.string.travel_route_preview_scale_fmt,
+                            (routePlaybackPreviewScale * 100f).toInt(),
+                        ),
+                        style = MaterialTheme.typography.labelSmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                    HorizontalDivider()
+                }
+                Text(
+                    stringResource(R.string.travel_route_playback_speed_label),
+                    style = MaterialTheme.typography.labelMedium,
+                )
+                Slider(
+                    value = routePlaybackSpeedMps,
+                    onValueChange = vm::setRoutePlaybackSpeedMps,
+                    valueRange = 0.5f..28f,
+                    modifier = Modifier.fillMaxWidth(),
+                )
+                Text(
+                    stringResource(
+                        R.string.travel_route_playback_speed_fmt,
+                        routePlaybackSpeedMps,
+                        (routePlaybackSpeedMps * 3.6f).toInt(),
+                    ),
+                    style = MaterialTheme.typography.labelSmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+                HorizontalDivider()
+                Row(
+                    Modifier.fillMaxWidth(),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                ) {
+                    Text(
+                        stringResource(R.string.travel_route_playback_reverse_label),
+                        style = MaterialTheme.typography.labelSmall,
+                        modifier = Modifier.weight(1f),
+                    )
+                    Switch(
+                        checked = routePlaybackReverse,
+                        onCheckedChange = vm::setRoutePlaybackReverse,
+                    )
+                }
+                Text(
+                    stringResource(
+                        R.string.travel_route_playback_start_fmt,
+                        routePlaybackStartDistanceM,
+                    ),
+                    style = MaterialTheme.typography.labelSmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+                Row(
+                    Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(4.dp),
+                ) {
+                    TextButton(
+                        onClick = {
+                            showRoutePlaybackControlsSheet = false
+                            vm.setRoutePlaybackPickStartActive(true)
+                        },
+                        modifier = Modifier.weight(1f),
+                    ) {
+                        Text(stringResource(R.string.travel_route_playback_pick_toggle))
+                    }
+                    TextButton(
+                        onClick = {
+                            showRoutePlaybackControlsSheet = false
+                            vm.resetRoutePlaybackStartOnPath()
+                        },
+                    ) {
+                        Text(stringResource(R.string.travel_route_playback_start_reset))
+                    }
+                }
+            }
+        }
     }
 
     if (showFriendPeerSheet) {

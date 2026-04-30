@@ -1027,6 +1027,8 @@
     <string name="travel_route_playback_speed_fmt">%1$.1f м/с (~%2$d км/ч)</string>
     <string name="travel_route_preview_scale_label">Размер превью фото</string>
     <string name="travel_route_preview_scale_fmt">Масштаб: %1$d%%</string>
+    <string name="travel_route_playback_sheet_title">Параметры виртуального проезда</string>
+    <string name="travel_route_playback_settings_fab_cd">Открыть параметры виртуального проезда</string>
     <string name="travel_route_playback_next_session_cd">Другая серия снимков</string>
     <string name="travel_route_delete_session_cd">Удалить текущую серию фото по маршруту</string>
     <string name="travel_route_delete_session_title">Удалить серию снимков?</string>

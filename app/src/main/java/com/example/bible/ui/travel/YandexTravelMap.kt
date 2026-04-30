@@ -300,6 +300,7 @@ fun YandexTravelMap(
     routeBurstDraftPoints: List<TravelRoutePhotoPoint> = emptyList(),
     routePlaybackSim: RoutePlaybackSimState? = null,
     friendPeerLocation: FriendPeerLocation? = null,
+    hideNavigatorHud: Boolean = false,
 ) {
     val context = LocalContext.current
     var mapReady by remember { mutableStateOf<Boolean?>(null) }
@@ -364,6 +365,7 @@ fun YandexTravelMap(
                 routeBurstDraftPoints = routeBurstDraftPoints,
                 routePlaybackSim = routePlaybackSim,
                 friendPeerLocation = friendPeerLocation,
+                hideNavigatorHud = hideNavigatorHud,
             )
         }
     }
@@ -399,6 +401,7 @@ private fun YandexTravelMapContent(
     routeBurstDraftPoints: List<TravelRoutePhotoPoint> = emptyList(),
     routePlaybackSim: RoutePlaybackSimState? = null,
     friendPeerLocation: FriendPeerLocation? = null,
+    hideNavigatorHud: Boolean = false,
 ) {
     val context = LocalContext.current
     val lifecycleOwner = LocalLifecycleOwner.current
@@ -1311,7 +1314,8 @@ private fun YandexTravelMapContent(
     }
 
     val showRecenterFab = headingModeActive && userLocationEnabled && hasFineLocation
-    val showMapHud = userLocationEnabled && hasFineLocation && !routePickMode && !incidentPlaceMode
+    val showMapHud =
+        userLocationEnabled && hasFineLocation && !routePickMode && !incidentPlaceMode && !hideNavigatorHud
 
     Box(modifier = modifier) {
         AndroidView(
