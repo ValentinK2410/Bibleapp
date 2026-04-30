@@ -18,6 +18,7 @@ import coil.compose.AsyncImagePainter
 import coil.compose.rememberAsyncImagePainter
 import coil.request.CachePolicy
 import coil.request.ImageRequest
+import java.io.File
 
 /**
  * Превью кадров виртуального проезда: пока новый URI декодируется, остаётся предыдущий кадр
@@ -33,16 +34,30 @@ fun RoutePlaybackSmoothPhoto(
     var stableBackdropUri by remember { mutableStateOf(uriStr) }
 
     val frontRequest = remember(uriStr) {
+        val uri = runCatching { Uri.parse(uriStr) }.getOrNull()
+        val file = uri?.path?.let { File(it) }
+        val data: Any = if (file != null && file.exists() && file.length() > 0L) {
+            file
+        } else {
+            uri ?: uriStr
+        }
         ImageRequest.Builder(context)
-            .data(Uri.parse(uriStr))
+            .data(data)
             .crossfade(false)
             .memoryCachePolicy(CachePolicy.ENABLED)
             .diskCachePolicy(CachePolicy.ENABLED)
             .build()
     }
     val backRequest = remember(stableBackdropUri) {
+        val uri = runCatching { Uri.parse(stableBackdropUri) }.getOrNull()
+        val file = uri?.path?.let { File(it) }
+        val data: Any = if (file != null && file.exists() && file.length() > 0L) {
+            file
+        } else {
+            uri ?: stableBackdropUri
+        }
         ImageRequest.Builder(context)
-            .data(Uri.parse(stableBackdropUri))
+            .data(data)
             .crossfade(false)
             .memoryCachePolicy(CachePolicy.ENABLED)
             .diskCachePolicy(CachePolicy.ENABLED)

@@ -121,6 +121,7 @@ import androidx.compose.foundation.border
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.outlined.BrokenImage
 import androidx.compose.material.icons.filled.CameraAlt
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.SkipNext
@@ -129,13 +130,61 @@ import androidx.compose.material.icons.filled.VideoLibrary
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.vector.rememberVectorPainter
 import androidx.compose.ui.layout.ContentScale
 import coil.compose.AsyncImage
+import coil.request.CachePolicy
+import coil.request.ImageRequest
 import com.example.bible.data.travel.TravelPhotoStorage
 import com.example.bible.data.travel.TravelRoutePhotoPoint
 import com.example.bible.data.travel.TravelRoutePhotoSession
+import java.io.File
 import java.util.UUID
 import java.util.concurrent.Executors
+
+/** Превью кадра серии по маршруту из внутреннего файла: Coil грузит через File; при отсутствии файла или ошибке — иконка. */
+@Composable
+private fun RouteBurstStoredPhotoThumbnail(
+    photoUriString: String,
+    modifier: Modifier = Modifier,
+    contentDescription: String? = null,
+) {
+    val ctx = LocalContext.current
+    val file = remember(photoUriString) {
+        runCatching { Uri.parse(photoUriString).path?.let(::File) }.getOrNull()
+    }
+    val request = remember(photoUriString, file) {
+        val f = file?.takeIf { it.exists() && it.length() > 0L } ?: return@remember null
+        ImageRequest.Builder(ctx)
+            .data(f)
+            .crossfade(false)
+            .diskCachePolicy(CachePolicy.DISABLED)
+            .memoryCachePolicy(CachePolicy.DISABLED)
+            .build()
+    }
+    val brokenPainter = rememberVectorPainter(Icons.Outlined.BrokenImage)
+    Box(
+        modifier = modifier.background(MaterialTheme.colorScheme.surfaceVariant),
+        contentAlignment = Alignment.Center,
+    ) {
+        when {
+            request == null -> Icon(
+                Icons.Outlined.BrokenImage,
+                contentDescription = contentDescription,
+                tint = MaterialTheme.colorScheme.outline,
+                modifier = Modifier.padding(12.dp),
+            )
+            else -> AsyncImage(
+                model = request,
+                contentDescription = contentDescription,
+                modifier = Modifier.fillMaxSize(),
+                contentScale = ContentScale.Crop,
+                placeholder = brokenPainter,
+                error = brokenPainter,
+            )
+        }
+    }
+}
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -408,7 +457,7 @@ fun MyTravelsScreen(
             val geo = lastGeoRef.value
             val file = TravelPhotoStorage.createRouteBurstImageFile(context, sid)
             val ok = ic.captureToFileSuspend(file, burstCaptureExecutor)
-            if (ok && geo != null) {
+            if (ok && geo != null && file.exists() && file.length() > 0L) {
                 burstDraftPoints.add(
                     TravelRoutePhotoPoint(
                         latitude = geo.latitude,
@@ -895,14 +944,13 @@ fun MyTravelsScreen(
                                     ),
                                 ) {
                                     Column(Modifier.padding(6.dp)) {
-                                        AsyncImage(
-                                            model = Uri.parse(last.photoUri),
-                                            contentDescription = stringResource(R.string.travel_route_burst_last_frame_cd),
+                                        RouteBurstStoredPhotoThumbnail(
+                                            photoUriString = last.photoUri,
                                             modifier = Modifier
                                                 .fillMaxWidth()
                                                 .heightIn(min = 72.dp, max = 114.dp)
                                                 .clip(RoundedCornerShape(8.dp)),
-                                            contentScale = ContentScale.Crop,
+                                            contentDescription = stringResource(R.string.travel_route_burst_last_frame_cd),
                                         )
                                         Text(
                                             stringResource(
@@ -1824,7 +1872,10 @@ fun MyTravelsScreen(
                         modifier = Modifier.padding(bottom = 8.dp),
                     )
                 }
-                items(sessionForManage.points, key = { it.photoUri }) { pt ->
+                itemsIndexed(
+                    sessionForManage.points,
+                    key = { _, pt -> "${pt.photoUri}_${pt.capturedAtMs}" },
+                ) { _, pt ->
                     Row(
                         Modifier
                             .fillMaxWidth()
@@ -1832,13 +1883,12 @@ fun MyTravelsScreen(
                         horizontalArrangement = Arrangement.spacedBy(12.dp),
                         verticalAlignment = Alignment.CenterVertically,
                     ) {
-                        AsyncImage(
-                            model = Uri.parse(pt.photoUri),
-                            contentDescription = null,
+                        RouteBurstStoredPhotoThumbnail(
+                            photoUriString = pt.photoUri,
                             modifier = Modifier
                                 .size(72.dp)
                                 .clip(RoundedCornerShape(8.dp)),
-                            contentScale = ContentScale.Crop,
+                            contentDescription = null,
                         )
                         Text(
                             stringResource(
