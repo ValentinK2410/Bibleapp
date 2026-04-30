@@ -13,6 +13,7 @@ import kotlin.math.max
 
 object TravelGeofenceManager {
 
+    /** Android Geofencing API даёт стабильную работу примерно от 100 м; меньший сохранённый радиус на карте при регистрации поднимается до этого значения. */
     private const val MIN_RADIUS_M = 100f
 
     fun geofencePendingIntent(context: Context): PendingIntent {

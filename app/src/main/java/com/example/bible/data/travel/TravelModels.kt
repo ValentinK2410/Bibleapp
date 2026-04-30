@@ -41,6 +41,11 @@ enum class TravelTriggerAction {
     }
 }
 
+/** Допустимый радиус круговой зоны на карте (м). Для фоновых геозон Android см. [TravelGeofenceManager]. */
+const val TRAVEL_ZONE_CIRCLE_RADIUS_MIN_M = 1f
+
+const val TRAVEL_ZONE_CIRCLE_RADIUS_MAX_M = 10_000f
+
 data class TravelZone(
     val id: String = UUID.randomUUID().toString(),
     val name: String,

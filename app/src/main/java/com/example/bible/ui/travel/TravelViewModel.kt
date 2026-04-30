@@ -19,6 +19,8 @@ import com.example.bible.data.travel.interpolateRoutePlayback
 import com.example.bible.data.travel.routePlaybackPhotoUriAtDistance
 import com.example.bible.data.travel.TravelZoneKind
 import com.example.bible.data.travel.TravelZoneRepository
+import com.example.bible.data.travel.TRAVEL_ZONE_CIRCLE_RADIUS_MAX_M
+import com.example.bible.data.travel.TRAVEL_ZONE_CIRCLE_RADIUS_MIN_M
 import com.example.bible.map.MapKitBootstrap
 import com.example.bible.service.TravelMonitorService
 import com.yandex.mapkit.directions.driving.DrivingRoute
@@ -597,7 +599,14 @@ class TravelViewModel(
         viewModelScope.launch {
             val z = repo.snapshot().find { it.id == zoneId } ?: return@launch
             if (z.kind != TravelZoneKind.CIRCLE) return@launch
-            repo.replace(z.copy(radiusMeters = maxOf(radiusMeters, 100f)))
+            repo.replace(
+                z.copy(
+                    radiusMeters = radiusMeters.coerceIn(
+                        TRAVEL_ZONE_CIRCLE_RADIUS_MIN_M,
+                        TRAVEL_ZONE_CIRCLE_RADIUS_MAX_M,
+                    ),
+                ),
+            )
         }
     }
 

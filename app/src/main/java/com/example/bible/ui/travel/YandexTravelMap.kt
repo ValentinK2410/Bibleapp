@@ -81,6 +81,7 @@ import com.example.bible.data.travel.TravelRouteGuidanceSession
 import com.example.bible.data.travel.TravelTriggerAction
 import com.example.bible.data.travel.TravelZone
 import com.example.bible.data.travel.TravelZoneKind
+import com.example.bible.data.travel.TRAVEL_ZONE_CIRCLE_RADIUS_MIN_M
 import com.example.bible.data.travel.FriendPeerLocation
 import com.example.bible.data.travel.RoutePlaybackSimState
 import com.example.bible.data.travel.TravelRoutePhotoSession
@@ -1630,7 +1631,7 @@ private fun redrawZoneOverlays(
         when (z.kind) {
             TravelZoneKind.CIRCLE -> {
                 val circle = zonesCollection.addCircle(
-                    Circle(Point(z.centerLat, z.centerLng), max(z.radiusMeters, 100f)),
+                    Circle(Point(z.centerLat, z.centerLng), max(z.radiusMeters, TRAVEL_ZONE_CIRCLE_RADIUS_MIN_M)),
                 )
                 circle.strokeWidth = if (isSelected) 4f else 2f
                 when {

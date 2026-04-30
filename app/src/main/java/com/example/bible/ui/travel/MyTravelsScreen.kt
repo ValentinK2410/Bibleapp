@@ -95,6 +95,8 @@ import com.example.bible.data.travel.TravelTriggerAction
 import com.example.bible.data.travel.TravelUserSoundStorage
 import com.example.bible.data.travel.TravelZone
 import com.example.bible.data.travel.TravelZoneKind
+import com.example.bible.data.travel.TRAVEL_ZONE_CIRCLE_RADIUS_MAX_M
+import com.example.bible.data.travel.TRAVEL_ZONE_CIRCLE_RADIUS_MIN_M
 import com.example.bible.data.travel.travelDistanceMeters
 import com.example.bible.data.travel.parseLatLonManualLine
 import com.example.bible.data.travel.travelZonesAtPoint
@@ -108,7 +110,6 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.tasks.await
 import kotlinx.coroutines.withContext
 import java.util.Locale
-import kotlin.math.max
 import kotlin.math.roundToInt
 import androidx.camera.core.ImageCapture
 import androidx.compose.foundation.background
@@ -1219,7 +1220,10 @@ fun MyTravelsScreen(
                                         mutableFloatStateOf(z.radiusMeters)
                                     }
                                     LaunchedEffect(z.id, z.radiusMeters) {
-                                        radiusDraft = z.radiusMeters
+                                        radiusDraft = z.radiusMeters.coerceIn(
+                                            TRAVEL_ZONE_CIRCLE_RADIUS_MIN_M,
+                                            TRAVEL_ZONE_CIRCLE_RADIUS_MAX_M,
+                                        )
                                     }
                                     Text(
                                         stringResource(R.string.travel_radius_m, radiusDraft.toInt()),
@@ -1231,13 +1235,33 @@ fun MyTravelsScreen(
                                         onValueChangeFinished = {
                                             vm.updateZoneRadius(z.id, radiusDraft)
                                         },
-                                        valueRange = 100f..2000f,
+                                        valueRange = TRAVEL_ZONE_CIRCLE_RADIUS_MIN_M..TRAVEL_ZONE_CIRCLE_RADIUS_MAX_M,
                                     )
                                     TextButton(
                                         onClick = { vm.setPendingCircleRecenter(z.id) },
                                         enabled = pendingCircleRecenterZoneId == null,
                                     ) {
                                         Text(stringResource(R.string.travel_edit_recenter))
+                                    }
+                                    Row(
+                                        modifier = Modifier.fillMaxWidth(),
+                                        horizontalArrangement = Arrangement.spacedBy(8.dp),
+                                    ) {
+                                        FilledTonalButton(
+                                            onClick = { vm.openZoneProperties(z.id) },
+                                            modifier = Modifier.weight(1f),
+                                        ) {
+                                            Text(stringResource(R.string.travel_zone_action_edit))
+                                        }
+                                        TextButton(
+                                            onClick = { vm.removeZone(z.id) },
+                                            modifier = Modifier.weight(1f),
+                                            colors = ButtonDefaults.textButtonColors(
+                                                contentColor = MaterialTheme.colorScheme.error,
+                                            ),
+                                        ) {
+                                            Text(stringResource(R.string.travel_delete))
+                                        }
                                     }
                                 } else if (z.kind == TravelZoneKind.POLYGON) {
                                     TextButton(
@@ -1273,24 +1297,11 @@ fun MyTravelsScreen(
                                         }
                                     }
                                 }
-                                if (z.kind != TravelZoneKind.POLYGON) {
-                                    Row(
-                                        horizontalArrangement = Arrangement.spacedBy(4.dp),
-                                    ) {
-                                        TextButton(onClick = { vm.openZoneProperties(z.id) }) {
-                                            Text(stringResource(R.string.travel_edit_properties))
-                                        }
-                                        TextButton(onClick = { vm.selectZoneForEdit(null) }) {
-                                            Text(stringResource(R.string.travel_edit_close_panel))
-                                        }
-                                    }
-                                } else {
-                                    TextButton(
-                                        onClick = { vm.selectZoneForEdit(null) },
-                                        modifier = Modifier.align(Alignment.End),
-                                    ) {
-                                        Text(stringResource(R.string.travel_edit_close_panel))
-                                    }
+                                TextButton(
+                                    onClick = { vm.selectZoneForEdit(null) },
+                                    modifier = Modifier.align(Alignment.End),
+                                ) {
+                                    Text(stringResource(R.string.travel_edit_close_panel))
                                 }
                             }
                         }
@@ -2068,8 +2079,16 @@ private fun SaveZoneDialog(
     var radius by remember(pending) {
         mutableFloatStateOf(
             when (pending) {
-                is TravelPendingZoneSave.CircleZone -> pending.radius
-                else -> 150f
+                is TravelPendingZoneSave.CircleZone ->
+                    pending.radius.coerceIn(
+                        TRAVEL_ZONE_CIRCLE_RADIUS_MIN_M,
+                        TRAVEL_ZONE_CIRCLE_RADIUS_MAX_M,
+                    )
+                else ->
+                    150f.coerceIn(
+                        TRAVEL_ZONE_CIRCLE_RADIUS_MIN_M,
+                        TRAVEL_ZONE_CIRCLE_RADIUS_MAX_M,
+                    )
             },
         )
     }
@@ -2118,7 +2137,7 @@ private fun SaveZoneDialog(
                     Slider(
                         value = radius,
                         onValueChange = { radius = it },
-                        valueRange = 100f..800f,
+                        valueRange = TRAVEL_ZONE_CIRCLE_RADIUS_MIN_M..TRAVEL_ZONE_CIRCLE_RADIUS_MAX_M,
                     )
                 }
                 Spacer(Modifier.height(8.dp))
@@ -2170,7 +2189,10 @@ private fun SaveZoneDialog(
                                     kind = TravelZoneKind.CIRCLE,
                                     centerLat = pending.center.latitude,
                                     centerLng = pending.center.longitude,
-                                    radiusMeters = max(radius, 100f),
+                                    radiusMeters = radius.coerceIn(
+                                        TRAVEL_ZONE_CIRCLE_RADIUS_MIN_M,
+                                        TRAVEL_ZONE_CIRCLE_RADIUS_MAX_M,
+                                    ),
                                     action = action,
                                     mediaUri = mediaUri.takeIf {
                                         action == TravelTriggerAction.PLAY_SOUND ||
