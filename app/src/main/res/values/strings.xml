@@ -1013,6 +1013,15 @@
     <string name="travel_incident_sheet_cd_delete">Удалить метку</string>
     <string name="travel_route_burst_start_cd">Начать съёмку по маршруту каждые 0,5 с</string>
     <string name="travel_route_burst_stop_cd">Закончить съёмку и сохранить серию</string>
+    <string name="travel_route_burst_last_frame_cd">Последний сохранённый кадр серии</string>
+    <string name="travel_route_burst_frames_fmt">Кадров в серии: %1$d</string>
+    <string name="travel_route_playback_pick_hint">Коснитесь линии сохранённого маршрута на карте — виртуальный проезд начнётся от этого места.</string>
+    <string name="travel_route_playback_pick_conflict">Отключите съёмку по маршруту, выбор точки навигатора или режим метки.</string>
+    <string name="travel_route_playback_start_applied_fmt">Старт виртуального проезда: %1$.0f м от начала трека</string>
+    <string name="travel_route_playback_reverse_label">Обратное направление</string>
+    <string name="travel_route_playback_pick_toggle">Куда стартовать</string>
+    <string name="travel_route_playback_start_reset">С начала трека</string>
+    <string name="travel_route_playback_start_fmt">Точка старта: %1$.0f м</string>
     <string name="travel_route_playback_cd">Виртуальный проезд и кадры по записанному маршруту</string>
     <string name="travel_route_playback_speed_label">Скорость виртуального проезда</string>
     <string name="travel_route_playback_speed_fmt">%1$.1f м/с (~%2$d км/ч)</string>

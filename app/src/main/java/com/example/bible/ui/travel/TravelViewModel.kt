@@ -16,6 +16,8 @@ import com.example.bible.data.travel.TravelRoutePhotoSession
 import com.example.bible.data.travel.TravelZone
 import com.example.bible.data.travel.buildRoutePlaybackPolyline
 import com.example.bible.data.travel.interpolateRoutePlayback
+import com.example.bible.data.travel.nearestDistanceAlongPolyline
+import com.example.bible.data.travel.normalizeHeadingDeg
 import com.example.bible.data.travel.routePlaybackPhotoUriAtDistance
 import com.example.bible.data.travel.TravelZoneKind
 import com.example.bible.data.travel.TravelZoneRepository
@@ -210,6 +212,16 @@ class TravelViewModel(
     private val _routePlaybackSpeedMps = MutableStateFlow(ROUTE_PLAYBACK_SPEED_DEFAULT_MPS)
     val routePlaybackSpeedMps: StateFlow<Float> = _routePlaybackSpeedMps.asStateFlow()
 
+    private val _routePlaybackPickStartActive = MutableStateFlow(false)
+    val routePlaybackPickStartActive: StateFlow<Boolean> = _routePlaybackPickStartActive.asStateFlow()
+
+    private val _routePlaybackReverse = MutableStateFlow(false)
+    val routePlaybackReverse: StateFlow<Boolean> = _routePlaybackReverse.asStateFlow()
+
+    /** Смещение старта виртуального проезда вдоль текущей сессии (м от начала полилинии). */
+    private val _routePlaybackStartDistanceM = MutableStateFlow(0f)
+    val routePlaybackStartDistanceM: StateFlow<Float> = _routePlaybackStartDistanceM.asStateFlow()
+
     private var playbackSimJob: Job? = null
 
     private val _friendPeerLocationPoll = MutableStateFlow<FriendPeerLocation?>(null)
@@ -292,7 +304,9 @@ class TravelViewModel(
                 _routePlaybackActive,
                 _routePlaybackSessionIndex,
                 routePhotoSessions,
-            ) { _, _, _ -> Unit }
+                _routePlaybackStartDistanceM,
+                _routePlaybackReverse,
+            ) { _, _, _, _, _ -> Unit }
                 .collect {
                     if (_routePlaybackActive.value) {
                         restartRoutePlaybackSimulation()
@@ -370,13 +384,16 @@ class TravelViewModel(
                     }
                 }
             }
-            var dist = 0f
+            val reverse = _routePlaybackReverse.value
+            var dist = _routePlaybackStartDistanceM.value.coerceIn(0f, total)
             while (isActive && _routePlaybackActive.value) {
                 val speed = _routePlaybackSpeedMps.value.coerceIn(
                     ROUTE_PLAYBACK_SPEED_MIN_MPS,
                     ROUTE_PLAYBACK_SPEED_MAX_MPS,
                 )
-                val (lat, lon, bear) = interpolateRoutePlayback(poly, dist)
+                val dir = if (reverse) -1f else 1f
+                val (lat, lon, bearFwd) = interpolateRoutePlayback(poly, dist)
+                val bear = if (reverse) normalizeHeadingDeg(bearFwd + 180f) else bearFwd
                 val uri = routePlaybackPhotoUriAtDistance(poly, dist)
                 _routePlaybackSim.value = RoutePlaybackSimState(
                     latitude = lat,
@@ -389,8 +406,9 @@ class TravelViewModel(
                 )
                 delay(33)
                 if (!_routePlaybackActive.value) break
-                dist += speed * 0.033f
-                if (dist >= total) dist %= total
+                dist += speed * 0.033f * dir
+                while (dist < 0f) dist += total
+                while (dist >= total) dist -= total
             }
         }
     }
@@ -755,12 +773,43 @@ class TravelViewModel(
 
     fun setRoutePlaybackActive(active: Boolean) {
         _routePlaybackActive.value = active
+        if (!active) {
+            _routePlaybackPickStartActive.value = false
+        }
+    }
+
+    fun setRoutePlaybackPickStartActive(active: Boolean) {
+        _routePlaybackPickStartActive.value = active
+    }
+
+    fun setRoutePlaybackReverse(reverse: Boolean) {
+        _routePlaybackReverse.value = reverse
+        if (_routePlaybackActive.value) restartRoutePlaybackSimulation()
+    }
+
+    /** Ближайшая точка на полилинии текущей сессии к касанию карты — старт виртуального проезда. */
+    fun applyRoutePlaybackStartFromMap(latitude: Double, longitude: Double): Float? {
+        val sortedSessions = routePhotoSessions.value.sortedByDescending { it.createdAtMs }
+        if (sortedSessions.isEmpty()) return null
+        val idx = _routePlaybackSessionIndex.value % sortedSessions.size
+        val poly = buildRoutePlaybackPolyline(sortedSessions[idx].points) ?: return null
+        val d = nearestDistanceAlongPolyline(poly, latitude, longitude)
+        _routePlaybackStartDistanceM.value = d
+        if (_routePlaybackActive.value) restartRoutePlaybackSimulation()
+        return d
+    }
+
+    fun resetRoutePlaybackStartOnPath() {
+        _routePlaybackStartDistanceM.value = 0f
+        if (_routePlaybackActive.value) restartRoutePlaybackSimulation()
     }
 
     fun cycleRoutePlaybackSession() {
         val n = routePhotoSessions.value.sortedByDescending { it.createdAtMs }.size
         if (n <= 1) return
         _routePlaybackSessionIndex.update { (it + 1) % n }
+        _routePlaybackStartDistanceM.value = 0f
+        if (_routePlaybackActive.value) restartRoutePlaybackSimulation()
     }
 
     suspend fun saveRouteBurstSession(session: TravelRoutePhotoSession) {
@@ -787,6 +836,9 @@ class TravelViewModel(
             _routePlaybackActive.value = false
             _routePlaybackSim.value = null
             _routePlaybackSessionIndex.value = 0
+            _routePlaybackStartDistanceM.value = 0f
+            _routePlaybackReverse.value = false
+            _routePlaybackPickStartActive.value = false
         }
     }
 

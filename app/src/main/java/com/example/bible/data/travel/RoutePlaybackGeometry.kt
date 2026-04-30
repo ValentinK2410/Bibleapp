@@ -80,6 +80,44 @@ fun interpolateRoutePlayback(poly: RoutePlaybackPolyline, distanceM: Float): Tri
 }
 
 /**
+ * Расстояние от начала полилинии вдоль траектории до проекции [latitude],[longitude]
+ * на ближайший отрезок (метры).
+ */
+fun nearestDistanceAlongPolyline(poly: RoutePlaybackPolyline, latitude: Double, longitude: Double): Float {
+    if (poly.segments.isEmpty()) return 0f
+    var cumulative = 0f
+    var bestAlong = 0f
+    var bestDistSq = Double.MAX_VALUE
+    for (seg in poly.segments) {
+        val ax = seg.lat1
+        val ay = seg.lon1
+        val bx = seg.lat2
+        val by = seg.lon2
+        val len = seg.lengthM.toDouble().coerceAtLeast(1e-6)
+        val abLat = bx - ax
+        val abLon = by - ay
+        val apLat = latitude - ax
+        val apLon = longitude - ay
+        val dot = apLat * abLat + apLon * abLon
+        val abSq = abLat * abLat + abLon * abLon
+        val t = if (abSq < 1e-22) 0.0 else (dot / abSq).coerceIn(0.0, 1.0)
+        val clat = ax + abLat * t
+        val clon = ay + abLon * t
+        val dArr = FloatArray(1)
+        Location.distanceBetween(latitude, longitude, clat, clon, dArr)
+        val d = dArr[0].toDouble()
+        val dSq = d * d
+        if (dSq < bestDistSq) {
+            bestDistSq = dSq
+            bestAlong = (cumulative + len * t).toFloat()
+        }
+        cumulative += seg.lengthM
+    }
+    val total = poly.totalLengthM.coerceAtLeast(1f)
+    return bestAlong.coerceIn(0f, total)
+}
+
+/**
  * URI последнего кадра, до которого «добрались» по расстоянию по маршруту
  * (кадры берутся по порядку времени съёмки).
  */

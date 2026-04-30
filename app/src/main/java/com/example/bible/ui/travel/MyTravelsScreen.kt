@@ -23,6 +23,7 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -178,6 +179,9 @@ fun MyTravelsScreen(
     val routePlaybackSessionIndex by vm.routePlaybackSessionIndex.collectAsStateWithLifecycle()
     val routePlaybackSim by vm.routePlaybackSim.collectAsStateWithLifecycle()
     val routePlaybackSpeedMps by vm.routePlaybackSpeedMps.collectAsStateWithLifecycle()
+    val routePlaybackPickStartActive by vm.routePlaybackPickStartActive.collectAsStateWithLifecycle()
+    val routePlaybackReverse by vm.routePlaybackReverse.collectAsStateWithLifecycle()
+    val routePlaybackStartDistanceM by vm.routePlaybackStartDistanceM.collectAsStateWithLifecycle()
     val friendPeerLocation by vm.friendPeerLocation.collectAsStateWithLifecycle()
     val friendPeerPollUrl by vm.friendPeerPollUrl.collectAsStateWithLifecycle()
     val friendPeerPollIntervalSec by vm.friendPeerPollIntervalSec.collectAsStateWithLifecycle()
@@ -762,6 +766,40 @@ fun MyTravelsScreen(
                         omitPolygonZoneId = polygonRedraftZoneId,
                         onMapTap = mapTap@{ pt ->
                             bumpFloatingToolbar()
+                            if (routePlaybackPickStartActive) {
+                                when {
+                                    sortedPhotoSessions.isEmpty() -> {
+                                        vm.setRoutePlaybackPickStartActive(false)
+                                        Toast.makeText(
+                                            context,
+                                            R.string.travel_route_photo_no_sessions,
+                                            Toast.LENGTH_SHORT,
+                                        ).show()
+                                    }
+                                    incidentPlaceMode || routePickDestination || routeBurstActive -> {
+                                        Toast.makeText(
+                                            context,
+                                            R.string.travel_route_playback_pick_conflict,
+                                            Toast.LENGTH_SHORT,
+                                        ).show()
+                                    }
+                                    else -> {
+                                        val d = vm.applyRoutePlaybackStartFromMap(pt.latitude, pt.longitude)
+                                        vm.setRoutePlaybackPickStartActive(false)
+                                        if (d != null) {
+                                            Toast.makeText(
+                                                context,
+                                                context.getString(
+                                                    R.string.travel_route_playback_start_applied_fmt,
+                                                    d,
+                                                ),
+                                                Toast.LENGTH_SHORT,
+                                            ).show()
+                                        }
+                                    }
+                                }
+                                return@mapTap
+                            }
                             val incidentHit = mapIncidents.mapNotNull { inc ->
                                 val d = travelDistanceMeters(
                                     pt,
@@ -823,14 +861,62 @@ fun MyTravelsScreen(
                         },
                         onUserLocationUpdated = { lat, lng -> vm.reportUserLocation(lat, lng) },
                         routePhotoSessions = routePhotoSessions,
+                        routeBurstDraftPoints = burstDraftPoints.toList(),
                         routePlaybackSim = routePlaybackSim,
                         friendPeerLocation = friendPeerLocation,
                     )
-                    TravelBurstCameraPreview(
-                        enabled = routeBurstActive && camGranted,
-                        modifier = Modifier.align(Alignment.TopStart),
-                        onImageCaptureReady = { burstImageCapture = it },
-                    )
+                    if (routeBurstActive && camGranted) {
+                        Column(
+                            modifier = Modifier
+                                .align(Alignment.TopStart)
+                                .padding(start = 10.dp, top = 52.dp)
+                                .widthIn(max = 172.dp),
+                            verticalArrangement = Arrangement.spacedBy(6.dp),
+                        ) {
+                            Surface(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .height(118.dp),
+                                shape = RoundedCornerShape(12.dp),
+                                tonalElevation = 3.dp,
+                                shadowElevation = 3.dp,
+                            ) {
+                                TravelBurstCameraPreview(
+                                    enabled = true,
+                                    modifier = Modifier.fillMaxSize(),
+                                    onImageCaptureReady = { burstImageCapture = it },
+                                )
+                            }
+                            burstDraftPoints.lastOrNull()?.let { last ->
+                                Card(
+                                    modifier = Modifier.fillMaxWidth(),
+                                    colors = CardDefaults.cardColors(
+                                        containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.96f),
+                                    ),
+                                ) {
+                                    Column(Modifier.padding(6.dp)) {
+                                        AsyncImage(
+                                            model = Uri.parse(last.photoUri),
+                                            contentDescription = stringResource(R.string.travel_route_burst_last_frame_cd),
+                                            modifier = Modifier
+                                                .fillMaxWidth()
+                                                .heightIn(min = 72.dp, max = 114.dp)
+                                                .clip(RoundedCornerShape(8.dp)),
+                                            contentScale = ContentScale.Crop,
+                                        )
+                                        Text(
+                                            stringResource(
+                                                R.string.travel_route_burst_frames_fmt,
+                                                burstDraftPoints.size,
+                                            ),
+                                            style = MaterialTheme.typography.labelSmall,
+                                            modifier = Modifier.padding(top = 4.dp),
+                                        )
+                                    }
+                                }
+                            }
+                        }
+                    }
                     Column(
                         modifier = Modifier
                             .align(Alignment.TopEnd)
@@ -955,6 +1041,44 @@ fun MyTravelsScreen(
                                         style = MaterialTheme.typography.labelSmall,
                                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                                     )
+                                    HorizontalDivider(Modifier.padding(vertical = 8.dp))
+                                    Row(
+                                        Modifier.fillMaxWidth(),
+                                        verticalAlignment = Alignment.CenterVertically,
+                                        horizontalArrangement = Arrangement.SpaceBetween,
+                                    ) {
+                                        Text(
+                                            stringResource(R.string.travel_route_playback_reverse_label),
+                                            style = MaterialTheme.typography.labelSmall,
+                                            modifier = Modifier.weight(1f),
+                                        )
+                                        Switch(
+                                            checked = routePlaybackReverse,
+                                            onCheckedChange = vm::setRoutePlaybackReverse,
+                                        )
+                                    }
+                                    Text(
+                                        stringResource(
+                                            R.string.travel_route_playback_start_fmt,
+                                            routePlaybackStartDistanceM,
+                                        ),
+                                        style = MaterialTheme.typography.labelSmall,
+                                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                    )
+                                    Row(
+                                        Modifier.fillMaxWidth(),
+                                        horizontalArrangement = Arrangement.spacedBy(4.dp),
+                                    ) {
+                                        TextButton(
+                                            onClick = { vm.setRoutePlaybackPickStartActive(true) },
+                                            modifier = Modifier.weight(1f),
+                                        ) {
+                                            Text(stringResource(R.string.travel_route_playback_pick_toggle))
+                                        }
+                                        TextButton(onClick = { vm.resetRoutePlaybackStartOnPath() }) {
+                                            Text(stringResource(R.string.travel_route_playback_start_reset))
+                                        }
+                                    }
                                 }
                             }
                         }
@@ -1117,11 +1241,43 @@ fun MyTravelsScreen(
                             }
                         }
                     }
-                    if (incidentPlaceMode) {
+                    if (routePlaybackPickStartActive) {
                         Card(
                             modifier = Modifier
                                 .align(Alignment.TopCenter)
                                 .padding(top = if (routePickDestination) 72.dp else 8.dp)
+                                .widthIn(max = 340.dp),
+                            colors = CardDefaults.cardColors(
+                                containerColor = MaterialTheme.colorScheme.secondaryContainer,
+                            ),
+                        ) {
+                            Row(
+                                Modifier.padding(horizontal = 12.dp, vertical = 8.dp),
+                                verticalAlignment = Alignment.CenterVertically,
+                            ) {
+                                Text(
+                                    stringResource(R.string.travel_route_playback_pick_hint),
+                                    Modifier.weight(1f),
+                                    style = MaterialTheme.typography.bodySmall,
+                                    color = MaterialTheme.colorScheme.onSecondaryContainer,
+                                )
+                                TextButton(onClick = { vm.setRoutePlaybackPickStartActive(false) }) {
+                                    Text(stringResource(R.string.travel_cancel))
+                                }
+                            }
+                        }
+                    }
+                    if (incidentPlaceMode) {
+                        Card(
+                            modifier = Modifier
+                                .align(Alignment.TopCenter)
+                                .padding(
+                                    top = when {
+                                        routePickDestination && routePlaybackPickStartActive -> 136.dp
+                                        routePickDestination || routePlaybackPickStartActive -> 72.dp
+                                        else -> 8.dp
+                                    },
+                                )
                                 .widthIn(max = 340.dp),
                             colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.tertiaryContainer),
                         ) {

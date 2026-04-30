@@ -85,6 +85,7 @@ import com.example.bible.data.travel.TRAVEL_ZONE_CIRCLE_RADIUS_MIN_M
 import com.example.bible.data.travel.FriendPeerLocation
 import com.example.bible.data.travel.RoutePlaybackSimState
 import com.example.bible.data.travel.TravelRoutePhotoSession
+import com.example.bible.data.travel.TravelRoutePhotoPoint
 import com.example.bible.data.travel.bearingDegreesLatLon
 import com.example.bible.data.travel.buildRoutePhotoDirectionSegments
 import com.example.bible.map.MapKitBootstrap
@@ -296,6 +297,7 @@ fun YandexTravelMap(
     onIncidentPlaced: (TravelGeoPoint) -> Unit,
     onUserLocationUpdated: ((Double, Double) -> Unit)? = null,
     routePhotoSessions: List<TravelRoutePhotoSession> = emptyList(),
+    routeBurstDraftPoints: List<TravelRoutePhotoPoint> = emptyList(),
     routePlaybackSim: RoutePlaybackSimState? = null,
     friendPeerLocation: FriendPeerLocation? = null,
 ) {
@@ -359,6 +361,7 @@ fun YandexTravelMap(
                 onIncidentPlaced = onIncidentPlaced,
                 onUserLocationUpdated = onUserLocationUpdated,
                 routePhotoSessions = routePhotoSessions,
+                routeBurstDraftPoints = routeBurstDraftPoints,
                 routePlaybackSim = routePlaybackSim,
                 friendPeerLocation = friendPeerLocation,
             )
@@ -393,6 +396,7 @@ private fun YandexTravelMapContent(
     onIncidentPlaced: (TravelGeoPoint) -> Unit,
     onUserLocationUpdated: ((Double, Double) -> Unit)? = null,
     routePhotoSessions: List<TravelRoutePhotoSession> = emptyList(),
+    routeBurstDraftPoints: List<TravelRoutePhotoPoint> = emptyList(),
     routePlaybackSim: RoutePlaybackSimState? = null,
     friendPeerLocation: FriendPeerLocation? = null,
 ) {
@@ -475,7 +479,7 @@ private fun YandexTravelMapContent(
     val routePlaybackSimState = rememberUpdatedState(routePlaybackSim)
     val friendPeerLocationState = rememberUpdatedState(friendPeerLocation)
 
-    LaunchedEffect(routePhotoSessions, routePhotoBurstLayer, mapView) {
+    LaunchedEffect(routePhotoSessions, routeBurstDraftPoints, routePhotoBurstLayer, mapView) {
         routePhotoBurstLayer.clear()
         val segments = buildRoutePhotoDirectionSegments(routePhotoSessions)
         for (seg in segments) {
@@ -485,9 +489,22 @@ private fun YandexTravelMapContent(
             line.strokeWidth = 11f
             line.zIndex = 4.06f
         }
+        if (routeBurstDraftPoints.isNotEmpty()) {
+            val draftSegs = buildRoutePhotoDirectionSegments(
+                listOf(TravelRoutePhotoSession(id = "__draft__", points = routeBurstDraftPoints)),
+            )
+            draftSegs.forEachIndexed { idx, seg ->
+                val poly = Polyline(listOf(Point(seg.lat1, seg.lon1), Point(seg.lat2, seg.lon2)))
+                val line = routePhotoBurstLayer.addPolyline(poly)
+                val last = idx == draftSegs.lastIndex
+                line.setStrokeColor(if (last) 0xFF00E676.toInt() else seg.colorArgb)
+                line.strokeWidth = if (last) 15f else 12f
+                line.zIndex = 4.07f
+            }
+        }
     }
 
-    LaunchedEffect(routePhotoSessions, routePhotoArrowLayer, mapView, context) {
+    LaunchedEffect(routePhotoSessions, routeBurstDraftPoints, routePhotoArrowLayer, mapView, context) {
         routePhotoArrowLayer.clear()
         val segments = buildRoutePhotoDirectionSegments(routePhotoSessions)
         val laneArrowIcon = laneDirectionArrowImageProvider(context)
@@ -505,6 +522,27 @@ private fun YandexTravelMapContent(
                         zIndex = 4.37f
                     },
                 )
+            }
+        }
+        if (routeBurstDraftPoints.isNotEmpty()) {
+            val draftSegs = buildRoutePhotoDirectionSegments(
+                listOf(TravelRoutePhotoSession(id = "__draft__", points = routeBurstDraftPoints)),
+            )
+            for (seg in draftSegs) {
+                val poly = Polyline(listOf(Point(seg.lat1, seg.lon1), Point(seg.lat2, seg.lon2)))
+                val arrows = sampleLaneArrowsAlongPolyline(poly, TRAVEL_ROUTE_LANE_ARROW_SPACING_M)
+                for ((pt, bearingDeg) in arrows) {
+                    val pm = routePhotoArrowLayer.addPlacemark(pt, laneArrowIcon)
+                    pm.direction = bearingDeg
+                    pm.setIconStyle(
+                        IconStyle().apply {
+                            anchor = PointF(0.5f, 0.5f)
+                            rotationType = RotationType.ROTATE
+                            scale = 1.12f
+                            zIndex = 4.375f
+                        },
+                    )
+                }
             }
         }
     }
