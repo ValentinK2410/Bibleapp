@@ -846,43 +846,26 @@ fun MyTravelsScreen(
                         verticalArrangement = Arrangement.spacedBy(8.dp),
                         horizontalAlignment = Alignment.End,
                     ) {
-                        Row(
-                            horizontalArrangement = Arrangement.spacedBy(8.dp),
-                            verticalAlignment = Alignment.CenterVertically,
+                        SmallFloatingActionButton(
+                            onClick = {
+                                if (routeBurstActive) stopRouteBurstAndSave() else requestStartRouteBurst()
+                            },
+                            containerColor = if (routeBurstActive) {
+                                MaterialTheme.colorScheme.errorContainer
+                            } else {
+                                MaterialTheme.colorScheme.primaryContainer
+                            },
                         ) {
-                            SmallFloatingActionButton(
-                                onClick = {
-                                    if (routeBurstActive) stopRouteBurstAndSave() else requestStartRouteBurst()
-                                },
-                                containerColor = if (routeBurstActive) {
-                                    MaterialTheme.colorScheme.errorContainer
-                                } else {
-                                    MaterialTheme.colorScheme.primaryContainer
-                                },
-                            ) {
-                                Icon(
-                                    if (routeBurstActive) Icons.Default.Stop else Icons.Default.CameraAlt,
-                                    contentDescription = stringResource(
-                                        if (routeBurstActive) {
-                                            R.string.travel_route_burst_stop_cd
-                                        } else {
-                                            R.string.travel_route_burst_start_cd
-                                        },
-                                    ),
-                                )
-                            }
-                            if (territoryPanelBelowMap) {
-                                TravelCircleTerritoryFab(
-                                    selected = editMode == TravelMapEditMode.CIRCLE_TAP,
-                                    onClick = {
-                                        bumpFloatingToolbar()
-                                        vm.setIncidentPlaceMode(false)
-                                        vm.setRoutePickMode(false)
-                                        incidentDraftPoint = null
-                                        vm.toggleCircleDrawMode()
+                            Icon(
+                                if (routeBurstActive) Icons.Default.Stop else Icons.Default.CameraAlt,
+                                contentDescription = stringResource(
+                                    if (routeBurstActive) {
+                                        R.string.travel_route_burst_stop_cd
+                                    } else {
+                                        R.string.travel_route_burst_start_cd
                                     },
-                                )
-                            }
+                                ),
+                            )
                         }
                         SmallFloatingActionButton(
                             onClick = {
@@ -1051,6 +1034,7 @@ fun MyTravelsScreen(
                         polygonSelected = editMode == TravelMapEditMode.POLYGON_DRAW,
                         markerModeActive = incidentPlaceMode,
                         routePickActive = routePickDestination,
+                        circleModeActive = editMode == TravelMapEditMode.CIRCLE_TAP,
                         onPolygonClick = {
                             bumpFloatingToolbar()
                             vm.setIncidentPlaceMode(false)
@@ -1073,6 +1057,13 @@ fun MyTravelsScreen(
                                     incidentDraftPoint = null
                                 }
                             }
+                        },
+                        onCircleClick = {
+                            bumpFloatingToolbar()
+                            vm.setIncidentPlaceMode(false)
+                            vm.setRoutePickMode(false)
+                            incidentDraftPoint = null
+                            vm.toggleCircleDrawMode()
                         },
                         onRouteClick = {
                             bumpFloatingToolbar()

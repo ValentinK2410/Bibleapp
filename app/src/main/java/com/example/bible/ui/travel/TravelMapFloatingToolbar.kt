@@ -8,14 +8,14 @@ import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.CenterFocusStrong
@@ -25,7 +25,6 @@ import androidx.compose.material.icons.filled.Polyline
 import androidx.compose.material.icons.filled.Share
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.SmallFloatingActionButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -49,9 +48,11 @@ fun TravelMapFloatingToolbar(
     polygonSelected: Boolean,
     markerModeActive: Boolean,
     routePickActive: Boolean,
+    circleModeActive: Boolean,
     enabled: Boolean,
     onPolygonClick: () -> Unit,
     onMarkersClick: () -> Unit,
+    onCircleClick: () -> Unit,
     onRouteClick: () -> Unit,
     onShareClick: () -> Unit,
 ) {
@@ -68,9 +69,8 @@ fun TravelMapFloatingToolbar(
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .horizontalScroll(rememberScrollState())
                 .padding(horizontal = 12.dp, vertical = 10.dp),
-            horizontalArrangement = Arrangement.spacedBy(14.dp),
+            horizontalArrangement = Arrangement.Start,
             verticalAlignment = Alignment.CenterVertically,
         ) {
             TravelMapSquareToolButton(
@@ -81,6 +81,7 @@ fun TravelMapFloatingToolbar(
                 iconVector = Icons.Default.Polyline,
                 iconTint = MaterialTheme.colorScheme.onSurface,
             )
+            Spacer(Modifier.width(14.dp))
             TravelMapSquareToolButton(
                 selected = markerModeActive,
                 onClick = onMarkersClick,
@@ -89,6 +90,16 @@ fun TravelMapFloatingToolbar(
                 iconVector = Icons.Default.LocationOn,
                 iconTint = Color(0xFFD32F2F),
             )
+            Spacer(Modifier.weight(1f))
+            TravelMapSquareToolButton(
+                selected = circleModeActive,
+                onClick = onCircleClick,
+                badgePlus = true,
+                contentDescription = stringResource(R.string.travel_fab_circle_cd),
+                iconVector = Icons.Default.Circle,
+                iconTint = MaterialTheme.colorScheme.onSurface,
+            )
+            Spacer(Modifier.width(14.dp))
             TravelMapSquareToolButton(
                 selected = routePickActive,
                 onClick = onRouteClick,
@@ -97,6 +108,7 @@ fun TravelMapFloatingToolbar(
                 iconVector = Icons.Default.CenterFocusStrong,
                 iconTint = MaterialTheme.colorScheme.onSurface,
             )
+            Spacer(Modifier.width(14.dp))
             TravelMapSquareToolButton(
                 selected = false,
                 onClick = onShareClick,
@@ -106,43 +118,6 @@ fun TravelMapFloatingToolbar(
                 iconTint = MaterialTheme.colorScheme.onSurface,
             )
         }
-    }
-}
-
-/**
- * Режим круга территории: FAB справа сверху, с плюсом как у полигона в панели.
- */
-@Composable
-fun TravelCircleTerritoryFab(
-    selected: Boolean,
-    onClick: () -> Unit,
-    modifier: Modifier = Modifier,
-) {
-    Box(modifier = modifier) {
-        SmallFloatingActionButton(
-            onClick = onClick,
-            containerColor = if (selected) {
-                MaterialTheme.colorScheme.primaryContainer
-            } else {
-                MaterialTheme.colorScheme.surfaceVariant
-            },
-            contentColor = MaterialTheme.colorScheme.onSurface,
-        ) {
-            Icon(
-                imageVector = Icons.Default.Circle,
-                contentDescription = stringResource(R.string.travel_fab_circle_cd),
-                modifier = Modifier.size(26.dp),
-            )
-        }
-        Text(
-            "+",
-            modifier = Modifier
-                .align(Alignment.TopStart)
-                .padding(start = 4.dp, top = 2.dp),
-            style = MaterialTheme.typography.labelSmall,
-            fontSize = 11.sp,
-            color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.9f),
-        )
     }
 }
 
