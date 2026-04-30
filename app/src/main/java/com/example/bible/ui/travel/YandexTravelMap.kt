@@ -1344,7 +1344,7 @@ private fun YandexTravelMapContent(
                 },
                 modifier = Modifier
                     .align(Alignment.BottomEnd)
-                    .padding(20.dp)
+                    .padding(end = 16.dp, bottom = 132.dp)
                     .alpha(animatedRecenterFabAlpha),
                 containerColor = MaterialTheme.colorScheme.surface,
                 contentColor = MaterialTheme.colorScheme.primary,

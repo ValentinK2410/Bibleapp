@@ -13,7 +13,6 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
@@ -26,6 +25,7 @@ import androidx.compose.material.icons.filled.Polyline
 import androidx.compose.material.icons.filled.Share
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.SmallFloatingActionButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -49,13 +49,11 @@ fun TravelMapFloatingToolbar(
     polygonSelected: Boolean,
     markerModeActive: Boolean,
     routePickActive: Boolean,
-    circleModeActive: Boolean,
     enabled: Boolean,
     onPolygonClick: () -> Unit,
     onMarkersClick: () -> Unit,
     onRouteClick: () -> Unit,
     onShareClick: () -> Unit,
-    onCircleClick: () -> Unit,
 ) {
     AnimatedVisibility(
         visible = visible && enabled,
@@ -71,7 +69,7 @@ fun TravelMapFloatingToolbar(
             modifier = Modifier
                 .fillMaxWidth()
                 .horizontalScroll(rememberScrollState())
-                .padding(start = 12.dp, end = 12.dp, top = 26.dp, bottom = 10.dp),
+                .padding(horizontal = 12.dp, vertical = 10.dp),
             horizontalArrangement = Arrangement.spacedBy(14.dp),
             verticalAlignment = Alignment.CenterVertically,
         ) {
@@ -91,19 +89,14 @@ fun TravelMapFloatingToolbar(
                 iconVector = Icons.Default.LocationOn,
                 iconTint = Color(0xFFD32F2F),
             )
-            Box(
-                modifier = Modifier.offset(y = (-22).dp),
-                contentAlignment = Alignment.Center,
-            ) {
-                TravelMapSquareToolButton(
-                    selected = routePickActive,
-                    onClick = onRouteClick,
-                    badgePlus = false,
-                    contentDescription = stringResource(R.string.travel_fab_route_cd),
-                    iconVector = Icons.Default.CenterFocusStrong,
-                    iconTint = MaterialTheme.colorScheme.onSurface,
-                )
-            }
+            TravelMapSquareToolButton(
+                selected = routePickActive,
+                onClick = onRouteClick,
+                badgePlus = false,
+                contentDescription = stringResource(R.string.travel_fab_route_cd),
+                iconVector = Icons.Default.CenterFocusStrong,
+                iconTint = MaterialTheme.colorScheme.onSurface,
+            )
             TravelMapSquareToolButton(
                 selected = false,
                 onClick = onShareClick,
@@ -112,15 +105,44 @@ fun TravelMapFloatingToolbar(
                 iconVector = Icons.Default.Share,
                 iconTint = MaterialTheme.colorScheme.onSurface,
             )
-            TravelMapSquareToolButton(
-                selected = circleModeActive,
-                onClick = onCircleClick,
-                badgePlus = false,
+        }
+    }
+}
+
+/**
+ * Режим круга территории: FAB справа сверху, с плюсом как у полигона в панели.
+ */
+@Composable
+fun TravelCircleTerritoryFab(
+    selected: Boolean,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    Box(modifier = modifier) {
+        SmallFloatingActionButton(
+            onClick = onClick,
+            containerColor = if (selected) {
+                MaterialTheme.colorScheme.primaryContainer
+            } else {
+                MaterialTheme.colorScheme.surfaceVariant
+            },
+            contentColor = MaterialTheme.colorScheme.onSurface,
+        ) {
+            Icon(
+                imageVector = Icons.Default.Circle,
                 contentDescription = stringResource(R.string.travel_fab_circle_cd),
-                iconVector = Icons.Default.Circle,
-                iconTint = MaterialTheme.colorScheme.onSurface,
+                modifier = Modifier.size(26.dp),
             )
         }
+        Text(
+            "+",
+            modifier = Modifier
+                .align(Alignment.TopStart)
+                .padding(start = 4.dp, top = 2.dp),
+            style = MaterialTheme.typography.labelSmall,
+            fontSize = 11.sp,
+            color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.9f),
+        )
     }
 }
 
