@@ -940,6 +940,7 @@
     <string name="travel_edit_recenter_wait">Коснитесь карты — новый центр круга</string>
     <string name="travel_edit_new_polygon_outline">Новый контур</string>
     <string name="travel_edit_polygon_redraft_hint">Отметьте минимум три точки нового контура</string>
+    <string name="travel_zone_action_edit">Редактировать</string>
     <string name="travel_edit_properties">Название и действие</string>
     <string name="travel_edit_close_panel">Закрыть</string>
     <string name="travel_edit_save_outline">Сохранить контур</string>

@@ -37,6 +37,7 @@ import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.AddLocationAlt
 import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.DropdownMenu
@@ -1264,14 +1265,43 @@ fun MyTravelsScreen(
                                     ) {
                                         Text(stringResource(R.string.travel_edit_new_polygon_outline))
                                     }
-                                }
-                                Row(
-                                    horizontalArrangement = Arrangement.spacedBy(4.dp),
-                                ) {
-                                    TextButton(onClick = { vm.openZoneProperties(z.id) }) {
-                                        Text(stringResource(R.string.travel_edit_properties))
+                                    Row(
+                                        modifier = Modifier.fillMaxWidth(),
+                                        horizontalArrangement = Arrangement.spacedBy(8.dp),
+                                    ) {
+                                        FilledTonalButton(
+                                            onClick = { vm.openZoneProperties(z.id) },
+                                            modifier = Modifier.weight(1f),
+                                        ) {
+                                            Text(stringResource(R.string.travel_zone_action_edit))
+                                        }
+                                        TextButton(
+                                            onClick = { vm.removeZone(z.id) },
+                                            modifier = Modifier.weight(1f),
+                                            colors = ButtonDefaults.textButtonColors(
+                                                contentColor = MaterialTheme.colorScheme.error,
+                                            ),
+                                        ) {
+                                            Text(stringResource(R.string.travel_delete))
+                                        }
                                     }
-                                    TextButton(onClick = { vm.selectZoneForEdit(null) }) {
+                                }
+                                if (z.kind != TravelZoneKind.POLYGON) {
+                                    Row(
+                                        horizontalArrangement = Arrangement.spacedBy(4.dp),
+                                    ) {
+                                        TextButton(onClick = { vm.openZoneProperties(z.id) }) {
+                                            Text(stringResource(R.string.travel_edit_properties))
+                                        }
+                                        TextButton(onClick = { vm.selectZoneForEdit(null) }) {
+                                            Text(stringResource(R.string.travel_edit_close_panel))
+                                        }
+                                    }
+                                } else {
+                                    TextButton(
+                                        onClick = { vm.selectZoneForEdit(null) },
+                                        modifier = Modifier.align(Alignment.End),
+                                    ) {
                                         Text(stringResource(R.string.travel_edit_close_panel))
                                     }
                                 }

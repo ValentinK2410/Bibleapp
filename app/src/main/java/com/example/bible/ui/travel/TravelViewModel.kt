@@ -690,6 +690,20 @@ class TravelViewModel(
     fun removeZone(id: String) {
         viewModelScope.launch {
             repo.remove(id)
+            if (_selectedZoneIdForEdit.value == id) {
+                _selectedZoneIdForEdit.value = null
+            }
+            if (_polygonRedraftZoneId.value == id) {
+                _polygonRedraftZoneId.value = null
+                _polygonDraft.value = emptyList()
+                _editMode.value = TravelMapEditMode.VIEW
+            }
+            if (_zonePropertiesEditId.value == id) {
+                _zonePropertiesEditId.value = null
+            }
+            if (_pendingCircleRecenterZoneId.value == id) {
+                _pendingCircleRecenterZoneId.value = null
+            }
         }
     }
 
