@@ -1016,29 +1016,27 @@ fun MyTravelsScreen(
                         }
                         routePlaybackSim?.let { sim ->
                             sim.currentPhotoUri?.let { uriStr ->
-                                Card(
+                                Box(
                                     modifier = Modifier
                                         .width((220 * routePlaybackPreviewScale).dp)
-                                        .height((140 * routePlaybackPreviewScale).dp),
-                                    shape = RoundedCornerShape(12.dp),
+                                        .height((140 * routePlaybackPreviewScale).dp)
+                                        .clip(RoundedCornerShape(12.dp)),
                                 ) {
-                                    Box(Modifier.fillMaxSize()) {
-                                        AsyncImage(
-                                            model = Uri.parse(uriStr),
-                                            contentDescription = null,
-                                            modifier = Modifier.fillMaxSize(),
-                                            contentScale = ContentScale.Crop,
+                                    RoutePlaybackSmoothPhoto(
+                                        uriStr = uriStr,
+                                        modifier = Modifier.fillMaxSize(),
+                                        contentScale = ContentScale.Crop,
+                                    )
+                                    Surface(
+                                        modifier = Modifier.align(Alignment.BottomCenter),
+                                        color = MaterialTheme.colorScheme.surface.copy(alpha = 0.88f),
+                                        shape = RoundedCornerShape(bottomStart = 12.dp, bottomEnd = 12.dp),
+                                    ) {
+                                        Text(
+                                            "${(sim.progress * 100f).toInt()}% · ${sim.distanceAlongMeters.toInt()} м / ${sim.totalPathMeters.toInt()} м",
+                                            style = MaterialTheme.typography.labelSmall,
+                                            modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
                                         )
-                                        Surface(
-                                            modifier = Modifier.align(Alignment.BottomCenter),
-                                            color = MaterialTheme.colorScheme.surface.copy(alpha = 0.88f),
-                                        ) {
-                                            Text(
-                                                "${(sim.progress * 100f).toInt()}% · ${sim.distanceAlongMeters.toInt()} м / ${sim.totalPathMeters.toInt()} м",
-                                                style = MaterialTheme.typography.labelSmall,
-                                                modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
-                                            )
-                                        }
                                     }
                                 }
                             }

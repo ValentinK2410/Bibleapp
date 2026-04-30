@@ -37,6 +37,9 @@ import kotlinx.coroutines.isActive
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import android.net.Uri
+import coil.imageLoader
+import coil.request.ImageRequest
 
 enum class TravelMapEditMode {
     VIEW,
@@ -351,6 +354,20 @@ class TravelViewModel(
         }
         val total = poly.totalLengthM.coerceAtLeast(1f)
         playbackSimJob = viewModelScope.launch {
+            launch(Dispatchers.IO) {
+                val app = getApplication<Application>()
+                val loader = app.imageLoader
+                for (p in session.points) {
+                    runCatching {
+                        loader.enqueue(
+                            ImageRequest.Builder(app)
+                                .data(Uri.parse(p.photoUri))
+                                .crossfade(false)
+                                .build(),
+                        )
+                    }
+                }
+            }
             var dist = 0f
             while (isActive && _routePlaybackActive.value) {
                 val speed = _routePlaybackSpeedMps.value.coerceIn(
