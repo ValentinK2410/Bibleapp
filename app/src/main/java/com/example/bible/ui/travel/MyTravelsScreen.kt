@@ -88,6 +88,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.bible.R
 import com.example.bible.data.travel.TravelGeoPoint
+import com.example.bible.data.travel.TravelMapIncident
 import com.example.bible.data.travel.TravelMarkerSoundTrigger
 import com.example.bible.data.travel.TravelTriggerAction
 import com.example.bible.data.travel.TravelZoneTapSound
@@ -190,6 +191,8 @@ fun MyTravelsScreen(
     var friendPeerUrlDraft by remember { mutableStateOf("") }
     var friendPeerManualLine by remember { mutableStateOf("") }
     var friendPeerManualLabel by remember { mutableStateOf("") }
+    var incidentTapSheetIncident by remember { mutableStateOf<TravelMapIncident?>(null) }
+    var incidentDeleteConfirmFor by remember { mutableStateOf<TravelMapIncident?>(null) }
     val burstDraftPoints = remember { mutableStateListOf<TravelRoutePhotoPoint>() }
     var burstImageCapture by remember { mutableStateOf<ImageCapture?>(null) }
     val burstCaptureExecutor = remember { Executors.newSingleThreadExecutor() }
@@ -753,7 +756,7 @@ fun MyTravelsScreen(
                         territoryEditMode = territoryEditEnabled,
                         selectedZoneId = selectedZoneIdForEdit,
                         omitPolygonZoneId = polygonRedraftZoneId,
-                        onMapTap = { pt ->
+                        onMapTap = mapTap@{ pt ->
                             bumpFloatingToolbar()
                             if (editMode == TravelMapEditMode.VIEW && !territoryEditEnabled &&
                                 pendingCircleRecenterZoneId == null && !routePickDestination && !incidentPlaceMode
@@ -770,36 +773,23 @@ fun MyTravelsScreen(
                                     }
                                 }.minByOrNull { it.second }?.first
                                 if (hit != null) {
-                                    val uri = hit.soundUri ?: markerDefaultSoundUri
-                                    if (!uri.isNullOrBlank()) {
-                                        TravelMarkerSoundTrigger.onMapTapNear(
-                                            context,
-                                            hit.id,
-                                            uri,
-                                            hit.note.trim().ifBlank {
-                                                context.getString(R.string.travel_incidents_header)
-                                            },
-                                        )
-                                    }
+                                    incidentTapSheetIncident = hit
+                                    return@mapTap
                                 }
-                                val markerHadAudio = hit != null &&
-                                    !(hit.soundUri ?: markerDefaultSoundUri).isNullOrBlank()
-                                if (!markerHadAudio) {
-                                    val zoneAudio = travelZonesAtPoint(
-                                        zones.filter { it.enabled },
-                                        pt,
-                                    ).firstOrNull {
-                                        it.action == TravelTriggerAction.PLAY_SOUND &&
-                                            !it.mediaUri.isNullOrBlank()
-                                    }
-                                    if (zoneAudio != null) {
-                                        TravelZoneTapSound.onMapTapInZone(
-                                            context,
-                                            zoneAudio.id,
-                                            zoneAudio.mediaUri!!,
-                                            zoneAudio.name,
-                                        )
-                                    }
+                                val zoneAudio = travelZonesAtPoint(
+                                    zones.filter { it.enabled },
+                                    pt,
+                                ).firstOrNull {
+                                    it.action == TravelTriggerAction.PLAY_SOUND &&
+                                        !it.mediaUri.isNullOrBlank()
+                                }
+                                if (zoneAudio != null) {
+                                    TravelZoneTapSound.onMapTapInZone(
+                                        context,
+                                        zoneAudio.id,
+                                        zoneAudio.mediaUri!!,
+                                        zoneAudio.name,
+                                    )
                                 }
                             }
                             val recId = pendingCircleRecenterZoneId
@@ -1604,6 +1594,46 @@ fun MyTravelsScreen(
             },
             dismissButton = {
                 TextButton(onClick = { friendPeerManualDialog = false }) {
+                    Text(stringResource(R.string.travel_cancel))
+                }
+            },
+        )
+    }
+
+    IncidentMarkerTapSheet(
+        incident = incidentTapSheetIncident,
+        mapIncidents = mapIncidents,
+        markerDefaultSoundUri = markerDefaultSoundUri,
+        onDismiss = { incidentTapSheetIncident = null },
+        onSaveNote = { inc, note ->
+            vm.replaceMapIncident(inc.copy(note = note))
+            Toast.makeText(context, R.string.travel_saved, Toast.LENGTH_SHORT).show()
+        },
+        onDelete = { incidentDeleteConfirmFor = it },
+        onOpenFullEditor = {
+            vm.setShowMarkersEditSheet(true)
+            incidentTapSheetIncident = null
+        },
+    )
+
+    incidentDeleteConfirmFor?.let { inc ->
+        AlertDialog(
+            onDismissRequest = { incidentDeleteConfirmFor = null },
+            title = { Text(stringResource(R.string.travel_incident_sheet_delete_confirm_title)) },
+            text = { Text(stringResource(R.string.travel_incident_sheet_delete_confirm_body)) },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        vm.removeMapIncident(inc.id)
+                        incidentDeleteConfirmFor = null
+                        incidentTapSheetIncident = null
+                    },
+                ) {
+                    Text(stringResource(R.string.travel_delete))
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { incidentDeleteConfirmFor = null }) {
                     Text(stringResource(R.string.travel_cancel))
                 }
             },
