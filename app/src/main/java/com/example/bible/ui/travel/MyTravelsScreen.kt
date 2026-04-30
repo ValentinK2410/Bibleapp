@@ -1603,12 +1603,7 @@ fun MyTravelsScreen(
     IncidentMarkerTapSheet(
         incident = incidentTapSheetIncident,
         mapIncidents = mapIncidents,
-        markerDefaultSoundUri = markerDefaultSoundUri,
         onDismiss = { incidentTapSheetIncident = null },
-        onSaveNote = { inc, note ->
-            vm.replaceMapIncident(inc.copy(note = note))
-            Toast.makeText(context, R.string.travel_saved, Toast.LENGTH_SHORT).show()
-        },
         onDelete = { incidentDeleteConfirmFor = it },
         onOpenFullEditor = {
             vm.setShowMarkersEditSheet(true)

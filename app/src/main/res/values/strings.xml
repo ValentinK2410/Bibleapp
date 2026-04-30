@@ -1003,6 +1003,13 @@
     <string name="travel_incident_sheet_delete_marker">Удалить отметку</string>
     <string name="travel_incident_sheet_delete_confirm_title">Удалить отметку?</string>
     <string name="travel_incident_sheet_delete_confirm_body">Точка, текст, звук и снимки этой метки будут удалены.</string>
+    <string name="travel_incident_sheet_auto_listen_hint">При открытии: свой звуковой файл воспроизводится автоматически; если звука нет — текст читается голосом ассистента (настройки озвучки в приложении).</string>
+    <string name="travel_incident_sheet_preview_cd">Фото метки на карте</string>
+    <string name="travel_incident_sheet_tts_used_hint">Текст озвучивается системным голосом (TTS).</string>
+    <string name="travel_incident_sheet_side_edit">Изменить</string>
+    <string name="travel_incident_sheet_side_delete">Удалить</string>
+    <string name="travel_incident_sheet_cd_edit">Редактировать метку</string>
+    <string name="travel_incident_sheet_cd_delete">Удалить метку</string>
     <string name="travel_route_burst_start_cd">Начать съёмку по маршруту каждые 0,5 с</string>
     <string name="travel_route_burst_stop_cd">Закончить съёмку и сохранить серию</string>
     <string name="travel_route_playback_cd">Виртуальный проезд и кадры по записанному маршруту</string>
