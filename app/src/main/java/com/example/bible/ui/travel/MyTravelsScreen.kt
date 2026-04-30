@@ -31,6 +31,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
@@ -73,8 +74,10 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
@@ -1216,26 +1219,12 @@ fun MyTravelsScreen(
                             Column(Modifier.padding(12.dp)) {
                                 Text(z.name, style = MaterialTheme.typography.titleSmall)
                                 if (z.kind == TravelZoneKind.CIRCLE) {
-                                    var radiusDraft by remember(z.id) {
-                                        mutableFloatStateOf(z.radiusMeters)
-                                    }
-                                    LaunchedEffect(z.id, z.radiusMeters) {
-                                        radiusDraft = z.radiusMeters.coerceIn(
-                                            TRAVEL_ZONE_CIRCLE_RADIUS_MIN_M,
-                                            TRAVEL_ZONE_CIRCLE_RADIUS_MAX_M,
-                                        )
-                                    }
-                                    Text(
-                                        stringResource(R.string.travel_radius_m, radiusDraft.toInt()),
-                                        style = MaterialTheme.typography.labelMedium,
-                                    )
-                                    Slider(
-                                        value = radiusDraft,
-                                        onValueChange = { radiusDraft = it },
-                                        onValueChangeFinished = {
-                                            vm.updateZoneRadius(z.id, radiusDraft)
+                                    TravelCircleRadiusSliderWithManualInput(
+                                        rememberKey = z.id,
+                                        radiusFromModel = z.radiusMeters,
+                                        onRadiusCommitted = { r ->
+                                            vm.updateZoneRadius(z.id, r)
                                         },
-                                        valueRange = TRAVEL_ZONE_CIRCLE_RADIUS_MIN_M..TRAVEL_ZONE_CIRCLE_RADIUS_MAX_M,
                                     )
                                     TextButton(
                                         onClick = { vm.setPendingCircleRecenter(z.id) },
@@ -2068,6 +2057,82 @@ private fun EditZonePropertiesDialog(
 }
 
 @Composable
+private fun TravelCircleRadiusSliderWithManualInput(
+    rememberKey: Any?,
+    radiusFromModel: Float,
+    onRadiusCommitted: (Float) -> Unit,
+) {
+    val minR = TRAVEL_ZONE_CIRCLE_RADIUS_MIN_M
+    val maxR = TRAVEL_ZONE_CIRCLE_RADIUS_MAX_M
+    var radiusDraft by remember(rememberKey) {
+        mutableFloatStateOf(radiusFromModel.coerceIn(minR, maxR))
+    }
+    var manualText by remember(rememberKey) {
+        mutableStateOf(radiusDraft.toInt().toString())
+    }
+    var manualFieldFocused by remember(rememberKey) { mutableStateOf(false) }
+
+    LaunchedEffect(rememberKey, radiusFromModel) {
+        radiusDraft = radiusFromModel.coerceIn(minR, maxR)
+        if (!manualFieldFocused) {
+            manualText = radiusDraft.toInt().toString()
+        }
+    }
+
+    val focusManager = LocalFocusManager.current
+
+    fun commitManualInput() {
+        val parsed = manualText.toIntOrNull()?.toFloat()?.coerceIn(minR, maxR)
+        val v = parsed ?: radiusDraft
+        radiusDraft = v
+        manualText = v.toInt().toString()
+        onRadiusCommitted(v)
+    }
+
+    Text(
+        stringResource(R.string.travel_radius_m, radiusDraft.toInt()),
+        style = MaterialTheme.typography.labelMedium,
+    )
+    Slider(
+        value = radiusDraft,
+        onValueChange = {
+            manualFieldFocused = false
+            radiusDraft = it
+            manualText = it.toInt().toString()
+        },
+        onValueChangeFinished = { onRadiusCommitted(radiusDraft) },
+        valueRange = minR..maxR,
+    )
+    OutlinedTextField(
+        value = manualText,
+        onValueChange = { chunk ->
+            manualFieldFocused = true
+            manualText = chunk.filter { it.isDigit() }.take(5)
+        },
+        label = { Text(stringResource(R.string.travel_radius_manual_label)) },
+        singleLine = true,
+        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+        keyboardActions = KeyboardActions(
+            onDone = {
+                commitManualInput()
+                manualFieldFocused = false
+                focusManager.clearFocus()
+            },
+        ),
+        modifier = Modifier
+            .fillMaxWidth()
+            .onFocusChanged { state ->
+                if (state.isFocused) {
+                    manualFieldFocused = true
+                } else if (manualFieldFocused) {
+                    commitManualInput()
+                    manualFieldFocused = false
+                }
+            },
+    )
+}
+
+@Composable
 private fun SaveZoneDialog(
     pending: TravelPendingZoneSave,
     onDismiss: () -> Unit,
@@ -2133,11 +2198,10 @@ private fun SaveZoneDialog(
                 )
                 if (pending is TravelPendingZoneSave.CircleZone) {
                     Spacer(Modifier.height(8.dp))
-                    Text(stringResource(R.string.travel_radius_m, radius.toInt()))
-                    Slider(
-                        value = radius,
-                        onValueChange = { radius = it },
-                        valueRange = TRAVEL_ZONE_CIRCLE_RADIUS_MIN_M..TRAVEL_ZONE_CIRCLE_RADIUS_MAX_M,
+                    TravelCircleRadiusSliderWithManualInput(
+                        rememberKey = pending,
+                        radiusFromModel = radius,
+                        onRadiusCommitted = { radius = it },
                     )
                 }
                 Spacer(Modifier.height(8.dp))

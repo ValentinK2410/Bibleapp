@@ -1072,6 +1072,7 @@
     <string name="travel_save_dialog_title">Новая зона</string>
     <string name="travel_zone_name">Название</string>
     <string name="travel_radius_m">Радиус: %1$d м</string>
+    <string name="travel_radius_manual_label">Радиус в метрах (вручную)</string>
     <string name="travel_action_label">При входе в зону</string>
     <string name="travel_action_notif">Только уведомление</string>
     <string name="travel_action_beep">Уведомление и звуковой сигнал</string>
