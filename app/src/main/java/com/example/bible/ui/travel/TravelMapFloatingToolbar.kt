@@ -8,12 +8,15 @@ import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.CenterFocusStrong
@@ -67,8 +70,9 @@ fun TravelMapFloatingToolbar(
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(horizontal = 12.dp, vertical = 10.dp),
-            horizontalArrangement = Arrangement.SpaceEvenly,
+                .horizontalScroll(rememberScrollState())
+                .padding(start = 12.dp, end = 12.dp, top = 26.dp, bottom = 10.dp),
+            horizontalArrangement = Arrangement.spacedBy(14.dp),
             verticalAlignment = Alignment.CenterVertically,
         ) {
             TravelMapSquareToolButton(
@@ -87,14 +91,19 @@ fun TravelMapFloatingToolbar(
                 iconVector = Icons.Default.LocationOn,
                 iconTint = Color(0xFFD32F2F),
             )
-            TravelMapSquareToolButton(
-                selected = routePickActive,
-                onClick = onRouteClick,
-                badgePlus = false,
-                contentDescription = stringResource(R.string.travel_fab_route_cd),
-                iconVector = Icons.Default.CenterFocusStrong,
-                iconTint = MaterialTheme.colorScheme.onSurface,
-            )
+            Box(
+                modifier = Modifier.offset(y = (-22).dp),
+                contentAlignment = Alignment.Center,
+            ) {
+                TravelMapSquareToolButton(
+                    selected = routePickActive,
+                    onClick = onRouteClick,
+                    badgePlus = false,
+                    contentDescription = stringResource(R.string.travel_fab_route_cd),
+                    iconVector = Icons.Default.CenterFocusStrong,
+                    iconTint = MaterialTheme.colorScheme.onSurface,
+                )
+            }
             TravelMapSquareToolButton(
                 selected = false,
                 onClick = onShareClick,
