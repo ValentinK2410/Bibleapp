@@ -70,6 +70,7 @@ private val smsExperimentPermissions = arrayOf(
     Manifest.permission.SEND_SMS,
     Manifest.permission.CALL_PHONE,
     Manifest.permission.READ_CONTACTS,
+    Manifest.permission.READ_PHONE_STATE,
 )
 
 internal data class InboundSmsRow(

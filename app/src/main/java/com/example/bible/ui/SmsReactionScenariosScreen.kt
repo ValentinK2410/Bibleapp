@@ -1,5 +1,9 @@
 package com.example.bible.ui
 
+import android.Manifest
+import android.content.pm.PackageManager
+import android.telephony.SubscriptionManager
+import androidx.core.content.ContextCompat
 import android.content.Context
 import android.content.Intent
 import androidx.activity.compose.rememberLauncherForActivityResult
@@ -61,10 +65,35 @@ import com.example.bible.data.SmsReactionScenario
 import com.example.bible.data.normalizeSmsDigits
 import java.util.UUID
 
+private data class SimChoice(val subscriptionId: Int, val label: String)
+
+private fun buildOutboundSimChoices(context: Context): List<SimChoice> {
+    val incoming = context.getString(R.string.experiment_sms_sim_use_incoming)
+    val list = mutableListOf(SimChoice(SubscriptionManager.INVALID_SUBSCRIPTION_ID, incoming))
+    if (ContextCompat.checkSelfPermission(context, Manifest.permission.READ_PHONE_STATE) !=
+        PackageManager.PERMISSION_GRANTED
+    ) {
+        return list
+    }
+    val sm = context.getSystemService(SubscriptionManager::class.java) ?: return list
+    val infos =
+        runCatching { sm.activeSubscriptionInfoList }.getOrNull().orEmpty().sortedBy { it.simSlotIndex }
+    for (info in infos) {
+        val slot = info.simSlotIndex + 1
+        val carrier = info.carrierName?.toString()?.trim().orEmpty()
+        val carrierLabel =
+            carrier.ifBlank { context.getString(R.string.experiment_sms_sim_carrier_unknown) }
+        val label = context.getString(R.string.experiment_sms_sim_slot_fmt, slot, carrierLabel)
+        list.add(SimChoice(info.subscriptionId, label))
+    }
+    return list
+}
+
 private data class ReactionEditorState(
     val id: String,
     val title: String,
     val enabled: Boolean,
+    val outboundSubscriptionId: Int,
     val senderFieldText: String,
     val phrasesFieldText: String,
     val matchAllPhrases: Boolean,
@@ -76,6 +105,7 @@ private data class ReactionEditorState(
         id = s.id,
         title = s.title,
         enabled = s.enabled,
+        outboundSubscriptionId = s.outboundSubscriptionId,
         senderFieldText = s.senderDigitPatterns.joinToString("\n"),
         phrasesFieldText = s.bodyPhrases.joinToString("\n"),
         matchAllPhrases = s.matchAllPhrases,
@@ -89,7 +119,16 @@ private data class ReactionEditorState(
             .filter { it.isNotEmpty() }
             .distinct()
         val phrases = phrasesFieldText.lines().map { it.trim() }.filter { it.isNotEmpty() }.distinct()
-        return SmsReactionScenario(id, title, enabled, senders, phrases, matchAllPhrases, actions)
+        return SmsReactionScenario(
+            id,
+            title,
+            enabled,
+            senders,
+            phrases,
+            matchAllPhrases,
+            outboundSubscriptionId,
+            actions,
+        )
     }
 
     fun removeActionAt(index: Int): ReactionEditorState =
@@ -335,6 +374,16 @@ fun SmsReactionScenariosScreen(
                             onCheckedChange = { v -> editorState = editorState!!.copy(enabled = v) },
                         )
                     }
+                    Spacer(Modifier.height(12.dp))
+                    val phoneOk =
+                        ContextCompat.checkSelfPermission(context, Manifest.permission.READ_PHONE_STATE) ==
+                            PackageManager.PERMISSION_GRANTED
+                    val simChoices = remember(context, phoneOk) { buildOutboundSimChoices(context) }
+                    OutboundSimDropdown(
+                        choices = simChoices,
+                        selectedSubscriptionId = editorState!!.outboundSubscriptionId,
+                        onSelect = { sid -> editorState = editorState!!.copy(outboundSubscriptionId = sid) },
+                    )
                     Spacer(Modifier.height(8.dp))
                     OutlinedTextField(
                         value = editorState!!.senderFieldText,
@@ -453,6 +502,52 @@ fun SmsReactionScenariosScreen(
                 }
             },
         )
+    }
+}
+
+@Composable
+private fun OutboundSimDropdown(
+    choices: List<SimChoice>,
+    selectedSubscriptionId: Int,
+    onSelect: (Int) -> Unit,
+) {
+    var expanded by remember { mutableStateOf(false) }
+    val selectedLabel =
+        choices.firstOrNull { it.subscriptionId == selectedSubscriptionId }?.label
+            ?: choices.firstOrNull()?.label.orEmpty()
+    Column(Modifier.fillMaxWidth()) {
+        Text(
+            stringResource(R.string.experiment_sms_reaction_outbound_sim),
+            style = MaterialTheme.typography.labelLarge,
+        )
+        Text(
+            stringResource(R.string.experiment_sms_reaction_outbound_sim_hint),
+            style = MaterialTheme.typography.bodySmall,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            modifier = Modifier.padding(top = 4.dp, bottom = 6.dp),
+        )
+        Box {
+            OutlinedButton(
+                onClick = { expanded = true },
+                modifier = Modifier.fillMaxWidth(),
+            ) {
+                Text(selectedLabel, maxLines = 3)
+            }
+            DropdownMenu(
+                expanded = expanded,
+                onDismissRequest = { expanded = false },
+            ) {
+                choices.forEach { ch ->
+                    DropdownMenuItem(
+                        text = { Text(ch.label) },
+                        onClick = {
+                            expanded = false
+                            onSelect(ch.subscriptionId)
+                        },
+                    )
+                }
+            }
+        }
     }
 }
 

@@ -1,5 +1,6 @@
 package com.example.bible.data
 
+import android.telephony.SubscriptionManager
 import org.json.JSONArray
 import org.json.JSONObject
 import java.util.Locale
@@ -32,6 +33,11 @@ data class SmsReactionScenario(
     val bodyPhrases: List<String> = emptyList(),
     /** true — должны встретиться все фразы; false — хотя бы одна */
     val matchAllPhrases: Boolean = false,
+    /**
+     * Подписка SIM для исходящих действий сценария (ответное SMS, обратный/фиксированный звонок).
+     * [SubscriptionManager.INVALID_SUBSCRIPTION_ID] — использовать ту же SIM, на которую пришло SMS (extras `"subscription"`).
+     */
+    val outboundSubscriptionId: Int = SubscriptionManager.INVALID_SUBSCRIPTION_ID,
     val actions: List<SmsReactionAction> = emptyList(),
 )
 
@@ -67,6 +73,7 @@ private object SmsReactionJsonKeys {
     const val SENDERS = "senders"
     const val PHRASES = "phrases"
     const val MATCH_ALL = "matchAll"
+    const val OUTBOUND_SUBSCRIPTION_ID = "outboundSubscriptionId"
     const val ACTIONS = "actions"
     const val KIND = "kind"
     const val PARAM = "param"
@@ -102,6 +109,7 @@ object SmsReactionJson {
             put(SmsReactionJsonKeys.SENDERS, JSONArray(s.senderDigitPatterns))
             put(SmsReactionJsonKeys.PHRASES, JSONArray(s.bodyPhrases))
             put(SmsReactionJsonKeys.MATCH_ALL, s.matchAllPhrases)
+            put(SmsReactionJsonKeys.OUTBOUND_SUBSCRIPTION_ID, s.outboundSubscriptionId)
             put(SmsReactionJsonKeys.ACTIONS, JSONArray().apply {
                 for (a in s.actions) put(actionToJson(a))
             })
@@ -120,6 +128,8 @@ object SmsReactionJson {
         val senders = o.optJSONArray(SmsReactionJsonKeys.SENDERS)?.toStringList().orEmpty()
         val phrases = o.optJSONArray(SmsReactionJsonKeys.PHRASES)?.toStringList().orEmpty()
         val matchAll = o.optBoolean(SmsReactionJsonKeys.MATCH_ALL, false)
+        val outboundSub =
+            o.optInt(SmsReactionJsonKeys.OUTBOUND_SUBSCRIPTION_ID, SubscriptionManager.INVALID_SUBSCRIPTION_ID)
         val actionsArr = o.optJSONArray(SmsReactionJsonKeys.ACTIONS) ?: JSONArray()
         val actions = buildList {
             for (i in 0 until actionsArr.length()) {
@@ -127,7 +137,7 @@ object SmsReactionJson {
                 actionFromJson(ao)?.let { add(it) }
             }
         }
-        return SmsReactionScenario(id, title, enabled, senders, phrases, matchAll, actions)
+        return SmsReactionScenario(id, title, enabled, senders, phrases, matchAll, outboundSub, actions)
     }
 
     private fun actionFromJson(o: JSONObject): SmsReactionAction? {

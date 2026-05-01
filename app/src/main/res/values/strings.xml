@@ -338,7 +338,7 @@
     <string name="experiment_calls_sim_system_default">Как в системе по умолчанию</string>
     <string name="experiment_sms_inbox_title">Входящие SMS</string>
     <string name="experiment_sms_inbox_hint">Показываются сохранённые входящие сообщения из хранилища SMS устройства (до %1$d шт.). Экспериментальный экран; доступ к SMS чувствительный для конфиденциальности.</string>
-    <string name="experiment_sms_permission_hint">Для списка — «Читать SMS»; для прихода новых сообщений и сценариев — «Получать SMS»; для ответной SMS и автозвонка из сценария — «Отправлять SMS» и разрешение на звонки.</string>
+    <string name="experiment_sms_permission_hint">Для списка — «Читать SMS»; для прихода новых сообщений и сценариев — «Получать SMS»; для ответной SMS и автозвонка — «Отправлять SMS» и звонки; для выбора SIM в сценариях — «Состояние телефона».</string>
     <string name="experiment_sms_contacts_permission_hint">Чтобы озвучивать имя отправителя из ваших контактов (а не номер), разрешите доступ «Контакты» — через кнопку ниже или в настройках приложения.</string>
     <string name="experiment_sms_grant_permissions">Запросить доступ к SMS и связанным функциям</string>
     <string name="experiment_sms_need_read_permission">Выдайте разрешение на чтение SMS — без него входящие недоступны.</string>
@@ -353,7 +353,7 @@
 
     <string name="experiment_sms_reactions_button">Сценарии реакций на SMS</string>
     <string name="experiment_sms_reactions_title">Сценарии реакций на SMS</string>
-    <string name="experiment_sms_reactions_hint">При входящей SMS приложение проверяет включённые сценарии по номеру отправителя и тексту сообщения и выполняет действия подряд. Нужны «Получать SMS», при ответе и звонке — «Отправлять SMS» и разрешение на звонки (запросите на экране «Входящие SMS»), плюс камера для фонаря и т.д.</string>
+    <string name="experiment_sms_reactions_hint">Для каждого сценария можно выбрать SIM для исходящих SMS и звонков. Нужны «Получать SMS», при ответе и звонке — «Отправлять SMS» и разрешение на звонки (экран «Входящие SMS»). Список SIM в редакторе виден при разрешении «Состояние телефона». Также камера для фонаря и т.д.</string>
     <string name="experiment_sms_reaction_new_title">Новый сценарий</string>
     <string name="experiment_sms_reaction_add_cd">Добавить сценарий</string>
     <string name="experiment_sms_reaction_edit_cd">Редактировать</string>
@@ -370,6 +370,11 @@
     <string name="experiment_sms_reaction_phrase_logic">Если заданы фразы</string>
     <string name="experiment_sms_reaction_match_any">Достаточно любой фразы</string>
     <string name="experiment_sms_reaction_match_all">Нужны все фразы</string>
+    <string name="experiment_sms_sim_use_incoming">Та же SIM, что входящее SMS</string>
+    <string name="experiment_sms_sim_slot_fmt">SIM %1$d · %2$s</string>
+    <string name="experiment_sms_sim_carrier_unknown">оператор не указан</string>
+    <string name="experiment_sms_reaction_outbound_sim">SIM для ответного SMS и звонков</string>
+    <string name="experiment_sms_reaction_outbound_sim_hint">Для действий «ответное SMS», «обратный звонок» и «звонок на номер». Чтобы выбрать конкретную SIM, разрешите приложению «Состояние телефона» (список слотов подтягивается из системы).</string>
     <string name="experiment_sms_reaction_actions_header">Действия по порядку</string>
     <string name="experiment_sms_reaction_pick_audio">Выбрать аудиофайл…</string>
     <string name="experiment_sms_reaction_pick_image">Выбрать картинку…</string>

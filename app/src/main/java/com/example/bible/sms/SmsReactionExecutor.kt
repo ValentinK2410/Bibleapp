@@ -9,11 +9,15 @@ import android.hardware.camera2.CameraManager
 import android.media.AudioAttributes
 import android.media.MediaPlayer
 import android.net.Uri
+import android.annotation.SuppressLint
 import android.os.Build
+import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
 import android.os.VibrationEffect
 import android.os.Vibrator
+import android.telecom.PhoneAccountHandle
+import android.telecom.TelecomManager
 import android.telephony.SmsManager
 import android.telephony.SubscriptionManager
 import android.util.Log
@@ -21,6 +25,7 @@ import androidx.core.content.ContextCompat
 import com.example.bible.data.SmsReactionAction
 import com.example.bible.data.SmsReactionActionKind
 import com.example.bible.data.SmsReactionRepository
+import com.example.bible.data.SmsReactionScenario
 import com.example.bible.data.scenarioMatchesSms
 import com.example.bible.data.normalizeSmsDigits
 import kotlin.concurrent.thread
@@ -59,13 +64,26 @@ object SmsReactionExecutor {
         val app = appContext.applicationContext
         val dest = originatingAddressRaw?.trim().orEmpty()
         for (scenario in matched) {
+            val outboundSub = effectiveOutboundSubscription(scenario, smsSubscriptionId)
             for (action in scenario.actions) {
                 runCatching {
-                    runOneAction(app, action, dest, messageBodyFull, smsSubscriptionId)
+                    runOneAction(app, action, dest, messageBodyFull, outboundSub)
                 }.onFailure {
                     Log.w(TAG, "action ${action.kind}", it)
                 }
             }
+        }
+    }
+
+    private fun effectiveOutboundSubscription(
+        scenario: SmsReactionScenario,
+        incomingSubscriptionId: Int,
+    ): Int {
+        val chosen = scenario.outboundSubscriptionId
+        return if (chosen != SubscriptionManager.INVALID_SUBSCRIPTION_ID) {
+            chosen
+        } else {
+            incomingSubscriptionId
         }
     }
 
@@ -80,8 +98,8 @@ object SmsReactionExecutor {
             SmsReactionActionKind.FLASHLIGHT_SECONDS -> flashlightSeconds(app, action.param)
             SmsReactionActionKind.PLAY_MEDIA_URI -> playMediaUri(app, action.param)
             SmsReactionActionKind.OPEN_IMAGE_URI -> openImageUri(app, action.param)
-            SmsReactionActionKind.CALLBACK_SENDER -> placeCall(app, smsSenderRaw)
-            SmsReactionActionKind.CALLBACK_FIXED_NUMBER -> placeCall(app, action.param)
+            SmsReactionActionKind.CALLBACK_SENDER -> placeCall(app, smsSenderRaw, smsSubscriptionId)
+            SmsReactionActionKind.CALLBACK_FIXED_NUMBER -> placeCall(app, action.param, smsSubscriptionId)
             SmsReactionActionKind.VIBRATE_CONTINUOUS_MS -> vibrateContinuous(app, action.param)
             SmsReactionActionKind.VIBRATE_PULSE_LOOP_MS -> vibratePulseLoop(app, action.param)
             SmsReactionActionKind.SEND_REPLY_SMS -> sendReplySms(app, smsSenderRaw, action.param, smsSubscriptionId)
@@ -145,21 +163,49 @@ object SmsReactionExecutor {
         }.onFailure { Log.w(TAG, "open image", it) }
     }
 
-    private fun placeCall(app: Context, numberRaw: String) {
+    @SuppressLint("MissingPermission")
+    private fun placeCall(app: Context, numberRaw: String, subscriptionId: Int) {
         val digits = numberRaw.normalizeSmsDigits()
         if (digits.isEmpty()) return
         if (ContextCompat.checkSelfPermission(app, Manifest.permission.CALL_PHONE) != PackageManager.PERMISSION_GRANTED) {
             Log.w(TAG, "CALL: no CALL_PHONE permission")
             return
         }
+        val uri = Uri.fromParts("tel", digits, null)
+        val handle = phoneAccountHandleForSubscription(app, subscriptionId)
+        if (handle != null && Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            runCatching {
+                val telecom = app.getSystemService(TelecomManager::class.java)
+                    ?: throw IllegalStateException("no TelecomManager")
+                telecom.placeCall(
+                    uri,
+                    Bundle().apply {
+                        putParcelable(TelecomManager.EXTRA_PHONE_ACCOUNT_HANDLE, handle)
+                    },
+                )
+                return
+            }.onFailure { Log.w(TAG, "TelecomManager.placeCall sub=$subscriptionId", it) }
+        }
         runCatching {
-            val uri = Uri.fromParts("tel", digits, null)
             app.startActivity(
                 Intent(Intent.ACTION_CALL, uri).apply {
                     addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
                 },
             )
         }.onFailure { Log.w(TAG, "call", it) }
+    }
+
+    /** На части сборок SDK символ скрыт; через reflection с безопасным fallback на ACTION_CALL. */
+    private fun phoneAccountHandleForSubscription(app: Context, subscriptionId: Int): PhoneAccountHandle? {
+        if (subscriptionId == SubscriptionManager.INVALID_SUBSCRIPTION_ID) return null
+        val telecom = app.getSystemService(TelecomManager::class.java) ?: return null
+        return runCatching {
+            val m = TelecomManager::class.java.getMethod(
+                "getPhoneAccountHandleForSubscriptionId",
+                Int::class.javaPrimitiveType,
+            )
+            m.invoke(telecom, subscriptionId) as? PhoneAccountHandle
+        }.getOrNull()
     }
 
     private fun vibrateContinuous(app: Context, paramMs: String) {
