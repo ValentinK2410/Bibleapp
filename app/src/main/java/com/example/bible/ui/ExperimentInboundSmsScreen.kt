@@ -264,69 +264,78 @@ fun ExperimentInboundSmsScreen(
             )
         },
     ) { padding ->
-        Column(
+        LazyColumn(
             Modifier
                 .padding(padding)
                 .fillMaxSize()
                 .padding(horizontal = 16.dp),
         ) {
-            Text(
-                text = stringResource(R.string.experiment_sms_inbox_hint, SMS_QUERY_LIMIT),
-                style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                modifier = Modifier.padding(vertical = 12.dp),
-            )
-            Row(
-                Modifier
-                    .fillMaxWidth()
-                    .padding(bottom = 8.dp),
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.SpaceBetween,
-            ) {
-                Column(Modifier.weight(1f).padding(end = 12.dp)) {
-                    Text(
-                        text = stringResource(R.string.experiment_sms_speak_incoming_title),
-                        style = MaterialTheme.typography.titleSmall,
-                    )
-                    Text(
-                        text = stringResource(R.string.experiment_sms_speak_incoming_subtitle),
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        modifier = Modifier.padding(top = 4.dp),
-                    )
-                }
-                Switch(
-                    checked = speakIncomingSms,
-                    onCheckedChange = {
-                        speakIncomingSms = it
-                        ExperimentSmsSpeakPrefs.setSpeakIncomingEnabled(context, it)
-                    },
+            item {
+                Text(
+                    text = stringResource(R.string.experiment_sms_inbox_hint, SMS_QUERY_LIMIT),
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    modifier = Modifier.padding(vertical = 12.dp),
                 )
             }
-            OutlinedButton(
-                onClick = onOpenSmsReactions,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(bottom = 8.dp),
-            ) {
-                Text(stringResource(R.string.experiment_sms_reactions_button))
+            item {
+                Row(
+                    Modifier
+                        .fillMaxWidth()
+                        .padding(bottom = 8.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                ) {
+                    Column(Modifier.weight(1f).padding(end = 12.dp)) {
+                        Text(
+                            text = stringResource(R.string.experiment_sms_speak_incoming_title),
+                            style = MaterialTheme.typography.titleSmall,
+                        )
+                        Text(
+                            text = stringResource(R.string.experiment_sms_speak_incoming_subtitle),
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            modifier = Modifier.padding(top = 4.dp),
+                        )
+                    }
+                    Switch(
+                        checked = speakIncomingSms,
+                        onCheckedChange = {
+                            speakIncomingSms = it
+                            ExperimentSmsSpeakPrefs.setSpeakIncomingEnabled(context, it)
+                        },
+                    )
+                }
             }
-            OutlinedButton(
-                onClick = onOpenSmsSpeechOverrides,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(bottom = 10.dp),
-            ) {
-                Text(stringResource(R.string.experiment_sms_speech_override_nav_button))
+            item {
+                OutlinedButton(
+                    onClick = onOpenSmsReactions,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(bottom = 8.dp),
+                ) {
+                    Text(stringResource(R.string.experiment_sms_reactions_button))
+                }
             }
-            Card(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(bottom = 12.dp),
-                colors = CardDefaults.cardColors(
-                    containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.35f),
-                ),
-            ) {
+            item {
+                OutlinedButton(
+                    onClick = onOpenSmsSpeechOverrides,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(bottom = 10.dp),
+                ) {
+                    Text(stringResource(R.string.experiment_sms_speech_override_nav_button))
+                }
+            }
+            item {
+                Card(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(bottom = 12.dp),
+                    colors = CardDefaults.cardColors(
+                        containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.35f),
+                    ),
+                ) {
                 Column(Modifier.padding(12.dp)) {
                     Text(
                         stringResource(R.string.experiment_sms_crypto_title),
@@ -439,89 +448,96 @@ fun ExperimentInboundSmsScreen(
                     }
                 }
             }
-            HorizontalDivider()
-            Spacer(Modifier.height(12.dp))
-            if (!readGranted || !receiveGranted || !sendSmsGranted || !callPhoneGranted) {
-                Text(
-                    text = stringResource(R.string.experiment_sms_permission_hint),
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.secondary,
-                    modifier = Modifier.padding(bottom = 8.dp),
-                )
             }
-            if (!contactsGranted && speakIncomingSms) {
-                Text(
-                    text = stringResource(R.string.experiment_sms_contacts_permission_hint),
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    modifier = Modifier.padding(bottom = 8.dp),
-                )
-            }
-            FilledTonalButton(
-                onClick = {
-                    permissionLauncher.launch(smsExperimentPermissions)
-                },
-                modifier = Modifier.fillMaxWidth(),
-            ) {
-                Row(
-                    horizontalArrangement = Arrangement.Center,
-                    verticalAlignment = Alignment.CenterVertically,
+            item {
+                HorizontalDivider()
+                Spacer(Modifier.height(12.dp))
+                if (!readGranted || !receiveGranted || !sendSmsGranted || !callPhoneGranted) {
+                    Text(
+                        text = stringResource(R.string.experiment_sms_permission_hint),
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.secondary,
+                        modifier = Modifier.padding(bottom = 8.dp),
+                    )
+                }
+                if (!contactsGranted && speakIncomingSms) {
+                    Text(
+                        text = stringResource(R.string.experiment_sms_contacts_permission_hint),
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        modifier = Modifier.padding(bottom = 8.dp),
+                    )
+                }
+                FilledTonalButton(
+                    onClick = {
+                        permissionLauncher.launch(smsExperimentPermissions)
+                    },
+                    modifier = Modifier.fillMaxWidth(),
                 ) {
-                    Icon(Icons.Filled.Sms, contentDescription = null)
-                    Spacer(Modifier.width(8.dp))
-                    Text(stringResource(R.string.experiment_sms_grant_permissions))
+                    Row(
+                        horizontalArrangement = Arrangement.Center,
+                        verticalAlignment = Alignment.CenterVertically,
+                    ) {
+                        Icon(Icons.Filled.Sms, contentDescription = null)
+                        Spacer(Modifier.width(8.dp))
+                        Text(stringResource(R.string.experiment_sms_grant_permissions))
+                    }
+                }
+                Spacer(Modifier.height(12.dp))
+                if (!readGranted) {
+                    Text(
+                        text = stringResource(R.string.experiment_sms_need_read_permission),
+                        style = MaterialTheme.typography.bodyLarge,
+                        modifier = Modifier.padding(top = 24.dp),
+                    )
+                } else if (rows.isEmpty()) {
+                    Text(
+                        text = stringResource(R.string.experiment_sms_empty),
+                        style = MaterialTheme.typography.bodyLarge,
+                        modifier = Modifier.padding(top = 24.dp),
+                    )
                 }
             }
-            Spacer(Modifier.height(12.dp))
-            if (!readGranted) {
-                Text(
-                    text = stringResource(R.string.experiment_sms_need_read_permission),
-                    style = MaterialTheme.typography.bodyLarge,
-                    modifier = Modifier.padding(top = 24.dp),
-                )
-            } else if (rows.isEmpty()) {
-                Text(
-                    text = stringResource(R.string.experiment_sms_empty),
-                    style = MaterialTheme.typography.bodyLarge,
-                    modifier = Modifier.padding(top = 24.dp),
-                )
-            } else {
-                LazyColumn(
-                    verticalArrangement = Arrangement.spacedBy(8.dp),
-                    modifier = Modifier.fillMaxSize(),
-                ) {
-                    items(rows, key = { it.id }) { sms ->
-                        Card(
-                            colors = CardDefaults.cardColors(
-                                containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(
-                                    alpha = if (sms.read) 0.85f else 0.98f,
-                                ),
+            if (readGranted && rows.isNotEmpty()) {
+                items(
+                    count = rows.size,
+                    key = { index -> rows[index].id },
+                ) { index ->
+                    val sms = rows[index]
+                    Card(
+                        modifier = Modifier.padding(bottom = 8.dp),
+                        colors = CardDefaults.cardColors(
+                            containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(
+                                alpha = if (sms.read) 0.85f else 0.98f,
                             ),
-                        ) {
-                            Column(Modifier.padding(12.dp)) {
-                                Text(
-                                    text = sms.address.ifBlank { "—" },
-                                    style = MaterialTheme.typography.titleSmall,
-                                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                                )
-                                Text(
-                                    text = dateFmt.format(Instant.ofEpochMilli(sms.dateMs)),
-                                    style = MaterialTheme.typography.labelSmall,
-                                    color = MaterialTheme.colorScheme.outline,
-                                    modifier = Modifier.padding(top = 2.dp),
-                                )
-                                HorizontalDivider(Modifier.padding(vertical = 8.dp))
-                                Text(
-                                    text = SmsOutboundCrypto.decryptInboundForDisplay(
-                                        context,
-                                        sms.body.ifBlank { "—" },
-                                    ),
-                                    style = MaterialTheme.typography.bodyMedium,
-                                )
-                            }
+                        ),
+                    ) {
+                        Column(Modifier.padding(12.dp)) {
+                            Text(
+                                text = sms.address.ifBlank { "—" },
+                                style = MaterialTheme.typography.titleSmall,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            )
+                            Text(
+                                text = dateFmt.format(Instant.ofEpochMilli(sms.dateMs)),
+                                style = MaterialTheme.typography.labelSmall,
+                                color = MaterialTheme.colorScheme.outline,
+                                modifier = Modifier.padding(top = 2.dp),
+                            )
+                            HorizontalDivider(Modifier.padding(vertical = 8.dp))
+                            Text(
+                                text = SmsOutboundCrypto.decryptInboundForDisplay(
+                                    context,
+                                    sms.body.ifBlank { "—" },
+                                ),
+                                style = MaterialTheme.typography.bodyMedium,
+                            )
                         }
                     }
                 }
+            }
+            item {
+                Spacer(Modifier.height(24.dp))
             }
         }
     }
