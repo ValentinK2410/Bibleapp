@@ -93,7 +93,8 @@ private data class ReactionEditorState(
     val id: String,
     val title: String,
     val enabled: Boolean,
-    val outboundSubscriptionId: Int,
+    val outboundSmsSubscriptionId: Int,
+    val outboundCallSubscriptionId: Int,
     val senderFieldText: String,
     val phrasesFieldText: String,
     val matchAllPhrases: Boolean,
@@ -105,7 +106,8 @@ private data class ReactionEditorState(
         id = s.id,
         title = s.title,
         enabled = s.enabled,
-        outboundSubscriptionId = s.outboundSubscriptionId,
+        outboundSmsSubscriptionId = s.outboundSmsSubscriptionId,
+        outboundCallSubscriptionId = s.outboundCallSubscriptionId,
         senderFieldText = s.senderDigitPatterns.joinToString("\n"),
         phrasesFieldText = s.bodyPhrases.joinToString("\n"),
         matchAllPhrases = s.matchAllPhrases,
@@ -126,7 +128,8 @@ private data class ReactionEditorState(
             senders,
             phrases,
             matchAllPhrases,
-            outboundSubscriptionId,
+            outboundSmsSubscriptionId,
+            outboundCallSubscriptionId,
             actions,
         )
     }
@@ -379,10 +382,24 @@ fun SmsReactionScenariosScreen(
                         ContextCompat.checkSelfPermission(context, Manifest.permission.READ_PHONE_STATE) ==
                             PackageManager.PERMISSION_GRANTED
                     val simChoices = remember(context, phoneOk) { buildOutboundSimChoices(context) }
+                    Text(
+                        stringResource(R.string.experiment_sms_reaction_outbound_sim_hint),
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        modifier = Modifier.padding(bottom = 8.dp),
+                    )
                     OutboundSimDropdown(
+                        sectionTitle = stringResource(R.string.experiment_sms_reaction_outbound_sim_sms),
                         choices = simChoices,
-                        selectedSubscriptionId = editorState!!.outboundSubscriptionId,
-                        onSelect = { sid -> editorState = editorState!!.copy(outboundSubscriptionId = sid) },
+                        selectedSubscriptionId = editorState!!.outboundSmsSubscriptionId,
+                        onSelect = { sid -> editorState = editorState!!.copy(outboundSmsSubscriptionId = sid) },
+                    )
+                    Spacer(Modifier.height(10.dp))
+                    OutboundSimDropdown(
+                        sectionTitle = stringResource(R.string.experiment_sms_reaction_outbound_sim_call),
+                        choices = simChoices,
+                        selectedSubscriptionId = editorState!!.outboundCallSubscriptionId,
+                        onSelect = { sid -> editorState = editorState!!.copy(outboundCallSubscriptionId = sid) },
                     )
                     Spacer(Modifier.height(8.dp))
                     OutlinedTextField(
@@ -489,6 +506,32 @@ fun SmsReactionScenariosScreen(
                                     }
                                     else -> Unit
                                 }
+                                when (action.kind) {
+                                    SmsReactionActionKind.SEND_REPLY_SMS -> {
+                                        Spacer(Modifier.height(8.dp))
+                                        OutboundSimDropdown(
+                                            sectionTitle = stringResource(R.string.experiment_sms_reaction_outbound_sim_sms),
+                                            choices = simChoices,
+                                            selectedSubscriptionId = editorState!!.outboundSmsSubscriptionId,
+                                            onSelect = { sid ->
+                                                editorState = editorState!!.copy(outboundSmsSubscriptionId = sid)
+                                            },
+                                        )
+                                    }
+                                    SmsReactionActionKind.CALLBACK_SENDER,
+                                    SmsReactionActionKind.CALLBACK_FIXED_NUMBER -> {
+                                        Spacer(Modifier.height(8.dp))
+                                        OutboundSimDropdown(
+                                            sectionTitle = stringResource(R.string.experiment_sms_reaction_outbound_sim_call),
+                                            choices = simChoices,
+                                            selectedSubscriptionId = editorState!!.outboundCallSubscriptionId,
+                                            onSelect = { sid ->
+                                                editorState = editorState!!.copy(outboundCallSubscriptionId = sid)
+                                            },
+                                        )
+                                    }
+                                    else -> Unit
+                                }
                             }
                         }
                     }
@@ -507,6 +550,7 @@ fun SmsReactionScenariosScreen(
 
 @Composable
 private fun OutboundSimDropdown(
+    sectionTitle: String,
     choices: List<SimChoice>,
     selectedSubscriptionId: Int,
     onSelect: (Int) -> Unit,
@@ -517,14 +561,9 @@ private fun OutboundSimDropdown(
             ?: choices.firstOrNull()?.label.orEmpty()
     Column(Modifier.fillMaxWidth()) {
         Text(
-            stringResource(R.string.experiment_sms_reaction_outbound_sim),
+            sectionTitle,
             style = MaterialTheme.typography.labelLarge,
-        )
-        Text(
-            stringResource(R.string.experiment_sms_reaction_outbound_sim_hint),
-            style = MaterialTheme.typography.bodySmall,
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
-            modifier = Modifier.padding(top = 4.dp, bottom = 6.dp),
+            modifier = Modifier.padding(bottom = 6.dp),
         )
         Box {
             OutlinedButton(

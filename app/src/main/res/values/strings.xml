@@ -324,7 +324,7 @@
     <string name="experiment_hub_section_sms_inbox_desc">Читать входящие сообщения из памяти телефона и обновлять список при новых SMS.</string>
     <string name="experiment_calls_nav">Звонки и СМС</string>
     <string name="experiment_calls_title">Звонки и СМС</string>
-    <string name="experiment_calls_hint">Звонок и СМС выполняются сразу после нажатия кнопки. Нужны разрешения на звонки и SMS; чтобы выбрать SIM, система запросит доступ к состоянию телефона. Номер обязателен.</string>
+    <string name="experiment_calls_hint">Звонок и SMS выполняются сразу после нажатия кнопки. Нужны разрешения на звонки и SMS; чтобы выбрать SIM для каждого действия отдельно, система запросит доступ к состоянию телефона. Номер обязателен.</string>
     <string name="experiment_calls_phone_label">Номер телефона</string>
     <string name="experiment_calls_message_label">Текст сообщения</string>
     <string name="experiment_calls_dial">Позвонить</string>
@@ -334,7 +334,8 @@
     <string name="experiment_calls_permission_call_denied">Без разрешения на звонки нельзя начать вызов</string>
     <string name="experiment_calls_permission_sms_denied">Без разрешения на SMS нельзя отправить сообщение</string>
     <string name="experiment_calls_sms_sent">СМС отправлено</string>
-    <string name="experiment_calls_sim_label">SIM для звонка и СМС</string>
+    <string name="experiment_calls_sim_label_call">SIM для звонка</string>
+    <string name="experiment_calls_sim_label_sms">SIM для отправки SMS</string>
     <string name="experiment_calls_sim_system_default">Как в системе по умолчанию</string>
     <string name="experiment_sms_inbox_title">Входящие SMS</string>
     <string name="experiment_sms_inbox_hint">Показываются сохранённые входящие сообщения из хранилища SMS устройства (до %1$d шт.). Экспериментальный экран; доступ к SMS чувствительный для конфиденциальности.</string>
@@ -368,7 +369,7 @@
     <string name="experiment_sms_speech_override_delete_body">Будет удалена только альтернативная озвучка; на SMS это не влияет.</string>
     <string name="experiment_sms_speech_override_card_summary_fmt">Шаблонов: %1$d · «%2$s»</string>
     <string name="experiment_sms_reactions_title">Сценарии реакций на SMS</string>
-    <string name="experiment_sms_reactions_hint">Для каждого сценария можно выбрать SIM для исходящих SMS и звонков. Нужны «Получать SMS», при ответе и звонке — «Отправлять SMS» и разрешение на звонки (экран «Входящие SMS»). Список SIM в редакторе виден при разрешении «Состояние телефона». Также камера для фонаря и т.д.</string>
+    <string name="experiment_sms_reactions_hint">В сценарии можно отдельно указать SIM для ответного SMS и для звонков. Нужны «Получать SMS», «Отправлять SMS» и звонки (экран «Входящие SMS»). Список SIM — при разрешении «Состояние телефона». Также камера для фонаря и т.д.</string>
     <string name="experiment_sms_reaction_new_title">Новый сценарий</string>
     <string name="experiment_sms_reaction_add_cd">Добавить сценарий</string>
     <string name="experiment_sms_reaction_edit_cd">Редактировать</string>
@@ -388,8 +389,9 @@
     <string name="experiment_sms_sim_use_incoming">Та же SIM, что входящее SMS</string>
     <string name="experiment_sms_sim_slot_fmt">SIM %1$d · %2$s</string>
     <string name="experiment_sms_sim_carrier_unknown">оператор не указан</string>
-    <string name="experiment_sms_reaction_outbound_sim">SIM для ответного SMS и звонков</string>
-    <string name="experiment_sms_reaction_outbound_sim_hint">Для действий «ответное SMS», «обратный звонок» и «звонок на номер». Чтобы выбрать конкретную SIM, разрешите приложению «Состояние телефона» (список слотов подтягивается из системы).</string>
+    <string name="experiment_sms_reaction_outbound_sim_sms">SIM для ответного SMS</string>
+    <string name="experiment_sms_reaction_outbound_sim_call">SIM для звонков в сценарии</string>
+    <string name="experiment_sms_reaction_outbound_sim_hint">«Та же SIM, что входящее SMS» использует слот входящего сообщения. Чтобы видеть список слотов, разрешите «Состояние телефона». Тот же выбор продублирован под каждым действием ответного SMS или звонка.</string>
     <string name="experiment_sms_reaction_actions_header">Действия по порядку</string>
     <string name="experiment_sms_reaction_pick_audio">Выбрать аудиофайл…</string>
     <string name="experiment_sms_reaction_pick_image">Выбрать картинку…</string>
