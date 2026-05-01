@@ -20,10 +20,7 @@ data class SimSlot(
     val phoneAccountHandle: PhoneAccountHandle?,
 )
 
-/**
- * Человекочитаемая подпись SIM: слот (SIM-карта 1/2…), оператор, номер линии (если есть).
- * Короткие displayName вроде «1»/«2» от прошивки не показываем как название оператора.
- */
+/** Как в редакторе сценария: `SIM N · оператор` ([R.string.experiment_sms_sim_slot_fmt]). */
 @SuppressLint("MissingPermission")
 private fun Context.formatSimSlotLabel(
     info: SubscriptionInfo?,
@@ -38,46 +35,16 @@ private fun Context.formatSimSlotLabel(
         .takeIf { it.isNotBlank() && !isMisleadingSlotDigitLabel(it, info?.simSlotIndex) }.orEmpty()
 
     val slotNum = info?.simSlotIndex?.takeIf { it >= 0 }?.plus(1)
-    val carrier = info?.carrierName?.toString()?.trim().orEmpty()
-    val display = info?.displayName?.toString()?.trim().orEmpty()
-
-    val lineFromInfo = info?.number?.toString()?.trim().orEmpty()
-    val lineFromAccount = phoneAccount?.address?.schemeSpecificPart?.trim().orEmpty()
-    val lineNumber = when {
-        lineFromInfo.isNotBlank() -> lineFromInfo
-        lineFromAccount.isNotBlank() -> lineFromAccount
-        else -> ""
+    if (slotNum != null && info != null) {
+        val carrier = info.carrierName?.toString()?.trim().orEmpty()
+        val carrierLabel = carrier.ifBlank { getString(R.string.experiment_sms_sim_carrier_unknown) }
+        return getString(R.string.experiment_sms_sim_slot_fmt, slotNum, carrierLabel)
     }
 
-    val misleadingDisplay = display.isBlank() ||
-        display.matches(Regex("^\\d{1,2}$")) ||
-        isMisleadingSlotDigitLabel(display, info?.simSlotIndex)
-
-    val operatorPart = when {
-        !misleadingDisplay && display.isNotBlank() -> display
-        carrier.isNotBlank() -> carrier
-        accountLabel.isNotBlank() -> accountLabel
-        else -> ""
+    if (subId != SubscriptionManager.INVALID_SUBSCRIPTION_ID) {
+        return getString(R.string.experiment_sim_unknown_subscription_fmt, subId)
     }
-
-    val parts = mutableListOf<String>()
-    if (slotNum != null) {
-        parts.add(getString(R.string.experiment_sim_slot_label_fmt, slotNum))
-    }
-    if (operatorPart.isNotBlank()) {
-        parts.add(operatorPart)
-    }
-    if (lineNumber.isNotBlank()) {
-        parts.add(lineNumber)
-    }
-
-    return when {
-        parts.isNotEmpty() -> parts.joinToString(separator = " · ")
-        subId != SubscriptionManager.INVALID_SUBSCRIPTION_ID ->
-            getString(R.string.experiment_sim_unknown_subscription_fmt, subId)
-        accountLabel.isNotBlank() -> accountLabel
-        else -> getString(R.string.experiment_sim_generic)
-    }
+    return accountLabel.ifBlank { getString(R.string.experiment_sim_generic) }
 }
 
 private fun isMisleadingSlotDigitLabel(text: String, simSlotIndex: Int?): Boolean {
@@ -117,14 +84,19 @@ fun Context.loadSimSlots(): List<SimSlot> {
             label = label,
             phoneAccountHandle = handle,
         )
-    }
+    }.sortedWith(
+        compareBy(
+            { infosBySubId[it.subscriptionId]?.simSlotIndex?.takeIf { s -> s >= 0 } ?: Int.MAX_VALUE },
+            { it.subscriptionId },
+        ),
+    )
 
     if (fromAccounts.isNotEmpty()) return fromAccounts
 
     // Запасной путь, если аккаунтов нет (редко)
     val infos = subMgr.activeSubscriptionInfoList ?: return emptyList()
     if (infos.isEmpty()) return emptyList()
-    return infos.map { info ->
+    return infos.sortedBy { it.simSlotIndex }.map { info ->
         val handle = resolvePhoneAccountHandleForSubscription(info.subscriptionId)
         val label = formatSimSlotLabel(info, info.subscriptionId, handle)
         SimSlot(

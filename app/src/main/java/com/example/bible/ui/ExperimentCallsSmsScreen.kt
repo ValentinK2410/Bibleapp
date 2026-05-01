@@ -17,7 +17,6 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -30,15 +29,10 @@ import androidx.compose.material.icons.filled.Call
 import androidx.compose.material.icons.filled.Sms
 import androidx.compose.material3.Button
 import androidx.compose.material3.CenterAlignedTopAppBar
-import androidx.compose.material3.DropdownMenu
-import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.ExposedDropdownMenuBox
-import androidx.compose.material3.ExposedDropdownMenuDefaults
 import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
-import androidx.compose.material3.MenuAnchorType
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
@@ -77,9 +71,6 @@ fun ExperimentCallsSmsScreen(
     var simSlots by remember { mutableStateOf<List<SimSlot>>(emptyList()) }
     var selectedSimIndexCall by remember { mutableIntStateOf(0) }
     var selectedSimIndexSms by remember { mutableIntStateOf(0) }
-    var simMenuOpenCall by remember { mutableStateOf(false) }
-    var simMenuOpenSms by remember { mutableStateOf(false) }
-
     val systemDefaultLabel = stringResource(R.string.experiment_calls_sim_system_default)
     val options = remember(simSlots, systemDefaultLabel) {
         if (simSlots.isEmpty()) {
@@ -306,22 +297,18 @@ fun ExperimentCallsSmsScreen(
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
             Spacer(Modifier.height(16.dp))
-            SimSlotDropdownRow(
-                label = stringResource(R.string.experiment_calls_sim_label_call),
+            SimSlotPickerField(
+                sectionTitle = stringResource(R.string.experiment_calls_sim_label_call),
                 options = options,
                 selectedIndex = selectedSimIndexCall,
                 onSelectIndex = { selectedSimIndexCall = it },
-                expanded = simMenuOpenCall,
-                onExpandedChange = { simMenuOpenCall = it },
             )
             Spacer(Modifier.height(12.dp))
-            SimSlotDropdownRow(
-                label = stringResource(R.string.experiment_calls_sim_label_sms),
+            SimSlotPickerField(
+                sectionTitle = stringResource(R.string.experiment_calls_sim_label_sms),
                 options = options,
                 selectedIndex = selectedSimIndexSms,
                 onSelectIndex = { selectedSimIndexSms = it },
-                expanded = simMenuOpenSms,
-                onExpandedChange = { simMenuOpenSms = it },
             )
             Spacer(Modifier.height(12.dp))
             OutlinedTextField(
@@ -375,50 +362,6 @@ fun ExperimentCallsSmsScreen(
                     Spacer(Modifier.width(8.dp))
                     Text(stringResource(R.string.experiment_calls_compose_sms))
                 }
-            }
-        }
-    }
-}
-
-@OptIn(ExperimentalMaterial3Api::class)
-@Composable
-private fun SimSlotDropdownRow(
-    label: String,
-    options: List<SimSlot>,
-    selectedIndex: Int,
-    onSelectIndex: (Int) -> Unit,
-    expanded: Boolean,
-    onExpandedChange: (Boolean) -> Unit,
-) {
-    if (options.isEmpty()) return
-    val idx = selectedIndex.coerceIn(0, options.lastIndex)
-    ExposedDropdownMenuBox(
-        expanded = expanded,
-        onExpandedChange = onExpandedChange,
-    ) {
-        OutlinedTextField(
-            value = options[idx].label,
-            onValueChange = {},
-            readOnly = true,
-            label = { Text(label) },
-            trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded) },
-            modifier = Modifier
-                .menuAnchor(MenuAnchorType.PrimaryNotEditable)
-                .fillMaxWidth(),
-        )
-        DropdownMenu(
-            expanded = expanded,
-            onDismissRequest = { onExpandedChange(false) },
-            modifier = Modifier.heightIn(max = 320.dp),
-        ) {
-            options.forEachIndexed { index, slot ->
-                DropdownMenuItem(
-                    text = { Text(slot.label) },
-                    onClick = {
-                        onSelectIndex(index)
-                        onExpandedChange(false)
-                    },
-                )
             }
         }
     }

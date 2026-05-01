@@ -337,7 +337,6 @@
     <string name="experiment_calls_sim_label_call">SIM для звонка</string>
     <string name="experiment_calls_sim_label_sms">SIM для отправки SMS</string>
     <string name="experiment_calls_sim_system_default">Как в системе по умолчанию</string>
-    <string name="experiment_sim_slot_label_fmt">SIM-карта %1$d</string>
     <string name="experiment_sim_unknown_subscription_fmt">SIM (подписка %1$d)</string>
     <string name="experiment_sim_generic">SIM</string>
     <string name="experiment_sms_inbox_title">Входящие SMS</string>

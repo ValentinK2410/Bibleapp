@@ -11,21 +11,14 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
-import androidx.compose.material3.DropdownMenu
-import androidx.compose.material3.DropdownMenuItem
-import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.ExposedDropdownMenuBox
-import androidx.compose.material3.ExposedDropdownMenuDefaults
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.MenuAnchorType
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -52,6 +45,7 @@ import com.example.bible.sms.SmsCryptoSecureStore
 import com.example.bible.sms.SmsOutboundCrypto
 import com.example.bible.sms.sendSmsMultipart
 import com.example.bible.ui.SimSlot
+import com.example.bible.ui.SimSlotPickerField
 import com.example.bible.ui.loadSimSlots
 import com.google.android.gms.location.LocationServices
 import com.google.android.gms.location.Priority
@@ -62,7 +56,6 @@ import kotlinx.coroutines.tasks.await
 import org.json.JSONObject
 import java.util.Locale
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ShareTravelCoordinatesSmsSheetContent(
     scope: CoroutineScope,
@@ -78,7 +71,6 @@ fun ShareTravelCoordinatesSmsSheetContent(
     var contacts by remember { mutableStateOf<List<UserContact>>(emptyList()) }
     var simSlots by remember { mutableStateOf<List<SimSlot>>(emptyList()) }
     var selectedSimIndex by remember { mutableIntStateOf(0) }
-    var simMenuExpanded by remember { mutableStateOf(false) }
     var selectedContactId by remember { mutableStateOf<String?>(null) }
     var manualPhone by remember { mutableStateOf("") }
     var draftLat by remember { mutableStateOf(lastLatitude) }
@@ -146,40 +138,16 @@ fun ShareTravelCoordinatesSmsSheetContent(
             modifier = Modifier.padding(top = 6.dp, bottom = 12.dp),
         )
 
-        ExposedDropdownMenuBox(
-            expanded = simMenuExpanded,
-            onExpandedChange = { simMenuExpanded = it },
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(top = 4.dp),
-        ) {
-            OutlinedTextField(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .menuAnchor(MenuAnchorType.PrimaryNotEditable),
-                readOnly = true,
-                value = slot().label,
-                onValueChange = {},
-                label = { Text(stringResource(R.string.travel_share_sms_sim_label)) },
-                trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = simMenuExpanded) },
-            )
-            DropdownMenu(
-                expanded = simMenuExpanded,
-                onDismissRequest = { simMenuExpanded = false },
-                modifier = Modifier.heightIn(max = 320.dp),
-            ) {
-                options.forEachIndexed { index, s ->
-                    DropdownMenuItem(
-                        text = { Text(s.label) },
-                        onClick = {
-                            selectedSimIndex = index
-                            TravelSmsSharePrefs.setShareSubscriptionId(context, s.subscriptionId)
-                            simMenuExpanded = false
-                        },
-                    )
-                }
-            }
-        }
+        SimSlotPickerField(
+            sectionTitle = stringResource(R.string.travel_share_sms_sim_label),
+            options = options,
+            selectedIndex = selectedSimIndex,
+            onSelectIndex = { index ->
+                selectedSimIndex = index
+                TravelSmsSharePrefs.setShareSubscriptionId(context, options[index].subscriptionId)
+            },
+            modifier = Modifier.padding(top = 4.dp),
+        )
 
         Spacer(Modifier.height(12.dp))
         Text(stringResource(R.string.travel_share_sms_contact_label), style = MaterialTheme.typography.labelMedium)
