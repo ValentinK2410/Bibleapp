@@ -445,6 +445,13 @@ class TravelViewModel(
         _friendPeerLocationManual.value = null
     }
 
+    fun removeFriendPeerFromMap() {
+        clearFriendPeerManual()
+        viewModelScope.launch {
+            friendPeerRepo.setPollEnabled(false)
+        }
+    }
+
     fun centerMapOnFriendPeer() {
         val loc = friendPeerLocation.value ?: return
         setCameraJump(TravelGeoPoint(loc.latitude, loc.longitude))

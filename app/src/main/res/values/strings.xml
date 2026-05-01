@@ -1199,6 +1199,9 @@
     <string name="travel_friend_peer_pin_default">Друг</string>
     <string name="travel_friend_peer_current_fmt">Текущая точка: %1$.5f · %2$.5f</string>
     <string name="travel_friend_peer_none">Нет данных — включите опрос URL или введите координаты вручную.</string>
+    <string name="travel_friend_peer_map_sheet_remove">Убрать с карты</string>
+    <string name="travel_friend_peer_map_sheet_remove_hint">Будут сброшены ручная точка или точка из контактов и отключён автоматический опрос координат по HTTPS.</string>
+    <string name="travel_friend_peer_removed_from_map">Пользователь убран с карты</string>
     <string name="travel_camera_permission_denied">Нужен доступ к камере для съёмки по маршруту</string>
     <string name="travel_marker_photos_label">Фото у метки</string>
     <string name="travel_marker_photo_from_gallery">Из галереи</string>

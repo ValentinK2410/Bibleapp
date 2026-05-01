@@ -94,6 +94,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.bible.R
 import com.example.bible.data.ContactsRepository
 import com.example.bible.data.UserContact
+import com.example.bible.data.travel.FriendPeerLocation
 import com.example.bible.data.travel.TravelGeoPoint
 import com.example.bible.data.travel.TravelMapIncident
 import com.example.bible.data.travel.TravelMarkerSoundTrigger
@@ -256,6 +257,7 @@ fun MyTravelsScreen(
     var friendPeerUrlDraft by remember { mutableStateOf("") }
     var friendPeerManualLine by remember { mutableStateOf("") }
     var friendPeerManualLabel by remember { mutableStateOf("") }
+    var friendPeerTapSheetSnapshot by remember { mutableStateOf<FriendPeerLocation?>(null) }
     var incidentTapSheetIncident by remember { mutableStateOf<TravelMapIncident?>(null) }
     var incidentDeleteConfirmFor by remember { mutableStateOf<TravelMapIncident?>(null) }
     val burstDraftPoints = remember { mutableStateListOf<TravelRoutePhotoPoint>() }
@@ -934,6 +936,16 @@ fun MyTravelsScreen(
                                 shareMapPointPickActive = false
                                 shareCoordinatesAtPoint(pt)
                                 return@mapTap
+                            }
+                            friendPeerLocation?.let { loc ->
+                                val fd = travelDistanceMeters(
+                                    pt,
+                                    TravelGeoPoint(loc.latitude, loc.longitude),
+                                )
+                                if (fd <= TravelMarkerSoundTrigger.TAP_MAX_DISTANCE_METERS) {
+                                    friendPeerTapSheetSnapshot = loc
+                                    return@mapTap
+                                }
                             }
                             val incidentHit = mapIncidents.mapNotNull { inc ->
                                 val d = travelDistanceMeters(
@@ -2078,6 +2090,16 @@ fun MyTravelsScreen(
             )
         }
     }
+
+    FriendPeerMarkerTapSheet(
+        snapshot = friendPeerTapSheetSnapshot,
+        liveLocation = friendPeerLocation,
+        onDismiss = { friendPeerTapSheetSnapshot = null },
+        onRemoveFromMap = {
+            vm.removeFriendPeerFromMap()
+            Toast.makeText(context, R.string.travel_friend_peer_removed_from_map, Toast.LENGTH_SHORT).show()
+        },
+    )
 
     IncidentMarkerTapSheet(
         incident = incidentTapSheetIncident,
