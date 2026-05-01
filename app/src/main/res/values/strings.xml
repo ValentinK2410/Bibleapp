@@ -338,7 +338,7 @@
     <string name="experiment_calls_sim_system_default">Как в системе по умолчанию</string>
     <string name="experiment_sms_inbox_title">Входящие SMS</string>
     <string name="experiment_sms_inbox_hint">Показываются сохранённые входящие сообщения из хранилища SMS устройства (до %1$d шт.). Экспериментальный экран; доступ к SMS чувствительный для конфиденциальности.</string>
-    <string name="experiment_sms_permission_hint">Для списка нужно разрешение «Читать SMS»; чтобы список сам обновлялся при новой SMS — также «Получать SMS».</string>
+    <string name="experiment_sms_permission_hint">Для списка — «Читать SMS»; для прихода новых сообщений и сценариев — «Получать SMS»; для ответной SMS и автозвонка из сценария — «Отправлять SMS» и разрешение на звонки.</string>
     <string name="experiment_sms_grant_permissions">Запросить доступ к SMS</string>
     <string name="experiment_sms_need_read_permission">Выдайте разрешение на чтение SMS — без него входящие недоступны.</string>
     <string name="experiment_sms_empty">Входящих SMS в памяти телефона не найдено.</string>
@@ -352,7 +352,7 @@
 
     <string name="experiment_sms_reactions_button">Сценарии реакций на SMS</string>
     <string name="experiment_sms_reactions_title">Сценарии реакций на SMS</string>
-    <string name="experiment_sms_reactions_hint">При входящей SMS приложение проверяет включённые сценарии по номеру отправителя и тексту сообщения и выполняет заданные действия подряд. Нужны разрешения «Получать SMS» и действия по типу (звонок, SMS, камера и т.д.).</string>
+    <string name="experiment_sms_reactions_hint">При входящей SMS приложение проверяет включённые сценарии по номеру отправителя и тексту сообщения и выполняет действия подряд. Нужны «Получать SMS», при ответе и звонке — «Отправлять SMS» и разрешение на звонки (запросите на экране «Входящие SMS»), плюс камера для фонаря и т.д.</string>
     <string name="experiment_sms_reaction_new_title">Новый сценарий</string>
     <string name="experiment_sms_reaction_add_cd">Добавить сценарий</string>
     <string name="experiment_sms_reaction_edit_cd">Редактировать</string>

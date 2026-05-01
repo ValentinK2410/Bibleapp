@@ -4,32 +4,38 @@ import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.provider.Telephony
+import android.telephony.SubscriptionManager
 import com.example.bible.IncomingSmsSpeak
 import com.example.bible.R
 import com.example.bible.data.ExperimentSmsSpeakPrefs
 import com.example.bible.sms.SmsReactionExecutor
 
 /**
- * Озвучка входящих SMS при включённом флаге в разделе «Эксперимент» → SMS.
- * Регистрируется из [com.example.bible.BibleApplication].
+ * Озвучка входящих SMS при включённом флаге в разделе «Эксперимент» → SMS,
+ * а также сценарии реакций ([SmsReactionExecutor]).
+ * Объявлен в манифесте (`SMS_RECEIVED`, exported).
  */
 class SmsSpeakBroadcastReceiver : BroadcastReceiver() {
     override fun onReceive(context: Context, intent: Intent?) {
-        if (intent?.action != Telephony.Sms.Intents.SMS_RECEIVED_ACTION) return
-        val msgs = Telephony.Sms.Intents.getMessagesFromIntent(intent) ?: return
+        val i = intent ?: return
+        if (i.action != Telephony.Sms.Intents.SMS_RECEIVED_ACTION) return
+        val msgs = Telephony.Sms.Intents.getMessagesFromIntent(i) ?: return
         if (msgs.isEmpty()) return
         val appCtx = context.applicationContext
+        val sm0 = msgs.firstOrNull() ?: return
         val rawAddress =
-            msgs.firstOrNull()?.originatingAddress?.trim()?.takeIf { it.isNotEmpty() }
-                ?: msgs.firstOrNull()?.displayOriginatingAddress?.trim()
+            sm0.displayOriginatingAddress?.trim()?.takeIf { it.isNotEmpty() }
+                ?: sm0.originatingAddress?.trim()?.takeIf { it.isNotEmpty() }
         val fullBody =
             msgs.joinToString("") { sm ->
                 sm.messageBody ?: sm.displayMessageBody.orEmpty()
             }
-        SmsReactionExecutor.handleIncomingSms(appCtx, rawAddress, fullBody)
+        val subId =
+            i.getIntExtra("subscription", SubscriptionManager.INVALID_SUBSCRIPTION_ID)
+        SmsReactionExecutor.handleIncomingSms(appCtx, rawAddress, fullBody, subId)
 
         if (!ExperimentSmsSpeakPrefs.isSpeakIncomingEnabled(context)) return
-        val utterance = IncomingSmsSpeakUtterance.build(context, intent) ?: return
+        val utterance = IncomingSmsSpeakUtterance.build(context, i) ?: return
         IncomingSmsSpeak.speak(appCtx, utterance)
     }
 }

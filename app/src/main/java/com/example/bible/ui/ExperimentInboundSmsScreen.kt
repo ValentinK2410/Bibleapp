@@ -64,6 +64,13 @@ import java.time.format.FormatStyle
 
 private const val SMS_QUERY_LIMIT = 800
 
+private val smsExperimentPermissions = arrayOf(
+    Manifest.permission.READ_SMS,
+    Manifest.permission.RECEIVE_SMS,
+    Manifest.permission.SEND_SMS,
+    Manifest.permission.CALL_PHONE,
+)
+
 internal data class InboundSmsRow(
     val id: Long,
     val address: String,
@@ -129,6 +136,18 @@ fun ExperimentInboundSmsScreen(
                 PackageManager.PERMISSION_GRANTED,
         )
     }
+    var sendSmsGranted by remember {
+        mutableStateOf(
+            ContextCompat.checkSelfPermission(context, Manifest.permission.SEND_SMS) ==
+                PackageManager.PERMISSION_GRANTED,
+        )
+    }
+    var callPhoneGranted by remember {
+        mutableStateOf(
+            ContextCompat.checkSelfPermission(context, Manifest.permission.CALL_PHONE) ==
+                PackageManager.PERMISSION_GRANTED,
+        )
+    }
     var inboxNonce by remember { mutableIntStateOf(0) }
 
     val permissionLauncher = rememberLauncherForActivityResult(
@@ -136,6 +155,8 @@ fun ExperimentInboundSmsScreen(
     ) { result ->
         readGranted = result[Manifest.permission.READ_SMS] == true
         receiveGranted = result[Manifest.permission.RECEIVE_SMS] == true
+        sendSmsGranted = result[Manifest.permission.SEND_SMS] == true
+        callPhoneGranted = result[Manifest.permission.CALL_PHONE] == true
         if (!readGranted) {
             Toast.makeText(
                 context,
@@ -170,7 +191,7 @@ fun ExperimentInboundSmsScreen(
         }
         val filter = IntentFilter(Telephony.Sms.Intents.SMS_RECEIVED_ACTION)
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-            context.registerReceiver(receiver, filter, Context.RECEIVER_NOT_EXPORTED)
+            context.registerReceiver(receiver, filter, Context.RECEIVER_EXPORTED)
         } else {
             @Suppress("DEPRECATION")
             ContextCompat.registerReceiver(context, receiver, filter, ContextCompat.RECEIVER_EXPORTED)
@@ -263,7 +284,7 @@ fun ExperimentInboundSmsScreen(
             }
             HorizontalDivider()
             Spacer(Modifier.height(12.dp))
-            if (!readGranted || !receiveGranted) {
+            if (!readGranted || !receiveGranted || !sendSmsGranted || !callPhoneGranted) {
                 Text(
                     text = stringResource(R.string.experiment_sms_permission_hint),
                     style = MaterialTheme.typography.bodySmall,
@@ -273,12 +294,7 @@ fun ExperimentInboundSmsScreen(
             }
             FilledTonalButton(
                 onClick = {
-                    permissionLauncher.launch(
-                        arrayOf(
-                            Manifest.permission.READ_SMS,
-                            Manifest.permission.RECEIVE_SMS,
-                        ),
-                    )
+                    permissionLauncher.launch(smsExperimentPermissions)
                 },
                 modifier = Modifier.fillMaxWidth(),
             ) {

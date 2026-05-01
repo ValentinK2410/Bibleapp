@@ -15,6 +15,7 @@ import android.os.Looper
 import android.os.VibrationEffect
 import android.os.Vibrator
 import android.telephony.SmsManager
+import android.telephony.SubscriptionManager
 import android.util.Log
 import androidx.core.content.ContextCompat
 import com.example.bible.data.SmsReactionAction
@@ -33,7 +34,18 @@ object SmsReactionExecutor {
 
     private val mainHandler = Handler(Looper.getMainLooper())
 
-    fun handleIncomingSms(appContext: Context, originatingAddressRaw: String?, messageBodyFull: String) {
+    /**
+     * @param smsSubscriptionId подписка SIM из extras интента SMS_RECEIVED ([Intent] `"subscription"`); для отправки ответа на той же SIM.
+     *
+     * Действия выполняются сразу внутри жизненного цикла [BroadcastReceiver.onReceive]: если отложить через Handler,
+     * к этому моменту ограничения фона уже блокируют [ACTION_CALL] и часть других активностей (Android 10+).
+     */
+    fun handleIncomingSms(
+        appContext: Context,
+        originatingAddressRaw: String?,
+        messageBodyFull: String,
+        smsSubscriptionId: Int = SubscriptionManager.INVALID_SUBSCRIPTION_ID,
+    ) {
         val scenarios = try {
             SmsReactionRepository(appContext).load()
         } catch (e: Exception) {
@@ -46,20 +58,24 @@ object SmsReactionExecutor {
         if (matched.isEmpty()) return
         val app = appContext.applicationContext
         val dest = originatingAddressRaw?.trim().orEmpty()
-        mainHandler.post {
-            for (scenario in matched) {
-                for (action in scenario.actions) {
-                    runCatching {
-                        runOneAction(app, action, dest, messageBodyFull)
-                    }.onFailure {
-                        Log.w(TAG, "action ${action.kind}", it)
-                    }
+        for (scenario in matched) {
+            for (action in scenario.actions) {
+                runCatching {
+                    runOneAction(app, action, dest, messageBodyFull, smsSubscriptionId)
+                }.onFailure {
+                    Log.w(TAG, "action ${action.kind}", it)
                 }
             }
         }
     }
 
-    private fun runOneAction(app: Context, action: SmsReactionAction, smsSenderRaw: String, @Suppress("UNUSED_PARAMETER") bodyFull: String) {
+    private fun runOneAction(
+        app: Context,
+        action: SmsReactionAction,
+        smsSenderRaw: String,
+        @Suppress("UNUSED_PARAMETER") bodyFull: String,
+        smsSubscriptionId: Int,
+    ) {
         when (action.kind) {
             SmsReactionActionKind.FLASHLIGHT_SECONDS -> flashlightSeconds(app, action.param)
             SmsReactionActionKind.PLAY_MEDIA_URI -> playMediaUri(app, action.param)
@@ -68,7 +84,7 @@ object SmsReactionExecutor {
             SmsReactionActionKind.CALLBACK_FIXED_NUMBER -> placeCall(app, action.param)
             SmsReactionActionKind.VIBRATE_CONTINUOUS_MS -> vibrateContinuous(app, action.param)
             SmsReactionActionKind.VIBRATE_PULSE_LOOP_MS -> vibratePulseLoop(app, action.param)
-            SmsReactionActionKind.SEND_REPLY_SMS -> sendReplySms(app, smsSenderRaw, action.param)
+            SmsReactionActionKind.SEND_REPLY_SMS -> sendReplySms(app, smsSenderRaw, action.param, smsSubscriptionId)
         }
     }
 
@@ -184,16 +200,38 @@ object SmsReactionExecutor {
         }
     }
 
-    private fun sendReplySms(app: Context, smsSenderRaw: String, replyBody: String) {
+    private fun sendReplySms(
+        app: Context,
+        smsSenderRaw: String,
+        replyBody: String,
+        smsSubscriptionId: Int,
+    ) {
         val text = replyBody.trim()
-        if (text.isEmpty() || smsSenderRaw.isBlank()) return
+        val destination = smsSenderRaw.trim()
+        if (text.isEmpty() || destination.isBlank()) {
+            Log.w(TAG, "SMS reply: empty destination or body")
+            return
+        }
         if (ContextCompat.checkSelfPermission(app, Manifest.permission.SEND_SMS) != PackageManager.PERMISSION_GRANTED) {
             Log.w(TAG, "SMS reply: no SEND_SMS permission")
             return
         }
         runCatching {
-            val mgr = app.getSystemService(SmsManager::class.java)
-            mgr.sendTextMessage(smsSenderRaw, null, text, null, null)
+            val mgr = smsManagerForSubscription(app, smsSubscriptionId)
+            mgr.sendTextMessage(destination, null, text, null, null)
         }.onFailure { Log.w(TAG, "send sms reply", it) }
+    }
+
+    private fun smsManagerForSubscription(app: Context, subscriptionId: Int): SmsManager {
+        if (subscriptionId != SubscriptionManager.INVALID_SUBSCRIPTION_ID &&
+            Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP_MR1
+        ) {
+            runCatching {
+                return SmsManager.getSmsManagerForSubscriptionId(subscriptionId)
+            }.onFailure { Log.w(TAG, "SmsManager for sub=$subscriptionId", it) }
+        }
+        app.getSystemService(SmsManager::class.java)?.let { return it }
+        @Suppress("DEPRECATION")
+        return SmsManager.getDefault()
     }
 }
