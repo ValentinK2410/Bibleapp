@@ -311,8 +311,8 @@ object SmsReactionExecutor {
         smsSubscriptionId: Int,
     ) {
         val text = replyBody.trim()
-        val destDigits = smsSenderRaw.normalizeRussianOutboundPhoneDigits()
-        if (text.isEmpty() || destDigits.isEmpty()) {
+        val dest = smsSenderRaw.normalizeRussianOutboundPhoneDigits()
+        if (text.isEmpty() || dest.isEmpty()) {
             Log.w(TAG, "SMS reply: empty destination or body")
             return
         }
@@ -322,7 +322,7 @@ object SmsReactionExecutor {
         }
         runCatching {
             val mgr = smsManagerForSubscription(app, smsSubscriptionId)
-            mgr.sendTextMessage(destDigits, null, text, null, null)
+            mgr.sendTextMessage(dest, null, text, null, null)
         }.onFailure { Log.w(TAG, "send sms reply", it) }
     }
 

@@ -57,13 +57,13 @@ data class SmsReactionScenario(
 fun String.normalizeSmsDigits(): String = filter { it.isDigit() }
 
 /**
- * Для исходящего звонка/SMS: российский номер с кодом +7 (после извлечения цифр «7» + 10 знаков)
- * приводится к внутреннему виду с ведущей **8**.
+ * Для исходящего звонка/SMS: российский номер **8XXXXXXXXXXX** (11 цифр) → **+7** и десять последующих цифр.
+ * Остальные номера возвращаются как набор цифр из строки (без изменения префикса).
  */
 fun String.normalizeRussianOutboundPhoneDigits(): String {
     val d = normalizeSmsDigits()
-    if (d.length == 11 && d.startsWith('7')) {
-        return "8${d.substring(1)}"
+    if (d.length == 11 && d.startsWith('8')) {
+        return "+7${d.substring(1)}"
     }
     return d
 }
