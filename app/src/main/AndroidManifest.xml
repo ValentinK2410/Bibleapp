@@ -88,6 +88,14 @@
                 <action android:name="android.intent.action.BOOT_COMPLETED" />
             </intent-filter>
         </receiver>
+        <!-- SMS_RECEIVED приходит от системы; на API 33+ динамическая регистрация с RECEIVER_NOT_EXPORTED его не получает. -->
+        <receiver
+            android:name=".receiver.SmsSpeakBroadcastReceiver"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.provider.Telephony.SMS_RECEIVED" />
+            </intent-filter>
+        </receiver>
 
         <service
             android:name=".service.TravelMonitorService"
