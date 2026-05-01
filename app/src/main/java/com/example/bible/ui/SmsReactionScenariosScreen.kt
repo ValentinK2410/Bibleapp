@@ -21,6 +21,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.selection.selectable
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
@@ -47,6 +48,7 @@ import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -56,13 +58,19 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import com.example.bible.R
+import com.example.bible.data.SMS_REACTION_DELAY_MAX_MS
 import com.example.bible.data.SmsReactionAction
 import com.example.bible.data.SmsReactionActionKind
 import com.example.bible.data.SmsReactionRepository
 import com.example.bible.data.SmsReactionScenario
+import com.example.bible.data.formatSmsReactionDelayHHMM
+import com.example.bible.data.isCompleteSmsReactionDelayHHMM
 import com.example.bible.data.normalizeSmsDigits
+import com.example.bible.data.parseSmsReactionDelayHHMM
+import com.example.bible.data.sanitizeSmsReactionDelayHHMMInput
 import java.util.UUID
 
 private data class SimChoice(val subscriptionId: Int, val label: String)
@@ -141,6 +149,13 @@ private data class ReactionEditorState(
         if (index !in actions.indices) return this
         val next = actions.toMutableList()
         next[index] = next[index].copy(param = param)
+        return copy(actions = next)
+    }
+
+    fun copyActionDelayBeforeNext(index: Int, delayMs: Long): ReactionEditorState {
+        if (index !in actions.indices) return this
+        val next = actions.toMutableList()
+        next[index] = next[index].copy(delayBeforeNextMs = delayMs.coerceIn(0L, SMS_REACTION_DELAY_MAX_MS))
         return copy(actions = next)
     }
 
@@ -531,6 +546,43 @@ fun SmsReactionScenariosScreen(
                                         )
                                     }
                                     else -> Unit
+                                }
+                                if (index < editorState!!.actions.lastIndex) {
+                                    Spacer(Modifier.height(8.dp))
+                                    val storedDelay = action.delayBeforeNextMs
+                                    var delayDraft by remember(index, storedDelay) {
+                                        mutableStateOf(formatSmsReactionDelayHHMM(storedDelay))
+                                    }
+                                    LaunchedEffect(storedDelay, index) {
+                                        delayDraft = formatSmsReactionDelayHHMM(storedDelay)
+                                    }
+                                    OutlinedTextField(
+                                        value = delayDraft,
+                                        onValueChange = { nv ->
+                                            val sanitized = sanitizeSmsReactionDelayHHMMInput(nv)
+                                            delayDraft = sanitized
+                                            when {
+                                                sanitized.isBlank() ->
+                                                    editorState = editorState!!.copyActionDelayBeforeNext(index, 0L)
+                                                isCompleteSmsReactionDelayHHMM(sanitized) ->
+                                                    editorState = editorState!!.copyActionDelayBeforeNext(
+                                                        index,
+                                                        parseSmsReactionDelayHHMM(sanitized),
+                                                    )
+                                            }
+                                        },
+                                        label = {
+                                            Text(stringResource(R.string.experiment_sms_action_delay_before_next_label))
+                                        },
+                                        supportingText = {
+                                            Text(stringResource(R.string.experiment_sms_action_delay_before_next_hint))
+                                        },
+                                        modifier = Modifier.fillMaxWidth(),
+                                        singleLine = true,
+                                        keyboardOptions = KeyboardOptions.Default.copy(
+                                            keyboardType = KeyboardType.Ascii,
+                                        ),
+                                    )
                                 }
                             }
                         }

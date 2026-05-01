@@ -23,6 +23,7 @@ import android.util.Log
 import androidx.core.content.ContextCompat
 import com.example.bible.data.SmsReactionAction
 import com.example.bible.data.SmsReactionActionKind
+import com.example.bible.data.SMS_REACTION_DELAY_MAX_MS
 import com.example.bible.data.SmsReactionRepository
 import com.example.bible.data.SmsReactionScenario
 import com.example.bible.data.scenarioMatchesSms
@@ -42,8 +43,8 @@ object SmsReactionExecutor {
     /**
      * @param smsSubscriptionId подписка SIM из extras интента SMS_RECEIVED ([Intent] `"subscription"`); для отправки ответа на той же SIM.
      *
-     * Действия выполняются сразу внутри жизненного цикла [BroadcastReceiver.onReceive]: если отложить через Handler,
-     * к этому моменту ограничения фона уже блокируют [ACTION_CALL] и часть других активностей (Android 10+).
+     * Первое действие выполняется синхронно в [BroadcastReceiver.onReceive]; следующие могут быть отложены через [mainHandler].
+     * Для больших пауз звонки/SMS из фона могут блокироваться системой — это ограничение Android.
      */
     fun handleIncomingSms(
         appContext: Context,
@@ -66,14 +67,39 @@ object SmsReactionExecutor {
         for (scenario in matched) {
             val smsSub = resolveChosenSubscription(scenario.outboundSmsSubscriptionId, smsSubscriptionId)
             val callSub = resolveChosenSubscription(scenario.outboundCallSubscriptionId, smsSubscriptionId)
-            for (action in scenario.actions) {
-                runCatching {
-                    runOneAction(app, action, dest, messageBodyFull, smsSub, callSub)
-                }.onFailure {
-                    Log.w(TAG, "action ${action.kind}", it)
-                }
+            scheduleScenarioActions(app, scenario, dest, messageBodyFull, smsSub, callSub)
+        }
+    }
+
+    private fun scheduleScenarioActions(
+        app: Context,
+        scenario: SmsReactionScenario,
+        smsSenderRaw: String,
+        bodyFull: String,
+        smsSubscriptionId: Int,
+        callSubscriptionId: Int,
+    ) {
+        val actions = scenario.actions
+        if (actions.isEmpty()) return
+        fun step(index: Int) {
+            if (index >= actions.size) return
+            val action = actions[index]
+            runCatching {
+                runOneAction(app, action, smsSenderRaw, bodyFull, smsSubscriptionId, callSubscriptionId)
+            }.onFailure {
+                Log.w(TAG, "action ${action.kind}", it)
+            }
+            val next = index + 1
+            if (next >= actions.size) return
+            val delayMs = action.delayBeforeNextMs.coerceIn(0L, SMS_REACTION_DELAY_MAX_MS)
+            val runNext = Runnable { step(next) }
+            if (delayMs <= 0L) {
+                mainHandler.post(runNext)
+            } else {
+                mainHandler.postDelayed(runNext, delayMs)
             }
         }
+        step(0)
     }
 
     private fun resolveChosenSubscription(chosenSubscriptionId: Int, incomingSubscriptionId: Int): Int {

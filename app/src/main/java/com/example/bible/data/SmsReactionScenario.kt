@@ -17,10 +17,18 @@ enum class SmsReactionActionKind {
     SEND_REPLY_SMS,
 }
 
+/** Максимальная пауза перед следующим действием: 99 ч 59 мин. */
+const val SMS_REACTION_DELAY_MAX_MS: Long = (99L * 3600L + 59L * 60L) * 1000L
+
 data class SmsReactionAction(
     val kind: SmsReactionActionKind,
     /** Смысл зависит от [kind]: секунды фонаря; URI медиа/картинки; фиксированный номер (цифры); длительность вибро мс; текст ответного SMS */
     val param: String = "",
+    /**
+     * После выполнения этого действия подождать столько миллисекунд перед следующим.
+     * `0` — следующее действие запускается сразу (на том же главном потоке через [android.os.Handler]).
+     */
+    val delayBeforeNextMs: Long = 0L,
 )
 
 data class SmsReactionScenario(
@@ -34,14 +42,59 @@ data class SmsReactionScenario(
     /** true — должны встретиться все фразы; false — хотя бы одна */
     val matchAllPhrases: Boolean = false,
     /**
-     * Подписка SIM для исходящих действий сценария (ответное SMS, обратный/фиксированный звонок).
-     * [SubscriptionManager.INVALID_SUBSCRIPTION_ID] — использовать ту же SIM, на которую пришло SMS (extras `"subscription"`).
+     * Подписка SIM для действия «ответное SMS» в этом сценарии.
+     * [SubscriptionManager.INVALID_SUBSCRIPTION_ID] — та же SIM, что входящее SMS.
      */
-    val outboundSubscriptionId: Int = SubscriptionManager.INVALID_SUBSCRIPTION_ID,
+    val outboundSmsSubscriptionId: Int = SubscriptionManager.INVALID_SUBSCRIPTION_ID,
+    /**
+     * Подписка SIM для действий «обратный звонок» и «звонок на номер».
+     * [SubscriptionManager.INVALID_SUBSCRIPTION_ID] — та же SIM, что входящее SMS.
+     */
+    val outboundCallSubscriptionId: Int = SubscriptionManager.INVALID_SUBSCRIPTION_ID,
     val actions: List<SmsReactionAction> = emptyList(),
 )
 
 fun String.normalizeSmsDigits(): String = filter { it.isDigit() }
+
+/** Интервал ЧЧ:ММ → миллисекунды; пустая строка → 0. Неполный ввод не парсится здесь. */
+fun parseSmsReactionDelayHHMM(raw: String): Long {
+    val t = raw.trim()
+    if (t.isEmpty()) return 0L
+    val parts = t.split(':')
+    if (parts.size != 2) return 0L
+    val h = parts[0].trim().toIntOrNull()?.coerceIn(0, 99) ?: return 0L
+    val m = parts[1].trim().toIntOrNull()?.coerceIn(0, 59) ?: return 0L
+    return ((h * 3600L + m * 60L) * 1000L).coerceAtMost(SMS_REACTION_DELAY_MAX_MS)
+}
+
+fun formatSmsReactionDelayHHMM(ms: Long): String {
+    val capped = ms.coerceIn(0L, SMS_REACTION_DELAY_MAX_MS)
+    if (capped <= 0L) return ""
+    val totalMin = capped / 60000L
+    val h = (totalMin / 60).coerceAtMost(99)
+    val m = totalMin % 60
+    return "%02d:%02d".format(h, m)
+}
+
+private val DelayHHMMCompleteRegex = Regex("^\\d{1,2}:\\d{2}$")
+
+fun isCompleteSmsReactionDelayHHMM(raw: String): Boolean = DelayHHMMCompleteRegex.matches(raw.trim())
+
+/** Разрешить только цифры и одну «:», формат как ЧЧ:ММ (до 5 символов). */
+fun sanitizeSmsReactionDelayHHMMInput(raw: String): String {
+    val sb = StringBuilder()
+    for (ch in raw) {
+        when {
+            ch.isDigit() -> {
+                if (sb.length >= 5) continue
+                if (sb.none { it == ':' } && sb.length == 2) sb.append(':')
+                if (sb.length < 5) sb.append(ch)
+            }
+            ch == ':' && sb.none { it == ':' } && sb.isNotEmpty() -> sb.append(':')
+        }
+    }
+    return sb.toString().take(5)
+}
 
 fun scenarioMatchesSms(
     scenario: SmsReactionScenario,
@@ -73,10 +126,14 @@ private object SmsReactionJsonKeys {
     const val SENDERS = "senders"
     const val PHRASES = "phrases"
     const val MATCH_ALL = "matchAll"
-    const val OUTBOUND_SUBSCRIPTION_ID = "outboundSubscriptionId"
+    const val OUTBOUND_SMS_SUBSCRIPTION_ID = "outboundSmsSubscriptionId"
+    const val OUTBOUND_CALL_SUBSCRIPTION_ID = "outboundCallSubscriptionId"
+    /** Старый ключ: одно значение на SMS и звонок */
+    const val OUTBOUND_SUBSCRIPTION_ID_LEGACY = "outboundSubscriptionId"
     const val ACTIONS = "actions"
     const val KIND = "kind"
     const val PARAM = "param"
+    const val DELAY_BEFORE_NEXT_MS = "delayBeforeNextMs"
 }
 
 object SmsReactionJson {
@@ -109,7 +166,8 @@ object SmsReactionJson {
             put(SmsReactionJsonKeys.SENDERS, JSONArray(s.senderDigitPatterns))
             put(SmsReactionJsonKeys.PHRASES, JSONArray(s.bodyPhrases))
             put(SmsReactionJsonKeys.MATCH_ALL, s.matchAllPhrases)
-            put(SmsReactionJsonKeys.OUTBOUND_SUBSCRIPTION_ID, s.outboundSubscriptionId)
+            put(SmsReactionJsonKeys.OUTBOUND_SMS_SUBSCRIPTION_ID, s.outboundSmsSubscriptionId)
+            put(SmsReactionJsonKeys.OUTBOUND_CALL_SUBSCRIPTION_ID, s.outboundCallSubscriptionId)
             put(SmsReactionJsonKeys.ACTIONS, JSONArray().apply {
                 for (a in s.actions) put(actionToJson(a))
             })
@@ -119,6 +177,9 @@ object SmsReactionJson {
         JSONObject().apply {
             put(SmsReactionJsonKeys.KIND, a.kind.name)
             put(SmsReactionJsonKeys.PARAM, a.param)
+            if (a.delayBeforeNextMs > 0L) {
+                put(SmsReactionJsonKeys.DELAY_BEFORE_NEXT_MS, a.delayBeforeNextMs)
+            }
         }
 
     private fun scenarioFromJson(o: JSONObject): SmsReactionScenario? {
@@ -128,8 +189,20 @@ object SmsReactionJson {
         val senders = o.optJSONArray(SmsReactionJsonKeys.SENDERS)?.toStringList().orEmpty()
         val phrases = o.optJSONArray(SmsReactionJsonKeys.PHRASES)?.toStringList().orEmpty()
         val matchAll = o.optBoolean(SmsReactionJsonKeys.MATCH_ALL, false)
-        val outboundSub =
-            o.optInt(SmsReactionJsonKeys.OUTBOUND_SUBSCRIPTION_ID, SubscriptionManager.INVALID_SUBSCRIPTION_ID)
+        var outboundSms =
+            o.optInt(SmsReactionJsonKeys.OUTBOUND_SMS_SUBSCRIPTION_ID, SubscriptionManager.INVALID_SUBSCRIPTION_ID)
+        var outboundCall =
+            o.optInt(SmsReactionJsonKeys.OUTBOUND_CALL_SUBSCRIPTION_ID, SubscriptionManager.INVALID_SUBSCRIPTION_ID)
+        if (outboundSms == SubscriptionManager.INVALID_SUBSCRIPTION_ID &&
+            outboundCall == SubscriptionManager.INVALID_SUBSCRIPTION_ID
+        ) {
+            val legacy =
+                o.optInt(SmsReactionJsonKeys.OUTBOUND_SUBSCRIPTION_ID_LEGACY, SubscriptionManager.INVALID_SUBSCRIPTION_ID)
+            if (legacy != SubscriptionManager.INVALID_SUBSCRIPTION_ID) {
+                outboundSms = legacy
+                outboundCall = legacy
+            }
+        }
         val actionsArr = o.optJSONArray(SmsReactionJsonKeys.ACTIONS) ?: JSONArray()
         val actions = buildList {
             for (i in 0 until actionsArr.length()) {
@@ -137,14 +210,26 @@ object SmsReactionJson {
                 actionFromJson(ao)?.let { add(it) }
             }
         }
-        return SmsReactionScenario(id, title, enabled, senders, phrases, matchAll, outboundSub, actions)
+        return SmsReactionScenario(
+            id,
+            title,
+            enabled,
+            senders,
+            phrases,
+            matchAll,
+            outboundSms,
+            outboundCall,
+            actions,
+        )
     }
 
     private fun actionFromJson(o: JSONObject): SmsReactionAction? {
         val kindName = o.optString(SmsReactionJsonKeys.KIND).trim()
         val kind = runCatching { SmsReactionActionKind.valueOf(kindName) }.getOrNull() ?: return null
         val param = o.optString(SmsReactionJsonKeys.PARAM, "")
-        return SmsReactionAction(kind, param)
+        val delayMs = o.optLong(SmsReactionJsonKeys.DELAY_BEFORE_NEXT_MS, 0L)
+            .coerceIn(0L, SMS_REACTION_DELAY_MAX_MS)
+        return SmsReactionAction(kind, param, delayMs)
     }
 
     private fun JSONArray.toStringList(): List<String> = buildList {
