@@ -6,7 +6,6 @@ import android.content.pm.PackageManager
 import android.net.Uri
 import android.os.Bundle
 import android.telecom.TelecomManager
-import android.telephony.SmsManager
 import android.telephony.SubscriptionManager
 import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
@@ -61,6 +60,8 @@ import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat
 import com.example.bible.R
 import com.example.bible.data.normalizeRussianOutboundPhoneDigits
+import com.example.bible.sms.SmsOutboundCrypto
+import com.example.bible.sms.sendSmsMultipart
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -200,17 +201,9 @@ fun ExperimentCallsSmsScreen(
             return
         }
         val subId = slotForSms().subscriptionId
-        val smsManager = if (subId != SubscriptionManager.INVALID_SUBSCRIPTION_ID) {
-            try {
-                SmsManager.getSmsManagerForSubscriptionId(subId)
-            } catch (_: Exception) {
-                context.getSystemService(SmsManager::class.java)
-            }
-        } else {
-            context.getSystemService(SmsManager::class.java)
-        }
+        val textOut = SmsOutboundCrypto.wrapOutboundBody(context, messageLatest)
         try {
-            smsManager.sendTextMessage(p, null, messageLatest, null, null)
+            sendSmsMultipart(context, subId, p, textOut)
             Toast.makeText(
                 context,
                 context.getString(R.string.experiment_calls_sms_sent),

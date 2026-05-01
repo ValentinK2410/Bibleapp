@@ -2804,6 +2804,11 @@ private fun BibleNavHost(
                 onBack = { navController.navigateUp() },
             )
         }
+        composable("app_contacts") {
+            ContactsScreen(
+                onBack = { navController.navigateUp() },
+            )
+        }
         composable("note_edit/{noteId}") { entry ->
             val noteId = entry.arguments?.getString("noteId") ?: return@composable
             val notes by viewModel.userNotes.collectAsStateWithLifecycle()

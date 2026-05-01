@@ -22,6 +22,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.ui.Alignment
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -39,9 +40,11 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
+import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
@@ -53,10 +56,15 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat
 import com.example.bible.R
 import com.example.bible.data.ExperimentSmsSpeakPrefs
+import com.example.bible.sms.SmsCryptoPrefs
+import com.example.bible.sms.SmsCryptoSecureStore
+import com.example.bible.sms.SmsOutboundCrypto
 import java.time.Instant
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
@@ -222,6 +230,17 @@ fun ExperimentInboundSmsScreen(
         mutableStateOf(ExperimentSmsSpeakPrefs.isSpeakIncomingEnabled(context))
     }
 
+    var passphraseDraft by remember { mutableStateOf("") }
+    var encryptOutboundSms by remember {
+        mutableStateOf(SmsCryptoPrefs.isEncryptOutboundEnabled(context))
+    }
+    var decryptInboundSms by remember {
+        mutableStateOf(SmsCryptoPrefs.isDecryptInboundEnabled(context))
+    }
+    var hasCryptoKey by remember {
+        mutableStateOf(SmsCryptoSecureStore.hasPassphrase(context))
+    }
+
     Scaffold(
         topBar = {
             CenterAlignedTopAppBar(
@@ -300,6 +319,126 @@ fun ExperimentInboundSmsScreen(
             ) {
                 Text(stringResource(R.string.experiment_sms_speech_override_nav_button))
             }
+            Card(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(bottom = 12.dp),
+                colors = CardDefaults.cardColors(
+                    containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.35f),
+                ),
+            ) {
+                Column(Modifier.padding(12.dp)) {
+                    Text(
+                        stringResource(R.string.experiment_sms_crypto_title),
+                        style = MaterialTheme.typography.titleSmall,
+                    )
+                    Text(
+                        stringResource(R.string.experiment_sms_crypto_hint),
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        modifier = Modifier.padding(top = 6.dp, bottom = 8.dp),
+                    )
+                    OutlinedTextField(
+                        value = passphraseDraft,
+                        onValueChange = { passphraseDraft = it },
+                        label = { Text(stringResource(R.string.experiment_sms_crypto_passphrase_label)) },
+                        visualTransformation = PasswordVisualTransformation(),
+                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
+                        modifier = Modifier.fillMaxWidth(),
+                        singleLine = true,
+                    )
+                    Row(
+                        Modifier
+                            .fillMaxWidth()
+                            .padding(top = 8.dp),
+                        horizontalArrangement = Arrangement.spacedBy(8.dp),
+                    ) {
+                        TextButton(
+                            onClick = {
+                                SmsCryptoSecureStore.setPassphrase(context, passphraseDraft)
+                                passphraseDraft = ""
+                                hasCryptoKey = SmsCryptoSecureStore.hasPassphrase(context)
+                                Toast.makeText(
+                                    context,
+                                    context.getString(R.string.experiment_sms_crypto_key_saved),
+                                    Toast.LENGTH_SHORT,
+                                ).show()
+                            },
+                        ) {
+                            Text(stringResource(R.string.experiment_sms_crypto_save_key))
+                        }
+                        TextButton(
+                            onClick = {
+                                SmsCryptoSecureStore.clearPassphrase(context)
+                                encryptOutboundSms = false
+                                decryptInboundSms = false
+                                SmsCryptoPrefs.setEncryptOutboundEnabled(context, false)
+                                SmsCryptoPrefs.setDecryptInboundEnabled(context, false)
+                                hasCryptoKey = false
+                                inboxNonce++
+                                Toast.makeText(
+                                    context,
+                                    context.getString(R.string.experiment_sms_crypto_key_cleared),
+                                    Toast.LENGTH_SHORT,
+                                ).show()
+                            },
+                        ) {
+                            Text(stringResource(R.string.experiment_sms_crypto_clear_key))
+                        }
+                    }
+                    Row(
+                        Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically,
+                    ) {
+                        Column(Modifier.weight(1f).padding(end = 8.dp)) {
+                            Text(
+                                stringResource(R.string.experiment_sms_crypto_encrypt_out_title),
+                                style = MaterialTheme.typography.titleSmall,
+                            )
+                            Text(
+                                stringResource(R.string.experiment_sms_crypto_encrypt_out_subtitle),
+                                style = MaterialTheme.typography.bodySmall,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            )
+                        }
+                        Switch(
+                            checked = encryptOutboundSms,
+                            onCheckedChange = {
+                                encryptOutboundSms = it
+                                SmsCryptoPrefs.setEncryptOutboundEnabled(context, it)
+                            },
+                            enabled = hasCryptoKey,
+                        )
+                    }
+                    Row(
+                        Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically,
+                    ) {
+                        Column(Modifier.weight(1f).padding(end = 8.dp)) {
+                            Text(
+                                stringResource(R.string.experiment_sms_crypto_decrypt_in_title),
+                                style = MaterialTheme.typography.titleSmall,
+                            )
+                            Text(
+                                stringResource(R.string.experiment_sms_crypto_decrypt_in_subtitle),
+                                style = MaterialTheme.typography.bodySmall,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            )
+                        }
+                        Switch(
+                            checked = decryptInboundSms,
+                            onCheckedChange = {
+                                decryptInboundSms = it
+                                SmsCryptoPrefs.setDecryptInboundEnabled(context, it)
+                                inboxNonce++
+                            },
+                            enabled = hasCryptoKey,
+                        )
+                    }
+                }
+            }
             HorizontalDivider()
             Spacer(Modifier.height(12.dp))
             if (!readGranted || !receiveGranted || !sendSmsGranted || !callPhoneGranted) {
@@ -373,7 +512,10 @@ fun ExperimentInboundSmsScreen(
                                 )
                                 HorizontalDivider(Modifier.padding(vertical = 8.dp))
                                 Text(
-                                    text = sms.body.ifBlank { "—" },
+                                    text = SmsOutboundCrypto.decryptInboundForDisplay(
+                                        context,
+                                        sms.body.ifBlank { "—" },
+                                    ),
                                     style = MaterialTheme.typography.bodyMedium,
                                 )
                             }

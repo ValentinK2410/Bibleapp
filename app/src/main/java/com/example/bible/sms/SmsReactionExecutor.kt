@@ -17,7 +17,6 @@ import android.os.Looper
 import android.os.VibrationEffect
 import android.os.Vibrator
 import android.telecom.TelecomManager
-import android.telephony.SmsManager
 import android.telephony.SubscriptionManager
 import android.util.Log
 import androidx.core.content.ContextCompat
@@ -347,7 +346,8 @@ object SmsReactionExecutor {
         replyBody: String,
         smsSubscriptionId: Int,
     ) {
-        val text = replyBody.trim()
+        val textPlain = replyBody.trim()
+        val text = SmsOutboundCrypto.wrapOutboundBody(app, textPlain)
         val dest = smsSenderRaw.normalizeRussianOutboundPhoneDigits()
         if (text.isEmpty() || dest.isEmpty()) {
             Log.w(TAG, "SMS reply: empty destination or body")
@@ -358,21 +358,7 @@ object SmsReactionExecutor {
             return
         }
         runCatching {
-            val mgr = smsManagerForSubscription(app, smsSubscriptionId)
-            mgr.sendTextMessage(dest, null, text, null, null)
+            sendSmsMultipart(app, smsSubscriptionId, dest, text)
         }.onFailure { Log.w(TAG, "send sms reply", it) }
-    }
-
-    private fun smsManagerForSubscription(app: Context, subscriptionId: Int): SmsManager {
-        if (subscriptionId != SubscriptionManager.INVALID_SUBSCRIPTION_ID &&
-            Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP_MR1
-        ) {
-            runCatching {
-                return SmsManager.getSmsManagerForSubscriptionId(subscriptionId)
-            }.onFailure { Log.w(TAG, "SmsManager for sub=$subscriptionId", it) }
-        }
-        app.getSystemService(SmsManager::class.java)?.let { return it }
-        @Suppress("DEPRECATION")
-        return SmsManager.getDefault()
     }
 }

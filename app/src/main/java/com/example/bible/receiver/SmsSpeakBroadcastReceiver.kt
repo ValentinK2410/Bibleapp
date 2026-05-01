@@ -11,6 +11,7 @@ import com.example.bible.data.ExperimentSmsSpeakPrefs
 import com.example.bible.data.SmsSpeechOverrideRepository
 import com.example.bible.data.speechUtteranceForDigits
 import com.example.bible.sms.SmsReactionExecutor
+import com.example.bible.sms.SmsOutboundCrypto
 
 /**
  * Озвучка входящих SMS при включённом флаге в разделе «Эксперимент» → SMS,
@@ -60,9 +61,10 @@ object IncomingSmsSpeakUtterance {
                 ?: SmsIncomingSenderDisplay.resolve(context.applicationContext, addrRaw).ifBlank {
                     context.getString(R.string.experiment_sms_unknown_sender)
                 }
-        val rawBody = msgs.joinToString("") { it.displayMessageBody.orEmpty() }
+        val joined = msgs.joinToString("") { it.displayMessageBody.orEmpty() }
             .replace('\n', ' ')
             .trim()
+        val rawBody = SmsOutboundCrypto.decryptInboundForDisplay(context.applicationContext, joined)
         val body = if (rawBody.length > IncomingSmsSpeak.MAX_UTTERANCE_CHARS) {
             rawBody.take(IncomingSmsSpeak.MAX_UTTERANCE_CHARS) + "…"
         } else {

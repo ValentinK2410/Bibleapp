@@ -7,6 +7,7 @@ import androidx.compose.material.icons.filled.CalendarToday
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Explore
 import androidx.compose.material.icons.filled.Church
+import androidx.compose.material.icons.filled.Contacts
 import androidx.compose.material.icons.filled.FlashOn
 import androidx.compose.material.icons.filled.FormatColorFill
 import androidx.compose.material.icons.filled.FormatSize
@@ -67,6 +68,11 @@ fun BooksMainMenuOrderedItems(
                 text = { Text("Заметки") },
                 onClick = { closeMenu(); navController.navigate("notes") },
                 leadingIcon = { Icon(Icons.Default.Edit, contentDescription = null) },
+            )
+            BooksMainMenuOrder.CONTACTS -> DropdownMenuItem(
+                text = { Text(stringResource(R.string.contacts_title)) },
+                onClick = { closeMenu(); navController.navigate("app_contacts") },
+                leadingIcon = { Icon(Icons.Default.Contacts, contentDescription = null, tint = primary) },
             )
             BooksMainMenuOrder.DUAL -> DropdownMenuItem(
                 text = { Text(stringResource(R.string.menu_dual_bible)) },

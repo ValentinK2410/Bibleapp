@@ -92,6 +92,8 @@ import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.bible.R
+import com.example.bible.data.ContactsRepository
+import com.example.bible.data.UserContact
 import com.example.bible.data.travel.TravelGeoPoint
 import com.example.bible.data.travel.TravelMapIncident
 import com.example.bible.data.travel.TravelMarkerSoundTrigger
@@ -239,6 +241,7 @@ fun MyTravelsScreen(
     val lastUserGeo by vm.lastUserGeo.collectAsStateWithLifecycle()
     val lastUserHeadingDeg by vm.lastUserHeadingDeg.collectAsStateWithLifecycle()
     val scope = rememberCoroutineScope()
+    val contactsRepo = remember { ContactsRepository(context) }
 
     var burstSessionIdLocal by remember { mutableStateOf<String?>(null) }
     var deleteRouteSessionDialog by remember { mutableStateOf(false) }
@@ -246,6 +249,9 @@ fun MyTravelsScreen(
     var showRoutePhotosManageSheet by remember { mutableStateOf(false) }
     var showRoutePlaybackControlsSheet by remember { mutableStateOf(false) }
     var showFriendPeerSheet by remember { mutableStateOf(false) }
+    var showShareCoordsSmsSheet by remember { mutableStateOf(false) }
+    var friendPeerContactsPickOpen by remember { mutableStateOf(false) }
+    var geoContactsPickList by remember { mutableStateOf<List<UserContact>>(emptyList()) }
     var friendPeerManualDialog by remember { mutableStateOf(false) }
     var friendPeerUrlDraft by remember { mutableStateOf("") }
     var friendPeerManualLine by remember { mutableStateOf("") }
@@ -273,6 +279,20 @@ fun MyTravelsScreen(
             Toast.makeText(context, R.string.travel_camera_permission_denied, Toast.LENGTH_LONG).show()
         }
     }
+    var sendSmsGranted by remember {
+        mutableStateOf(
+            ContextCompat.checkSelfPermission(context, Manifest.permission.SEND_SMS) ==
+                PackageManager.PERMISSION_GRANTED,
+        )
+    }
+    val smsSharePermLauncher = rememberLauncherForActivityResult(
+        ActivityResultContracts.RequestPermission(),
+    ) { ok ->
+        sendSmsGranted = ok
+        if (!ok) {
+            Toast.makeText(context, R.string.travel_share_sms_permission_denied, Toast.LENGTH_LONG).show()
+        }
+    }
     val lifecycleOwner = LocalLifecycleOwner.current
 
     /** Масштаб карточки превью виртуального проезда (сохраняется при повороте экрана). */
@@ -288,6 +308,14 @@ fun MyTravelsScreen(
 
     LaunchedEffect(showFriendPeerSheet) {
         if (showFriendPeerSheet) friendPeerUrlDraft = friendPeerPollUrl
+    }
+
+    LaunchedEffect(friendPeerContactsPickOpen) {
+        if (friendPeerContactsPickOpen) {
+            geoContactsPickList = contactsRepo.load()
+                .filter { it.hasCoordinates() }
+                .sortedBy { it.fullName.lowercase(Locale.getDefault()) }
+        }
     }
 
     var hasFineLocation by remember {
@@ -765,6 +793,13 @@ fun MyTravelsScreen(
                                 onClick = {
                                     vm.setTravelMenuExpanded(false)
                                     showFriendPeerSheet = true
+                                },
+                            )
+                            DropdownMenuItem(
+                                text = { Text(stringResource(R.string.travel_share_sms_menu)) },
+                                onClick = {
+                                    vm.setTravelMenuExpanded(false)
+                                    showShareCoordsSmsSheet = true
                                 },
                             )
                             DropdownMenuItem(
@@ -1796,6 +1831,12 @@ fun MyTravelsScreen(
                     Text(stringResource(R.string.travel_friend_peer_manual))
                 }
                 TextButton(
+                    onClick = { friendPeerContactsPickOpen = true },
+                    modifier = Modifier.fillMaxWidth(),
+                ) {
+                    Text(stringResource(R.string.travel_friend_peer_pick_from_contacts))
+                }
+                TextButton(
                     onClick = { vm.clearFriendPeerManual() },
                     modifier = Modifier.fillMaxWidth(),
                 ) {
@@ -1859,6 +1900,71 @@ fun MyTravelsScreen(
                 }
             },
         )
+    }
+
+    if (friendPeerContactsPickOpen) {
+        AlertDialog(
+            onDismissRequest = { friendPeerContactsPickOpen = false },
+            title = { Text(stringResource(R.string.travel_friend_peer_pick_contact_title)) },
+            text = {
+                if (geoContactsPickList.isEmpty()) {
+                    Text(stringResource(R.string.travel_friend_peer_pick_contact_empty))
+                } else {
+                    LazyColumn(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .heightIn(max = 320.dp),
+                    ) {
+                        items(geoContactsPickList, key = { it.id }) { c ->
+                            val lat = c.latitude!!
+                            val lon = c.longitude!!
+                            TextButton(
+                                onClick = {
+                                    vm.setFriendPeerManual(lat, lon, c.fullName)
+                                    friendPeerContactsPickOpen = false
+                                    Toast.makeText(
+                                        context,
+                                        R.string.travel_friend_peer_pick_applied,
+                                        Toast.LENGTH_SHORT,
+                                    ).show()
+                                },
+                                modifier = Modifier.fillMaxWidth(),
+                            ) {
+                                Column(Modifier.fillMaxWidth()) {
+                                    Text(c.fullName, style = MaterialTheme.typography.titleSmall)
+                                    Text(
+                                        String.format(Locale.US, "%.6f, %.6f", lat, lon),
+                                        style = MaterialTheme.typography.bodySmall,
+                                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                    )
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            confirmButton = {
+                TextButton(onClick = { friendPeerContactsPickOpen = false }) {
+                    Text(stringResource(R.string.back))
+                }
+            },
+        )
+    }
+
+    if (showShareCoordsSmsSheet) {
+        ModalBottomSheet(onDismissRequest = { showShareCoordsSmsSheet = false }) {
+            ShareTravelCoordinatesSmsSheetContent(
+                scope = scope,
+                lastLatitude = lastUserGeo?.latitude,
+                lastLongitude = lastUserGeo?.longitude,
+                hasFineLocation = hasFineLocation,
+                sendSmsGranted = sendSmsGranted,
+                onRequestSendSmsPermission = {
+                    smsSharePermLauncher.launch(Manifest.permission.SEND_SMS)
+                },
+                onDismiss = { showShareCoordsSmsSheet = false },
+            )
+        }
     }
 
     IncidentMarkerTapSheet(

@@ -95,6 +95,7 @@ dependencies {
     implementation(libs.androidx.navigation.compose)
     implementation(libs.reorderable)
     implementation(libs.androidx.datastore.preferences)
+    implementation("androidx.security:security-crypto:1.1.0-alpha06")
     implementation(libs.androidx.room.runtime)
     implementation(libs.androidx.room.ktx)
     ksp(libs.androidx.room.compiler)
