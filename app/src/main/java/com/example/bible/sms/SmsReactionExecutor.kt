@@ -132,23 +132,60 @@ object SmsReactionExecutor {
 
     private fun flashlightSeconds(app: Context, param: String) {
         val sec = param.trim().toIntOrNull()?.coerceIn(1, 120) ?: 30
+        // После возврата из BroadcastReceiver доступ к камере на части прошивок стабильнее.
+        mainHandler.post {
+            turnTorchForSeconds(app, sec)
+        }
+    }
+
+    @SuppressLint("MissingPermission")
+    private fun turnTorchForSeconds(app: Context, sec: Int) {
         if (ContextCompat.checkSelfPermission(app, Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED) {
             Log.w(TAG, "FLASHLIGHT: no CAMERA permission")
             return
         }
         val cm = app.getSystemService(Context.CAMERA_SERVICE) as CameraManager
-        val cameraId = cm.cameraIdList.firstOrNull { id ->
-            cm.getCameraCharacteristics(id).get(CameraCharacteristics.FLASH_INFO_AVAILABLE) == true
-        } ?: run {
-            Log.w(TAG, "FLASHLIGHT: no torch camera")
+        val cameraId = resolveTorchCameraId(cm) ?: run {
+            Log.w(TAG, "FLASHLIGHT: no torch-capable camera")
             return
         }
-        runCatching {
-            cm.setTorchMode(cameraId, true)
+        fun scheduleOff() {
             mainHandler.postDelayed({
                 runCatching { cm.setTorchMode(cameraId, false) }
+                    .onFailure { Log.w(TAG, "FLASHLIGHT: torch off", it) }
             }, sec * 1000L)
-        }.onFailure { Log.w(TAG, "torch", it) }
+        }
+        val first = runCatching {
+            cm.setTorchMode(cameraId, true)
+        }
+        if (first.isSuccess) {
+            scheduleOff()
+            return
+        }
+        Log.w(TAG, "FLASHLIGHT: torch on failed (will retry)", first.exceptionOrNull())
+        mainHandler.postDelayed({
+            runCatching {
+                cm.setTorchMode(cameraId, true)
+                scheduleOff()
+            }.onFailure { Log.w(TAG, "FLASHLIGHT: torch on retry failed", it) }
+        }, 350L)
+    }
+
+    private fun resolveTorchCameraId(cm: CameraManager): String? {
+        return runCatching {
+            cm.cameraIdList.firstOrNull { id ->
+                val ch = cm.getCameraCharacteristics(id)
+                val flash = ch.get(CameraCharacteristics.FLASH_INFO_AVAILABLE) == true
+                val back = ch.get(CameraCharacteristics.LENS_FACING) == CameraCharacteristics.LENS_FACING_BACK
+                flash && back
+            }
+                ?: cm.cameraIdList.firstOrNull { id ->
+                    cm.getCameraCharacteristics(id).get(CameraCharacteristics.FLASH_INFO_AVAILABLE) == true
+                }
+        }.getOrElse {
+            Log.w(TAG, "FLASHLIGHT: camera list", it)
+            null
+        }
     }
 
     private fun playMediaUri(app: Context, uriStr: String) {
