@@ -5,6 +5,8 @@ import android.annotation.SuppressLint
 import android.content.pm.PackageManager
 import android.telephony.SubscriptionManager
 import android.widget.Toast
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -81,16 +83,28 @@ fun ShareTravelCoordinatesSmsSheetContent(
         draftLon = lastLongitude
     }
 
+    val phoneStateLauncher = rememberLauncherForActivityResult(
+        ActivityResultContracts.RequestPermission(),
+    ) { granted ->
+        if (granted) simSlots = context.loadSimSlots()
+    }
+
     LaunchedEffect(Unit) {
         contacts = repo.load().sortedWith(compareBy({ it.fullName.lowercase() }, { it.phone }))
-        if (ContextCompat.checkSelfPermission(context, Manifest.permission.READ_PHONE_STATE) ==
-            PackageManager.PERMISSION_GRANTED
-        ) {
-            simSlots = context.loadSimSlots()
+        when {
+            ContextCompat.checkSelfPermission(context, Manifest.permission.READ_PHONE_STATE) ==
+                PackageManager.PERMISSION_GRANTED ->
+                simSlots = context.loadSimSlots()
+            else ->
+                phoneStateLauncher.launch(Manifest.permission.READ_PHONE_STATE)
         }
+    }
+
+    LaunchedEffect(simSlots) {
+        if (simSlots.isEmpty()) return@LaunchedEffect
         val savedSub = TravelSmsSharePrefs.getShareSubscriptionId(context)
         val idx = simSlots.indexOfFirst { it.subscriptionId == savedSub }.takeIf { it >= 0 } ?: 0
-        selectedSimIndex = idx.coerceIn(0, (simSlots.size - 1).coerceAtLeast(0))
+        selectedSimIndex = idx.coerceIn(0, simSlots.lastIndex.coerceAtLeast(0))
     }
 
     val systemDefaultLabel = stringResource(R.string.experiment_calls_sim_system_default)

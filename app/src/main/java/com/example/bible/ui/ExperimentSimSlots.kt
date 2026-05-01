@@ -44,7 +44,20 @@ private fun Context.formatSimSlotLabel(
     if (subId != SubscriptionManager.INVALID_SUBSCRIPTION_ID) {
         return getString(R.string.experiment_sim_unknown_subscription_fmt, subId)
     }
-    return accountLabel.ifBlank { getString(R.string.experiment_sim_generic) }
+
+    val pa = phoneAccount
+    val fromAccount = sequenceOf(
+        pa?.label?.toString()?.trim(),
+        pa?.shortDescription?.toString()?.trim(),
+        pa?.address?.schemeSpecificPart?.trim(),
+    )
+        .mapNotNull { text ->
+            text?.takeIf { s ->
+                s.isNotBlank() && !isMisleadingSlotDigitLabel(s, info?.simSlotIndex)
+            }
+        }
+        .firstOrNull()
+    return fromAccount ?: accountLabel.ifBlank { getString(R.string.experiment_sim_generic) }
 }
 
 private fun isMisleadingSlotDigitLabel(text: String, simSlotIndex: Int?): Boolean {
@@ -56,9 +69,9 @@ private fun isMisleadingSlotDigitLabel(text: String, simSlotIndex: Int?): Boolea
 }
 
 /**
- * Список SIM строится от [TelecomManager.callCapablePhoneAccounts], чтобы у каждого пункта
- * был реальный [PhoneAccountHandle] — иначе звонок уходит без аккаунта и система снова
- * показывает выбор SIM.
+ * Список SIM: сначала активные подписки ([SubscriptionManager]) — слот и оператор как в редакторе сценариев;
+ * для звонков подставляется [PhoneAccountHandle], если аккаунт в [TelecomManager.callCapablePhoneAccounts].
+ * Запасной путь — перебор call-capable аккаунтов (если список подписок пуст).
  */
 @SuppressLint("MissingPermission")
 fun Context.loadSimSlots(): List<SimSlot> {
@@ -72,6 +85,24 @@ fun Context.loadSimSlots(): List<SimSlot> {
     val infosBySubId = subMgr.activeSubscriptionInfoList
         ?.associateBy { it.subscriptionId }
         .orEmpty()
+
+    val capableHandles = telecom.callCapablePhoneAccounts?.toSet().orEmpty()
+
+    // Главный путь — как в редакторе сценариев SMS: активные подписки дают слот и оператора,
+    // даже если reflection для subscriptionId по PhoneAccountHandle не срабатывает.
+    val infosSorted = subMgr.activeSubscriptionInfoList.orEmpty().sortedBy { it.simSlotIndex }
+    val fromSubscriptions = infosSorted.map { info ->
+        val resolved = resolvePhoneAccountHandleForSubscription(info.subscriptionId)
+        val handleForDial =
+            resolved?.takeIf { capableHandles.isEmpty() || it in capableHandles }
+        SimSlot(
+            subscriptionId = info.subscriptionId,
+            label = formatSimSlotLabel(info, info.subscriptionId, resolved),
+            phoneAccountHandle = handleForDial,
+        )
+    }
+
+    if (fromSubscriptions.isNotEmpty()) return fromSubscriptions
 
     val handles = telecom.callCapablePhoneAccounts ?: emptyList()
     val fromAccounts = handles.mapNotNull { handle ->
@@ -91,20 +122,7 @@ fun Context.loadSimSlots(): List<SimSlot> {
         ),
     )
 
-    if (fromAccounts.isNotEmpty()) return fromAccounts
-
-    // Запасной путь, если аккаунтов нет (редко)
-    val infos = subMgr.activeSubscriptionInfoList ?: return emptyList()
-    if (infos.isEmpty()) return emptyList()
-    return infos.sortedBy { it.simSlotIndex }.map { info ->
-        val handle = resolvePhoneAccountHandleForSubscription(info.subscriptionId)
-        val label = formatSimSlotLabel(info, info.subscriptionId, handle)
-        SimSlot(
-            subscriptionId = info.subscriptionId,
-            label = label,
-            phoneAccountHandle = handle,
-        )
-    }
+    return fromAccounts
 }
 
 private fun TelecomManager.isSimSubscriptionLine(handle: PhoneAccountHandle, subId: Int): Boolean {
