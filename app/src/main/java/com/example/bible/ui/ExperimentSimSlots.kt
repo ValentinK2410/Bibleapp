@@ -8,6 +8,8 @@ import android.telecom.PhoneAccountHandle
 import android.telecom.TelecomManager
 import android.telephony.SubscriptionManager
 import androidx.core.content.ContextCompat
+import com.example.bible.telecom.phoneAccountHandleForSubscriptionId
+import com.example.bible.telecom.subscriptionIdForPhoneAccount
 
 data class SimSlot(
     val subscriptionId: Int,
@@ -34,7 +36,7 @@ fun Context.loadSimSlots(): List<SimSlot> {
 
     val handles = telecom.callCapablePhoneAccounts ?: emptyList()
     val fromAccounts = handles.mapNotNull { handle ->
-        val subId = telecom.subscriptionIdForAccount(handle)
+        val subId = telecom.subscriptionIdForPhoneAccount(handle)
         if (!telecom.isSimSubscriptionLine(handle, subId)) return@mapNotNull null
         val info = infosBySubId[subId]
         val name = info?.displayName?.toString()?.trim().orEmpty()
@@ -60,7 +62,7 @@ fun Context.loadSimSlots(): List<SimSlot> {
     val infos = subMgr.activeSubscriptionInfoList ?: return emptyList()
     if (infos.isEmpty()) return emptyList()
     return infos.map { info ->
-        val handle = telecom.findHandleForSubscription(info.subscriptionId)
+        val handle = telecom.phoneAccountHandleForSubscriptionId(info.subscriptionId)
         val name = info.displayName?.toString()?.trim().orEmpty()
         val slotNum = info.simSlotIndex + 1
         val label = when {
@@ -88,22 +90,3 @@ private fun TelecomManager.isSimSubscriptionLine(handle: PhoneAccountHandle, sub
     return (account.capabilities and PhoneAccount.CAPABILITY_SIM_SUBSCRIPTION) != 0
 }
 
-private fun TelecomManager.subscriptionIdForAccount(account: PhoneAccountHandle): Int {
-    return try {
-        val method = TelecomManager::class.java.getMethod(
-            "getPhoneAccountSubscriptionId",
-            PhoneAccountHandle::class.java,
-        )
-        (method.invoke(this, account) as? Int)
-            ?: SubscriptionManager.INVALID_SUBSCRIPTION_ID
-    } catch (_: Exception) {
-        SubscriptionManager.INVALID_SUBSCRIPTION_ID
-    }
-}
-
-private fun TelecomManager.findHandleForSubscription(subscriptionId: Int): PhoneAccountHandle? {
-    for (account in callCapablePhoneAccounts) {
-        if (subscriptionIdForAccount(account) == subscriptionId) return account
-    }
-    return null
-}

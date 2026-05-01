@@ -16,7 +16,6 @@ import android.os.Handler
 import android.os.Looper
 import android.os.VibrationEffect
 import android.os.Vibrator
-import android.telecom.PhoneAccountHandle
 import android.telecom.TelecomManager
 import android.telephony.SmsManager
 import android.telephony.SubscriptionManager
@@ -28,6 +27,7 @@ import com.example.bible.data.SmsReactionRepository
 import com.example.bible.data.SmsReactionScenario
 import com.example.bible.data.scenarioMatchesSms
 import com.example.bible.data.normalizeSmsDigits
+import com.example.bible.telecom.phoneAccountHandleForSubscriptionId
 import kotlin.concurrent.thread
 
 private const val TAG = "SmsReactionExecutor"
@@ -64,10 +64,11 @@ object SmsReactionExecutor {
         val app = appContext.applicationContext
         val dest = originatingAddressRaw?.trim().orEmpty()
         for (scenario in matched) {
-            val outboundSub = effectiveOutboundSubscription(scenario, smsSubscriptionId)
+            val smsSub = resolveChosenSubscription(scenario.outboundSmsSubscriptionId, smsSubscriptionId)
+            val callSub = resolveChosenSubscription(scenario.outboundCallSubscriptionId, smsSubscriptionId)
             for (action in scenario.actions) {
                 runCatching {
-                    runOneAction(app, action, dest, messageBodyFull, outboundSub)
+                    runOneAction(app, action, dest, messageBodyFull, smsSub, callSub)
                 }.onFailure {
                     Log.w(TAG, "action ${action.kind}", it)
                 }
@@ -75,13 +76,9 @@ object SmsReactionExecutor {
         }
     }
 
-    private fun effectiveOutboundSubscription(
-        scenario: SmsReactionScenario,
-        incomingSubscriptionId: Int,
-    ): Int {
-        val chosen = scenario.outboundSubscriptionId
-        return if (chosen != SubscriptionManager.INVALID_SUBSCRIPTION_ID) {
-            chosen
+    private fun resolveChosenSubscription(chosenSubscriptionId: Int, incomingSubscriptionId: Int): Int {
+        return if (chosenSubscriptionId != SubscriptionManager.INVALID_SUBSCRIPTION_ID) {
+            chosenSubscriptionId
         } else {
             incomingSubscriptionId
         }
@@ -93,13 +90,14 @@ object SmsReactionExecutor {
         smsSenderRaw: String,
         @Suppress("UNUSED_PARAMETER") bodyFull: String,
         smsSubscriptionId: Int,
+        callSubscriptionId: Int,
     ) {
         when (action.kind) {
             SmsReactionActionKind.FLASHLIGHT_SECONDS -> flashlightSeconds(app, action.param)
             SmsReactionActionKind.PLAY_MEDIA_URI -> playMediaUri(app, action.param)
             SmsReactionActionKind.OPEN_IMAGE_URI -> openImageUri(app, action.param)
-            SmsReactionActionKind.CALLBACK_SENDER -> placeCall(app, smsSenderRaw, smsSubscriptionId)
-            SmsReactionActionKind.CALLBACK_FIXED_NUMBER -> placeCall(app, action.param, smsSubscriptionId)
+            SmsReactionActionKind.CALLBACK_SENDER -> placeCall(app, smsSenderRaw, callSubscriptionId)
+            SmsReactionActionKind.CALLBACK_FIXED_NUMBER -> placeCall(app, action.param, callSubscriptionId)
             SmsReactionActionKind.VIBRATE_CONTINUOUS_MS -> vibrateContinuous(app, action.param)
             SmsReactionActionKind.VIBRATE_PULSE_LOOP_MS -> vibratePulseLoop(app, action.param)
             SmsReactionActionKind.SEND_REPLY_SMS -> sendReplySms(app, smsSenderRaw, action.param, smsSubscriptionId)
@@ -172,11 +170,10 @@ object SmsReactionExecutor {
             return
         }
         val uri = Uri.fromParts("tel", digits, null)
-        val handle = phoneAccountHandleForSubscription(app, subscriptionId)
-        if (handle != null && Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+        val telecom = app.getSystemService(TelecomManager::class.java)
+        val handle = telecom?.phoneAccountHandleForSubscriptionId(subscriptionId)
+        if (telecom != null && handle != null && Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             runCatching {
-                val telecom = app.getSystemService(TelecomManager::class.java)
-                    ?: throw IllegalStateException("no TelecomManager")
                 telecom.placeCall(
                     uri,
                     Bundle().apply {
@@ -190,22 +187,12 @@ object SmsReactionExecutor {
             app.startActivity(
                 Intent(Intent.ACTION_CALL, uri).apply {
                     addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                    if (handle != null) {
+                        putExtra(TelecomManager.EXTRA_PHONE_ACCOUNT_HANDLE, handle)
+                    }
                 },
             )
         }.onFailure { Log.w(TAG, "call", it) }
-    }
-
-    /** На части сборок SDK символ скрыт; через reflection с безопасным fallback на ACTION_CALL. */
-    private fun phoneAccountHandleForSubscription(app: Context, subscriptionId: Int): PhoneAccountHandle? {
-        if (subscriptionId == SubscriptionManager.INVALID_SUBSCRIPTION_ID) return null
-        val telecom = app.getSystemService(TelecomManager::class.java) ?: return null
-        return runCatching {
-            val m = TelecomManager::class.java.getMethod(
-                "getPhoneAccountHandleForSubscriptionId",
-                Int::class.javaPrimitiveType,
-            )
-            m.invoke(telecom, subscriptionId) as? PhoneAccountHandle
-        }.getOrNull()
     }
 
     private fun vibrateContinuous(app: Context, paramMs: String) {
