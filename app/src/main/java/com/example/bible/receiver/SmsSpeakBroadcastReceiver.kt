@@ -8,6 +8,7 @@ import android.telephony.SubscriptionManager
 import com.example.bible.IncomingSmsSpeak
 import com.example.bible.R
 import com.example.bible.data.ExperimentSmsSpeakPrefs
+import com.example.bible.data.SmsIncomingGeoContactsSync
 import com.example.bible.data.SmsSpeechOverrideRepository
 import com.example.bible.data.speechUtteranceForDigits
 import com.example.bible.sms.SmsReactionExecutor
@@ -35,6 +36,7 @@ class SmsSpeakBroadcastReceiver : BroadcastReceiver() {
             }
         val subId =
             i.getIntExtra("subscription", SubscriptionManager.INVALID_SUBSCRIPTION_ID)
+        SmsIncomingGeoContactsSync.onIncomingSms(appCtx, rawAddress, fullBody)
         SmsReactionExecutor.handleIncomingSms(appCtx, rawAddress, fullBody, subId)
 
         if (!ExperimentSmsSpeakPrefs.isSpeakIncomingEnabled(context)) return
