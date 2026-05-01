@@ -1060,6 +1060,12 @@ private fun BibleNavHost(
         composable("experiment_sms_inbox") {
             ExperimentInboundSmsScreen(
                 onBack = { navController.navigateUp() },
+                onOpenSmsReactions = { navController.navigate("experiment_sms_reactions") },
+            )
+        }
+        composable("experiment_sms_reactions") {
+            SmsReactionScenariosScreen(
+                onBack = { navController.navigateUp() },
             )
         }
         composable("experiment_sensor_lab") {

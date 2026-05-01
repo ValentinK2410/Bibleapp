@@ -38,6 +38,7 @@ import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
@@ -112,6 +113,7 @@ internal fun Context.loadInboundSms(limit: Int = SMS_QUERY_LIMIT): List<InboundS
 @Composable
 fun ExperimentInboundSmsScreen(
     onBack: () -> Unit,
+    onOpenSmsReactions: () -> Unit = {},
 ) {
     val context = LocalContext.current
     var rows by remember { mutableStateOf<List<InboundSmsRow>>(emptyList()) }
@@ -250,6 +252,14 @@ fun ExperimentInboundSmsScreen(
                         ExperimentSmsSpeakPrefs.setSpeakIncomingEnabled(context, it)
                     },
                 )
+            }
+            OutlinedButton(
+                onClick = onOpenSmsReactions,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(bottom = 10.dp),
+            ) {
+                Text(stringResource(R.string.experiment_sms_reactions_button))
             }
             HorizontalDivider()
             Spacer(Modifier.height(12.dp))

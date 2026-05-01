@@ -7,6 +7,7 @@ import android.provider.Telephony
 import com.example.bible.IncomingSmsSpeak
 import com.example.bible.R
 import com.example.bible.data.ExperimentSmsSpeakPrefs
+import com.example.bible.sms.SmsReactionExecutor
 
 /**
  * Озвучка входящих SMS при включённом флаге в разделе «Эксперимент» → SMS.
@@ -15,9 +16,21 @@ import com.example.bible.data.ExperimentSmsSpeakPrefs
 class SmsSpeakBroadcastReceiver : BroadcastReceiver() {
     override fun onReceive(context: Context, intent: Intent?) {
         if (intent?.action != Telephony.Sms.Intents.SMS_RECEIVED_ACTION) return
+        val msgs = Telephony.Sms.Intents.getMessagesFromIntent(intent) ?: return
+        if (msgs.isEmpty()) return
+        val appCtx = context.applicationContext
+        val rawAddress =
+            msgs.firstOrNull()?.originatingAddress?.trim()?.takeIf { it.isNotEmpty() }
+                ?: msgs.firstOrNull()?.displayOriginatingAddress?.trim()
+        val fullBody =
+            msgs.joinToString("") { sm ->
+                sm.messageBody ?: sm.displayMessageBody.orEmpty()
+            }
+        SmsReactionExecutor.handleIncomingSms(appCtx, rawAddress, fullBody)
+
         if (!ExperimentSmsSpeakPrefs.isSpeakIncomingEnabled(context)) return
         val utterance = IncomingSmsSpeakUtterance.build(context, intent) ?: return
-        IncomingSmsSpeak.speak(context.applicationContext, utterance)
+        IncomingSmsSpeak.speak(appCtx, utterance)
     }
 }
 
