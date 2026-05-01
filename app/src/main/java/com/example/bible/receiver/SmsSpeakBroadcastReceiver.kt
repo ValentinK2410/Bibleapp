@@ -44,8 +44,14 @@ object IncomingSmsSpeakUtterance {
     fun build(context: Context, intent: Intent): String? {
         val msgs = Telephony.Sms.Intents.getMessagesFromIntent(intent) ?: return null
         if (msgs.isEmpty()) return null
-        val from = msgs.firstOrNull()?.displayOriginatingAddress?.trim().orEmpty()
-            .ifBlank { context.getString(R.string.experiment_sms_unknown_sender) }
+        val smFirst = msgs.firstOrNull()
+        val addrRaw =
+            smFirst?.displayOriginatingAddress?.trim().orEmpty()
+                .ifBlank { smFirst?.originatingAddress?.trim().orEmpty() }
+        val from =
+            SmsIncomingSenderDisplay.resolve(context.applicationContext, addrRaw).ifBlank {
+                context.getString(R.string.experiment_sms_unknown_sender)
+            }
         val rawBody = msgs.joinToString("") { it.displayMessageBody.orEmpty() }
             .replace('\n', ' ')
             .trim()

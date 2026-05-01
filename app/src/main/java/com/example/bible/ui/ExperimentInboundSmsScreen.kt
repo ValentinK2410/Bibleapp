@@ -69,6 +69,7 @@ private val smsExperimentPermissions = arrayOf(
     Manifest.permission.RECEIVE_SMS,
     Manifest.permission.SEND_SMS,
     Manifest.permission.CALL_PHONE,
+    Manifest.permission.READ_CONTACTS,
 )
 
 internal data class InboundSmsRow(
@@ -148,6 +149,12 @@ fun ExperimentInboundSmsScreen(
                 PackageManager.PERMISSION_GRANTED,
         )
     }
+    var contactsGranted by remember {
+        mutableStateOf(
+            ContextCompat.checkSelfPermission(context, Manifest.permission.READ_CONTACTS) ==
+                PackageManager.PERMISSION_GRANTED,
+        )
+    }
     var inboxNonce by remember { mutableIntStateOf(0) }
 
     val permissionLauncher = rememberLauncherForActivityResult(
@@ -157,6 +164,7 @@ fun ExperimentInboundSmsScreen(
         receiveGranted = result[Manifest.permission.RECEIVE_SMS] == true
         sendSmsGranted = result[Manifest.permission.SEND_SMS] == true
         callPhoneGranted = result[Manifest.permission.CALL_PHONE] == true
+        contactsGranted = result[Manifest.permission.READ_CONTACTS] == true
         if (!readGranted) {
             Toast.makeText(
                 context,
@@ -289,6 +297,14 @@ fun ExperimentInboundSmsScreen(
                     text = stringResource(R.string.experiment_sms_permission_hint),
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.secondary,
+                    modifier = Modifier.padding(bottom = 8.dp),
+                )
+            }
+            if (!contactsGranted && speakIncomingSms) {
+                Text(
+                    text = stringResource(R.string.experiment_sms_contacts_permission_hint),
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
                     modifier = Modifier.padding(bottom = 8.dp),
                 )
             }

@@ -339,13 +339,14 @@
     <string name="experiment_sms_inbox_title">Входящие SMS</string>
     <string name="experiment_sms_inbox_hint">Показываются сохранённые входящие сообщения из хранилища SMS устройства (до %1$d шт.). Экспериментальный экран; доступ к SMS чувствительный для конфиденциальности.</string>
     <string name="experiment_sms_permission_hint">Для списка — «Читать SMS»; для прихода новых сообщений и сценариев — «Получать SMS»; для ответной SMS и автозвонка из сценария — «Отправлять SMS» и разрешение на звонки.</string>
-    <string name="experiment_sms_grant_permissions">Запросить доступ к SMS</string>
+    <string name="experiment_sms_contacts_permission_hint">Чтобы озвучивать имя отправителя из ваших контактов (а не номер), разрешите доступ «Контакты» — через кнопку ниже или в настройках приложения.</string>
+    <string name="experiment_sms_grant_permissions">Запросить доступ к SMS и связанным функциям</string>
     <string name="experiment_sms_need_read_permission">Выдайте разрешение на чтение SMS — без него входящие недоступны.</string>
     <string name="experiment_sms_empty">Входящих SMS в памяти телефона не найдено.</string>
     <string name="experiment_sms_refresh">Обновить список</string>
     <string name="experiment_sms_permission_denied">Разрешение на чтение SMS не выдано</string>
     <string name="experiment_sms_speak_incoming_title">Озвучивать входящие SMS</string>
-    <string name="experiment_sms_speak_incoming_subtitle">Системный голос при новой SMS (нужно разрешение «Получать SMS»). Работает в фоне, пока включено.</string>
+    <string name="experiment_sms_speak_incoming_subtitle">Системный голос при новой SMS (нужно «Получать SMS»). Если разрешить доступ к контактам на этом экране — озвучивается имя из записной книги, иначе номер.</string>
     <string name="experiment_sms_unknown_sender">неизвестный номер</string>
     <string name="experiment_sms_speak_utterance_fmt">СМС от %1$s: %2$s</string>
     <string name="experiment_sms_speak_body_empty_fmt">СМС от %1$s, без текста</string>
