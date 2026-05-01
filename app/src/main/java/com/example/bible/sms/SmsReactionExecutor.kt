@@ -27,7 +27,7 @@ import com.example.bible.data.SMS_REACTION_DELAY_MAX_MS
 import com.example.bible.data.SmsReactionRepository
 import com.example.bible.data.SmsReactionScenario
 import com.example.bible.data.scenarioMatchesSms
-import com.example.bible.data.normalizeSmsDigits
+import com.example.bible.data.normalizeRussianOutboundPhoneDigits
 import com.example.bible.telecom.resolvePhoneAccountHandleForSubscription
 import kotlin.concurrent.thread
 
@@ -189,7 +189,7 @@ object SmsReactionExecutor {
 
     @SuppressLint("MissingPermission")
     private fun placeCall(app: Context, numberRaw: String, subscriptionId: Int) {
-        val digits = numberRaw.normalizeSmsDigits()
+        val digits = numberRaw.normalizeRussianOutboundPhoneDigits()
         if (digits.isEmpty()) return
         if (ContextCompat.checkSelfPermission(app, Manifest.permission.CALL_PHONE) != PackageManager.PERMISSION_GRANTED) {
             Log.w(TAG, "CALL: no CALL_PHONE permission")
@@ -311,8 +311,8 @@ object SmsReactionExecutor {
         smsSubscriptionId: Int,
     ) {
         val text = replyBody.trim()
-        val destination = smsSenderRaw.trim()
-        if (text.isEmpty() || destination.isBlank()) {
+        val destDigits = smsSenderRaw.normalizeRussianOutboundPhoneDigits()
+        if (text.isEmpty() || destDigits.isEmpty()) {
             Log.w(TAG, "SMS reply: empty destination or body")
             return
         }
@@ -322,7 +322,7 @@ object SmsReactionExecutor {
         }
         runCatching {
             val mgr = smsManagerForSubscription(app, smsSubscriptionId)
-            mgr.sendTextMessage(destination, null, text, null, null)
+            mgr.sendTextMessage(destDigits, null, text, null, null)
         }.onFailure { Log.w(TAG, "send sms reply", it) }
     }
 

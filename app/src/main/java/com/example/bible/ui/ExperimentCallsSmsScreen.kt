@@ -60,6 +60,7 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat
 import com.example.bible.R
+import com.example.bible.data.normalizeRussianOutboundPhoneDigits
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -73,8 +74,10 @@ fun ExperimentCallsSmsScreen(
     val messageLatest by rememberUpdatedState(message)
 
     var simSlots by remember { mutableStateOf<List<SimSlot>>(emptyList()) }
-    var selectedSimIndex by remember { mutableIntStateOf(0) }
-    var simMenuOpen by remember { mutableStateOf(false) }
+    var selectedSimIndexCall by remember { mutableIntStateOf(0) }
+    var selectedSimIndexSms by remember { mutableIntStateOf(0) }
+    var simMenuOpenCall by remember { mutableStateOf(false) }
+    var simMenuOpenSms by remember { mutableStateOf(false) }
 
     val systemDefaultLabel = stringResource(R.string.experiment_calls_sim_system_default)
     val options = remember(simSlots, systemDefaultLabel) {
@@ -92,11 +95,15 @@ fun ExperimentCallsSmsScreen(
     }
 
     val optionsLatest by rememberUpdatedState(options)
-    val selectedSimLatest by rememberUpdatedState(selectedSimIndex)
+    val selectedSimCallLatest by rememberUpdatedState(selectedSimIndexCall)
+    val selectedSimSmsLatest by rememberUpdatedState(selectedSimIndexSms)
 
     LaunchedEffect(options.size) {
-        if (selectedSimIndex >= options.size) {
-            selectedSimIndex = 0
+        if (selectedSimIndexCall >= options.size) {
+            selectedSimIndexCall = 0
+        }
+        if (selectedSimIndexSms >= options.size) {
+            selectedSimIndexSms = 0
         }
     }
 
@@ -118,17 +125,21 @@ fun ExperimentCallsSmsScreen(
         }
     }
 
-    fun slotForAction(): SimSlot {
+    fun slotAt(listIndex: Int): SimSlot {
         val list = optionsLatest
         val last = (list.size - 1).coerceAtLeast(0)
-        val i = selectedSimLatest.coerceIn(0, last)
+        val i = listIndex.coerceIn(0, last)
         return list[i]
     }
+
+    fun slotForCall(): SimSlot = slotAt(selectedSimCallLatest)
+
+    fun slotForSms(): SimSlot = slotAt(selectedSimSmsLatest)
 
     fun normalizedPhone(): String = phone.trim()
 
     fun performCall() {
-        val p = phoneLatest.trim()
+        val p = phoneLatest.trim().normalizeRussianOutboundPhoneDigits()
         if (p.isEmpty()) {
             Toast.makeText(
                 context,
@@ -142,7 +153,7 @@ fun ExperimentCallsSmsScreen(
         } catch (_: Exception) {
             Uri.parse("tel:${Uri.encode(p)}")
         }
-        val slot = slotForAction()
+        val slot = slotForCall()
         val handle = slot.phoneAccountHandle
         val telecom = context.getSystemService(TelecomManager::class.java)
         if (handle != null && telecom != null) {
@@ -179,7 +190,7 @@ fun ExperimentCallsSmsScreen(
     }
 
     fun performSendSms() {
-        val p = phoneLatest.trim()
+        val p = phoneLatest.trim().normalizeRussianOutboundPhoneDigits()
         if (p.isEmpty()) {
             Toast.makeText(
                 context,
@@ -188,7 +199,7 @@ fun ExperimentCallsSmsScreen(
             ).show()
             return
         }
-        val subId = slotForAction().subscriptionId
+        val subId = slotForSms().subscriptionId
         val smsManager = if (subId != SubscriptionManager.INVALID_SUBSCRIPTION_ID) {
             try {
                 SmsManager.getSmsManagerForSubscriptionId(subId)
@@ -302,36 +313,23 @@ fun ExperimentCallsSmsScreen(
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
             Spacer(Modifier.height(16.dp))
-            ExposedDropdownMenuBox(
-                expanded = simMenuOpen,
-                onExpandedChange = { simMenuOpen = it },
-            ) {
-                OutlinedTextField(
-                    value = options[selectedSimIndex.coerceIn(0, options.lastIndex)].label,
-                    onValueChange = {},
-                    readOnly = true,
-                    label = { Text(stringResource(R.string.experiment_calls_sim_label)) },
-                    trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = simMenuOpen) },
-                    modifier = Modifier
-                        .menuAnchor(MenuAnchorType.PrimaryNotEditable)
-                        .fillMaxWidth(),
-                )
-                DropdownMenu(
-                    expanded = simMenuOpen,
-                    onDismissRequest = { simMenuOpen = false },
-                    modifier = Modifier.heightIn(max = 320.dp),
-                ) {
-                    options.forEachIndexed { index, slot ->
-                        DropdownMenuItem(
-                            text = { Text(slot.label) },
-                            onClick = {
-                                selectedSimIndex = index
-                                simMenuOpen = false
-                            },
-                        )
-                    }
-                }
-            }
+            SimSlotDropdownRow(
+                label = stringResource(R.string.experiment_calls_sim_label_call),
+                options = options,
+                selectedIndex = selectedSimIndexCall,
+                onSelectIndex = { selectedSimIndexCall = it },
+                expanded = simMenuOpenCall,
+                onExpandedChange = { simMenuOpenCall = it },
+            )
+            Spacer(Modifier.height(12.dp))
+            SimSlotDropdownRow(
+                label = stringResource(R.string.experiment_calls_sim_label_sms),
+                options = options,
+                selectedIndex = selectedSimIndexSms,
+                onSelectIndex = { selectedSimIndexSms = it },
+                expanded = simMenuOpenSms,
+                onExpandedChange = { simMenuOpenSms = it },
+            )
             Spacer(Modifier.height(12.dp))
             OutlinedTextField(
                 value = phone,
@@ -384,6 +382,50 @@ fun ExperimentCallsSmsScreen(
                     Spacer(Modifier.width(8.dp))
                     Text(stringResource(R.string.experiment_calls_compose_sms))
                 }
+            }
+        }
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun SimSlotDropdownRow(
+    label: String,
+    options: List<SimSlot>,
+    selectedIndex: Int,
+    onSelectIndex: (Int) -> Unit,
+    expanded: Boolean,
+    onExpandedChange: (Boolean) -> Unit,
+) {
+    if (options.isEmpty()) return
+    val idx = selectedIndex.coerceIn(0, options.lastIndex)
+    ExposedDropdownMenuBox(
+        expanded = expanded,
+        onExpandedChange = onExpandedChange,
+    ) {
+        OutlinedTextField(
+            value = options[idx].label,
+            onValueChange = {},
+            readOnly = true,
+            label = { Text(label) },
+            trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded) },
+            modifier = Modifier
+                .menuAnchor(MenuAnchorType.PrimaryNotEditable)
+                .fillMaxWidth(),
+        )
+        DropdownMenu(
+            expanded = expanded,
+            onDismissRequest = { onExpandedChange(false) },
+            modifier = Modifier.heightIn(max = 320.dp),
+        ) {
+            options.forEachIndexed { index, slot ->
+                DropdownMenuItem(
+                    text = { Text(slot.label) },
+                    onClick = {
+                        onSelectIndex(index)
+                        onExpandedChange(false)
+                    },
+                )
             }
         }
     }

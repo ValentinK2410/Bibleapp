@@ -56,6 +56,18 @@ data class SmsReactionScenario(
 
 fun String.normalizeSmsDigits(): String = filter { it.isDigit() }
 
+/**
+ * Для исходящего звонка/SMS: российский номер с кодом +7 (после извлечения цифр «7» + 10 знаков)
+ * приводится к внутреннему виду с ведущей **8**.
+ */
+fun String.normalizeRussianOutboundPhoneDigits(): String {
+    val d = normalizeSmsDigits()
+    if (d.length == 11 && d.startsWith('7')) {
+        return "8${d.substring(1)}"
+    }
+    return d
+}
+
 /** Интервал ЧЧ:ММ или ЧЧ:ММ:СС → миллисекунды; пустая строка → 0. */
 fun parseSmsReactionDelayHHMM(raw: String): Long {
     val t = raw.trim()
