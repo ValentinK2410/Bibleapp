@@ -369,7 +369,7 @@
     <string name="experiment_sms_speech_override_delete_body">Будет удалена только альтернативная озвучка; на SMS это не влияет.</string>
     <string name="experiment_sms_speech_override_card_summary_fmt">Шаблонов: %1$d · «%2$s»</string>
     <string name="experiment_sms_reactions_title">Сценарии реакций на SMS</string>
-    <string name="experiment_sms_reactions_hint">В сценарии можно отдельно указать SIM для ответного SMS и для звонков, а также паузу ЧЧ:ММ перед следующим действием (на карточке, если есть действие ниже). Нужны «Получать SMS», «Отправлять SMS» и звонки (экран «Входящие SMS»). Список SIM — при разрешении «Состояние телефона». Отложенные звонки/SMS из фона могут блокироваться системой. Также камера для фонаря и т.д.</string>
+    <string name="experiment_sms_reactions_hint">В сценарии можно отдельно указать SIM для ответного SMS и для звонков, а также паузу ЧЧ:ММ:СС (или ЧЧ:ММ) перед следующим действием (на карточке, если есть действие ниже). Нужны «Получать SMS», «Отправлять SMS» и звонки (экран «Входящие SMS»). Список SIM — при разрешении «Состояние телефона». Отложенные звонки/SMS из фона могут блокироваться системой. Также камера для фонаря и т.д.</string>
     <string name="experiment_sms_reaction_new_title">Новый сценарий</string>
     <string name="experiment_sms_reaction_add_cd">Добавить сценарий</string>
     <string name="experiment_sms_reaction_edit_cd">Редактировать</string>
@@ -406,7 +406,7 @@
     <string name="experiment_sms_action_vibrate_pulse">Вибрация импульсами (цикл мс)</string>
     <string name="experiment_sms_action_reply_sms">Ответное SMS отправителю</string>
     <string name="experiment_sms_action_delay_before_next_label">Перед следующим действием</string>
-    <string name="experiment_sms_action_delay_before_next_hint">Пусто или 00:00 — сразу. Интервал ЧЧ:ММ (до 99:59). Не показывается у последнего действия.</string>
+    <string name="experiment_sms_action_delay_before_next_hint">Пусто или 00:00:00 — сразу. Интервал ЧЧ:ММ или ЧЧ:ММ:СС (до 99:59:59). Не показывается у последнего действия.</string>
 
     <string name="experiment_sms_param_flashlight">Секунды (1–120)</string>
     <string name="experiment_sms_param_uri_audio">content:// или file URI</string>

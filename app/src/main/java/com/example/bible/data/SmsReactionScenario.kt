@@ -17,8 +17,8 @@ enum class SmsReactionActionKind {
     SEND_REPLY_SMS,
 }
 
-/** Максимальная пауза перед следующим действием: 99 ч 59 мин. */
-const val SMS_REACTION_DELAY_MAX_MS: Long = (99L * 3600L + 59L * 60L) * 1000L
+/** Максимальная пауза перед следующим действием: 99 ч 59 мин 59 сек. */
+const val SMS_REACTION_DELAY_MAX_MS: Long = (99L * 3600L + 59L * 60L + 59L) * 1000L
 
 data class SmsReactionAction(
     val kind: SmsReactionActionKind,
@@ -56,44 +56,66 @@ data class SmsReactionScenario(
 
 fun String.normalizeSmsDigits(): String = filter { it.isDigit() }
 
-/** Интервал ЧЧ:ММ → миллисекунды; пустая строка → 0. Неполный ввод не парсится здесь. */
+/** Интервал ЧЧ:ММ или ЧЧ:ММ:СС → миллисекунды; пустая строка → 0. */
 fun parseSmsReactionDelayHHMM(raw: String): Long {
     val t = raw.trim()
     if (t.isEmpty()) return 0L
-    val parts = t.split(':')
-    if (parts.size != 2) return 0L
-    val h = parts[0].trim().toIntOrNull()?.coerceIn(0, 99) ?: return 0L
-    val m = parts[1].trim().toIntOrNull()?.coerceIn(0, 59) ?: return 0L
-    return ((h * 3600L + m * 60L) * 1000L).coerceAtMost(SMS_REACTION_DELAY_MAX_MS)
+    val parts = t.split(':').map { it.trim() }.filter { it.isNotEmpty() }
+    if (parts.size !in 2..3) return 0L
+    val h = parts[0].toIntOrNull()?.coerceIn(0, 99) ?: return 0L
+    val m = parts[1].toIntOrNull()?.coerceIn(0, 59) ?: return 0L
+    val s = if (parts.size == 3) {
+        parts[2].toIntOrNull()?.coerceIn(0, 59) ?: return 0L
+    } else {
+        0
+    }
+    return ((h * 3600L + m * 60L + s) * 1000L).coerceAtMost(SMS_REACTION_DELAY_MAX_MS)
 }
 
 fun formatSmsReactionDelayHHMM(ms: Long): String {
     val capped = ms.coerceIn(0L, SMS_REACTION_DELAY_MAX_MS)
     if (capped <= 0L) return ""
-    val totalMin = capped / 60000L
-    val h = (totalMin / 60).coerceAtMost(99)
-    val m = totalMin % 60
-    return "%02d:%02d".format(h, m)
+    val totalSec = capped / 1000L
+    val h = (totalSec / 3600).coerceAtMost(99)
+    val m = (totalSec % 3600) / 60
+    val s = totalSec % 60
+    return "%02d:%02d:%02d".format(h, m, s)
 }
 
-private val DelayHHMMCompleteRegex = Regex("^\\d{1,2}:\\d{2}$")
+private val DelayHmCompleteRegex = Regex("^\\d{1,2}:\\d{2}$")
+private val DelayHmsCompleteRegex = Regex("^\\d{1,2}:\\d{2}:\\d{2}$")
 
-fun isCompleteSmsReactionDelayHHMM(raw: String): Boolean = DelayHHMMCompleteRegex.matches(raw.trim())
+fun isCompleteSmsReactionDelayHHMM(raw: String): Boolean {
+    val t = raw.trim()
+    return DelayHmCompleteRegex.matches(t) || DelayHmsCompleteRegex.matches(t)
+}
 
-/** Разрешить только цифры и одну «:», формат как ЧЧ:ММ (до 5 символов). */
+/** Цифры и «:», авторазделители как ЧЧ:ММ:СС (до 8 символов). */
 fun sanitizeSmsReactionDelayHHMMInput(raw: String): String {
     val sb = StringBuilder()
     for (ch in raw) {
         when {
             ch.isDigit() -> {
-                if (sb.length >= 5) continue
-                if (sb.none { it == ':' } && sb.length == 2) sb.append(':')
-                if (sb.length < 5) sb.append(ch)
+                if (sb.length >= 8) continue
+                val s = sb.toString()
+                val colons = s.count { it == ':' }
+                if (colons == 0 && s.filter { ch -> ch.isDigit() }.length == 2) sb.append(':')
+                if (colons == 1) {
+                    val afterFirst = s.substringAfter(':')
+                    val minuteDigits = afterFirst.filter { ch -> ch.isDigit() }.length
+                    if (minuteDigits == 2) sb.append(':')
+                }
+                if (sb.length < 8) sb.append(ch)
             }
-            ch == ':' && sb.none { it == ':' } && sb.isNotEmpty() -> sb.append(':')
+            ch == ':' -> {
+                val s = sb.toString()
+                if (s.count { it == ':' } < 2 && s.isNotEmpty() && !s.endsWith(":")) {
+                    sb.append(':')
+                }
+            }
         }
     }
-    return sb.toString().take(5)
+    return sb.toString().take(8)
 }
 
 fun scenarioMatchesSms(
