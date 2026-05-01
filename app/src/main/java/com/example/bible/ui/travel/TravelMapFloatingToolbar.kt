@@ -18,6 +18,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.AddLocationAlt
 import androidx.compose.material.icons.filled.CenterFocusStrong
 import androidx.compose.material.icons.filled.Circle
 import androidx.compose.material.icons.filled.LocationOn
@@ -49,11 +50,13 @@ fun TravelMapFloatingToolbar(
     markerModeActive: Boolean,
     routePickActive: Boolean,
     circleModeActive: Boolean,
+    shareMapPointPickActive: Boolean,
     enabled: Boolean,
     onPolygonClick: () -> Unit,
     onMarkersClick: () -> Unit,
     onCircleClick: () -> Unit,
     onRouteClick: () -> Unit,
+    onShareMapPointClick: () -> Unit,
     onShareClick: () -> Unit,
 ) {
     AnimatedVisibility(
@@ -107,6 +110,15 @@ fun TravelMapFloatingToolbar(
                 contentDescription = stringResource(R.string.travel_fab_route_cd),
                 iconVector = Icons.Default.CenterFocusStrong,
                 iconTint = MaterialTheme.colorScheme.onSurface,
+            )
+            Spacer(Modifier.width(14.dp))
+            TravelMapSquareToolButton(
+                selected = shareMapPointPickActive,
+                onClick = onShareMapPointClick,
+                badgePlus = false,
+                contentDescription = stringResource(R.string.travel_fab_share_map_point_cd),
+                iconVector = Icons.Default.AddLocationAlt,
+                iconTint = MaterialTheme.colorScheme.primary,
             )
             Spacer(Modifier.width(14.dp))
             TravelMapSquareToolButton(

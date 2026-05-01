@@ -1069,6 +1069,11 @@
     <string name="travel_fab_marker_cd">Пользовательские метки на карте</string>
     <string name="travel_fab_route_cd">Маршрут до точки на карте</string>
     <string name="travel_fab_share_cd">Поделиться координатами</string>
+    <string name="travel_fab_share_map_point_cd">Поделиться точкой на карте</string>
+    <string name="travel_share_map_point_pick_hint">Коснитесь карты — откроется «Поделиться» с координатами выбранной точки.</string>
+    <string name="travel_share_map_point_conflict">Сначала выключите метку, маршрут, съёмку по маршруту или режим редактирования территории на карте.</string>
+    <string name="travel_share_map_point_banner">Выберите точку на карте для отправки координат</string>
+    <string name="travel_share_map_point_pick_cancelled">Выбор точки отменён</string>
     <string name="travel_fab_circle_cd">Режим круга на карте</string>
     <string name="travel_share_coords_subject">Мои координаты</string>
     <string name="travel_share_coords_failed">Не удалось получить координаты для отправки</string>

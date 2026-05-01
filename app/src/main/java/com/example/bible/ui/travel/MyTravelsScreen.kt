@@ -450,18 +450,23 @@ fun MyTravelsScreen(
     val configuration = LocalConfiguration.current
     val isLandscape = configuration.orientation == Configuration.ORIENTATION_LANDSCAPE
 
+    var incidentDraftPoint by remember { mutableStateOf<TravelGeoPoint?>(null) }
+    var shareMapPointPickActive by remember { mutableStateOf(false) }
+
     var toolbarInteractionNonce by remember { mutableLongStateOf(0L) }
     var showFloatingToolbar by remember { mutableStateOf(false) }
     val stickyFloatingToolbar =
         territoryEditEnabled ||
             editMode != TravelMapEditMode.VIEW ||
             incidentPlaceMode ||
-            routePickDestination
+            routePickDestination ||
+            shareMapPointPickActive
 
     LaunchedEffect(territoryPanelBelowMap) {
         if (!territoryPanelBelowMap) {
             showFloatingToolbar = false
             toolbarInteractionNonce = 0L
+            shareMapPointPickActive = false
         }
     }
 
@@ -477,6 +482,27 @@ fun MyTravelsScreen(
         showFloatingToolbar = true
         delay(4200)
         showFloatingToolbar = false
+    }
+
+    LaunchedEffect(
+        incidentPlaceMode,
+        routePickDestination,
+        routeBurstActive,
+        routePlaybackPickStartActive,
+        pendingCircleRecenterZoneId,
+        editMode,
+        polygonRedraftZoneId,
+    ) {
+        if (!shareMapPointPickActive) return@LaunchedEffect
+        val conflict =
+            incidentPlaceMode ||
+                routePickDestination ||
+                routeBurstActive ||
+                routePlaybackPickStartActive ||
+                pendingCircleRecenterZoneId != null ||
+                editMode != TravelMapEditMode.VIEW ||
+                polygonRedraftZoneId != null
+        if (conflict) shareMapPointPickActive = false
     }
 
     val burstActiveRef = rememberUpdatedState(routeBurstActive)
@@ -544,7 +570,6 @@ fun MyTravelsScreen(
         }
     }
 
-    var incidentDraftPoint by remember { mutableStateOf<TravelGeoPoint?>(null) }
     var incidentNoteDraft by remember { mutableStateOf("") }
 
     LaunchedEffect(zonePropertiesEditId, zones.map { it.id }) {
@@ -610,6 +635,20 @@ fun MyTravelsScreen(
                 Toast.makeText(context, R.string.travel_share_coords_failed, Toast.LENGTH_SHORT).show()
             }
         }
+    }
+
+    val shareCoordinatesAtPoint: (TravelGeoPoint) -> Unit = { pt ->
+        bumpFloatingToolbar()
+        val text =
+            "${String.format(Locale.US, "%.6f", pt.latitude)}, ${String.format(Locale.US, "%.6f", pt.longitude)}"
+        val intent = Intent(Intent.ACTION_SEND).apply {
+            type = "text/plain"
+            putExtra(Intent.EXTRA_TEXT, text)
+            putExtra(Intent.EXTRA_SUBJECT, context.getString(R.string.travel_share_coords_subject))
+        }
+        context.startActivity(
+            Intent.createChooser(intent, context.getString(R.string.travel_share_coords_subject)),
+        )
     }
 
     Scaffold(
@@ -891,6 +930,11 @@ fun MyTravelsScreen(
                                 }
                                 return@mapTap
                             }
+                            if (shareMapPointPickActive) {
+                                shareMapPointPickActive = false
+                                shareCoordinatesAtPoint(pt)
+                                return@mapTap
+                            }
                             val incidentHit = mapIncidents.mapNotNull { inc ->
                                 val d = travelDistanceMeters(
                                     pt,
@@ -1158,8 +1202,10 @@ fun MyTravelsScreen(
                         markerModeActive = incidentPlaceMode,
                         routePickActive = routePickDestination,
                         circleModeActive = editMode == TravelMapEditMode.CIRCLE_TAP,
+                        shareMapPointPickActive = shareMapPointPickActive,
                         onPolygonClick = {
                             bumpFloatingToolbar()
+                            shareMapPointPickActive = false
                             vm.setIncidentPlaceMode(false)
                             vm.setRoutePickMode(false)
                             incidentDraftPoint = null
@@ -1167,6 +1213,7 @@ fun MyTravelsScreen(
                         },
                         onMarkersClick = {
                             bumpFloatingToolbar()
+                            shareMapPointPickActive = false
                             if (!hasFineLocation) {
                                 Toast.makeText(
                                     context,
@@ -1183,6 +1230,7 @@ fun MyTravelsScreen(
                         },
                         onCircleClick = {
                             bumpFloatingToolbar()
+                            shareMapPointPickActive = false
                             vm.setIncidentPlaceMode(false)
                             vm.setRoutePickMode(false)
                             incidentDraftPoint = null
@@ -1190,6 +1238,7 @@ fun MyTravelsScreen(
                         },
                         onRouteClick = {
                             bumpFloatingToolbar()
+                            shareMapPointPickActive = false
                             if (routePickDestination) {
                                 vm.clearTravelRoute()
                             } else if (!hasFineLocation) {
@@ -1207,7 +1256,44 @@ fun MyTravelsScreen(
                                 ).show()
                             }
                         },
-                        onShareClick = shareMyCoordinates,
+                        onShareMapPointClick = {
+                            bumpFloatingToolbar()
+                            if (shareMapPointPickActive) {
+                                shareMapPointPickActive = false
+                                Toast.makeText(
+                                    context,
+                                    R.string.travel_share_map_point_pick_cancelled,
+                                    Toast.LENGTH_SHORT,
+                                ).show()
+                            } else {
+                                val blocked =
+                                    incidentPlaceMode ||
+                                        routePickDestination ||
+                                        routeBurstActive ||
+                                        routePlaybackPickStartActive ||
+                                        pendingCircleRecenterZoneId != null ||
+                                        editMode != TravelMapEditMode.VIEW ||
+                                        polygonRedraftZoneId != null
+                                if (blocked) {
+                                    Toast.makeText(
+                                        context,
+                                        R.string.travel_share_map_point_conflict,
+                                        Toast.LENGTH_LONG,
+                                    ).show()
+                                } else {
+                                    shareMapPointPickActive = true
+                                    Toast.makeText(
+                                        context,
+                                        R.string.travel_share_map_point_pick_hint,
+                                        Toast.LENGTH_LONG,
+                                    ).show()
+                                }
+                            }
+                        },
+                        onShareClick = {
+                            shareMapPointPickActive = false
+                            shareMyCoordinates()
+                        },
                     )
                     if (pendingCircleRecenterZoneId != null) {
                         Card(
@@ -1269,6 +1355,32 @@ fun MyTravelsScreen(
                                     color = MaterialTheme.colorScheme.onSecondaryContainer,
                                 )
                                 TextButton(onClick = { vm.setRoutePlaybackPickStartActive(false) }) {
+                                    Text(stringResource(R.string.travel_cancel))
+                                }
+                            }
+                        }
+                    }
+                    if (shareMapPointPickActive) {
+                        Card(
+                            modifier = Modifier
+                                .align(Alignment.TopCenter)
+                                .padding(top = 8.dp)
+                                .widthIn(max = 340.dp),
+                            colors = CardDefaults.cardColors(
+                                containerColor = MaterialTheme.colorScheme.tertiaryContainer,
+                            ),
+                        ) {
+                            Row(
+                                Modifier.padding(horizontal = 12.dp, vertical = 8.dp),
+                                verticalAlignment = Alignment.CenterVertically,
+                            ) {
+                                Text(
+                                    stringResource(R.string.travel_share_map_point_banner),
+                                    Modifier.weight(1f),
+                                    style = MaterialTheme.typography.bodySmall,
+                                    color = MaterialTheme.colorScheme.onTertiaryContainer,
+                                )
+                                TextButton(onClick = { shareMapPointPickActive = false }) {
                                     Text(stringResource(R.string.travel_cancel))
                                 }
                             }
