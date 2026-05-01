@@ -337,6 +337,9 @@
     <string name="experiment_calls_sim_label_call">SIM для звонка</string>
     <string name="experiment_calls_sim_label_sms">SIM для отправки SMS</string>
     <string name="experiment_calls_sim_system_default">Как в системе по умолчанию</string>
+    <string name="experiment_sim_slot_label_fmt">SIM-карта %1$d</string>
+    <string name="experiment_sim_unknown_subscription_fmt">SIM (подписка %1$d)</string>
+    <string name="experiment_sim_generic">SIM</string>
     <string name="experiment_sms_inbox_title">Входящие SMS</string>
     <string name="experiment_sms_inbox_hint">Показываются сохранённые входящие сообщения из хранилища SMS устройства (до %1$d шт.). Экспериментальный экран; доступ к SMS чувствительный для конфиденциальности.</string>
     <string name="experiment_sms_permission_hint">Для списка — «Читать SMS»; для прихода новых сообщений и сценариев — «Получать SMS»; для ответной SMS и автозвонка — «Отправлять SMS» и звонки; для выбора SIM в сценариях — «Состояние телефона».</string>
