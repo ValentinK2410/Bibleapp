@@ -8,6 +8,8 @@ import android.telephony.SubscriptionManager
 import com.example.bible.IncomingSmsSpeak
 import com.example.bible.R
 import com.example.bible.data.ExperimentSmsSpeakPrefs
+import com.example.bible.data.SmsSpeechOverrideRepository
+import com.example.bible.data.speechUtteranceForDigits
 import com.example.bible.sms.SmsReactionExecutor
 
 /**
@@ -48,10 +50,16 @@ object IncomingSmsSpeakUtterance {
         val addrRaw =
             smFirst?.displayOriginatingAddress?.trim().orEmpty()
                 .ifBlank { smFirst?.originatingAddress?.trim().orEmpty() }
+        val digits = addrRaw.filter { it.isDigit() }
+        val customUtterance =
+            runCatching {
+                SmsSpeechOverrideRepository(context.applicationContext).load().speechUtteranceForDigits(digits)
+            }.getOrNull()
         val from =
-            SmsIncomingSenderDisplay.resolve(context.applicationContext, addrRaw).ifBlank {
-                context.getString(R.string.experiment_sms_unknown_sender)
-            }
+            customUtterance?.takeIf { it.isNotBlank() }
+                ?: SmsIncomingSenderDisplay.resolve(context.applicationContext, addrRaw).ifBlank {
+                    context.getString(R.string.experiment_sms_unknown_sender)
+                }
         val rawBody = msgs.joinToString("") { it.displayMessageBody.orEmpty() }
             .replace('\n', ' ')
             .trim()

@@ -123,6 +123,7 @@ internal fun Context.loadInboundSms(limit: Int = SMS_QUERY_LIMIT): List<InboundS
 fun ExperimentInboundSmsScreen(
     onBack: () -> Unit,
     onOpenSmsReactions: () -> Unit = {},
+    onOpenSmsSpeechOverrides: () -> Unit = {},
 ) {
     val context = LocalContext.current
     var rows by remember { mutableStateOf<List<InboundSmsRow>>(emptyList()) }
@@ -287,9 +288,17 @@ fun ExperimentInboundSmsScreen(
                 onClick = onOpenSmsReactions,
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(bottom = 10.dp),
+                    .padding(bottom = 8.dp),
             ) {
                 Text(stringResource(R.string.experiment_sms_reactions_button))
+            }
+            OutlinedButton(
+                onClick = onOpenSmsSpeechOverrides,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(bottom = 10.dp),
+            ) {
+                Text(stringResource(R.string.experiment_sms_speech_override_nav_button))
             }
             HorizontalDivider()
             Spacer(Modifier.height(12.dp))

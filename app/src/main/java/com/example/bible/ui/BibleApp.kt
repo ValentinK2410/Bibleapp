@@ -1061,10 +1061,16 @@ private fun BibleNavHost(
             ExperimentInboundSmsScreen(
                 onBack = { navController.navigateUp() },
                 onOpenSmsReactions = { navController.navigate("experiment_sms_reactions") },
+                onOpenSmsSpeechOverrides = { navController.navigate("experiment_sms_speech_overrides") },
             )
         }
         composable("experiment_sms_reactions") {
             SmsReactionScenariosScreen(
+                onBack = { navController.navigateUp() },
+            )
+        }
+        composable("experiment_sms_speech_overrides") {
+            SmsSpeechOverridesScreen(
                 onBack = { navController.navigateUp() },
             )
         }
