@@ -99,7 +99,11 @@ private val DelayHmsCompleteRegex = Regex("^\\d{1,2}:\\d{2}:\\d{2}$")
 
 fun isCompleteSmsReactionDelayHHMM(raw: String): Boolean {
     val t = raw.trim()
-    return DelayHmCompleteRegex.matches(t) || DelayHmsCompleteRegex.matches(t)
+    if (DelayHmsCompleteRegex.matches(t)) return true
+    if (!DelayHmCompleteRegex.matches(t)) return false
+    // Иначе это только ЧЧ:ММ — «00:00» не считаем завершённым (иначе сохраняется 0 мс и поле
+    // сбрасывается через LaunchedEffect, пока пользователь дописывает «:СС»).
+    return parseSmsReactionDelayHHMM(t) > 0L
 }
 
 /** Цифры и «:», авторазделители как ЧЧ:ММ:СС (до 8 символов). */
