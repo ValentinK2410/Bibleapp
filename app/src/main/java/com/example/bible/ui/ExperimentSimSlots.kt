@@ -8,7 +8,7 @@ import android.telecom.PhoneAccountHandle
 import android.telecom.TelecomManager
 import android.telephony.SubscriptionManager
 import androidx.core.content.ContextCompat
-import com.example.bible.telecom.phoneAccountHandleForSubscriptionId
+import com.example.bible.telecom.resolvePhoneAccountHandleForSubscription
 import com.example.bible.telecom.subscriptionIdForPhoneAccount
 
 data class SimSlot(
@@ -62,7 +62,7 @@ fun Context.loadSimSlots(): List<SimSlot> {
     val infos = subMgr.activeSubscriptionInfoList ?: return emptyList()
     if (infos.isEmpty()) return emptyList()
     return infos.map { info ->
-        val handle = telecom.phoneAccountHandleForSubscriptionId(info.subscriptionId)
+        val handle = resolvePhoneAccountHandleForSubscription(info.subscriptionId)
         val name = info.displayName?.toString()?.trim().orEmpty()
         val slotNum = info.simSlotIndex + 1
         val label = when {

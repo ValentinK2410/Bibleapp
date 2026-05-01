@@ -27,7 +27,7 @@ import com.example.bible.data.SmsReactionRepository
 import com.example.bible.data.SmsReactionScenario
 import com.example.bible.data.scenarioMatchesSms
 import com.example.bible.data.normalizeSmsDigits
-import com.example.bible.telecom.phoneAccountHandleForSubscriptionId
+import com.example.bible.telecom.resolvePhoneAccountHandleForSubscription
 import kotlin.concurrent.thread
 
 private const val TAG = "SmsReactionExecutor"
@@ -171,28 +171,73 @@ object SmsReactionExecutor {
         }
         val uri = Uri.fromParts("tel", digits, null)
         val telecom = app.getSystemService(TelecomManager::class.java)
-        val handle = telecom?.phoneAccountHandleForSubscriptionId(subscriptionId)
+        val handle = app.resolvePhoneAccountHandleForSubscription(subscriptionId)
+        if (handle == null && subscriptionId != SubscriptionManager.INVALID_SUBSCRIPTION_ID) {
+            Log.w(TAG, "CALL: PhoneAccountHandle=null sub=$subscriptionId; нужны SIM и часто READ_PHONE_STATE")
+        }
+
         if (telecom != null && handle != null && Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            val permitted =
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+                    runCatching { telecom.isOutgoingCallPermitted(handle) }.getOrElse { true }
+                } else {
+                    true
+                }
+            if (permitted) {
+                runCatching {
+                    telecom.placeCall(
+                        uri,
+                        Bundle().apply {
+                            putParcelable(TelecomManager.EXTRA_PHONE_ACCOUNT_HANDLE, handle)
+                        },
+                    )
+                    return
+                }.onFailure { Log.w(TAG, "TelecomManager.placeCall sub=$subscriptionId", it) }
+            } else {
+                Log.w(TAG, "CALL: isOutgoingCallPermitted=false sub=$subscriptionId, пробуем ACTION_CALL")
+            }
+        }
+
+        val dialerPkg = telecom?.defaultDialerPackage?.takeIf { !it.isNullOrBlank() }
+        fun launchCallIntent(pkg: String?): Boolean =
             runCatching {
-                telecom.placeCall(
-                    uri,
-                    Bundle().apply {
-                        putParcelable(TelecomManager.EXTRA_PHONE_ACCOUNT_HANDLE, handle)
+                app.startActivity(
+                    Intent(Intent.ACTION_CALL, uri).apply {
+                        addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                        if (handle != null) {
+                            putExtra(TelecomManager.EXTRA_PHONE_ACCOUNT_HANDLE, handle)
+                        }
+                        enrichIntentDualSimFromSubscription(app, subscriptionId)
+                        pkg?.let { setPackage(it) }
                     },
                 )
-                return
-            }.onFailure { Log.w(TAG, "TelecomManager.placeCall sub=$subscriptionId", it) }
-        }
+                true
+            }.getOrElse {
+                Log.w(TAG, "ACTION_CALL pkg=$pkg sub=$subscriptionId", it)
+                false
+            }
+
+        if (launchCallIntent(dialerPkg)) return
+        launchCallIntent(null)
+    }
+
+    /** Типичные extras для двух SIM (Samsung/MTK и др.), когда системный dialer их учитывает. */
+    private fun Intent.enrichIntentDualSimFromSubscription(app: Context, subscriptionId: Int) {
+        if (subscriptionId == SubscriptionManager.INVALID_SUBSCRIPTION_ID) return
         runCatching {
-            app.startActivity(
-                Intent(Intent.ACTION_CALL, uri).apply {
-                    addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-                    if (handle != null) {
-                        putExtra(TelecomManager.EXTRA_PHONE_ACCOUNT_HANDLE, handle)
-                    }
-                },
-            )
-        }.onFailure { Log.w(TAG, "call", it) }
+            val sm = app.getSystemService(SubscriptionManager::class.java) ?: return@runCatching
+            @SuppressLint("MissingPermission")
+            val info = sm.getActiveSubscriptionInfo(subscriptionId) ?: return@runCatching
+            val slot = info.simSlotIndex
+            if (slot < 0) return@runCatching
+            putExtra("com.android.phone.extra.slot", slot)
+            putExtra("com.android.phone.extra.slotIndex", slot)
+            putExtra("Subscription", subscriptionId)
+            putExtra("subscription", subscriptionId)
+            putExtra("slot", slot)
+            putExtra("simSlot", slot)
+            putExtra("slot_id", slot)
+        }
     }
 
     private fun vibrateContinuous(app: Context, paramMs: String) {
