@@ -39,6 +39,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
@@ -54,6 +55,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat
 import com.example.bible.R
+import com.example.bible.data.ExperimentSmsSpeakPrefs
 import java.time.Instant
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
@@ -183,6 +185,10 @@ fun ExperimentInboundSmsScreen(
         DateTimeFormatter.ofLocalizedDateTime(FormatStyle.SHORT).withZone(ZoneId.systemDefault())
     }
 
+    var speakIncomingSms by remember {
+        mutableStateOf(ExperimentSmsSpeakPrefs.isSpeakIncomingEnabled(context))
+    }
+
     Scaffold(
         topBar = {
             CenterAlignedTopAppBar(
@@ -218,6 +224,35 @@ fun ExperimentInboundSmsScreen(
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                 modifier = Modifier.padding(vertical = 12.dp),
             )
+            Row(
+                Modifier
+                    .fillMaxWidth()
+                    .padding(bottom = 8.dp),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.SpaceBetween,
+            ) {
+                Column(Modifier.weight(1f).padding(end = 12.dp)) {
+                    Text(
+                        text = stringResource(R.string.experiment_sms_speak_incoming_title),
+                        style = MaterialTheme.typography.titleSmall,
+                    )
+                    Text(
+                        text = stringResource(R.string.experiment_sms_speak_incoming_subtitle),
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        modifier = Modifier.padding(top = 4.dp),
+                    )
+                }
+                Switch(
+                    checked = speakIncomingSms,
+                    onCheckedChange = {
+                        speakIncomingSms = it
+                        ExperimentSmsSpeakPrefs.setSpeakIncomingEnabled(context, it)
+                    },
+                )
+            }
+            HorizontalDivider()
+            Spacer(Modifier.height(12.dp))
             if (!readGranted || !receiveGranted) {
                 Text(
                     text = stringResource(R.string.experiment_sms_permission_hint),

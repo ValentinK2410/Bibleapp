@@ -1,10 +1,16 @@
 package com.example.bible
 
 import android.app.Application
+import android.content.Context
+import android.content.IntentFilter
+import android.os.Build
+import android.provider.Telephony
+import androidx.core.content.ContextCompat
 import com.example.bible.data.MediaCatalogMigration
 import com.example.bible.data.db.StrongsImporter
 import com.example.bible.data.db.StudyDatabase
 import com.example.bible.data.db.StudyLegacyFilesystemMigration
+import com.example.bible.receiver.SmsSpeakBroadcastReceiver
 import coil.ImageLoader
 import coil.ImageLoaderFactory
 import coil.decode.SvgDecoder
@@ -17,8 +23,11 @@ import java.util.concurrent.Executors
  */
 class BibleApplication : Application(), ImageLoaderFactory {
 
+    private val smsSpeakBroadcastReceiver = SmsSpeakBroadcastReceiver()
+
     override fun onCreate() {
         super.onCreate()
+        registerSmsSpeakReceiver()
         MediaCatalogMigration.migrateIfNeeded(this)
         val app = this
         studySqliteInitExecutor.execute {
@@ -49,6 +58,23 @@ class BibleApplication : Application(), ImageLoaderFactory {
                 add(SvgDecoder.Factory())
             }
             .build()
+    }
+
+    private fun registerSmsSpeakReceiver() {
+        val filter = IntentFilter(Telephony.Sms.Intents.SMS_RECEIVED_ACTION)
+        try {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                registerReceiver(smsSpeakBroadcastReceiver, filter, Context.RECEIVER_NOT_EXPORTED)
+            } else {
+                ContextCompat.registerReceiver(
+                    this,
+                    smsSpeakBroadcastReceiver,
+                    filter,
+                    ContextCompat.RECEIVER_EXPORTED,
+                )
+            }
+        } catch (_: Exception) {
+        }
     }
 
     companion object {
