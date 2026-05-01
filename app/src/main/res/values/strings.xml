@@ -320,6 +320,8 @@
     <string name="experiment_no_short">нет</string>
     <string name="experiment_hub_section_calls">Звонки и СМС</string>
     <string name="experiment_hub_section_calls_desc">Сразу начать вызов или отправить СМС (нужны разрешения).</string>
+    <string name="experiment_hub_section_sms_inbox">SMS — входящие</string>
+    <string name="experiment_hub_section_sms_inbox_desc">Читать входящие сообщения из памяти телефона и обновлять список при новых SMS.</string>
     <string name="experiment_calls_nav">Звонки и СМС</string>
     <string name="experiment_calls_title">Звонки и СМС</string>
     <string name="experiment_calls_hint">Звонок и СМС выполняются сразу после нажатия кнопки. Нужны разрешения на звонки и SMS; чтобы выбрать SIM, система запросит доступ к состоянию телефона. Номер обязателен.</string>
@@ -334,6 +336,14 @@
     <string name="experiment_calls_sms_sent">СМС отправлено</string>
     <string name="experiment_calls_sim_label">SIM для звонка и СМС</string>
     <string name="experiment_calls_sim_system_default">Как в системе по умолчанию</string>
+    <string name="experiment_sms_inbox_title">Входящие SMS</string>
+    <string name="experiment_sms_inbox_hint">Показываются сохранённые входящие сообщения из хранилища SMS устройства (до %1$d шт.). Экспериментальный экран; доступ к SMS чувствительный для конфиденциальности.</string>
+    <string name="experiment_sms_permission_hint">Для списка нужно разрешение «Читать SMS»; чтобы список сам обновлялся при новой SMS — также «Получать SMS».</string>
+    <string name="experiment_sms_grant_permissions">Запросить доступ к SMS</string>
+    <string name="experiment_sms_need_read_permission">Выдайте разрешение на чтение SMS — без него входящие недоступны.</string>
+    <string name="experiment_sms_empty">Входящих SMS в памяти телефона не найдено.</string>
+    <string name="experiment_sms_refresh">Обновить список</string>
+    <string name="experiment_sms_permission_denied">Разрешение на чтение SMS не выдано</string>
     <string name="books_title">Книги</string>
     <string name="translation_label">Перевод: %1$s · офлайн</string>
     <string name="loading">Загрузка…</string>

@@ -19,6 +19,7 @@ import androidx.compose.material.icons.filled.Face
 import androidx.compose.material.icons.filled.Gesture
 import androidx.compose.material.icons.filled.Phone
 import androidx.compose.material.icons.filled.Sensors
+import androidx.compose.material.icons.filled.Sms
 import androidx.compose.material.icons.automirrored.filled.VolumeUp
 import androidx.compose.material.icons.filled.Videocam
 import androidx.compose.material.icons.filled.Wifi
@@ -46,6 +47,7 @@ fun ExperimentHubScreen(
     onOpenCamera4: () -> Unit,
     onOpenCamera5MediaPipe: () -> Unit,
     onOpenCallsSms: () -> Unit,
+    onOpenInboundSms: () -> Unit,
     onOpenSensorLab: () -> Unit,
     onOpenSoundLab: () -> Unit,
     onOpenWifi: () -> Unit,
@@ -108,6 +110,12 @@ fun ExperimentHubScreen(
                 title = stringResource(R.string.experiment_hub_section_calls),
                 description = stringResource(R.string.experiment_hub_section_calls_desc),
                 onClick = onOpenCallsSms,
+            )
+            ExperimentHubSectionButton(
+                icon = { Icon(Icons.Filled.Sms, contentDescription = null, modifier = Modifier.size(28.dp)) },
+                title = stringResource(R.string.experiment_hub_section_sms_inbox),
+                description = stringResource(R.string.experiment_hub_section_sms_inbox_desc),
+                onClick = onOpenInboundSms,
             )
             ExperimentHubSectionButton(
                 icon = { Icon(Icons.Filled.Sensors, contentDescription = null, modifier = Modifier.size(28.dp)) },
