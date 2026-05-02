@@ -249,3 +249,45 @@ fun nearestRoutePhotoPoint(
         ),
     ).first
 }
+
+private const val FOLK_BURST_MAX_HEADING_DIFF_DEG = 52f
+private const val FOLK_BURST_MAX_PREVIEW_COUNT = 36
+
+/**
+ * Для превью «народной съёмки»: кадры в похожем направлении взгляда относительно пользователя,
+ * от ближайших к дальним. Без совпадений по направлению — ближайшие по расстоянию.
+ */
+fun folkBurstFilteredPointsForViewer(
+    points: List<TravelRoutePhotoPoint>,
+    viewerLat: Double?,
+    viewerLon: Double?,
+    viewerHeadingDeg: Float?,
+): List<TravelRoutePhotoPoint> {
+    if (points.isEmpty()) return emptyList()
+    if (viewerLat == null || viewerLon == null) {
+        return points.takeLast(FOLK_BURST_MAX_PREVIEW_COUNT).asReversed()
+    }
+    val here = TravelGeoPoint(viewerLat, viewerLon)
+    val vh = viewerHeadingDeg?.takeIf { it.isFinite() }
+    val scored = points.mapNotNull { p ->
+        val d = travelDistanceMeters(here, TravelGeoPoint(p.latitude, p.longitude))
+        val dirOk = when {
+            vh == null -> true
+            p.headingDeg != null && p.headingDeg.isFinite() ->
+                headingAngularDifferenceDeg(vh, p.headingDeg) <= FOLK_BURST_MAX_HEADING_DIFF_DEG
+            else -> {
+                val bearingToPhoto = bearingDegreesLatLon(viewerLat, viewerLon, p.latitude, p.longitude)
+                headingAngularDifferenceDeg(vh, bearingToPhoto) <= FOLK_BURST_MAX_HEADING_DIFF_DEG
+            }
+        }
+        if (dirOk) p to d else null
+    }
+    val ordered = if (scored.isEmpty()) {
+        points.map { p ->
+            p to travelDistanceMeters(here, TravelGeoPoint(p.latitude, p.longitude))
+        }.sortedBy { it.second }
+    } else {
+        scored.sortedBy { it.second }
+    }
+    return ordered.map { it.first }.take(FOLK_BURST_MAX_PREVIEW_COUNT)
+}

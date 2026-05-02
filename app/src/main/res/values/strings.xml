@@ -1151,9 +1151,12 @@
     <string name="travel_incident_sheet_side_delete">Удалить</string>
     <string name="travel_incident_sheet_cd_edit">Редактировать метку</string>
     <string name="travel_incident_sheet_cd_delete">Удалить метку</string>
-    <string name="travel_route_burst_start_cd">Начать съёмку по маршруту каждые 0,5 с</string>
-    <string name="travel_route_burst_stop_cd">Закончить съёмку и сохранить серию</string>
+    <string name="travel_route_burst_start_cd">Народная съёмка</string>
+    <string name="travel_route_burst_stop_cd">Закончить народную съёмку и сохранить серию</string>
     <string name="travel_route_burst_last_frame_cd">Последний сохранённый кадр серии</string>
+    <string name="travel_route_folk_title_bar">Народная съёмка</string>
+    <string name="travel_route_folk_gesture_hint">На заголовке выше жестом двумя пальцами: масштаб и сдвиг всего блока. Ленту кадров ниже листайте одним пальцем.</string>
+    <string name="travel_route_folk_frames_fmt">Народная съёмка · кадров: %1$d</string>
     <string name="travel_route_burst_frames_fmt">Кадров в серии: %1$d</string>
     <string name="travel_route_playback_pick_hint">Коснитесь линии сохранённого маршрута на карте — виртуальный проезд начнётся от этого места.</string>
     <string name="travel_route_playback_pick_conflict">Отключите съёмку по маршруту, выбор точки навигатора или режим метки.</string>

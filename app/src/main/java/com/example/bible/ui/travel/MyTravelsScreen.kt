@@ -1014,55 +1014,18 @@ fun MyTravelsScreen(
                         hideNavigatorHud = routePlaybackActive,
                     )
                     if (routeBurstActive && camGranted) {
-                        Column(
+                        FolkBurstPreviewPanel(
+                            burstDraftPoints = burstDraftPoints.toList(),
+                            viewerLat = lastUserGeo?.latitude,
+                            viewerLon = lastUserGeo?.longitude,
+                            viewerHeadingDeg = lastUserHeadingDeg,
+                            totalCapturedCount = burstDraftPoints.size,
+                            onImageCaptureReady = { burstImageCapture = it },
                             modifier = Modifier
                                 .align(Alignment.TopStart)
                                 .padding(start = 10.dp, top = 52.dp)
-                                .widthIn(max = 172.dp),
-                            verticalArrangement = Arrangement.spacedBy(6.dp),
-                        ) {
-                            Surface(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .height(118.dp),
-                                shape = RoundedCornerShape(12.dp),
-                                tonalElevation = 3.dp,
-                                shadowElevation = 3.dp,
-                            ) {
-                                TravelBurstCameraPreview(
-                                    enabled = true,
-                                    modifier = Modifier.fillMaxSize(),
-                                    onImageCaptureReady = { burstImageCapture = it },
-                                )
-                            }
-                            burstDraftPoints.lastOrNull()?.let { last ->
-                                Card(
-                                    modifier = Modifier.fillMaxWidth(),
-                                    colors = CardDefaults.cardColors(
-                                        containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.96f),
-                                    ),
-                                ) {
-                                    Column(Modifier.padding(6.dp)) {
-                                        RouteBurstStoredPhotoThumbnail(
-                                            photoUriString = last.photoUri,
-                                            modifier = Modifier
-                                                .fillMaxWidth()
-                                                .heightIn(min = 72.dp, max = 114.dp)
-                                                .clip(RoundedCornerShape(8.dp)),
-                                            contentDescription = stringResource(R.string.travel_route_burst_last_frame_cd),
-                                        )
-                                        Text(
-                                            stringResource(
-                                                R.string.travel_route_burst_frames_fmt,
-                                                burstDraftPoints.size,
-                                            ),
-                                            style = MaterialTheme.typography.labelSmall,
-                                            modifier = Modifier.padding(top = 4.dp),
-                                        )
-                                    }
-                                }
-                            }
-                        }
+                                .widthIn(max = 292.dp),
+                        )
                     }
                     Column(
                         modifier = Modifier
