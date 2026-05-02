@@ -301,6 +301,7 @@ fun YandexTravelMap(
     routePlaybackSim: RoutePlaybackSimState? = null,
     friendPeerLocation: FriendPeerLocation? = null,
     hideNavigatorHud: Boolean = false,
+    navigatorHudExtras: (@Composable () -> Unit)? = null,
 ) {
     val context = LocalContext.current
     var mapReady by remember { mutableStateOf<Boolean?>(null) }
@@ -366,6 +367,7 @@ fun YandexTravelMap(
                 routePlaybackSim = routePlaybackSim,
                 friendPeerLocation = friendPeerLocation,
                 hideNavigatorHud = hideNavigatorHud,
+                navigatorHudExtras = navigatorHudExtras,
             )
         }
     }
@@ -402,6 +404,7 @@ private fun YandexTravelMapContent(
     routePlaybackSim: RoutePlaybackSimState? = null,
     friendPeerLocation: FriendPeerLocation? = null,
     hideNavigatorHud: Boolean = false,
+    navigatorHudExtras: (@Composable () -> Unit)? = null,
 ) {
     val context = LocalContext.current
     val lifecycleOwner = LocalLifecycleOwner.current
@@ -1331,13 +1334,19 @@ private fun YandexTravelMapContent(
                 color = MaterialTheme.colorScheme.surface.copy(alpha = 0.92f),
                 shadowElevation = 3.dp,
             ) {
-                TravelNavigatorHud(
-                    navHud = if (activeTravelRoute != null) navHudState else null,
-                    fallbackSpeedKmh = hudSpeedKmh.floatValue,
-                    viewSpanM = hudViewSpanM.intValue,
-                    mapZoom = mapZoom,
-                    modifier = Modifier.padding(horizontal = 12.dp, vertical = 10.dp),
-                )
+                Column(
+                    Modifier.padding(horizontal = 12.dp, vertical = 10.dp),
+                    horizontalAlignment = Alignment.Start,
+                ) {
+                    TravelNavigatorHud(
+                        navHud = if (activeTravelRoute != null) navHudState else null,
+                        fallbackSpeedKmh = hudSpeedKmh.floatValue,
+                        viewSpanM = hudViewSpanM.intValue,
+                        mapZoom = mapZoom,
+                        modifier = Modifier,
+                    )
+                    navigatorHudExtras?.invoke()
+                }
             }
         }
         if (showRecenterFab && (animatedRecenterFabAlpha > 0.02f || recenterFabAlphaTarget > 0.02f)) {

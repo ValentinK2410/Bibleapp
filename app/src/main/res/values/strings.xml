@@ -1158,6 +1158,9 @@
     <string name="travel_route_folk_gesture_hint">На заголовке выше жестом двумя пальцами: масштаб и сдвиг всего блока. Ленту кадров ниже листайте одним пальцем.</string>
     <string name="travel_route_folk_frames_fmt">Народная съёмка · кадров: %1$d</string>
     <string name="travel_route_burst_frames_fmt">Кадров в серии: %1$d</string>
+    <string name="travel_spot_photos_toggle_cd">Показать или скрыть фото рядом с вами на карте (1–3 м и по направлению)</string>
+    <string name="travel_spot_photos_empty">Нет кадров на расстоянии 1–3 м с учётом направления.</string>
+    <string name="travel_spot_photos_wait_gps">Подождите координаты GPS и попробуйте снова.</string>
     <string name="travel_route_playback_pick_hint">Коснитесь линии сохранённого маршрута на карте — виртуальный проезд начнётся от этого места.</string>
     <string name="travel_route_playback_pick_conflict">Отключите съёмку по маршруту, выбор точки навигатора или режим метки.</string>
     <string name="travel_route_playback_start_applied_fmt">Старт виртуального проезда: %1$.0f м от начала трека</string>

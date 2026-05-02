@@ -143,7 +143,7 @@ fun FolkBurstPreviewPanel(
 }
 
 @Composable
-private fun FolkBurstPhotoThumb(
+internal fun FolkBurstPhotoThumb(
     photoUriString: String,
     modifier: Modifier = Modifier,
 ) {

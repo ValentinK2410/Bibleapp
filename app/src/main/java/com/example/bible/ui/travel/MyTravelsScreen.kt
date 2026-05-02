@@ -142,6 +142,7 @@ import coil.request.ImageRequest
 import com.example.bible.data.travel.TravelPhotoStorage
 import com.example.bible.data.travel.TravelRoutePhotoPoint
 import com.example.bible.data.travel.TravelRoutePhotoSession
+import com.example.bible.data.travel.routePhotosInSpotRingForViewer
 import java.io.File
 import java.util.UUID
 import java.util.concurrent.Executors
@@ -261,6 +262,7 @@ fun MyTravelsScreen(
     var incidentTapSheetIncident by remember { mutableStateOf<TravelMapIncident?>(null) }
     var incidentDeleteConfirmFor by remember { mutableStateOf<TravelMapIncident?>(null) }
     val burstDraftPoints = remember { mutableStateListOf<TravelRoutePhotoPoint>() }
+    var spotPhotosHudExpanded by remember { mutableStateOf(false) }
     var burstImageCapture by remember { mutableStateOf<ImageCapture?>(null) }
     val burstCaptureExecutor = remember { Executors.newSingleThreadExecutor() }
     DisposableEffect(Unit) {
@@ -364,8 +366,8 @@ fun MyTravelsScreen(
         }
     }
 
-    DisposableEffect(routeBurstActive, hasFineLocation) {
-        if (!routeBurstActive || !hasFineLocation) {
+    DisposableEffect(routeBurstActive, spotPhotosHudExpanded, hasFineLocation) {
+        if ((!routeBurstActive && !spotPhotosHudExpanded) || !hasFineLocation) {
             vm.clearUserHeading()
             return@DisposableEffect onDispose { }
         }
@@ -537,6 +539,26 @@ fun MyTravelsScreen(
 
     val sortedPhotoSessions = remember(routePhotoSessions) {
         routePhotoSessions.sortedByDescending { it.createdAtMs }
+    }
+    val combinedRoutePhotoPoints = remember(routePhotoSessions, burstDraftPoints.toList()) {
+        val draft = burstDraftPoints.toList()
+        val fromSessions = routePhotoSessions.flatMap { it.points }
+        (fromSessions + draft).distinctBy { "${it.photoUri}_${it.latitude}_${it.longitude}" }
+    }
+    val spotHudFilteredPhotos = remember(
+        combinedRoutePhotoPoints,
+        lastUserGeo?.latitude,
+        lastUserGeo?.longitude,
+        lastUserHeadingDeg,
+        spotPhotosHudExpanded,
+    ) {
+        if (!spotPhotosHudExpanded) emptyList()
+        else routePhotosInSpotRingForViewer(
+            combinedRoutePhotoPoints,
+            lastUserGeo?.latitude,
+            lastUserGeo?.longitude,
+            lastUserHeadingDeg,
+        )
     }
     val stopRouteBurstAndSave: () -> Unit = {
         vm.setRouteBurstActive(false)
@@ -1012,6 +1034,35 @@ fun MyTravelsScreen(
                         routePlaybackSim = routePlaybackSim,
                         friendPeerLocation = friendPeerLocation,
                         hideNavigatorHud = routePlaybackActive,
+                        navigatorHudExtras = {
+                            SpotPhotosAtPlaceHudSection(
+                                expanded = spotPhotosHudExpanded,
+                                onExpandedChange = { next ->
+                                    val allow = when {
+                                        !next -> true
+                                        !hasFineLocation -> {
+                                            Toast.makeText(
+                                                context,
+                                                R.string.travel_need_location,
+                                                Toast.LENGTH_SHORT,
+                                            ).show()
+                                            false
+                                        }
+                                        lastUserGeo == null -> {
+                                            Toast.makeText(
+                                                context,
+                                                R.string.travel_spot_photos_wait_gps,
+                                                Toast.LENGTH_SHORT,
+                                            ).show()
+                                            false
+                                        }
+                                        else -> true
+                                    }
+                                    if (allow) spotPhotosHudExpanded = next
+                                },
+                                photos = spotHudFilteredPhotos,
+                            )
+                        },
                     )
                     if (routeBurstActive && camGranted) {
                         FolkBurstPreviewPanel(

@@ -291,3 +291,39 @@ fun folkBurstFilteredPointsForViewer(
     }
     return ordered.map { it.first }.take(FOLK_BURST_MAX_PREVIEW_COUNT)
 }
+
+private const val SPOT_RING_MIN_DISTANCE_M = 1.0
+private const val SPOT_RING_MAX_DISTANCE_M = 3.0
+private const val SPOT_RING_MAX_RESULTS = 32
+
+/**
+ * Кадры у «текущей точки»: на карте на расстоянии от [SPOT_RING_MIN_DISTANCE_M] до [SPOT_RING_MAX_DISTANCE_M] м
+ * и в том же секторе направления, что и у наблюдателя (как у «народной съёмки»).
+ */
+fun routePhotosInSpotRingForViewer(
+    points: List<TravelRoutePhotoPoint>,
+    viewerLat: Double?,
+    viewerLon: Double?,
+    viewerHeadingDeg: Float?,
+): List<TravelRoutePhotoPoint> {
+    if (points.isEmpty()) return emptyList()
+    if (viewerLat == null || viewerLon == null) return emptyList()
+    val here = TravelGeoPoint(viewerLat, viewerLon)
+    val vh = viewerHeadingDeg?.takeIf { it.isFinite() }
+    val inRing = points.mapNotNull { p ->
+        val d = travelDistanceMeters(here, TravelGeoPoint(p.latitude, p.longitude))
+        if (d < SPOT_RING_MIN_DISTANCE_M || d > SPOT_RING_MAX_DISTANCE_M) return@mapNotNull null
+        val dirOk = when {
+            vh == null -> true
+            p.headingDeg != null && p.headingDeg.isFinite() ->
+                headingAngularDifferenceDeg(vh, p.headingDeg) <= FOLK_BURST_MAX_HEADING_DIFF_DEG
+            else -> {
+                val bearingToPhoto = bearingDegreesLatLon(viewerLat, viewerLon, p.latitude, p.longitude)
+                headingAngularDifferenceDeg(vh, bearingToPhoto) <= FOLK_BURST_MAX_HEADING_DIFF_DEG
+            }
+        }
+        if (!dirOk) return@mapNotNull null
+        p to d
+    }.sortedBy { it.second }
+    return inRing.map { it.first }.take(SPOT_RING_MAX_RESULTS)
+}
