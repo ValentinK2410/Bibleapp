@@ -1167,6 +1167,13 @@
     <string name="travel_trip_history_recording_switch">Записывать маршрут (GPS)</string>
     <string name="travel_trip_history_recording_hint">Точки сохраняются в фоне (уведомление «Маршруты») и чаще, пока открыта карта. Отключите, чтобы не накапливать историю.</string>
     <string name="travel_trip_history_pick_day_time">День и интервал времени (местное)</string>
+    <string name="travel_trip_history_calendar_section">Календарь</string>
+    <string name="travel_trip_history_prev_month_cd">Предыдущий месяц</string>
+    <string name="travel_trip_history_next_month_cd">Следующий месяц</string>
+    <string name="travel_trip_history_today">Сегодня</string>
+    <string name="travel_trip_history_no_data_day">Нет записей за этот день</string>
+    <string name="travel_trip_history_refine_time">Уточнить время за день</string>
+    <string name="travel_trip_history_time_on_day_fmt">На отрезке: %1$s</string>
     <string name="travel_trip_history_day_fmt">Дата: %1$s</string>
     <string name="travel_trip_history_from_fmt">С %1$s</string>
     <string name="travel_trip_history_until_fmt">До %1$s</string>

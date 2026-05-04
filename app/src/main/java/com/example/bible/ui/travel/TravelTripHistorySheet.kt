@@ -1,20 +1,26 @@
 package com.example.bible.ui.travel
 
+import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.KeyboardArrowLeft
+import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
 import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
-import androidx.compose.material3.DatePicker
-import androidx.compose.material3.DatePickerDialog
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
@@ -25,7 +31,6 @@ import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TimePicker
-import androidx.compose.material3.rememberDatePickerState
 import androidx.compose.material3.rememberTimePickerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -36,20 +41,27 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.bible.R
 import com.example.bible.data.travel.TravelGeoPoint
 import com.example.bible.data.travel.TravelTripTrackPoint
 import com.example.bible.data.travel.tripTrackPathLengthMeters
 import kotlinx.coroutines.launch
+import java.time.DayOfWeek
 import java.time.Instant
 import java.time.LocalDate
 import java.time.LocalTime
+import java.time.YearMonth
 import java.time.ZoneId
 import java.time.ZonedDateTime
 import java.time.format.DateTimeFormatter
+import java.time.format.TextStyle
 import java.util.Locale
 
 fun filterTripTrackByLocalWindow(
@@ -69,11 +81,138 @@ fun filterTripTrackByLocalWindow(
         .toList()
 }
 
+fun tripTrackLocalDatesWithData(points: List<TravelTripTrackPoint>, zone: ZoneId): Set<LocalDate> =
+    points.mapTo(HashSet(points.size.coerceAtLeast(16))) {
+        Instant.ofEpochMilli(it.timestampMs).atZone(zone).toLocalDate()
+    }
+
+fun filterTripTrackForLocalDate(
+    points: List<TravelTripTrackPoint>,
+    zone: ZoneId,
+    date: LocalDate,
+): List<TravelTripTrackPoint> =
+    points.asSequence()
+        .filter { Instant.ofEpochMilli(it.timestampMs).atZone(zone).toLocalDate() == date }
+        .sortedBy { it.timestampMs }
+        .toList()
+
+private fun carrySelectionToMonth(selected: LocalDate, ym: YearMonth): LocalDate {
+    val last = ym.lengthOfMonth()
+    val day = selected.dayOfMonth.coerceAtMost(last)
+    return ym.atDay(day)
+}
+
+private fun mondayFirstOffset(dayOfWeek: DayOfWeek): Int =
+    when (dayOfWeek) {
+        DayOfWeek.MONDAY -> 0
+        DayOfWeek.TUESDAY -> 1
+        DayOfWeek.WEDNESDAY -> 2
+        DayOfWeek.THURSDAY -> 3
+        DayOfWeek.FRIDAY -> 4
+        DayOfWeek.SATURDAY -> 5
+        DayOfWeek.SUNDAY -> 6
+    }
+
 private fun centerOfTripPoints(pts: List<TravelTripTrackPoint>): TravelGeoPoint? {
     if (pts.isEmpty()) return null
     val lat = pts.sumOf { it.latitude } / pts.size
     val lon = pts.sumOf { it.longitude } / pts.size
     return TravelGeoPoint(lat, lon)
+}
+
+@Composable
+private fun TripHistoryCalendarGrid(
+    yearMonth: YearMonth,
+    datesWithData: Set<LocalDate>,
+    selectedDate: LocalDate,
+    onSelectDay: (LocalDate) -> Unit,
+) {
+    val loc = Locale.getDefault()
+    val weekendColor = MaterialTheme.colorScheme.primary
+    val normalColor = MaterialTheme.colorScheme.onSurface
+    Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+        for (d in 1..7) {
+            val dow = DayOfWeek.of(d)
+            val label = dow.getDisplayName(TextStyle.SHORT, loc).take(2)
+                .replaceFirstChar { if (it.isLowerCase()) it.titlecase(loc) else it.toString() }
+            Text(
+                text = label,
+                style = MaterialTheme.typography.labelSmall,
+                color = if (dow == DayOfWeek.SATURDAY || dow == DayOfWeek.SUNDAY) {
+                    weekendColor
+                } else {
+                    MaterialTheme.colorScheme.onSurfaceVariant
+                },
+                modifier = Modifier.weight(1f),
+                textAlign = TextAlign.Center,
+            )
+        }
+    }
+    Spacer(Modifier.height(6.dp))
+
+    val firstOfMonth = yearMonth.atDay(1)
+    val pad = mondayFirstOffset(firstOfMonth.dayOfWeek)
+    val daysInMonth = yearMonth.lengthOfMonth()
+    val totalCells = ((pad + daysInMonth + 6) / 7) * 7
+
+    Column(Modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(4.dp)) {
+        for (row in 0 until totalCells / 7) {
+            Row(
+                Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(4.dp),
+            ) {
+                for (col in 0..6) {
+                    val idx = row * 7 + col
+                    val dayNum = idx - pad + 1
+                    val isSelected =
+                        dayNum in 1..daysInMonth &&
+                            LocalDate.of(yearMonth.year, yearMonth.month, dayNum) == selectedDate
+                    Box(
+                        modifier = Modifier
+                            .weight(1f)
+                            .aspectRatio(1f)
+                            .background(
+                                color = if (isSelected) {
+                                    MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.55f)
+                                } else {
+                                    Color.Transparent
+                                },
+                                shape = CircleShape,
+                            )
+                            .clip(CircleShape)
+                            .clickable(enabled = dayNum in 1..daysInMonth) {
+                                onSelectDay(yearMonth.atDay(dayNum))
+                            },
+                        contentAlignment = Alignment.Center,
+                    ) {
+                        if (dayNum in 1..daysInMonth) {
+                            val cellDate = LocalDate.of(yearMonth.year, yearMonth.month, dayNum)
+                            val isWeekend =
+                                cellDate.dayOfWeek == DayOfWeek.SATURDAY ||
+                                    cellDate.dayOfWeek == DayOfWeek.SUNDAY
+                            Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                                Text(
+                                    text = "$dayNum",
+                                    color = if (isWeekend) weekendColor else normalColor,
+                                    style = MaterialTheme.typography.bodyMedium,
+                                    textAlign = TextAlign.Center,
+                                )
+                                if (cellDate in datesWithData) {
+                                    Box(
+                                        Modifier
+                                            .padding(top = 2.dp)
+                                            .size(4.dp)
+                                            .clip(CircleShape)
+                                            .background(MaterialTheme.colorScheme.outline),
+                                    )
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -84,11 +223,12 @@ fun TravelTripHistorySheet(
 ) {
     val scope = rememberCoroutineScope()
     val zone = ZoneId.systemDefault()
-    val dateFmt = remember {
-        DateTimeFormatter.ofPattern("dd.MM.yyyy", Locale.getDefault())
+    val loc = Locale.getDefault()
+    val selectedHeaderFmt = remember {
+        DateTimeFormatter.ofPattern("EEE, d MMMM", loc)
     }
     val timeFmt = remember {
-        DateTimeFormatter.ofPattern("HH:mm", Locale.getDefault())
+        DateTimeFormatter.ofPattern("HH:mm", loc)
     }
 
     var rawPoints by remember { mutableStateOf<List<TravelTripTrackPoint>>(emptyList()) }
@@ -96,52 +236,48 @@ fun TravelTripHistorySheet(
         rawPoints = vm.tripTrackSnapshot()
     }
 
-    var pickedDate by remember { mutableStateOf(LocalDate.now()) }
+    val datesWithData = remember(rawPoints, zone) {
+        tripTrackLocalDatesWithData(rawPoints, zone)
+    }
+
+    var visibleMonth by remember { mutableStateOf(YearMonth.from(LocalDate.now())) }
+    var selectedDate by remember { mutableStateOf(LocalDate.now()) }
+
+    var refineTime by remember { mutableStateOf(false) }
     var startTime by remember { mutableStateOf(LocalTime.MIDNIGHT) }
     var endTime by remember { mutableStateOf(LocalTime.of(23, 59)) }
 
-    val filtered = remember(rawPoints, pickedDate, startTime, endTime, zone) {
-        filterTripTrackByLocalWindow(rawPoints, zone, pickedDate, startTime, endTime)
+    val dayPointsFull = remember(rawPoints, selectedDate, zone) {
+        filterTripTrackForLocalDate(rawPoints, zone, selectedDate)
     }
+
+    val filtered = remember(dayPointsFull, refineTime, selectedDate, startTime, endTime, zone, rawPoints) {
+        if (!refineTime) dayPointsFull
+        else filterTripTrackByLocalWindow(rawPoints, zone, selectedDate, startTime, endTime)
+    }
+
     val distanceKm = remember(filtered) { tripTrackPathLengthMeters(filtered) / 1000.0 }
     val maxKmh = remember(filtered) {
         filtered.maxOfOrNull { it.speedMps * 3.6f } ?: 0f
     }
+    val timeSpanText = remember(filtered, timeFmt) {
+        if (filtered.size < 2) {
+            filtered.firstOrNull()?.let { p ->
+                val t = Instant.ofEpochMilli(p.timestampMs).atZone(zone).toLocalTime()
+                timeFmt.format(t)
+            }
+        } else {
+            val a = Instant.ofEpochMilli(filtered.first().timestampMs).atZone(zone).toLocalTime()
+            val b = Instant.ofEpochMilli(filtered.last().timestampMs).atZone(zone).toLocalTime()
+            "${timeFmt.format(a)} — ${timeFmt.format(b)}"
+        }
+    }
 
     val tripRecording by vm.tripHistoryEnabled.collectAsStateWithLifecycle()
 
-    var showDatePicker by remember { mutableStateOf(false) }
     var showStartTimePicker by remember { mutableStateOf(false) }
     var showEndTimePicker by remember { mutableStateOf(false) }
     var showClearConfirm by remember { mutableStateOf(false) }
-
-    if (showDatePicker) {
-        val pickerState = rememberDatePickerState(
-            initialSelectedDateMillis = pickedDate.atStartOfDay(zone).toInstant().toEpochMilli(),
-        )
-        DatePickerDialog(
-            onDismissRequest = { showDatePicker = false },
-            confirmButton = {
-                TextButton(
-                    onClick = {
-                        pickerState.selectedDateMillis?.let { ms ->
-                            pickedDate = Instant.ofEpochMilli(ms).atZone(zone).toLocalDate()
-                        }
-                        showDatePicker = false
-                    },
-                ) {
-                    Text(stringResource(R.string.travel_trip_history_ok))
-                }
-            },
-            dismissButton = {
-                TextButton(onClick = { showDatePicker = false }) {
-                    Text(stringResource(R.string.travel_trip_history_cancel))
-                }
-            },
-        ) {
-            DatePicker(state = pickerState)
-        }
-    }
 
     if (showStartTimePicker) {
         val st = rememberTimePickerState(
@@ -226,8 +362,8 @@ fun TravelTripHistorySheet(
         Modifier
             .fillMaxWidth()
             .verticalScroll(rememberScrollState())
-            .padding(horizontal = 20.dp, vertical = 12.dp),
-        verticalArrangement = Arrangement.spacedBy(12.dp),
+            .padding(horizontal = 16.dp, vertical = 10.dp),
+        verticalArrangement = Arrangement.spacedBy(10.dp),
     ) {
         Row(
             Modifier.fillMaxWidth(),
@@ -267,45 +403,128 @@ fun TravelTripHistorySheet(
             stringResource(R.string.travel_trip_history_recording_hint),
             style = MaterialTheme.typography.bodySmall,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
+            lineHeight = 18.sp,
         )
 
         HorizontalDivider()
 
-        Text(stringResource(R.string.travel_trip_history_pick_day_time), style = MaterialTheme.typography.titleSmall)
+        Text(
+            stringResource(R.string.travel_trip_history_calendar_section),
+            style = MaterialTheme.typography.titleSmall,
+        )
 
-        OutlinedButton(
-            onClick = { showDatePicker = true },
-            modifier = Modifier.fillMaxWidth(),
-        ) {
-            Text(stringResource(R.string.travel_trip_history_day_fmt, pickedDate.format(dateFmt)))
-        }
         Row(
             Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.spacedBy(8.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.SpaceBetween,
         ) {
-            OutlinedButton(
-                onClick = { showStartTimePicker = true },
-                modifier = Modifier.weight(1f),
+            IconButton(
+                onClick = {
+                    visibleMonth = visibleMonth.minusMonths(1)
+                    selectedDate = carrySelectionToMonth(selectedDate, visibleMonth)
+                },
             ) {
-                Text(stringResource(R.string.travel_trip_history_from_fmt, startTime.format(timeFmt)))
+                Icon(Icons.AutoMirrored.Filled.KeyboardArrowLeft, contentDescription = stringResource(R.string.travel_trip_history_prev_month_cd))
             }
-            OutlinedButton(
-                onClick = { showEndTimePicker = true },
-                modifier = Modifier.weight(1f),
+            Text(
+                buildString {
+                    append(
+                        visibleMonth.month.getDisplayName(TextStyle.FULL_STANDALONE, loc)
+                            .replaceFirstChar { ch ->
+                                if (ch.isLowerCase()) ch.titlecase(loc) else ch.toString()
+                            },
+                    )
+                    append(" ")
+                    append(visibleMonth.year)
+                },
+                style = MaterialTheme.typography.titleMedium,
+            )
+            IconButton(
+                onClick = {
+                    visibleMonth = visibleMonth.plusMonths(1)
+                    selectedDate = carrySelectionToMonth(selectedDate, visibleMonth)
+                },
             ) {
-                Text(stringResource(R.string.travel_trip_history_until_fmt, endTime.format(timeFmt)))
+                Icon(Icons.AutoMirrored.Filled.KeyboardArrowRight, contentDescription = stringResource(R.string.travel_trip_history_next_month_cd))
             }
         }
 
-        Text(
-            stringResource(
-                R.string.travel_trip_history_stats_fmt,
-                filtered.size,
-                distanceKm,
-                maxKmh,
-            ),
-            style = MaterialTheme.typography.bodyMedium,
+        TripHistoryCalendarGrid(
+            yearMonth = visibleMonth,
+            datesWithData = datesWithData,
+            selectedDate = selectedDate,
+            onSelectDay = { selectedDate = it },
         )
+
+        HorizontalDivider(Modifier.padding(vertical = 4.dp))
+
+        val today = LocalDate.now()
+        val headerLine = buildString {
+            append(selectedDate.format(selectedHeaderFmt).replaceFirstChar { c ->
+                if (c.isLowerCase()) c.titlecase(loc) else c.toString()
+            })
+            if (selectedDate == today) {
+                append(" · ")
+                append(stringResource(R.string.travel_trip_history_today))
+            }
+        }
+        Text(headerLine, style = MaterialTheme.typography.titleSmall)
+
+        if (filtered.isEmpty()) {
+            Text(
+                stringResource(R.string.travel_trip_history_no_data_day),
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+        } else {
+            timeSpanText?.let { span ->
+                Text(
+                    stringResource(R.string.travel_trip_history_time_on_day_fmt, span),
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+            }
+            Text(
+                stringResource(
+                    R.string.travel_trip_history_stats_fmt,
+                    filtered.size,
+                    distanceKm,
+                    maxKmh,
+                ),
+                style = MaterialTheme.typography.bodyMedium,
+            )
+        }
+
+        Row(
+            Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            Text(
+                stringResource(R.string.travel_trip_history_refine_time),
+                style = MaterialTheme.typography.labelLarge,
+            )
+            Switch(checked = refineTime, onCheckedChange = { refineTime = it })
+        }
+        if (refineTime) {
+            Row(
+                Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+            ) {
+                OutlinedButton(
+                    onClick = { showStartTimePicker = true },
+                    modifier = Modifier.weight(1f),
+                ) {
+                    Text(stringResource(R.string.travel_trip_history_from_fmt, startTime.format(timeFmt)))
+                }
+                OutlinedButton(
+                    onClick = { showEndTimePicker = true },
+                    modifier = Modifier.weight(1f),
+                ) {
+                    Text(stringResource(R.string.travel_trip_history_until_fmt, endTime.format(timeFmt)))
+                }
+            }
+        }
 
         Button(
             onClick = {
@@ -330,7 +549,7 @@ fun TravelTripHistorySheet(
             Text(stringResource(R.string.travel_trip_history_hide_track))
         }
 
-        Spacer(Modifier.height(8.dp))
+        Spacer(Modifier.height(4.dp))
 
         TextButton(
             onClick = { showClearConfirm = true },
@@ -343,6 +562,6 @@ fun TravelTripHistorySheet(
             Text(stringResource(R.string.travel_trip_history_close))
         }
 
-        Spacer(Modifier.height(16.dp))
+        Spacer(Modifier.height(8.dp))
     }
 }
