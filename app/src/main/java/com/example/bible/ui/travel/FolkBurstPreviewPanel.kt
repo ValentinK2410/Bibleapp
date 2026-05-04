@@ -44,7 +44,6 @@ import coil.request.ImageRequest
 import com.example.bible.R
 import com.example.bible.data.travel.TravelRoutePhotoPoint
 import com.example.bible.data.travel.folkBurstFilteredPointsForViewer
-import java.io.File
 
 @Composable
 fun FolkBurstPreviewPanel(
@@ -148,13 +147,14 @@ internal fun FolkBurstPhotoThumb(
     modifier: Modifier = Modifier,
 ) {
     val ctx = LocalContext.current
-    val file = remember(photoUriString) {
-        runCatching { Uri.parse(photoUriString).path?.let(::File) }.getOrNull()
+    val uri = remember(photoUriString) {
+        runCatching { Uri.parse(photoUriString.trim()) }.getOrNull()
+            ?.takeUnless { it === Uri.EMPTY }
     }
-    val request = remember(photoUriString, file) {
-        val f = file?.takeIf { it.exists() && it.length() > 0L } ?: return@remember null
+    val request = remember(photoUriString, uri, ctx) {
+        val u = uri ?: return@remember null
         ImageRequest.Builder(ctx)
-            .data(f)
+            .data(u)
             .crossfade(false)
             .diskCachePolicy(CachePolicy.DISABLED)
             .memoryCachePolicy(CachePolicy.DISABLED)

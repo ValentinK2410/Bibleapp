@@ -513,13 +513,26 @@ fun MyTravelsScreen(
     val burstSidRef = rememberUpdatedState(burstSessionIdLocal)
     val lastGeoRef = rememberUpdatedState(lastUserGeo)
     val headingRef = rememberUpdatedState(lastUserHeadingDeg)
+    val burstIcRef = rememberUpdatedState(burstImageCapture)
 
-    LaunchedEffect(routeBurstActive, burstImageCapture, burstSessionIdLocal) {
+    /** Последняя известная точка GPS для серии; между тиками карты не теряем привязку кадра к координатам. */
+    var lastKnownGeoForBurst by remember { mutableStateOf<TravelGeoPoint?>(null) }
+    LaunchedEffect(lastUserGeo) {
+        lastUserGeo?.let { lastKnownGeoForBurst = it }
+    }
+
+    LaunchedEffect(routeBurstActive, burstSessionIdLocal) {
         if (!routeBurstActive) return@LaunchedEffect
         val sid = burstSessionIdLocal ?: return@LaunchedEffect
         while (burstActiveRef.value && burstSidRef.value == sid) {
-            val ic = burstImageCapture ?: break
-            val geo = lastGeoRef.value
+            val ic = burstIcRef.value
+            if (ic == null) {
+                delay(40)
+                continue
+            }
+            val geoNow = lastGeoRef.value
+            if (geoNow != null) lastKnownGeoForBurst = geoNow
+            val geo = geoNow ?: lastKnownGeoForBurst
             val file = TravelPhotoStorage.createRouteBurstImageFile(context, sid)
             val ok = ic.captureToFileSuspend(file, burstCaptureExecutor)
             if (ok && geo != null && file.exists() && file.length() > 0L) {
