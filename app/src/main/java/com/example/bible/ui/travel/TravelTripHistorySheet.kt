@@ -12,8 +12,10 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowLeft
@@ -190,6 +192,7 @@ private fun TripHistoryCalendarGrid(
                             val isWeekend =
                                 cellDate.dayOfWeek == DayOfWeek.SATURDAY ||
                                     cellDate.dayOfWeek == DayOfWeek.SUNDAY
+                            val hasTripHistory = cellDate in datesWithData
                             Column(horizontalAlignment = Alignment.CenterHorizontally) {
                                 Text(
                                     text = "$dayNum",
@@ -197,14 +200,25 @@ private fun TripHistoryCalendarGrid(
                                     style = MaterialTheme.typography.bodyMedium,
                                     textAlign = TextAlign.Center,
                                 )
-                                if (cellDate in datesWithData) {
+                                // Полоска под числом: день с записанным перемещением (история трека).
+                                if (hasTripHistory) {
+                                    val stripeColor =
+                                        if (isSelected) {
+                                            MaterialTheme.colorScheme.primary
+                                        } else {
+                                            MaterialTheme.colorScheme.primary.copy(alpha = 0.85f)
+                                        }
                                     Box(
                                         Modifier
-                                            .padding(top = 2.dp)
-                                            .size(4.dp)
-                                            .clip(CircleShape)
-                                            .background(MaterialTheme.colorScheme.outline),
+                                            .padding(top = 4.dp)
+                                            .width(20.dp)
+                                            .height(4.dp)
+                                            .clip(RoundedCornerShape(50))
+                                            .background(stripeColor),
                                     )
+                                } else {
+                                    // Резерв высоты, чтобы ячейки с данными и без не «прыгали» по вертикали.
+                                    Spacer(Modifier.height(8.dp))
                                 }
                             }
                         }
