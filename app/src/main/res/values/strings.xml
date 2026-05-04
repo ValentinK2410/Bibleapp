@@ -1158,8 +1158,8 @@
     <string name="travel_route_folk_gesture_hint">На заголовке выше жестом двумя пальцами: масштаб и сдвиг всего блока. Ленту кадров ниже листайте одним пальцем.</string>
     <string name="travel_route_folk_frames_fmt">Народная съёмка · кадров: %1$d</string>
     <string name="travel_route_burst_frames_fmt">Кадров в серии: %1$d</string>
-    <string name="travel_spot_photos_toggle_cd">Показать или скрыть фото рядом с вами на карте (1–3 м и по направлению)</string>
-    <string name="travel_spot_photos_empty">Нет кадров на расстоянии 1–3 м с учётом направления.</string>
+    <string name="travel_spot_photos_toggle_cd">Показать или скрыть фото рядом на карте (до ~22 м, по направлению если дальше ~8 м)</string>
+    <string name="travel_spot_photos_empty">Нет кадров рядом с этой точкой (до ~22 м) или не совпадает направление для дальних.</string>
     <string name="travel_spot_photos_wait_gps">Подождите координаты GPS и попробуйте снова.</string>
     <string name="travel_menu_trip_history">История поездок</string>
     <string name="travel_trip_history_title">История поездок</string>

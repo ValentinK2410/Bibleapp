@@ -292,13 +292,16 @@ fun folkBurstFilteredPointsForViewer(
     return ordered.map { it.first }.take(FOLK_BURST_MAX_PREVIEW_COUNT)
 }
 
-private const val SPOT_RING_MIN_DISTANCE_M = 1.0
-private const val SPOT_RING_MAX_DISTANCE_M = 3.0
+private const val SPOT_RING_MIN_DISTANCE_M = 0.0
+/** Реальный GPS редко держит 1–3 м; расширяем «рядом на карте», порядок — от ближних к дальним. */
+private const val SPOT_RING_MAX_DISTANCE_M = 22.0
+/** Внутри этого радиуса пеленг «вы→точка» ненадёжен — достаточно геопривязки. */
+private const val SPOT_NEARBY_SKIP_HEADING_M = 8.0
 private const val SPOT_RING_MAX_RESULTS = 32
 
 /**
- * Кадры у «текущей точки»: на карте на расстоянии от [SPOT_RING_MIN_DISTANCE_M] до [SPOT_RING_MAX_DISTANCE_M] м
- * и в том же секторе направления, что и у наблюдателя (как у «народной съёмки»).
+ * Кадры рядом с текущей точкой: до [SPOT_RING_MAX_DISTANCE_M] м (включая «на месте», от 0 м),
+ * с фильтром по направлению как у «народной съёмки», кроме очень близких кадров ([SPOT_NEARBY_SKIP_HEADING_M] м).
  */
 fun routePhotosInSpotRingForViewer(
     points: List<TravelRoutePhotoPoint>,
@@ -313,7 +316,8 @@ fun routePhotosInSpotRingForViewer(
     val inRing = points.mapNotNull { p ->
         val d = travelDistanceMeters(here, TravelGeoPoint(p.latitude, p.longitude))
         if (d < SPOT_RING_MIN_DISTANCE_M || d > SPOT_RING_MAX_DISTANCE_M) return@mapNotNull null
-        val dirOk = when {
+        val skipHeading = d <= SPOT_NEARBY_SKIP_HEADING_M
+        val dirOk = skipHeading || when {
             vh == null -> true
             p.headingDeg != null && p.headingDeg.isFinite() ->
                 headingAngularDifferenceDeg(vh, p.headingDeg) <= FOLK_BURST_MAX_HEADING_DIFF_DEG
