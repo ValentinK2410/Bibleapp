@@ -4,6 +4,7 @@ import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.app.Service
 import android.content.Intent
+import android.location.Location
 import android.os.Build
 import android.os.IBinder
 import android.os.Looper
@@ -13,6 +14,7 @@ import com.example.bible.R
 import com.example.bible.data.travel.TravelTriggerExecutor
 import com.example.bible.data.travel.TravelZoneKind
 import com.example.bible.data.travel.TravelMarkerSoundTrigger
+import com.example.bible.data.travel.TravelTripTrackPoint
 import com.example.bible.data.travel.TravelZoneRepository
 import com.example.bible.data.travel.pointInPolygon
 import com.example.bible.data.travel.travelDistanceMeters
@@ -84,7 +86,7 @@ class TravelMonitorService : Service() {
         val cb = object : LocationCallback() {
             override fun onLocationResult(result: LocationResult) {
                 val loc = result.lastLocation ?: return
-                evaluate(TravelGeoPoint(loc.latitude, loc.longitude))
+                evaluate(loc)
             }
         }
         callback = cb
@@ -99,9 +101,15 @@ class TravelMonitorService : Service() {
         }
     }
 
-    private fun evaluate(position: TravelGeoPoint) {
+    private fun evaluate(loc: Location) {
         serviceScope.launch {
             val repo = TravelZoneRepository(this@TravelMonitorService)
+            withContext(Dispatchers.IO) {
+                if (repo.tripHistoryEnabled.first()) {
+                    repo.appendTripSamples(listOf(TravelTripTrackPoint.fromLocation(loc)))
+                }
+            }
+            val position = TravelGeoPoint(loc.latitude, loc.longitude)
             val zones = withContext(Dispatchers.IO) {
                 repo.snapshot()
             }.filter {

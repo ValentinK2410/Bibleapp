@@ -242,12 +242,14 @@ fun MyTravelsScreen(
     val friendPeerPollEnabled by vm.friendPeerPollEnabled.collectAsStateWithLifecycle()
     val lastUserGeo by vm.lastUserGeo.collectAsStateWithLifecycle()
     val lastUserHeadingDeg by vm.lastUserHeadingDeg.collectAsStateWithLifecycle()
+    val tripHistoryOverlay by vm.tripHistoryOverlayPoints.collectAsStateWithLifecycle()
     val scope = rememberCoroutineScope()
     val contactsRepo = remember { ContactsRepository(context) }
 
     var burstSessionIdLocal by remember { mutableStateOf<String?>(null) }
     var deleteRouteSessionDialog by remember { mutableStateOf(false) }
     var deleteAllRouteSessionsConfirm by remember { mutableStateOf(false) }
+    var showTripHistorySheet by remember { mutableStateOf(false) }
     var showRoutePhotosManageSheet by remember { mutableStateOf(false) }
     var showRoutePlaybackControlsSheet by remember { mutableStateOf(false) }
     var showFriendPeerSheet by remember { mutableStateOf(false) }
@@ -788,6 +790,13 @@ fun MyTravelsScreen(
                                 },
                             )
                             DropdownMenuItem(
+                                text = { Text(stringResource(R.string.travel_menu_trip_history)) },
+                                onClick = {
+                                    vm.setTravelMenuExpanded(false)
+                                    showTripHistorySheet = true
+                                },
+                            )
+                            DropdownMenuItem(
                                 text = { Text(stringResource(R.string.travel_menu_edit_markers)) },
                                 onClick = {
                                     vm.setTravelMenuExpanded(false)
@@ -1075,6 +1084,10 @@ fun MyTravelsScreen(
                                 },
                                 photos = spotHudFilteredPhotos,
                             )
+                        },
+                        tripHistoryPolyline = tripHistoryOverlay,
+                        onTripGpsSample = { lat, lng, ts, sp ->
+                            vm.recordTripGpsSample(lat, lng, ts, sp)
                         },
                     )
                     if (routeBurstActive && camGranted) {
@@ -2161,6 +2174,15 @@ fun MyTravelsScreen(
                 }
             },
         )
+    }
+
+    if (showTripHistorySheet) {
+        ModalBottomSheet(onDismissRequest = { showTripHistorySheet = false }) {
+            TravelTripHistorySheet(
+                vm = vm,
+                onDismiss = { showTripHistorySheet = false },
+            )
+        }
     }
 
     if (showRoutePhotosManageSheet && sortedPhotoSessions.isNotEmpty()) {

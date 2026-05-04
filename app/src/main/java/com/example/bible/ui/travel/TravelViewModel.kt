@@ -13,12 +13,14 @@ import com.example.bible.data.travel.TravelMapIncident
 import com.example.bible.data.travel.TravelMapKitSettingsRepository
 import com.example.bible.data.travel.RoutePlaybackSimState
 import com.example.bible.data.travel.TravelRoutePhotoSession
+import com.example.bible.data.travel.TravelTripTrackPoint
 import com.example.bible.data.travel.TravelZone
 import com.example.bible.data.travel.buildRoutePlaybackPolyline
 import com.example.bible.data.travel.interpolateRoutePlayback
 import com.example.bible.data.travel.nearestDistanceAlongPolyline
 import com.example.bible.data.travel.normalizeHeadingDeg
 import com.example.bible.data.travel.routePlaybackPhotoUriAtDistance
+import com.example.bible.data.travel.travelDistanceMeters
 import com.example.bible.data.travel.TravelZoneKind
 import com.example.bible.data.travel.TravelZoneRepository
 import com.example.bible.data.travel.TRAVEL_ZONE_CIRCLE_RADIUS_MAX_M
@@ -67,6 +69,14 @@ sealed class TravelPendingZoneSave {
     data class CircleZone(val center: TravelGeoPoint, val radius: Float) : TravelPendingZoneSave()
     data class PolygonZone(val points: List<TravelGeoPoint>) : TravelPendingZoneSave()
 }
+
+private data class TravelMonitorGeoInputs(
+    val zones: List<TravelZone>,
+    val polygonMonitorEnabled: Boolean,
+    val incidents: List<TravelMapIncident>,
+    val markerProximityEnabled: Boolean,
+    val markerDefaultSoundUri: String?,
+)
 
 class TravelViewModel(
     app: Application,
@@ -268,6 +278,21 @@ class TravelViewModel(
         true,
     )
 
+    /** Запись GPS-трека для экрана «История поездок». */
+    val tripHistoryEnabled: StateFlow<Boolean> = repo.tripHistoryEnabled.stateIn(
+        viewModelScope,
+        SharingStarted.WhileSubscribed(5_000),
+        true,
+    )
+
+    private val _tripHistoryOverlayPoints = MutableStateFlow<List<TravelGeoPoint>?>(null)
+    val tripHistoryOverlayPoints: StateFlow<List<TravelGeoPoint>?> = _tripHistoryOverlayPoints.asStateFlow()
+
+    private val tripMapSampleGate = Any()
+    private var tripMapLastWallMs = 0L
+    private var tripMapLastLat = 0.0
+    private var tripMapLastLon = 0.0
+
     private val _incidentPlaceMode = MutableStateFlow(false)
     val incidentPlaceMode: StateFlow<Boolean> = _incidentPlaceMode.asStateFlow()
 
@@ -283,16 +308,19 @@ class TravelViewModel(
                 repo.markerProximityEnabled,
                 repo.markerDefaultSoundUri,
             ) { zones, polyMon, incidents, markerProx, markerDefSound ->
-                TravelGeofenceManager.sync(getApplication(), zones)
-                val hasPoly = zones.any {
+                TravelMonitorGeoInputs(zones, polyMon, incidents, markerProx, markerDefSound)
+            }.combine(repo.tripHistoryEnabled) { geo, tripHist ->
+                TravelGeofenceManager.sync(getApplication(), geo.zones)
+                val hasPoly = geo.zones.any {
                     it.enabled && it.kind == TravelZoneKind.POLYGON && it.polygonPoints.size >= 3
                 }
-                val polyMonitorWanted = polyMon && hasPoly
-                val markerAlertsWanted = markerProx && (
-                    !markerDefSound.isNullOrBlank() ||
-                        incidents.any { !it.soundUri.isNullOrBlank() }
+                val polyMonitorWanted = geo.polygonMonitorEnabled && hasPoly
+                val markerAlertsWanted = geo.markerProximityEnabled && (
+                    !geo.markerDefaultSoundUri.isNullOrBlank() ||
+                        geo.incidents.any { !it.soundUri.isNullOrBlank() }
                     )
-                if (polyMonitorWanted || markerAlertsWanted) {
+                val tripRecordingWanted = tripHist
+                if (polyMonitorWanted || markerAlertsWanted || tripRecordingWanted) {
                     TravelMonitorService.start(getApplication())
                 } else {
                     TravelMonitorService.stop(getApplication())
@@ -761,6 +789,65 @@ class TravelViewModel(
 
     fun reportUserLocation(latitude: Double, longitude: Double) {
         _lastUserGeo.value = TravelGeoPoint(latitude, longitude)
+    }
+
+    /** Плотная выборка с карты (пока открыты «Мои путешествия»); фон дублирует через [TravelMonitorService]. */
+    fun recordTripGpsSample(latitude: Double, longitude: Double, timestampMs: Long, speedMps: Float) {
+        viewModelScope.launch(Dispatchers.IO) {
+            if (!repo.tripHistoryEnabled.first()) return@launch
+            val allowAppend = synchronized(tripMapSampleGate) {
+                val now = System.currentTimeMillis()
+                if (tripMapLastWallMs == 0L) {
+                    tripMapLastWallMs = now
+                    tripMapLastLat = latitude
+                    tripMapLastLon = longitude
+                    true
+                } else {
+                    val dt = now - tripMapLastWallMs
+                    val d = travelDistanceMeters(
+                        TravelGeoPoint(tripMapLastLat, tripMapLastLon),
+                        TravelGeoPoint(latitude, longitude),
+                    )
+                    if (dt < 8_000L && d < 14.0) {
+                        false
+                    } else {
+                        tripMapLastWallMs = now
+                        tripMapLastLat = latitude
+                        tripMapLastLon = longitude
+                        true
+                    }
+                }
+            }
+            if (!allowAppend) return@launch
+            repo.appendTripSamples(
+                listOf(
+                    TravelTripTrackPoint(
+                        timestampMs = timestampMs.coerceAtLeast(0L),
+                        latitude = latitude,
+                        longitude = longitude,
+                        speedMps = speedMps.coerceAtLeast(0f),
+                    ),
+                ),
+            )
+        }
+    }
+
+    fun setTripHistoryRecordingEnabled(enabled: Boolean) {
+        viewModelScope.launch {
+            repo.setTripHistoryEnabled(enabled)
+        }
+    }
+
+    suspend fun tripTrackSnapshot(): List<TravelTripTrackPoint> = repo.snapshotTripTrack()
+
+    fun clearTripTrackHistory() {
+        viewModelScope.launch(Dispatchers.IO) {
+            repo.clearTripTrack()
+        }
+    }
+
+    fun setTripHistoryOverlay(points: List<TravelGeoPoint>?) {
+        _tripHistoryOverlayPoints.value = points
     }
 
     fun reportUserHeading(degrees: Float) {

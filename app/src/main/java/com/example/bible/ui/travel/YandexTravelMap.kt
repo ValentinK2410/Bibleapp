@@ -302,6 +302,8 @@ fun YandexTravelMap(
     friendPeerLocation: FriendPeerLocation? = null,
     hideNavigatorHud: Boolean = false,
     navigatorHudExtras: (@Composable () -> Unit)? = null,
+    tripHistoryPolyline: List<TravelGeoPoint>? = null,
+    onTripGpsSample: ((latitude: Double, longitude: Double, timestampMs: Long, speedMps: Float) -> Unit)? = null,
 ) {
     val context = LocalContext.current
     var mapReady by remember { mutableStateOf<Boolean?>(null) }
@@ -368,6 +370,8 @@ fun YandexTravelMap(
                 friendPeerLocation = friendPeerLocation,
                 hideNavigatorHud = hideNavigatorHud,
                 navigatorHudExtras = navigatorHudExtras,
+                tripHistoryPolyline = tripHistoryPolyline,
+                onTripGpsSample = onTripGpsSample,
             )
         }
     }
@@ -405,6 +409,8 @@ private fun YandexTravelMapContent(
     friendPeerLocation: FriendPeerLocation? = null,
     hideNavigatorHud: Boolean = false,
     navigatorHudExtras: (@Composable () -> Unit)? = null,
+    tripHistoryPolyline: List<TravelGeoPoint>? = null,
+    onTripGpsSample: ((latitude: Double, longitude: Double, timestampMs: Long, speedMps: Float) -> Unit)? = null,
 ) {
     val context = LocalContext.current
     val lifecycleOwner = LocalLifecycleOwner.current
@@ -461,6 +467,9 @@ private fun YandexTravelMapContent(
     val routePhotoArrowLayer = remember(mapView) {
         routeOverlay.addCollection().apply { zIndex = 4.38f }
     }
+    val tripHistoryLayer = remember(mapView) {
+        routeOverlay.addCollection().apply { zIndex = 4.09f }
+    }
     val routePlaybackWalkerLayer = remember(mapView) {
         routeOverlay.addCollection().apply { zIndex = 6.48f }
     }
@@ -482,6 +491,7 @@ private fun YandexTravelMapContent(
     val onRouteBuilt = rememberUpdatedState(onTravelRouteBuilt)
     val onActiveRoute = rememberUpdatedState(onActiveTravelRouteChange)
     val onUserLocation = rememberUpdatedState(onUserLocationUpdated)
+    val onTripGpsSampleCb = rememberUpdatedState(onTripGpsSample)
     val routePlaybackSimState = rememberUpdatedState(routePlaybackSim)
     val friendPeerLocationState = rememberUpdatedState(friendPeerLocation)
 
@@ -508,6 +518,17 @@ private fun YandexTravelMapContent(
                 line.zIndex = 4.07f
             }
         }
+    }
+
+    LaunchedEffect(tripHistoryPolyline, tripHistoryLayer, mapView) {
+        tripHistoryLayer.clear()
+        val pts = tripHistoryPolyline ?: return@LaunchedEffect
+        if (pts.size < 2) return@LaunchedEffect
+        val poly = Polyline(pts.map { Point(it.latitude, it.longitude) })
+        val line = tripHistoryLayer.addPolyline(poly)
+        line.setStrokeColor(0xFF7C4DFF.toInt())
+        line.strokeWidth = 10f
+        line.zIndex = 4.09f
     }
 
     LaunchedEffect(routePhotoSessions, routeBurstDraftPoints, routePhotoArrowLayer, mapView, context) {
@@ -928,6 +949,7 @@ private fun YandexTravelMapContent(
             elapsedRealtimeNs: Long,
         ) {
             onUserLocation.value?.invoke(latitude, longitude)
+            onTripGpsSampleCb.value?.invoke(latitude, longitude, System.currentTimeMillis(), speedMps)
             val kmh = (speedMps * 3.6f).coerceIn(0f, 400f)
             val hudBlend = when {
                 kmh < 10f -> 0.48f

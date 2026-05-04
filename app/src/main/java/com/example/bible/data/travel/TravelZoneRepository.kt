@@ -9,6 +9,8 @@ import androidx.datastore.preferences.preferencesDataStore
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
 import java.io.File
 
 private val Context.travelZonesDataStore by preferencesDataStore(name = "travel_zones")
@@ -29,12 +31,16 @@ private object TravelKeys {
     val MARKER_PROXIMITY_ENABLED = booleanPreferencesKey("travel_marker_proximity_enabled")
     /** Серии фото по GPS-маршруту (JSON-массив сессий). */
     val ROUTE_PHOTO_SESSIONS_JSON = stringPreferencesKey("travel_route_photo_sessions_json")
+    /** Запись GPS-трека поездок для истории на карте. */
+    val TRIP_HISTORY_ENABLED = booleanPreferencesKey("travel_trip_history_enabled")
+    val TRIP_TRACK_POINTS_JSON = stringPreferencesKey("travel_trip_track_points_json")
 }
 
 class TravelZoneRepository(
     context: Context,
 ) {
     private val app = context.applicationContext
+    private val tripTrackMutex = Mutex()
 
     val zones: Flow<List<TravelZone>> = app.travelZonesDataStore.data.map { prefs ->
         TravelZone.parseList(prefs[TravelKeys.ZONES_JSON] ?: "[]")
@@ -79,8 +85,49 @@ class TravelZoneRepository(
         TravelRoutePhotoSession.parseList(prefs[TravelKeys.ROUTE_PHOTO_SESSIONS_JSON] ?: "[]")
     }
 
+    /** Накопление точек маршрута (Мои путешествия → история поездок). По умолчанию включено. */
+    val tripHistoryEnabled: Flow<Boolean> = app.travelZonesDataStore.data.map { prefs ->
+        prefs[TravelKeys.TRIP_HISTORY_ENABLED] ?: true
+    }
+
     suspend fun snapshotRoutePhotoSessions(): List<TravelRoutePhotoSession> =
         routePhotoSessions.first()
+
+    suspend fun snapshotTripTrack(): List<TravelTripTrackPoint> =
+        tripTrackMutex.withLock {
+            readTripTrackPointsLocked()
+        }
+
+    private suspend fun readTripTrackPointsLocked(): List<TravelTripTrackPoint> {
+        val raw = app.travelZonesDataStore.data.first()[TravelKeys.TRIP_TRACK_POINTS_JSON] ?: "[]"
+        return TravelTripTrackPoint.parseList(raw)
+    }
+
+    suspend fun setTripHistoryEnabled(enabled: Boolean) {
+        app.travelZonesDataStore.edit { prefs ->
+            prefs[TravelKeys.TRIP_HISTORY_ENABLED] = enabled
+        }
+    }
+
+    suspend fun appendTripSamples(samples: List<TravelTripTrackPoint>) {
+        if (samples.isEmpty()) return
+        tripTrackMutex.withLock {
+            if (!tripHistoryEnabled.first()) return
+            val cur = readTripTrackPointsLocked()
+            val merged = mergeAndPruneTripTrack(cur, samples)
+            app.travelZonesDataStore.edit { prefs ->
+                prefs[TravelKeys.TRIP_TRACK_POINTS_JSON] = TravelTripTrackPoint.toJsonArray(merged)
+            }
+        }
+    }
+
+    suspend fun clearTripTrack() {
+        tripTrackMutex.withLock {
+            app.travelZonesDataStore.edit { prefs ->
+                prefs[TravelKeys.TRIP_TRACK_POINTS_JSON] = "[]"
+            }
+        }
+    }
 
     suspend fun saveRoutePhotoSessions(list: List<TravelRoutePhotoSession>) {
         app.travelZonesDataStore.edit { prefs ->
