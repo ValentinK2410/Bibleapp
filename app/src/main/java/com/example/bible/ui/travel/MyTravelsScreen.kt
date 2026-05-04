@@ -36,6 +36,7 @@ import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.AddLocationAlt
 import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material3.AlertDialog
@@ -247,6 +248,8 @@ fun MyTravelsScreen(
     val contactsRepo = remember { ContactsRepository(context) }
 
     var burstSessionIdLocal by remember { mutableStateOf<String?>(null) }
+    /** При дополнении серии: исходная сессия для replace и сохранения createdAtMs. */
+    var burstBaseSessionForContinue by remember { mutableStateOf<TravelRoutePhotoSession?>(null) }
     var deleteRouteSessionDialog by remember { mutableStateOf(false) }
     var deleteAllRouteSessionsConfirm by remember { mutableStateOf(false) }
     var showTripHistorySheet by remember { mutableStateOf(false) }
@@ -579,11 +582,21 @@ fun MyTravelsScreen(
         vm.setRouteBurstActive(false)
         val sid = burstSessionIdLocal
         val pts = burstDraftPoints.toList()
+        val base = burstBaseSessionForContinue
         burstSessionIdLocal = null
         burstDraftPoints.clear()
+        burstBaseSessionForContinue = null
         scope.launch {
             if (sid != null && pts.isNotEmpty()) {
-                vm.saveRouteBurstSession(TravelRoutePhotoSession(id = sid, points = pts))
+                val replace = base != null && base.id == sid
+                vm.saveRouteBurstSession(
+                    TravelRoutePhotoSession(
+                        id = sid,
+                        createdAtMs = if (replace) base.createdAtMs else System.currentTimeMillis(),
+                        points = pts,
+                    ),
+                    replaceExisting = replace,
+                )
             }
         }
     }
@@ -603,7 +616,35 @@ fun MyTravelsScreen(
             else -> {
                 vm.setRoutePlaybackActive(false)
                 burstDraftPoints.clear()
+                burstBaseSessionForContinue = null
                 burstSessionIdLocal = UUID.randomUUID().toString()
+                vm.setRouteBurstActive(true)
+            }
+        }
+    }
+
+    val requestContinueRouteBurst: () -> Unit = {
+        bumpFloatingToolbar()
+        when {
+            !hasFineLocation -> {
+                Toast.makeText(context, R.string.travel_need_location, Toast.LENGTH_LONG).show()
+            }
+            incidentPlaceMode || routePickDestination -> {
+                Toast.makeText(context, R.string.travel_route_photo_modes_conflict, Toast.LENGTH_SHORT).show()
+            }
+            !camGranted -> {
+                camPermLauncher.launch(Manifest.permission.CAMERA)
+            }
+            sortedPhotoSessions.isEmpty() -> {
+                Toast.makeText(context, R.string.travel_route_photo_no_sessions, Toast.LENGTH_SHORT).show()
+            }
+            else -> {
+                val latest = sortedPhotoSessions.first()
+                vm.setRoutePlaybackActive(false)
+                burstDraftPoints.clear()
+                burstDraftPoints.addAll(latest.points.sortedBy { it.capturedAtMs })
+                burstSessionIdLocal = latest.id
+                burstBaseSessionForContinue = latest
                 vm.setRouteBurstActive(true)
             }
         }
@@ -1131,6 +1172,17 @@ fun MyTravelsScreen(
                                     },
                                 ),
                             )
+                        }
+                        if (!routeBurstActive && sortedPhotoSessions.isNotEmpty()) {
+                            SmallFloatingActionButton(
+                                onClick = { requestContinueRouteBurst() },
+                                containerColor = MaterialTheme.colorScheme.secondaryContainer,
+                            ) {
+                                Icon(
+                                    Icons.Default.Add,
+                                    contentDescription = stringResource(R.string.travel_route_burst_continue_cd),
+                                )
+                            }
                         }
                         SmallFloatingActionButton(
                             onClick = {

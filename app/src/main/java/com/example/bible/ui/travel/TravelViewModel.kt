@@ -906,9 +906,13 @@ class TravelViewModel(
         if (_routePlaybackActive.value) restartRoutePlaybackSimulation()
     }
 
-    suspend fun saveRouteBurstSession(session: TravelRoutePhotoSession) {
+    suspend fun saveRouteBurstSession(session: TravelRoutePhotoSession, replaceExisting: Boolean = false) {
         if (session.points.isEmpty()) return
-        repo.addRoutePhotoSession(session)
+        if (replaceExisting) {
+            repo.replaceRoutePhotoSession(session)
+        } else {
+            repo.addRoutePhotoSession(session)
+        }
     }
 
     fun deleteRoutePhotoSession(sessionId: String) {

@@ -86,6 +86,7 @@ import com.example.bible.data.travel.FriendPeerLocation
 import com.example.bible.data.travel.RoutePlaybackSimState
 import com.example.bible.data.travel.TravelRoutePhotoSession
 import com.example.bible.data.travel.TravelRoutePhotoPoint
+import com.example.bible.data.travel.bearingDegForRoutePhotoMapOrNull
 import com.example.bible.data.travel.bearingDegreesLatLon
 import com.example.bible.data.travel.buildRoutePhotoDirectionSegments
 import com.example.bible.map.MapKitBootstrap
@@ -533,44 +534,37 @@ private fun YandexTravelMapContent(
 
     LaunchedEffect(routePhotoSessions, routeBurstDraftPoints, routePhotoArrowLayer, mapView, context) {
         routePhotoArrowLayer.clear()
-        val segments = buildRoutePhotoDirectionSegments(routePhotoSessions)
-        val laneArrowIcon = laneDirectionArrowImageProvider(context)
-        for (seg in segments) {
-            val poly = Polyline(listOf(Point(seg.lat1, seg.lon1), Point(seg.lat2, seg.lon2)))
-            val arrows = sampleLaneArrowsAlongPolyline(poly, TRAVEL_ROUTE_LANE_ARROW_SPACING_M)
-            for ((pt, bearingDeg) in arrows) {
-                val pm = routePhotoArrowLayer.addPlacemark(pt, laneArrowIcon)
-                pm.direction = bearingDeg
-                pm.setIconStyle(
-                    IconStyle().apply {
-                        anchor = PointF(0.5f, 0.5f)
-                        rotationType = RotationType.ROTATE
-                        scale = 1.18f
-                        zIndex = 4.37f
-                    },
-                )
-            }
-        }
-        if (routeBurstDraftPoints.isNotEmpty()) {
-            val draftSegs = buildRoutePhotoDirectionSegments(
-                listOf(TravelRoutePhotoSession(id = "__draft__", points = routeBurstDraftPoints)),
-            )
-            for (seg in draftSegs) {
-                val poly = Polyline(listOf(Point(seg.lat1, seg.lon1), Point(seg.lat2, seg.lon2)))
-                val arrows = sampleLaneArrowsAlongPolyline(poly, TRAVEL_ROUTE_LANE_ARROW_SPACING_M)
-                for ((pt, bearingDeg) in arrows) {
-                    val pm = routePhotoArrowLayer.addPlacemark(pt, laneArrowIcon)
-                    pm.direction = bearingDeg
+        val folkArrowIcon = laneDirectionArrowImageProvider(context)
+        fun addArrowsForSessions(sessions: List<TravelRoutePhotoSession>, iconScale: Float, z: Float) {
+            for (session in sessions) {
+                val pts = session.points.sortedBy { it.capturedAtMs }
+                for (i in pts.indices) {
+                    val bearing = bearingDegForRoutePhotoMapOrNull(
+                        pts.getOrNull(i - 1),
+                        pts[i],
+                        pts.getOrNull(i + 1),
+                    ) ?: continue
+                    val p = pts[i]
+                    val pm = routePhotoArrowLayer.addPlacemark(Point(p.latitude, p.longitude), folkArrowIcon)
+                    pm.direction = bearing
                     pm.setIconStyle(
                         IconStyle().apply {
                             anchor = PointF(0.5f, 0.5f)
                             rotationType = RotationType.ROTATE
-                            scale = 1.12f
-                            zIndex = 4.375f
+                            scale = iconScale
+                            zIndex = z
                         },
                     )
                 }
             }
+        }
+        addArrowsForSessions(routePhotoSessions, iconScale = 0.5f, z = 4.37f)
+        if (routeBurstDraftPoints.isNotEmpty()) {
+            addArrowsForSessions(
+                listOf(TravelRoutePhotoSession(id = "__draft__", points = routeBurstDraftPoints)),
+                iconScale = 0.47f,
+                z = 4.375f,
+            )
         }
     }
 

@@ -75,6 +75,28 @@ fun bearingDegreesLatLon(lat1: Double, lon1: Double, lat2: Double, lon2: Double)
     return normalizeHeadingDeg(Math.toDegrees(θ).toFloat())
 }
 
+/**
+ * Азимут стрелки на карте для одного кадра серии: сначала [TravelRoutePhotoPoint.headingDeg],
+ * иначе направление по GPS от предыдущей точки или к следующей.
+ * @return null, если по соседям направление восстановить нельзя и heading не задан.
+ */
+fun bearingDegForRoutePhotoMapOrNull(
+    prev: TravelRoutePhotoPoint?,
+    self: TravelRoutePhotoPoint,
+    next: TravelRoutePhotoPoint?,
+): Float? {
+    self.headingDeg?.takeIf { it.isFinite() }?.let { return normalizeHeadingDeg(it) }
+    prev?.let {
+        val b = bearingDegreesLatLon(it.latitude, it.longitude, self.latitude, self.longitude)
+        if (b.isFinite()) return b
+    }
+    next?.let {
+        val b = bearingDegreesLatLon(self.latitude, self.longitude, it.latitude, it.longitude)
+        if (b.isFinite()) return b
+    }
+    return null
+}
+
 /** Смещение точки по азимуту на короткую дистанцию (метры). */
 fun extrapolateLatLonMeters(latDeg: Double, lonDeg: Double, bearingDeg: Float, distanceM: Float): Pair<Double, Double> {
     if (distanceM <= 0f) return latDeg to lonDeg
