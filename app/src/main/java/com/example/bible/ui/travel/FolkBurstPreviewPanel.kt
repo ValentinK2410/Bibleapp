@@ -43,23 +43,15 @@ import coil.request.CachePolicy
 import coil.request.ImageRequest
 import com.example.bible.R
 import com.example.bible.data.travel.TravelRoutePhotoPoint
-import com.example.bible.data.travel.folkBurstFilteredPointsForViewer
 
 @Composable
 fun FolkBurstPreviewPanel(
-    burstDraftPoints: List<TravelRoutePhotoPoint>,
-    viewerLat: Double?,
-    viewerLon: Double?,
-    viewerHeadingDeg: Float?,
+    /** Кадры в радиусе от центра экрана карты (перекрестье), с фильтром по направлению камеры. */
+    cursorIntersectPhotos: List<TravelRoutePhotoPoint>,
     totalCapturedCount: Int,
     onImageCaptureReady: (ImageCapture?) -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    val snapshot = burstDraftPoints
-    val filtered = remember(snapshot, viewerLat, viewerLon, viewerHeadingDeg) {
-        folkBurstFilteredPointsForViewer(snapshot, viewerLat, viewerLon, viewerHeadingDeg)
-    }
-
     var pinchScale by remember { mutableFloatStateOf(1f) }
     var panelOffset by remember { mutableStateOf(Offset.Zero) }
 
@@ -72,6 +64,15 @@ fun FolkBurstPreviewPanel(
                 translationX = panelOffset.x
                 translationY = panelOffset.y
                 transformOrigin = TransformOrigin(0f, 0f)
+            }
+            .pointerInput(Unit) {
+                detectTransformGestures { _, panChange, zoomChange, _ ->
+                    pinchScale = (pinchScale * zoomChange).coerceIn(0.42f, 3.9f)
+                    panelOffset = Offset(
+                        panelOffset.x + panChange.x,
+                        panelOffset.y + panChange.y,
+                    )
+                }
             },
         shape = RoundedCornerShape(14.dp),
         tonalElevation = 4.dp,
@@ -83,17 +84,7 @@ fun FolkBurstPreviewPanel(
                 .padding(8.dp),
             verticalArrangement = Arrangement.spacedBy(8.dp),
         ) {
-            Column(
-                Modifier
-                    .fillMaxWidth()
-                    .heightIn(min = 72.dp)
-                    .pointerInput(Unit) {
-                        detectTransformGestures { _, panChange, zoomChange, _ ->
-                            pinchScale = (pinchScale * zoomChange).coerceIn(0.55f, 3.4f)
-                            panelOffset = Offset(panelOffset.x + panChange.x, panelOffset.y + panChange.y)
-                        }
-                    },
-            ) {
+            Column(Modifier.fillMaxWidth()) {
                 Text(
                     stringResource(R.string.travel_route_folk_title_bar),
                     style = MaterialTheme.typography.titleSmall,
@@ -105,19 +96,37 @@ fun FolkBurstPreviewPanel(
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                     modifier = Modifier.padding(top = 2.dp),
                 )
+                Text(
+                    stringResource(R.string.travel_route_folk_cursor_section),
+                    style = MaterialTheme.typography.labelLarge,
+                    color = MaterialTheme.colorScheme.onSurface,
+                    modifier = Modifier.padding(top = 8.dp),
+                )
             }
-            LazyRow(
-                horizontalArrangement = Arrangement.spacedBy(8.dp),
-                verticalAlignment = Alignment.CenterVertically,
-            ) {
-                items(
-                    items = filtered,
-                    key = { "${it.photoUri}_${it.capturedAtMs}" },
-                ) { point ->
-                    FolkBurstPhotoThumb(
-                        photoUriString = point.photoUri,
-                        modifier = Modifier.size(width = 102.dp, height = 76.dp),
-                    )
+            if (cursorIntersectPhotos.isEmpty()) {
+                Text(
+                    stringResource(R.string.travel_route_folk_cursor_empty),
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    modifier = Modifier.padding(top = 2.dp),
+                )
+            } else {
+                LazyRow(
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .heightIn(min = 92.dp),
+                ) {
+                    items(
+                        items = cursorIntersectPhotos,
+                        key = { "${it.photoUri}_${it.capturedAtMs}" },
+                    ) { point ->
+                        FolkBurstPhotoThumb(
+                            photoUriString = point.photoUri,
+                            modifier = Modifier.size(width = 132.dp, height = 92.dp),
+                        )
+                    }
                 }
             }
             Surface(

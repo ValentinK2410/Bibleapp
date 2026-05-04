@@ -14,6 +14,7 @@ import android.os.Build
 import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -135,6 +136,7 @@ import androidx.compose.material.icons.filled.VideoLibrary
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.vector.rememberVectorPainter
 import androidx.compose.ui.layout.ContentScale
 import coil.compose.AsyncImage
@@ -189,6 +191,19 @@ private fun RouteBurstStoredPhotoThumbnail(
                 error = brokenPainter,
             )
         }
+    }
+}
+
+/** Перекрестье центра карты в режиме народной съёмки (маленькая область нажатий). */
+@Composable
+private fun FolkMapCrosshairDecoration(modifier: Modifier = Modifier) {
+    val color = MaterialTheme.colorScheme.primary.copy(alpha = 0.82f)
+    Canvas(modifier.then(Modifier.size(44.dp))) {
+        val c = Offset(size.width / 2f, size.height / 2f)
+        val arm = size.minDimension * 0.36f
+        val sw = (size.minDimension * 0.065f).coerceAtLeast(1.5f)
+        drawLine(color, Offset(c.x - arm, c.y), Offset(c.x + arm, c.y), strokeWidth = sw)
+        drawLine(color, Offset(c.x, c.y - arm), Offset(c.x, c.y + arm), strokeWidth = sw)
     }
 }
 
@@ -250,6 +265,8 @@ fun MyTravelsScreen(
     var burstSessionIdLocal by remember { mutableStateOf<String?>(null) }
     /** При дополнении серии: исходная сессия для replace и сохранения createdAtMs. */
     var burstBaseSessionForContinue by remember { mutableStateOf<TravelRoutePhotoSession?>(null) }
+    /** Центр экрана карты и азимут камеры — «курсор» для показа кадров под перекрестьем. */
+    var folkCrosshairGeo by remember { mutableStateOf<Triple<Double, Double, Float>?>(null) }
     var deleteRouteSessionDialog by remember { mutableStateOf(false) }
     var deleteAllRouteSessionsConfirm by remember { mutableStateOf(false) }
     var showTripHistorySheet by remember { mutableStateOf(false) }
@@ -576,6 +593,19 @@ fun MyTravelsScreen(
             lastUserGeo?.latitude,
             lastUserGeo?.longitude,
             lastUserHeadingDeg,
+        )
+    }
+    LaunchedEffect(routeBurstActive) {
+        if (!routeBurstActive) folkCrosshairGeo = null
+    }
+    val folkCursorPhotos = remember(combinedRoutePhotoPoints, folkCrosshairGeo, routeBurstActive) {
+        if (!routeBurstActive) return@remember emptyList()
+        val cg = folkCrosshairGeo ?: return@remember emptyList()
+        routePhotosInSpotRingForViewer(
+            combinedRoutePhotoPoints,
+            cg.first,
+            cg.second,
+            cg.third,
         )
     }
     val stopRouteBurstAndSave: () -> Unit = {
@@ -1130,13 +1160,21 @@ fun MyTravelsScreen(
                         onTripGpsSample = { lat, lng, ts, sp ->
                             vm.recordTripGpsSample(lat, lng, ts, sp)
                         },
+                        onFolkMapCrosshairGeoChanged =
+                            if (routeBurstActive) {
+                                { lat, lng, az -> folkCrosshairGeo = Triple(lat, lng, az) }
+                            } else {
+                                null
+                            },
                     )
+                    if (routeBurstActive && apiKeyPresent) {
+                        Box(Modifier.align(Alignment.Center)) {
+                            FolkMapCrosshairDecoration()
+                        }
+                    }
                     if (routeBurstActive && camGranted) {
                         FolkBurstPreviewPanel(
-                            burstDraftPoints = burstDraftPoints.toList(),
-                            viewerLat = lastUserGeo?.latitude,
-                            viewerLon = lastUserGeo?.longitude,
-                            viewerHeadingDeg = lastUserHeadingDeg,
+                            cursorIntersectPhotos = folkCursorPhotos,
                             totalCapturedCount = burstDraftPoints.size,
                             onImageCaptureReady = { burstImageCapture = it },
                             modifier = Modifier

@@ -1156,7 +1156,9 @@
     <string name="travel_route_burst_continue_cd">Дополнить последнюю серию снимков маршрута</string>
     <string name="travel_route_burst_last_frame_cd">Последний сохранённый кадр серии</string>
     <string name="travel_route_folk_title_bar">Народная съёмка</string>
-    <string name="travel_route_folk_gesture_hint">На заголовке выше жестом двумя пальцами: масштаб и сдвиг всего блока. Ленту кадров ниже листайте одним пальцем.</string>
+    <string name="travel_route_folk_gesture_hint">Два пальца по панели: сдвиг и масштаб всего блока. Ленту кадров под центром карты листайте горизонтально.</string>
+    <string name="travel_route_folk_cursor_section">Кадры у центра карты</string>
+    <string name="travel_route_folk_cursor_empty">Сместите карту так, чтобы центр экрана (перекрестье) оказался у точки съёмки — здесь появятся подходящие снимки.</string>
     <string name="travel_route_folk_frames_fmt">Народная съёмка · кадров: %1$d</string>
     <string name="travel_route_burst_frames_fmt">Кадров в серии: %1$d</string>
     <string name="travel_spot_photos_toggle_cd">Показать или скрыть фото рядом на карте (до ~22 м, по направлению если дальше ~8 м)</string>

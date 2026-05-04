@@ -305,6 +305,7 @@ fun YandexTravelMap(
     navigatorHudExtras: (@Composable () -> Unit)? = null,
     tripHistoryPolyline: List<TravelGeoPoint>? = null,
     onTripGpsSample: ((latitude: Double, longitude: Double, timestampMs: Long, speedMps: Float) -> Unit)? = null,
+    onFolkMapCrosshairGeoChanged: ((latitude: Double, longitude: Double, azimuthDeg: Float) -> Unit)? = null,
 ) {
     val context = LocalContext.current
     var mapReady by remember { mutableStateOf<Boolean?>(null) }
@@ -373,6 +374,7 @@ fun YandexTravelMap(
                 navigatorHudExtras = navigatorHudExtras,
                 tripHistoryPolyline = tripHistoryPolyline,
                 onTripGpsSample = onTripGpsSample,
+                onFolkMapCrosshairGeoChanged = onFolkMapCrosshairGeoChanged,
             )
         }
     }
@@ -412,6 +414,7 @@ private fun YandexTravelMapContent(
     navigatorHudExtras: (@Composable () -> Unit)? = null,
     tripHistoryPolyline: List<TravelGeoPoint>? = null,
     onTripGpsSample: ((latitude: Double, longitude: Double, timestampMs: Long, speedMps: Float) -> Unit)? = null,
+    onFolkMapCrosshairGeoChanged: ((latitude: Double, longitude: Double, azimuthDeg: Float) -> Unit)? = null,
 ) {
     val context = LocalContext.current
     val lifecycleOwner = LocalLifecycleOwner.current
@@ -495,6 +498,8 @@ private fun YandexTravelMapContent(
     val onTripGpsSampleCb = rememberUpdatedState(onTripGpsSample)
     val routePlaybackSimState = rememberUpdatedState(routePlaybackSim)
     val friendPeerLocationState = rememberUpdatedState(friendPeerLocation)
+    val folkCrosshairCbState = rememberUpdatedState(onFolkMapCrosshairGeoChanged)
+    val folkCrosshairThrottleLastMs = remember { AtomicLong(0L) }
 
     LaunchedEffect(routePhotoSessions, routeBurstDraftPoints, routePhotoBurstLayer, mapView) {
         routePhotoBurstLayer.clear()
@@ -1159,6 +1164,15 @@ private fun YandexTravelMapContent(
                     cameraPosition.zoom,
                     cameraPosition.target.latitude,
                 )
+                folkCrosshairCbState.value?.let { cb ->
+                    val now = SystemClock.uptimeMillis()
+                    val prev = folkCrosshairThrottleLastMs.get()
+                    if (finished || now - prev >= 72L) {
+                        folkCrosshairThrottleLastMs.set(now)
+                        val t = cameraPosition.target
+                        cb(t.latitude, t.longitude, cameraPosition.azimuth)
+                    }
+                }
                 if (cameraUpdateReason == CameraUpdateReason.GESTURES) {
                     hideRecenterFabJob.value?.cancel()
                     followUserActive = false
@@ -1180,6 +1194,11 @@ private fun YandexTravelMapContent(
         }
         map.addCameraListener(listener)
         mapZoom = map.cameraPosition.zoom
+        folkCrosshairCbState.value?.let { cb ->
+            val cp = map.cameraPosition
+            val t = cp.target
+            cb(t.latitude, t.longitude, cp.azimuth)
+        }
         onDispose {
             hideRecenterFabJob.value?.cancel()
             map.removeCameraListener(listener)
