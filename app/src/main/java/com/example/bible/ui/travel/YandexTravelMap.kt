@@ -485,11 +485,12 @@ private fun YandexTravelMapContent(
     val tripHistoryLayer = remember(mapView) {
         routeOverlay.addCollection().apply { zIndex = 4.09f }
     }
+    /** Выше любых слоёв внутри [routeOverlay] и выше [pinsOverlay] (z=6): иначе «человечек» может быть под метками. */
     val routePlaybackWalkerLayer = remember(mapView) {
-        routeOverlay.addCollection().apply { zIndex = 7.92f }
+        mapView.mapWindow.map.mapObjects.addCollection().apply { zIndex = 22f }
     }
     val friendPeerLayer = remember(mapView) {
-        routeOverlay.addCollection().apply { zIndex = 7.93f }
+        mapView.mapWindow.map.mapObjects.addCollection().apply { zIndex = 22.5f }
     }
     /** Отмена устаревших ответов [DrivingSession] при новом запросе или [routeClearNonce]. */
     val routeRequestGeneration = remember { AtomicLong(0L) }
@@ -616,6 +617,7 @@ private fun YandexTravelMapContent(
     LaunchedEffect(routePlaybackWalkerLayer, mapView, context) {
         val icon = routePlaybackWalkerImageProvider(context)
         val pm = routePlaybackWalkerLayer.addPlacemark(Point(0.0, 0.0), icon)
+        pm.zIndex = 100f
         pm.setIconStyle(walkerStyleFollowCam)
         pm.setVisible(false)
         snapshotFlow {
@@ -1382,6 +1384,7 @@ private fun YandexTravelMapContent(
     LaunchedEffect(friendPeerLayer, mapView, context, mapZoom) {
         val icon = friendPeerPinImageProvider(context)
         val pm = friendPeerLayer.addPlacemark(Point(0.0, 0.0), icon)
+        pm.zIndex = 90f
         pm.setIconStyle(
             IconStyle().apply {
                 anchor = PointF(0.5f, 1f)
@@ -1916,7 +1919,7 @@ private fun laneDirectionArrowImageProvider(context: android.content.Context): I
 
 /** Маркер виртуального проезда по сохранённому GPS-маршруту (фигурка поверх полос направления). */
 private fun routePlaybackWalkerImageProvider(context: android.content.Context): ImageProvider {
-    val d = (38 * context.resources.displayMetrics.density).toInt().coerceIn(30, 56)
+    val d = (52 * context.resources.displayMetrics.density).toInt().coerceIn(44, 88)
     val bmp = Bitmap.createBitmap(d, d, Bitmap.Config.ARGB_8888)
     val canvas = Canvas(bmp)
     val cx = d / 2f
@@ -1925,7 +1928,7 @@ private fun routePlaybackWalkerImageProvider(context: android.content.Context): 
     val rim = Paint(Paint.ANTI_ALIAS_FLAG).apply {
         color = AndroidColor.WHITE
         style = Paint.Style.STROKE
-        strokeWidth = max(1f, d * 0.07f)
+        strokeWidth = max(2f, d * 0.11f)
     }
     canvas.drawCircle(cx, cy, d * 0.3f, body)
     canvas.drawCircle(cx, cy, d * 0.3f, rim)

@@ -93,6 +93,7 @@ import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.zIndex
 import android.content.res.Configuration
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.Lifecycle
@@ -1485,6 +1486,7 @@ fun MyTravelsScreen(
                                 modifier = Modifier
                                     .align(Alignment.BottomEnd)
                                     .padding(end = 12.dp, bottom = 88.dp)
+                                    .zIndex(48f)
                                     .offset {
                                         IntOffset(
                                             routePlaybackHudPanX.roundToInt(),
