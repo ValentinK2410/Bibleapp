@@ -176,6 +176,9 @@ private const val TRAVEL_NAV_TILT_SMOOTH = 0.10f
 /** Шаг между стрелками направления движения вдоль полилинии маршрута (м). */
 private const val TRAVEL_ROUTE_LANE_ARROW_SPACING_M = 38f
 
+/** Во сколько раз больше минимальной иконки делается bitmap маркера (прозрачные поля) — палец можно схватить не только за оранжевый кружок. */
+private const val ROUTE_WALKER_TOUCH_BITMAP_FACTOR = 2.85f
+
 private data class MapWalkerGesturesBackup(
     val scroll: Boolean,
     val zoom: Boolean,
@@ -538,6 +541,9 @@ private fun YandexTravelMapContent(
     val tripHistoryReplayPoseState = rememberUpdatedState(tripHistoryReplayPose)
     val friendPeerLocationState = rememberUpdatedState(friendPeerLocation)
     val folkCrosshairCbState = rememberUpdatedState(onFolkMapCrosshairGeoChanged)
+    val routeWalkerPolyForInput = rememberUpdatedState(routePlaybackWalkerPolyline)
+    val onWalkerCommitFromMap = rememberUpdatedState(onRouteWalkerDragCommit)
+    val territoryEditForInput = rememberUpdatedState(territoryEditMode)
     val folkCrosshairThrottleLastMs = remember { AtomicLong(0L) }
 
     LaunchedEffect(routePhotoSessions, routeBurstDraftPoints, routePhotoBurstLayer, mapView) {
@@ -918,7 +924,16 @@ private fun YandexTravelMapContent(
                 onTapState.value(TravelGeoPoint(point.latitude, point.longitude))
             }
 
-            override fun onMapLongTap(map: Map, point: Point) = Unit
+            override fun onMapLongTap(map: Map, point: Point) {
+                if (territoryEditForInput.value) return
+                if (folkCrosshairCbState.value != null) return
+                if (tripHistoryReplayPoseState.value != null) return
+                if (routePickActive.value || incidentPickActive.value) return
+                val poly = routeWalkerPolyForInput.value ?: return
+                if (routePlaybackSimState.value == null) return
+                val d = nearestDistanceAlongPolyline(poly, point.latitude, point.longitude)
+                onWalkerCommitFromMap.value?.invoke(d)
+            }
         }
     }
 
@@ -2043,11 +2058,17 @@ private fun laneDirectionArrowImageProvider(context: android.content.Context): I
     return ImageProvider.fromBitmap(bmp)
 }
 
-/** Маркер виртуального проезда по сохранённому GPS-маршруту (фигурка поверх полос направления). */
+/** Маркер виртуального проезда: рисунок прежнего размера, bitmap с прозрачным полем — MapKit ловит drag по большей области. */
 private fun routePlaybackWalkerImageProvider(context: android.content.Context): ImageProvider {
-    val d = (52 * context.resources.displayMetrics.density).toInt().coerceIn(44, 88)
-    val bmp = Bitmap.createBitmap(d, d, Bitmap.Config.ARGB_8888)
+    val density = context.resources.displayMetrics.density
+    val inner = (52 * density).toInt().coerceIn(44, 88)
+    val outer = (inner * ROUTE_WALKER_TOUCH_BITMAP_FACTOR).toInt().coerceIn(inner + 32, 260)
+    val bmp = Bitmap.createBitmap(outer, outer, Bitmap.Config.ARGB_8888)
     val canvas = Canvas(bmp)
+    val padX = (outer - inner) / 2f
+    val padY = (outer - inner) / 2f
+    canvas.translate(padX, padY)
+    val d = inner.toFloat()
     val cx = d / 2f
     val cy = d / 2f - d * 0.06f
     val body = Paint(Paint.ANTI_ALIAS_FLAG).apply { color = 0xFFFF6F00.toInt() }
