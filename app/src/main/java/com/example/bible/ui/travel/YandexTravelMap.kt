@@ -16,6 +16,8 @@ import android.graphics.PointF
 import android.graphics.RectF
 import android.graphics.Typeface
 import android.os.Looper
+import android.view.MotionEvent
+import android.view.View
 import android.os.SystemClock
 import android.view.Choreographer
 import androidx.compose.animation.core.animateFloatAsState
@@ -93,6 +95,7 @@ import com.example.bible.data.travel.tripTrackSpeedKmhToArgb
 import com.example.bible.data.travel.TravelRoutePhotoPoint
 import com.example.bible.data.travel.bearingDegForRoutePhotoMapOrNull
 import com.example.bible.data.travel.bearingDegreesLatLon
+import com.example.bible.data.travel.distanceMetersToRoutePolyline
 import com.example.bible.data.travel.buildRoutePhotoDirectionSegments
 import com.example.bible.data.travel.interpolateRoutePlayback
 import com.example.bible.data.travel.nearestDistanceAlongPolyline
@@ -103,6 +106,7 @@ import com.google.android.gms.location.LocationResult
 import com.google.android.gms.location.LocationServices
 import com.google.android.gms.location.Priority
 import com.yandex.mapkit.Animation
+import com.yandex.mapkit.ScreenPoint
 import com.yandex.mapkit.MapKitFactory
 import com.yandex.mapkit.RequestPoint
 import com.yandex.mapkit.RequestPointType
@@ -128,8 +132,6 @@ import com.yandex.mapkit.map.CameraListener
 import com.yandex.mapkit.map.CameraPosition
 import com.yandex.mapkit.map.CameraUpdateReason
 import com.yandex.mapkit.map.IconStyle
-import com.yandex.mapkit.map.MapObject
-import com.yandex.mapkit.map.MapObjectDragListener
 import com.yandex.mapkit.map.InputListener
 import com.yandex.mapkit.map.Map
 import com.yandex.mapkit.map.MapObjectCollection
@@ -143,6 +145,7 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
+import kotlin.math.hypot
 import kotlinx.coroutines.tasks.await
 import java.util.concurrent.atomic.AtomicBoolean
 import java.util.concurrent.atomic.AtomicLong
@@ -179,12 +182,23 @@ private const val TRAVEL_ROUTE_LANE_ARROW_SPACING_M = 38f
 /** Во сколько раз больше минимальной иконки делается bitmap маркера (прозрачные поля) — палец можно схватить не только за оранжевый кружок. */
 private const val ROUTE_WALKER_TOUCH_BITMAP_FACTOR = 2.85f
 
+/** Макс. отступ от линии трека (м), при котором жест перехватывается для «перемотки» человечка. */
+private const val ROUTE_WALKER_SCRUB_CORRIDOR_M = 55f
+
+/** Радиус (в dp) вокруг маркера — жест там тоже начинает перемотку (не только по линии). */
+private const val ROUTE_WALKER_SCRUB_NEAR_MARKER_DP = 130f
+
 private data class MapWalkerGesturesBackup(
     val scroll: Boolean,
     val zoom: Boolean,
     val rotate: Boolean,
     val tilt: Boolean,
 )
+
+private class RouteWalkerScrubGestureHolder {
+    var active: Boolean = false
+    var backup: MapWalkerGesturesBackup? = null
+}
 
 /**
  * Вертикальный охват в метрах для плоского вида сверху (оценка по Web Mercator и зуму MapKit);
@@ -646,146 +660,147 @@ private fun YandexTravelMapContent(
         }
     }
 
-    val walkerFingerDraggingLocal = remember { AtomicBoolean(false) }
-    val activePolyForWalker = rememberUpdatedState(routePlaybackWalkerPolyline)
     val onWalkerPreview = rememberUpdatedState(onRouteWalkerDragPreview)
     val onWalkerCommit = rememberUpdatedState(onRouteWalkerDragCommit)
     val onWalkerFinger = rememberUpdatedState(onRouteWalkerFingerDragging)
+    val routeWalkerScrub = remember { RouteWalkerScrubGestureHolder() }
 
     LaunchedEffect(routePlaybackWalkerLayer, mapView, context) {
         val iconWalker = routePlaybackWalkerImageProvider(context)
-        val iconLandingDot = routeWalkerLandingDotImageProvider(context)
         val pm = routePlaybackWalkerLayer.addPlacemark(Point(0.0, 0.0), iconWalker)
         pm.zIndex = 100f
         pm.setIconStyle(walkerStyleFollowCam)
         pm.setVisible(false)
-        val landingPm: PlacemarkMapObject = routePlaybackWalkerLayer.addPlacemark(Point(0.0, 0.0), iconLandingDot)
-        landingPm.setZIndex(99.9f)
-        landingPm.setIconStyle(
-            IconStyle().apply {
-                anchor = PointF(0.5f, 0.5f)
-                rotationType = RotationType.NO_ROTATION
-                scale = 0.9f
-            },
-        )
-        landingPm.setVisible(false)
-        landingPm.setDraggable(false)
-        var gesturesBackupForWalker: MapWalkerGesturesBackup? = null
-        /** Не вызывать [MapObject.setDraggable] с false во время активного drag — иначе MapKit сбрасывает жест. */
-        var walkerDraggableProgrammatic: Boolean? = null
-
-        pm.setDragListener(
-            object : MapObjectDragListener {
-                override fun onMapObjectDragStart(mapObject: MapObject) {
-                    if (mapObject !== pm) return
-                    val poly = activePolyForWalker.value ?: return
-                    walkerFingerDraggingLocal.set(true)
-                    onWalkerFinger.value?.invoke(true)
-                    val mapInst = mapView.mapWindow.map
-                    gesturesBackupForWalker = MapWalkerGesturesBackup(
-                        scroll = mapInst.isScrollGesturesEnabled,
-                        zoom = mapInst.isZoomGesturesEnabled,
-                        rotate = mapInst.isRotateGesturesEnabled,
-                        tilt = mapInst.isTiltGesturesEnabled,
-                    ).also { b ->
-                        mapInst.isScrollGesturesEnabled = false
-                        mapInst.isZoomGesturesEnabled = false
-                        mapInst.isRotateGesturesEnabled = false
-                        mapInst.isTiltGesturesEnabled = false
-                    }
-                    val g = pm.geometry
-                    val (startLat, startLon, _) = interpolateRoutePlayback(
-                        poly,
-                        nearestDistanceAlongPolyline(poly, g.latitude, g.longitude),
-                    )
-                    landingPm.geometry = Point(startLat, startLon)
-                    landingPm.setVisible(true)
-                }
-
-                override fun onMapObjectDrag(mapObject: MapObject, point: Point) {
-                    if (mapObject !== pm) return
-                    val poly = activePolyForWalker.value ?: return
-                    val snapped = nearestDistanceAlongPolyline(poly, point.latitude, point.longitude)
-                    val (lat, lon, _) = interpolateRoutePlayback(poly, snapped)
-                    landingPm.geometry = Point(lat, lon)
-                    pm.geometry = Point(lat, lon)
-                    onWalkerPreview.value?.invoke(snapped)
-                }
-
-                override fun onMapObjectDragEnd(mapObject: MapObject) {
-                    if (mapObject !== pm) return
-                    val poly = activePolyForWalker.value ?: return
-                    walkerFingerDraggingLocal.set(false)
-                    onWalkerFinger.value?.invoke(false)
-                    val mapInst = mapView.mapWindow.map
-                    gesturesBackupForWalker?.let { b ->
-                        mapInst.isScrollGesturesEnabled = b.scroll
-                        mapInst.isZoomGesturesEnabled = b.zoom
-                        mapInst.isRotateGesturesEnabled = b.rotate
-                        mapInst.isTiltGesturesEnabled = b.tilt
-                    }
-                    gesturesBackupForWalker = null
-                    val g = pm.geometry
-                    val snapped = nearestDistanceAlongPolyline(poly, g.latitude, g.longitude)
-                    val (lat, lon, _) = interpolateRoutePlayback(poly, snapped)
-                    pm.geometry = Point(lat, lon)
-                    landingPm.setVisible(false)
-                    onWalkerCommit.value?.invoke(snapped)
-                }
-            },
-        )
+        pm.setDraggable(false)
 
         while (coroutineContext.isActive) {
             val sim = routePlaybackSimState.value
             val replay = tripHistoryReplayPoseState.value
             val mapInst = mapView.mapWindow.map
             val cp = mapInst.cameraPosition
-            val poly = activePolyForWalker.value
-            val fingerOnWalker = walkerFingerDraggingLocal.get()
-            val wantWalkerDraggable = poly != null && replay == null && sim != null
-            if (wantWalkerDraggable != walkerDraggableProgrammatic &&
-                (!fingerOnWalker || wantWalkerDraggable)
-            ) {
-                pm.setDraggable(wantWalkerDraggable)
-                walkerDraggableProgrammatic = wantWalkerDraggable
-            }
             when {
                 replay != null -> {
                     pm.setIconStyle(walkerStyleReplay)
                     pm.setVisible(true)
-                    if (!fingerOnWalker) {
-                        pm.geometry = Point(replay.latitude, replay.longitude)
-                        pm.direction = replay.bearingDeg
-                        mapInst.move(
-                            CameraPosition(Point(replay.latitude, replay.longitude), cp.zoom, cp.azimuth, cp.tilt),
-                            Animation(Animation.Type.SMOOTH, 0.16f),
-                            null,
-                        )
-                    }
+                    pm.geometry = Point(replay.latitude, replay.longitude)
+                    pm.direction = replay.bearingDeg
+                    mapInst.move(
+                        CameraPosition(Point(replay.latitude, replay.longitude), cp.zoom, cp.azimuth, cp.tilt),
+                        Animation(Animation.Type.SMOOTH, 0.16f),
+                        null,
+                    )
                 }
                 sim != null && sim.latitude.isFinite() && sim.longitude.isFinite() -> {
                     pm.setIconStyle(
                         if (sim.followCameraWithWalker) walkerStyleFollowCam else walkerStyleFreeCam,
                     )
                     pm.setVisible(true)
-                    if (!fingerOnWalker) {
-                        pm.geometry = Point(sim.latitude, sim.longitude)
-                        pm.direction = sim.bearingDeg
-                        if (sim.followCameraWithWalker) {
-                            mapInst.move(
-                                CameraPosition(Point(sim.latitude, sim.longitude), cp.zoom, cp.azimuth, cp.tilt),
-                                Animation(Animation.Type.SMOOTH, 0.16f),
-                                null,
-                            )
-                        }
+                    pm.geometry = Point(sim.latitude, sim.longitude)
+                    pm.direction = sim.bearingDeg
+                    if (sim.followCameraWithWalker) {
+                        mapInst.move(
+                            CameraPosition(Point(sim.latitude, sim.longitude), cp.zoom, cp.azimuth, cp.tilt),
+                            Animation(Animation.Type.SMOOTH, 0.16f),
+                            null,
+                        )
                     }
                 }
-                else -> {
-                    pm.setVisible(false)
-                    landingPm.setVisible(false)
-                }
+                else -> pm.setVisible(false)
             }
             delay(if (sim != null || replay != null) 16L else 120L)
+        }
+    }
+
+    DisposableEffect(mapView) {
+        val dm = context.resources.displayMetrics.density
+        val nearWalkerPx = ROUTE_WALKER_SCRUB_NEAR_MARKER_DP * dm
+        val listener =
+            View.OnTouchListener l@{ _, event ->
+                if (territoryEditForInput.value) return@l false
+                if (folkCrosshairCbState.value != null) return@l false
+                if (tripHistoryReplayPoseState.value != null) return@l false
+                if (routePickActive.value || incidentPickActive.value) return@l false
+                val poly = routeWalkerPolyForInput.value ?: return@l false
+                if (routePlaybackSimState.value == null) return@l false
+                val mw = mapView.mapWindow
+                val mapInst = mw.map
+                fun geo(ev: MotionEvent): Point? {
+                    val sp = ScreenPoint(ev.x, ev.y)
+                    return mw.screenToWorld(sp)
+                }
+                when (event.actionMasked) {
+                    MotionEvent.ACTION_DOWN -> {
+                        val sim = routePlaybackSimState.value ?: return@l false
+                        val g = geo(event) ?: return@l false
+                        val distM = distanceMetersToRoutePolyline(poly, g.latitude, g.longitude)
+                        val wScr = mw.worldToScreen(Point(sim.latitude, sim.longitude)) ?: return@l false
+                        val ddx = event.x - wScr.x
+                        val ddy = event.y - wScr.y
+                        val screenDist = hypot(ddx.toDouble(), ddy.toDouble()).toFloat()
+                        val onCorridor = distM <= ROUTE_WALKER_SCRUB_CORRIDOR_M
+                        val nearWalker = screenDist <= nearWalkerPx
+                        if (!onCorridor && !nearWalker) return@l false
+                        routeWalkerScrub.active = true
+                        routeWalkerScrub.backup =
+                            MapWalkerGesturesBackup(
+                                scroll = mapInst.isScrollGesturesEnabled,
+                                zoom = mapInst.isZoomGesturesEnabled,
+                                rotate = mapInst.isRotateGesturesEnabled,
+                                tilt = mapInst.isTiltGesturesEnabled,
+                            ).also { b ->
+                                mapInst.isScrollGesturesEnabled = false
+                                mapInst.isZoomGesturesEnabled = false
+                                mapInst.isRotateGesturesEnabled = false
+                                mapInst.isTiltGesturesEnabled = false
+                            }
+                        onWalkerFinger.value?.invoke(true)
+                        val d0 = nearestDistanceAlongPolyline(poly, g.latitude, g.longitude)
+                        onWalkerPreview.value?.invoke(d0)
+                        return@l true
+                    }
+                    MotionEvent.ACTION_MOVE -> {
+                        if (!routeWalkerScrub.active) return@l false
+                        val g = geo(event) ?: return@l true
+                        val d = nearestDistanceAlongPolyline(poly, g.latitude, g.longitude)
+                        onWalkerPreview.value?.invoke(d)
+                        return@l true
+                    }
+                    MotionEvent.ACTION_UP, MotionEvent.ACTION_CANCEL -> {
+                        if (!routeWalkerScrub.active) return@l false
+                        routeWalkerScrub.active = false
+                        val g = geo(event)
+                            ?: routePlaybackSimState.value?.let { Point(it.latitude, it.longitude) }
+                            ?: return@l true
+                        val d = nearestDistanceAlongPolyline(poly, g.latitude, g.longitude)
+                        onWalkerCommit.value?.invoke(d)
+                        onWalkerFinger.value?.invoke(false)
+                        routeWalkerScrub.backup?.let { b ->
+                            mapInst.isScrollGesturesEnabled = b.scroll
+                            mapInst.isZoomGesturesEnabled = b.zoom
+                            mapInst.isRotateGesturesEnabled = b.rotate
+                            mapInst.isTiltGesturesEnabled = b.tilt
+                        }
+                        routeWalkerScrub.backup = null
+                        return@l true
+                    }
+                }
+                false
+            }
+        mapView.setOnTouchListener(listener)
+        onDispose {
+            mapView.setOnTouchListener(null)
+            if (routeWalkerScrub.active) {
+                routeWalkerScrub.active = false
+                onWalkerFinger.value?.invoke(false)
+                val m = mapView.mapWindow.map
+                routeWalkerScrub.backup?.let { b ->
+                    m.isScrollGesturesEnabled = b.scroll
+                    m.isZoomGesturesEnabled = b.zoom
+                    m.isRotateGesturesEnabled = b.rotate
+                    m.isTiltGesturesEnabled = b.tilt
+                }
+                routeWalkerScrub.backup = null
+            }
         }
     }
 
@@ -2081,25 +2096,6 @@ private fun routePlaybackWalkerImageProvider(context: android.content.Context): 
     canvas.drawCircle(cx, cy, d * 0.3f, rim)
     val head = Paint(Paint.ANTI_ALIAS_FLAG).apply { color = AndroidColor.WHITE }
     canvas.drawCircle(cx, cy - d * 0.34f, d * 0.11f, head)
-    return ImageProvider.fromBitmap(bmp)
-}
-
-/** Точка «приземления» под маркером при перетаскивании вдоль сохранённого маршрута. */
-private fun routeWalkerLandingDotImageProvider(context: android.content.Context): ImageProvider {
-    val d = (28 * context.resources.displayMetrics.density).toInt().coerceIn(22, 44)
-    val bmp = Bitmap.createBitmap(d, d, Bitmap.Config.ARGB_8888)
-    val canvas = Canvas(bmp)
-    val cx = d / 2f
-    val cy = d / 2f
-    val fill = Paint(Paint.ANTI_ALIAS_FLAG).apply { color = 0x9934C759.toInt() }
-    val rim = Paint(Paint.ANTI_ALIAS_FLAG).apply {
-        color = AndroidColor.WHITE
-        style = Paint.Style.STROKE
-        strokeWidth = max(1f, d * 0.09f)
-    }
-    val r = d * 0.32f
-    canvas.drawCircle(cx, cy, r, fill)
-    canvas.drawCircle(cx, cy, r, rim)
     return ImageProvider.fromBitmap(bmp)
 }
 

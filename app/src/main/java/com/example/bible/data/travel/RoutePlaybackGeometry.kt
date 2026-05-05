@@ -137,6 +137,15 @@ fun nearestDistanceAlongPolyline(poly: RoutePlaybackPolyline, latitude: Double, 
     return bestAlong.coerceIn(0f, total)
 }
 
+/** Перпендикулярное расстояние от точки до ломаной (м): к проекции на трек — [nearestDistanceAlongPolyline]. */
+fun distanceMetersToRoutePolyline(poly: RoutePlaybackPolyline, latitude: Double, longitude: Double): Float {
+    val along = nearestDistanceAlongPolyline(poly, latitude, longitude)
+    val (lat, lon, _) = interpolateRoutePlayback(poly, along)
+    val buf = FloatArray(1)
+    Location.distanceBetween(latitude, longitude, lat, lon, buf)
+    return buf[0]
+}
+
 /**
  * URI последнего кадра, до которого «добрались» по расстоянию по маршруту
  * (кадры берутся по порядку времени съёмки).
