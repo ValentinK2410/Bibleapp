@@ -136,6 +136,7 @@ import com.yandex.runtime.Error
 import com.yandex.runtime.image.ImageProvider
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.tasks.await
 import java.util.concurrent.atomic.AtomicBoolean
@@ -146,6 +147,7 @@ import kotlin.math.max
 import kotlin.math.pow
 import kotlin.math.roundToInt
 import kotlin.math.sin
+import kotlin.coroutines.coroutineContext
 
 /** Интервал запроса к Fused Location при следовании (реальная частота часто ~1 Гц на телефоне). */
 private const val TRAVEL_FOLLOW_LOCATION_INTERVAL_MS = 33L
@@ -456,7 +458,7 @@ private fun YandexTravelMapContent(
     val userLockedWideView = remember { AtomicBoolean(false) }
 
     val zoneOverlay = remember(mapView) {
-        mapView.mapWindow.map.mapObjects.addCollection()
+        mapView.mapWindow.map.mapObjects.addCollection().apply { zIndex = 0.5f }
     }
     val routeOverlay = remember(mapView) {
         mapView.mapWindow.map.mapObjects.addCollection().apply { zIndex = 5f }
@@ -485,12 +487,12 @@ private fun YandexTravelMapContent(
     val tripHistoryLayer = remember(mapView) {
         routeOverlay.addCollection().apply { zIndex = 4.09f }
     }
-    /** Выше любых слоёв внутри [routeOverlay] и выше [pinsOverlay] (z=6): иначе «человечек» может быть под метками. */
+    /** Выше любых слоёв внутри [routeOverlay], [pinsOverlay] (z=6) и полигонов зон. */
     val routePlaybackWalkerLayer = remember(mapView) {
-        mapView.mapWindow.map.mapObjects.addCollection().apply { zIndex = 22f }
+        mapView.mapWindow.map.mapObjects.addCollection().apply { zIndex = 50f }
     }
     val friendPeerLayer = remember(mapView) {
-        mapView.mapWindow.map.mapObjects.addCollection().apply { zIndex = 22.5f }
+        mapView.mapWindow.map.mapObjects.addCollection().apply { zIndex = 51f }
     }
     /** Отмена устаревших ответов [DrivingSession] при новом запросе или [routeClearNonce]. */
     val routeRequestGeneration = remember { AtomicLong(0L) }
@@ -620,9 +622,10 @@ private fun YandexTravelMapContent(
         pm.zIndex = 100f
         pm.setIconStyle(walkerStyleFollowCam)
         pm.setVisible(false)
-        snapshotFlow {
-            Pair(routePlaybackSimState.value, tripHistoryReplayPoseState.value)
-        }.collect { (sim, replay) ->
+        // snapshotFlow + rememberUpdatedState на частых тиках иногда не отдаёт кадры в MapKit; опрос состояния стабильнее.
+        while (coroutineContext.isActive) {
+            val sim = routePlaybackSimState.value
+            val replay = tripHistoryReplayPoseState.value
             val mapInst = mapView.mapWindow.map
             val cp = mapInst.cameraPosition
             when {
@@ -637,7 +640,7 @@ private fun YandexTravelMapContent(
                         null,
                     )
                 }
-                sim != null -> {
+                sim != null && sim.latitude.isFinite() && sim.longitude.isFinite() -> {
                     pm.setIconStyle(
                         if (sim.followCameraWithWalker) walkerStyleFollowCam else walkerStyleFreeCam,
                     )
@@ -654,6 +657,7 @@ private fun YandexTravelMapContent(
                 }
                 else -> pm.setVisible(false)
             }
+            delay(if (sim != null || replay != null) 16L else 120L)
         }
     }
 
