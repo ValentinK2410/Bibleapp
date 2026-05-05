@@ -1236,6 +1236,9 @@
     <string name="travel_route_photo_no_sessions">Нет сохранённых серий фото по маршруту</string>
     <string name="travel_route_playback_no_photo">Нет снимка для этой позиции</string>
     <string name="travel_route_photo_preview_drag_cd">Переместить блок превью фото</string>
+    <string name="travel_route_photo_preview_zoom_in_cd">Увеличить превью фото по маршруту</string>
+    <string name="travel_route_photo_preview_zoom_out_cd">Уменьшить превью фото по маршруту</string>
+    <string name="travel_route_photo_preview_resize_corner_cd">Потянуть, чтобы изменить размер превью</string>
     <string name="travel_friend_peer_menu">Локация другого пользователя</string>
     <string name="travel_friend_peer_sheet_title">Координаты другого пользователя</string>
     <string name="travel_friend_peer_json_hint">Укажите HTTPS-ссылку, которая отдаёт JSON с полями latitude и longitude (или lat и lng). Дополнительно: label или name, updatedAtMs или t.</string>

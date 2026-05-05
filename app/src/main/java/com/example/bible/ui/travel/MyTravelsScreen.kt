@@ -32,6 +32,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
+import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
@@ -137,6 +138,8 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.outlined.BrokenImage
 import androidx.compose.material.icons.filled.CameraAlt
 import androidx.compose.material.icons.filled.DragHandle
+import androidx.compose.material.icons.filled.ZoomIn
+import androidx.compose.material.icons.filled.ZoomOut
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.DirectionsWalk
@@ -150,8 +153,11 @@ import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.rememberVectorPainter
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
 import coil.compose.AsyncImage
 import coil.request.CachePolicy
 import coil.request.ImageRequest
@@ -1477,12 +1483,13 @@ fun MyTravelsScreen(
                         routePlaybackSim != null
                     if (showPlaybackPhotoHud) {
                         routePlaybackSim?.let { sim ->
-                            val pbScale = routePlaybackPreviewScale.coerceIn(0.45f, 3.2f)
-                            val thumbW = (128f * pbScale).dp.coerceIn(88.dp, 240.dp)
-                            val thumbH = (82f * pbScale).dp.coerceIn(56.dp, 160.dp)
+                            val pbMin = 0.40f
+                            val pbMax = 4.0f
+                            val pbScale = routePlaybackPreviewScale.coerceIn(pbMin, pbMax)
+                            val thumbW = (128f * pbScale).dp.coerceIn(88.dp, 360.dp)
+                            val thumbH = (82f * pbScale).dp.coerceIn(56.dp, 300.dp)
                             val uriStr = sim.currentPhotoUri
-                            Column(
-                                horizontalAlignment = Alignment.End,
+                            Row(
                                 modifier = Modifier
                                     .align(Alignment.BottomEnd)
                                     .padding(end = 12.dp, bottom = 88.dp)
@@ -1493,84 +1500,166 @@ fun MyTravelsScreen(
                                             routePlaybackHudPanY.roundToInt(),
                                         )
                                     }
-                                    .width(thumbW),
+                                    .wrapContentWidth(Alignment.End),
+                                verticalAlignment = Alignment.Bottom,
                             ) {
-                                Surface(
-                                    color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.94f),
-                                    shape = RoundedCornerShape(topStart = 12.dp, topEnd = 12.dp),
-                                    tonalElevation = 2.dp,
-                                    modifier = Modifier
-                                        .fillMaxWidth()
-                                        .pointerInput(Unit) {
-                                            detectDragGestures { change, dragAmount ->
-                                                change.consume()
-                                                routePlaybackHudPanX += dragAmount.x
-                                                routePlaybackHudPanY += dragAmount.y
-                                            }
-                                        },
+                                Column(
+                                    Modifier.padding(end = 2.dp),
+                                    horizontalAlignment = Alignment.CenterHorizontally,
                                 ) {
-                                    Row(
-                                        Modifier
-                                            .fillMaxWidth()
-                                            .padding(vertical = 4.dp),
-                                        horizontalArrangement = Arrangement.Center,
-                                        verticalAlignment = Alignment.CenterVertically,
+                                    IconButton(
+                                        onClick = {
+                                            bumpFloatingToolbar()
+                                            routePlaybackPreviewScale =
+                                                (routePlaybackPreviewScale * 1.1f).coerceIn(pbMin, pbMax)
+                                        },
+                                        modifier = Modifier.size(40.dp),
                                     ) {
                                         Icon(
-                                            Icons.Filled.DragHandle,
+                                            Icons.Filled.ZoomIn,
                                             contentDescription = stringResource(
-                                                R.string.travel_route_photo_preview_drag_cd,
+                                                R.string.travel_route_photo_preview_zoom_in_cd,
                                             ),
-                                            tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                                        )
+                                    }
+                                    IconButton(
+                                        onClick = {
+                                            bumpFloatingToolbar()
+                                            routePlaybackPreviewScale =
+                                                (routePlaybackPreviewScale / 1.1f).coerceIn(pbMin, pbMax)
+                                        },
+                                        modifier = Modifier.size(40.dp),
+                                    ) {
+                                        Icon(
+                                            Icons.Filled.ZoomOut,
+                                            contentDescription = stringResource(
+                                                R.string.travel_route_photo_preview_zoom_out_cd,
+                                            ),
                                         )
                                     }
                                 }
-                                Box(
-                                    modifier = Modifier
-                                        .fillMaxWidth()
-                                        .height(thumbH)
-                                        .clip(
-                                            RoundedCornerShape(bottomStart = 12.dp, bottomEnd = 12.dp),
-                                        )
-                                        .pointerInput(routePlaybackPreviewScale) {
-                                            detectTransformGestures { _, _, zoom, _ ->
-                                                routePlaybackPreviewScale =
-                                                    (routePlaybackPreviewScale * zoom).coerceIn(0.45f, 3.2f)
-                                            }
-                                        },
+                                Column(
+                                    horizontalAlignment = Alignment.End,
+                                    modifier = Modifier.width(thumbW),
                                 ) {
-                                    if (uriStr != null && uriStr.isNotBlank()) {
-                                        RoutePlaybackSmoothPhoto(
-                                            uriStr = uriStr,
-                                            modifier = Modifier.fillMaxSize(),
-                                            contentScale = ContentScale.Crop,
-                                        )
-                                    } else {
-                                        Box(
-                                            modifier = Modifier
-                                                .fillMaxSize()
-                                                .background(MaterialTheme.colorScheme.surfaceVariant),
-                                            contentAlignment = Alignment.Center,
+                                    Surface(
+                                        color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.94f),
+                                        shape = RoundedCornerShape(topStart = 12.dp, topEnd = 12.dp),
+                                        tonalElevation = 2.dp,
+                                        modifier = Modifier
+                                            .fillMaxWidth()
+                                            .pointerInput(Unit) {
+                                                detectDragGestures { change, dragAmount ->
+                                                    change.consume()
+                                                    routePlaybackHudPanX += dragAmount.x
+                                                    routePlaybackHudPanY += dragAmount.y
+                                                }
+                                            },
+                                    ) {
+                                        Row(
+                                            Modifier
+                                                .fillMaxWidth()
+                                                .padding(vertical = 4.dp),
+                                            horizontalArrangement = Arrangement.Center,
+                                            verticalAlignment = Alignment.CenterVertically,
                                         ) {
-                                            Text(
-                                                stringResource(R.string.travel_route_playback_no_photo),
-                                                style = MaterialTheme.typography.labelSmall,
-                                                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                                                modifier = Modifier.padding(8.dp),
+                                            Icon(
+                                                Icons.Filled.DragHandle,
+                                                contentDescription = stringResource(
+                                                    R.string.travel_route_photo_preview_drag_cd,
+                                                ),
+                                                tint = MaterialTheme.colorScheme.onSurfaceVariant,
                                             )
                                         }
                                     }
-                                    Surface(
-                                        modifier = Modifier.align(Alignment.BottomCenter),
-                                        color = MaterialTheme.colorScheme.surface.copy(alpha = 0.88f),
-                                        shape =
-                                            RoundedCornerShape(bottomStart = 12.dp, bottomEnd = 12.dp),
+                                    Box(
+                                        modifier = Modifier
+                                            .fillMaxWidth()
+                                            .height(thumbH)
+                                            .clip(
+                                                RoundedCornerShape(bottomStart = 12.dp, bottomEnd = 12.dp),
+                                            )
+                                            .pointerInput(routePlaybackPreviewScale) {
+                                                detectTransformGestures { _, _, zoom, _ ->
+                                                    routePlaybackPreviewScale =
+                                                        (routePlaybackPreviewScale * zoom).coerceIn(pbMin, pbMax)
+                                                }
+                                            },
                                     ) {
-                                        Text(
-                                            "${(sim.progress * 100f).toInt()}% · ${sim.distanceAlongMeters.toInt()} м / ${sim.totalPathMeters.toInt()} м",
-                                            style = MaterialTheme.typography.labelSmall,
-                                            modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
-                                        )
+                                        if (uriStr != null && uriStr.isNotBlank()) {
+                                            RoutePlaybackSmoothPhoto(
+                                                uriStr = uriStr,
+                                                modifier = Modifier.fillMaxSize(),
+                                                contentScale = ContentScale.Crop,
+                                            )
+                                        } else {
+                                            Box(
+                                                modifier = Modifier
+                                                    .fillMaxSize()
+                                                    .background(MaterialTheme.colorScheme.surfaceVariant),
+                                                contentAlignment = Alignment.Center,
+                                            ) {
+                                                Text(
+                                                    stringResource(R.string.travel_route_playback_no_photo),
+                                                    style = MaterialTheme.typography.labelSmall,
+                                                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                                    modifier = Modifier.padding(8.dp),
+                                                )
+                                            }
+                                        }
+                                        Surface(
+                                            modifier = Modifier.align(Alignment.BottomCenter),
+                                            color = MaterialTheme.colorScheme.surface.copy(alpha = 0.88f),
+                                            shape =
+                                                RoundedCornerShape(bottomStart = 12.dp, bottomEnd = 12.dp),
+                                        ) {
+                                            Text(
+                                                "${(sim.progress * 100f).toInt()}% · ${sim.distanceAlongMeters.toInt()} м / ${sim.totalPathMeters.toInt()} м",
+                                                style = MaterialTheme.typography.labelSmall,
+                                                modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
+                                            )
+                                        }
+                                        Canvas(
+                                            modifier = Modifier
+                                                .align(Alignment.BottomEnd)
+                                                .semantics {
+                                                    contentDescription = context.getString(
+                                                        R.string.travel_route_photo_preview_resize_corner_cd,
+                                                    )
+                                                }
+                                                .size(32.dp)
+                                                .pointerInput(routePlaybackPreviewScale) {
+                                                    detectDragGestures { change, dragAmount ->
+                                                        change.consume()
+                                                        routePlaybackPreviewScale = (
+                                                            routePlaybackPreviewScale +
+                                                                (dragAmount.x - dragAmount.y) / 240f
+                                                            ).coerceIn(pbMin, pbMax)
+                                                    }
+                                                },
+                                        ) {
+                                            val grip = Color.White.copy(alpha = 0.88f)
+                                            val stroke = 2.8.dp.toPx()
+                                            val inset = stroke * 2.2f
+                                            drawLine(
+                                                color = grip,
+                                                strokeWidth = stroke,
+                                                start = Offset(inset, size.height - inset),
+                                                end = Offset(size.width - inset * 2.2f, inset * 2.2f),
+                                            )
+                                            drawLine(
+                                                color = grip,
+                                                strokeWidth = stroke,
+                                                start = Offset(inset * 1.95f, size.height - inset),
+                                                end = Offset(size.width - inset * 1.15f, inset * 3.05f),
+                                            )
+                                            drawLine(
+                                                color = grip,
+                                                strokeWidth = stroke,
+                                                start = Offset(inset * 2.95f, size.height - inset),
+                                                end = Offset(size.width - inset * 0.15f, inset * 3.95f),
+                                            )
+                                        }
                                     }
                                 }
                             }
@@ -2188,8 +2277,8 @@ fun MyTravelsScreen(
                     )
                     Slider(
                         value = routePlaybackPreviewScale,
-                        onValueChange = { routePlaybackPreviewScale = it.coerceIn(0.45f, 3.2f) },
-                        valueRange = 0.45f..3.2f,
+                        onValueChange = { routePlaybackPreviewScale = it.coerceIn(0.40f, 4.0f) },
+                        valueRange = 0.40f..4.0f,
                         modifier = Modifier.fillMaxWidth(),
                     )
                     Text(

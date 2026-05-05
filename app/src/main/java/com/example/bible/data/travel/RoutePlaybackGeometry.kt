@@ -80,36 +80,56 @@ fun interpolateRoutePlayback(poly: RoutePlaybackPolyline, distanceM: Float): Tri
 }
 
 /**
- * Расстояние от начала полилинии вдоль траектории до проекции [latitude],[longitude]
- * на ближайший отрезок (метры).
+ * Расстояние от начала полилинии вдоль траектории до **ближайшего** места на ломаной к точке ([latitude],[longitude]).
+ *
+ * Для каждого сегмента ищем [t]∈[0,1], минимизирующий [Location.distanceBetween] до линейно интерполированной точки
+ * на отрезке; расстояние вдоль пути — сумма длин «кусков»: от вершины сегмента до найденной точки + накопленное.
+ *
+ * Устаревшая проекция в «голых» градусах без учёта соотношения шагов по широте/долготе смещала точку попадания
+ * после касания карты относительно реального трека.
  */
 fun nearestDistanceAlongPolyline(poly: RoutePlaybackPolyline, latitude: Double, longitude: Double): Float {
     if (poly.segments.isEmpty()) return 0f
+    if (poly.sortedPoints.size <= 1) return 0f
+
+    fun distM(latP: Double, lonP: Double, latX: Double, lonX: Double): Float {
+        val arr = FloatArray(1)
+        Location.distanceBetween(latP, lonP, latX, lonX, arr)
+        return arr[0]
+    }
+
+    fun closestPointOnSegment(seg: RoutePlaybackSegment): Pair<Double, Double> {
+        fun distSqAt(t: Double): Double {
+            val clat = seg.lat1 + (seg.lat2 - seg.lat1) * t
+            val clon = seg.lon1 + (seg.lon2 - seg.lon1) * t
+            val d = distM(latitude, longitude, clat, clon).toDouble()
+            return d * d
+        }
+        var lo = 0.0
+        var hi = 1.0
+        repeat(28) {
+            val m1 = lo + (hi - lo) / 3.0
+            val m2 = hi - (hi - lo) / 3.0
+            if (distSqAt(m1) <= distSqAt(m2)) hi = m2 else lo = m1
+        }
+        val t = (lo + hi) * 0.5
+        val latC = seg.lat1 + (seg.lat2 - seg.lat1) * t
+        val lonC = seg.lon1 + (seg.lon2 - seg.lon1) * t
+        return Pair(latC, lonC)
+    }
+
     var cumulative = 0f
     var bestAlong = 0f
     var bestDistSq = Double.MAX_VALUE
     for (seg in poly.segments) {
-        val ax = seg.lat1
-        val ay = seg.lon1
-        val bx = seg.lat2
-        val by = seg.lon2
-        val len = seg.lengthM.toDouble().coerceAtLeast(1e-6)
-        val abLat = bx - ax
-        val abLon = by - ay
-        val apLat = latitude - ax
-        val apLon = longitude - ay
-        val dot = apLat * abLat + apLon * abLon
-        val abSq = abLat * abLat + abLon * abLon
-        val t = if (abSq < 1e-22) 0.0 else (dot / abSq).coerceIn(0.0, 1.0)
-        val clat = ax + abLat * t
-        val clon = ay + abLon * t
-        val dArr = FloatArray(1)
-        Location.distanceBetween(latitude, longitude, clat, clon, dArr)
-        val d = dArr[0].toDouble()
-        val dSq = d * d
+        val (clat, clon) = closestPointOnSegment(seg)
+        val dm = distM(latitude, longitude, clat, clon).toDouble()
+        val dSq = dm * dm
+        val segmentPortion = distM(seg.lat1, seg.lon1, clat, clon)
+        val along = cumulative + segmentPortion
         if (dSq < bestDistSq) {
             bestDistSq = dSq
-            bestAlong = (cumulative + len * t).toFloat()
+            bestAlong = along
         }
         cumulative += seg.lengthM
     }
