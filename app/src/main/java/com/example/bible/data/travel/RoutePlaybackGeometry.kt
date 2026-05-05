@@ -143,4 +143,6 @@ data class RoutePlaybackSimState(
     val distanceAlongMeters: Float,
     val totalPathMeters: Float,
     val currentPhotoUri: String?,
+    /** Если false — человечек двигается, азимут задаётся симуляцией, карту поворачивает только пользователь */
+    val followCameraWithWalker: Boolean = true,
 )

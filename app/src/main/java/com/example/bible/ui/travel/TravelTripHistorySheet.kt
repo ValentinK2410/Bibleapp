@@ -29,6 +29,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
+import androidx.compose.material3.Slider
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -44,6 +45,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
@@ -51,9 +53,12 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.bible.R
+import com.example.bible.data.travel.TRIP_TRACK_COLOR_SCALE_MAX_KMH
+import com.example.bible.data.travel.TRIP_TRACK_COLOR_SCALE_MIN_KMH
 import com.example.bible.data.travel.TravelGeoPoint
 import com.example.bible.data.travel.TravelTripTrackPoint
 import com.example.bible.data.travel.tripTrackPathLengthMeters
+import com.example.bible.data.travel.tripTrackSpeedKmhToArgb
 import kotlinx.coroutines.launch
 import java.time.DayOfWeek
 import java.time.Instant
@@ -65,6 +70,7 @@ import java.time.ZonedDateTime
 import java.time.format.DateTimeFormatter
 import java.time.format.TextStyle
 import java.util.Locale
+import kotlin.math.roundToInt
 
 fun filterTripTrackByLocalWindow(
     points: List<TravelTripTrackPoint>,
@@ -120,6 +126,33 @@ private fun centerOfTripPoints(pts: List<TravelTripTrackPoint>): TravelGeoPoint?
     val lat = pts.sumOf { it.latitude } / pts.size
     val lon = pts.sumOf { it.longitude } / pts.size
     return TravelGeoPoint(lat, lon)
+}
+
+@Composable
+private fun TripHistorySpeedScaleLegend(modifier: Modifier = Modifier) {
+    val gradient = remember {
+        val steps = 48
+        val colors = List(steps + 1) { i ->
+            val t = i / steps.toFloat()
+            val kmh = TRIP_TRACK_COLOR_SCALE_MIN_KMH +
+                (TRIP_TRACK_COLOR_SCALE_MAX_KMH - TRIP_TRACK_COLOR_SCALE_MIN_KMH) * t
+            val argb = tripTrackSpeedKmhToArgb(kmh)
+            Color(
+                red = ((argb shr 16) and 0xFF) / 255f,
+                green = ((argb shr 8) and 0xFF) / 255f,
+                blue = (argb and 0xFF) / 255f,
+                alpha = ((argb ushr 24) and 0xFF) / 255f,
+            )
+        }
+        Brush.horizontalGradient(colors)
+    }
+    Box(
+        modifier
+            .fillMaxWidth()
+            .height(14.dp)
+            .clip(RoundedCornerShape(6.dp))
+            .background(gradient),
+    )
 }
 
 @Composable
@@ -288,6 +321,7 @@ fun TravelTripHistorySheet(
     }
 
     val tripRecording by vm.tripHistoryEnabled.collectAsStateWithLifecycle()
+    val replayMult by vm.tripHistoryReplaySpeedMultiplier.collectAsStateWithLifecycle()
 
     var showStartTimePicker by remember { mutableStateOf(false) }
     var showEndTimePicker by remember { mutableStateOf(false) }
@@ -507,6 +541,74 @@ fun TravelTripHistorySheet(
                 ),
                 style = MaterialTheme.typography.bodyMedium,
             )
+            Spacer(Modifier.height(10.dp))
+            Text(
+                stringResource(R.string.travel_trip_history_speed_legend_title),
+                style = MaterialTheme.typography.titleSmall,
+            )
+            Text(
+                stringResource(R.string.travel_trip_history_speed_legend_body),
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                lineHeight = 18.sp,
+            )
+            TripHistorySpeedScaleLegend(Modifier.padding(vertical = 8.dp))
+            Row(
+                Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+            ) {
+                Text(
+                    "${TRIP_TRACK_COLOR_SCALE_MIN_KMH.toInt()} км/ч — медленнее",
+                    style = MaterialTheme.typography.labelSmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+                Text(
+                    "${TRIP_TRACK_COLOR_SCALE_MAX_KMH.toInt()} км/ч — быстрее",
+                    style = MaterialTheme.typography.labelSmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+            }
+            Spacer(Modifier.height(12.dp))
+            Text(
+                stringResource(R.string.travel_trip_history_replay_speed_title),
+                style = MaterialTheme.typography.titleSmall,
+            )
+            Text(
+                stringResource(R.string.travel_trip_history_replay_speed_hint),
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                lineHeight = 18.sp,
+            )
+            Slider(
+                value = replayMult,
+                onValueChange = { vm.setTripHistoryReplaySpeedMultiplier(it) },
+                valueRange = 1f..120f,
+                steps = 23,
+                modifier = Modifier.fillMaxWidth(),
+            )
+            Text(
+                stringResource(R.string.travel_trip_history_replay_mult_fmt, replayMult.roundToInt()),
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+            Button(
+                onClick = {
+                    if (filtered.size < 2) return@Button
+                    vm.startTripHistoryReplay(filtered)
+                    centerOfTripPoints(filtered)?.let { vm.setCameraJump(it) }
+                    onDismiss()
+                },
+                modifier = Modifier.fillMaxWidth(),
+                enabled = filtered.size >= 2,
+            ) {
+                Text(stringResource(R.string.travel_trip_history_replay_start))
+            }
+            OutlinedButton(
+                onClick = { vm.stopTripHistoryReplay() },
+                modifier = Modifier.fillMaxWidth(),
+            ) {
+                Text(stringResource(R.string.travel_trip_history_replay_stop))
+            }
         }
 
         Row(
@@ -543,8 +645,7 @@ fun TravelTripHistorySheet(
         Button(
             onClick = {
                 if (filtered.size < 2) return@Button
-                val poly = filtered.map { TravelGeoPoint(it.latitude, it.longitude) }
-                vm.setTripHistoryOverlay(poly)
+                vm.setTripHistoryOverlay(filtered)
                 centerOfTripPoints(filtered)?.let { vm.setCameraJump(it) }
                 onDismiss()
             },

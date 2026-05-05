@@ -55,9 +55,12 @@ import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.RadioButton
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SnackbarDuration
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Slider
 import androidx.compose.material3.SmallFloatingActionButton
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -127,7 +130,11 @@ import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.outlined.BrokenImage
 import androidx.compose.material.icons.filled.CameraAlt
+import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.DirectionsWalk
+import androidx.compose.material.icons.filled.KeyboardArrowDown
+import androidx.compose.material.icons.filled.KeyboardArrowUp
 import androidx.compose.material.icons.filled.SkipNext
 import androidx.compose.material.icons.filled.Stop
 import androidx.compose.material.icons.filled.Tune
@@ -285,6 +292,10 @@ fun MyTravelsScreen(
     val routePlaybackSim by vm.routePlaybackSim.collectAsStateWithLifecycle()
     val routePlaybackSpeedMps by vm.routePlaybackSpeedMps.collectAsStateWithLifecycle()
     val routePlaybackPickStartActive by vm.routePlaybackPickStartActive.collectAsStateWithLifecycle()
+    val manualPhotoWalkPickStartActive by vm.manualPhotoWalkPickStartActive.collectAsStateWithLifecycle()
+    val manualPhotoWalkSteppingActive by vm.manualPhotoWalkSteppingActive.collectAsStateWithLifecycle()
+    val tripHistoryReplayActive by vm.tripHistoryReplayActive.collectAsStateWithLifecycle()
+    val tripHistoryReplayPose by vm.tripHistoryReplayPose.collectAsStateWithLifecycle()
     val routePlaybackReverse by vm.routePlaybackReverse.collectAsStateWithLifecycle()
     val routePlaybackStartDistanceM by vm.routePlaybackStartDistanceM.collectAsStateWithLifecycle()
     val friendPeerLocation by vm.friendPeerLocation.collectAsStateWithLifecycle()
@@ -293,9 +304,26 @@ fun MyTravelsScreen(
     val friendPeerPollEnabled by vm.friendPeerPollEnabled.collectAsStateWithLifecycle()
     val lastUserGeo by vm.lastUserGeo.collectAsStateWithLifecycle()
     val lastUserHeadingDeg by vm.lastUserHeadingDeg.collectAsStateWithLifecycle()
-    val tripHistoryOverlay by vm.tripHistoryOverlayPoints.collectAsStateWithLifecycle()
+    val tripHistoryOverlayTrack by vm.tripHistoryOverlayTrack.collectAsStateWithLifecycle()
     val scope = rememberCoroutineScope()
+    val travelSnackbarHostState = remember { SnackbarHostState() }
     val contactsRepo = remember { ContactsRepository(context) }
+
+    DisposableEffect(Unit) {
+        onDispose {
+            vm.stopTripHistoryReplay()
+            vm.cancelManualPhotoWalkFully()
+        }
+    }
+
+    LaunchedEffect(manualPhotoWalkPickStartActive) {
+        if (manualPhotoWalkPickStartActive) {
+            travelSnackbarHostState.showSnackbar(
+                message = context.getString(R.string.travel_manual_walk_pick_snackbar),
+                duration = SnackbarDuration.Long,
+            )
+        }
+    }
 
     var burstSessionIdLocal by remember { mutableStateOf<String?>(null) }
     /** При дополнении серии: исходная сессия для replace и сохранения createdAtMs. */
@@ -521,7 +549,11 @@ fun MyTravelsScreen(
             editMode != TravelMapEditMode.VIEW ||
             incidentPlaceMode ||
             routePickDestination ||
-            shareMapPointPickActive
+            shareMapPointPickActive ||
+            routeBurstActive ||
+            routePlaybackPickStartActive ||
+            manualPhotoWalkPickStartActive ||
+            tripHistoryReplayActive
 
     LaunchedEffect(territoryPanelBelowMap) {
         if (!territoryPanelBelowMap) {
@@ -550,6 +582,7 @@ fun MyTravelsScreen(
         routePickDestination,
         routeBurstActive,
         routePlaybackPickStartActive,
+        manualPhotoWalkPickStartActive,
         pendingCircleRecenterZoneId,
         editMode,
         polygonRedraftZoneId,
@@ -560,6 +593,7 @@ fun MyTravelsScreen(
                 routePickDestination ||
                 routeBurstActive ||
                 routePlaybackPickStartActive ||
+                manualPhotoWalkPickStartActive ||
                 pendingCircleRecenterZoneId != null ||
                 editMode != TravelMapEditMode.VIEW ||
                 polygonRedraftZoneId != null
@@ -786,6 +820,7 @@ fun MyTravelsScreen(
     }
 
     Scaffold(
+        snackbarHost = { SnackbarHost(travelSnackbarHostState) },
         topBar = {
             TopAppBar(
                 title = { Text(stringResource(R.string.travel_title)) },
@@ -1037,6 +1072,36 @@ fun MyTravelsScreen(
                         omitPolygonZoneId = polygonRedraftZoneId,
                         onMapTap = mapTap@{ pt ->
                             bumpFloatingToolbar()
+                            if (manualPhotoWalkPickStartActive) {
+                                when {
+                                    sortedPhotoSessions.isEmpty() -> {
+                                        vm.cancelManualPhotoWalkPickModeOnly()
+                                        Toast.makeText(
+                                            context,
+                                            R.string.travel_route_photo_no_sessions,
+                                            Toast.LENGTH_SHORT,
+                                        ).show()
+                                    }
+                                    incidentPlaceMode || routePickDestination || routeBurstActive -> {
+                                        Toast.makeText(
+                                            context,
+                                            R.string.travel_route_playback_pick_conflict,
+                                            Toast.LENGTH_SHORT,
+                                        ).show()
+                                    }
+                                    else -> {
+                                        val d = vm.applyManualPhotoWalkStartFromMap(pt.latitude, pt.longitude)
+                                        if (d == null) {
+                                            Toast.makeText(
+                                                context,
+                                                R.string.travel_manual_walk_pick_failed,
+                                                Toast.LENGTH_SHORT,
+                                            ).show()
+                                        }
+                                    }
+                                }
+                                return@mapTap
+                            }
                             if (routePlaybackPickStartActive) {
                                 when {
                                     sortedPhotoSessions.isEmpty() -> {
@@ -1149,8 +1214,9 @@ fun MyTravelsScreen(
                         routePhotoSessions = routePhotoSessions,
                         routeBurstDraftPoints = burstDraftPoints.toList(),
                         routePlaybackSim = routePlaybackSim,
+                        tripHistoryReplayPose = tripHistoryReplayPose,
                         friendPeerLocation = friendPeerLocation,
-                        hideNavigatorHud = routePlaybackActive,
+                        hideNavigatorHud = routePlaybackActive || manualPhotoWalkSteppingActive,
                         navigatorHudExtras = {
                             SpotPhotosAtPlaceHudSection(
                                 expanded = spotPhotosHudExpanded,
@@ -1180,7 +1246,7 @@ fun MyTravelsScreen(
                                 photos = spotHudFilteredPhotos,
                             )
                         },
-                        tripHistoryPolyline = tripHistoryOverlay,
+                        tripHistoryTrack = tripHistoryOverlayTrack,
                         onTripGpsSample = { lat, lng, ts, sp ->
                             vm.recordTripGpsSample(lat, lng, ts, sp)
                         },
@@ -1234,6 +1300,34 @@ fun MyTravelsScreen(
                                     },
                                 ),
                             )
+                        }
+                        if (sortedPhotoSessions.isNotEmpty()) {
+                            SmallFloatingActionButton(
+                                onClick = {
+                                    bumpFloatingToolbar()
+                                    when {
+                                        incidentPlaceMode || routePickDestination || routeBurstActive -> {
+                                            Toast.makeText(
+                                                context,
+                                                R.string.travel_route_photo_modes_conflict,
+                                                Toast.LENGTH_SHORT,
+                                            ).show()
+                                        }
+                                        else -> vm.requestManualPhotoWalkPickMode()
+                                    }
+                                },
+                                containerColor =
+                                    if (manualPhotoWalkPickStartActive || manualPhotoWalkSteppingActive) {
+                                        MaterialTheme.colorScheme.secondaryContainer
+                                    } else {
+                                        MaterialTheme.colorScheme.surfaceVariant
+                                    },
+                            ) {
+                                Icon(
+                                    Icons.Default.DirectionsWalk,
+                                    contentDescription = stringResource(R.string.travel_manual_walk_fab_cd),
+                                )
+                            }
                         }
                         SmallFloatingActionButton(
                             onClick = {
@@ -1297,6 +1391,58 @@ fun MyTravelsScreen(
                                 )
                             }
                         }
+                        if (tripHistoryReplayActive) {
+                            SmallFloatingActionButton(
+                                onClick = {
+                                    bumpFloatingToolbar()
+                                    vm.stopTripHistoryReplay()
+                                },
+                                containerColor = MaterialTheme.colorScheme.errorContainer,
+                            ) {
+                                Icon(
+                                    Icons.Default.Stop,
+                                    contentDescription = stringResource(R.string.travel_trip_history_replay_stop_cd),
+                                )
+                            }
+                        }
+                        if (manualPhotoWalkSteppingActive) {
+                            SmallFloatingActionButton(
+                                onClick = {
+                                    bumpFloatingToolbar()
+                                    vm.manualPhotoWalkStepBackward()
+                                },
+                                containerColor = MaterialTheme.colorScheme.surfaceVariant,
+                            ) {
+                                Icon(
+                                    Icons.Default.KeyboardArrowDown,
+                                    contentDescription = stringResource(R.string.travel_manual_walk_step_back_cd),
+                                )
+                            }
+                            SmallFloatingActionButton(
+                                onClick = {
+                                    bumpFloatingToolbar()
+                                    vm.manualPhotoWalkStepForward()
+                                },
+                                containerColor = MaterialTheme.colorScheme.surfaceVariant,
+                            ) {
+                                Icon(
+                                    Icons.Default.KeyboardArrowUp,
+                                    contentDescription = stringResource(R.string.travel_manual_walk_step_forward_cd),
+                                )
+                            }
+                            SmallFloatingActionButton(
+                                onClick = {
+                                    bumpFloatingToolbar()
+                                    vm.cancelManualPhotoWalkFully()
+                                },
+                                containerColor = MaterialTheme.colorScheme.secondaryContainer,
+                            ) {
+                                Icon(
+                                    Icons.Default.Close,
+                                    contentDescription = stringResource(R.string.travel_manual_walk_exit_cd),
+                                )
+                            }
+                        }
                     }
                     if (routePlaybackActive) {
                         SmallFloatingActionButton(
@@ -1315,34 +1461,38 @@ fun MyTravelsScreen(
                             )
                         }
                     }
-                    routePlaybackSim?.let { sim ->
-                        sim.currentPhotoUri?.let { uriStr ->
-                            val pbScale = routePlaybackPreviewScale.coerceIn(0.5f, 2.5f)
-                            val thumbW = (128f * pbScale).dp.coerceIn(88.dp, 188.dp)
-                            val thumbH = (82f * pbScale).dp.coerceIn(56.dp, 120.dp)
-                            Box(
-                                modifier = Modifier
-                                    .align(Alignment.BottomEnd)
-                                    .padding(end = 12.dp, bottom = 88.dp)
-                                    .width(thumbW)
-                                    .height(thumbH)
-                                    .clip(RoundedCornerShape(12.dp)),
-                            ) {
-                                RoutePlaybackSmoothPhoto(
-                                    uriStr = uriStr,
-                                    modifier = Modifier.fillMaxSize(),
-                                    contentScale = ContentScale.Crop,
-                                )
-                                Surface(
-                                    modifier = Modifier.align(Alignment.BottomCenter),
-                                    color = MaterialTheme.colorScheme.surface.copy(alpha = 0.88f),
-                                    shape = RoundedCornerShape(bottomStart = 12.dp, bottomEnd = 12.dp),
+                    val showPlaybackPhotoHud = (routePlaybackActive || manualPhotoWalkSteppingActive) &&
+                        routePlaybackSim != null
+                    if (showPlaybackPhotoHud) {
+                        routePlaybackSim?.let { sim ->
+                            sim.currentPhotoUri?.let { uriStr ->
+                                val pbScale = routePlaybackPreviewScale.coerceIn(0.5f, 2.5f)
+                                val thumbW = (128f * pbScale).dp.coerceIn(88.dp, 188.dp)
+                                val thumbH = (82f * pbScale).dp.coerceIn(56.dp, 120.dp)
+                                Box(
+                                    modifier = Modifier
+                                        .align(Alignment.BottomEnd)
+                                        .padding(end = 12.dp, bottom = 88.dp)
+                                        .width(thumbW)
+                                        .height(thumbH)
+                                        .clip(RoundedCornerShape(12.dp)),
                                 ) {
-                                    Text(
-                                        "${(sim.progress * 100f).toInt()}% · ${sim.distanceAlongMeters.toInt()} м / ${sim.totalPathMeters.toInt()} м",
-                                        style = MaterialTheme.typography.labelSmall,
-                                        modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
+                                    RoutePlaybackSmoothPhoto(
+                                        uriStr = uriStr,
+                                        modifier = Modifier.fillMaxSize(),
+                                        contentScale = ContentScale.Crop,
                                     )
+                                    Surface(
+                                        modifier = Modifier.align(Alignment.BottomCenter),
+                                        color = MaterialTheme.colorScheme.surface.copy(alpha = 0.88f),
+                                        shape = RoundedCornerShape(bottomStart = 12.dp, bottomEnd = 12.dp),
+                                    ) {
+                                        Text(
+                                            "${(sim.progress * 100f).toInt()}% · ${sim.distanceAlongMeters.toInt()} м / ${sim.totalPathMeters.toInt()} м",
+                                            style = MaterialTheme.typography.labelSmall,
+                                            modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
+                                        )
+                                    }
                                 }
                             }
                         }
@@ -1426,6 +1576,7 @@ fun MyTravelsScreen(
                                         routePickDestination ||
                                         routeBurstActive ||
                                         routePlaybackPickStartActive ||
+                                        manualPhotoWalkPickStartActive ||
                                         pendingCircleRecenterZoneId != null ||
                                         editMode != TravelMapEditMode.VIEW ||
                                         polygonRedraftZoneId != null
@@ -1511,6 +1662,58 @@ fun MyTravelsScreen(
                                 )
                                 TextButton(onClick = { vm.setRoutePlaybackPickStartActive(false) }) {
                                     Text(stringResource(R.string.travel_cancel))
+                                }
+                            }
+                        }
+                    }
+                    if (manualPhotoWalkPickStartActive) {
+                        Card(
+                            modifier = Modifier
+                                .align(Alignment.TopCenter)
+                                .padding(top = if (routePickDestination) 72.dp else 8.dp)
+                                .widthIn(max = 340.dp),
+                            colors = CardDefaults.cardColors(
+                                containerColor = MaterialTheme.colorScheme.secondaryContainer,
+                            ),
+                        ) {
+                            Row(
+                                Modifier.padding(horizontal = 12.dp, vertical = 8.dp),
+                                verticalAlignment = Alignment.CenterVertically,
+                            ) {
+                                Text(
+                                    stringResource(R.string.travel_manual_walk_banner),
+                                    Modifier.weight(1f),
+                                    style = MaterialTheme.typography.bodySmall,
+                                    color = MaterialTheme.colorScheme.onSecondaryContainer,
+                                )
+                                TextButton(onClick = { vm.cancelManualPhotoWalkPickModeOnly() }) {
+                                    Text(stringResource(R.string.travel_cancel))
+                                }
+                            }
+                        }
+                    }
+                    if (tripHistoryReplayActive) {
+                        Card(
+                            modifier = Modifier
+                                .align(Alignment.TopCenter)
+                                .padding(top = 8.dp)
+                                .widthIn(max = 360.dp),
+                            colors = CardDefaults.cardColors(
+                                containerColor = MaterialTheme.colorScheme.primaryContainer,
+                            ),
+                        ) {
+                            Row(
+                                Modifier.padding(horizontal = 12.dp, vertical = 8.dp),
+                                verticalAlignment = Alignment.CenterVertically,
+                            ) {
+                                Text(
+                                    stringResource(R.string.travel_trip_history_replay_banner),
+                                    Modifier.weight(1f),
+                                    style = MaterialTheme.typography.bodySmall,
+                                    color = MaterialTheme.colorScheme.onPrimaryContainer,
+                                )
+                                TextButton(onClick = { vm.stopTripHistoryReplay() }) {
+                                    Text(stringResource(R.string.travel_trip_history_replay_stop))
                                 }
                             }
                         }

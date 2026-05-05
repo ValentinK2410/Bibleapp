@@ -11,7 +11,10 @@ import com.example.bible.data.travel.TravelGeoPoint
 import com.example.bible.data.travel.TravelGeofenceManager
 import com.example.bible.data.travel.TravelMapIncident
 import com.example.bible.data.travel.TravelMapKitSettingsRepository
+import com.example.bible.data.travel.RoutePlaybackPolyline
 import com.example.bible.data.travel.RoutePlaybackSimState
+import com.example.bible.data.travel.TripHistoryReplayPose
+import com.example.bible.data.travel.interpolateTripHistoryReplayPose
 import com.example.bible.data.travel.TravelRoutePhotoSession
 import com.example.bible.data.travel.TravelTripTrackPoint
 import com.example.bible.data.travel.TravelZone
@@ -56,6 +59,7 @@ enum class TravelMapEditMode {
 private const val ROUTE_PLAYBACK_SPEED_DEFAULT_MPS = 6f
 private const val ROUTE_PLAYBACK_SPEED_MIN_MPS = 0.5f
 private const val ROUTE_PLAYBACK_SPEED_MAX_MPS = 28f
+private const val MANUAL_PHOTO_WALK_STEP_METERS = 14f
 
 data class TravelSavedMapCamera(
     val latitude: Double,
@@ -234,6 +238,22 @@ class TravelViewModel(
 
     private var playbackSimJob: Job? = null
 
+    /** Ручная «прогулка» по линии между снимками: ждём точку на карте, затем шаги ↑/↓ без автодвижения камеры. */
+    private val _manualPhotoWalkPickStartActive = MutableStateFlow(false)
+    val manualPhotoWalkPickStartActive: StateFlow<Boolean> = _manualPhotoWalkPickStartActive.asStateFlow()
+    private val _manualPhotoWalkSteppingActive = MutableStateFlow(false)
+    val manualPhotoWalkSteppingActive: StateFlow<Boolean> = _manualPhotoWalkSteppingActive.asStateFlow()
+    private var manualWalkCachedPoly: RoutePlaybackPolyline? = null
+    private val _manualPhotoWalkDistM = MutableStateFlow(0f)
+
+    private var tripHistoryReplayJob: Job? = null
+    private val _tripHistoryReplayActive = MutableStateFlow(false)
+    val tripHistoryReplayActive: StateFlow<Boolean> = _tripHistoryReplayActive.asStateFlow()
+    private val _tripHistoryReplayPose = MutableStateFlow<TripHistoryReplayPose?>(null)
+    val tripHistoryReplayPose: StateFlow<TripHistoryReplayPose?> = _tripHistoryReplayPose.asStateFlow()
+    private val _tripHistoryReplaySpeedMultiplier = MutableStateFlow(24f)
+    val tripHistoryReplaySpeedMultiplier: StateFlow<Float> = _tripHistoryReplaySpeedMultiplier.asStateFlow()
+
     private val _friendPeerLocationPoll = MutableStateFlow<FriendPeerLocation?>(null)
     private val _friendPeerLocationManual = MutableStateFlow<FriendPeerLocation?>(null)
     private var friendPeerPollJob: Job? = null
@@ -285,8 +305,8 @@ class TravelViewModel(
         true,
     )
 
-    private val _tripHistoryOverlayPoints = MutableStateFlow<List<TravelGeoPoint>?>(null)
-    val tripHistoryOverlayPoints: StateFlow<List<TravelGeoPoint>?> = _tripHistoryOverlayPoints.asStateFlow()
+    private val _tripHistoryOverlayTrack = MutableStateFlow<List<TravelTripTrackPoint>?>(null)
+    val tripHistoryOverlayTrack: StateFlow<List<TravelTripTrackPoint>?> = _tripHistoryOverlayTrack.asStateFlow()
 
     private val tripMapSampleGate = Any()
     private var tripMapLastWallMs = 0L
@@ -341,7 +361,9 @@ class TravelViewModel(
                     } else {
                         playbackSimJob?.cancel()
                         playbackSimJob = null
-                        _routePlaybackSim.value = null
+                        if (!_manualPhotoWalkSteppingActive.value) {
+                            _routePlaybackSim.value = null
+                        }
                     }
                 }
         }
@@ -382,7 +404,9 @@ class TravelViewModel(
         playbackSimJob?.cancel()
         playbackSimJob = null
         if (!_routePlaybackActive.value) {
-            _routePlaybackSim.value = null
+            if (!_manualPhotoWalkSteppingActive.value) {
+                _routePlaybackSim.value = null
+            }
             return
         }
         val sortedSessions = routePhotoSessions.value.sortedByDescending { it.createdAtMs }
@@ -431,6 +455,7 @@ class TravelViewModel(
                     distanceAlongMeters = dist,
                     totalPathMeters = total,
                     currentPhotoUri = uri,
+                    followCameraWithWalker = true,
                 )
                 delay(33)
                 if (!_routePlaybackActive.value) break
@@ -846,8 +871,145 @@ class TravelViewModel(
         }
     }
 
-    fun setTripHistoryOverlay(points: List<TravelGeoPoint>?) {
-        _tripHistoryOverlayPoints.value = points
+    fun setTripHistoryOverlay(track: List<TravelTripTrackPoint>?) {
+        _tripHistoryOverlayTrack.value =
+            track?.sortedBy { it.timestampMs }?.takeIf { it.isNotEmpty() }
+    }
+
+    fun setTripHistoryReplaySpeedMultiplier(mult: Float) {
+        _tripHistoryReplaySpeedMultiplier.value = mult.coerceIn(1f, 200f)
+    }
+
+    private fun stopTripHistoryReplayInternal() {
+        tripHistoryReplayJob?.cancel()
+        tripHistoryReplayJob = null
+        _tripHistoryReplayActive.value = false
+        _tripHistoryReplayPose.value = null
+    }
+
+    fun stopTripHistoryReplay() {
+        stopTripHistoryReplayInternal()
+    }
+
+    fun startTripHistoryReplay(track: List<TravelTripTrackPoint>) {
+        val ordered = track.sortedBy { it.timestampMs }
+        if (ordered.size < 2) return
+        cancelManualPhotoWalkFully()
+        playbackSimJob?.cancel()
+        playbackSimJob = null
+        _routePlaybackActive.value = false
+        _routePlaybackSim.value = null
+
+        stopTripHistoryReplayInternal()
+        _tripHistoryReplayActive.value = true
+
+        tripHistoryReplayJob = viewModelScope.launch {
+            while (isActive && _tripHistoryReplayActive.value) {
+                val span = (ordered.last().timestampMs - ordered.first().timestampMs).coerceAtLeast(1L)
+                var virtualMs = 0L
+                while (isActive && _tripHistoryReplayActive.value && virtualMs < span) {
+                    val mult = _tripHistoryReplaySpeedMultiplier.value.coerceIn(1f, 200f)
+                    delay(33L)
+                    virtualMs += (33f * mult).toLong().coerceAtLeast(1L)
+                    if (virtualMs > span) virtualMs = span
+                    _tripHistoryReplayPose.value = interpolateTripHistoryReplayPose(ordered, virtualMs)
+                }
+                delay(600L)
+            }
+        }
+    }
+
+    fun requestManualPhotoWalkPickMode() {
+        stopTripHistoryReplayInternal()
+        playbackSimJob?.cancel()
+        playbackSimJob = null
+        _routePlaybackActive.value = false
+        _routePlaybackSim.value = null
+        manualWalkCachedPoly = null
+        _manualPhotoWalkDistM.value = 0f
+        _manualPhotoWalkSteppingActive.value = false
+        _routePlaybackPickStartActive.value = false
+        _manualPhotoWalkPickStartActive.value = true
+    }
+
+    fun cancelManualPhotoWalkPickModeOnly() {
+        _manualPhotoWalkPickStartActive.value = false
+    }
+
+    fun cancelManualPhotoWalkFully() {
+        manualWalkCachedPoly = null
+        _manualPhotoWalkPickStartActive.value = false
+        _manualPhotoWalkSteppingActive.value = false
+        _manualPhotoWalkDistM.value = 0f
+        if (!_routePlaybackActive.value) {
+            _routePlaybackSim.value = null
+        }
+    }
+
+    private fun emitManualPlaybackSim(poly: RoutePlaybackPolyline, distMeters: Float) {
+        val total = poly.totalLengthM.coerceAtLeast(1f)
+        val dist = distMeters.coerceIn(0f, total)
+        val (lat, lon, bearFwd) = interpolateRoutePlayback(poly, dist)
+        val uri = routePlaybackPhotoUriAtDistance(poly, dist)
+        _routePlaybackSim.value = RoutePlaybackSimState(
+            latitude = lat,
+            longitude = lon,
+            bearingDeg = bearFwd,
+            progress = (dist / total).coerceIn(0f, 1f),
+            distanceAlongMeters = dist,
+            totalPathMeters = total,
+            currentPhotoUri = uri,
+            followCameraWithWalker = false,
+        )
+    }
+
+    /** Старт ручной прогулки: ближайшая точка на полилинии текущей фото-сессии к касанию карты. */
+    fun applyManualPhotoWalkStartFromMap(latitude: Double, longitude: Double): Float? {
+        val sortedSessions = routePhotoSessions.value.sortedByDescending { it.createdAtMs }
+        if (sortedSessions.isEmpty()) return null
+        val idx = _routePlaybackSessionIndex.value % sortedSessions.size
+        val session = sortedSessions[idx]
+        val poly = buildRoutePlaybackPolyline(session.points) ?: return null
+        val d = nearestDistanceAlongPolyline(poly, latitude, longitude)
+        prefetchRouteSessionPhotos(session)
+        manualWalkCachedPoly = poly
+        _manualPhotoWalkPickStartActive.value = false
+        _manualPhotoWalkSteppingActive.value = true
+        _manualPhotoWalkDistM.value = d
+        emitManualPlaybackSim(poly, d)
+        return d
+    }
+
+    private fun prefetchRouteSessionPhotos(session: TravelRoutePhotoSession) {
+        viewModelScope.launch(Dispatchers.IO) {
+            val app = getApplication<Application>()
+            val loader = app.imageLoader
+            for (p in session.points) {
+                runCatching {
+                    loader.enqueue(
+                        ImageRequest.Builder(app)
+                            .data(Uri.parse(p.photoUri))
+                            .crossfade(false)
+                            .build(),
+                    )
+                }
+            }
+        }
+    }
+
+    fun manualPhotoWalkStepForward() {
+        val poly = manualWalkCachedPoly ?: return
+        val next = (_manualPhotoWalkDistM.value + MANUAL_PHOTO_WALK_STEP_METERS)
+            .coerceAtMost(poly.totalLengthM)
+        _manualPhotoWalkDistM.value = next
+        emitManualPlaybackSim(poly, next)
+    }
+
+    fun manualPhotoWalkStepBackward() {
+        val poly = manualWalkCachedPoly ?: return
+        val prev = (_manualPhotoWalkDistM.value - MANUAL_PHOTO_WALK_STEP_METERS).coerceAtLeast(0f)
+        _manualPhotoWalkDistM.value = prev
+        emitManualPlaybackSim(poly, prev)
     }
 
     fun reportUserHeading(degrees: Float) {
@@ -866,6 +1028,10 @@ class TravelViewModel(
     }
 
     fun setRoutePlaybackActive(active: Boolean) {
+        if (active) {
+            cancelManualPhotoWalkFully()
+            stopTripHistoryReplayInternal()
+        }
         _routePlaybackActive.value = active
         if (!active) {
             _routePlaybackPickStartActive.value = false
@@ -873,6 +1039,10 @@ class TravelViewModel(
     }
 
     fun setRoutePlaybackPickStartActive(active: Boolean) {
+        if (active) {
+            cancelManualPhotoWalkFully()
+            _manualPhotoWalkPickStartActive.value = false
+        }
         _routePlaybackPickStartActive.value = active
     }
 
@@ -883,6 +1053,7 @@ class TravelViewModel(
 
     /** Ближайшая точка на полилинии текущей сессии к касанию карты — старт виртуального проезда. */
     fun applyRoutePlaybackStartFromMap(latitude: Double, longitude: Double): Float? {
+        cancelManualPhotoWalkFully()
         val sortedSessions = routePhotoSessions.value.sortedByDescending { it.createdAtMs }
         if (sortedSessions.isEmpty()) return null
         val idx = _routePlaybackSessionIndex.value % sortedSessions.size
@@ -899,6 +1070,7 @@ class TravelViewModel(
     }
 
     fun cycleRoutePlaybackSession() {
+        cancelManualPhotoWalkFully()
         val n = routePhotoSessions.value.sortedByDescending { it.createdAtMs }.size
         if (n <= 1) return
         _routePlaybackSessionIndex.update { (it + 1) % n }
@@ -931,6 +1103,8 @@ class TravelViewModel(
             repo.clearAllRoutePhotoSessions()
             playbackSimJob?.cancel()
             playbackSimJob = null
+            cancelManualPhotoWalkFully()
+            stopTripHistoryReplayInternal()
             _routePlaybackActive.value = false
             _routePlaybackSim.value = null
             _routePlaybackSessionIndex.value = 0

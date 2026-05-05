@@ -85,6 +85,10 @@ import com.example.bible.data.travel.TRAVEL_ZONE_CIRCLE_RADIUS_MIN_M
 import com.example.bible.data.travel.FriendPeerLocation
 import com.example.bible.data.travel.RoutePlaybackSimState
 import com.example.bible.data.travel.TravelRoutePhotoSession
+import com.example.bible.data.travel.TripHistoryReplayPose
+import com.example.bible.data.travel.TravelTripTrackPoint
+import com.example.bible.data.travel.tripTrackSegmentSpeedKmhForDisplay
+import com.example.bible.data.travel.tripTrackSpeedKmhToArgb
 import com.example.bible.data.travel.TravelRoutePhotoPoint
 import com.example.bible.data.travel.bearingDegForRoutePhotoMapOrNull
 import com.example.bible.data.travel.bearingDegreesLatLon
@@ -300,10 +304,11 @@ fun YandexTravelMap(
     routePhotoSessions: List<TravelRoutePhotoSession> = emptyList(),
     routeBurstDraftPoints: List<TravelRoutePhotoPoint> = emptyList(),
     routePlaybackSim: RoutePlaybackSimState? = null,
+    tripHistoryReplayPose: TripHistoryReplayPose? = null,
     friendPeerLocation: FriendPeerLocation? = null,
     hideNavigatorHud: Boolean = false,
     navigatorHudExtras: (@Composable () -> Unit)? = null,
-    tripHistoryPolyline: List<TravelGeoPoint>? = null,
+    tripHistoryTrack: List<TravelTripTrackPoint>? = null,
     onTripGpsSample: ((latitude: Double, longitude: Double, timestampMs: Long, speedMps: Float) -> Unit)? = null,
     onFolkMapCrosshairGeoChanged: ((latitude: Double, longitude: Double, azimuthDeg: Float) -> Unit)? = null,
 ) {
@@ -369,10 +374,11 @@ fun YandexTravelMap(
                 routePhotoSessions = routePhotoSessions,
                 routeBurstDraftPoints = routeBurstDraftPoints,
                 routePlaybackSim = routePlaybackSim,
+                tripHistoryReplayPose = tripHistoryReplayPose,
                 friendPeerLocation = friendPeerLocation,
                 hideNavigatorHud = hideNavigatorHud,
                 navigatorHudExtras = navigatorHudExtras,
-                tripHistoryPolyline = tripHistoryPolyline,
+                tripHistoryTrack = tripHistoryTrack,
                 onTripGpsSample = onTripGpsSample,
                 onFolkMapCrosshairGeoChanged = onFolkMapCrosshairGeoChanged,
             )
@@ -409,10 +415,11 @@ private fun YandexTravelMapContent(
     routePhotoSessions: List<TravelRoutePhotoSession> = emptyList(),
     routeBurstDraftPoints: List<TravelRoutePhotoPoint> = emptyList(),
     routePlaybackSim: RoutePlaybackSimState? = null,
+    tripHistoryReplayPose: TripHistoryReplayPose? = null,
     friendPeerLocation: FriendPeerLocation? = null,
     hideNavigatorHud: Boolean = false,
     navigatorHudExtras: (@Composable () -> Unit)? = null,
-    tripHistoryPolyline: List<TravelGeoPoint>? = null,
+    tripHistoryTrack: List<TravelTripTrackPoint>? = null,
     onTripGpsSample: ((latitude: Double, longitude: Double, timestampMs: Long, speedMps: Float) -> Unit)? = null,
     onFolkMapCrosshairGeoChanged: ((latitude: Double, longitude: Double, azimuthDeg: Float) -> Unit)? = null,
 ) {
@@ -497,6 +504,7 @@ private fun YandexTravelMapContent(
     val onUserLocation = rememberUpdatedState(onUserLocationUpdated)
     val onTripGpsSampleCb = rememberUpdatedState(onTripGpsSample)
     val routePlaybackSimState = rememberUpdatedState(routePlaybackSim)
+    val tripHistoryReplayPoseState = rememberUpdatedState(tripHistoryReplayPose)
     val friendPeerLocationState = rememberUpdatedState(friendPeerLocation)
     val folkCrosshairCbState = rememberUpdatedState(onFolkMapCrosshairGeoChanged)
     val folkCrosshairThrottleLastMs = remember { AtomicLong(0L) }
@@ -526,15 +534,21 @@ private fun YandexTravelMapContent(
         }
     }
 
-    LaunchedEffect(tripHistoryPolyline, tripHistoryLayer, mapView) {
+    LaunchedEffect(tripHistoryTrack, tripHistoryLayer, mapView) {
         tripHistoryLayer.clear()
-        val pts = tripHistoryPolyline ?: return@LaunchedEffect
+        val pts = tripHistoryTrack ?: return@LaunchedEffect
         if (pts.size < 2) return@LaunchedEffect
-        val poly = Polyline(pts.map { Point(it.latitude, it.longitude) })
-        val line = tripHistoryLayer.addPolyline(poly)
-        line.setStrokeColor(0xFF7C4DFF.toInt())
-        line.strokeWidth = 10f
-        line.zIndex = 4.09f
+        val ordered = pts.sortedBy { it.timestampMs }
+        for (i in 1 until ordered.size) {
+            val a = ordered[i - 1]
+            val b = ordered[i]
+            val polySeg =
+                Polyline(listOf(Point(a.latitude, a.longitude), Point(b.latitude, b.longitude)))
+            val line = tripHistoryLayer.addPolyline(polySeg)
+            line.setStrokeColor(tripTrackSpeedKmhToArgb(tripTrackSegmentSpeedKmhForDisplay(a, b)))
+            line.strokeWidth = 10f
+            line.zIndex = 4.09f
+        }
     }
 
     LaunchedEffect(routePhotoSessions, routeBurstDraftPoints, routePhotoArrowLayer, mapView, context) {
@@ -584,21 +598,36 @@ private fun YandexTravelMapContent(
             },
         )
         pm.setVisible(false)
-        snapshotFlow { routePlaybackSimState.value }.collect { sim ->
-            if (sim == null) {
-                pm.setVisible(false)
-                return@collect
-            }
-            pm.setVisible(true)
-            pm.geometry = Point(sim.latitude, sim.longitude)
-            pm.direction = sim.bearingDeg
+        snapshotFlow {
+            Pair(routePlaybackSimState.value, tripHistoryReplayPoseState.value)
+        }.collect { (sim, replay) ->
             val mapInst = mapView.mapWindow.map
             val cp = mapInst.cameraPosition
-            mapInst.move(
-                CameraPosition(Point(sim.latitude, sim.longitude), cp.zoom, cp.azimuth, cp.tilt),
-                Animation(Animation.Type.SMOOTH, 0.16f),
-                null,
-            )
+            when {
+                replay != null -> {
+                    pm.setVisible(true)
+                    pm.geometry = Point(replay.latitude, replay.longitude)
+                    pm.direction = replay.bearingDeg
+                    mapInst.move(
+                        CameraPosition(Point(replay.latitude, replay.longitude), cp.zoom, cp.azimuth, cp.tilt),
+                        Animation(Animation.Type.SMOOTH, 0.16f),
+                        null,
+                    )
+                }
+                sim != null -> {
+                    pm.setVisible(true)
+                    pm.geometry = Point(sim.latitude, sim.longitude)
+                    pm.direction = sim.bearingDeg
+                    if (sim.followCameraWithWalker) {
+                        mapInst.move(
+                            CameraPosition(Point(sim.latitude, sim.longitude), cp.zoom, cp.azimuth, cp.tilt),
+                            Animation(Animation.Type.SMOOTH, 0.16f),
+                            null,
+                        )
+                    }
+                }
+                else -> pm.setVisible(false)
+            }
         }
     }
 
