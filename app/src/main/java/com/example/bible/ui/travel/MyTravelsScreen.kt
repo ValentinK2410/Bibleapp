@@ -311,6 +311,7 @@ fun MyTravelsScreen(
     val tripHistoryReplayPose by vm.tripHistoryReplayPose.collectAsStateWithLifecycle()
     val routePlaybackReverse by vm.routePlaybackReverse.collectAsStateWithLifecycle()
     val routePlaybackStartDistanceM by vm.routePlaybackStartDistanceM.collectAsStateWithLifecycle()
+    val activeRoutePlaybackPolyline by vm.activeRoutePlaybackPolyline.collectAsStateWithLifecycle()
     val friendPeerLocation by vm.friendPeerLocation.collectAsStateWithLifecycle()
     val friendPeerPollUrl by vm.friendPeerPollUrl.collectAsStateWithLifecycle()
     val friendPeerPollIntervalSec by vm.friendPeerPollIntervalSec.collectAsStateWithLifecycle()
@@ -1274,6 +1275,10 @@ fun MyTravelsScreen(
                             } else {
                                 null
                             },
+                        routePlaybackWalkerPolyline = activeRoutePlaybackPolyline,
+                        onRouteWalkerDragPreview = vm::previewRouteWalkerDrag,
+                        onRouteWalkerDragCommit = vm::commitRouteWalkerDrag,
+                        onRouteWalkerFingerDragging = vm::setRouteWalkerFingerDragging,
                     )
                     if (routeBurstActive && apiKeyPresent) {
                         Box(Modifier.align(Alignment.Center)) {

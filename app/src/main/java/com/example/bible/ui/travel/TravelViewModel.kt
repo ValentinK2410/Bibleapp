@@ -222,6 +222,14 @@ class TravelViewModel(
     private val _routePlaybackSim = MutableStateFlow<RoutePlaybackSimState?>(null)
     val routePlaybackSim: StateFlow<RoutePlaybackSimState?> = _routePlaybackSim.asStateFlow()
 
+    /** Активная полилиния серии фото для перетаскивания маркера и привязки к треку. */
+    private val _activeRoutePlaybackPolyline = MutableStateFlow<RoutePlaybackPolyline?>(null)
+    val activeRoutePlaybackPolyline: StateFlow<RoutePlaybackPolyline?> = _activeRoutePlaybackPolyline.asStateFlow()
+
+    /** Пользователь тащит оранжевого «человечка» — автопроезд на паузе. */
+    private val _routeWalkerFingerDragging = MutableStateFlow(false)
+    val routeWalkerFingerDragging: StateFlow<Boolean> = _routeWalkerFingerDragging.asStateFlow()
+
     /** Скорость виртуального проезда по полилинии (м/с); применяется на каждом тике симуляции. */
     private val _routePlaybackSpeedMps = MutableStateFlow(ROUTE_PLAYBACK_SPEED_DEFAULT_MPS)
     val routePlaybackSpeedMps: StateFlow<Float> = _routePlaybackSpeedMps.asStateFlow()
@@ -363,6 +371,7 @@ class TravelViewModel(
                         playbackSimJob = null
                         if (!_manualPhotoWalkSteppingActive.value) {
                             _routePlaybackSim.value = null
+                            _activeRoutePlaybackPolyline.value = null
                         }
                     }
                 }
@@ -406,20 +415,24 @@ class TravelViewModel(
         if (!_routePlaybackActive.value) {
             if (!_manualPhotoWalkSteppingActive.value) {
                 _routePlaybackSim.value = null
+                _activeRoutePlaybackPolyline.value = null
             }
             return
         }
         val sortedSessions = routePhotoSessions.value.sortedByDescending { it.createdAtMs }
         if (sortedSessions.isEmpty()) {
             _routePlaybackSim.value = null
+            _activeRoutePlaybackPolyline.value = null
             return
         }
         val idx = _routePlaybackSessionIndex.value % sortedSessions.size
         val session = sortedSessions[idx]
         val poly = buildRoutePlaybackPolyline(session.points) ?: run {
             _routePlaybackSim.value = null
+            _activeRoutePlaybackPolyline.value = null
             return
         }
+        _activeRoutePlaybackPolyline.value = poly
         val total = poly.totalLengthM.coerceAtLeast(1f)
         playbackSimJob = viewModelScope.launch {
             launch(Dispatchers.IO) {
@@ -439,6 +452,10 @@ class TravelViewModel(
             val reverse = _routePlaybackReverse.value
             var dist = _routePlaybackStartDistanceM.value.coerceIn(0f, total)
             while (isActive && _routePlaybackActive.value) {
+                if (_routeWalkerFingerDragging.value) {
+                    delay(33)
+                    continue
+                }
                 val speed = _routePlaybackSpeedMps.value.coerceIn(
                     ROUTE_PLAYBACK_SPEED_MIN_MPS,
                     ROUTE_PLAYBACK_SPEED_MAX_MPS,
@@ -464,6 +481,47 @@ class TravelViewModel(
                 while (dist >= total) dist -= total
             }
         }
+    }
+
+    fun previewRouteWalkerDrag(distanceAlongMeters: Float) {
+        val poly = _activeRoutePlaybackPolyline.value ?: return
+        val total = poly.totalLengthM.coerceAtLeast(1f)
+        val d = distanceAlongMeters.coerceIn(0f, total)
+        val (lat, lon, bearFwd) = interpolateRoutePlayback(poly, d)
+        val uri = routePlaybackPhotoUriAtDistance(poly, d)
+        _routePlaybackSim.value = RoutePlaybackSimState(
+            latitude = lat,
+            longitude = lon,
+            bearingDeg = bearFwd,
+            progress = (d / total).coerceIn(0f, 1f),
+            distanceAlongMeters = d,
+            totalPathMeters = total,
+            currentPhotoUri = uri,
+            followCameraWithWalker = false,
+        )
+    }
+
+    fun commitRouteWalkerDrag(distanceAlongMeters: Float) {
+        val poly = _activeRoutePlaybackPolyline.value ?: return
+        val total = poly.totalLengthM.coerceAtLeast(1f)
+        val d = distanceAlongMeters.coerceIn(0f, total)
+        _routeWalkerFingerDragging.value = false
+        when {
+            _manualPhotoWalkSteppingActive.value -> {
+                manualWalkCachedPoly = poly
+                _manualPhotoWalkDistM.value = d
+                emitManualPlaybackSim(poly, d)
+            }
+            _routePlaybackActive.value -> {
+                _routePlaybackStartDistanceM.value = d
+                restartRoutePlaybackSimulation()
+            }
+            else -> Unit
+        }
+    }
+
+    fun setRouteWalkerFingerDragging(active: Boolean) {
+        _routeWalkerFingerDragging.value = active
     }
 
     fun setRoutePlaybackSpeedMps(mps: Float) {
@@ -899,6 +957,7 @@ class TravelViewModel(
         playbackSimJob = null
         _routePlaybackActive.value = false
         _routePlaybackSim.value = null
+        _activeRoutePlaybackPolyline.value = null
 
         stopTripHistoryReplayInternal()
         _tripHistoryReplayActive.value = true
@@ -926,6 +985,7 @@ class TravelViewModel(
         _routePlaybackActive.value = false
         _routePlaybackSim.value = null
         manualWalkCachedPoly = null
+        _activeRoutePlaybackPolyline.value = null
         _manualPhotoWalkDistM.value = 0f
         _manualPhotoWalkSteppingActive.value = false
         _routePlaybackPickStartActive.value = false
@@ -943,10 +1003,12 @@ class TravelViewModel(
         _manualPhotoWalkDistM.value = 0f
         if (!_routePlaybackActive.value) {
             _routePlaybackSim.value = null
+            _activeRoutePlaybackPolyline.value = null
         }
     }
 
     private fun emitManualPlaybackSim(poly: RoutePlaybackPolyline, distMeters: Float) {
+        _activeRoutePlaybackPolyline.value = poly
         val total = poly.totalLengthM.coerceAtLeast(1f)
         val dist = distMeters.coerceIn(0f, total)
         val (lat, lon, bearFwd) = interpolateRoutePlayback(poly, dist)
