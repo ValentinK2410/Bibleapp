@@ -1151,9 +1151,8 @@
     <string name="travel_incident_sheet_side_delete">Удалить</string>
     <string name="travel_incident_sheet_cd_edit">Редактировать метку</string>
     <string name="travel_incident_sheet_cd_delete">Удалить метку</string>
-    <string name="travel_route_burst_start_cd">Народная съёмка</string>
+    <string name="travel_route_burst_start_cd">Народная съёмка: новая серия или дополнение рядом с уже поставленными метками</string>
     <string name="travel_route_burst_stop_cd">Закончить народную съёмку и сохранить серию</string>
-    <string name="travel_route_burst_continue_cd">Дополнить последнюю серию снимков маршрута</string>
     <string name="travel_route_burst_last_frame_cd">Последний сохранённый кадр серии</string>
     <string name="travel_route_folk_title_bar">Народная съёмка</string>
     <string name="travel_route_folk_gesture_hint">Два пальца по панели: сдвиг и масштаб всего блока. Ленту кадров под центром карты листайте горизонтально.</string>

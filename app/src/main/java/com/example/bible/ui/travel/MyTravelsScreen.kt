@@ -37,7 +37,6 @@ import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.AddLocationAlt
 import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material3.AlertDialog
@@ -205,6 +204,42 @@ private fun FolkMapCrosshairDecoration(modifier: Modifier = Modifier) {
         drawLine(color, Offset(c.x - arm, c.y), Offset(c.x + arm, c.y), strokeWidth = sw)
         drawLine(color, Offset(c.x, c.y - arm), Offset(c.x, c.y + arm), strokeWidth = sw)
     }
+}
+
+/**
+ * Если пользователь не дальше этого расстояния от хотя бы одной метки серии на карте,
+ * новые снимки дополняют эту серию; иначе начинается новая серия.
+ */
+private const val ROUTE_PHOTO_EXTEND_SESSION_MAX_M = 100.0
+
+private data class RoutePhotoSessionProximityPick(
+    val session: TravelRoutePhotoSession,
+    val minDistanceMeters: Double,
+)
+
+/**
+ * Серия для дополнения: минимальное расстояние до любой её метки по сравнению с [maxMeters].
+ * При равной «близости точки» выбирается более новая сессия ([TravelRoutePhotoSession.createdAtMs]).
+ */
+private fun pickRoutePhotoSessionNearUserOrNull(
+    userLat: Double,
+    userLng: Double,
+    sessions: List<TravelRoutePhotoSession>,
+    maxMeters: Double,
+): TravelRoutePhotoSession? {
+    if (sessions.isEmpty()) return null
+    val here = TravelGeoPoint(userLat, userLng)
+    val candidates = sessions.mapNotNull { s ->
+        if (s.points.isEmpty()) return@mapNotNull null
+        val minD = s.points.minOf { p ->
+            travelDistanceMeters(here, TravelGeoPoint(p.latitude, p.longitude))
+        }
+        if (minD <= maxMeters) RoutePhotoSessionProximityPick(s, minD) else null
+    }
+    if (candidates.isEmpty()) return null
+    return candidates.minWith(
+        compareBy<RoutePhotoSessionProximityPick> { it.minDistanceMeters }.thenByDescending { it.session.createdAtMs },
+    ).session
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -631,7 +666,7 @@ fun MyTravelsScreen(
         }
     }
 
-    val requestStartRouteBurst: () -> Unit = {
+    val requestStartOrExtendRouteBurst: () -> Unit = {
         bumpFloatingToolbar()
         when {
             !hasFineLocation -> {
@@ -647,34 +682,23 @@ fun MyTravelsScreen(
                 vm.setRoutePlaybackActive(false)
                 burstDraftPoints.clear()
                 burstBaseSessionForContinue = null
-                burstSessionIdLocal = UUID.randomUUID().toString()
-                vm.setRouteBurstActive(true)
-            }
-        }
-    }
 
-    val requestContinueRouteBurst: () -> Unit = {
-        bumpFloatingToolbar()
-        when {
-            !hasFineLocation -> {
-                Toast.makeText(context, R.string.travel_need_location, Toast.LENGTH_LONG).show()
-            }
-            incidentPlaceMode || routePickDestination -> {
-                Toast.makeText(context, R.string.travel_route_photo_modes_conflict, Toast.LENGTH_SHORT).show()
-            }
-            !camGranted -> {
-                camPermLauncher.launch(Manifest.permission.CAMERA)
-            }
-            sortedPhotoSessions.isEmpty() -> {
-                Toast.makeText(context, R.string.travel_route_photo_no_sessions, Toast.LENGTH_SHORT).show()
-            }
-            else -> {
-                val latest = sortedPhotoSessions.first()
-                vm.setRoutePlaybackActive(false)
-                burstDraftPoints.clear()
-                burstDraftPoints.addAll(latest.points.sortedBy { it.capturedAtMs })
-                burstSessionIdLocal = latest.id
-                burstBaseSessionForContinue = latest
+                val extend =
+                    lastUserGeo?.let { g ->
+                        pickRoutePhotoSessionNearUserOrNull(
+                            userLat = g.latitude,
+                            userLng = g.longitude,
+                            sessions = sortedPhotoSessions,
+                            maxMeters = ROUTE_PHOTO_EXTEND_SESSION_MAX_M,
+                        )
+                    }
+
+                burstSessionIdLocal = extend?.id ?: UUID.randomUUID().toString()
+                if (extend != null) {
+                    burstDraftPoints.addAll(extend.points.sortedBy { it.capturedAtMs })
+                    burstBaseSessionForContinue = extend
+                }
+
                 vm.setRouteBurstActive(true)
             }
         }
@@ -1192,7 +1216,7 @@ fun MyTravelsScreen(
                     ) {
                         SmallFloatingActionButton(
                             onClick = {
-                                if (routeBurstActive) stopRouteBurstAndSave() else requestStartRouteBurst()
+                                if (routeBurstActive) stopRouteBurstAndSave() else requestStartOrExtendRouteBurst()
                             },
                             containerColor = if (routeBurstActive) {
                                 MaterialTheme.colorScheme.errorContainer
@@ -1210,17 +1234,6 @@ fun MyTravelsScreen(
                                     },
                                 ),
                             )
-                        }
-                        if (!routeBurstActive && sortedPhotoSessions.isNotEmpty()) {
-                            SmallFloatingActionButton(
-                                onClick = { requestContinueRouteBurst() },
-                                containerColor = MaterialTheme.colorScheme.secondaryContainer,
-                            ) {
-                                Icon(
-                                    Icons.Default.Add,
-                                    contentDescription = stringResource(R.string.travel_route_burst_continue_cd),
-                                )
-                            }
                         }
                         SmallFloatingActionButton(
                             onClick = {
