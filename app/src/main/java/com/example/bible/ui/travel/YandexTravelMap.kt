@@ -665,6 +665,8 @@ private fun YandexTravelMapContent(
         landingPm.setVisible(false)
         landingPm.setDraggable(false)
         var gesturesBackupForWalker: MapWalkerGesturesBackup? = null
+        /** Не вызывать [MapObject.setDraggable] с false во время активного drag — иначе MapKit сбрасывает жест. */
+        var walkerDraggableProgrammatic: Boolean? = null
 
         pm.setDragListener(
             object : MapObjectDragListener {
@@ -734,7 +736,13 @@ private fun YandexTravelMapContent(
             val cp = mapInst.cameraPosition
             val poly = activePolyForWalker.value
             val fingerOnWalker = walkerFingerDraggingLocal.get()
-            pm.setDraggable(!fingerOnWalker && poly != null && replay == null && sim != null)
+            val wantWalkerDraggable = poly != null && replay == null && sim != null
+            if (wantWalkerDraggable != walkerDraggableProgrammatic &&
+                (!fingerOnWalker || wantWalkerDraggable)
+            ) {
+                pm.setDraggable(wantWalkerDraggable)
+                walkerDraggableProgrammatic = wantWalkerDraggable
+            }
             when {
                 replay != null -> {
                     pm.setIconStyle(walkerStyleReplay)
