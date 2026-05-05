@@ -1,28 +1,40 @@
 package com.example.bible.ui.travel
 
+import android.content.Context
 import android.net.Uri
-import androidx.compose.foundation.Image
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.graphics.painter.ColorPainter
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
-import coil.compose.AsyncImagePainter
-import coil.compose.rememberAsyncImagePainter
+import coil.compose.AsyncImage
 import coil.request.CachePolicy
 import coil.request.ImageRequest
 import java.io.File
+import java.util.Locale
 
 /**
- * Превью кадров виртуального проезда: пока новый URI декодируется, остаётся предыдущий кадр
- * (без пустого «мигания» и без crossfade Coil). Обрезку скруглением задаёт родитель ([Modifier.clip]).
+ * Резолвер пути для Coil: надёжно открывает `file://`, в т. ч. когда важнее [File], чем [Uri].
+ */
+fun playbackPhotoCoilModel(context: Context, uriStr: String): Any {
+    val t = uriStr.trim()
+    if (t.isEmpty()) return t
+    val uri = runCatching { Uri.parse(t) }.getOrNull() ?: return t
+    return when (uri.scheme?.lowercase(Locale.US)) {
+        "file" -> {
+            val raw = uri.path ?: return uri
+            val decoded = Uri.decode(raw)
+            File(decoded).takeIf { it.isFile && it.canRead() } ?: uri
+        }
+        else -> uri
+    }
+}
+
+/**
+ * Превью кадров виртуального проезда: Coil [AsyncImage] с предсказуемым состоянием загрузки/ошибки
+ * (без «прозрачного» переднего слоя у старых painter’ов).
  */
 @Composable
 fun RoutePlaybackSmoothPhoto(
@@ -31,67 +43,22 @@ fun RoutePlaybackSmoothPhoto(
     contentScale: ContentScale = ContentScale.Crop,
 ) {
     val context = LocalContext.current
-    var stableBackdropUri by remember { mutableStateOf(uriStr) }
+    val modelData = remember(uriStr) { playbackPhotoCoilModel(context, uriStr) }
 
-    val frontRequest = remember(uriStr) {
-        val uri = runCatching { Uri.parse(uriStr) }.getOrNull()
-        val file = uri?.path?.let { File(it) }
-        val data: Any = if (file != null && file.exists() && file.length() > 0L) {
-            file
-        } else {
-            uri ?: uriStr
-        }
-        ImageRequest.Builder(context)
-            .data(data)
-            .crossfade(false)
+    val phColor = MaterialTheme.colorScheme.surfaceVariant
+    val errColor = MaterialTheme.colorScheme.errorContainer
+
+    AsyncImage(
+        model = ImageRequest.Builder(context)
+            .data(modelData)
+            .crossfade(120)
             .memoryCachePolicy(CachePolicy.ENABLED)
             .diskCachePolicy(CachePolicy.ENABLED)
-            .build()
-    }
-    val backRequest = remember(stableBackdropUri) {
-        val uri = runCatching { Uri.parse(stableBackdropUri) }.getOrNull()
-        val file = uri?.path?.let { File(it) }
-        val data: Any = if (file != null && file.exists() && file.length() > 0L) {
-            file
-        } else {
-            uri ?: stableBackdropUri
-        }
-        ImageRequest.Builder(context)
-            .data(data)
-            .crossfade(false)
-            .memoryCachePolicy(CachePolicy.ENABLED)
-            .diskCachePolicy(CachePolicy.ENABLED)
-            .build()
-    }
-
-    val painterFront = rememberAsyncImagePainter(frontRequest)
-    val painterBack = rememberAsyncImagePainter(backRequest)
-
-    LaunchedEffect(painterFront.state, uriStr) {
-        if (painterFront.state is AsyncImagePainter.State.Success) {
-            stableBackdropUri = uriStr
-        }
-    }
-
-    val showFront = painterFront.state is AsyncImagePainter.State.Success ||
-        (uriStr == stableBackdropUri && painterFront.state !is AsyncImagePainter.State.Error)
-
-    Box(modifier) {
-        Image(
-            painter = painterBack,
-            contentDescription = null,
-            modifier = Modifier.fillMaxSize(),
-            contentScale = contentScale,
-        )
-        Image(
-            painter = painterFront,
-            contentDescription = null,
-            modifier = Modifier
-                .fillMaxSize()
-                .graphicsLayer {
-                    alpha = if (showFront) 1f else 0f
-                },
-            contentScale = contentScale,
-        )
-    }
+            .build(),
+        contentDescription = null,
+        modifier = modifier,
+        contentScale = contentScale,
+        placeholder = remember(phColor) { ColorPainter(phColor.copy(alpha = 0.92f)) },
+        error = remember(errColor) { ColorPainter(errColor.copy(alpha = 0.88f)) },
+    )
 }

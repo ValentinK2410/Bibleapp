@@ -311,6 +311,8 @@ fun YandexTravelMap(
     tripHistoryTrack: List<TravelTripTrackPoint>? = null,
     onTripGpsSample: ((latitude: Double, longitude: Double, timestampMs: Long, speedMps: Float) -> Unit)? = null,
     onFolkMapCrosshairGeoChanged: ((latitude: Double, longitude: Double, azimuthDeg: Float) -> Unit)? = null,
+    /** Скрыть нативную синюю метку GPS, оставив подписку на координаты (виртуальный маркер не перекрывается). */
+    suppressNativeUserLocationPin: Boolean = false,
 ) {
     val context = LocalContext.current
     var mapReady by remember { mutableStateOf<Boolean?>(null) }
@@ -381,6 +383,7 @@ fun YandexTravelMap(
                 tripHistoryTrack = tripHistoryTrack,
                 onTripGpsSample = onTripGpsSample,
                 onFolkMapCrosshairGeoChanged = onFolkMapCrosshairGeoChanged,
+                suppressNativeUserLocationPin = suppressNativeUserLocationPin,
             )
         }
     }
@@ -422,6 +425,7 @@ private fun YandexTravelMapContent(
     tripHistoryTrack: List<TravelTripTrackPoint>? = null,
     onTripGpsSample: ((latitude: Double, longitude: Double, timestampMs: Long, speedMps: Float) -> Unit)? = null,
     onFolkMapCrosshairGeoChanged: ((latitude: Double, longitude: Double, azimuthDeg: Float) -> Unit)? = null,
+    suppressNativeUserLocationPin: Boolean = false,
 ) {
     val context = LocalContext.current
     val lifecycleOwner = LocalLifecycleOwner.current
@@ -482,10 +486,10 @@ private fun YandexTravelMapContent(
         routeOverlay.addCollection().apply { zIndex = 4.09f }
     }
     val routePlaybackWalkerLayer = remember(mapView) {
-        routeOverlay.addCollection().apply { zIndex = 6.48f }
+        routeOverlay.addCollection().apply { zIndex = 7.92f }
     }
     val friendPeerLayer = remember(mapView) {
-        routeOverlay.addCollection().apply { zIndex = 6.49f }
+        routeOverlay.addCollection().apply { zIndex = 7.93f }
     }
     /** Отмена устаревших ответов [DrivingSession] при новом запросе или [routeClearNonce]. */
     val routeRequestGeneration = remember { AtomicLong(0L) }
@@ -587,16 +591,32 @@ private fun YandexTravelMapContent(
         }
     }
 
+    val walkerStyleReplay = remember {
+        IconStyle().apply {
+            anchor = PointF(0.5f, 0.5f)
+            rotationType = RotationType.ROTATE
+            scale = 1.22f
+        }
+    }
+    val walkerStyleFollowCam = remember {
+        IconStyle().apply {
+            anchor = PointF(0.5f, 0.5f)
+            rotationType = RotationType.ROTATE
+            scale = 1.12f
+        }
+    }
+    val walkerStyleFreeCam = remember {
+        IconStyle().apply {
+            anchor = PointF(0.5f, 0.5f)
+            rotationType = RotationType.ROTATE
+            scale = 1.86f
+        }
+    }
+
     LaunchedEffect(routePlaybackWalkerLayer, mapView, context) {
         val icon = routePlaybackWalkerImageProvider(context)
         val pm = routePlaybackWalkerLayer.addPlacemark(Point(0.0, 0.0), icon)
-        pm.setIconStyle(
-            IconStyle().apply {
-                anchor = PointF(0.5f, 0.5f)
-                rotationType = RotationType.ROTATE
-                scale = 1.12f
-            },
-        )
+        pm.setIconStyle(walkerStyleFollowCam)
         pm.setVisible(false)
         snapshotFlow {
             Pair(routePlaybackSimState.value, tripHistoryReplayPoseState.value)
@@ -605,6 +625,7 @@ private fun YandexTravelMapContent(
             val cp = mapInst.cameraPosition
             when {
                 replay != null -> {
+                    pm.setIconStyle(walkerStyleReplay)
                     pm.setVisible(true)
                     pm.geometry = Point(replay.latitude, replay.longitude)
                     pm.direction = replay.bearingDeg
@@ -615,6 +636,9 @@ private fun YandexTravelMapContent(
                     )
                 }
                 sim != null -> {
+                    pm.setIconStyle(
+                        if (sim.followCameraWithWalker) walkerStyleFollowCam else walkerStyleFreeCam,
+                    )
                     pm.setVisible(true)
                     pm.geometry = Point(sim.latitude, sim.longitude)
                     pm.direction = sim.bearingDeg
@@ -816,10 +840,10 @@ private fun YandexTravelMapContent(
         }
     }
 
-    LaunchedEffect(userLocationEnabled, headingModeActive, followUserActive, userLocationLayer) {
+    LaunchedEffect(userLocationEnabled, headingModeActive, followUserActive, userLocationLayer, suppressNativeUserLocationPin) {
         val layer = userLocationLayer ?: return@LaunchedEffect
         val useSmoothedFollowPin = userLocationEnabled && headingModeActive && followUserActive
-        layer.isVisible = userLocationEnabled && !useSmoothedFollowPin
+        layer.isVisible = userLocationEnabled && !useSmoothedFollowPin && !suppressNativeUserLocationPin
         if (userLocationEnabled) {
             // Поворот и центрирование задаём сами (компас + bearing), иначе дублируется с UserLocationLayer.
             layer.isHeadingModeActive = false

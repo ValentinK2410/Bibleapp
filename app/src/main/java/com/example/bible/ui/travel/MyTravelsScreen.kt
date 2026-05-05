@@ -15,6 +15,8 @@ import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.Canvas
+import androidx.compose.foundation.gestures.detectDragGestures
+import androidx.compose.foundation.gestures.detectTransformGestures
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -25,6 +27,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -80,12 +83,14 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.onFocusChanged
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
+import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import android.content.res.Configuration
@@ -130,6 +135,7 @@ import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.outlined.BrokenImage
 import androidx.compose.material.icons.filled.CameraAlt
+import androidx.compose.material.icons.filled.DragHandle
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.DirectionsWalk
@@ -386,6 +392,9 @@ fun MyTravelsScreen(
 
     /** Масштаб карточки превью виртуального проезда (сохраняется при повороте экрана). */
     var routePlaybackPreviewScale by rememberSaveable { mutableFloatStateOf(1f) }
+    /** Смещение превью от стандартного угла (перетаскивание за ручку). */
+    var routePlaybackHudPanX by rememberSaveable { mutableFloatStateOf(0f) }
+    var routePlaybackHudPanY by rememberSaveable { mutableFloatStateOf(0f) }
 
     val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
     val markersSheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
@@ -1062,6 +1071,8 @@ fun MyTravelsScreen(
                         zones = zones,
                         polygonDraft = polygonDraft,
                         userLocationEnabled = hasFineLocation,
+                        suppressNativeUserLocationPin =
+                            routePlaybackActive || manualPhotoWalkSteppingActive || tripHistoryReplayActive,
                         headingModeActive = hasFineLocation &&
                             editMode == TravelMapEditMode.VIEW &&
                             !territoryEditEnabled,
@@ -1465,27 +1476,93 @@ fun MyTravelsScreen(
                         routePlaybackSim != null
                     if (showPlaybackPhotoHud) {
                         routePlaybackSim?.let { sim ->
-                            sim.currentPhotoUri?.let { uriStr ->
-                                val pbScale = routePlaybackPreviewScale.coerceIn(0.5f, 2.5f)
-                                val thumbW = (128f * pbScale).dp.coerceIn(88.dp, 188.dp)
-                                val thumbH = (82f * pbScale).dp.coerceIn(56.dp, 120.dp)
+                            val pbScale = routePlaybackPreviewScale.coerceIn(0.45f, 3.2f)
+                            val thumbW = (128f * pbScale).dp.coerceIn(88.dp, 240.dp)
+                            val thumbH = (82f * pbScale).dp.coerceIn(56.dp, 160.dp)
+                            val uriStr = sim.currentPhotoUri
+                            Column(
+                                horizontalAlignment = Alignment.End,
+                                modifier = Modifier
+                                    .align(Alignment.BottomEnd)
+                                    .padding(end = 12.dp, bottom = 88.dp)
+                                    .offset {
+                                        IntOffset(
+                                            routePlaybackHudPanX.roundToInt(),
+                                            routePlaybackHudPanY.roundToInt(),
+                                        )
+                                    }
+                                    .width(thumbW),
+                            ) {
+                                Surface(
+                                    color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.94f),
+                                    shape = RoundedCornerShape(topStart = 12.dp, topEnd = 12.dp),
+                                    tonalElevation = 2.dp,
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .pointerInput(Unit) {
+                                            detectDragGestures { change, dragAmount ->
+                                                change.consume()
+                                                routePlaybackHudPanX += dragAmount.x
+                                                routePlaybackHudPanY += dragAmount.y
+                                            }
+                                        },
+                                ) {
+                                    Row(
+                                        Modifier
+                                            .fillMaxWidth()
+                                            .padding(vertical = 4.dp),
+                                        horizontalArrangement = Arrangement.Center,
+                                        verticalAlignment = Alignment.CenterVertically,
+                                    ) {
+                                        Icon(
+                                            Icons.Filled.DragHandle,
+                                            contentDescription = stringResource(
+                                                R.string.travel_route_photo_preview_drag_cd,
+                                            ),
+                                            tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                                        )
+                                    }
+                                }
                                 Box(
                                     modifier = Modifier
-                                        .align(Alignment.BottomEnd)
-                                        .padding(end = 12.dp, bottom = 88.dp)
-                                        .width(thumbW)
+                                        .fillMaxWidth()
                                         .height(thumbH)
-                                        .clip(RoundedCornerShape(12.dp)),
+                                        .clip(
+                                            RoundedCornerShape(bottomStart = 12.dp, bottomEnd = 12.dp),
+                                        )
+                                        .pointerInput(routePlaybackPreviewScale) {
+                                            detectTransformGestures { _, _, zoom, _ ->
+                                                routePlaybackPreviewScale =
+                                                    (routePlaybackPreviewScale * zoom).coerceIn(0.45f, 3.2f)
+                                            }
+                                        },
                                 ) {
-                                    RoutePlaybackSmoothPhoto(
-                                        uriStr = uriStr,
-                                        modifier = Modifier.fillMaxSize(),
-                                        contentScale = ContentScale.Crop,
-                                    )
+                                    if (uriStr != null && uriStr.isNotBlank()) {
+                                        RoutePlaybackSmoothPhoto(
+                                            uriStr = uriStr,
+                                            modifier = Modifier.fillMaxSize(),
+                                            contentScale = ContentScale.Crop,
+                                        )
+                                    } else {
+                                        Box(
+                                            modifier = Modifier
+                                                .fillMaxSize()
+                                                .background(MaterialTheme.colorScheme.surfaceVariant),
+                                            contentAlignment = Alignment.Center,
+                                        ) {
+                                            Text(
+                                                stringResource(R.string.travel_route_playback_no_photo),
+                                                style = MaterialTheme.typography.labelSmall,
+                                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                                modifier = Modifier.padding(8.dp),
+                                            )
+                                        }
+                                    }
                                     Surface(
                                         modifier = Modifier.align(Alignment.BottomCenter),
                                         color = MaterialTheme.colorScheme.surface.copy(alpha = 0.88f),
-                                        shape = RoundedCornerShape(bottomStart = 12.dp, bottomEnd = 12.dp),
+                                        shape =
+                                            RoundedCornerShape(bottomStart = 12.dp, bottomEnd = 12.dp),
                                     ) {
                                         Text(
                                             "${(sim.progress * 100f).toInt()}% · ${sim.distanceAlongMeters.toInt()} м / ${sim.totalPathMeters.toInt()} м",
@@ -2109,8 +2186,8 @@ fun MyTravelsScreen(
                     )
                     Slider(
                         value = routePlaybackPreviewScale,
-                        onValueChange = { routePlaybackPreviewScale = it.coerceIn(0.5f, 2.5f) },
-                        valueRange = 0.5f..2.5f,
+                        onValueChange = { routePlaybackPreviewScale = it.coerceIn(0.45f, 3.2f) },
+                        valueRange = 0.45f..3.2f,
                         modifier = Modifier.fillMaxWidth(),
                     )
                     Text(

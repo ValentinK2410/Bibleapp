@@ -1234,6 +1234,8 @@
     <string name="travel_route_manage_photos_title">Кадры текущей серии</string>
     <string name="travel_route_photo_point_short">%1$.5f · %2$.5f</string>
     <string name="travel_route_photo_no_sessions">Нет сохранённых серий фото по маршруту</string>
+    <string name="travel_route_playback_no_photo">Нет снимка для этой позиции</string>
+    <string name="travel_route_photo_preview_drag_cd">Переместить блок превью фото</string>
     <string name="travel_friend_peer_menu">Локация другого пользователя</string>
     <string name="travel_friend_peer_sheet_title">Координаты другого пользователя</string>
     <string name="travel_friend_peer_json_hint">Укажите HTTPS-ссылку, которая отдаёт JSON с полями latitude и longitude (или lat и lng). Дополнительно: label или name, updatedAtMs или t.</string>
