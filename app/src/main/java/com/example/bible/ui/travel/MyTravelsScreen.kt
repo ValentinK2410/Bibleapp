@@ -1073,11 +1073,13 @@ fun MyTravelsScreen(
                     }
                 } else {
                     val selectedZone = selectedZoneIdForEdit?.let { id -> zones.find { it.id == id } }
+                    val tripHistoryMapIsolate =
+                        tripHistoryOverlayTrack != null || tripHistoryReplayActive
                     YandexTravelMap(
                         mapKitApiKey = mapKitApiKey,
                         modifier = Modifier.fillMaxSize(),
-                        zones = zones,
-                        polygonDraft = polygonDraft,
+                        zones = if (tripHistoryMapIsolate) emptyList() else zones,
+                        polygonDraft = if (tripHistoryMapIsolate) emptyList() else polygonDraft,
                         userLocationEnabled = hasFineLocation,
                         suppressNativeUserLocationPin =
                             routePlaybackActive || manualPhotoWalkSteppingActive || tripHistoryReplayActive,
@@ -1221,20 +1223,21 @@ fun MyTravelsScreen(
                             Toast.makeText(context, resId, Toast.LENGTH_LONG).show()
                         },
                         onTravelRouteBuilt = vm::onTravelRouteBuilt,
-                        activeTravelRoute = activeTravelRoute,
+                        activeTravelRoute = if (tripHistoryMapIsolate) null else activeTravelRoute,
                         onActiveTravelRouteChange = vm::setActiveTravelRoute,
-                        mapIncidents = mapIncidents,
+                        mapIncidents = if (tripHistoryMapIsolate) emptyList() else mapIncidents,
                         incidentPlaceMode = incidentPlaceMode,
                         onIncidentPlaced = { pt ->
                             incidentDraftPoint = pt
                             incidentNoteDraft = ""
                         },
                         onUserLocationUpdated = { lat, lng -> vm.reportUserLocation(lat, lng) },
-                        routePhotoSessions = routePhotoSessions,
-                        routeBurstDraftPoints = burstDraftPoints.toList(),
+                        routePhotoSessions = if (tripHistoryMapIsolate) emptyList() else routePhotoSessions,
+                        routeBurstDraftPoints =
+                            if (tripHistoryMapIsolate) emptyList() else burstDraftPoints.toList(),
                         routePlaybackSim = routePlaybackSim,
                         tripHistoryReplayPose = tripHistoryReplayPose,
-                        friendPeerLocation = friendPeerLocation,
+                        friendPeerLocation = if (tripHistoryMapIsolate) null else friendPeerLocation,
                         hideNavigatorHud = routePlaybackActive || manualPhotoWalkSteppingActive,
                         navigatorHudExtras = {
                             SpotPhotosAtPlaceHudSection(

@@ -961,6 +961,7 @@ class TravelViewModel(
 
         stopTripHistoryReplayInternal()
         _tripHistoryReplayActive.value = true
+        _tripHistoryOverlayTrack.value = ordered
 
         tripHistoryReplayJob = viewModelScope.launch {
             while (isActive && _tripHistoryReplayActive.value) {
