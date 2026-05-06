@@ -4,6 +4,7 @@ import android.app.Application
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.bible.BuildConfig
+import com.example.bible.R
 import com.example.bible.data.travel.FriendPeerLocation
 import com.example.bible.data.travel.FriendPeerLocationRepository
 import com.example.bible.data.travel.pollOnce
@@ -17,6 +18,10 @@ import com.example.bible.data.travel.TripHistoryReplayPose
 import com.example.bible.data.travel.interpolateTripHistoryReplayPose
 import com.example.bible.data.travel.TravelRoutePhotoSession
 import com.example.bible.data.travel.TravelTripTrackPoint
+import com.example.bible.data.travel.TRIP_TRACK_ERASE_MAX_TAP_METERS
+import com.example.bible.data.travel.fullTrackIndexForPickedPoint
+import com.example.bible.data.travel.nearestTripTrackPointIndex
+import com.example.bible.data.travel.removeTripTrackInclusiveRange
 import com.example.bible.data.travel.TravelZone
 import com.example.bible.data.travel.buildRoutePlaybackPolyline
 import com.example.bible.data.travel.interpolateRoutePlayback
@@ -31,7 +36,9 @@ import com.example.bible.data.travel.TRAVEL_ZONE_CIRCLE_RADIUS_MIN_M
 import com.example.bible.map.MapKitBootstrap
 import com.example.bible.service.TravelMonitorService
 import com.yandex.mapkit.directions.driving.DrivingRoute
+import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -81,6 +88,16 @@ private data class TravelMonitorGeoInputs(
     val markerProximityEnabled: Boolean,
     val markerDefaultSoundUri: String?,
 )
+
+enum class TripTrackErasePickStage { Idle, AwaitA, AwaitB }
+
+data class TripTrackEraseUiState(
+    val stage: TripTrackErasePickStage = TripTrackErasePickStage.Idle,
+    /** Индекс первой точки в полном треке (по времени), после выбора на карте. */
+    val indexAFull: Int? = null,
+)
+
+data class TripTrackEraseSnack(val messageRes: Int, val formatArg: Int? = null)
 
 class TravelViewModel(
     app: Application,
@@ -315,6 +332,12 @@ class TravelViewModel(
 
     private val _tripHistoryOverlayTrack = MutableStateFlow<List<TravelTripTrackPoint>?>(null)
     val tripHistoryOverlayTrack: StateFlow<List<TravelTripTrackPoint>?> = _tripHistoryOverlayTrack.asStateFlow()
+
+    private val _tripTrackEraseUi = MutableStateFlow(TripTrackEraseUiState())
+    val tripTrackEraseUi: StateFlow<TripTrackEraseUiState> = _tripTrackEraseUi.asStateFlow()
+
+    private val _tripTrackEraseSnack = MutableSharedFlow<TripTrackEraseSnack>(extraBufferCapacity = 8)
+    val tripTrackEraseSnack: SharedFlow<TripTrackEraseSnack> = _tripTrackEraseSnack
 
     private val tripMapSampleGate = Any()
     private var tripMapLastWallMs = 0L
@@ -930,8 +953,89 @@ class TravelViewModel(
     }
 
     fun setTripHistoryOverlay(track: List<TravelTripTrackPoint>?) {
-        _tripHistoryOverlayTrack.value =
-            track?.sortedBy { it.timestampMs }?.takeIf { it.isNotEmpty() }
+        val next = track?.sortedBy { it.timestampMs }?.takeIf { it.isNotEmpty() }
+        _tripHistoryOverlayTrack.value = next
+        if (next == null && _tripTrackEraseUi.value.stage != TripTrackErasePickStage.Idle) {
+            _tripTrackEraseUi.value = TripTrackEraseUiState()
+        }
+    }
+
+    /** Двухшаговое вырезание участка трека: тап «начало», тап «конец» на карте (по ближайшей точке выбранной трассы). */
+    fun startTripTrackIntervalErase(overlayPoints: List<TravelTripTrackPoint>) {
+        val ordered = overlayPoints.sortedBy { it.timestampMs }
+        if (ordered.size < 2) return
+        stopTripHistoryReplayInternal()
+        _tripTrackEraseUi.value = TripTrackEraseUiState(TripTrackErasePickStage.AwaitA, null)
+        setTripHistoryOverlay(ordered)
+        viewModelScope.launch {
+            _tripTrackEraseSnack.emit(TripTrackEraseSnack(R.string.travel_trip_erase_snackbar_first))
+        }
+    }
+
+    fun cancelTripTrackIntervalErase() {
+        _tripTrackEraseUi.value = TripTrackEraseUiState()
+    }
+
+    fun onTripTrackEraseMapTap(latitude: Double, longitude: Double) {
+        viewModelScope.launch {
+            val ui = _tripTrackEraseUi.value
+            if (ui.stage == TripTrackErasePickStage.Idle) return@launch
+
+            val overlay = _tripHistoryOverlayTrack.value
+            if (overlay.isNullOrEmpty() || overlay.size < 2) {
+                cancelTripTrackIntervalErase()
+                _tripTrackEraseSnack.emit(TripTrackEraseSnack(R.string.travel_trip_erase_failed))
+                return@launch
+            }
+            val overlaySorted = overlay.sortedBy { it.timestampMs }
+            val idxO = nearestTripTrackPointIndex(
+                overlaySorted,
+                latitude,
+                longitude,
+                TRIP_TRACK_ERASE_MAX_TAP_METERS,
+            )
+            if (idxO == null) {
+                _tripTrackEraseSnack.emit(TripTrackEraseSnack(R.string.travel_trip_erase_tap_too_far))
+                return@launch
+            }
+            val picked = overlaySorted[idxO]
+            val full = withContext(Dispatchers.IO) { repo.snapshotTripTrack() }.sortedBy { it.timestampMs }
+            if (full.size < 2) {
+                cancelTripTrackIntervalErase()
+                _tripTrackEraseSnack.emit(TripTrackEraseSnack(R.string.travel_trip_erase_failed))
+                return@launch
+            }
+            val idxFull = fullTrackIndexForPickedPoint(full, picked)
+            when (ui.stage) {
+                TripTrackErasePickStage.AwaitA -> {
+                    _tripTrackEraseUi.value = TripTrackEraseUiState(
+                        stage = TripTrackErasePickStage.AwaitB,
+                        indexAFull = idxFull,
+                    )
+                    _tripTrackEraseSnack.emit(TripTrackEraseSnack(R.string.travel_trip_erase_snackbar_second))
+                }
+                TripTrackErasePickStage.AwaitB -> {
+                    val i1 = ui.indexAFull ?: return@launch
+                    if (i1 == idxFull) {
+                        _tripTrackEraseSnack.emit(TripTrackEraseSnack(R.string.travel_trip_erase_same_point))
+                        return@launch
+                    }
+                    val lo = minOf(i1, idxFull)
+                    val hi = maxOf(i1, idxFull)
+                    val newFull = removeTripTrackInclusiveRange(full, lo, hi)
+                    val removed = full.size - newFull.size
+                    if (removed <= 0) {
+                        _tripTrackEraseSnack.emit(TripTrackEraseSnack(R.string.travel_trip_erase_same_point))
+                        return@launch
+                    }
+                    withContext(Dispatchers.IO) { repo.replaceTripTrack(newFull) }
+                    setTripHistoryOverlay(null)
+                    cancelTripTrackIntervalErase()
+                    _tripTrackEraseSnack.emit(TripTrackEraseSnack(R.string.travel_trip_erase_done_fmt, removed))
+                }
+                TripTrackErasePickStage.Idle -> Unit
+            }
+        }
     }
 
     fun setTripHistoryReplaySpeedMultiplier(mult: Float) {

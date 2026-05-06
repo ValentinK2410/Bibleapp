@@ -319,6 +319,7 @@ fun MyTravelsScreen(
     val lastUserGeo by vm.lastUserGeo.collectAsStateWithLifecycle()
     val lastUserHeadingDeg by vm.lastUserHeadingDeg.collectAsStateWithLifecycle()
     val tripHistoryOverlayTrack by vm.tripHistoryOverlayTrack.collectAsStateWithLifecycle()
+    val tripTrackEraseUi by vm.tripTrackEraseUi.collectAsStateWithLifecycle()
     val scope = rememberCoroutineScope()
     val travelSnackbarHostState = remember { SnackbarHostState() }
     val contactsRepo = remember { ContactsRepository(context) }
@@ -327,6 +328,16 @@ fun MyTravelsScreen(
         onDispose {
             vm.stopTripHistoryReplay()
             vm.cancelManualPhotoWalkFully()
+            vm.cancelTripTrackIntervalErase()
+        }
+    }
+
+    LaunchedEffect(Unit) {
+        vm.tripTrackEraseSnack.collect { snack ->
+            val text = snack.formatArg?.let { arg ->
+                context.getString(snack.messageRes, arg)
+            } ?: context.getString(snack.messageRes)
+            travelSnackbarHostState.showSnackbar(text)
         }
     }
 
@@ -570,7 +581,8 @@ fun MyTravelsScreen(
             routeBurstActive ||
             routePlaybackPickStartActive ||
             manualPhotoWalkPickStartActive ||
-            tripHistoryReplayActive
+            tripHistoryReplayActive ||
+            tripTrackEraseUi.stage != TripTrackErasePickStage.Idle
 
     LaunchedEffect(territoryPanelBelowMap) {
         if (!territoryPanelBelowMap) {
@@ -1074,7 +1086,9 @@ fun MyTravelsScreen(
                 } else {
                     val selectedZone = selectedZoneIdForEdit?.let { id -> zones.find { it.id == id } }
                     val tripHistoryMapIsolate =
-                        tripHistoryOverlayTrack != null || tripHistoryReplayActive
+                        tripHistoryOverlayTrack != null ||
+                            tripHistoryReplayActive ||
+                            tripTrackEraseUi.stage != TripTrackErasePickStage.Idle
                     YandexTravelMap(
                         mapKitApiKey = mapKitApiKey,
                         modifier = Modifier.fillMaxSize(),
@@ -1082,7 +1096,10 @@ fun MyTravelsScreen(
                         polygonDraft = if (tripHistoryMapIsolate) emptyList() else polygonDraft,
                         userLocationEnabled = hasFineLocation,
                         suppressNativeUserLocationPin =
-                            routePlaybackActive || manualPhotoWalkSteppingActive || tripHistoryReplayActive,
+                            routePlaybackActive ||
+                                manualPhotoWalkSteppingActive ||
+                                tripHistoryReplayActive ||
+                                tripTrackEraseUi.stage != TripTrackErasePickStage.Idle,
                         headingModeActive = hasFineLocation &&
                             editMode == TravelMapEditMode.VIEW &&
                             !territoryEditEnabled,
@@ -1093,6 +1110,10 @@ fun MyTravelsScreen(
                         omitPolygonZoneId = polygonRedraftZoneId,
                         onMapTap = mapTap@{ pt ->
                             bumpFloatingToolbar()
+                            if (tripTrackEraseUi.stage != TripTrackErasePickStage.Idle) {
+                                vm.onTripTrackEraseMapTap(pt.latitude, pt.longitude)
+                                return@mapTap
+                            }
                             if (manualPhotoWalkPickStartActive) {
                                 when {
                                     sortedPhotoSessions.isEmpty() -> {
@@ -1890,6 +1911,32 @@ fun MyTravelsScreen(
                                 )
                                 TextButton(onClick = { vm.stopTripHistoryReplay() }) {
                                     Text(stringResource(R.string.travel_trip_history_replay_stop))
+                                }
+                            }
+                        }
+                    }
+                    if (tripTrackEraseUi.stage != TripTrackErasePickStage.Idle) {
+                        Card(
+                            modifier = Modifier
+                                .align(Alignment.TopCenter)
+                                .padding(top = 8.dp)
+                                .widthIn(max = 360.dp),
+                            colors = CardDefaults.cardColors(
+                                containerColor = MaterialTheme.colorScheme.secondaryContainer,
+                            ),
+                        ) {
+                            Row(
+                                Modifier.padding(horizontal = 12.dp, vertical = 8.dp),
+                                verticalAlignment = Alignment.CenterVertically,
+                            ) {
+                                Text(
+                                    stringResource(R.string.travel_trip_erase_banner),
+                                    Modifier.weight(1f),
+                                    style = MaterialTheme.typography.bodySmall,
+                                    color = MaterialTheme.colorScheme.onSecondaryContainer,
+                                )
+                                TextButton(onClick = { vm.cancelTripTrackIntervalErase() }) {
+                                    Text(stringResource(R.string.travel_cancel))
                                 }
                             }
                         }

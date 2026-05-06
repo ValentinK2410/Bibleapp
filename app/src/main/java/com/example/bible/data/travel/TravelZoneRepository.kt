@@ -129,6 +129,17 @@ class TravelZoneRepository(
         }
     }
 
+    /** Полная замена трека (после ручного вырезания участка). Сортировка и обрезка по лимитам хранения. */
+    suspend fun replaceTripTrack(points: List<TravelTripTrackPoint>) {
+        tripTrackMutex.withLock {
+            val sorted = points.sortedBy { it.timestampMs }
+            val pruned = pruneTripTrackForStorage(sorted)
+            app.travelZonesDataStore.edit { prefs ->
+                prefs[TravelKeys.TRIP_TRACK_POINTS_JSON] = TravelTripTrackPoint.toJsonArray(pruned)
+            }
+        }
+    }
+
     suspend fun saveRoutePhotoSessions(list: List<TravelRoutePhotoSession>) {
         app.travelZonesDataStore.edit { prefs ->
             prefs[TravelKeys.ROUTE_PHOTO_SESSIONS_JSON] = TravelRoutePhotoSession.toJsonArray(list)

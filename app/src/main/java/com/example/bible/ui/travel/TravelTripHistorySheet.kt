@@ -656,6 +656,23 @@ fun TravelTripHistorySheet(
         }
         OutlinedButton(
             onClick = {
+                if (filtered.size < 2) return@OutlinedButton
+                vm.startTripTrackIntervalErase(filtered)
+                centerOfTripPoints(filtered)?.let { vm.setCameraJump(it) }
+                onDismiss()
+            },
+            modifier = Modifier.fillMaxWidth(),
+            enabled = filtered.size >= 2,
+        ) {
+            Text(stringResource(R.string.travel_trip_erase_start))
+        }
+        Text(
+            stringResource(R.string.travel_trip_erase_hint),
+            style = MaterialTheme.typography.bodySmall,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+        )
+        OutlinedButton(
+            onClick = {
                 vm.setTripHistoryOverlay(null)
                 onDismiss()
             },

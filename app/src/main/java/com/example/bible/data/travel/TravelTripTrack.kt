@@ -73,7 +73,7 @@ fun mergeAndPruneTripTrack(
     existing: List<TravelTripTrackPoint>,
     incoming: List<TravelTripTrackPoint>,
 ): List<TravelTripTrackPoint> {
-    if (incoming.isEmpty()) return pruneTripTrack(existing)
+    if (incoming.isEmpty()) return pruneTripTrackForStorage(existing)
     val merged = (existing + incoming).sortedBy { it.timestampMs }
     val out = ArrayList<TravelTripTrackPoint>(merged.size.coerceAtMost(existing.size + incoming.size))
     for (p in merged) {
@@ -90,10 +90,11 @@ fun mergeAndPruneTripTrack(
         }
         out.add(p)
     }
-    return pruneTripTrack(out)
+    return pruneTripTrackForStorage(out)
 }
 
-private fun pruneTripTrack(points: List<TravelTripTrackPoint>): List<TravelTripTrackPoint> {
+/** Обрезка по возрасту и лимиту точек при сохранении (в т.ч. после ручного редактирования). */
+internal fun pruneTripTrackForStorage(points: List<TravelTripTrackPoint>): List<TravelTripTrackPoint> {
     val cutoff = System.currentTimeMillis() - TRIP_TRACK_MAX_AGE_MS
     val ageFiltered = points.filter { it.timestampMs >= cutoff }
     return if (ageFiltered.size <= TRIP_TRACK_MAX_POINTS) {
@@ -102,6 +103,81 @@ private fun pruneTripTrack(points: List<TravelTripTrackPoint>): List<TravelTripT
         ageFiltered.takeLast(TRIP_TRACK_MAX_POINTS)
     }
 }
+
+/**
+ * Индекс ближайшей точки трека к нажатию на карте.
+ * @return null, если ближайшая точка дальше [maxDistanceMeters].
+ */
+fun nearestTripTrackPointIndex(
+    points: List<TravelTripTrackPoint>,
+    lat: Double,
+    lon: Double,
+    maxDistanceMeters: Double,
+): Int? {
+    if (points.isEmpty()) return null
+    val tap = TravelGeoPoint(lat, lon)
+    var bestI = 0
+    var bestD = Double.MAX_VALUE
+    points.forEachIndexed { i, p ->
+        val d = travelDistanceMeters(tap, TravelGeoPoint(p.latitude, p.longitude))
+        if (d < bestD) {
+            bestD = d
+            bestI = i
+        }
+    }
+    return if (bestD <= maxDistanceMeters) bestI else null
+}
+
+/**
+ * Удалить участок между двумя выбранными индексами (включительно) в списке, уже отсортированном по времени.
+ */
+fun removeTripTrackInclusiveRange(
+    sortedPoints: List<TravelTripTrackPoint>,
+    fromIndex: Int,
+    toIndex: Int,
+): List<TravelTripTrackPoint> {
+    if (sortedPoints.isEmpty()) return sortedPoints
+    val a = fromIndex.coerceIn(sortedPoints.indices)
+    val b = toIndex.coerceIn(sortedPoints.indices)
+    val lo = minOf(a, b)
+    val hi = maxOf(a, b)
+    if (lo > hi) return sortedPoints
+    return buildList(sortedPoints.size - (hi - lo + 1)) {
+        for (i in sortedPoints.indices) {
+            if (i !in lo..hi) add(sortedPoints[i])
+        }
+    }
+}
+
+/** Найти индекс точки в полном треке (после сортировки по времени), совпадающей с выбором с карты. */
+fun fullTrackIndexForPickedPoint(
+    fullSorted: List<TravelTripTrackPoint>,
+    picked: TravelTripTrackPoint,
+): Int {
+    if (fullSorted.isEmpty()) return 0
+    val exact = fullSorted.indexOfFirst {
+        it.timestampMs == picked.timestampMs &&
+            kotlin.math.abs(it.latitude - picked.latitude) < 1e-7 &&
+            kotlin.math.abs(it.longitude - picked.longitude) < 1e-7
+    }
+    if (exact >= 0) return exact
+    val byTime = fullSorted.indexOfFirst { it.timestampMs == picked.timestampMs }
+    if (byTime >= 0) return byTime
+    val tap = TravelGeoPoint(picked.latitude, picked.longitude)
+    var bestI = 0
+    var bestD = Double.MAX_VALUE
+    fullSorted.forEachIndexed { i, p ->
+        val d = travelDistanceMeters(tap, TravelGeoPoint(p.latitude, p.longitude))
+        if (d < bestD) {
+            bestD = d
+            bestI = i
+        }
+    }
+    return bestI
+}
+
+/** Макс. отступ тапа от точки трека при вырезании артефакта (м). */
+const val TRIP_TRACK_ERASE_MAX_TAP_METERS = 95.0
 
 /** Пройденное расстояние по цепочке точек (м). */
 fun tripTrackPathLengthMeters(points: List<TravelTripTrackPoint>): Double {
