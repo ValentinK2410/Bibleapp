@@ -91,6 +91,7 @@ import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -309,6 +310,7 @@ fun MyTravelsScreen(
     val manualPhotoWalkSteppingActive by vm.manualPhotoWalkSteppingActive.collectAsStateWithLifecycle()
     val tripHistoryReplayActive by vm.tripHistoryReplayActive.collectAsStateWithLifecycle()
     val tripHistoryReplayPose by vm.tripHistoryReplayPose.collectAsStateWithLifecycle()
+    val tripHistoryReplaySpeedMult by vm.tripHistoryReplaySpeedMultiplier.collectAsStateWithLifecycle()
     val routePlaybackReverse by vm.routePlaybackReverse.collectAsStateWithLifecycle()
     val routePlaybackStartDistanceM by vm.routePlaybackStartDistanceM.collectAsStateWithLifecycle()
     val activeRoutePlaybackPolyline by vm.activeRoutePlaybackPolyline.collectAsStateWithLifecycle()
@@ -1890,28 +1892,43 @@ fun MyTravelsScreen(
                         }
                     }
                     if (tripHistoryReplayActive) {
-                        Card(
+                        val replaySliderCd = stringResource(R.string.travel_trip_history_replay_map_slider_cd)
+                        Surface(
                             modifier = Modifier
-                                .align(Alignment.TopCenter)
-                                .padding(top = 8.dp)
-                                .widthIn(max = 360.dp),
-                            colors = CardDefaults.cardColors(
-                                containerColor = MaterialTheme.colorScheme.primaryContainer,
-                            ),
+                                .align(Alignment.BottomCenter)
+                                .padding(start = 10.dp, end = 10.dp, bottom = 100.dp)
+                                .fillMaxWidth(0.94f)
+                                .widthIn(max = 400.dp),
+                            shape = RoundedCornerShape(24.dp),
+                            shadowElevation = 5.dp,
+                            color = MaterialTheme.colorScheme.surfaceContainerHigh.copy(alpha = 0.94f),
                         ) {
                             Row(
-                                Modifier.padding(horizontal = 12.dp, vertical = 8.dp),
+                                Modifier.padding(start = 4.dp, end = 12.dp, top = 0.dp, bottom = 0.dp),
                                 verticalAlignment = Alignment.CenterVertically,
                             ) {
-                                Text(
-                                    stringResource(R.string.travel_trip_history_replay_banner),
-                                    Modifier.weight(1f),
-                                    style = MaterialTheme.typography.bodySmall,
-                                    color = MaterialTheme.colorScheme.onPrimaryContainer,
+                                Slider(
+                                    value = tripHistoryReplaySpeedMult,
+                                    onValueChange = { vm.setTripHistoryReplaySpeedMultiplier(it) },
+                                    valueRange = 1f..120f,
+                                    steps = 23,
+                                    modifier = Modifier
+                                        .weight(1f)
+                                        .height(40.dp)
+                                        .semantics {
+                                            contentDescription = replaySliderCd
+                                        },
                                 )
-                                TextButton(onClick = { vm.stopTripHistoryReplay() }) {
-                                    Text(stringResource(R.string.travel_trip_history_replay_stop))
-                                }
+                                Text(
+                                    stringResource(
+                                        R.string.travel_trip_history_replay_mult_short_fmt,
+                                        tripHistoryReplaySpeedMult.roundToInt(),
+                                    ),
+                                    style = MaterialTheme.typography.titleSmall,
+                                    fontWeight = FontWeight.SemiBold,
+                                    color = MaterialTheme.colorScheme.primary,
+                                    modifier = Modifier.widthIn(min = 44.dp),
+                                )
                             }
                         }
                     }

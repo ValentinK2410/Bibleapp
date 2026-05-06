@@ -1196,7 +1196,9 @@
     <string name="travel_trip_history_speed_legend_title">Цвет трассы по скорости</string>
     <string name="travel_trip_history_speed_legend_body">Линия разбита по участкам: краснее при движении ближе к 1 км/ч, синее при быстром движении вплоть до 250 км/ч (оценка по промежуткам между точками).</string>
     <string name="travel_trip_history_replay_speed_title">Ускоренное воспроизведение перемещения</string>
-    <string name="travel_trip_history_replay_speed_hint">Множитель времени: выше значение — быстрее «прокручивается» сохранённая поездка по времени между точками GPS.</string>
+    <string name="travel_trip_history_replay_speed_hint">Множитель времени: выше значение — быстрее «прокручивается» сохранённая поездка по времени между точками GPS. Во время просмотра на карте скорость можно менять узкой панелью внизу экрана.</string>
+    <string name="travel_trip_history_replay_mult_short_fmt">×%1$d</string>
+    <string name="travel_trip_history_replay_map_slider_cd">Скорость воспроизведения записи поездки</string>
     <string name="travel_trip_history_replay_mult_fmt">Ускорение: ×%1$d</string>
     <string name="travel_trip_history_replay_start">Воспроизвести трассу ускоренно</string>
     <string name="travel_trip_history_replay_stop">Остановить воспроизведение</string>
