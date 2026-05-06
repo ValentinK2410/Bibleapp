@@ -684,9 +684,10 @@ private fun YandexTravelMapContent(
                     pm.setVisible(true)
                     pm.geometry = Point(replay.latitude, replay.longitude)
                     pm.direction = replay.bearingDeg
+                    // LINEAR/0: как при follow-GPS в Choreographer — SMOOTH каждые ~16ms даёт наложение анимаций и рывки.
                     mapInst.move(
                         CameraPosition(Point(replay.latitude, replay.longitude), cp.zoom, cp.azimuth, cp.tilt),
-                        Animation(Animation.Type.SMOOTH, 0.16f),
+                        Animation(Animation.Type.LINEAR, 0f),
                         null,
                     )
                 }
@@ -700,7 +701,7 @@ private fun YandexTravelMapContent(
                     if (sim.followCameraWithWalker) {
                         mapInst.move(
                             CameraPosition(Point(sim.latitude, sim.longitude), cp.zoom, cp.azimuth, cp.tilt),
-                            Animation(Animation.Type.SMOOTH, 0.16f),
+                            Animation(Animation.Type.LINEAR, 0f),
                             null,
                         )
                     }
