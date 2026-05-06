@@ -179,6 +179,26 @@ fun fullTrackIndexForPickedPoint(
 /** Макс. отступ тапа от точки трека при вырезании артефакта (м). */
 const val TRIP_TRACK_ERASE_MAX_TAP_METERS = 95.0
 
+/** Сколько точек максимум рисовать на карте в режиме вырезания (тап идёт по полному треку в памяти). */
+const val TRIP_ERASE_MAP_DISPLAY_MAX = 4500
+
+/**
+ * Равномерная выборка точек для отображения длинного трека без потери привязки тапа
+ * (тап обрабатывается по полному списку в ViewModel).
+ */
+fun decimateTripTrackForMapDisplay(points: List<TravelTripTrackPoint>, maxPoints: Int): List<TravelTripTrackPoint> {
+    val cap = maxPoints.coerceIn(2, TRIP_ERASE_MAP_DISPLAY_MAX)
+    if (points.size <= cap) return points
+    val n = points.size
+    val m = cap
+    return buildList(m) {
+        for (i in 0 until m) {
+            val idx = (i * (n - 1L) / (m - 1L)).toInt().coerceIn(0, n - 1)
+            add(points[idx])
+        }
+    }
+}
+
 /** Пройденное расстояние по цепочке точек (м). */
 fun tripTrackPathLengthMeters(points: List<TravelTripTrackPoint>): Double {
     if (points.size < 2) return 0.0

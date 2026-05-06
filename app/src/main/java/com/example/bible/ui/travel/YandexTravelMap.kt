@@ -340,6 +340,7 @@ fun YandexTravelMap(
     hideNavigatorHud: Boolean = false,
     navigatorHudExtras: (@Composable () -> Unit)? = null,
     tripHistoryTrack: List<TravelTripTrackPoint>? = null,
+    tripTrackEraseHighlight: List<TravelTripTrackPoint>? = null,
     onTripGpsSample: ((latitude: Double, longitude: Double, timestampMs: Long, speedMps: Float) -> Unit)? = null,
     onFolkMapCrosshairGeoChanged: ((latitude: Double, longitude: Double, azimuthDeg: Float) -> Unit)? = null,
     /** Скрыть нативную синюю метку GPS, оставив подписку на координаты (виртуальный маркер не перекрывается). */
@@ -416,6 +417,7 @@ fun YandexTravelMap(
                 hideNavigatorHud = hideNavigatorHud,
                 navigatorHudExtras = navigatorHudExtras,
                 tripHistoryTrack = tripHistoryTrack,
+                tripTrackEraseHighlight = tripTrackEraseHighlight,
                 onTripGpsSample = onTripGpsSample,
                 onFolkMapCrosshairGeoChanged = onFolkMapCrosshairGeoChanged,
                 suppressNativeUserLocationPin = suppressNativeUserLocationPin,
@@ -462,6 +464,7 @@ private fun YandexTravelMapContent(
     hideNavigatorHud: Boolean = false,
     navigatorHudExtras: (@Composable () -> Unit)? = null,
     tripHistoryTrack: List<TravelTripTrackPoint>? = null,
+    tripTrackEraseHighlight: List<TravelTripTrackPoint>? = null,
     onTripGpsSample: ((latitude: Double, longitude: Double, timestampMs: Long, speedMps: Float) -> Unit)? = null,
     onFolkMapCrosshairGeoChanged: ((latitude: Double, longitude: Double, azimuthDeg: Float) -> Unit)? = null,
     suppressNativeUserLocationPin: Boolean = false,
@@ -527,6 +530,9 @@ private fun YandexTravelMapContent(
     }
     val tripHistoryLayer = remember(mapView) {
         routeOverlay.addCollection().apply { zIndex = 4.09f }
+    }
+    val tripEraseHighlightLayer = remember(mapView) {
+        routeOverlay.addCollection().apply { zIndex = 4.11f }
     }
     /** Выше любых слоёв внутри [routeOverlay], [pinsOverlay] (z=6) и полигонов зон. */
     val routePlaybackWalkerLayer = remember(mapView) {
@@ -599,6 +605,24 @@ private fun YandexTravelMapContent(
             line.setStrokeColor(tripTrackSpeedKmhToArgb(tripTrackSegmentSpeedKmhForDisplay(a, b)))
             line.strokeWidth = 10f
             line.zIndex = 4.09f
+        }
+    }
+
+    LaunchedEffect(tripTrackEraseHighlight, tripEraseHighlightLayer, mapView) {
+        tripEraseHighlightLayer.clear()
+        val pts = tripTrackEraseHighlight ?: return@LaunchedEffect
+        if (pts.size < 2) return@LaunchedEffect
+        val ordered = pts.sortedBy { it.timestampMs }
+        val yellow = 0xFFFFE082.toInt()
+        for (i in 1 until ordered.size) {
+            val a = ordered[i - 1]
+            val b = ordered[i]
+            val polySeg =
+                Polyline(listOf(Point(a.latitude, a.longitude), Point(b.latitude, b.longitude)))
+            val line = tripEraseHighlightLayer.addPolyline(polySeg)
+            line.setStrokeColor(yellow)
+            line.strokeWidth = 13f
+            line.zIndex = 4.11f
         }
     }
 

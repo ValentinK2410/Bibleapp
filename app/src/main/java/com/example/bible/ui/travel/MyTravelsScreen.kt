@@ -42,6 +42,7 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.AddLocationAlt
+import androidx.compose.material.icons.filled.ContentCut
 import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.ButtonDefaults
@@ -322,6 +323,8 @@ fun MyTravelsScreen(
     val lastUserHeadingDeg by vm.lastUserHeadingDeg.collectAsStateWithLifecycle()
     val tripHistoryOverlayTrack by vm.tripHistoryOverlayTrack.collectAsStateWithLifecycle()
     val tripTrackEraseUi by vm.tripTrackEraseUi.collectAsStateWithLifecycle()
+    val tripTrackEraseHighlight by vm.tripTrackEraseHighlight.collectAsStateWithLifecycle()
+    val tripHistoryEnabled by vm.tripHistoryEnabled.collectAsStateWithLifecycle()
     val scope = rememberCoroutineScope()
     val travelSnackbarHostState = remember { SnackbarHostState() }
     val contactsRepo = remember { ContactsRepository(context) }
@@ -1067,6 +1070,36 @@ fun MyTravelsScreen(
                 .padding(padding)
                 .fillMaxSize(),
         ) {
+            val eraseLo = tripTrackEraseUi.pendingLo
+            val eraseHi = tripTrackEraseUi.pendingHi
+            if (tripTrackEraseUi.stage == TripTrackErasePickStage.AwaitConfirm &&
+                eraseLo != null &&
+                eraseHi != null
+            ) {
+                val erasePointCount = eraseHi - eraseLo + 1
+                AlertDialog(
+                    onDismissRequest = { vm.cancelTripTrackEraseConfirm() },
+                    title = { Text(stringResource(R.string.travel_trip_erase_confirm_title)) },
+                    text = {
+                        Text(
+                            stringResource(
+                                R.string.travel_trip_erase_confirm_body,
+                                erasePointCount,
+                            ),
+                        )
+                    },
+                    confirmButton = {
+                        TextButton(onClick = { vm.commitTripTrackErase() }) {
+                            Text(stringResource(R.string.travel_trip_erase_confirm_delete))
+                        }
+                    },
+                    dismissButton = {
+                        TextButton(onClick = { vm.cancelTripTrackEraseConfirm() }) {
+                            Text(stringResource(R.string.travel_cancel))
+                        }
+                    },
+                )
+            }
             Box(
                 Modifier
                     .weight(1f)
@@ -1292,6 +1325,7 @@ fun MyTravelsScreen(
                             )
                         },
                         tripHistoryTrack = tripHistoryOverlayTrack,
+                        tripTrackEraseHighlight = tripTrackEraseHighlight,
                         onTripGpsSample = { lat, lng, ts, sp ->
                             vm.recordTripGpsSample(lat, lng, ts, sp)
                         },
@@ -1375,6 +1409,52 @@ fun MyTravelsScreen(
                                 Icon(
                                     Icons.Default.DirectionsWalk,
                                     contentDescription = stringResource(R.string.travel_manual_walk_fab_cd),
+                                )
+                            }
+                        }
+                        if (tripHistoryEnabled) {
+                            SmallFloatingActionButton(
+                                onClick = {
+                                    bumpFloatingToolbar()
+                                    if (tripTrackEraseUi.stage != TripTrackErasePickStage.Idle) {
+                                        vm.cancelTripTrackIntervalErase()
+                                    } else {
+                                        when {
+                                            incidentPlaceMode || routePickDestination || routeBurstActive -> {
+                                                Toast.makeText(
+                                                    context,
+                                                    R.string.travel_route_photo_modes_conflict,
+                                                    Toast.LENGTH_SHORT,
+                                                ).show()
+                                            }
+                                            routePlaybackActive -> {
+                                                Toast.makeText(
+                                                    context,
+                                                    R.string.travel_trip_erase_conflict_route_playback,
+                                                    Toast.LENGTH_SHORT,
+                                                ).show()
+                                            }
+                                            manualPhotoWalkPickStartActive || manualPhotoWalkSteppingActive -> {
+                                                Toast.makeText(
+                                                    context,
+                                                    R.string.travel_trip_erase_conflict_manual_walk,
+                                                    Toast.LENGTH_SHORT,
+                                                ).show()
+                                            }
+                                            else -> vm.startTripTrackIntervalEraseFromMap()
+                                        }
+                                    }
+                                },
+                                containerColor =
+                                    if (tripTrackEraseUi.stage != TripTrackErasePickStage.Idle) {
+                                        MaterialTheme.colorScheme.secondaryContainer
+                                    } else {
+                                        MaterialTheme.colorScheme.surfaceVariant
+                                    },
+                            ) {
+                                Icon(
+                                    Icons.Filled.ContentCut,
+                                    contentDescription = stringResource(R.string.travel_trip_erase_fab_cd),
                                 )
                             }
                         }
@@ -1947,7 +2027,13 @@ fun MyTravelsScreen(
                                 verticalAlignment = Alignment.CenterVertically,
                             ) {
                                 Text(
-                                    stringResource(R.string.travel_trip_erase_banner),
+                                    stringResource(
+                                        if (tripTrackEraseUi.stage == TripTrackErasePickStage.AwaitConfirm) {
+                                            R.string.travel_trip_erase_banner_confirm
+                                        } else {
+                                            R.string.travel_trip_erase_banner
+                                        },
+                                    ),
                                     Modifier.weight(1f),
                                     style = MaterialTheme.typography.bodySmall,
                                     color = MaterialTheme.colorScheme.onSecondaryContainer,
