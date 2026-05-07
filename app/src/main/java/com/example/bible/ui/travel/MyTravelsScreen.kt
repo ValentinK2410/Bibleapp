@@ -1356,17 +1356,25 @@ fun MyTravelsScreen(
                                 .widthIn(max = 292.dp),
                         )
                     }
+                    val travelFabTight = isLandscape
+                    val travelFabSizeMod = if (travelFabTight) Modifier.size(34.dp) else Modifier
+                    val travelFabIconMod = if (travelFabTight) Modifier.size(18.dp) else Modifier
+                    val travelFabGap = if (travelFabTight) 2.dp else 8.dp
                     Column(
                         modifier = Modifier
                             .align(Alignment.TopEnd)
-                            .padding(top = 8.dp, end = 8.dp),
-                        verticalArrangement = Arrangement.spacedBy(8.dp),
+                            .padding(
+                                top = if (travelFabTight) 4.dp else 8.dp,
+                                end = if (travelFabTight) 4.dp else 8.dp,
+                            ),
+                        verticalArrangement = Arrangement.spacedBy(travelFabGap),
                         horizontalAlignment = Alignment.End,
                     ) {
                         SmallFloatingActionButton(
                             onClick = {
                                 if (routeBurstActive) stopRouteBurstAndSave() else requestStartOrExtendRouteBurst()
                             },
+                            modifier = travelFabSizeMod,
                             containerColor = if (routeBurstActive) {
                                 MaterialTheme.colorScheme.errorContainer
                             } else {
@@ -1382,6 +1390,7 @@ fun MyTravelsScreen(
                                         R.string.travel_route_burst_start_cd
                                     },
                                 ),
+                                modifier = travelFabIconMod,
                             )
                         }
                         if (sortedPhotoSessions.isNotEmpty()) {
@@ -1399,6 +1408,7 @@ fun MyTravelsScreen(
                                         else -> vm.requestManualPhotoWalkPickMode()
                                     }
                                 },
+                                modifier = travelFabSizeMod,
                                 containerColor =
                                     if (manualPhotoWalkPickStartActive || manualPhotoWalkSteppingActive) {
                                         MaterialTheme.colorScheme.secondaryContainer
@@ -1409,6 +1419,7 @@ fun MyTravelsScreen(
                                 Icon(
                                     Icons.Default.DirectionsWalk,
                                     contentDescription = stringResource(R.string.travel_manual_walk_fab_cd),
+                                    modifier = travelFabIconMod,
                                 )
                             }
                         }
@@ -1445,6 +1456,7 @@ fun MyTravelsScreen(
                                         }
                                     }
                                 },
+                                modifier = travelFabSizeMod,
                                 containerColor =
                                     if (tripTrackEraseUi.stage != TripTrackErasePickStage.Idle) {
                                         MaterialTheme.colorScheme.secondaryContainer
@@ -1455,6 +1467,7 @@ fun MyTravelsScreen(
                                 Icon(
                                     Icons.Filled.ContentCut,
                                     contentDescription = stringResource(R.string.travel_trip_erase_fab_cd),
+                                    modifier = travelFabIconMod,
                                 )
                             }
                         }
@@ -1480,6 +1493,7 @@ fun MyTravelsScreen(
                                     else -> vm.setRoutePlaybackActive(!routePlaybackActive)
                                 }
                             },
+                            modifier = travelFabSizeMod,
                             containerColor = if (routePlaybackActive) {
                                 MaterialTheme.colorScheme.tertiaryContainer
                             } else {
@@ -1489,6 +1503,7 @@ fun MyTravelsScreen(
                             Icon(
                                 Icons.Default.VideoLibrary,
                                 contentDescription = stringResource(R.string.travel_route_playback_cd),
+                                modifier = travelFabIconMod,
                             )
                         }
                         if (routePlaybackActive && sortedPhotoSessions.size > 1) {
@@ -1497,12 +1512,14 @@ fun MyTravelsScreen(
                                     bumpFloatingToolbar()
                                     vm.cycleRoutePlaybackSession()
                                 },
+                                modifier = travelFabSizeMod,
                             ) {
                                 Icon(
                                     Icons.Default.SkipNext,
                                     contentDescription = stringResource(
                                         R.string.travel_route_playback_next_session_cd,
                                     ),
+                                    modifier = travelFabIconMod,
                                 )
                             }
                         }
@@ -1512,11 +1529,13 @@ fun MyTravelsScreen(
                                     bumpFloatingToolbar()
                                     deleteRouteSessionDialog = true
                                 },
+                                modifier = travelFabSizeMod,
                                 containerColor = MaterialTheme.colorScheme.errorContainer,
                             ) {
                                 Icon(
                                     Icons.Default.Delete,
                                     contentDescription = stringResource(R.string.travel_route_delete_session_cd),
+                                    modifier = travelFabIconMod,
                                 )
                             }
                         }
@@ -1526,11 +1545,13 @@ fun MyTravelsScreen(
                                     bumpFloatingToolbar()
                                     vm.stopTripHistoryReplay()
                                 },
+                                modifier = travelFabSizeMod,
                                 containerColor = MaterialTheme.colorScheme.errorContainer,
                             ) {
                                 Icon(
                                     Icons.Default.Stop,
                                     contentDescription = stringResource(R.string.travel_trip_history_replay_stop_cd),
+                                    modifier = travelFabIconMod,
                                 )
                             }
                         }
@@ -1540,11 +1561,13 @@ fun MyTravelsScreen(
                                     bumpFloatingToolbar()
                                     vm.manualPhotoWalkStepBackward()
                                 },
+                                modifier = travelFabSizeMod,
                                 containerColor = MaterialTheme.colorScheme.surfaceVariant,
                             ) {
                                 Icon(
                                     Icons.Default.KeyboardArrowDown,
                                     contentDescription = stringResource(R.string.travel_manual_walk_step_back_cd),
+                                    modifier = travelFabIconMod,
                                 )
                             }
                             SmallFloatingActionButton(
@@ -1552,11 +1575,13 @@ fun MyTravelsScreen(
                                     bumpFloatingToolbar()
                                     vm.manualPhotoWalkStepForward()
                                 },
+                                modifier = travelFabSizeMod,
                                 containerColor = MaterialTheme.colorScheme.surfaceVariant,
                             ) {
                                 Icon(
                                     Icons.Default.KeyboardArrowUp,
                                     contentDescription = stringResource(R.string.travel_manual_walk_step_forward_cd),
+                                    modifier = travelFabIconMod,
                                 )
                             }
                             SmallFloatingActionButton(
@@ -1564,11 +1589,13 @@ fun MyTravelsScreen(
                                     bumpFloatingToolbar()
                                     vm.cancelManualPhotoWalkFully()
                                 },
+                                modifier = travelFabSizeMod,
                                 containerColor = MaterialTheme.colorScheme.secondaryContainer,
                             ) {
                                 Icon(
                                     Icons.Default.Close,
                                     contentDescription = stringResource(R.string.travel_manual_walk_exit_cd),
+                                    modifier = travelFabIconMod,
                                 )
                             }
                         }
