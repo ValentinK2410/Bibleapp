@@ -1047,6 +1047,7 @@
     <string name="travel_map_hud_speed">Скорость: %1$.0f км/ч</string>
     <!-- «Высота» для вида сверху: оценка по вертикальному охвату карты (метры) и зум, как в плоском режиме. -->
     <string name="travel_map_hud_view_from_above">Сверху: ~%1$d м, зум %2$.1f</string>
+    <string name="travel_map_hud_drag_pinch_hint">Панель карты: перетащите или щипком измените размер</string>
     <string name="travel_nav_slow_down">Снизьте скорость</string>
     <string name="travel_nav_next_road_note">Через %1$d м: %2$s</string>
     <string name="travel_nav_speed_cd">Текущая скорость и лимит по маршруту</string>

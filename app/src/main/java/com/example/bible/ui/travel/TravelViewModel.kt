@@ -32,6 +32,11 @@ import com.example.bible.data.travel.routePlaybackPhotoUriAtDistance
 import com.example.bible.data.travel.travelDistanceMeters
 import com.example.bible.data.travel.TravelZoneKind
 import com.example.bible.data.travel.TravelZoneRepository
+import com.example.bible.data.travel.TRAVEL_MAP_HUD_PANEL_SCALE_MAX
+import com.example.bible.data.travel.TRAVEL_MAP_HUD_PANEL_SCALE_MIN
+import com.example.bible.data.travel.TRAVEL_PHOTO_HUD_DEFAULT_OFF_Y_DP
+import com.example.bible.data.travel.TRAVEL_PHOTO_HUD_PANEL_SCALE_MAX
+import com.example.bible.data.travel.TRAVEL_PHOTO_HUD_PANEL_SCALE_MIN
 import com.example.bible.data.travel.TRAVEL_ZONE_CIRCLE_RADIUS_MAX_M
 import com.example.bible.data.travel.TRAVEL_ZONE_CIRCLE_RADIUS_MIN_M
 import com.example.bible.map.MapKitBootstrap
@@ -44,6 +49,8 @@ import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.channels.BufferOverflow
+import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
@@ -125,11 +132,65 @@ class TravelViewModel(
         "",
     )
 
-    val mapHudPanelScale: StateFlow<Float> = mapKitSettings.mapHudPanelScale.stateIn(
-        viewModelScope,
-        SharingStarted.WhileSubscribed(5_000),
-        1f,
+    private val _mapHudPanelScale = MutableStateFlow(1f)
+    val mapHudPanelScale: StateFlow<Float> = _mapHudPanelScale.asStateFlow()
+
+    private val _speedHudOffsetX = MutableStateFlow(0f)
+    private val _speedHudOffsetY = MutableStateFlow(0f)
+    val speedHudOffsetXDp: StateFlow<Float> = _speedHudOffsetX.asStateFlow()
+    val speedHudOffsetYDp: StateFlow<Float> = _speedHudOffsetY.asStateFlow()
+
+    private val _photoHudOffsetX = MutableStateFlow(0f)
+    private val _photoHudOffsetY = MutableStateFlow(TRAVEL_PHOTO_HUD_DEFAULT_OFF_Y_DP)
+    val photoHudOffsetXDp: StateFlow<Float> = _photoHudOffsetX.asStateFlow()
+    val photoHudOffsetYDp: StateFlow<Float> = _photoHudOffsetY.asStateFlow()
+
+    private val _photoHudPanelScale = MutableStateFlow(1f)
+    val photoHudPanelScale: StateFlow<Float> = _photoHudPanelScale.asStateFlow()
+
+    private val mapHudScaleWriteBus = MutableSharedFlow<Float>(
+        extraBufferCapacity = 1,
+        onBufferOverflow = BufferOverflow.DROP_OLDEST,
     )
+    private val speedHudOffsetWriteBus = MutableSharedFlow<Pair<Float, Float>>(
+        extraBufferCapacity = 1,
+        onBufferOverflow = BufferOverflow.DROP_OLDEST,
+    )
+    private val photoHudOffsetWriteBus = MutableSharedFlow<Pair<Float, Float>>(
+        extraBufferCapacity = 1,
+        onBufferOverflow = BufferOverflow.DROP_OLDEST,
+    )
+    private val photoHudPanelScaleWriteBus = MutableSharedFlow<Float>(
+        extraBufferCapacity = 1,
+        onBufferOverflow = BufferOverflow.DROP_OLDEST,
+    )
+
+    init {
+        viewModelScope.launch {
+            _mapHudPanelScale.value = mapKitSettings.mapHudPanelScale.first()
+            _speedHudOffsetX.value = mapKitSettings.speedHudOffsetXDp.first()
+            _speedHudOffsetY.value = mapKitSettings.speedHudOffsetYDp.first()
+            _photoHudOffsetX.value = mapKitSettings.photoHudOffsetXDp.first()
+            _photoHudOffsetY.value = mapKitSettings.photoHudOffsetYDp.first()
+            _photoHudPanelScale.value = mapKitSettings.photoHudPanelScale.first()
+        }
+        viewModelScope.launch {
+            mapHudScaleWriteBus.debounce(280).collect { mapKitSettings.setMapHudPanelScale(it) }
+        }
+        viewModelScope.launch {
+            speedHudOffsetWriteBus.debounce(280).collect { (x, y) ->
+                mapKitSettings.setSpeedHudOffsets(x, y)
+            }
+        }
+        viewModelScope.launch {
+            photoHudOffsetWriteBus.debounce(280).collect { (x, y) ->
+                mapKitSettings.setPhotoHudOffsets(x, y)
+            }
+        }
+        viewModelScope.launch {
+            photoHudPanelScaleWriteBus.debounce(280).collect { mapKitSettings.setPhotoHudPanelScale(it) }
+        }
+    }
 
     val spotRoutePhotoFrameScale: StateFlow<Float> = mapKitSettings.spotRoutePhotoFrameScale.stateIn(
         viewModelScope,
@@ -138,7 +199,31 @@ class TravelViewModel(
     )
 
     fun setMapHudPanelScale(value: Float) {
-        viewModelScope.launch { mapKitSettings.setMapHudPanelScale(value) }
+        val v = value.coerceIn(TRAVEL_MAP_HUD_PANEL_SCALE_MIN, TRAVEL_MAP_HUD_PANEL_SCALE_MAX)
+        _mapHudPanelScale.value = v
+        mapHudScaleWriteBus.tryEmit(v)
+    }
+
+    fun setSpeedHudOffset(xDp: Float, yDp: Float) {
+        val x = xDp.coerceIn(-2800f, 2800f)
+        val y = yDp.coerceIn(-2800f, 2800f)
+        _speedHudOffsetX.value = x
+        _speedHudOffsetY.value = y
+        speedHudOffsetWriteBus.tryEmit(x to y)
+    }
+
+    fun setPhotoHudOffset(xDp: Float, yDp: Float) {
+        val x = xDp.coerceIn(-2800f, 2800f)
+        val y = yDp.coerceIn(-2800f, 2800f)
+        _photoHudOffsetX.value = x
+        _photoHudOffsetY.value = y
+        photoHudOffsetWriteBus.tryEmit(x to y)
+    }
+
+    fun setPhotoHudPanelScale(value: Float) {
+        val v = value.coerceIn(TRAVEL_PHOTO_HUD_PANEL_SCALE_MIN, TRAVEL_PHOTO_HUD_PANEL_SCALE_MAX)
+        _photoHudPanelScale.value = v
+        photoHudPanelScaleWriteBus.tryEmit(v)
     }
 
     fun setSpotRoutePhotoFrameScale(value: Float) {

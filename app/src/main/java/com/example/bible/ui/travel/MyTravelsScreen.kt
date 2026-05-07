@@ -328,6 +328,11 @@ fun MyTravelsScreen(
     val tripTrackEraseHighlight by vm.tripTrackEraseHighlight.collectAsStateWithLifecycle()
     val tripHistoryEnabled by vm.tripHistoryEnabled.collectAsStateWithLifecycle()
     val mapHudPanelScale by vm.mapHudPanelScale.collectAsStateWithLifecycle()
+    val speedHudOffsetXDp by vm.speedHudOffsetXDp.collectAsStateWithLifecycle()
+    val speedHudOffsetYDp by vm.speedHudOffsetYDp.collectAsStateWithLifecycle()
+    val photoHudOffsetXDp by vm.photoHudOffsetXDp.collectAsStateWithLifecycle()
+    val photoHudOffsetYDp by vm.photoHudOffsetYDp.collectAsStateWithLifecycle()
+    val photoHudPanelScale by vm.photoHudPanelScale.collectAsStateWithLifecycle()
     val spotRoutePhotoFrameScale by vm.spotRoutePhotoFrameScale.collectAsStateWithLifecycle()
     val scope = rememberCoroutineScope()
     val travelSnackbarHostState = remember { SnackbarHostState() }
@@ -1351,6 +1356,14 @@ fun MyTravelsScreen(
                         onRouteWalkerFingerDragging = vm::setRouteWalkerFingerDragging,
                         mapHudPanelScale = mapHudPanelScale,
                         onMapHudPanelScaleChange = vm::setMapHudPanelScale,
+                        speedHudOffsetXDp = speedHudOffsetXDp,
+                        speedHudOffsetYDp = speedHudOffsetYDp,
+                        onSpeedHudOffsetChange = vm::setSpeedHudOffset,
+                        photoHudOffsetXDp = photoHudOffsetXDp,
+                        photoHudOffsetYDp = photoHudOffsetYDp,
+                        onPhotoHudOffsetChange = vm::setPhotoHudOffset,
+                        photoHudPanelScale = photoHudPanelScale,
+                        onPhotoHudPanelScaleChange = vm::setPhotoHudPanelScale,
                         onTravelRecenterFabSlot = publishTravelRecenterSlot,
                     )
                     if (routeBurstActive && apiKeyPresent) {

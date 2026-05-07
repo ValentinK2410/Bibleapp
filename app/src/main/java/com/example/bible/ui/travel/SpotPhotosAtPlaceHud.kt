@@ -2,9 +2,7 @@ package com.example.bible.ui.travel
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.material.icons.Icons
@@ -37,7 +35,6 @@ fun SpotPhotosAtPlaceHudSection(
         modifier = modifier,
         horizontalAlignment = Alignment.Start,
     ) {
-        Spacer(modifier = Modifier.height(8.dp))
         IconToggleButton(
             checked = expanded,
             onCheckedChange = onExpandedChange,

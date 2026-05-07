@@ -23,7 +23,6 @@ import android.view.Choreographer
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Canvas
-import androidx.compose.foundation.gestures.detectTransformGestures
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -32,7 +31,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.layout.width
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Navigation
 import androidx.compose.material3.CircularProgressIndicator
@@ -40,7 +39,6 @@ import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.FloatingActionButtonDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
@@ -60,9 +58,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.TransformOrigin
-import androidx.compose.ui.graphics.graphicsLayer
-import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
@@ -99,6 +94,9 @@ import com.example.bible.data.travel.tripTrackSegmentSpeedKmhForDisplay
 import com.example.bible.data.travel.tripTrackSpeedKmhToArgb
 import com.example.bible.data.travel.TRAVEL_MAP_HUD_PANEL_SCALE_MAX
 import com.example.bible.data.travel.TRAVEL_MAP_HUD_PANEL_SCALE_MIN
+import com.example.bible.data.travel.TRAVEL_PHOTO_HUD_DEFAULT_OFF_Y_DP
+import com.example.bible.data.travel.TRAVEL_PHOTO_HUD_PANEL_SCALE_MAX
+import com.example.bible.data.travel.TRAVEL_PHOTO_HUD_PANEL_SCALE_MIN
 import com.example.bible.data.travel.TravelRoutePhotoPoint
 import com.example.bible.data.travel.bearingDegForRoutePhotoMapOrNull
 import com.example.bible.data.travel.bearingDegreesLatLon
@@ -366,6 +364,14 @@ fun YandexTravelMap(
     onRouteWalkerFingerDragging: ((active: Boolean) -> Unit)? = null,
     mapHudPanelScale: Float = 1f,
     onMapHudPanelScaleChange: ((Float) -> Unit)? = null,
+    speedHudOffsetXDp: Float = 0f,
+    speedHudOffsetYDp: Float = 0f,
+    onSpeedHudOffsetChange: ((Float, Float) -> Unit)? = null,
+    photoHudOffsetXDp: Float = 0f,
+    photoHudOffsetYDp: Float = TRAVEL_PHOTO_HUD_DEFAULT_OFF_Y_DP,
+    onPhotoHudOffsetChange: ((Float, Float) -> Unit)? = null,
+    photoHudPanelScale: Float = 1f,
+    onPhotoHudPanelScaleChange: ((Float) -> Unit)? = null,
     /** Если задано, кнопка перецентровки не рисуется на карте, а передаётся в колонку FAB родителя. */
     onTravelRecenterFabSlot: ((TravelRecenterFabSlot?) -> Unit)? = null,
 ) {
@@ -446,6 +452,14 @@ fun YandexTravelMap(
                 onRouteWalkerFingerDragging = onRouteWalkerFingerDragging,
                 mapHudPanelScale = mapHudPanelScale,
                 onMapHudPanelScaleChange = onMapHudPanelScaleChange,
+                speedHudOffsetXDp = speedHudOffsetXDp,
+                speedHudOffsetYDp = speedHudOffsetYDp,
+                onSpeedHudOffsetChange = onSpeedHudOffsetChange,
+                photoHudOffsetXDp = photoHudOffsetXDp,
+                photoHudOffsetYDp = photoHudOffsetYDp,
+                onPhotoHudOffsetChange = onPhotoHudOffsetChange,
+                photoHudPanelScale = photoHudPanelScale,
+                onPhotoHudPanelScaleChange = onPhotoHudPanelScaleChange,
                 onTravelRecenterFabSlot = onTravelRecenterFabSlot,
             )
         }
@@ -496,6 +510,14 @@ private fun YandexTravelMapContent(
     onRouteWalkerFingerDragging: ((active: Boolean) -> Unit)? = null,
     mapHudPanelScale: Float = 1f,
     onMapHudPanelScaleChange: ((Float) -> Unit)? = null,
+    speedHudOffsetXDp: Float = 0f,
+    speedHudOffsetYDp: Float = 0f,
+    onSpeedHudOffsetChange: ((Float, Float) -> Unit)? = null,
+    photoHudOffsetXDp: Float = 0f,
+    photoHudOffsetYDp: Float = TRAVEL_PHOTO_HUD_DEFAULT_OFF_Y_DP,
+    onPhotoHudOffsetChange: ((Float, Float) -> Unit)? = null,
+    photoHudPanelScale: Float = 1f,
+    onPhotoHudPanelScaleChange: ((Float) -> Unit)? = null,
     /** Если задано, кнопка перецентровки не рисуется на карте, а передаётся в колонку FAB родителя. */
     onTravelRecenterFabSlot: ((TravelRecenterFabSlot?) -> Unit)? = null,
 ) {
@@ -1678,8 +1700,6 @@ private fun YandexTravelMapContent(
 
     val showMapHud =
         userLocationEnabled && hasFineLocation && !routePickMode && !incidentPlaceMode && !hideNavigatorHud
-    val hudScaleRef = rememberUpdatedState(mapHudPanelScale)
-    val onHudScaleCb = rememberUpdatedState(onMapHudPanelScaleChange)
 
     Box(modifier = modifier) {
         AndroidView(
@@ -1687,46 +1707,42 @@ private fun YandexTravelMapContent(
             modifier = Modifier.fillMaxSize(),
         )
         if (showMapHud) {
-            Surface(
-                modifier = Modifier
+            val speedHudModifier = Modifier
+                .align(Alignment.TopStart)
+                .padding(12.dp, 8.dp, 4.dp, 4.dp)
+                .hudOffsetDp(speedHudOffsetXDp, speedHudOffsetYDp)
+            TravelDraggableMapHudPanel(
+                offsetXDp = speedHudOffsetXDp,
+                offsetYDp = speedHudOffsetYDp,
+                onOffsetDpChange = { x, y -> onSpeedHudOffsetChange?.invoke(x, y) },
+                panelScale = mapHudPanelScale,
+                onPanelScaleChange = { s -> onMapHudPanelScaleChange?.invoke(s) },
+                scaleRange = TRAVEL_MAP_HUD_PANEL_SCALE_MIN..TRAVEL_MAP_HUD_PANEL_SCALE_MAX,
+                modifier = speedHudModifier,
+            ) {
+                TravelNavigatorHud(
+                    navHud = if (activeTravelRoute != null) navHudState else null,
+                    fallbackSpeedKmh = hudSpeedKmh.floatValue,
+                    viewSpanM = hudViewSpanM.intValue,
+                    mapZoom = mapZoom,
+                    modifier = Modifier,
+                )
+            }
+            if (navigatorHudExtras != null) {
+                val photoHudModifier = Modifier
                     .align(Alignment.TopStart)
                     .padding(12.dp, 8.dp, 4.dp, 4.dp)
-                    .graphicsLayer {
-                        scaleX = mapHudPanelScale
-                        scaleY = mapHudPanelScale
-                        transformOrigin = TransformOrigin(0f, 0f)
-                    }
-                    .then(
-                        if (onMapHudPanelScaleChange != null) {
-                            Modifier.pointerInput(Unit) {
-                                detectTransformGestures { _, _, zoomChange, _ ->
-                                    val next = (hudScaleRef.value * zoomChange).coerceIn(
-                                        TRAVEL_MAP_HUD_PANEL_SCALE_MIN,
-                                        TRAVEL_MAP_HUD_PANEL_SCALE_MAX,
-                                    )
-                                    onHudScaleCb.value?.invoke(next)
-                                }
-                            }
-                        } else {
-                            Modifier
-                        },
-                    ),
-                shape = RoundedCornerShape(10.dp),
-                color = MaterialTheme.colorScheme.surface.copy(alpha = 0.92f),
-                shadowElevation = 3.dp,
-            ) {
-                Column(
-                    Modifier.padding(horizontal = 12.dp, vertical = 10.dp),
-                    horizontalAlignment = Alignment.Start,
+                    .hudOffsetDp(photoHudOffsetXDp, photoHudOffsetYDp)
+                TravelDraggableMapHudPanel(
+                    offsetXDp = photoHudOffsetXDp,
+                    offsetYDp = photoHudOffsetYDp,
+                    onOffsetDpChange = { x, y -> onPhotoHudOffsetChange?.invoke(x, y) },
+                    panelScale = photoHudPanelScale,
+                    onPanelScaleChange = { s -> onPhotoHudPanelScaleChange?.invoke(s) },
+                    scaleRange = TRAVEL_PHOTO_HUD_PANEL_SCALE_MIN..TRAVEL_PHOTO_HUD_PANEL_SCALE_MAX,
+                    modifier = photoHudModifier,
                 ) {
-                    TravelNavigatorHud(
-                        navHud = if (activeTravelRoute != null) navHudState else null,
-                        fallbackSpeedKmh = hudSpeedKmh.floatValue,
-                        viewSpanM = hudViewSpanM.intValue,
-                        mapZoom = mapZoom,
-                        modifier = Modifier,
-                    )
-                    navigatorHudExtras?.invoke()
+                    navigatorHudExtras.invoke()
                 }
             }
         }
