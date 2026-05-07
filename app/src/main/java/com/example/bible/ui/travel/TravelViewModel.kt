@@ -125,6 +125,26 @@ class TravelViewModel(
         "",
     )
 
+    val mapHudPanelScale: StateFlow<Float> = mapKitSettings.mapHudPanelScale.stateIn(
+        viewModelScope,
+        SharingStarted.WhileSubscribed(5_000),
+        1f,
+    )
+
+    val spotRoutePhotoFrameScale: StateFlow<Float> = mapKitSettings.spotRoutePhotoFrameScale.stateIn(
+        viewModelScope,
+        SharingStarted.WhileSubscribed(5_000),
+        1f,
+    )
+
+    fun setMapHudPanelScale(value: Float) {
+        viewModelScope.launch { mapKitSettings.setMapHudPanelScale(value) }
+    }
+
+    fun setSpotRoutePhotoFrameScale(value: Float) {
+        viewModelScope.launch { mapKitSettings.setSpotRoutePhotoFrameScale(value) }
+    }
+
     val zones: StateFlow<List<TravelZone>> = repo.zones.stateIn(
         viewModelScope,
         SharingStarted.WhileSubscribed(5_000),

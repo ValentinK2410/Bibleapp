@@ -9,16 +9,14 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.lazy.LazyRow
-import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.BrokenImage
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Slider
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -42,6 +40,8 @@ import coil.compose.AsyncImage
 import coil.request.CachePolicy
 import coil.request.ImageRequest
 import com.example.bible.R
+import com.example.bible.data.travel.TRAVEL_SPOT_ROUTE_PHOTO_FRAME_SCALE_MAX
+import com.example.bible.data.travel.TRAVEL_SPOT_ROUTE_PHOTO_FRAME_SCALE_MIN
 import com.example.bible.data.travel.TravelRoutePhotoPoint
 
 @Composable
@@ -50,6 +50,8 @@ fun FolkBurstPreviewPanel(
     cursorIntersectPhotos: List<TravelRoutePhotoPoint>,
     totalCapturedCount: Int,
     onImageCaptureReady: (ImageCapture?) -> Unit,
+    photoFrameScale: Float,
+    onPhotoFrameScaleChange: (Float) -> Unit,
     modifier: Modifier = Modifier,
 ) {
     var pinchScale by remember { mutableFloatStateOf(1f) }
@@ -111,22 +113,28 @@ fun FolkBurstPreviewPanel(
                     modifier = Modifier.padding(top = 2.dp),
                 )
             } else {
-                LazyRow(
-                    horizontalArrangement = Arrangement.spacedBy(8.dp),
-                    verticalAlignment = Alignment.CenterVertically,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .heightIn(min = 92.dp),
+                val primary = cursorIntersectPhotos.first()
+                val w = (132f * photoFrameScale).dp
+                val h = (92f * photoFrameScale).dp
+                Column(
+                    modifier = Modifier.fillMaxWidth(),
+                    verticalArrangement = Arrangement.spacedBy(6.dp),
                 ) {
-                    items(
-                        items = cursorIntersectPhotos,
-                        key = { "${it.photoUri}_${it.capturedAtMs}" },
-                    ) { point ->
-                        FolkBurstPhotoThumb(
-                            photoUriString = point.photoUri,
-                            modifier = Modifier.size(width = 132.dp, height = 92.dp),
-                        )
-                    }
+                    FolkBurstPhotoThumb(
+                        photoUriString = primary.photoUri,
+                        modifier = Modifier.size(width = w, height = h),
+                    )
+                    Text(
+                        stringResource(R.string.travel_spot_photo_size_label),
+                        style = MaterialTheme.typography.labelSmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                    Slider(
+                        value = photoFrameScale,
+                        onValueChange = onPhotoFrameScaleChange,
+                        valueRange = TRAVEL_SPOT_ROUTE_PHOTO_FRAME_SCALE_MIN..TRAVEL_SPOT_ROUTE_PHOTO_FRAME_SCALE_MAX,
+                        modifier = Modifier.fillMaxWidth(),
+                    )
                 }
             }
             Surface(

@@ -325,6 +325,8 @@ fun MyTravelsScreen(
     val tripTrackEraseUi by vm.tripTrackEraseUi.collectAsStateWithLifecycle()
     val tripTrackEraseHighlight by vm.tripTrackEraseHighlight.collectAsStateWithLifecycle()
     val tripHistoryEnabled by vm.tripHistoryEnabled.collectAsStateWithLifecycle()
+    val mapHudPanelScale by vm.mapHudPanelScale.collectAsStateWithLifecycle()
+    val spotRoutePhotoFrameScale by vm.spotRoutePhotoFrameScale.collectAsStateWithLifecycle()
     val scope = rememberCoroutineScope()
     val travelSnackbarHostState = remember { SnackbarHostState() }
     val contactsRepo = remember { ContactsRepository(context) }
@@ -1322,6 +1324,8 @@ fun MyTravelsScreen(
                                     if (allow) spotPhotosHudExpanded = next
                                 },
                                 photos = spotHudFilteredPhotos,
+                                photoFrameScale = spotRoutePhotoFrameScale,
+                                onPhotoFrameScaleChange = vm::setSpotRoutePhotoFrameScale,
                             )
                         },
                         tripHistoryTrack = tripHistoryOverlayTrack,
@@ -1339,6 +1343,8 @@ fun MyTravelsScreen(
                         onRouteWalkerDragPreview = vm::previewRouteWalkerDrag,
                         onRouteWalkerDragCommit = vm::commitRouteWalkerDrag,
                         onRouteWalkerFingerDragging = vm::setRouteWalkerFingerDragging,
+                        mapHudPanelScale = mapHudPanelScale,
+                        onMapHudPanelScaleChange = vm::setMapHudPanelScale,
                     )
                     if (routeBurstActive && apiKeyPresent) {
                         Box(Modifier.align(Alignment.Center)) {
@@ -1350,6 +1356,8 @@ fun MyTravelsScreen(
                             cursorIntersectPhotos = folkCursorPhotos,
                             totalCapturedCount = burstDraftPoints.size,
                             onImageCaptureReady = { burstImageCapture = it },
+                            photoFrameScale = spotRoutePhotoFrameScale,
+                            onPhotoFrameScaleChange = vm::setSpotRoutePhotoFrameScale,
                             modifier = Modifier
                                 .align(Alignment.TopStart)
                                 .padding(start = 10.dp, top = 52.dp)

@@ -23,6 +23,7 @@ import android.view.Choreographer
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Canvas
+import androidx.compose.foundation.gestures.detectTransformGestures
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -58,6 +59,9 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.TransformOrigin
+import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
@@ -92,6 +96,8 @@ import com.example.bible.data.travel.TripHistoryReplayPose
 import com.example.bible.data.travel.TravelTripTrackPoint
 import com.example.bible.data.travel.tripTrackSegmentSpeedKmhForDisplay
 import com.example.bible.data.travel.tripTrackSpeedKmhToArgb
+import com.example.bible.data.travel.TRAVEL_MAP_HUD_PANEL_SCALE_MAX
+import com.example.bible.data.travel.TRAVEL_MAP_HUD_PANEL_SCALE_MIN
 import com.example.bible.data.travel.TravelRoutePhotoPoint
 import com.example.bible.data.travel.bearingDegForRoutePhotoMapOrNull
 import com.example.bible.data.travel.bearingDegreesLatLon
@@ -349,6 +355,8 @@ fun YandexTravelMap(
     onRouteWalkerDragPreview: ((distanceAlongPathMeters: Float) -> Unit)? = null,
     onRouteWalkerDragCommit: ((distanceAlongPathMeters: Float) -> Unit)? = null,
     onRouteWalkerFingerDragging: ((active: Boolean) -> Unit)? = null,
+    mapHudPanelScale: Float = 1f,
+    onMapHudPanelScaleChange: ((Float) -> Unit)? = null,
 ) {
     val context = LocalContext.current
     var mapReady by remember { mutableStateOf<Boolean?>(null) }
@@ -425,6 +433,8 @@ fun YandexTravelMap(
                 onRouteWalkerDragPreview = onRouteWalkerDragPreview,
                 onRouteWalkerDragCommit = onRouteWalkerDragCommit,
                 onRouteWalkerFingerDragging = onRouteWalkerFingerDragging,
+                mapHudPanelScale = mapHudPanelScale,
+                onMapHudPanelScaleChange = onMapHudPanelScaleChange,
             )
         }
     }
@@ -472,6 +482,8 @@ private fun YandexTravelMapContent(
     onRouteWalkerDragPreview: ((distanceAlongPathMeters: Float) -> Unit)? = null,
     onRouteWalkerDragCommit: ((distanceAlongPathMeters: Float) -> Unit)? = null,
     onRouteWalkerFingerDragging: ((active: Boolean) -> Unit)? = null,
+    mapHudPanelScale: Float = 1f,
+    onMapHudPanelScaleChange: ((Float) -> Unit)? = null,
 ) {
     val context = LocalContext.current
     val lifecycleOwner = LocalLifecycleOwner.current
@@ -1591,6 +1603,8 @@ private fun YandexTravelMapContent(
     val showRecenterFab = headingModeActive && userLocationEnabled && hasFineLocation
     val showMapHud =
         userLocationEnabled && hasFineLocation && !routePickMode && !incidentPlaceMode && !hideNavigatorHud
+    val hudScaleRef = rememberUpdatedState(mapHudPanelScale)
+    val onHudScaleCb = rememberUpdatedState(onMapHudPanelScaleChange)
 
     Box(modifier = modifier) {
         AndroidView(
@@ -1601,7 +1615,27 @@ private fun YandexTravelMapContent(
             Surface(
                 modifier = Modifier
                     .align(Alignment.TopStart)
-                    .padding(12.dp, 8.dp, 4.dp, 4.dp),
+                    .padding(12.dp, 8.dp, 4.dp, 4.dp)
+                    .graphicsLayer {
+                        scaleX = mapHudPanelScale
+                        scaleY = mapHudPanelScale
+                        transformOrigin = TransformOrigin(0f, 0f)
+                    }
+                    .then(
+                        if (onMapHudPanelScaleChange != null) {
+                            Modifier.pointerInput(Unit) {
+                                detectTransformGestures { _, _, zoomChange, _ ->
+                                    val next = (hudScaleRef.value * zoomChange).coerceIn(
+                                        TRAVEL_MAP_HUD_PANEL_SCALE_MIN,
+                                        TRAVEL_MAP_HUD_PANEL_SCALE_MAX,
+                                    )
+                                    onHudScaleCb.value?.invoke(next)
+                                }
+                            }
+                        } else {
+                            Modifier
+                        },
+                    ),
                 shape = RoundedCornerShape(10.dp),
                 color = MaterialTheme.colorScheme.surface.copy(alpha = 0.92f),
                 shadowElevation = 3.dp,

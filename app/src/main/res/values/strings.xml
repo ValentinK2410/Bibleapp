@@ -1155,13 +1155,14 @@
     <string name="travel_route_burst_stop_cd">Закончить народную съёмку и сохранить серию</string>
     <string name="travel_route_burst_last_frame_cd">Последний сохранённый кадр серии</string>
     <string name="travel_route_folk_title_bar">Народная съёмка</string>
-    <string name="travel_route_folk_gesture_hint">Два пальца по панели: сдвиг и масштаб всего блока. Ленту кадров под центром карты листайте горизонтально.</string>
+    <string name="travel_route_folk_gesture_hint">Два пальца по панели: сдвиг и масштаб всего блока. У центра карты показывается один ближайший кадр; ползунок — размер превью.</string>
     <string name="travel_route_folk_cursor_section">Кадры у центра карты</string>
     <string name="travel_route_folk_cursor_empty">Сместите карту так, чтобы центр экрана (перекрестье) оказался у точки съёмки — здесь появятся подходящие снимки.</string>
     <string name="travel_route_folk_frames_fmt">Народная съёмка · кадров: %1$d</string>
     <string name="travel_route_burst_frames_fmt">Кадров в серии: %1$d</string>
     <string name="travel_spot_photos_toggle_cd">Показать или скрыть фото рядом на карте (до ~22 м, по направлению если дальше ~8 м)</string>
     <string name="travel_spot_photos_empty">Нет кадров рядом с этой точкой (до ~22 м) или не совпадает направление для дальних.</string>
+    <string name="travel_spot_photo_size_label">Размер фото</string>
     <string name="travel_spot_photos_wait_gps">Подождите координаты GPS и попробуйте снова.</string>
     <string name="travel_menu_trip_history">История поездок</string>
     <string name="travel_trip_history_title">История поездок</string>
