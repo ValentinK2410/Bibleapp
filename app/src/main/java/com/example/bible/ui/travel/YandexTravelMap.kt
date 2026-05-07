@@ -54,6 +54,7 @@ import androidx.compose.runtime.snapshotFlow
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.SideEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
@@ -309,6 +310,14 @@ private class TravelFollowCameraTargets {
     var lastFrameNs = 0L
 }
 
+/**
+ * Состояние кнопки «вернуть карту к следованию за курсом» для размещения в колонке FAB на экране путешествий.
+ */
+data class TravelRecenterFabSlot(
+    val alpha: Float,
+    val onRecenter: () -> Unit,
+)
+
 @Composable
 fun YandexTravelMap(
     mapKitApiKey: String,
@@ -357,6 +366,8 @@ fun YandexTravelMap(
     onRouteWalkerFingerDragging: ((active: Boolean) -> Unit)? = null,
     mapHudPanelScale: Float = 1f,
     onMapHudPanelScaleChange: ((Float) -> Unit)? = null,
+    /** Если задано, кнопка перецентровки не рисуется на карте, а передаётся в колонку FAB родителя. */
+    onTravelRecenterFabSlot: ((TravelRecenterFabSlot?) -> Unit)? = null,
 ) {
     val context = LocalContext.current
     var mapReady by remember { mutableStateOf<Boolean?>(null) }
@@ -435,6 +446,7 @@ fun YandexTravelMap(
                 onRouteWalkerFingerDragging = onRouteWalkerFingerDragging,
                 mapHudPanelScale = mapHudPanelScale,
                 onMapHudPanelScaleChange = onMapHudPanelScaleChange,
+                onTravelRecenterFabSlot = onTravelRecenterFabSlot,
             )
         }
     }
@@ -484,6 +496,8 @@ private fun YandexTravelMapContent(
     onRouteWalkerFingerDragging: ((active: Boolean) -> Unit)? = null,
     mapHudPanelScale: Float = 1f,
     onMapHudPanelScaleChange: ((Float) -> Unit)? = null,
+    /** Если задано, кнопка перецентровки не рисуется на карте, а передаётся в колонку FAB родителя. */
+    onTravelRecenterFabSlot: ((TravelRecenterFabSlot?) -> Unit)? = null,
 ) {
     val context = LocalContext.current
     val lifecycleOwner = LocalLifecycleOwner.current
@@ -1397,6 +1411,68 @@ private fun YandexTravelMapContent(
         animationSpec = tween(420),
         label = "travel_recenter_fab_alpha",
     )
+    val performRecenter = remember(mapView, scope, context) {
+        {
+            hideRecenterFabJob.value?.cancel()
+            followUserActive = true
+            recenterFabAlphaTarget = 0f
+            userLockedWideView.set(false)
+            scope.launch {
+                @SuppressLint("MissingPermission")
+                runCatching {
+                    val client = LocationServices.getFusedLocationProviderClient(context)
+                    var loc = client.getCurrentLocation(
+                        Priority.PRIORITY_HIGH_ACCURACY,
+                        com.google.android.gms.tasks.CancellationTokenSource().token,
+                    ).await()
+                    if (loc == null) {
+                        loc = client.lastLocation.await()
+                    }
+                    if (loc != null) {
+                        val map = mapView.mapWindow.map
+                        val cp = map.cameraPosition
+                        val zoom = zoomForViewSpanMeters(
+                            mapView,
+                            loc.latitude,
+                            RECENTER_VIEW_SPAN_M,
+                        )
+                        val az = if (loc.hasBearing()) {
+                            (loc.bearing % 360f + 360f) % 360f
+                        } else {
+                            cp.azimuth
+                        }
+                        map.move(
+                            CameraPosition(
+                                Point(loc.latitude, loc.longitude),
+                                zoom,
+                                az,
+                                TRAVEL_NAV_TARGET_TILT,
+                            ),
+                            Animation(Animation.Type.SMOOTH, 0.35f),
+                            null,
+                        )
+                    }
+                }
+            }
+            Unit
+        }
+    }
+    DisposableEffect(onTravelRecenterFabSlot) {
+        onDispose { onTravelRecenterFabSlot?.invoke(null) }
+    }
+    val showRecenterFab = headingModeActive && userLocationEnabled && hasFineLocation
+    SideEffect {
+        val publish = onTravelRecenterFabSlot ?: return@SideEffect
+        val visible = showRecenterFab &&
+            (animatedRecenterFabAlpha > 0.02f || recenterFabAlphaTarget > 0.02f)
+        publish(
+            if (visible) {
+                TravelRecenterFabSlot(alpha = animatedRecenterFabAlpha, onRecenter = performRecenter)
+            } else {
+                null
+            },
+        )
+    }
     DisposableEffect(mapView, scope) {
         val map = mapView.mapWindow.map
         val listener = object : CameraListener {
@@ -1600,7 +1676,6 @@ private fun YandexTravelMapContent(
         }
     }
 
-    val showRecenterFab = headingModeActive && userLocationEnabled && hasFineLocation
     val showMapHud =
         userLocationEnabled && hasFineLocation && !routePickMode && !incidentPlaceMode && !hideNavigatorHud
     val hudScaleRef = rememberUpdatedState(mapHudPanelScale)
@@ -1655,51 +1730,13 @@ private fun YandexTravelMapContent(
                 }
             }
         }
-        if (showRecenterFab && (animatedRecenterFabAlpha > 0.02f || recenterFabAlphaTarget > 0.02f)) {
+        if (
+            onTravelRecenterFabSlot == null &&
+            showRecenterFab &&
+            (animatedRecenterFabAlpha > 0.02f || recenterFabAlphaTarget > 0.02f)
+        ) {
             FloatingActionButton(
-                onClick = {
-                    hideRecenterFabJob.value?.cancel()
-                    followUserActive = true
-                    recenterFabAlphaTarget = 0f
-                    userLockedWideView.set(false)
-                    scope.launch {
-                        @SuppressLint("MissingPermission")
-                        runCatching {
-                            val client = LocationServices.getFusedLocationProviderClient(context)
-                            var loc = client.getCurrentLocation(
-                                Priority.PRIORITY_HIGH_ACCURACY,
-                                com.google.android.gms.tasks.CancellationTokenSource().token,
-                            ).await()
-                            if (loc == null) {
-                                loc = client.lastLocation.await()
-                            }
-                            if (loc != null) {
-                                val map = mapView.mapWindow.map
-                                val cp = map.cameraPosition
-                                val zoom = zoomForViewSpanMeters(
-                                    mapView,
-                                    loc.latitude,
-                                    RECENTER_VIEW_SPAN_M,
-                                )
-                                val az = if (loc.hasBearing()) {
-                                    (loc.bearing % 360f + 360f) % 360f
-                                } else {
-                                    cp.azimuth
-                                }
-                                map.move(
-                                    CameraPosition(
-                                        Point(loc.latitude, loc.longitude),
-                                        zoom,
-                                        az,
-                                        TRAVEL_NAV_TARGET_TILT,
-                                    ),
-                                    Animation(Animation.Type.SMOOTH, 0.35f),
-                                    null,
-                                )
-                            }
-                        }
-                    }
-                },
+                onClick = performRecenter,
                 modifier = Modifier
                     .align(Alignment.BottomEnd)
                     .padding(end = 16.dp, bottom = 132.dp)

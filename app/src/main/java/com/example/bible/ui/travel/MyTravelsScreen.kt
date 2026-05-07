@@ -44,6 +44,7 @@ import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.AddLocationAlt
 import androidx.compose.material.icons.filled.ContentCut
 import androidx.compose.material.icons.filled.MoreVert
+import androidx.compose.material.icons.filled.Navigation
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
@@ -153,6 +154,7 @@ import androidx.compose.material.icons.filled.Tune
 import androidx.compose.material.icons.filled.VideoLibrary
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.rememberUpdatedState
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
@@ -380,6 +382,10 @@ fun MyTravelsScreen(
     var incidentDeleteConfirmFor by remember { mutableStateOf<TravelMapIncident?>(null) }
     val burstDraftPoints = remember { mutableStateListOf<TravelRoutePhotoPoint>() }
     var spotPhotosHudExpanded by remember { mutableStateOf(false) }
+    var travelRecenterSlot by remember { mutableStateOf<TravelRecenterFabSlot?>(null) }
+    val publishTravelRecenterSlot = remember {
+        { s: TravelRecenterFabSlot? -> travelRecenterSlot = s }
+    }
     var burstImageCapture by remember { mutableStateOf<ImageCapture?>(null) }
     val burstCaptureExecutor = remember { Executors.newSingleThreadExecutor() }
     DisposableEffect(Unit) {
@@ -1345,6 +1351,7 @@ fun MyTravelsScreen(
                         onRouteWalkerFingerDragging = vm::setRouteWalkerFingerDragging,
                         mapHudPanelScale = mapHudPanelScale,
                         onMapHudPanelScaleChange = vm::setMapHudPanelScale,
+                        onTravelRecenterFabSlot = publishTravelRecenterSlot,
                     )
                     if (routeBurstActive && apiKeyPresent) {
                         Box(Modifier.align(Alignment.Center)) {
@@ -1603,6 +1610,20 @@ fun MyTravelsScreen(
                                 Icon(
                                     Icons.Default.Close,
                                     contentDescription = stringResource(R.string.travel_manual_walk_exit_cd),
+                                    modifier = travelFabIconMod,
+                                )
+                            }
+                        }
+                        travelRecenterSlot?.let { slot ->
+                            SmallFloatingActionButton(
+                                onClick = slot.onRecenter,
+                                modifier = travelFabSizeMod.alpha(slot.alpha),
+                                containerColor = MaterialTheme.colorScheme.surface,
+                                contentColor = MaterialTheme.colorScheme.primary,
+                            ) {
+                                Icon(
+                                    Icons.Filled.Navigation,
+                                    contentDescription = stringResource(R.string.travel_recenter_map_cd),
                                     modifier = travelFabIconMod,
                                 )
                             }
