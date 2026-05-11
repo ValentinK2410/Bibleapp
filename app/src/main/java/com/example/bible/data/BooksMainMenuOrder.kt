@@ -14,6 +14,7 @@ object BooksMainMenuOrder {
     const val OTHER_BOOKS = "other_books"
     const val STRONGS = "strongs"
     const val SEMANTIC_LEXICON = "semantic_lexicon"
+    const val LANGUAGE_STUDY = "language_study"
     const val TIMEMARK = "timemark"
     const val MEDIA = "media"
     const val NARRATOR = "narrator"
@@ -37,6 +38,7 @@ object BooksMainMenuOrder {
         OTHER_BOOKS,
         STRONGS,
         SEMANTIC_LEXICON,
+        LANGUAGE_STUDY,
         TIMEMARK,
         MEDIA,
         NARRATOR,
@@ -86,6 +88,7 @@ object BooksMainMenuOrder {
         OTHER_BOOKS -> "Другие книги"
         STRONGS -> "Словарь Стронга"
         SEMANTIC_LEXICON -> "Словарь тематической подсветки"
+        LANGUAGE_STUDY -> "Изучение языков"
         TIMEMARK -> "Редактор таймкодов"
         MEDIA -> "Медиа"
         NARRATOR -> "Озвучка главы"

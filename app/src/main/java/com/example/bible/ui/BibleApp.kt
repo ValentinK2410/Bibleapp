@@ -2793,6 +2793,29 @@ private fun BibleNavHost(
                 onBack = { navController.navigateUp() },
             )
         }
+        composable("language_study") {
+            LanguageStudyHubScreen(
+                onBack = { navController.navigateUp() },
+                onOpenLanguage = { lang -> navController.navigate("language_study/${lang.routeArg}") },
+            )
+        }
+        composable(
+            route = "language_study/{lang}",
+            arguments = listOf(navArgument("lang") { type = NavType.StringType }),
+        ) { entry ->
+            val arg = entry.arguments?.getString("lang").orEmpty()
+            val lang = LanguageStudyCode.parse(arg)
+            if (lang == null) {
+                LaunchedEffect(arg) {
+                    navController.navigateUp()
+                }
+            } else {
+                LanguageStudyLanguageScreen(
+                    code = lang,
+                    onBack = { navController.navigateUp() },
+                )
+            }
+        }
         composable("notes") {
             val notes by viewModel.userNotes.collectAsStateWithLifecycle()
             NotesListScreen(

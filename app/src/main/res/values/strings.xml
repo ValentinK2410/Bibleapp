@@ -1025,6 +1025,14 @@
     <string name="genealogy_search_refs_label">Писание</string>
     <string name="genealogy_ancestors_empty">У этой персоны в справочнике нет записанных родителей — ветвь предков пуста.</string>
 
+    <string name="language_study_title">Изучение языков</string>
+    <string name="language_study_menu">Изучение языков</string>
+    <string name="language_study_lang_english">Английский</string>
+    <string name="language_study_lang_irit">Ирит</string>
+    <string name="language_study_lang_greek">Греческий</string>
+    <string name="language_study_lang_arabic">Арабский</string>
+    <string name="language_study_placeholder">Раздел языка в разработке — здесь можно разместить уроки и материалы.</string>
+
     <string name="travel_title">Мои путешествия</string>
     <string name="travel_menu">Мои путешествия</string>
     <string name="travel_mode_circle">Круг</string>

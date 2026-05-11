@@ -20,6 +20,7 @@ import androidx.compose.material.icons.filled.Public
 import androidx.compose.material.icons.filled.Schedule
 import androidx.compose.material.icons.filled.School
 import androidx.compose.material.icons.filled.Search
+import androidx.compose.material.icons.filled.Translate
 import androidx.compose.material.icons.filled.ViewModule
 import androidx.compose.material.icons.automirrored.filled.MenuBook
 import androidx.compose.material3.DropdownMenuItem
@@ -110,6 +111,11 @@ fun BooksMainMenuOrderedItems(
                 leadingIcon = {
                     Icon(Icons.Default.FormatColorFill, contentDescription = null, tint = primary)
                 },
+            )
+            BooksMainMenuOrder.LANGUAGE_STUDY -> DropdownMenuItem(
+                text = { Text(stringResource(R.string.language_study_menu)) },
+                onClick = { closeMenu(); navController.navigate("language_study") },
+                leadingIcon = { Icon(Icons.Filled.Translate, contentDescription = null, tint = primary) },
             )
             BooksMainMenuOrder.TIMEMARK -> DropdownMenuItem(
                 text = { Text(stringResource(R.string.timemark_menu)) },
