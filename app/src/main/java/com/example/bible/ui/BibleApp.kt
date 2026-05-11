@@ -205,6 +205,7 @@ import coil.compose.AsyncImage
 import com.example.bible.ui.theme.BibleTheme
 import com.example.bible.ui.theme.ThemedWindowBackdrop
 import com.example.bible.ui.travel.MyTravelsScreen
+import com.example.bible.ui.languagestudy.LanguageStudyLanguageFlowScreen
 import com.example.bible.ui.church.ChurchMemberEditScreen
 import com.example.bible.ui.church.ChurchParticipantsScreen
 import com.example.bible.ui.church.ChurchPlaceholderScreen
@@ -2810,7 +2811,7 @@ private fun BibleNavHost(
                     navController.navigateUp()
                 }
             } else {
-                LanguageStudyLanguageScreen(
+                LanguageStudyLanguageFlowScreen(
                     code = lang,
                     onBack = { navController.navigateUp() },
                 )

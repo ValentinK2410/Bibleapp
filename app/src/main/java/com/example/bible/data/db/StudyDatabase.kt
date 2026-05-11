@@ -10,8 +10,10 @@ import androidx.room.RoomDatabase
         StudyChapterCommentaryEntity::class,
         StudyVerseBlobEntity::class,
         StrongsEntryEntity::class,
+        LangVocabWordEntity::class,
+        LangSrsCardEntity::class,
     ],
-    version = 1,
+    version = 2,
     exportSchema = true,
 )
 abstract class StudyDatabase : RoomDatabase() {
@@ -31,6 +33,7 @@ abstract class StudyDatabase : RoomDatabase() {
                     DB_NAME,
                 )
                     .allowMainThreadQueries()
+                    .addMigrations(StudyDbMigrations.MIGRATION_1_2)
                     .fallbackToDestructiveMigration()
                     .build()
                     .also { instance = it }

@@ -9,6 +9,53 @@ import androidx.room.Query
 interface StudyDao {
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
+    fun upsertLangVocab(words: List<LangVocabWordEntity>)
+
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    fun upsertLangSrsCards(cards: List<LangSrsCardEntity>)
+
+    fun countLangWords(langCode: String): Int
+
+    @Query("SELECT * FROM lang_vocab_words WHERE langCode = :langCode ORDER BY frequencyRank ASC, lemma ASC")
+    fun listLangWords(langCode: String): List<LangVocabWordEntity>
+
+    @Query(
+        "SELECT * FROM lang_vocab_words WHERE langCode = :langCode AND " +
+            "(lemma LIKE '%' || :needle || '%' OR display LIKE '%' || :needle || '%' OR glossRu LIKE '%' || :needle || '%') " +
+            "ORDER BY frequencyRank ASC, lemma ASC LIMIT :lim",
+    )
+    fun searchLangWords(langCode: String, needle: String, lim: Int): List<LangVocabWordEntity>
+
+    @Query("SELECT * FROM lang_vocab_words WHERE wordKey = :wordKey LIMIT 1")
+    fun getLangWord(wordKey: String): LangVocabWordEntity?
+
+    @Query("SELECT * FROM lang_srs_cards WHERE wordKey = :wordKey LIMIT 1")
+    fun getLangSrsCard(wordKey: String): LangSrsCardEntity?
+
+    @Query(
+        """
+        SELECT w.* FROM lang_vocab_words w
+        LEFT JOIN lang_srs_cards s ON w.wordKey = s.wordKey
+        WHERE w.langCode = :langCode
+        AND (s.wordKey IS NULL OR s.nextReviewAtEpochMs <= :nowMs)
+        ORDER BY CASE WHEN s.wordKey IS NULL THEN 0 ELSE 1 END ASC,
+                 COALESCE(s.nextReviewAtEpochMs, 9223372036854775807) ASC
+        LIMIT :lim
+        """,
+    )
+    fun getDueLangWords(langCode: String, nowMs: Long, lim: Int): List<LangVocabWordEntity>
+
+    @Query(
+        """
+        SELECT COUNT(*) FROM lang_vocab_words w
+        LEFT JOIN lang_srs_cards s ON w.wordKey = s.wordKey
+        WHERE w.langCode = :langCode
+        AND (s.wordKey IS NULL OR s.nextReviewAtEpochMs <= :nowMs)
+        """,
+    )
+    fun countDueLangWords(langCode: String, nowMs: Long): Int
+
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
     fun upsertChapterCommentary(entity: StudyChapterCommentaryEntity)
 
     @Query(
