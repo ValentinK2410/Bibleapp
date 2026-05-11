@@ -14,6 +14,10 @@ interface StudyDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     fun upsertLangSrsCards(cards: List<LangSrsCardEntity>)
 
+    @Query("DELETE FROM lang_vocab_words WHERE langCode = :langCode")
+    fun deleteLangWordsForLanguage(langCode: String)
+
+    @Query("SELECT COUNT(*) FROM lang_vocab_words WHERE langCode = :langCode")
     fun countLangWords(langCode: String): Int
 
     @Query("SELECT * FROM lang_vocab_words WHERE langCode = :langCode ORDER BY frequencyRank ASC, lemma ASC")
