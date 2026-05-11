@@ -52,8 +52,8 @@ import androidx.compose.material.icons.filled.DarkMode
 import androidx.compose.material.icons.filled.FormatColorFill
 import androidx.compose.material.icons.filled.Download
 import androidx.compose.material.icons.filled.Map
-import androidx.compose.material.icons.filled.Explore
 import androidx.compose.material.icons.filled.MusicNote
+import androidx.compose.material.icons.filled.Navigation
 import androidx.compose.material.icons.filled.PermMedia
 import androidx.compose.material.icons.filled.LightMode
 import androidx.compose.material.icons.filled.ContentCopy
@@ -652,6 +652,13 @@ private fun BibleNavHost(
                                             Icons.Filled.ViewModule
                                         },
                                         contentDescription = stringResource(R.string.toggle_grid_list),
+                                    )
+                                }
+                                IconButton(onClick = { navController.navigate("my_travels") }) {
+                                    Icon(
+                                        Icons.Filled.Navigation,
+                                        contentDescription = stringResource(R.string.travel_menu),
+                                        tint = MaterialTheme.colorScheme.primary,
                                     )
                                 }
                                 IconButton(onClick = { fullBibleDlConfirm = true }) {
