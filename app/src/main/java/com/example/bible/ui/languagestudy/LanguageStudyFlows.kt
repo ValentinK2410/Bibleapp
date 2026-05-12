@@ -2,9 +2,12 @@ package com.example.bible.ui.languagestudy
 
 import android.app.Application
 import android.content.Context
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.foundation.border
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
@@ -18,6 +21,7 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
@@ -28,6 +32,7 @@ import androidx.compose.material.icons.filled.CloudDownload
 import androidx.compose.material.icons.filled.LibraryBooks
 import androidx.compose.material.icons.filled.Link
 import androidx.compose.material.icons.filled.Refresh
+import androidx.compose.material.icons.filled.Repeat
 import androidx.compose.material.icons.filled.School
 import androidx.compose.material.icons.filled.UploadFile
 import androidx.compose.material3.AlertDialog
@@ -43,13 +48,18 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Slider
+import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -61,8 +71,17 @@ import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.example.bible.data.BiblePreferences
+import com.example.bible.data.db.LangVocabWordEntity
 import com.example.bible.R
 import com.example.bible.ui.LanguageStudyCode
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.suspendCancellableCoroutine
+import java.util.Locale
+import java.util.concurrent.atomic.AtomicBoolean
+import kotlin.coroutines.resume
 
 private enum class LangStudyTab { HOME, SESSION, DICT, PACK }
 
@@ -167,13 +186,80 @@ private fun LsHubCard(title: String, subtitle: String, icon: androidx.compose.ui
     }
 }
 
+/** Ручное нажатие или цикл после паузы, если включён повтор на сессии. */
+private fun lsSpeakWithOptionalRepeat(
+    scope: CoroutineScope,
+    repeatLoopEnabled: Boolean,
+    pauseMs: () -> Long,
+    repeatStillEnabled: () -> Boolean,
+    play: (onDone: (() -> Unit)?) -> Unit,
+) {
+    if (!repeatLoopEnabled) {
+        play(null)
+        return
+    }
+    fun scheduleNext() {
+        play {
+            scope.launch {
+                delay(pauseMs())
+                if (repeatStillEnabled()) scheduleNext()
+            }
+        }
+    }
+    scheduleNext()
+}
+
+private suspend fun LangStudyTtsFacade.speakStudyAwait(text: String) {
+    if (text.isBlank()) return
+    suspendCancellableCoroutine<Unit> { cont ->
+        val done = AtomicBoolean(false)
+        fun finish() {
+            if (done.compareAndSet(false, true) && cont.isActive) {
+                cont.resume(Unit)
+            }
+        }
+        val ok = speakStudy(text) { finish() }
+        if (!ok) finish()
+    }
+}
+
+private suspend fun LangStudyTtsFacade.speakRussianAwait(text: String) {
+    if (text.isBlank()) return
+    suspendCancellableCoroutine<Unit> { cont ->
+        val done = AtomicBoolean(false)
+        fun finish() {
+            if (done.compareAndSet(false, true) && cont.isActive) {
+                cont.resume(Unit)
+            }
+        }
+        val ok = speakRussian(text) { finish() }
+        if (!ok) finish()
+    }
+}
+
 @Composable
 private fun LS_Session(modifier: Modifier, langTag: String, lsVm: LanguageStudyViewModel) {
+    val ctx = LocalContext.current
+    val prefs = remember { BiblePreferences(ctx.applicationContext) }
+    val scope = rememberCoroutineScope()
     val session by lsVm.session.collectAsStateWithLifecycle()
     val tts = rememberLangStudyTts(langTag)
     val q = session.queue
     val idx = session.index
     val maxView = session.maxViewIndex
+    var repeatLoopEnabled by remember { mutableStateOf(false) }
+    var autoAdvanceDeck by remember { mutableStateOf(false) }
+    val repeatPauseMs by prefs.langStudySrsRepeatPauseMs.collectAsStateWithLifecycle(
+        initialValue = BiblePreferences.LANG_STUDY_SRS_REPEAT_PAUSE_MS_DEFAULT,
+    )
+    var pauseSliderMs by remember { mutableLongStateOf(repeatPauseMs) }
+    LaunchedEffect(repeatPauseMs) {
+        pauseSliderMs = repeatPauseMs
+    }
+    val repeatLoopRef = rememberUpdatedState(repeatLoopEnabled)
+    val pauseRef = rememberUpdatedState(repeatPauseMs)
+    val autoAdvanceDeckRef = rememberUpdatedState(autoAdvanceDeck)
+
     if (q.isEmpty()) {
         Column(modifier.fillMaxSize().padding(24.dp), verticalArrangement = Arrangement.Center, horizontalAlignment = Alignment.CenterHorizontally) {
             Text(stringResource(R.string.language_study_session_empty))
@@ -187,6 +273,38 @@ private fun LS_Session(modifier: Modifier, langTag: String, lsVm: LanguageStudyV
         return
     }
     val w = q[idx]
+    val lemmaLine = remember(w.wordKey, w.display, w.lemma) { w.display.ifBlank { w.lemma } }
+
+    LaunchedEffect(autoAdvanceDeck, idx, lemmaLine, repeatPauseMs, w.wordKey, q.size) {
+        if (!autoAdvanceDeck || q.isEmpty()) return@LaunchedEffect
+        val card = q.getOrNull(idx) ?: return@LaunchedEffect
+        val pauseStep = (repeatPauseMs / 3).coerceIn(250L..4000L)
+        val showExample = !card.exampleL2.isNullOrBlank() &&
+            !card.exampleRu.isNullOrBlank() &&
+            (card.exampleL2.trim() != lemmaLine.trim() || card.exampleRu.trim() != card.glossRu.trim())
+        delay(200)
+        if (!autoAdvanceDeckRef.value) return@LaunchedEffect
+        tts.speakStudyAwait(lemmaLine)
+        delay(pauseStep)
+        if (!autoAdvanceDeckRef.value) return@LaunchedEffect
+        tts.speakRussianAwait(card.glossRu)
+        if (showExample) {
+            delay(pauseStep)
+            if (!autoAdvanceDeckRef.value) return@LaunchedEffect
+            tts.speakStudyAwait(card.exampleL2!!.trim())
+            delay(pauseStep)
+            if (!autoAdvanceDeckRef.value) return@LaunchedEffect
+            tts.speakRussianAwait(card.exampleRu!!.trim())
+        }
+        delay(pauseStep)
+        if (!autoAdvanceDeckRef.value) return@LaunchedEffect
+        if (idx >= q.lastIndex) {
+            autoAdvanceDeck = false
+        } else {
+            lsVm.sessionAutoplayAdvanceOne()
+        }
+    }
+
     Column(modifier.fillMaxSize().padding(horizontal = 18.dp)) {
         Row(
             Modifier
@@ -196,7 +314,10 @@ private fun LS_Session(modifier: Modifier, langTag: String, lsVm: LanguageStudyV
             horizontalArrangement = Arrangement.SpaceBetween,
         ) {
             IconButton(
-                onClick = { lsVm.sessionGoPrevWithinQueue() },
+                onClick = {
+                    autoAdvanceDeck = false
+                    lsVm.sessionGoPrevWithinQueue()
+                },
                 enabled = idx > 0,
             ) {
                 Icon(
@@ -210,7 +331,10 @@ private fun LS_Session(modifier: Modifier, langTag: String, lsVm: LanguageStudyV
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
             IconButton(
-                onClick = { lsVm.sessionGoNextWithinQueue() },
+                onClick = {
+                    autoAdvanceDeck = false
+                    lsVm.sessionGoNextWithinQueue()
+                },
                 enabled = idx < maxView,
             ) {
                 Icon(
@@ -219,37 +343,147 @@ private fun LS_Session(modifier: Modifier, langTag: String, lsVm: LanguageStudyV
                 )
             }
         }
+        Row(
+            modifier = Modifier.fillMaxWidth().padding(bottom = 4.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.SpaceBetween,
+        ) {
+            Box(
+                modifier = Modifier.then(
+                    if (repeatLoopEnabled) {
+                        Modifier.border(2.dp, MaterialTheme.colorScheme.primary, CircleShape)
+                    } else {
+                        Modifier
+                    },
+                ),
+            ) {
+                IconButton(onClick = { repeatLoopEnabled = !repeatLoopEnabled }) {
+                    Icon(
+                        Icons.Filled.Repeat,
+                        contentDescription = stringResource(R.string.language_study_repeat_cd),
+                        tint = if (repeatLoopEnabled) {
+                            MaterialTheme.colorScheme.primary
+                        } else {
+                            MaterialTheme.colorScheme.onSurfaceVariant
+                        },
+                    )
+                }
+            }
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Text(
+                    stringResource(R.string.language_study_autoplay),
+                    style = MaterialTheme.typography.labelMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    modifier = Modifier.padding(end = 8.dp),
+                )
+                Switch(
+                    checked = autoAdvanceDeck,
+                    onCheckedChange = { autoAdvanceDeck = it },
+                    modifier = Modifier.padding(end = 4.dp),
+                    enabled = q.isNotEmpty(),
+                )
+            }
+        }
+        AnimatedVisibility(repeatLoopEnabled) {
+            val pMin = BiblePreferences.LANG_STUDY_SRS_REPEAT_PAUSE_MS_MIN.toFloat()
+            val pMax = BiblePreferences.LANG_STUDY_SRS_REPEAT_PAUSE_MS_MAX.toFloat()
+            Column(modifier = Modifier.fillMaxWidth().padding(bottom = 8.dp)) {
+                Text(
+                    stringResource(
+                        R.string.language_study_repeat_pause_label,
+                        String.format(Locale.getDefault(), "%.1f", pauseSliderMs / 1000f),
+                    ),
+                    style = MaterialTheme.typography.labelSmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+                Slider(
+                    value = pauseSliderMs.toFloat().coerceIn(pMin, pMax),
+                    onValueChange = { v ->
+                        pauseSliderMs = v.toLong().coerceIn(
+                            BiblePreferences.LANG_STUDY_SRS_REPEAT_PAUSE_MS_MIN,
+                            BiblePreferences.LANG_STUDY_SRS_REPEAT_PAUSE_MS_MAX,
+                        )
+                    },
+                    onValueChangeFinished = {
+                        val v = pauseSliderMs
+                        scope.launch {
+                            prefs.setLangStudySrsRepeatPauseMs(v)
+                        }
+                    },
+                    valueRange = pMin..pMax,
+                )
+            }
+        }
         LsFlashcardMinimal(
-            display = w.display.ifBlank { w.lemma },
-            ipa = w.ipa,
-            glossRu = w.glossRu,
-            exampleL2 = w.exampleL2,
-            exampleRu = w.exampleRu,
-            onSpeak = { tts.speak(w.display.ifBlank { w.lemma }) },
+            word = w,
+            lemmaLine = lemmaLine,
+            tts = tts,
+            repeatLoopEnabled = repeatLoopEnabled,
+            pauseMsSnapshot = { pauseRef.value },
+            repeatStillEnabled = { repeatLoopRef.value },
+            scope = scope,
         )
         Spacer(Modifier.weight(1f))
         Text(stringResource(R.string.language_study_grade_prompt), style = MaterialTheme.typography.labelLarge)
         Spacer(Modifier.height(8.dp))
         Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(6.dp)) {
-            OutlinedButton(onClick = { lsVm.gradeCurrent(langTag, 2) }, modifier = Modifier.weight(1f)) { Text(stringResource(R.string.language_study_again)) }
-            OutlinedButton(onClick = { lsVm.gradeCurrent(langTag, 3) }, modifier = Modifier.weight(1f)) { Text(stringResource(R.string.language_study_hard)) }
+            OutlinedButton(
+                onClick = {
+                    autoAdvanceDeck = false
+                    lsVm.gradeCurrent(langTag, 2)
+                },
+                modifier = Modifier.weight(1f),
+            ) {
+                Text(stringResource(R.string.language_study_again))
+            }
+            OutlinedButton(
+                onClick = {
+                    autoAdvanceDeck = false
+                    lsVm.gradeCurrent(langTag, 3)
+                },
+                modifier = Modifier.weight(1f),
+            ) {
+                Text(stringResource(R.string.language_study_hard))
+            }
         }
         Row(Modifier.fillMaxWidth().padding(top = 6.dp, bottom = 16.dp), horizontalArrangement = Arrangement.spacedBy(6.dp)) {
-            Button(onClick = { lsVm.gradeCurrent(langTag, 4) }, modifier = Modifier.weight(1f)) { Text(stringResource(R.string.language_study_good)) }
-            Button(onClick = { lsVm.gradeCurrent(langTag, 5) }, modifier = Modifier.weight(1f)) { Text(stringResource(R.string.language_study_easy)) }
+            Button(
+                onClick = {
+                    autoAdvanceDeck = false
+                    lsVm.gradeCurrent(langTag, 4)
+                },
+                modifier = Modifier.weight(1f),
+            ) {
+                Text(stringResource(R.string.language_study_good))
+            }
+            Button(
+                onClick = {
+                    autoAdvanceDeck = false
+                    lsVm.gradeCurrent(langTag, 5)
+                },
+                modifier = Modifier.weight(1f),
+            ) {
+                Text(stringResource(R.string.language_study_easy))
+            }
         }
     }
 }
 
 @Composable
 private fun LsFlashcardMinimal(
-    display: String,
-    ipa: String?,
-    glossRu: String,
-    exampleL2: String?,
-    exampleRu: String?,
-    onSpeak: () -> Unit,
+    word: LangVocabWordEntity,
+    lemmaLine: String,
+    tts: LangStudyTtsFacade,
+    repeatLoopEnabled: Boolean,
+    pauseMsSnapshot: () -> Long,
+    repeatStillEnabled: () -> Boolean,
+    scope: CoroutineScope,
 ) {
+    val display = lemmaLine
+    val ipa = word.ipa
+    val glossRu = word.glossRu
+    val exampleL2 = word.exampleL2
+    val exampleRu = word.exampleRu
     val showExample = !exampleL2.isNullOrBlank() &&
         !exampleRu.isNullOrBlank() &&
         (exampleL2.trim() != display.trim() || exampleRu.trim() != glossRu.trim())
@@ -263,7 +497,17 @@ private fun LsFlashcardMinimal(
                     modifier = Modifier.weight(1f),
                     lineHeight = MaterialTheme.typography.displaySmall.lineHeight * 1.15f,
                 )
-                IconButton(onClick = onSpeak) {
+                IconButton(
+                    enabled = lemmaLine.isNotBlank(),
+                    onClick = {
+                        lsSpeakWithOptionalRepeat(
+                            scope,
+                            repeatLoopEnabled,
+                            pauseMsSnapshot,
+                            repeatStillEnabled,
+                        ) { cb -> tts.speakStudy(lemmaLine, cb) }
+                    },
+                ) {
                     Icon(Icons.AutoMirrored.Filled.VolumeUp, contentDescription = stringResource(R.string.language_study_speak))
                 }
             }
@@ -283,11 +527,32 @@ private fun LsFlashcardMinimal(
                 )
             }
             Spacer(Modifier.height(12.dp))
-            Text(
-                stringResource(R.string.language_study_gloss_label),
-                style = MaterialTheme.typography.labelLarge,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-            )
+            Row(
+                Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                Text(
+                    stringResource(R.string.language_study_gloss_label),
+                    style = MaterialTheme.typography.labelLarge,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+                IconButton(
+                    enabled = glossRu.isNotBlank(),
+                    onClick = {
+                        lsSpeakWithOptionalRepeat(
+                            scope,
+                            repeatLoopEnabled,
+                            pauseMsSnapshot,
+                            repeatStillEnabled,
+                        ) { cb ->
+                            tts.speakRussian(glossRu, cb)
+                        }
+                    },
+                ) {
+                    Icon(Icons.AutoMirrored.Filled.VolumeUp, contentDescription = stringResource(R.string.language_study_speak_gloss_cd))
+                }
+            }
             Text(
                 text = glossRu,
                 style = MaterialTheme.typography.titleMedium,
@@ -296,22 +561,78 @@ private fun LsFlashcardMinimal(
             )
             if (showExample) {
                 Spacer(Modifier.height(16.dp))
-                Text(
-                    stringResource(R.string.language_study_example_label),
-                    style = MaterialTheme.typography.labelLarge,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                )
-                Text(
-                    text = exampleL2.orEmpty(),
-                    style = MaterialTheme.typography.bodyLarge,
-                    modifier = Modifier.padding(top = 6.dp),
-                )
-                Text(
-                    text = exampleRu.orEmpty(),
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.primary,
-                    modifier = Modifier.padding(top = 4.dp),
-                )
+                Row(
+                    Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.Top,
+                ) {
+                    Text(
+                        stringResource(R.string.language_study_example_label),
+                        style = MaterialTheme.typography.labelLarge,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                }
+                Row(
+                    Modifier
+                        .fillMaxWidth()
+                        .padding(top = 6.dp),
+                    verticalAlignment = Alignment.Top,
+                ) {
+                    Text(
+                        text = exampleL2.orEmpty(),
+                        style = MaterialTheme.typography.bodyLarge,
+                        modifier = Modifier.weight(1f),
+                    )
+                    IconButton(
+                        enabled = exampleL2.isNotBlank(),
+                        onClick = {
+                            lsSpeakWithOptionalRepeat(
+                                scope,
+                                repeatLoopEnabled,
+                                pauseMsSnapshot,
+                                repeatStillEnabled,
+                            ) { cb ->
+                                tts.speakStudy(exampleL2!!.trim(), cb)
+                            }
+                        },
+                    ) {
+                        Icon(
+                            Icons.AutoMirrored.Filled.VolumeUp,
+                            contentDescription = stringResource(R.string.language_study_speak_example_l2_cd),
+                        )
+                    }
+                }
+                Row(
+                    Modifier
+                        .fillMaxWidth()
+                        .padding(top = 4.dp),
+                    verticalAlignment = Alignment.Top,
+                ) {
+                    Text(
+                        text = exampleRu.orEmpty(),
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.primary,
+                        modifier = Modifier.weight(1f),
+                    )
+                    IconButton(
+                        enabled = exampleRu.isNotBlank(),
+                        onClick = {
+                            lsSpeakWithOptionalRepeat(
+                                scope,
+                                repeatLoopEnabled,
+                                pauseMsSnapshot,
+                                repeatStillEnabled,
+                            ) { cb ->
+                                tts.speakRussian(exampleRu!!.trim(), cb)
+                            }
+                        },
+                    ) {
+                        Icon(
+                            Icons.AutoMirrored.Filled.VolumeUp,
+                            contentDescription = stringResource(R.string.language_study_speak_example_ru_cd),
+                        )
+                    }
+                }
             }
         }
     }

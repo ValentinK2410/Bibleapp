@@ -123,6 +123,22 @@ class LanguageStudyViewModel(application: Application) : AndroidViewModel(applic
         _session.value = s.copy(index = s.index + 1)
     }
 
+    /**
+     * Следующая карточка для автопрослушивания (без оценки SRS).
+     * Расширяет [LangStudySessionUi.maxViewIndex], чтобы стрелки «назад» оставались согласованными.
+     */
+    fun sessionAutoplayAdvanceOne() {
+        val s = _session.value
+        val q = s.queue
+        if (q.isEmpty()) return
+        val next = s.index + 1
+        if (next >= q.size) return
+        _session.value = s.copy(
+            index = next,
+            maxViewIndex = maxOf(s.maxViewIndex, next),
+        )
+    }
+
     fun saveNoteForWord(wordKey: String, note: String) {
         viewModelScope.launch(Dispatchers.IO) {
             repo.updateUserNote(wordKey, note)

@@ -100,6 +100,8 @@ private object Keys {
     val QURAN_ARABIC_WORD_BY_WORD_TTS = booleanPreferencesKey("quran_arabic_word_by_word_tts")
     /** Пауза между циклами повтора воспроизведения на карточке аята (мс). */
     val QURAN_AYAH_REPEAT_PAUSE_MS = longPreferencesKey("quran_ayah_repeat_pause_ms")
+    /** Пауза между повторами TTS на карточках интервального повторения языков (мс). */
+    val LANG_STUDY_SRS_REPEAT_PAUSE_MS = longPreferencesKey("lang_study_srs_repeat_pause_ms")
     /** JSON: пользовательские разделы «Детям», порядок хаба, свои картинки и звуки. */
     val KIDS_USER_SECTIONS_JSON = stringPreferencesKey("kids_user_sections_json")
     /** Скорость TTS, обычно 0.5…1.5 (1 = норма). */
@@ -844,6 +846,19 @@ class BiblePreferences(
         appContext.bibleDataStore.edit { it[Keys.QURAN_AYAH_REPEAT_PAUSE_MS] = v }
     }
 
+    /** Пауза между повторами озвучки в сессии интервальных карточек языка. */
+    val langStudySrsRepeatPauseMs: Flow<Long> = appContext.bibleDataStore.data.map { prefs ->
+        (prefs[Keys.LANG_STUDY_SRS_REPEAT_PAUSE_MS] ?: LANG_STUDY_SRS_REPEAT_PAUSE_MS_DEFAULT).coerceIn(
+            LANG_STUDY_SRS_REPEAT_PAUSE_MS_MIN,
+            LANG_STUDY_SRS_REPEAT_PAUSE_MS_MAX,
+        )
+    }
+
+    suspend fun setLangStudySrsRepeatPauseMs(ms: Long) {
+        val v = ms.coerceIn(LANG_STUDY_SRS_REPEAT_PAUSE_MS_MIN, LANG_STUDY_SRS_REPEAT_PAUSE_MS_MAX)
+        appContext.bibleDataStore.edit { it[Keys.LANG_STUDY_SRS_REPEAT_PAUSE_MS] = v }
+    }
+
     suspend fun appendReadingTrace(entry: ReadingTraceEntry) {
         appContext.bibleDataStore.edit { prefs ->
             val cur = ReadingTraceEntry.parseList(prefs[Keys.READING_TRACE_JSON].orEmpty()).toMutableList()
@@ -1188,6 +1203,10 @@ class BiblePreferences(
         const val QURAN_AYAH_REPEAT_PAUSE_MS_DEFAULT = 2000L
         const val QURAN_AYAH_REPEAT_PAUSE_MS_MIN = 500L
         const val QURAN_AYAH_REPEAT_PAUSE_MS_MAX = 12_000L
+
+        const val LANG_STUDY_SRS_REPEAT_PAUSE_MS_DEFAULT = 2000L
+        const val LANG_STUDY_SRS_REPEAT_PAUSE_MS_MIN = 500L
+        const val LANG_STUDY_SRS_REPEAT_PAUSE_MS_MAX = 12_000L
     }
 }
 

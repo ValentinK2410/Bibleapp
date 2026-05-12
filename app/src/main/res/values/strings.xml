@@ -1073,6 +1073,13 @@
     <string name="language_study_pos_fmt">Часть речи: %1$s</string>
     <string name="language_study_morph_label">Морфология (из данных): %1$s</string>
     <string name="language_study_speak">Прослушать</string>
+    <string name="language_study_speak_gloss_cd">Озвучить перевод на русском</string>
+    <string name="language_study_speak_example_l2_cd">Озвучить пример на языке карточки</string>
+    <string name="language_study_speak_example_ru_cd">Озвучить русский перевод примера</string>
+    <string name="language_study_repeat_cd">Повтор: зацикливать текущую озвучку после паузы</string>
+    <string name="language_study_repeat_pause_label">Пауза между повторами: %1$s с</string>
+    <string name="language_study_autoplay">Автонабор</string>
+    <string name="language_study_autoplay_cd">Подряд: слово → перевод → пример (если есть), затем следующая карточка</string>
 
     <string name="travel_title">Мои путешествия</string>
     <string name="travel_menu">Мои путешествия</string>

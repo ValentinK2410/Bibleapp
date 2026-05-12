@@ -1,5 +1,7 @@
 package com.example.bible.ui.languagestudy
 
+import android.os.Handler
+import android.os.Looper
 import android.speech.tts.TextToSpeech
 import android.speech.tts.UtteranceProgressListener
 import android.speech.tts.Voice
@@ -15,13 +17,33 @@ class LangStudyTtsFacade internal constructor(
     private val languageTag: String,
 ) {
     private val ready = AtomicBoolean(false)
+    private val mainHandler = Handler(Looper.getMainLooper())
+    private val utteranceCompleteActions = mutableMapOf<String, () -> Unit>()
 
     init {
-        tts.setOnUtteranceProgressListener(object : UtteranceProgressListener() {
-            override fun onDone(utteranceId: String?) {}
-            override fun onError(utteranceId: String?) {}
-            override fun onStart(utteranceId: String?) {}
-        })
+        tts.setOnUtteranceProgressListener(
+            object : UtteranceProgressListener() {
+                override fun onStart(utteranceId: String?) {}
+
+                override fun onDone(utteranceId: String?) {
+                    fireUtteranceCompletion(utteranceId)
+                }
+
+                override fun onError(utteranceId: String?, errorCode: Int) {
+                    fireUtteranceCompletion(utteranceId)
+                }
+
+                @Deprecated("Deprecated in Java")
+                override fun onError(utteranceId: String?) {
+                    fireUtteranceCompletion(utteranceId)
+                }
+            },
+        )
+    }
+
+    private fun fireUtteranceCompletion(utteranceId: String?) {
+        if (utteranceId == null) return
+        utteranceCompleteActions.remove(utteranceId)?.let { mainHandler.post(it) }
     }
 
     fun onEngineInitialized(status: Int) {
@@ -29,11 +51,15 @@ class LangStudyTtsFacade internal constructor(
             ready.set(false)
             return
         }
+        restoreStudyVoiceAndTune()
+        ready.set(true)
+    }
+
+    private fun restoreStudyVoiceAndTune() {
         if (!pickAndSetNativeVoice()) {
             applyBestLocaleForTag(languageTag)
         }
         applySpeechTuningForStudy(languageTag)
-        ready.set(true)
     }
 
     private fun pickAndSetNativeVoice(): Boolean {
@@ -79,17 +105,91 @@ class LangStudyTtsFacade internal constructor(
         }
     }
 
-    fun speak(text: String): Boolean {
-        if (!ready.get() || text.isBlank()) return false
+    /** Короткая форма без колбэка (язык пакета / изучения). */
+    fun speak(text: String): Boolean = speakStudy(text, null)
+
+    /**
+     * Озвучка на языке изучения (голос родной акцент по [languageTag]).
+     * @param onFullySpoken вызывается после окончания фразы (или ошибке движка для этого utterance).
+     */
+    fun speakStudy(text: String, onFullySpoken: (() -> Unit)? = null): Boolean {
+        if (text.isBlank()) {
+            onFullySpoken?.let { mainHandler.post(it) }
+            return false
+        }
+        if (!ready.get()) {
+            onFullySpoken?.let { mainHandler.post(it) }
+            return false
+        }
+        utteranceCallbacksReset()
+        try {
+            tts.stop()
+        } catch (_: Exception) {
+        }
+        restoreStudyVoiceAndTune()
+        val uid = "ls_${System.nanoTime()}"
+        onFullySpoken?.let { utteranceCompleteActions[uid] = it }
         return try {
-            tts.speak(text, TextToSpeech.QUEUE_FLUSH, null, "ls_${System.nanoTime()}")
+            tts.speak(text, TextToSpeech.QUEUE_FLUSH, null, uid)
             true
         } catch (_: Exception) {
+            utteranceCompleteActions.remove(uid)
+            onFullySpoken?.let { mainHandler.post(it) }
             false
         }
     }
 
+    /** Русский перевод gloss / пример; после фразы возвращаются голос и тюнинг языка изучения. */
+    fun speakRussian(text: String, onFullySpoken: (() -> Unit)? = null): Boolean {
+        if (text.isBlank()) {
+            onFullySpoken?.let { mainHandler.post(it) }
+            return false
+        }
+        if (!ready.get()) {
+            onFullySpoken?.let { mainHandler.post(it) }
+            return false
+        }
+        utteranceCallbacksReset()
+        try {
+            tts.stop()
+        } catch (_: Exception) {
+        }
+        val uid = "ls_ru_${System.nanoTime()}"
+        utteranceCompleteActions[uid] = {
+            restoreStudyVoiceAndTune()
+            onFullySpoken?.invoke()
+        }
+        val ru = Locale.forLanguageTag("ru-RU")
+        var r = tts.setLanguage(ru)
+        if (
+            r == TextToSpeech.LANG_MISSING_DATA ||
+            r == TextToSpeech.LANG_NOT_SUPPORTED
+        ) {
+            r = tts.setLanguage(Locale("ru"))
+        }
+        if (
+            r == TextToSpeech.LANG_MISSING_DATA ||
+            r == TextToSpeech.LANG_NOT_SUPPORTED
+        ) {
+            tts.setLanguage(Locale.US)
+        }
+        return try {
+            tts.speak(text, TextToSpeech.QUEUE_FLUSH, null, uid)
+            true
+        } catch (_: Exception) {
+            utteranceCompleteActions.remove(uid)
+            restoreStudyVoiceAndTune()
+            onFullySpoken?.let { mainHandler.post(it) }
+            false
+        }
+    }
+
+    private fun utteranceCallbacksReset() {
+        utteranceCompleteActions.clear()
+    }
+
     fun shutdown() {
+        utteranceCompleteActions.clear()
         try {
             tts.stop()
             tts.shutdown()
