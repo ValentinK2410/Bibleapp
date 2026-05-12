@@ -1038,7 +1038,7 @@
     <string name="language_study_tab_pack">Загрузка пакета</string>
     <string name="language_study_home_intro">Выберите режим: повтор слов по SM-2, поиск по базе или импорт zip-пакета (pack.json + words.jsonl).</string>
     <string name="language_study_stats_fmt">Слов в базе: %1$d · В очереди на повтор сегодня: %2$d</string>
-    <string name="language_study_hub_session_hint">Показывается подсказка L2 → ответ Ru. Оцените ответ после разворота карточки.</string>
+    <string name="language_study_hub_session_hint">Слово, транскрипция, перевод и короткий пример (для английского в пакете из скрипта). Оценка — по кнопкам внизу.</string>
     <string name="language_study_hub_dict_hint">Быстрый поиск по лемме, отображению и переводу.</string>
     <string name="language_study_hub_pack_hint">Выбор zip с диска, из состава приложения (если вложено) или по HTTPS URL.</string>
     <string name="language_study_refresh_stats">Обновить счётчики</string>
@@ -1047,7 +1047,8 @@
     <string name="language_study_start_session">Начать повторение</string>
     <string name="language_study_session_progress">Карта %1$d из %2$d</string>
     <string name="language_study_show_answer">Показать перевод и пример</string>
-    <string name="language_study_gloss_label">Значение (RU)</string>
+    <string name="language_study_ipa_label">Как звучит</string>
+    <string name="language_study_gloss_label">Перевод</string>
     <string name="language_study_example_label">Пример</string>
     <string name="language_study_mnemonic_label">Мнемоника</string>
     <string name="language_study_user_note_hint">Ваша заметка / свой образ</string>

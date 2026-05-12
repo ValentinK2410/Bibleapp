@@ -1,95 +1,26 @@
 #!/usr/bin/env python3
 """Сборка zip-пакетов словарей для приложения BibleSqlite «Изучение языков».
 
-Требование: pip install -r requirements.txt (wordfreq).
+Требование: pip install -r requirements.txt (wordfreq, eng-to-ipa).
+
+Переводы подтягиваются через MyMemory API (нужен интернет). Без сети используйте готовые dist/*.zip.
 """
 from __future__ import annotations
 
 import json
 import pathlib
-import re
 import zipfile
 
-from wordfreq import top_n_list
+from pack_content_generator import (
+    TARGET,
+    build_english_rows,
+    build_foreign_rows,
+    freq_lemmas,
+    load_en_ru,
+)
 
 ROOT = pathlib.Path(__file__).resolve().parent
 DIST = ROOT / "dist"
-DATA = ROOT / "data"
-
-TARGET = 1000
-
-
-def load_en_ru() -> dict[str, str]:
-    p = DATA / "en_ru_core.json"
-    if not p.is_file():
-        return {}
-    return json.loads(p.read_text(encoding="utf-8"))
-
-
-def freq_lemmas(lang: str) -> list[str]:
-    raw = top_n_list(lang, 25000)
-    out: list[str] = []
-    for w in raw:
-        if not w:
-            continue
-        w = w.strip()
-        if len(w) < 2:
-            continue
-        if lang == "en":
-            if not re.match(r"^[a-z][a-z\-']*$", w, re.I):
-                continue
-        out.append(w)
-        if len(out) >= TARGET + 120:
-            break
-    return out[:TARGET]
-
-
-def pack_rows_english(words: list[str], enru: dict[str, str]) -> list[dict]:
-    rows = []
-    for i, lemma in enumerate(words[:TARGET], start=1):
-        low = lemma.lower()
-        gloss = enru.get(low) or enru.get(lemma)
-        if not gloss:
-            gloss = f"англ. «{lemma}» — уточните значение по контексту (топ-{i})."
-        rows.append(
-            {
-                "id": f"{i:04d}",
-                "lemma": lemma,
-                "display": lemma,
-                "glossRu": gloss,
-                "pos": "",
-                "frequencyRank": i,
-                "mnemonicHint": f"Частотный порядок (EN #{i}); связывайте с примером и образом.",
-                "morphologyNotes": "",
-            },
-        )
-    return rows
-
-
-def pack_rows_foreign(
-    *,
-    lang_app: str,
-    script_label: str,
-    words: list[str],
-) -> list[dict]:
-    rows = []
-    hint_lang = {"irit": "иврите", "greek": "греческом", "arabic": "арабском"}[lang_app]
-    for i, w in enumerate(words[:TARGET], start=1):
-        gloss = (
-            f"Слово на {hint_lang} (форма в учебной базе: «{w}»). №{i} по частоте списков."
-        )
-        row = {
-            "id": f"{i:04d}",
-            "lemma": w,
-            "display": w,
-            "glossRu": gloss,
-            "pos": "",
-            "frequencyRank": i,
-            "mnemonicHint": f"Выучите связь символов {script_label} с звучанием; образ для «{w[:18]}». ",
-            "morphologyNotes": "Корень/паттерн см. языковые справочники; поле можно дополнить вручную.",
-        }
-        rows.append(row)
-    return rows
 
 
 def write_zip(lang_app: str, version: str, rows: list[dict]) -> pathlib.Path:
@@ -106,19 +37,19 @@ def write_zip(lang_app: str, version: str, rows: list[dict]) -> pathlib.Path:
 
 
 def main() -> None:
-    DATA.mkdir(parents=True, exist_ok=True)
     enru = load_en_ru()
     packs = [
-        ("english", pack_rows_english(freq_lemmas("en"), enru)),
-        ("greek", pack_rows_foreign(lang_app="greek", script_label="Ελληνικά", words=freq_lemmas("el"))),
-        ("arabic", pack_rows_foreign(lang_app="arabic", script_label="العربية", words=freq_lemmas("ar"))),
-        ("irit", pack_rows_foreign(lang_app="irit", script_label="עברית", words=freq_lemmas("he"))),
+        ("english", build_english_rows(freq_lemmas("en"), enru)),
+        ("greek", build_foreign_rows(lang_app="greek", words=freq_lemmas("el"), translator_src="el")),
+        ("arabic", build_foreign_rows(lang_app="arabic", words=freq_lemmas("ar"), translator_src="ar")),
+        ("irit", build_foreign_rows(lang_app="irit", words=freq_lemmas("he"), translator_src="iw")),
     ]
     for lang_app, rows in packs:
+        print(f"Pack {lang_app}: {len(rows)} rows", flush=True)
         if len(rows) < TARGET:
             raise SystemExit(f"Недостаточно лемм для {lang_app}: {len(rows)}")
         zp = write_zip(lang_app, "1.0.0", rows)
-        print("OK", zp, "words", len(rows))
+        print("OK", zp, "words", len(rows), flush=True)
 
 
 if __name__ == "__main__":

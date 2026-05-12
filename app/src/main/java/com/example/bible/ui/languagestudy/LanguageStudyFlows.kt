@@ -195,6 +195,8 @@ private fun LS_Session(modifier: Modifier, langTag: String, lsVm: LanguageStudyV
             display = w.display.ifBlank { w.lemma },
             ipa = w.ipa,
             glossRu = w.glossRu,
+            exampleL2 = w.exampleL2,
+            exampleRu = w.exampleRu,
             onSpeak = { tts.speak(w.display.ifBlank { w.lemma }) },
         )
         Spacer(Modifier.weight(1f))
@@ -212,7 +214,17 @@ private fun LS_Session(modifier: Modifier, langTag: String, lsVm: LanguageStudyV
 }
 
 @Composable
-private fun LsFlashcardMinimal(display: String, ipa: String?, glossRu: String, onSpeak: () -> Unit) {
+private fun LsFlashcardMinimal(
+    display: String,
+    ipa: String?,
+    glossRu: String,
+    exampleL2: String?,
+    exampleRu: String?,
+    onSpeak: () -> Unit,
+) {
+    val showExample = !exampleL2.isNullOrBlank() &&
+        !exampleRu.isNullOrBlank() &&
+        (exampleL2.trim() != display.trim() || exampleRu.trim() != glossRu.trim())
     ElevatedCard(Modifier.fillMaxWidth()) {
         Column(Modifier.padding(horizontal = 20.dp, vertical = 28.dp)) {
             Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth()) {
@@ -228,20 +240,51 @@ private fun LsFlashcardMinimal(display: String, ipa: String?, glossRu: String, o
                 }
             }
             ipa?.takeIf { it.isNotBlank() }?.let { ipaLine ->
-                Spacer(Modifier.height(12.dp))
+                Spacer(Modifier.height(10.dp))
+                Text(
+                    stringResource(R.string.language_study_ipa_label),
+                    style = MaterialTheme.typography.labelLarge,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
                 Text(
                     text = ipaLine,
                     style = MaterialTheme.typography.titleLarge,
                     color = MaterialTheme.colorScheme.primary,
                     fontWeight = FontWeight.Medium,
+                    modifier = Modifier.padding(top = 4.dp),
                 )
             }
-            Spacer(Modifier.height(14.dp))
+            Spacer(Modifier.height(12.dp))
+            Text(
+                stringResource(R.string.language_study_gloss_label),
+                style = MaterialTheme.typography.labelLarge,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
             Text(
                 text = glossRu,
                 style = MaterialTheme.typography.titleMedium,
                 color = MaterialTheme.colorScheme.onSurface,
+                modifier = Modifier.padding(top = 4.dp),
             )
+            if (showExample) {
+                Spacer(Modifier.height(16.dp))
+                Text(
+                    stringResource(R.string.language_study_example_label),
+                    style = MaterialTheme.typography.labelLarge,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+                Text(
+                    text = exampleL2.orEmpty(),
+                    style = MaterialTheme.typography.bodyLarge,
+                    modifier = Modifier.padding(top = 6.dp),
+                )
+                Text(
+                    text = exampleRu.orEmpty(),
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.primary,
+                    modifier = Modifier.padding(top = 4.dp),
+                )
+            }
         }
     }
 }
