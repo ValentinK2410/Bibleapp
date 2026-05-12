@@ -6,21 +6,26 @@ import com.example.bible.data.db.LangVocabWordEntity
 import com.example.bible.data.db.StudyDatabase
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import org.json.JSONObject
 import java.io.BufferedInputStream
 import java.io.IOException
 import java.net.HttpURLConnection
 import java.net.URL
+import java.util.zip.ZipInputStream
 
 class LanguageStudyRepository(context: Context) {
     private val app = context.applicationContext
     private val dao get() = StudyDatabase.getInstance(app).studyDao()
     private val importer = LangPackImporter(app)
+    private val bundledPrefs = app.getSharedPreferences("language_study_bundled", Context.MODE_PRIVATE)
 
     companion object {
         private const val DEMO_VERSION = "demo-1"
         private const val DEMO_ASSET_ZIP = "language_packs/bundled/"
         /** Ниже порога считаем, что нужен импорт полного архива из assets (если он есть). */
         private const val FULL_PACK_IMPORT_THRESHOLD = 900
+
+        private fun bundledPackVerKey(langCode: String) = "bundled_pack_ver_$langCode"
     }
 
     private fun bundledZipFileName(langCode: String) = "${langCode}_v1.zip"
@@ -72,21 +77,50 @@ class LanguageStudyRepository(context: Context) {
             false
         }
 
+    private fun readBundledManifestVersion(assetFileName: String): String? =
+        try {
+            app.assets.open(DEMO_ASSET_ZIP + assetFileName).use { raw ->
+                ZipInputStream(BufferedInputStream(raw)).use { zis ->
+                    var entry = zis.nextEntry
+                    while (entry != null) {
+                        val shortName = entry.name.substringAfterLast('/')
+                        if (shortName.equals("pack.json", ignoreCase = true)) {
+                            val json = JSONObject(zis.readBytes().decodeToString())
+                            return json.optString("version").trim().ifBlank { null }
+                        }
+                        entry = zis.nextEntry
+                    }
+                    null
+                }
+            }
+        } catch (_: Exception) {
+            null
+        }
+
     /**
-     * Полный офлайн-пакет из assets заменяет демо, если строк меньше [FULL_PACK_IMPORT_THRESHOLD].
-     * Если полного архива нет — при пустой БД ставится маленькая демо-колода.
+     * Полный офлайн-пакет из assets заменяет демо, если строк меньше [FULL_PACK_IMPORT_THRESHOLD],
+     * либо если в архиве новая [version] в pack.json (обновление переводов без сброса данных вручную).
      */
     fun ensureBundledFullOrDemo(langCode: String) {
         val haveBundled = bundledPackAssetExists(langCode)
-        val count = dao.countLangWords(langCode)
-        when {
-            haveBundled && count < FULL_PACK_IMPORT_THRESHOLD -> {
-                importBundledFullPack(bundledZipFileName(langCode))
-            }
-            !haveBundled && count == 0 -> {
+        if (!haveBundled) {
+            if (dao.countLangWords(langCode) == 0) {
                 val jsonl = LanguageStudyDemoJsonl.buildJsonlForLang(langCode)
                 importer.importFromStrings(langCode, DEMO_VERSION, jsonl)
             }
+            return
+        }
+        val zipName = bundledZipFileName(langCode)
+        val bundledVer = readBundledManifestVersion(zipName) ?: return
+        val count = dao.countLangWords(langCode)
+        val prevVer = bundledPrefs.getString(bundledPackVerKey(langCode), null).orEmpty()
+        val needImport =
+            count < FULL_PACK_IMPORT_THRESHOLD ||
+                prevVer.isBlank() ||
+                prevVer != bundledVer
+        if (!needImport) return
+        importBundledFullPack(zipName).onSuccess {
+            bundledPrefs.edit().putString(bundledPackVerKey(langCode), bundledVer).apply()
         }
     }
 

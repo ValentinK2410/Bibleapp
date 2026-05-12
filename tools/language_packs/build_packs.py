@@ -3,7 +3,8 @@
 
 Требование: pip install -r requirements.txt (wordfreq, eng-to-ipa).
 
-Переводы подтягиваются через MyMemory API (нужен интернет). Без сети используйте готовые dist/*.zip.
+Переводы: **MyMemory** для английского (массово), **deep-translator** (Google) для el/ar/iw (параллельно).
+Без сети используйте готовые dist/*.zip или bundled в приложении.
 """
 from __future__ import annotations
 
@@ -23,7 +24,7 @@ ROOT = pathlib.Path(__file__).resolve().parent
 DIST = ROOT / "dist"
 
 
-def write_zip(lang_app: str, version: str, rows: list[dict]) -> pathlib.Path:
+def write_zip(lang_app: str, version: str = "1.1.0", rows: list[dict]) -> pathlib.Path:
     DIST.mkdir(parents=True, exist_ok=True)
     path = DIST / f"{lang_app}_v1.zip"
     manifest = {"lang": lang_app, "version": version, "schema": 1}
@@ -48,7 +49,7 @@ def main() -> None:
         print(f"Pack {lang_app}: {len(rows)} rows", flush=True)
         if len(rows) < TARGET:
             raise SystemExit(f"Недостаточно лемм для {lang_app}: {len(rows)}")
-        zp = write_zip(lang_app, "1.0.0", rows)
+        zp = write_zip(lang_app, rows=rows)
         print("OK", zp, "words", len(rows), flush=True)
 
 
