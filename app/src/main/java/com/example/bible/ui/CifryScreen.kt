@@ -14,6 +14,7 @@ import androidx.compose.foundation.gestures.detectDragGestures
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.FlowRow
@@ -47,6 +48,8 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.filled.VolumeUp
 import androidx.compose.material.icons.filled.Check
+import androidx.compose.material.icons.filled.ExpandLess
+import androidx.compose.material.icons.filled.ExpandMore
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Stop
 import androidx.compose.material3.Card
@@ -1571,6 +1574,23 @@ private fun CifryMathSection(
     }
 }
 
+private fun cifryMathBoundsSummaryLine(mode: CifryMathMode, capA: Int, capB: Int, bounds: OperandBoundsMode): String =
+    when (bounds) {
+        OperandBoundsMode.Auto -> "Как по сложности (до $capA)."
+        is OperandBoundsMode.Custom -> {
+            fun slot(min: Int, max: Int, pin: Boolean): String =
+                if (pin || min == max) "$min · постоянно" else "$min–$max"
+            val a = slot(bounds.minA, bounds.maxA, bounds.pinFirst)
+            val b = slot(bounds.minB, bounds.maxB, bounds.pinSecond)
+            when (mode) {
+                CifryMathMode.PLUS -> "Слагаемые: $a и $b"
+                CifryMathMode.MINUS -> "Уменьшаемое $a, вычитаемое $b"
+                CifryMathMode.MULT -> "Множители: $a и $b"
+                CifryMathMode.DIV -> "Делимое $a, делитель $b"
+            }
+        }
+    }
+
 private fun cifryMathEditorCaps(mode: CifryMathMode, difficulty: Int): Pair<Int, Int> {
     val diff = difficulty.coerceIn(0, 3)
     val maxFirst = when (mode) {
@@ -1601,26 +1621,40 @@ private fun CifryMathOperandBoundsEditor(
     val operandBounds by mathRepo.operandBoundsFor(mode).collectAsStateWithLifecycle(initialValue = OperandBoundsMode.Auto)
     val useCustom = operandBounds is OperandBoundsMode.Custom
 
+    var panelExpanded by remember(mode) { mutableStateOf(false) }
+
+    val bLowDefault = if (mode == CifryMathMode.DIV) 1f else 0f
+    var draftPinFirst by remember(mode, difficulty, capA, capB) { mutableStateOf(false) }
+    var draftPinSecond by remember(mode, difficulty, capA, capB) { mutableStateOf(false) }
     var draftMinA by remember(mode, difficulty, capA, capB) { mutableFloatStateOf(0f) }
     var draftMaxA by remember(mode, difficulty, capA, capB) { mutableFloatStateOf(capA.toFloat()) }
-    val bLowDefault = if (mode == CifryMathMode.DIV) 1f else 0f
     var draftMinB by remember(mode, difficulty, capA, capB) { mutableFloatStateOf(bLowDefault) }
     var draftMaxB by remember(mode, difficulty, capA, capB) { mutableFloatStateOf(capB.toFloat()) }
+    var draftFixedA by remember(mode, difficulty, capA, capB) { mutableFloatStateOf(0f) }
+    var draftFixedB by remember(mode, difficulty, capA, capB) { mutableFloatStateOf(bLowDefault) }
 
     LaunchedEffect(operandBounds, capA, capB, mode) {
         val obs = operandBounds
         when (obs) {
             OperandBoundsMode.Auto -> {
+                draftPinFirst = false
+                draftPinSecond = false
                 draftMinA = 0f
                 draftMaxA = capA.toFloat()
                 draftMinB = if (mode == CifryMathMode.DIV) 1f else 0f
                 draftMaxB = capB.toFloat()
+                draftFixedA = 0f
+                draftFixedB = if (mode == CifryMathMode.DIV) 1f else 0f
             }
             is OperandBoundsMode.Custom -> {
+                draftPinFirst = obs.pinFirst
+                draftPinSecond = obs.pinSecond
                 draftMinA = obs.minA.toFloat().coerceIn(0f, capA.toFloat())
                 draftMaxA = obs.maxA.toFloat().coerceIn(0f, capA.toFloat())
                 draftMinB = obs.minB.toFloat().coerceIn(bLowDefault, capB.toFloat())
                 draftMaxB = obs.maxB.toFloat().coerceIn(bLowDefault, capB.toFloat())
+                draftFixedA = obs.minA.toFloat().coerceIn(0f, capA.toFloat())
+                draftFixedB = obs.minB.toFloat().coerceIn(bLowDefault, capB.toFloat())
             }
         }
         if (draftMaxA < draftMinA) draftMaxA = draftMinA
@@ -1629,11 +1663,13 @@ private fun CifryMathOperandBoundsEditor(
 
     fun pushBounds() {
         scope.launch {
-            val naLo = min(draftMinA, draftMaxA).roundToInt()
-            val naHi = max(draftMinA, draftMaxA).roundToInt()
-            val nbLo = min(draftMinB, draftMaxB).roundToInt()
-            val nbHi = max(draftMinB, draftMaxB).roundToInt()
-            val c = OperandBoundsMode.Custom(naLo, naHi, nbLo, nbHi).normalized(mode, difficulty)
+            val pinF = draftPinFirst
+            val pinS = draftPinSecond
+            val naLo = if (pinF) draftFixedA.roundToInt() else min(draftMinA, draftMaxA).roundToInt()
+            val naHi = if (pinF) draftFixedA.roundToInt() else max(draftMinA, draftMaxA).roundToInt()
+            val nbLo = if (pinS) draftFixedB.roundToInt() else min(draftMinB, draftMaxB).roundToInt()
+            val nbHi = if (pinS) draftFixedB.roundToInt() else max(draftMinB, draftMaxB).roundToInt()
+            val c = OperandBoundsMode.Custom(naLo, naHi, nbLo, nbHi, pinFirst = pinF, pinSecond = pinS).normalized(mode, difficulty)
             mathRepo.setOperandBounds(mode, c)
         }
     }
@@ -1647,74 +1683,182 @@ private fun CifryMathOperandBoundsEditor(
         ),
     ) {
         Column(Modifier.padding(10.dp)) {
-            Text("Свои числа в примерах", style = MaterialTheme.typography.titleSmall)
-            Text(
-                when (mode) {
-                    CifryMathMode.PLUS -> "Первое и второе слагаемое (каждое до $capA)."
-                    CifryMathMode.MINUS -> "Уменьшаемое до $capA; второе число — вычитаемое (не больше первого)."
-                    CifryMathMode.MULT -> "Первый и второй множители (каждый до $capA)."
-                    CifryMathMode.DIV -> "Первое число — делимое (до $capA), второе — делитель от 1 до $capB; ответ целый."
-                },
-                style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                modifier = Modifier.padding(top = 2.dp, bottom = 6.dp),
-            )
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                Text("Задать диапазоны", style = MaterialTheme.typography.labelLarge, modifier = Modifier.weight(1f))
-                Switch(
-                    checked = useCustom,
-                    onCheckedChange = { on ->
-                        scope.launch {
-                            if (on) {
-                                val c = OperandBoundsMode.Custom(
-                                    0,
-                                    capA,
-                                    if (mode == CifryMathMode.DIV) 1 else 0,
-                                    capB,
-                                ).normalized(mode, difficulty)
-                                mathRepo.setOperandBounds(mode, c)
-                            } else {
-                                mathRepo.setOperandBounds(mode, OperandBoundsMode.Auto)
-                            }
-                        }
-                    },
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clickable { panelExpanded = !panelExpanded },
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                Column(Modifier.weight(1f)) {
+                    Text("Свои числа в примерах", style = MaterialTheme.typography.titleSmall)
+                    Text(
+                        cifryMathBoundsSummaryLine(mode, capA, capB, operandBounds),
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        modifier = Modifier.padding(top = 2.dp),
+                    )
+                }
+                Icon(
+                    imageVector = if (panelExpanded) Icons.Filled.ExpandLess else Icons.Filled.ExpandMore,
+                    contentDescription = if (panelExpanded) "Свернуть" else "Развернуть",
+                    tint = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
             }
-            if (useCustom) {
-                val bLow = if (mode == CifryMathMode.DIV) 1f else 0f
-                Text(
-                    "Первое число: от ${draftMinA.roundToInt()} до ${draftMaxA.roundToInt()}",
-                    style = MaterialTheme.typography.labelSmall,
-                    modifier = Modifier.padding(top = 4.dp),
-                )
-                Slider(
-                    value = draftMinA,
-                    onValueChange = { v -> draftMinA = v.coerceIn(0f, capA.toFloat()) },
-                    onValueChangeFinished = { pushBounds() },
-                    valueRange = 0f..capA.toFloat(),
-                )
-                Slider(
-                    value = draftMaxA,
-                    onValueChange = { v -> draftMaxA = v.coerceIn(0f, capA.toFloat()) },
-                    onValueChangeFinished = { pushBounds() },
-                    valueRange = 0f..capA.toFloat(),
-                )
-                Text(
-                    "Второе число: от ${draftMinB.roundToInt()} до ${draftMaxB.roundToInt()}",
-                    style = MaterialTheme.typography.labelSmall,
-                )
-                Slider(
-                    value = draftMinB,
-                    onValueChange = { v -> draftMinB = v.coerceIn(bLow, capB.toFloat()) },
-                    onValueChangeFinished = { pushBounds() },
-                    valueRange = bLow..capB.toFloat(),
-                )
-                Slider(
-                    value = draftMaxB,
-                    onValueChange = { v -> draftMaxB = v.coerceIn(bLow, capB.toFloat()) },
-                    onValueChangeFinished = { pushBounds() },
-                    valueRange = bLow..capB.toFloat(),
-                )
+
+            AnimatedVisibility(visible = panelExpanded) {
+                Column {
+                    Text(
+                        when (mode) {
+                            CifryMathMode.PLUS ->
+                                "Можно задать диапазон или закрепить одно число — второе будет меняться в своём диапазоне."
+                            CifryMathMode.MINUS ->
+                                "Вычитаемое не больше уменьшаемого. Закрепите одно из чисел для тренировки столбца."
+                            CifryMathMode.MULT ->
+                                "Закрепите множитель (табличный столбец или строку): одно число постоянно, второе из диапазона."
+                            CifryMathMode.DIV ->
+                                "Целое деление. Если делимое закреплено, делитель подбирается так, чтобы делилось без остатка."
+                        },
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        modifier = Modifier.padding(top = 8.dp, bottom = 6.dp),
+                    )
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Text("Задать диапазоны", style = MaterialTheme.typography.labelLarge, modifier = Modifier.weight(1f))
+                        Switch(
+                            checked = useCustom,
+                            onCheckedChange = { on ->
+                                if (on) panelExpanded = true
+                                scope.launch {
+                                    if (on) {
+                                        val c = OperandBoundsMode.Custom(
+                                            minA = 0,
+                                            maxA = capA,
+                                            minB = if (mode == CifryMathMode.DIV) 1 else 0,
+                                            maxB = capB,
+                                            pinFirst = false,
+                                            pinSecond = false,
+                                        ).normalized(mode, difficulty)
+                                        mathRepo.setOperandBounds(mode, c)
+                                    } else {
+                                        mathRepo.setOperandBounds(mode, OperandBoundsMode.Auto)
+                                    }
+                                }
+                            },
+                        )
+                    }
+                    if (useCustom) {
+                        val bLow = if (mode == CifryMathMode.DIV) 1f else 0f
+                        Row(
+                            modifier = Modifier.padding(top = 8.dp),
+                            verticalAlignment = Alignment.CenterVertically,
+                        ) {
+                            Text(
+                                "Первое число не менять",
+                                style = MaterialTheme.typography.labelMedium,
+                                modifier = Modifier.weight(1f),
+                            )
+                            Switch(
+                                checked = draftPinFirst,
+                                onCheckedChange = { v ->
+                                    draftPinFirst = v
+                                    if (v) {
+                                        draftFixedA = ((draftMinA + draftMaxA) / 2f).coerceIn(0f, capA.toFloat())
+                                    } else {
+                                        draftMinA = draftFixedA
+                                        draftMaxA = draftFixedA
+                                    }
+                                    pushBounds()
+                                },
+                            )
+                        }
+                        if (draftPinFirst) {
+                            Text(
+                                "Значение: ${draftFixedA.roundToInt()}",
+                                style = MaterialTheme.typography.labelSmall,
+                                modifier = Modifier.padding(top = 4.dp),
+                            )
+                            Slider(
+                                value = draftFixedA,
+                                onValueChange = { v -> draftFixedA = v.coerceIn(0f, capA.toFloat()) },
+                                onValueChangeFinished = { pushBounds() },
+                                valueRange = 0f..capA.toFloat(),
+                            )
+                        } else {
+                            Text(
+                                "Первое число: от ${draftMinA.roundToInt()} до ${draftMaxA.roundToInt()}",
+                                style = MaterialTheme.typography.labelSmall,
+                                modifier = Modifier.padding(top = 4.dp),
+                            )
+                            Slider(
+                                value = draftMinA,
+                                onValueChange = { v -> draftMinA = v.coerceIn(0f, capA.toFloat()) },
+                                onValueChangeFinished = { pushBounds() },
+                                valueRange = 0f..capA.toFloat(),
+                            )
+                            Slider(
+                                value = draftMaxA,
+                                onValueChange = { v -> draftMaxA = v.coerceIn(0f, capA.toFloat()) },
+                                onValueChangeFinished = { pushBounds() },
+                                valueRange = 0f..capA.toFloat(),
+                            )
+                        }
+
+                        Row(
+                            modifier = Modifier.padding(top = 8.dp),
+                            verticalAlignment = Alignment.CenterVertically,
+                        ) {
+                            Text(
+                                "Второе число не менять",
+                                style = MaterialTheme.typography.labelMedium,
+                                modifier = Modifier.weight(1f),
+                            )
+                            Switch(
+                                checked = draftPinSecond,
+                                onCheckedChange = { v ->
+                                    draftPinSecond = v
+                                    if (v) {
+                                        draftFixedB = ((draftMinB + draftMaxB) / 2f).coerceIn(bLow, capB.toFloat())
+                                    } else {
+                                        draftMinB = draftFixedB
+                                        draftMaxB = draftFixedB
+                                    }
+                                    pushBounds()
+                                },
+                            )
+                        }
+                        if (draftPinSecond) {
+                            Text(
+                                "Значение: ${draftFixedB.roundToInt()}",
+                                style = MaterialTheme.typography.labelSmall,
+                                modifier = Modifier.padding(top = 4.dp),
+                            )
+                            Slider(
+                                value = draftFixedB,
+                                onValueChange = { v -> draftFixedB = v.coerceIn(bLow, capB.toFloat()) },
+                                onValueChangeFinished = { pushBounds() },
+                                valueRange = bLow..capB.toFloat(),
+                            )
+                        } else {
+                            Text(
+                                "Второе число: от ${draftMinB.roundToInt()} до ${draftMaxB.roundToInt()}",
+                                style = MaterialTheme.typography.labelSmall,
+                                modifier = Modifier.padding(top = 4.dp),
+                            )
+                            Slider(
+                                value = draftMinB,
+                                onValueChange = { v -> draftMinB = v.coerceIn(bLow, capB.toFloat()) },
+                                onValueChangeFinished = { pushBounds() },
+                                valueRange = bLow..capB.toFloat(),
+                            )
+                            Slider(
+                                value = draftMaxB,
+                                onValueChange = { v -> draftMaxB = v.coerceIn(bLow, capB.toFloat()) },
+                                onValueChangeFinished = { pushBounds() },
+                                valueRange = bLow..capB.toFloat(),
+                            )
+                        }
+                    }
+                }
             }
         }
     }
@@ -1763,6 +1907,78 @@ private fun MathVisualGroups(
             ) {
                 repeat(secondCount.coerceAtMost(30)) {
                     Text(theme.emoji, fontSize = 24.sp)
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun MultTableCell(text: String, emphasize: Boolean) {
+    Box(
+        modifier = Modifier
+            .width(34.dp)
+            .padding(vertical = 4.dp, horizontal = 2.dp),
+        contentAlignment = Alignment.Center,
+    ) {
+        Text(
+            text,
+            style = MaterialTheme.typography.labelSmall,
+            fontWeight = if (emphasize) FontWeight.Bold else FontWeight.Normal,
+            fontSize = 11.sp,
+            maxLines = 1,
+        )
+    }
+}
+
+@Composable
+private fun CifryMultiplicationTableSection() {
+    var open by remember { mutableStateOf(false) }
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.35f),
+        ),
+    ) {
+        Column(Modifier.padding(10.dp)) {
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clickable { open = !open },
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                Column(Modifier.weight(1f)) {
+                    Text("Таблица умножения", style = MaterialTheme.typography.titleSmall)
+                    Text(
+                        "Столбцы и строки от 1 до 10.",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        modifier = Modifier.padding(top = 2.dp),
+                    )
+                }
+                Icon(
+                    imageVector = if (open) Icons.Filled.ExpandLess else Icons.Filled.ExpandMore,
+                    contentDescription = if (open) "Свернуть таблицу" else "Развернуть таблицу",
+                    tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+            }
+            AnimatedVisibility(visible = open) {
+                Column(
+                    Modifier
+                        .padding(top = 10.dp)
+                        .horizontalScroll(rememberScrollState()),
+                ) {
+                    Row {
+                        MultTableCell("", emphasize = true)
+                        for (j in 1..10) MultTableCell("$j", emphasize = true)
+                    }
+                    for (i in 1..10) {
+                        Row {
+                            MultTableCell("$i", emphasize = true)
+                            for (j in 1..10) MultTableCell("${i * j}", emphasize = false)
+                        }
+                    }
                 }
             }
         }
@@ -1899,6 +2115,10 @@ private fun CifryMathPracticePage(
                     }
                 }
             }
+        }
+        if (mode == CifryMathMode.MULT) {
+            Spacer(Modifier.height(16.dp))
+            CifryMultiplicationTableSection()
         }
     }
 }

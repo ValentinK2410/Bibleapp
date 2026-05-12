@@ -78,6 +78,10 @@ sealed interface OperandBoundsMode {
         val maxA: Int,
         val minB: Int,
         val maxB: Int,
+        /** Первое число всегда одно и то же ([minA]==[maxA] после нормализации). */
+        val pinFirst: Boolean = false,
+        /** Второе число всегда одно и то же ([minB]==[maxB]). */
+        val pinSecond: Boolean = false,
     ) : OperandBoundsMode {
         fun normalized(mode: CifryMathMode, difficulty: Int): Custom {
             val d = difficulty.coerceIn(0, 3)
@@ -105,7 +109,13 @@ sealed interface OperandBoundsMode {
                     if (naMin > naMax) {
                         naMax = naMin
                     }
-                    Custom(naMin, naMax, nbMin, nbMax)
+                    var faMin = naMin
+                    var faMax = naMax
+                    var fbMin = nbMin
+                    var fbMax = nbMax
+                    if (pinFirst) faMax = faMin
+                    if (pinSecond) fbMax = fbMin
+                    Custom(faMin, faMax, fbMin, fbMax, pinFirst = pinFirst, pinSecond = pinSecond)
                 }
             }
         }
@@ -118,7 +128,13 @@ sealed interface OperandBoundsMode {
             if (minDivisorOne && nbMin < 1) nbMin = 1.coerceAtMost(nbMax.coerceAtLeast(1))
             if (nbMin > nbMax) nbMax = nbMin
             if (naMin > naMax) naMax = naMin
-            return Custom(naMin, naMax, nbMin, nbMax)
+            if (pinFirst) {
+                naMax = naMin
+            }
+            if (pinSecond) {
+                nbMax = nbMin
+            }
+            return Custom(naMin, naMax, nbMin, nbMax, pinFirst = pinFirst, pinSecond = pinSecond)
         }
     }
 }
@@ -126,20 +142,25 @@ sealed interface OperandBoundsMode {
 fun OperandBoundsMode.encodeToPrefs(): String =
     when (this) {
         OperandBoundsMode.Auto -> "auto"
-        is OperandBoundsMode.Custom -> "$minA,$maxA,$minB,$maxB"
+        is OperandBoundsMode.Custom ->
+            "$minA,$maxA,$minB,$maxB,${if (pinFirst) 1 else 0},${if (pinSecond) 1 else 0}"
     }
 
 fun decodeOperandBoundsMode(raw: String?): OperandBoundsMode {
     val s = raw?.trim().orEmpty()
     if (s.isEmpty() || s == "auto") return OperandBoundsMode.Auto
     val p = s.split(',')
-    if (p.size != 4) return OperandBoundsMode.Auto
+    if (p.size < 4) return OperandBoundsMode.Auto
     return try {
+        val pinFirst = p.getOrNull(4)?.trim()?.toIntOrNull()?.let { it != 0 } ?: false
+        val pinSecond = p.getOrNull(5)?.trim()?.toIntOrNull()?.let { it != 0 } ?: false
         OperandBoundsMode.Custom(
             minA = p[0].toInt(),
             maxA = p[1].toInt(),
             minB = p[2].toInt(),
             maxB = p[3].toInt(),
+            pinFirst = pinFirst,
+            pinSecond = pinSecond,
         )
     } catch (_: Exception) {
         OperandBoundsMode.Auto
@@ -298,10 +319,47 @@ private fun nextCifryMathProblemCustom(
                 val rbMin = bounds.minB
                 val rbMax = bounds.maxB
                 if (rbMin > rbMax || rbMin < 1) return null
-                val divisor = random.nextInt(rbMin, rbMax + 1)
-                if (divisor == 0) return@repeat
                 val raMin = bounds.minA
                 val raMax = bounds.maxA
+                val dividendFixed = bounds.pinFirst || raMin == raMax
+                val divisorFixed = bounds.pinSecond || rbMin == rbMax
+
+                if (dividendFixed && divisorFixed) {
+                    val a = raMin
+                    val divisor = rbMin
+                    if (divisor >= 1 && a % divisor == 0) {
+                        val q = a / divisor
+                        return CifryMathProblem(mode, a, divisor, q, null)
+                    }
+                    return null
+                }
+                if (dividendFixed) {
+                    val a = raMin
+                    repeat(120) {
+                        val divisor = random.nextInt(rbMin, rbMax + 1)
+                        if (divisor >= 1 && a % divisor == 0) {
+                            val q = a / divisor
+                            return CifryMathProblem(mode, a, divisor, q, null)
+                        }
+                    }
+                    return null
+                }
+                if (divisorFixed) {
+                    val divisor = rbMin
+                    val maxQ = (raMax / divisor).coerceAtLeast(0)
+                    val minQ = if (raMin <= 0) 0 else (raMin + divisor - 1) / divisor
+                    if (minQ <= maxQ) {
+                        val q = random.nextInt(minQ, maxQ + 1)
+                        val a = q * divisor
+                        if (a in raMin..raMax) {
+                            return CifryMathProblem(mode, a, divisor, q, null)
+                        }
+                    }
+                    return null
+                }
+
+                val divisor = random.nextInt(rbMin, rbMax + 1)
+                if (divisor == 0) return@repeat
                 val maxQ = (raMax / divisor).coerceAtLeast(0)
                 val minQ = if (raMin <= 0) 0 else (raMin + divisor - 1) / divisor
                 if (minQ <= maxQ) {
