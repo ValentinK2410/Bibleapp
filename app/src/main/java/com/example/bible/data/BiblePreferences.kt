@@ -98,6 +98,8 @@ private object Keys {
     val INTERLINEAR_HEBREW_SANDBOX_TEXT_SCALE = floatPreferencesKey("interlinear_hebrew_sandbox_text_scale")
     /** Озвучка арабского аята по словам (TTS), а не целой строкой. */
     val QURAN_ARABIC_WORD_BY_WORD_TTS = booleanPreferencesKey("quran_arabic_word_by_word_tts")
+    /** Пауза между циклами повтора воспроизведения на карточке аята (мс). */
+    val QURAN_AYAH_REPEAT_PAUSE_MS = longPreferencesKey("quran_ayah_repeat_pause_ms")
     /** JSON: пользовательские разделы «Детям», порядок хаба, свои картинки и звуки. */
     val KIDS_USER_SECTIONS_JSON = stringPreferencesKey("kids_user_sections_json")
     /** Скорость TTS, обычно 0.5…1.5 (1 = норма). */
@@ -829,6 +831,19 @@ class BiblePreferences(
         appContext.bibleDataStore.edit { it[Keys.QURAN_ARABIC_WORD_BY_WORD_TTS] = enabled }
     }
 
+    /** Пауза между повторами при включённом режиме «Повтор» на карточке аята. */
+    val quranAyahRepeatPauseMs: Flow<Long> = appContext.bibleDataStore.data.map { prefs ->
+        (prefs[Keys.QURAN_AYAH_REPEAT_PAUSE_MS] ?: QURAN_AYAH_REPEAT_PAUSE_MS_DEFAULT).coerceIn(
+            QURAN_AYAH_REPEAT_PAUSE_MS_MIN,
+            QURAN_AYAH_REPEAT_PAUSE_MS_MAX,
+        )
+    }
+
+    suspend fun setQuranAyahRepeatPauseMs(ms: Long) {
+        val v = ms.coerceIn(QURAN_AYAH_REPEAT_PAUSE_MS_MIN, QURAN_AYAH_REPEAT_PAUSE_MS_MAX)
+        appContext.bibleDataStore.edit { it[Keys.QURAN_AYAH_REPEAT_PAUSE_MS] = v }
+    }
+
     suspend fun appendReadingTrace(entry: ReadingTraceEntry) {
         appContext.bibleDataStore.edit { prefs ->
             val cur = ReadingTraceEntry.parseList(prefs[Keys.READING_TRACE_JSON].orEmpty()).toMutableList()
@@ -1169,6 +1184,10 @@ class BiblePreferences(
         const val QURAN_READER_TEXT_SCALE_DEFAULT = 1f
         const val QURAN_READER_TEXT_SCALE_MIN = 0.75f
         const val QURAN_READER_TEXT_SCALE_MAX = 1.75f
+
+        const val QURAN_AYAH_REPEAT_PAUSE_MS_DEFAULT = 2000L
+        const val QURAN_AYAH_REPEAT_PAUSE_MS_MIN = 500L
+        const val QURAN_AYAH_REPEAT_PAUSE_MS_MAX = 12_000L
     }
 }
 

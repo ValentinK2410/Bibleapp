@@ -1,6 +1,9 @@
 package com.example.bible.ui
 
+import android.content.Context
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
@@ -29,6 +32,7 @@ import androidx.compose.material.icons.filled.ExpandLess
 import androidx.compose.material.icons.filled.ExpandMore
 import androidx.compose.material.icons.filled.Headphones
 import androidx.compose.material.icons.filled.MoreVert
+import androidx.compose.material.icons.filled.Repeat
 import androidx.compose.material.icons.filled.School
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.Stop
@@ -47,6 +51,7 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Slider
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
@@ -62,9 +67,11 @@ import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -119,6 +126,28 @@ sealed class QuranBulkAyahDownloadUi {
 /** Слова аята по пробелам (исходная огласовка сохраняется для отображения и передаётся в TTS). */
 private fun quranArabicWordTokens(arabic: String): List<String> =
     arabic.trim().split(Regex("\\s+")).filter { it.isNotEmpty() }
+
+/** MP3 аята: локальный файл или подбор URL (suspend). `false` — нет источника воспроизведения. */
+private suspend fun startQuranAyahPlaybackOrToast(
+    context: Context,
+    ayahPlayer: QuranAyahStreamingPlayer,
+    surahNumber: Int,
+    verseNumber: Int,
+    onError: () -> Unit,
+): Boolean {
+    val appCtx = context.applicationContext
+    val local = QuranAyahAudioStorage.localFileIfReady(appCtx, surahNumber, verseNumber)
+    if (local != null) {
+        ayahPlayer.playLocalFile(surahNumber, verseNumber, local.absolutePath, onError)
+        return true
+    }
+    val urls = QuranAyahAudioApi.fetchAlafasyAudioUrls(surahNumber, verseNumber)
+    if (urls.isNotEmpty()) {
+        ayahPlayer.playStreamUrls(urls, surahNumber, verseNumber, onError)
+        return true
+    }
+    return false
+}
 
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
@@ -668,6 +697,7 @@ fun QuranSurahReaderScreen(
         QuranSurahBody(
             content = content,
             surahNumber = content.summary.number,
+            preferences = preferences,
             tts = tts,
             ayahPlayer = ayahPlayer,
             readerTextScale = quranTextScale,
@@ -755,6 +785,7 @@ fun QuranSurahReaderScreen(
 private fun QuranSurahBody(
     content: QuranSurahContent,
     surahNumber: Int,
+    preferences: BiblePreferences,
     tts: InterlinearTts,
     ayahPlayer: QuranAyahStreamingPlayer,
     readerTextScale: Float,
@@ -794,6 +825,7 @@ private fun QuranSurahBody(
             QuranVerseCard(
                 surahNumber = surahNumber,
                 verse = verse,
+                preferences = preferences,
                 tts = tts,
                 ayahPlayer = ayahPlayer,
                 readerTextScale = readerTextScale,
@@ -810,6 +842,7 @@ private const val QURAN_IBN_KATHIR_DISPLAY_MAX = 14_000
 private fun QuranVerseCard(
     surahNumber: Int,
     verse: QuranVerse,
+    preferences: BiblePreferences,
     tts: InterlinearTts,
     ayahPlayer: QuranAyahStreamingPlayer,
     readerTextScale: Float,
@@ -872,6 +905,29 @@ private fun QuranVerseCard(
     }
     val activeAyahKey by ayahPlayer.activeAyahKey.collectAsStateWithLifecycle()
     val isThisAyahMp3Playing = activeAyahKey == surahNumber to verse.number
+    var repeatLoopEnabled by remember { mutableStateOf(false) }
+    val repeatPauseMs by preferences.quranAyahRepeatPauseMs.collectAsStateWithLifecycle(
+        initialValue = BiblePreferences.QURAN_AYAH_REPEAT_PAUSE_MS_DEFAULT,
+    )
+    val repeatLoopRef = rememberUpdatedState(repeatLoopEnabled)
+    val repeatPauseRef = rememberUpdatedState(repeatPauseMs)
+    var pauseSliderMs by remember { mutableLongStateOf(repeatPauseMs) }
+    LaunchedEffect(repeatPauseMs) {
+        pauseSliderMs = repeatPauseMs
+    }
+    LaunchedEffect(surahNumber, verse.number, repeatLoopEnabled) {
+        if (!repeatLoopEnabled) return@LaunchedEffect
+        ayahPlayer.ayahPlaybackCompleted.collect { (s, a) ->
+            if (s != surahNumber || a != verse.number) return@collect
+            delay(repeatPauseRef.value)
+            if (!repeatLoopRef.value) return@collect
+            if (startQuranAyahPlaybackOrToast(context, ayahPlayer, surahNumber, verse.number, audioErrorToast)) {
+                // started
+            } else {
+                audioErrorToast()
+            }
+        }
+    }
     Card(
         modifier = Modifier.fillMaxWidth(),
         elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
@@ -899,30 +955,15 @@ private fun QuranVerseCard(
                             }
                             scope.launch {
                                 audioBusy = true
-                                val appCtx = context.applicationContext
-                                val local = QuranAyahAudioStorage.localFileIfReady(appCtx, surahNumber, verse.number)
-                                if (local != null) {
-                                    audioBusy = false
-                                    ayahPlayer.playLocalFile(
-                                        surahNumber,
-                                        verse.number,
-                                        local.absolutePath,
-                                        audioErrorToast,
-                                    )
-                                } else {
-                                    val urls = QuranAyahAudioApi.fetchAlafasyAudioUrls(surahNumber, verse.number)
-                                    audioBusy = false
-                                    if (urls.isNotEmpty()) {
-                                        ayahPlayer.playStreamUrls(
-                                            urls,
-                                            surahNumber,
-                                            verse.number,
-                                            audioErrorToast,
-                                        )
-                                    } else {
-                                        audioErrorToast()
-                                    }
-                                }
+                                val ok = startQuranAyahPlaybackOrToast(
+                                    context,
+                                    ayahPlayer,
+                                    surahNumber,
+                                    verse.number,
+                                    audioErrorToast,
+                                )
+                                audioBusy = false
+                                if (!ok) audioErrorToast()
                             }
                         },
                         enabled = (!audioBusy && !downloadBusy) || isThisAyahMp3Playing,
@@ -1003,11 +1044,32 @@ private fun QuranVerseCard(
                     }
                     IconButton(
                         onClick = {
-                            if (arabicWordByWordTts) {
-                                tts.speakQuranVerseArabicWordByWord(verse.arabic)
-                            } else {
-                                tts.speakQuranVerseArabic(verse.arabic)
+                            if (!repeatLoopEnabled) {
+                                if (arabicWordByWordTts) {
+                                    tts.speakQuranVerseArabicWordByWord(verse.arabic)
+                                } else {
+                                    tts.speakQuranVerseArabic(verse.arabic)
+                                }
+                                return@IconButton
                             }
+                            fun scheduleNext() {
+                                if (arabicWordByWordTts) {
+                                    tts.speakQuranVerseArabicWordByWord(verse.arabic) {
+                                        scope.launch {
+                                            delay(repeatPauseRef.value)
+                                            if (repeatLoopRef.value) scheduleNext()
+                                        }
+                                    }
+                                } else {
+                                    tts.speakQuranVerseArabic(verse.arabic) {
+                                        scope.launch {
+                                            delay(repeatPauseRef.value)
+                                            if (repeatLoopRef.value) scheduleNext()
+                                        }
+                                    }
+                                }
+                            }
+                            scheduleNext()
                         },
                         enabled = verse.arabic.isNotBlank(),
                     ) {
@@ -1024,7 +1086,21 @@ private fun QuranVerseCard(
                         )
                     }
                     IconButton(
-                        onClick = { tts.speakRussian(verse.translationRu) },
+                        onClick = {
+                            if (!repeatLoopEnabled) {
+                                tts.speakRussian(verse.translationRu)
+                                return@IconButton
+                            }
+                            fun scheduleNext() {
+                                tts.speakRussian(verse.translationRu) {
+                                    scope.launch {
+                                        delay(repeatPauseRef.value)
+                                        if (repeatLoopRef.value) scheduleNext()
+                                    }
+                                }
+                            }
+                            scheduleNext()
+                        },
                         enabled = verse.translationRu.isNotBlank(),
                     ) {
                         Icon(
@@ -1033,6 +1109,65 @@ private fun QuranVerseCard(
                             tint = MaterialTheme.colorScheme.secondary,
                         )
                     }
+                    Box(
+                        modifier = Modifier.then(
+                            if (repeatLoopEnabled) {
+                                Modifier.border(
+                                    width = 2.dp,
+                                    color = MaterialTheme.colorScheme.primary,
+                                    shape = CircleShape,
+                                )
+                            } else {
+                                Modifier
+                            },
+                        ),
+                    ) {
+                        IconButton(
+                            onClick = { repeatLoopEnabled = !repeatLoopEnabled },
+                        ) {
+                            Icon(
+                                Icons.Filled.Repeat,
+                                contentDescription = stringResource(R.string.quran_ayah_repeat_cd),
+                                tint = if (repeatLoopEnabled) {
+                                    MaterialTheme.colorScheme.primary
+                                } else {
+                                    MaterialTheme.colorScheme.onSurfaceVariant
+                                },
+                            )
+                        }
+                    }
+                }
+            }
+            AnimatedVisibility(visible = repeatLoopEnabled) {
+                val pauseMin = BiblePreferences.QURAN_AYAH_REPEAT_PAUSE_MS_MIN.toFloat()
+                val pauseMax = BiblePreferences.QURAN_AYAH_REPEAT_PAUSE_MS_MAX.toFloat()
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(top = 4.dp),
+                ) {
+                    Text(
+                        stringResource(
+                            R.string.quran_ayah_repeat_pause_label,
+                            String.format(Locale.getDefault(), "%.1f", pauseSliderMs / 1000f),
+                        ),
+                        style = MaterialTheme.typography.labelSmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                    Slider(
+                        value = pauseSliderMs.toFloat().coerceIn(pauseMin, pauseMax),
+                        onValueChange = { v ->
+                            pauseSliderMs = v.toLong().coerceIn(
+                                BiblePreferences.QURAN_AYAH_REPEAT_PAUSE_MS_MIN,
+                                BiblePreferences.QURAN_AYAH_REPEAT_PAUSE_MS_MAX,
+                            )
+                        },
+                        onValueChangeFinished = {
+                            val v = pauseSliderMs
+                            scope.launch { preferences.setQuranAyahRepeatPauseMs(v) }
+                        },
+                        valueRange = pauseMin..pauseMax,
+                    )
                 }
             }
             Row(

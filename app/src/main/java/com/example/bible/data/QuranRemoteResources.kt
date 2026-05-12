@@ -8,8 +8,11 @@ import android.os.Handler
 import android.os.Looper
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
 import org.json.JSONObject
 import java.net.HttpURLConnection
@@ -164,6 +167,10 @@ class QuranAyahStreamingPlayer(context: Context) {
     /** Какой аят сейчас проигрывается MP3 (сура, аят); null — нет воспроизведения. */
     val activeAyahKey: StateFlow<Pair<Int, Int>?> = _activeAyahKey.asStateFlow()
 
+    private val _ayahPlaybackCompleted = MutableSharedFlow<Pair<Int, Int>>(extraBufferCapacity = 1)
+    /** Когда поток или файл MP3 доиграли до конца успешно (сура к аяту); не при [stop]. */
+    val ayahPlaybackCompleted: SharedFlow<Pair<Int, Int>> = _ayahPlaybackCompleted.asSharedFlow()
+
     /** Заголовки для CDN: без User-Agent часть устройств получает пустой ответ / сбой MediaPlayer. */
     private val streamHeaders: Map<String, String> = mapOf(
         "User-Agent" to "Mozilla/5.0 (Linux; Android 14; Mobile) BibleApp QuranStream/1.0",
@@ -261,7 +268,9 @@ class QuranAyahStreamingPlayer(context: Context) {
             mp.setOnCompletionListener {
                 mainHandler.removeCallbacks(timeoutRunnable)
                 prepareTimeoutRunnable = null
+                val key = surah to ayah
                 releaseInternal()
+                _ayahPlaybackCompleted.tryEmit(key)
             }
             mp.setOnErrorListener { _, _, _ ->
                 if (terminal.compareAndSet(false, true)) {
@@ -338,7 +347,9 @@ class QuranAyahStreamingPlayer(context: Context) {
         mp.setOnCompletionListener {
             mainHandler.removeCallbacks(timeoutRunnable)
             prepareTimeoutRunnable = null
+            val key = surah to ayah
             releaseInternal()
+            _ayahPlaybackCompleted.tryEmit(key)
         }
         mp.setOnErrorListener { _, _, _ ->
             if (terminal.compareAndSet(false, true)) {

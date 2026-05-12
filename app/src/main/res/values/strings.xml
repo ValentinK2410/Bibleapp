@@ -887,6 +887,8 @@
     <string name="quran_ayah_download_fail">Не удалось скачать аудио. Проверьте интернет.</string>
     <string name="quran_ayah_audio_saved_cd">Аудио этого аята уже сохранено на устройстве</string>
     <string name="quran_ayah_audio_error">Не удалось воспроизвести аудио. Проверьте интернет или скачайте файл заранее.</string>
+    <string name="quran_ayah_repeat_cd">Повтор: цикличное воспроизведение после нажатия на наушники, арабский или русский TTS</string>
+    <string name="quran_ayah_repeat_pause_label">Пауза между повторами: %1$s с</string>
     <string name="quran_reader_overflow_cd">Дополнительно: шрифт, аудио, песочница</string>
     <string name="quran_font_increase">+ Увеличить шрифт</string>
     <string name="quran_font_decrease">− Уменьшить шрифт</string>

@@ -50,8 +50,27 @@ class InterlinearTts(context: Context) {
     private val _sequenceHighlight = MutableStateFlow<InterlinearWordSequenceHighlight?>(null)
     val sequenceHighlight: StateFlow<InterlinearWordSequenceHighlight?> = _sequenceHighlight.asStateFlow()
 
+    /** Колбэк после последнего слова [speakQuranVerseArabicWordByWord] (в т.ч. при обрыве последовательности). */
+    private var onArabicWordSequenceFullySpoken: (() -> Unit)? = null
+
+    /** Разовые колбэки по [utteranceId] (русский справочный текст, арабский аят целиком). */
+    private val utteranceCompleteActions = mutableMapOf<String, () -> Unit>()
+
     private fun clearSequenceHighlight() {
         _sequenceHighlight.value = null
+    }
+
+    private fun runUtteranceCompletion(utteranceId: String?) {
+        if (utteranceId == null) return
+        utteranceCompleteActions.remove(utteranceId)?.let { mainHandler.post(it) }
+    }
+
+    private fun finalizeArabicWordSequence(fireCallback: Boolean) {
+        val cb = onArabicWordSequenceFullySpoken
+        onArabicWordSequenceFullySpoken = null
+        if (fireCallback && cb != null) {
+            mainHandler.post(cb)
+        }
     }
 
     init {
@@ -87,15 +106,18 @@ class InterlinearTts(context: Context) {
                             }
 
                             override fun onDone(utteranceId: String?) {
+                                runUtteranceCompletion(utteranceId)
                                 advanceQueuedUtterance(utteranceId)
                             }
 
                             override fun onError(utteranceId: String?, errorCode: Int) {
+                                runUtteranceCompletion(utteranceId)
                                 advanceQueuedUtterance(utteranceId)
                             }
 
                             @Deprecated("Deprecated in Java")
                             override fun onError(utteranceId: String?) {
+                                runUtteranceCompletion(utteranceId)
                                 advanceQueuedUtterance(utteranceId)
                             }
                         },
@@ -146,6 +168,8 @@ class InterlinearTts(context: Context) {
         arabicWordSequence = null
         arabicLetterSequence = null
         hebrewLetterSequence = null
+        onArabicWordSequenceFullySpoken = null
+        utteranceCompleteActions.clear()
         clearSequenceHighlight()
     }
 
@@ -205,6 +229,8 @@ class InterlinearTts(context: Context) {
         arabicWordSequence = null
         arabicLetterSequence = null
         hebrewLetterSequence = null
+        onArabicWordSequenceFullySpoken = null
+        utteranceCompleteActions.clear()
         clearSequenceHighlight()
         tts?.stop()
         tts?.shutdown()
@@ -257,7 +283,7 @@ class InterlinearTts(context: Context) {
     }
 
     /** Озвучка справочного текста по-русски (алфавит, числа). */
-    fun speakRussian(text: String) {
+    fun speakRussian(text: String, onFullySpoken: (() -> Unit)? = null) {
         if (text.isBlank() || !ready) return
         val engine = tts ?: return
         stopSequence()
@@ -267,11 +293,13 @@ class InterlinearTts(context: Context) {
         if (r == TextToSpeech.LANG_MISSING_DATA || r == TextToSpeech.LANG_NOT_SUPPORTED) {
             engine.setLanguage(Locale.US)
         }
+        val uid = "ref_${System.nanoTime()}"
+        onFullySpoken?.let { utteranceCompleteActions[uid] = it }
         engine.speak(
             text,
             TextToSpeech.QUEUE_FLUSH,
             null,
-            "ref_${System.nanoTime()}",
+            uid,
         )
     }
 
@@ -410,7 +438,7 @@ class InterlinearTts(context: Context) {
         return false
     }
 
-    fun speakArabic(text: String) {
+    fun speakArabic(text: String, onFullySpoken: (() -> Unit)? = null) {
         val prepared = prepareArabicForTts(text)
         if (prepared.isBlank() || !ready) return
         val engine = tts ?: return
@@ -422,34 +450,41 @@ class InterlinearTts(context: Context) {
             )
             return
         }
+        val uid = "ar_${System.nanoTime()}"
+        onFullySpoken?.let { utteranceCompleteActions[uid] = it }
         engine.speak(
             prepared,
             TextToSpeech.QUEUE_FLUSH,
             null,
-            "ar_${System.nanoTime()}",
+            uid,
         )
     }
 
     /** Арабский текст аята Корана: убрать служебные символы, затем [speakArabic]. */
-    fun speakQuranVerseArabic(arabic: String) {
-        speakArabic(arabic)
+    fun speakQuranVerseArabic(arabic: String, onFullySpoken: (() -> Unit)? = null) {
+        speakArabic(arabic, onFullySpoken)
     }
 
     /**
      * Озвучка аята по отдельным словам (разбивка по пробелам после [sanitizeQuranArabicForTts]).
      * Требует установленного арабского голоса TTS (как у [speakArabic]).
      */
-    fun speakQuranVerseArabicWordByWord(arabic: String) {
+    fun speakQuranVerseArabicWordByWord(arabic: String, onFullySpoken: (() -> Unit)? = null) {
         if (!ready) return
         val sanitized = prepareArabicForTts(arabic)
         val words = sanitized.split(Regex("\\s+")).map { it.trim() }.filter { it.isNotEmpty() }
-        if (words.isEmpty()) return
         val engine = tts ?: return
         engine.stop()
         sequenceWords = null
         sequenceBookId = null
         arabicLetterSequence = null
         hebrewLetterSequence = null
+        utteranceCompleteActions.clear()
+        onArabicWordSequenceFullySpoken = onFullySpoken
+        if (words.isEmpty()) {
+            finalizeArabicWordSequence(fireCallback = onFullySpoken != null)
+            return
+        }
         arabicWordSequence = words
         speakArabicWordIndex(0)
     }
@@ -521,11 +556,13 @@ class InterlinearTts(context: Context) {
         val list = arabicWordSequence ?: return
         if (index >= list.size) {
             arabicWordSequence = null
+            finalizeArabicWordSequence(fireCallback = true)
             return
         }
         val engine = tts ?: return
         if (!setArabicLocale(engine)) {
             arabicWordSequence = null
+            finalizeArabicWordSequence(fireCallback = true)
             speakRussian(
                 "Арабский голос не установлен. В настройках телефона откройте синтез речи и скачайте данные для арабского языка — тогда озвучка будет работать без интернета.",
             )
