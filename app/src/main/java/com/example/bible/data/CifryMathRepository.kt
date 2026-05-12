@@ -8,6 +8,7 @@ import androidx.datastore.preferences.core.intPreferencesKey
 import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.datastore.preferences.preferencesDataStore
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.map
 
 private val Context.cifryMathDataStore: DataStore<Preferences> by preferencesDataStore(name = "cifry_math")
@@ -15,6 +16,10 @@ private val Context.cifryMathDataStore: DataStore<Preferences> by preferencesDat
 private object CifryMathKeys {
     val DIFFICULTY = intPreferencesKey("difficulty_level")
     val HISTORY = stringPreferencesKey("solved_history_v1")
+    val OPERANDS_PLUS = stringPreferencesKey("operands_plus_v1")
+    val OPERANDS_MINUS = stringPreferencesKey("operands_minus_v1")
+    val OPERANDS_MULT = stringPreferencesKey("operands_mult_v1")
+    val OPERANDS_DIV = stringPreferencesKey("operands_div_v1")
 }
 
 private const val HISTORY_SEP = "\u001f"
@@ -89,4 +94,27 @@ class CifryMathRepository(private val context: Context) {
             prefs[CifryMathKeys.HISTORY] = lines.joinToString("\n")
         }
     }
+
+    /** Диапазоны первого и второго числа для режима (+ − × ÷), с учётом текущей сложности. */
+    fun operandBoundsFor(mode: CifryMathMode): Flow<OperandBoundsMode> =
+        combine(difficulty, context.cifryMathDataStore.data) { diff, prefs ->
+            when (val raw = decodeOperandBoundsMode(prefs[operandsKey(mode)])) {
+                OperandBoundsMode.Auto -> OperandBoundsMode.Auto
+                is OperandBoundsMode.Custom -> raw.normalized(mode, diff)
+            }
+        }
+
+    suspend fun setOperandBounds(mode: CifryMathMode, bounds: OperandBoundsMode) {
+        context.cifryMathDataStore.edit { prefs ->
+            prefs[operandsKey(mode)] = bounds.encodeToPrefs()
+        }
+    }
+
+    private fun operandsKey(mode: CifryMathMode): Preferences.Key<String> =
+        when (mode) {
+            CifryMathMode.PLUS -> CifryMathKeys.OPERANDS_PLUS
+            CifryMathMode.MINUS -> CifryMathKeys.OPERANDS_MINUS
+            CifryMathMode.MULT -> CifryMathKeys.OPERANDS_MULT
+            CifryMathMode.DIV -> CifryMathKeys.OPERANDS_DIV
+        }
 }

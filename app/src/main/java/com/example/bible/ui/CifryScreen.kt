@@ -61,6 +61,8 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedCard
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.ScrollableTabRow
+import androidx.compose.material3.Slider
+import androidx.compose.material3.Switch
 import androidx.compose.material3.Tab
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -69,6 +71,7 @@ import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.State
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateMapOf
@@ -117,7 +120,11 @@ import com.example.bible.data.CifryRepository
 import com.example.bible.data.CifryShapes
 import com.example.bible.data.DigitInfo
 import com.example.bible.data.MathVisualTheme
+import com.example.bible.data.OperandBoundsMode
 import com.example.bible.data.buildMathChoices
+import com.example.bible.data.cifryMathDivisorCap
+import com.example.bible.data.cifryMathMaxOperand
+import com.example.bible.data.cifryMathMultOperandCap
 import com.example.bible.data.digitsChainToInt
 import com.example.bible.data.nextCifryMathProblem
 import kotlinx.coroutines.CoroutineScope
@@ -131,6 +138,7 @@ import kotlin.math.PI
 import kotlin.math.cos
 import kotlin.math.hypot
 import kotlin.math.min
+import kotlin.math.max
 import kotlin.math.roundToInt
 import kotlin.math.sin
 import kotlin.random.Random
@@ -1477,51 +1485,236 @@ private fun CifryMathSection(
                 .fillMaxWidth(),
         ) { page ->
             when (page) {
-                0 -> CifryMathPracticePage(
-                    mode = CifryMathMode.PLUS,
-                    difficulty = difficulty,
-                    mathPagerState = mathSectionPager,
-                    mathPagerPageIndex = page,
-                    speak = speak,
-                    speakWhenDone = speakWhenDone,
-                    progressRepo = progressRepo,
-                    mathRepo = mathRepo,
-                    scope = scope,
-                )
-                1 -> CifryMathPracticePage(
-                    mode = CifryMathMode.MINUS,
-                    difficulty = difficulty,
-                    mathPagerState = mathSectionPager,
-                    mathPagerPageIndex = page,
-                    speak = speak,
-                    speakWhenDone = speakWhenDone,
-                    progressRepo = progressRepo,
-                    mathRepo = mathRepo,
-                    scope = scope,
-                )
-                2 -> CifryMathPracticePage(
-                    mode = CifryMathMode.MULT,
-                    difficulty = difficulty,
-                    mathPagerState = mathSectionPager,
-                    mathPagerPageIndex = page,
-                    speak = speak,
-                    speakWhenDone = speakWhenDone,
-                    progressRepo = progressRepo,
-                    mathRepo = mathRepo,
-                    scope = scope,
-                )
-                3 -> CifryMathPracticePage(
-                    mode = CifryMathMode.DIV,
-                    difficulty = difficulty,
-                    mathPagerState = mathSectionPager,
-                    mathPagerPageIndex = page,
-                    speak = speak,
-                    speakWhenDone = speakWhenDone,
-                    progressRepo = progressRepo,
-                    mathRepo = mathRepo,
-                    scope = scope,
-                )
+                0 -> Column(Modifier.fillMaxSize()) {
+                    CifryMathOperandBoundsEditor(
+                        mode = CifryMathMode.PLUS,
+                        difficulty = difficulty,
+                        mathRepo = mathRepo,
+                        scope = subScope,
+                    )
+                    CifryMathPracticePage(
+                        mode = CifryMathMode.PLUS,
+                        difficulty = difficulty,
+                        mathPagerState = mathSectionPager,
+                        mathPagerPageIndex = page,
+                        speak = speak,
+                        speakWhenDone = speakWhenDone,
+                        progressRepo = progressRepo,
+                        mathRepo = mathRepo,
+                        scope = scope,
+                        modifier = Modifier.weight(1f).fillMaxWidth(),
+                    )
+                }
+                1 -> Column(Modifier.fillMaxSize()) {
+                    CifryMathOperandBoundsEditor(
+                        mode = CifryMathMode.MINUS,
+                        difficulty = difficulty,
+                        mathRepo = mathRepo,
+                        scope = subScope,
+                    )
+                    CifryMathPracticePage(
+                        mode = CifryMathMode.MINUS,
+                        difficulty = difficulty,
+                        mathPagerState = mathSectionPager,
+                        mathPagerPageIndex = page,
+                        speak = speak,
+                        speakWhenDone = speakWhenDone,
+                        progressRepo = progressRepo,
+                        mathRepo = mathRepo,
+                        scope = scope,
+                        modifier = Modifier.weight(1f).fillMaxWidth(),
+                    )
+                }
+                2 -> Column(Modifier.fillMaxSize()) {
+                    CifryMathOperandBoundsEditor(
+                        mode = CifryMathMode.MULT,
+                        difficulty = difficulty,
+                        mathRepo = mathRepo,
+                        scope = subScope,
+                    )
+                    CifryMathPracticePage(
+                        mode = CifryMathMode.MULT,
+                        difficulty = difficulty,
+                        mathPagerState = mathSectionPager,
+                        mathPagerPageIndex = page,
+                        speak = speak,
+                        speakWhenDone = speakWhenDone,
+                        progressRepo = progressRepo,
+                        mathRepo = mathRepo,
+                        scope = scope,
+                        modifier = Modifier.weight(1f).fillMaxWidth(),
+                    )
+                }
+                3 -> Column(Modifier.fillMaxSize()) {
+                    CifryMathOperandBoundsEditor(
+                        mode = CifryMathMode.DIV,
+                        difficulty = difficulty,
+                        mathRepo = mathRepo,
+                        scope = subScope,
+                    )
+                    CifryMathPracticePage(
+                        mode = CifryMathMode.DIV,
+                        difficulty = difficulty,
+                        mathPagerState = mathSectionPager,
+                        mathPagerPageIndex = page,
+                        speak = speak,
+                        speakWhenDone = speakWhenDone,
+                        progressRepo = progressRepo,
+                        mathRepo = mathRepo,
+                        scope = scope,
+                        modifier = Modifier.weight(1f).fillMaxWidth(),
+                    )
+                }
                 else -> CifryMathAchievementsTab(history = history)
+            }
+        }
+    }
+}
+
+private fun cifryMathEditorCaps(mode: CifryMathMode, difficulty: Int): Pair<Int, Int> {
+    val diff = difficulty.coerceIn(0, 3)
+    val maxFirst = when (mode) {
+        CifryMathMode.PLUS,
+        CifryMathMode.MINUS,
+        -> cifryMathMaxOperand(diff)
+        CifryMathMode.MULT -> cifryMathMultOperandCap(diff)
+        CifryMathMode.DIV -> cifryMathMaxOperand(diff)
+    }
+    val maxSecond = when (mode) {
+        CifryMathMode.PLUS,
+        CifryMathMode.MINUS,
+        -> cifryMathMaxOperand(diff)
+        CifryMathMode.MULT -> cifryMathMultOperandCap(diff)
+        CifryMathMode.DIV -> minOf(cifryMathDivisorCap(diff), cifryMathMaxOperand(diff)).coerceAtLeast(2)
+    }
+    return maxFirst to maxSecond
+}
+
+@Composable
+private fun CifryMathOperandBoundsEditor(
+    mode: CifryMathMode,
+    difficulty: Int,
+    mathRepo: CifryMathRepository,
+    scope: CoroutineScope,
+) {
+    val (capA, capB) = remember(mode, difficulty) { cifryMathEditorCaps(mode, difficulty) }
+    val operandBounds by mathRepo.operandBoundsFor(mode).collectAsStateWithLifecycle(initialValue = OperandBoundsMode.Auto)
+    val useCustom = operandBounds is OperandBoundsMode.Custom
+
+    var draftMinA by remember(mode, difficulty, capA, capB) { mutableFloatStateOf(0f) }
+    var draftMaxA by remember(mode, difficulty, capA, capB) { mutableFloatStateOf(capA.toFloat()) }
+    val bLowDefault = if (mode == CifryMathMode.DIV) 1f else 0f
+    var draftMinB by remember(mode, difficulty, capA, capB) { mutableFloatStateOf(bLowDefault) }
+    var draftMaxB by remember(mode, difficulty, capA, capB) { mutableFloatStateOf(capB.toFloat()) }
+
+    LaunchedEffect(operandBounds, capA, capB, mode) {
+        val obs = operandBounds
+        when (obs) {
+            OperandBoundsMode.Auto -> {
+                draftMinA = 0f
+                draftMaxA = capA.toFloat()
+                draftMinB = if (mode == CifryMathMode.DIV) 1f else 0f
+                draftMaxB = capB.toFloat()
+            }
+            is OperandBoundsMode.Custom -> {
+                draftMinA = obs.minA.toFloat().coerceIn(0f, capA.toFloat())
+                draftMaxA = obs.maxA.toFloat().coerceIn(0f, capA.toFloat())
+                draftMinB = obs.minB.toFloat().coerceIn(bLowDefault, capB.toFloat())
+                draftMaxB = obs.maxB.toFloat().coerceIn(bLowDefault, capB.toFloat())
+            }
+        }
+        if (draftMaxA < draftMinA) draftMaxA = draftMinA
+        if (draftMaxB < draftMinB) draftMaxB = draftMinB
+    }
+
+    fun pushBounds() {
+        scope.launch {
+            val naLo = min(draftMinA, draftMaxA).roundToInt()
+            val naHi = max(draftMinA, draftMaxA).roundToInt()
+            val nbLo = min(draftMinB, draftMaxB).roundToInt()
+            val nbHi = max(draftMinB, draftMaxB).roundToInt()
+            val c = OperandBoundsMode.Custom(naLo, naHi, nbLo, nbHi).normalized(mode, difficulty)
+            mathRepo.setOperandBounds(mode, c)
+        }
+    }
+
+    Card(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 8.dp, vertical = 4.dp),
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.35f),
+        ),
+    ) {
+        Column(Modifier.padding(10.dp)) {
+            Text("Свои числа в примерах", style = MaterialTheme.typography.titleSmall)
+            Text(
+                when (mode) {
+                    CifryMathMode.PLUS -> "Первое и второе слагаемое (каждое до $capA)."
+                    CifryMathMode.MINUS -> "Уменьшаемое до $capA; второе число — вычитаемое (не больше первого)."
+                    CifryMathMode.MULT -> "Первый и второй множители (каждый до $capA)."
+                    CifryMathMode.DIV -> "Первое число — делимое (до $capA), второе — делитель от 1 до $capB; ответ целый."
+                },
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                modifier = Modifier.padding(top = 2.dp, bottom = 6.dp),
+            )
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Text("Задать диапазоны", style = MaterialTheme.typography.labelLarge, modifier = Modifier.weight(1f))
+                Switch(
+                    checked = useCustom,
+                    onCheckedChange = { on ->
+                        scope.launch {
+                            if (on) {
+                                val c = OperandBoundsMode.Custom(
+                                    0,
+                                    capA,
+                                    if (mode == CifryMathMode.DIV) 1 else 0,
+                                    capB,
+                                ).normalized(mode, difficulty)
+                                mathRepo.setOperandBounds(mode, c)
+                            } else {
+                                mathRepo.setOperandBounds(mode, OperandBoundsMode.Auto)
+                            }
+                        }
+                    },
+                )
+            }
+            if (useCustom) {
+                val bLow = if (mode == CifryMathMode.DIV) 1f else 0f
+                Text(
+                    "Первое число: от ${draftMinA.roundToInt()} до ${draftMaxA.roundToInt()}",
+                    style = MaterialTheme.typography.labelSmall,
+                    modifier = Modifier.padding(top = 4.dp),
+                )
+                Slider(
+                    value = draftMinA,
+                    onValueChange = { v -> draftMinA = v.coerceIn(0f, capA.toFloat()) },
+                    onValueChangeFinished = { pushBounds() },
+                    valueRange = 0f..capA.toFloat(),
+                )
+                Slider(
+                    value = draftMaxA,
+                    onValueChange = { v -> draftMaxA = v.coerceIn(0f, capA.toFloat()) },
+                    onValueChangeFinished = { pushBounds() },
+                    valueRange = 0f..capA.toFloat(),
+                )
+                Text(
+                    "Второе число: от ${draftMinB.roundToInt()} до ${draftMaxB.roundToInt()}",
+                    style = MaterialTheme.typography.labelSmall,
+                )
+                Slider(
+                    value = draftMinB,
+                    onValueChange = { v -> draftMinB = v.coerceIn(bLow, capB.toFloat()) },
+                    onValueChangeFinished = { pushBounds() },
+                    valueRange = bLow..capB.toFloat(),
+                )
+                Slider(
+                    value = draftMaxB,
+                    onValueChange = { v -> draftMaxB = v.coerceIn(bLow, capB.toFloat()) },
+                    onValueChangeFinished = { pushBounds() },
+                    valueRange = bLow..capB.toFloat(),
+                )
             }
         }
     }
@@ -1587,25 +1780,34 @@ private fun CifryMathPracticePage(
     progressRepo: AzbukaProgressRepository,
     mathRepo: CifryMathRepository,
     scope: CoroutineScope,
+    modifier: Modifier = Modifier.fillMaxSize(),
 ) {
     val random = remember { Random(System.currentTimeMillis()) }
     var genKey by remember { mutableIntStateOf(0) }
-    val problem = remember(genKey, mode, difficulty) {
-        nextCifryMathProblem(mode, difficulty, Random(System.nanoTime()))
+    val operandBounds by mathRepo.operandBoundsFor(mode).collectAsStateWithLifecycle(initialValue = OperandBoundsMode.Auto)
+    val boundsRef = rememberUpdatedState(operandBounds)
+    var boundsSnapshot by remember(mode, mathPagerPageIndex) {
+        mutableStateOf(operandBounds)
+    }
+    LaunchedEffect(genKey, difficulty) {
+        boundsSnapshot = boundsRef.value
+    }
+    val problem = remember(genKey, mode, difficulty, boundsSnapshot) {
+        nextCifryMathProblem(mode, difficulty, Random(System.nanoTime()), boundsSnapshot)
     }
     val choices = remember(problem) { buildMathChoices(problem, Random(System.nanoTime())) }
     var feedback by remember { mutableStateOf<Int?>(null) }
 
     // Соседние страницы HorizontalPager могут оставаться в композиции — озвучиваем только выбранную вкладку.
-    LaunchedEffect(problem, mathPagerState.currentPage, mathPagerPageIndex) {
+    LaunchedEffect(genKey, difficulty, mathPagerState.currentPage, mathPagerPageIndex) {
         if (mathPagerState.currentPage != mathPagerPageIndex) return@LaunchedEffect
         feedback = null
         speak(problem.promptRu())
     }
 
     Column(
-        modifier = Modifier
-            .fillMaxSize()
+        modifier
+            .fillMaxWidth()
             .verticalScroll(rememberScrollState())
             .padding(horizontal = 12.dp, vertical = 8.dp),
     ) {

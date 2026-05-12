@@ -42,6 +42,110 @@ enum class CifryMathMode {
     DIV,
 }
 
+/** Верхняя граница слагаемых и т.п. по уровню сложности (как раньше без своих диапазонов). */
+fun cifryMathMaxOperand(difficulty: Int): Int =
+    when (difficulty.coerceIn(0, 3)) {
+        0 -> 10
+        1 -> 20
+        2 -> 50
+        else -> 99
+    }
+
+/** Верхняя граница множителей для умножения. */
+fun cifryMathMultOperandCap(difficulty: Int): Int =
+    when (difficulty.coerceIn(0, 3)) {
+        0 -> 10
+        1 -> 15
+        2 -> 25
+        else -> 50
+    }
+
+/** Верхняя граница делителя (не ниже 2 для генерации). */
+fun cifryMathDivisorCap(difficulty: Int): Int =
+    when (difficulty.coerceIn(0, 3)) {
+        0 -> 10
+        1 -> 15
+        2 -> 25
+        else -> 30
+    }.coerceAtLeast(2)
+
+/** Диапазоны первого и второго числа в примере; [Auto] — как при обычной сложности. */
+sealed interface OperandBoundsMode {
+    data object Auto : OperandBoundsMode
+
+    data class Custom(
+        val minA: Int,
+        val maxA: Int,
+        val minB: Int,
+        val maxB: Int,
+    ) : OperandBoundsMode {
+        fun normalized(mode: CifryMathMode, difficulty: Int): Custom {
+            val d = difficulty.coerceIn(0, 3)
+            return when (mode) {
+                CifryMathMode.PLUS,
+                CifryMathMode.MINUS,
+                -> {
+                    val cap = cifryMathMaxOperand(d)
+                    clampBoth(cap, cap, minDivisorOne = false)
+                }
+                CifryMathMode.MULT -> {
+                    val cap = cifryMathMultOperandCap(d)
+                    clampBoth(cap, cap, minDivisorOne = false)
+                }
+                CifryMathMode.DIV -> {
+                    val capA = cifryMathMaxOperand(d)
+                    val capB = minOf(cifryMathDivisorCap(d), capA).coerceAtLeast(2)
+                    var nbMin = minB.coerceIn(1, capB)
+                    var nbMax = maxB.coerceIn(1, capB).coerceAtLeast(nbMin)
+                    var naMin = minA.coerceIn(0, capA)
+                    var naMax = maxA.coerceIn(0, capA).coerceAtLeast(naMin)
+                    if (nbMin > nbMax) {
+                        nbMax = nbMin
+                    }
+                    if (naMin > naMax) {
+                        naMax = naMin
+                    }
+                    Custom(naMin, naMax, nbMin, nbMax)
+                }
+            }
+        }
+
+        private fun clampBoth(capA: Int, capB: Int, minDivisorOne: Boolean): Custom {
+            var naMin = minA.coerceIn(0, capA)
+            var naMax = maxA.coerceIn(0, capA).coerceAtLeast(naMin)
+            var nbMin = minB.coerceIn(0, capB)
+            var nbMax = maxB.coerceIn(0, capB).coerceAtLeast(nbMin)
+            if (minDivisorOne && nbMin < 1) nbMin = 1.coerceAtMost(nbMax.coerceAtLeast(1))
+            if (nbMin > nbMax) nbMax = nbMin
+            if (naMin > naMax) naMax = naMin
+            return Custom(naMin, naMax, nbMin, nbMax)
+        }
+    }
+}
+
+fun OperandBoundsMode.encodeToPrefs(): String =
+    when (this) {
+        OperandBoundsMode.Auto -> "auto"
+        is OperandBoundsMode.Custom -> "$minA,$maxA,$minB,$maxB"
+    }
+
+fun decodeOperandBoundsMode(raw: String?): OperandBoundsMode {
+    val s = raw?.trim().orEmpty()
+    if (s.isEmpty() || s == "auto") return OperandBoundsMode.Auto
+    val p = s.split(',')
+    if (p.size != 4) return OperandBoundsMode.Auto
+    return try {
+        OperandBoundsMode.Custom(
+            minA = p[0].toInt(),
+            maxA = p[1].toInt(),
+            minB = p[2].toInt(),
+            maxB = p[3].toInt(),
+        )
+    } catch (_: Exception) {
+        OperandBoundsMode.Auto
+    }
+}
+
 /**
  * Тема «картинок» для сложения/вычитания (эмодзи как наглядные объекты).
  */
@@ -107,17 +211,29 @@ data class CifryMathProblem(
 
 /**
  * [difficulty]: 0 — до ~10, 1 — до ~20, 2 — до ~50, 3 — до ~99.
+ * [operandBounds]: свои минимумы/максимумы для первого и второго числа (пересекаются с потолком сложности).
  */
-fun nextCifryMathProblem(mode: CifryMathMode, difficulty: Int, random: Random): CifryMathProblem {
+fun nextCifryMathProblem(
+    mode: CifryMathMode,
+    difficulty: Int,
+    random: Random,
+    operandBounds: OperandBoundsMode = OperandBoundsMode.Auto,
+): CifryMathProblem {
     val d = difficulty.coerceIn(0, 3)
-    val maxOperand = when (d) {
-        0 -> 10
-        1 -> 20
-        2 -> 50
-        else -> 99
-    }
+    val maxOperand = cifryMathMaxOperand(d)
     fun maybeVisual(a: Int, b: Int): MathVisualTheme? =
         if (a <= 10 && b <= 10) MathVisualThemes.all.random(random) else null
+
+    val boundsNorm: OperandBoundsMode.Custom? =
+        when (operandBounds) {
+            OperandBoundsMode.Auto -> null
+            is OperandBoundsMode.Custom ->
+                operandBounds.normalized(mode, d)
+        }
+
+    if (boundsNorm != null) {
+        nextCifryMathProblemCustom(mode, d, maxOperand, boundsNorm, random, ::maybeVisual)?.let { return it }
+    }
 
     return when (mode) {
         CifryMathMode.PLUS -> {
@@ -131,30 +247,74 @@ fun nextCifryMathProblem(mode: CifryMathMode, difficulty: Int, random: Random): 
             CifryMathProblem(mode, a, b, a - b, maybeVisual(a, b))
         }
         CifryMathMode.MULT -> {
-            val cap = when (d) {
-                0 -> 10
-                1 -> 15
-                2 -> 25
-                else -> 50
-            }
+            val cap = cifryMathMultOperandCap(d)
             val a = random.nextInt(0, cap + 1)
             val b = random.nextInt(0, cap + 1)
             CifryMathProblem(mode, a, b, a * b, null)
         }
         CifryMathMode.DIV -> {
-            val bMax = when (d) {
-                0 -> 10
-                1 -> 15
-                2 -> 25
-                else -> 30
-            }.coerceAtLeast(2)
-            val b = random.nextInt(1, minOf(bMax, maxOperand).coerceAtLeast(2))
+            val bMax = minOf(cifryMathDivisorCap(d), maxOperand).coerceAtLeast(2)
+            val b = random.nextInt(1, bMax + 1)
             val maxQ = (maxOperand / b).coerceAtLeast(0)
             val quotient = random.nextInt(0, maxQ + 1)
             val a = quotient * b
             CifryMathProblem(mode, a, b, quotient, null)
         }
     }
+}
+
+private fun nextCifryMathProblemCustom(
+    mode: CifryMathMode,
+    difficulty: Int,
+    maxOperand: Int,
+    bounds: OperandBoundsMode.Custom,
+    random: Random,
+    maybeVisual: (Int, Int) -> MathVisualTheme?,
+): CifryMathProblem? {
+    repeat(140) {
+        when (mode) {
+            CifryMathMode.PLUS -> {
+                val a = random.nextInt(bounds.minA, bounds.maxA + 1)
+                val x = random.nextInt(bounds.minB, bounds.maxB + 1)
+                if (a <= maxOperand && x <= maxOperand) {
+                    return CifryMathProblem(mode, a, x, a + x, maybeVisual(a, x))
+                }
+            }
+            CifryMathMode.MINUS -> {
+                val a = random.nextInt(bounds.minA, bounds.maxA + 1)
+                val subMin = bounds.minB.coerceAtMost(a)
+                val subMax = bounds.maxB.coerceAtMost(a).coerceAtLeast(subMin)
+                if (subMin <= subMax) {
+                    val x = random.nextInt(subMin, subMax + 1)
+                    return CifryMathProblem(mode, a, x, a - x, maybeVisual(a, x))
+                }
+            }
+            CifryMathMode.MULT -> {
+                val a = random.nextInt(bounds.minA, bounds.maxA + 1)
+                val x = random.nextInt(bounds.minB, bounds.maxB + 1)
+                return CifryMathProblem(mode, a, x, a * x, null)
+            }
+            CifryMathMode.DIV -> {
+                val rbMin = bounds.minB
+                val rbMax = bounds.maxB
+                if (rbMin > rbMax || rbMin < 1) return null
+                val divisor = random.nextInt(rbMin, rbMax + 1)
+                if (divisor == 0) return@repeat
+                val raMin = bounds.minA
+                val raMax = bounds.maxA
+                val maxQ = (raMax / divisor).coerceAtLeast(0)
+                val minQ = if (raMin <= 0) 0 else (raMin + divisor - 1) / divisor
+                if (minQ <= maxQ) {
+                    val q = random.nextInt(minQ, maxQ + 1)
+                    val a = q * divisor
+                    if (a in raMin..raMax) {
+                        return CifryMathProblem(mode, a, divisor, q, null)
+                    }
+                }
+            }
+        }
+    }
+    return null
 }
 
 fun buildMathChoices(problem: CifryMathProblem, random: Random): List<Int> {
