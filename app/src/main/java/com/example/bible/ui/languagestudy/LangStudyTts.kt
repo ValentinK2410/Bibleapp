@@ -2,6 +2,7 @@ package com.example.bible.ui.languagestudy
 
 import android.speech.tts.TextToSpeech
 import android.speech.tts.UtteranceProgressListener
+import android.speech.tts.Voice
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.remember
@@ -28,13 +29,20 @@ class LangStudyTtsFacade internal constructor(
             ready.set(false)
             return
         }
-        applyBestLocaleForTag(languageTag)
-        if (languageTag == "arabic" || languageTag == "irit") {
-            try {
-                tts.setSpeechRate(0.92f)
-            } catch (_: Exception) {}
+        if (!pickAndSetNativeVoice()) {
+            applyBestLocaleForTag(languageTag)
         }
+        applySpeechTuningForStudy(languageTag)
         ready.set(true)
+    }
+
+    private fun pickAndSetNativeVoice(): Boolean {
+        val voice = pickNativeStudyVoice(tts, languageTag) ?: return false
+        return try {
+            tts.setVoice(voice) == TextToSpeech.SUCCESS
+        } catch (_: Exception) {
+            false
+        }
     }
 
     private fun applyBestLocaleForTag(tag: String): Boolean {
@@ -43,8 +51,32 @@ class LangStudyTtsFacade internal constructor(
                 return true
             }
         }
-        val r = tts.setLanguage(Locale.US)
+        val r = tts.setLanguage(Locale.UK)
         return r != TextToSpeech.LANG_NOT_SUPPORTED
+    }
+
+    private fun applySpeechTuningForStudy(tag: String) {
+        try {
+            when (tag) {
+                "arabic", "irit" -> {
+                    tts.setSpeechRate(0.92f)
+                    tts.setPitch(1.0f)
+                }
+                "greek" -> {
+                    tts.setSpeechRate(0.94f)
+                    tts.setPitch(1.0f)
+                }
+                "english" -> {
+                    tts.setSpeechRate(0.98f)
+                    tts.setPitch(1.0f)
+                }
+                else -> {
+                    tts.setSpeechRate(1.0f)
+                    tts.setPitch(1.0f)
+                }
+            }
+        } catch (_: Exception) {
+        }
     }
 
     fun speak(text: String): Boolean {
@@ -66,30 +98,100 @@ class LangStudyTtsFacade internal constructor(
     }
 }
 
-private fun candidateLocalesForStudy(languageTag: String): List<Locale> = when (languageTag) {
-    "english" -> listOf(Locale.US, Locale.UK, Locale("en"))
-    "arabic" -> listOf(
-        Locale("ar", "SA"),
-        Locale("ar", "EG"),
-        Locale("ar", "MA"),
-        Locale("ar", "AE"),
-        Locale.forLanguageTag("ar-SA"),
-        Locale.forLanguageTag("ar-EG"),
-        Locale("ar"),
-    )
-    "irit" -> listOf(
-        Locale.forLanguageTag("he-IL"),
-        Locale("he", "IL"),
-        Locale.forLanguageTag("iw-IL"),
-        Locale("iw", "IL"),
-        Locale.forLanguageTag("he"),
-    )
-    "greek" -> listOf(
-        Locale.forLanguageTag("el-GR"),
-        Locale("el", "GR"),
-        Locale("el"),
-    )
-    else -> listOf(Locale.US)
+/**
+ * Локали в порядке приоритета: сначала родной регион (акцент страны), затем общий язык.
+ * Для english — сначала British English (en-GB), затем американский и нейтральный en.
+ */
+@Suppress("DEPRECATION")
+private fun candidateLocalesForStudy(languageTag: String): List<Locale> =
+    when (languageTag) {
+        "english" -> listOf(
+            Locale.UK,
+            Locale.forLanguageTag("en-GB"),
+            Locale("en", "GB"),
+            Locale.US,
+            Locale.forLanguageTag("en-US"),
+            Locale("en", "US"),
+            Locale("en"),
+        )
+        "arabic" -> listOf(
+            Locale("ar", "SA"),
+            Locale.forLanguageTag("ar-SA"),
+            Locale("ar", "EG"),
+            Locale.forLanguageTag("ar-EG"),
+            Locale("ar", "AE"),
+            Locale.forLanguageTag("ar-AE"),
+            Locale("ar", "JO"),
+            Locale.forLanguageTag("ar-JO"),
+            Locale("ar", "MA"),
+            Locale("ar"),
+        )
+        "irit" -> listOf(
+            Locale.forLanguageTag("he-IL"),
+            Locale("he", "IL"),
+            Locale.forLanguageTag("iw-IL"),
+            Locale("iw", "IL"),
+            Locale.forLanguageTag("he"),
+        )
+        "greek" -> listOf(
+            Locale.forLanguageTag("el-GR"),
+            Locale("el", "GR"),
+            Locale.forLanguageTag("el-CY"),
+            Locale("el"),
+        )
+        else -> listOf(Locale.UK, Locale.US)
+    }
+
+private fun canonicalTtsTag(languageTag: String, raw: String): String {
+    var t = raw.lowercase(Locale.ROOT).replace('_', '-')
+    if (languageTag == "irit" && (t == "iw-il" || t.startsWith("iw-"))) {
+        t = t.replaceFirst("iw", "he")
+    }
+    return t
+}
+
+/**
+ * Выбирает установленный голос с максимальным соответствием целевым локалям (не гостевой «ломаный» акцент другого языка).
+ * Сначала точное совпадение тега локали, затем язык+страна, затем любой голос того же языка.
+ * Предпочтение: локальные (без сети) и более высокое [Voice.quality].
+ */
+private fun pickNativeStudyVoice(tts: TextToSpeech, studyTag: String): Voice? {
+    val all = try {
+        tts.voices
+    } catch (_: Exception) {
+        null
+    }.orEmpty().ifEmpty { return null }
+
+    val locales = candidateLocalesForStudy(studyTag)
+
+    fun rank(list: List<Voice>): Voice? =
+        list.sortedWith(
+            compareBy<Voice> { if (it.isNetworkConnectionRequired) 1 else 0 }
+                .thenByDescending { it.quality },
+        ).firstOrNull()
+
+    for (loc in locales) {
+        val want = canonicalTtsTag(studyTag, loc.toLanguageTag())
+        val exact = all.filter { v ->
+            canonicalTtsTag(studyTag, v.locale.toLanguageTag()) == want
+        }
+        rank(exact)?.let { return it }
+    }
+    for (loc in locales) {
+        if (loc.country.isNullOrEmpty()) continue
+        val match = all.filter { v ->
+            v.locale.language.equals(loc.language, ignoreCase = true) &&
+                v.locale.country.equals(loc.country, ignoreCase = true)
+        }
+        rank(match)?.let { return it }
+    }
+    for (loc in locales) {
+        val lang = loc.language
+        if (lang.isNullOrEmpty()) continue
+        val anyLang = all.filter { v -> v.locale.language.equals(lang, ignoreCase = true) }
+        rank(anyLang)?.let { return it }
+    }
+    return null
 }
 
 @Composable
