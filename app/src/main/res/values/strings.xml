@@ -1046,6 +1046,8 @@
     <string name="language_study_session_empty">Нет активной сессии. Нажмите, чтобы набрать до 28 карточек для повтора.</string>
     <string name="language_study_start_session">Начать повторение</string>
     <string name="language_study_session_progress">Карта %1$d из %2$d</string>
+    <string name="language_study_session_prev_card">Предыдущая карточка</string>
+    <string name="language_study_session_next_card">Следующая карточка</string>
     <string name="language_study_show_answer">Показать перевод и пример</string>
     <string name="language_study_ipa_label">Как звучит</string>
     <string name="language_study_gloss_label">Перевод</string>

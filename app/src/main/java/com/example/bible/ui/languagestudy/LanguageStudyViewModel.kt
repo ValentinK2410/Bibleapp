@@ -23,6 +23,8 @@ data class LangStudyOverviewState(
 data class LangStudySessionUi(
     val queue: List<LangVocabWordEntity> = emptyList(),
     val index: Int = 0,
+    /** Максимальный индекс карточки, до которого можно листать вперёд без новой оценки (просмотр пройденного). */
+    val maxViewIndex: Int = 0,
 )
 
 class LanguageStudyViewModel(application: Application) : AndroidViewModel(application) {
@@ -78,7 +80,7 @@ class LanguageStudyViewModel(application: Application) : AndroidViewModel(applic
     fun startSession(langCode: String, limit: Int = 24) {
         viewModelScope.launch(Dispatchers.IO) {
             val q = repo.listDueWords(langCode, limit)
-            _session.value = LangStudySessionUi(queue = q, index = 0)
+            _session.value = LangStudySessionUi(queue = q, index = 0, maxViewIndex = 0)
         }
     }
 
@@ -93,12 +95,32 @@ class LanguageStudyViewModel(application: Application) : AndroidViewModel(applic
             val next = LanguageStudySm2.schedule(prev = prev, wordKey = w.wordKey, quality = quality)
             repo.upsertSrs(next)
             if (idx + 1 < q.size) {
-                _session.value = LangStudySessionUi(queue = q, index = idx + 1)
+                val nextIdx = idx + 1
+                _session.value = LangStudySessionUi(
+                    queue = q,
+                    index = nextIdx,
+                    maxViewIndex = maxOf(s.maxViewIndex, nextIdx),
+                )
             } else {
                 _session.value = LangStudySessionUi()
                 refreshOverview(langCode)
             }
         }
+    }
+
+    /** К предыдущей карточке в текущей очереди (уже показанной ранее). */
+    fun sessionGoPrevWithinQueue() {
+        val s = _session.value
+        if (s.index <= 0) return
+        _session.value = s.copy(index = s.index - 1)
+    }
+
+    /** Вперёд только по уже «открытым» карточкам сессии, без продвижения SRS. */
+    fun sessionGoNextWithinQueue() {
+        val s = _session.value
+        if (s.index >= s.maxViewIndex) return
+        if (s.index + 1 >= s.queue.size) return
+        _session.value = s.copy(index = s.index + 1)
     }
 
     fun saveNoteForWord(wordKey: String, note: String) {

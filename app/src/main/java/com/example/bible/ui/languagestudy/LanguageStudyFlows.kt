@@ -21,6 +21,8 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.automirrored.filled.KeyboardArrowLeft
+import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
 import androidx.compose.material.icons.automirrored.filled.VolumeUp
 import androidx.compose.material.icons.filled.CloudDownload
 import androidx.compose.material.icons.filled.LibraryBooks
@@ -171,6 +173,7 @@ private fun LS_Session(modifier: Modifier, langTag: String, lsVm: LanguageStudyV
     val tts = rememberLangStudyTts(langTag)
     val q = session.queue
     val idx = session.index
+    val maxView = session.maxViewIndex
     if (q.isEmpty()) {
         Column(modifier.fillMaxSize().padding(24.dp), verticalArrangement = Arrangement.Center, horizontalAlignment = Alignment.CenterHorizontally) {
             Text(stringResource(R.string.language_study_session_empty))
@@ -185,12 +188,37 @@ private fun LS_Session(modifier: Modifier, langTag: String, lsVm: LanguageStudyV
     }
     val w = q[idx]
     Column(modifier.fillMaxSize().padding(horizontal = 18.dp)) {
-        Text(
-            stringResource(R.string.language_study_session_progress, idx + 1, q.size),
-            Modifier.padding(top = 8.dp, bottom = 4.dp),
-            style = MaterialTheme.typography.labelMedium,
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
-        )
+        Row(
+            Modifier
+                .fillMaxWidth()
+                .padding(top = 8.dp, bottom = 4.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.SpaceBetween,
+        ) {
+            IconButton(
+                onClick = { lsVm.sessionGoPrevWithinQueue() },
+                enabled = idx > 0,
+            ) {
+                Icon(
+                    Icons.AutoMirrored.Filled.KeyboardArrowLeft,
+                    contentDescription = stringResource(R.string.language_study_session_prev_card),
+                )
+            }
+            Text(
+                stringResource(R.string.language_study_session_progress, idx + 1, q.size),
+                style = MaterialTheme.typography.labelMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+            IconButton(
+                onClick = { lsVm.sessionGoNextWithinQueue() },
+                enabled = idx < maxView,
+            ) {
+                Icon(
+                    Icons.AutoMirrored.Filled.KeyboardArrowRight,
+                    contentDescription = stringResource(R.string.language_study_session_next_card),
+                )
+            }
+        }
         LsFlashcardMinimal(
             display = w.display.ifBlank { w.lemma },
             ipa = w.ipa,
