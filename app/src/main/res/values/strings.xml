@@ -1042,7 +1042,7 @@
     <string name="language_study_hub_dict_hint">Быстрый поиск по лемме, отображению и переводу.</string>
     <string name="language_study_hub_pack_hint">Выбор zip с диска, из состава приложения (если вложено) или по HTTPS URL.</string>
     <string name="language_study_refresh_stats">Обновить счётчики</string>
-    <string name="language_study_srs_hint_footer">Полный объём базы (≥1000 слов) — отдельные zip-смо пакеты. Демо включается один раз само при первом запуске.</string>
+    <string name="language_study_srs_hint_footer">После установки приложения каждый язык получает тысячи слов из встроенного архива. Для арабского и иврита: если звука нет, включите синтез Google и скачайте голоса «Arabic» и «Hebrew» в настройках TTS телефона.</string>
     <string name="language_study_session_empty">Нет активной сессии. Нажмите, чтобы набрать до 28 карточек для повтора.</string>
     <string name="language_study_start_session">Начать повторение</string>
     <string name="language_study_session_progress">Карта %1$d из %2$d</string>

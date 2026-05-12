@@ -53,7 +53,7 @@ class LanguageStudyViewModel(application: Application) : AndroidViewModel(applic
     fun prepareLanguage(langCode: String) {
         activeLangCode = langCode
         viewModelScope.launch(Dispatchers.IO) {
-            repo.ensureDemoIfEmpty(langCode)
+            repo.ensureBundledFullOrDemo(langCode)
             refreshOverview(langCode)
         }
     }

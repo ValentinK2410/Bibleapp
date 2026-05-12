@@ -5,6 +5,7 @@ import com.example.bible.data.MediaCatalogMigration
 import com.example.bible.data.db.StrongsImporter
 import com.example.bible.data.db.StudyDatabase
 import com.example.bible.data.db.StudyLegacyFilesystemMigration
+import com.example.bible.data.languagestudy.LanguageStudyBootstrap
 import coil.ImageLoader
 import coil.ImageLoaderFactory
 import coil.decode.SvgDecoder
@@ -25,6 +26,7 @@ class BibleApplication : Application(), ImageLoaderFactory {
             val db = StudyDatabase.getInstance(app)
             StudyLegacyFilesystemMigration.runIfNeeded(app, db)
             StrongsImporter.importFromAssetsIfEmpty(app, db)
+            LanguageStudyBootstrap.importBundledIfNeeded(app)
         }
     }
 

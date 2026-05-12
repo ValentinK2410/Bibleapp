@@ -7,6 +7,7 @@ import com.example.bible.data.db.StudyDatabase
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import java.io.BufferedInputStream
+import java.io.IOException
 import java.net.HttpURLConnection
 import java.net.URL
 
@@ -18,7 +19,11 @@ class LanguageStudyRepository(context: Context) {
     companion object {
         private const val DEMO_VERSION = "demo-1"
         private const val DEMO_ASSET_ZIP = "language_packs/bundled/"
+        /** Ниже порога считаем, что нужен импорт полного архива из assets (если он есть). */
+        private const val FULL_PACK_IMPORT_THRESHOLD = 900
     }
+
+    private fun bundledZipFileName(langCode: String) = "${langCode}_v1.zip"
 
     fun countWords(langCode: String): Int = dao.countLangWords(langCode)
 
@@ -59,9 +64,33 @@ class LanguageStudyRepository(context: Context) {
         if (needle.isBlank()) emptyList()
         else dao.searchLangWords(langCode, needle.trim(), limit)
 
+    private fun bundledPackAssetExists(langCode: String): Boolean =
+        try {
+            app.assets.open(DEMO_ASSET_ZIP + bundledZipFileName(langCode)).close()
+            true
+        } catch (_: IOException) {
+            false
+        }
+
     /**
-     * Если для языка ещё нет слов — подставляем демо-колоду (не трогает уже импортированные пакеты).
+     * Полный офлайн-пакет из assets заменяет демо, если строк меньше [FULL_PACK_IMPORT_THRESHOLD].
+     * Если полного архива нет — при пустой БД ставится маленькая демо-колода.
      */
+    fun ensureBundledFullOrDemo(langCode: String) {
+        val haveBundled = bundledPackAssetExists(langCode)
+        val count = dao.countLangWords(langCode)
+        when {
+            haveBundled && count < FULL_PACK_IMPORT_THRESHOLD -> {
+                importBundledFullPack(bundledZipFileName(langCode))
+            }
+            !haveBundled && count == 0 -> {
+                val jsonl = LanguageStudyDemoJsonl.buildJsonlForLang(langCode)
+                importer.importFromStrings(langCode, DEMO_VERSION, jsonl)
+            }
+        }
+    }
+
+    /** Только демо, если язык совсем без записей (для особых сборок без zip). */
     fun ensureDemoIfEmpty(langCode: String) {
         if (dao.countLangWords(langCode) > 0) return
         val jsonl = LanguageStudyDemoJsonl.buildJsonlForLang(langCode)
