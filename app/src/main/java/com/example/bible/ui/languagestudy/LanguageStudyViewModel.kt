@@ -23,7 +23,6 @@ data class LangStudyOverviewState(
 data class LangStudySessionUi(
     val queue: List<LangVocabWordEntity> = emptyList(),
     val index: Int = 0,
-    val revealAnswer: Boolean = false,
 )
 
 class LanguageStudyViewModel(application: Application) : AndroidViewModel(application) {
@@ -79,13 +78,8 @@ class LanguageStudyViewModel(application: Application) : AndroidViewModel(applic
     fun startSession(langCode: String, limit: Int = 24) {
         viewModelScope.launch(Dispatchers.IO) {
             val q = repo.listDueWords(langCode, limit)
-            _session.value = LangStudySessionUi(queue = q, index = 0, revealAnswer = false)
+            _session.value = LangStudySessionUi(queue = q, index = 0)
         }
-    }
-
-    fun toggleReveal() {
-        val s = _session.value
-        _session.value = s.copy(revealAnswer = true)
     }
 
     fun gradeCurrent(langCode: String, quality: Int) {
@@ -99,7 +93,7 @@ class LanguageStudyViewModel(application: Application) : AndroidViewModel(applic
             val next = LanguageStudySm2.schedule(prev = prev, wordKey = w.wordKey, quality = quality)
             repo.upsertSrs(next)
             if (idx + 1 < q.size) {
-                _session.value = LangStudySessionUi(queue = q, index = idx + 1, revealAnswer = false)
+                _session.value = LangStudySessionUi(queue = q, index = idx + 1)
             } else {
                 _session.value = LangStudySessionUi()
                 refreshOverview(langCode)

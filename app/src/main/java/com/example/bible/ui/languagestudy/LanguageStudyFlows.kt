@@ -25,7 +25,6 @@ import androidx.compose.material.icons.automirrored.filled.VolumeUp
 import androidx.compose.material.icons.filled.CloudDownload
 import androidx.compose.material.icons.filled.LibraryBooks
 import androidx.compose.material.icons.filled.Link
-import androidx.compose.material.icons.filled.Psychology
 import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material.icons.filled.School
 import androidx.compose.material.icons.filled.UploadFile
@@ -52,6 +51,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
@@ -184,65 +184,64 @@ private fun LS_Session(modifier: Modifier, langTag: String, lsVm: LanguageStudyV
         return
     }
     val w = q[idx]
-    var userNoteDraft by remember(w.wordKey, idx) { mutableStateOf(lsVm.loadUserNote(w.wordKey)) }
-    LaunchedEffect(w.wordKey, idx) { userNoteDraft = lsVm.loadUserNote(w.wordKey) }
     Column(modifier.fillMaxSize().padding(horizontal = 18.dp)) {
-        Text(stringResource(R.string.language_study_session_progress, idx + 1, q.size), Modifier.padding(top = 8.dp, bottom = 4.dp), style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
-        LsWordFace(w.display, w.ipa, w.pos, w.morphologyNotes) { tts.speak(w.display.ifBlank { w.lemma }) }
-        if (!session.revealAnswer) {
-            Spacer(Modifier.height(24.dp))
-            Button(onClick = { lsVm.toggleReveal() }, modifier = Modifier.fillMaxWidth()) { Text(stringResource(R.string.language_study_show_answer)) }
-        } else {
-            Spacer(Modifier.height(20.dp))
-            Text(stringResource(R.string.language_study_gloss_label), style = MaterialTheme.typography.titleMedium)
-            Text(w.glossRu, style = MaterialTheme.typography.headlineSmall)
-            w.exampleL2?.let { ex ->
-                Spacer(Modifier.height(12.dp))
-                Text(stringResource(R.string.language_study_example_label))
-                Text(ex, style = MaterialTheme.typography.bodyLarge)
-                w.exampleRu?.let { ru -> Text(ru, style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.primary) }
-            }
-            w.mnemonicHint?.takeIf { it.isNotBlank() }?.let { m ->
-                Spacer(Modifier.height(12.dp))
-                Row {
-                    Icon(Icons.Filled.Psychology, null, tint = MaterialTheme.colorScheme.secondary)
-                    Text("${stringResource(R.string.language_study_mnemonic_label)} — $m", Modifier.padding(start = 8.dp))
-                }
-            }
-            OutlinedTextField(value = userNoteDraft, onValueChange = { userNoteDraft = it }, label = { Text(stringResource(R.string.language_study_user_note_hint)) }, modifier = Modifier.fillMaxWidth().padding(top = 12.dp), minLines = 2)
-            Button(onClick = { lsVm.saveNoteForWord(w.wordKey, userNoteDraft) }, modifier = Modifier.fillMaxWidth().padding(top = 6.dp)) { Text(stringResource(R.string.language_study_save_note)) }
-            Spacer(Modifier.height(16.dp))
-            Text(stringResource(R.string.language_study_grade_prompt), style = MaterialTheme.typography.labelLarge)
-            Spacer(Modifier.height(8.dp))
-            Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(6.dp)) {
-                OutlinedButton(onClick = { lsVm.gradeCurrent(langTag, 2) }, modifier = Modifier.weight(1f)) { Text(stringResource(R.string.language_study_again)) }
-                OutlinedButton(onClick = { lsVm.gradeCurrent(langTag, 3) }, modifier = Modifier.weight(1f)) { Text(stringResource(R.string.language_study_hard)) }
-            }
-            Row(Modifier.fillMaxWidth().padding(top = 6.dp), horizontalArrangement = Arrangement.spacedBy(6.dp)) {
-                Button(onClick = { lsVm.gradeCurrent(langTag, 4) }, modifier = Modifier.weight(1f)) { Text(stringResource(R.string.language_study_good)) }
-                Button(onClick = { lsVm.gradeCurrent(langTag, 5) }, modifier = Modifier.weight(1f)) { Text(stringResource(R.string.language_study_easy)) }
-            }
+        Text(
+            stringResource(R.string.language_study_session_progress, idx + 1, q.size),
+            Modifier.padding(top = 8.dp, bottom = 4.dp),
+            style = MaterialTheme.typography.labelMedium,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+        )
+        LsFlashcardMinimal(
+            display = w.display.ifBlank { w.lemma },
+            ipa = w.ipa,
+            glossRu = w.glossRu,
+            onSpeak = { tts.speak(w.display.ifBlank { w.lemma }) },
+        )
+        Spacer(Modifier.weight(1f))
+        Text(stringResource(R.string.language_study_grade_prompt), style = MaterialTheme.typography.labelLarge)
+        Spacer(Modifier.height(8.dp))
+        Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+            OutlinedButton(onClick = { lsVm.gradeCurrent(langTag, 2) }, modifier = Modifier.weight(1f)) { Text(stringResource(R.string.language_study_again)) }
+            OutlinedButton(onClick = { lsVm.gradeCurrent(langTag, 3) }, modifier = Modifier.weight(1f)) { Text(stringResource(R.string.language_study_hard)) }
+        }
+        Row(Modifier.fillMaxWidth().padding(top = 6.dp, bottom = 16.dp), horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+            Button(onClick = { lsVm.gradeCurrent(langTag, 4) }, modifier = Modifier.weight(1f)) { Text(stringResource(R.string.language_study_good)) }
+            Button(onClick = { lsVm.gradeCurrent(langTag, 5) }, modifier = Modifier.weight(1f)) { Text(stringResource(R.string.language_study_easy)) }
         }
     }
 }
 
 @Composable
-private fun LsWordFace(display: String, ipa: String?, pos: String?, morph: String?, onSpeak: () -> Unit) {
+private fun LsFlashcardMinimal(display: String, ipa: String?, glossRu: String, onSpeak: () -> Unit) {
     ElevatedCard(Modifier.fillMaxWidth()) {
-        Column(Modifier.padding(20.dp)) {
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                Text(display, style = MaterialTheme.typography.headlineMedium, modifier = Modifier.weight(1f))
+        Column(Modifier.padding(horizontal = 20.dp, vertical = 28.dp)) {
+            Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth()) {
+                Text(
+                    text = display,
+                    style = MaterialTheme.typography.displaySmall,
+                    fontWeight = FontWeight.Bold,
+                    modifier = Modifier.weight(1f),
+                    lineHeight = MaterialTheme.typography.displaySmall.lineHeight * 1.15f,
+                )
                 IconButton(onClick = onSpeak) {
                     Icon(Icons.AutoMirrored.Filled.VolumeUp, contentDescription = stringResource(R.string.language_study_speak))
                 }
             }
-            ipa?.takeIf { it.isNotBlank() }?.let { Text(it, style = MaterialTheme.typography.bodyLarge, color = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.padding(top = 6.dp)) }
-            pos?.takeIf { it.isNotBlank() }?.let {
-                Text(stringResource(R.string.language_study_pos_fmt, it), style = MaterialTheme.typography.labelMedium, modifier = Modifier.padding(top = 4.dp))
+            ipa?.takeIf { it.isNotBlank() }?.let { ipaLine ->
+                Spacer(Modifier.height(12.dp))
+                Text(
+                    text = ipaLine,
+                    style = MaterialTheme.typography.titleLarge,
+                    color = MaterialTheme.colorScheme.primary,
+                    fontWeight = FontWeight.Medium,
+                )
             }
-            morph?.takeIf { it.isNotBlank() }?.let {
-                Text(stringResource(R.string.language_study_morph_label, it), style = MaterialTheme.typography.bodySmall, modifier = Modifier.padding(top = 8.dp))
-            }
+            Spacer(Modifier.height(14.dp))
+            Text(
+                text = glossRu,
+                style = MaterialTheme.typography.titleMedium,
+                color = MaterialTheme.colorScheme.onSurface,
+            )
         }
     }
 }
