@@ -33,6 +33,7 @@ import androidx.compose.ui.unit.dp
 fun KidsGamesHubScreen(
     onBack: () -> Unit,
     onOpenTicTacToe: () -> Unit,
+    onOpenCheckers: () -> Unit,
 ) {
     Scaffold(
         topBar = {
@@ -84,6 +85,40 @@ fun KidsGamesHubScreen(
                             Spacer(Modifier.height(4.dp))
                             Text(
                                 "С компьютером, вдвоём или два компьютера; поле от 3×3 до 6×6.",
+                                style = MaterialTheme.typography.bodySmall,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            )
+                        }
+                    }
+                    Icon(Icons.AutoMirrored.Filled.ArrowForward, contentDescription = null, modifier = Modifier.size(22.dp))
+                }
+            }
+            Card(
+                onClick = onOpenCheckers,
+                modifier = Modifier.fillMaxWidth(),
+                shape = RoundedCornerShape(16.dp),
+                colors = CardDefaults.cardColors(
+                    containerColor = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.45f),
+                ),
+            ) {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(20.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                ) {
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Text("⚫", modifier = Modifier.padding(end = 12.dp))
+                        Column {
+                            Text(
+                                "Шашки",
+                                style = MaterialTheme.typography.titleMedium,
+                                fontWeight = FontWeight.Bold,
+                            )
+                            Spacer(Modifier.height(4.dp))
+                            Text(
+                                "С компьютером или вдвоём, русские правила: взятие обязательно, дамка бьёт на дистанции.",
                                 style = MaterialTheme.typography.bodySmall,
                                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                             )
