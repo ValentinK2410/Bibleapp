@@ -986,6 +986,11 @@ private fun BibleNavHost(
                         launchSingleTop = true
                     }
                 },
+                onOpenGo = {
+                    navController.navigate("kids_go") {
+                        launchSingleTop = true
+                    }
+                },
             )
         }
         composable("kids_tictactoe") {
@@ -993,6 +998,9 @@ private fun BibleNavHost(
         }
         composable("kids_checkers") {
             CheckersScreen(onBack = { navController.navigateUp() })
+        }
+        composable("kids_go") {
+            GoScreen(onBack = { navController.navigateUp() })
         }
         composable("kids_edit_sections") {
             KidsEditHubSectionsScreen(

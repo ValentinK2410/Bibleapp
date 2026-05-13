@@ -419,7 +419,7 @@ internal fun kidsHubDefaultRows(): List<KidsHubRow> = listOf(
     ),
     KidsHubRow(
         title = "Игры",
-        subtitle = "Крестики-нолики, шашки и другие настольные игры",
+        subtitle = "Крестики-нолики, шашки, го и другие настольные игры",
         route = "kids_games",
         icon = Icons.Filled.Extension,
         cardStyle = KidsHubCardVisual.Videos,
