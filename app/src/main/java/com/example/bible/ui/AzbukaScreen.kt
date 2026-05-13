@@ -1838,6 +1838,11 @@ private fun QuizTab(
                 onClick = { subMode = 3 },
                 text = { Text("Части речи", maxLines = 1) },
             )
+            Tab(
+                selected = subMode == 4,
+                onClick = { subMode = 4 },
+                text = { Text("Наоборот", maxLines = 1) },
+            )
         }
         Box(
             modifier = Modifier
@@ -1860,6 +1865,12 @@ private fun QuizTab(
                     scope = scope,
                 )
                 3 -> PartsOfSpeechGamePane(
+                    speak = speak,
+                    speakWhenDone = speakWhenDone,
+                    progressRepo = progressRepo,
+                    scope = scope,
+                )
+                4 -> ReversedWordGamePane(
                     speak = speak,
                     speakWhenDone = speakWhenDone,
                     progressRepo = progressRepo,

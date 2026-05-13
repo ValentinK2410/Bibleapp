@@ -29,7 +29,7 @@ private val PARTS_OF_SPEECH_WORDS: List<PartsOfSpeechItem> = buildList {
     for (w in listOf(
         "дом", "мама", "папа", "кот", "собака", "солнце", "дерево", "книга", "рука", "нога",
         "река", "море", "лес", "школа", "друг", "сестра", "брат", "птица", "цветок", "яблоко",
-        "мяч", "звезда", "облако", "снег", "дождь", "трава", "гриб",
+        "мяч", "звезда", "облако", "снег", "дождь", "трава", "гриб", "труба",
     )) {
         add(PartsOfSpeechItem(w, PartsOfSpeechKind.NOUN))
     }
@@ -50,6 +50,10 @@ private val PARTS_OF_SPEECH_WORDS: List<PartsOfSpeechItem> = buildList {
         add(PartsOfSpeechItem(w, PartsOfSpeechKind.ADJECTIVE))
     }
 }
+
+/** Слова для игр азбуки, где нужен общий словарь (например, «слово наоборот»). */
+fun azbukaReversedWordCandidates(): List<String> =
+    PARTS_OF_SPEECH_WORDS.map { it.word }.distinct()
 
 fun nextPartsOfSpeechRound(random: Random): PartsOfSpeechRound {
     val targetKind = PartsOfSpeechKind.entries.random(random)
