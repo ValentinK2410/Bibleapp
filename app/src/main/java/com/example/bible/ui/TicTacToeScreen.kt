@@ -47,9 +47,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import com.example.bible.games.tictactoe.TicGameMode
 import com.example.bible.games.tictactoe.TicMark
 import com.example.bible.games.tictactoe.TicTacToeAi
@@ -57,6 +55,9 @@ import com.example.bible.games.tictactoe.TicTacToeEngine
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlin.random.Random
+
+/** Одна база масштаба линии крестика и кольца нолика относительно ячейки. */
+private const val TIC_MARK_LINE_TO_CELL = 0.11f
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -296,12 +297,6 @@ private fun TicBoardGrid(
     val n = boardSize
     val cellPad = 2.dp
     val markBoxFraction = 0.78f
-    val xSp = when (n) {
-        3 -> 34.sp
-        4 -> 26.sp
-        5 -> 21.sp
-        else -> 18.sp
-    }
 
     BoxWithConstraints(
         modifier = Modifier
@@ -337,13 +332,15 @@ private fun TicBoardGrid(
                                 contentAlignment = Alignment.Center,
                             ) {
                                 when (mark) {
-                                    TicMark.X -> Text(
-                                        "✕",
-                                        fontSize = xSp,
-                                        fontWeight = FontWeight.Bold,
-                                        color = Color(0xFFD32F2F),
-                                        textAlign = TextAlign.Center,
-                                    )
+                                    TicMark.X -> Box(
+                                        Modifier.fillMaxSize(markBoxFraction),
+                                        contentAlignment = Alignment.Center,
+                                    ) {
+                                        TicCrossMark(
+                                            color = Color(0xFFD32F2F),
+                                            modifier = Modifier.fillMaxSize(),
+                                        )
+                                    }
 
                                     TicMark.O -> Box(
                                         Modifier.fillMaxSize(markBoxFraction),
@@ -374,16 +371,48 @@ private fun TicBoardGrid(
                             return Offset((cc + 0.5f) * cw, (rr + 0.5f) * ch)
                         }
                         drawLine(
-                            color = strikeColor.copy(alpha = 0.95f),
+                            color = strikeColor.copy(alpha = 0.92f),
                             start = center(line.first()),
                             end = center(line.last()),
-                            strokeWidth = size.minDimension * 0.045f,
+                            strokeWidth = size.minDimension * 0.028f,
                             cap = StrokeCap.Round,
                         )
                     }
                 }
             }
         }
+    }
+}
+
+@Composable
+private fun TicCrossMark(
+    color: Color,
+    modifier: Modifier = Modifier,
+) {
+    Canvas(modifier.aspectRatio(1f)) {
+        val w = size.width
+        val h = size.height
+        val m = kotlin.math.min(w, h)
+        val sw = m * TIC_MARK_LINE_TO_CELL
+        val inset = m * 0.10f + sw * 0.35f
+        val x0 = inset
+        val y0 = inset
+        val x1 = w - inset
+        val y1 = h - inset
+        drawLine(
+            color = color,
+            start = Offset(x0, y0),
+            end = Offset(x1, y1),
+            strokeWidth = sw,
+            cap = StrokeCap.Round,
+        )
+        drawLine(
+            color = color,
+            start = Offset(x1, y0),
+            end = Offset(x0, y1),
+            strokeWidth = sw,
+            cap = StrokeCap.Round,
+        )
     }
 }
 
@@ -396,7 +425,7 @@ private fun TicNoughtRing(
         val m = kotlin.math.min(size.width, size.height)
         val cx = size.width / 2f
         val cy = size.height / 2f
-        val strokeW = m * 0.11f
+        val strokeW = m * TIC_MARK_LINE_TO_CELL
         val radius = (m - strokeW) * 0.5f * 0.92f
         drawCircle(
             color = ringColor,
