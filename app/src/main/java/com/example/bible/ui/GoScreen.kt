@@ -73,10 +73,9 @@ fun GoScreen(onBack: () -> Unit) {
     var stateRevision by remember(boardSize, newGameKey) { mutableIntStateOf(0) }
     val random = remember { Random(System.currentTimeMillis()) }
 
-    val boardSig = game.board.joinToString("") { "${it.ordinal}" }
-    val turnSig = "${stateRevision}_${game.toPlay.ordinal}_${game.consecutivePasses}_${game.gameOver}_$boardSig"
-
-    LaunchedEffect(mode, turnSig) {
+    // Не включаем полный срез доски в ключ LaunchedEffect: иначе корутина ИИ отменялась при пересборке.
+    // отменяла корутину ИИ во время delay() — белые не ходили, на доске копились только чёрные.
+    LaunchedEffect(mode, stateRevision, game.toPlay, game.gameOver) {
         if (game.gameOver) return@LaunchedEffect
         if (mode != GoGameMode.HUMAN_VS_AI) return@LaunchedEffect
         if (game.toPlay != GoPlayer.White) return@LaunchedEffect
