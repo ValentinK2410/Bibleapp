@@ -32,38 +32,13 @@ class TicTacToeEngine(
 
     val cellCount: Int = size * size
 
-    private val lines: List<IntArray> = buildList {
-        val w = winLength
-        // горизонтали
-        for (r in 0 until size) {
-            for (c in 0 until size - w + 1) {
-                add(IntArray(w) { i -> r * size + (c + i) })
-            }
-        }
-        // вертикали
-        for (c in 0 until size) {
-            for (r in 0 until size - w + 1) {
-                add(IntArray(w) { i -> (r + i) * size + c })
-            }
-        }
-        // диагональ \
-        for (r in 0 until size - w + 1) {
-            for (c in 0 until size - w + 1) {
-                add(IntArray(w) { i -> (r + i) * size + (c + i) })
-            }
-        }
-        // диагональ /
-        for (r in 0 until size - w + 1) {
-            for (c in w - 1 until size) {
-                add(IntArray(w) { i -> (r + i) * size + (c - i) })
-            }
-        }
-    }
+    private val winningLines: List<IntArray> =
+        computeWinLines(boardSize = size, winLen = winLength)
 
     fun emptyBoard(): Array<TicMark> = Array(cellCount) { TicMark.Empty }
 
     fun winner(board: Array<TicMark>): TicMark? {
-        for (line in lines) {
+        for (line in winningLines) {
             val a = board[line[0]]
             if (a == TicMark.Empty) continue
             var ok = true
@@ -80,6 +55,36 @@ class TicTacToeEngine(
 
     fun isDraw(board: Array<TicMark>): Boolean =
         board.all { it != TicMark.Empty } && winner(board) == null
+}
+
+/** Вне `buildList { }`: внутри блока receiver — `MutableList`, и свойство `size` было бы длиной списка (0). */
+private fun computeWinLines(boardSize: Int, winLen: Int): List<IntArray> = buildList {
+    val w = winLen
+    val sz = boardSize
+    // горизонтали
+    for (r in 0 until sz) {
+        for (c in 0 until sz - w + 1) {
+            add(IntArray(w) { i -> r * sz + (c + i) })
+        }
+    }
+    // вертикали
+    for (c in 0 until sz) {
+        for (r in 0 until sz - w + 1) {
+            add(IntArray(w) { i -> (r + i) * sz + c })
+        }
+    }
+    // диагональ \
+    for (r in 0 until sz - w + 1) {
+        for (c in 0 until sz - w + 1) {
+            add(IntArray(w) { i -> (r + i) * sz + (c + i) })
+        }
+    }
+    // диагональ /
+    for (r in 0 until sz - w + 1) {
+        for (c in w - 1 until sz) {
+            add(IntArray(w) { i -> (r + i) * sz + (c - i) })
+        }
+    }
 }
 
 object TicTacToeAi {
