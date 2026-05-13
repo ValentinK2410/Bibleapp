@@ -83,6 +83,10 @@ private val REV_CORRECT_PHRASES: List<String> = listOf(
 private const val REV_TASK_TTS =
     "Какое это слово, если прочитать написанное наоборот, с конца к началу?"
 
+/** Буквы в порядке «с конца» — TTS читает понятнее, чем слитный «абурт». */
+private fun reversedLettersSpacedForTts(forwardWord: String): String =
+    forwardWord.lowercase().reversed().toList().joinToString(" ") { it.toString() }
+
 @Composable
 internal fun ReversedWordGamePane(
     speak: (String) -> Unit,
@@ -98,7 +102,9 @@ internal fun ReversedWordGamePane(
 
     LaunchedEffect(roundKey) {
         tapFeedback = RevTapFeedback.Idle
-        speak(REV_TASK_TTS)
+        speakWhenDone(REV_TASK_TTS) {
+            speak(reversedLettersSpacedForTts(round.answerForward))
+        }
     }
 
     Column(
@@ -113,7 +119,7 @@ internal fun ReversedWordGamePane(
         )
         Spacer(Modifier.height(4.dp))
         Text(
-            "Вверху — слово, будто его читают с конца. Найди, как оно правильно называется.",
+            "Вверху — то же слово, записанное с конца. Сначала звучит подсказка, потом буквы по порядку от конца слова. Ещё можно нажать «Прочитать наоборот».",
             style = MaterialTheme.typography.bodyMedium,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
         )
@@ -139,10 +145,13 @@ internal fun ReversedWordGamePane(
         Spacer(Modifier.height(8.dp))
         Row(
             modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.End,
+            horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically,
         ) {
-            TextButton(onClick = { speak(REV_TASK_TTS) }) {
+            TextButton(
+                onClick = { speak(REV_TASK_TTS) },
+                modifier = Modifier.weight(1f),
+            ) {
                 Icon(
                     Icons.AutoMirrored.Filled.VolumeUp,
                     contentDescription = null,
@@ -150,7 +159,20 @@ internal fun ReversedWordGamePane(
                         .size(18.dp)
                         .padding(end = 6.dp),
                 )
-                Text("Повторить задание")
+                Text("Задание", maxLines = 1)
+            }
+            TextButton(
+                onClick = { speak(reversedLettersSpacedForTts(round.answerForward)) },
+                modifier = Modifier.weight(1f),
+            ) {
+                Icon(
+                    Icons.AutoMirrored.Filled.VolumeUp,
+                    contentDescription = null,
+                    modifier = Modifier
+                        .size(18.dp)
+                        .padding(end = 6.dp),
+                )
+                Text("Прочитать наоборот", maxLines = 1)
             }
         }
         LazyVerticalGrid(
