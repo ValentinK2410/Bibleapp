@@ -38,6 +38,7 @@ import androidx.compose.material.icons.automirrored.filled.MenuBook
 import androidx.compose.material.icons.automirrored.filled.VolumeUp
 import androidx.compose.material.icons.filled.BugReport
 import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.filled.Extension
 import androidx.compose.material.icons.filled.LocalFlorist
 import androidx.compose.material.icons.filled.Nature
 import androidx.compose.material.icons.filled.Numbers
@@ -415,6 +416,14 @@ internal fun kidsHubDefaultRows(): List<KidsHubRow> = listOf(
         icon = Icons.Filled.Numbers,
         cardStyle = KidsHubCardVisual.Musician,
         emojiThumb = "🔢",
+    ),
+    KidsHubRow(
+        title = "Игры",
+        subtitle = "Крестики-нолики и другие настольные игры",
+        route = "kids_games",
+        icon = Icons.Filled.Extension,
+        cardStyle = KidsHubCardVisual.Videos,
+        emojiThumb = "🎮",
     ),
     KidsHubRow(
         title = "Цвета",

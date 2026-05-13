@@ -973,6 +973,19 @@ private fun BibleNavHost(
                 },
             )
         }
+        composable("kids_games") {
+            KidsGamesHubScreen(
+                onBack = { navController.navigateUp() },
+                onOpenTicTacToe = {
+                    navController.navigate("kids_tictactoe") {
+                        launchSingleTop = true
+                    }
+                },
+            )
+        }
+        composable("kids_tictactoe") {
+            TicTacToeScreen(onBack = { navController.navigateUp() })
+        }
         composable("kids_edit_sections") {
             KidsEditHubSectionsScreen(
                 viewModel = viewModel,
