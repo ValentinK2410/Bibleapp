@@ -1833,6 +1833,11 @@ private fun QuizTab(
                 onClick = { subMode = 2 },
                 text = { Text("Буквы", maxLines = 1) },
             )
+            Tab(
+                selected = subMode == 3,
+                onClick = { subMode = 3 },
+                text = { Text("Части речи", maxLines = 1) },
+            )
         }
         Box(
             modifier = Modifier
@@ -1849,6 +1854,12 @@ private fun QuizTab(
                     scope = scope,
                 )
                 2 -> FindLetterGamePane(
+                    speak = speak,
+                    speakWhenDone = speakWhenDone,
+                    progressRepo = progressRepo,
+                    scope = scope,
+                )
+                3 -> PartsOfSpeechGamePane(
                     speak = speak,
                     speakWhenDone = speakWhenDone,
                     progressRepo = progressRepo,
