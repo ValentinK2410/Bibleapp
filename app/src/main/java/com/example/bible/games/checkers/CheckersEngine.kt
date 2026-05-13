@@ -106,13 +106,45 @@ object CheckersEngine {
         val out = board.copyOf()
         val piece = out[from]
         require(sideOf(piece) != null)
+        require(board[to] == CheckersCell.Empty)
+        val r1 = row(from)
+        val c1 = col(from)
+        val r2 = row(to)
+        val c2 = col(to)
+        val dist = abs(r2 - r1)
+        require(abs(c2 - c1) == dist) { "not diagonal" }
         out[from] = CheckersCell.Empty
-        val mid = midpointCaptured(from, to, board) ?: error("invalid jump")
-        val (mr, mc) = mid
-        if (isPlayable(mr, mc)) out[idx(mr, mc)] = CheckersCell.Empty
-        val er = row(to)
-        out[to] = promote(er, piece)
+        when {
+            dist == 1 -> {
+                /* простой ход шашки или дамки на соседнее поле */
+            }
+            else -> {
+                val mid = midpointCaptured(from, to, board)
+                if (mid != null) {
+                    val (mr, mc) = mid
+                    if (isPlayable(mr, mc)) out[idx(mr, mc)] = CheckersCell.Empty
+                } else {
+                    require(isKing(piece)) { "only king may slide" }
+                    require(diagonalInteriorsEmpty(board, from, to)) { "path not empty" }
+                }
+            }
+        }
+        out[to] = promote(r2, piece)
         return out
+    }
+
+    /** Клетки строго между [from] и [to] на одной диагонали — все пустые (ход дамки без взятия). */
+    private fun diagonalInteriorsEmpty(board: Array<CheckersCell>, from: Int, to: Int): Boolean {
+        val dr = (row(to) - row(from)).sign
+        val dc = (col(to) - col(from)).sign
+        var r = row(from) + dr
+        var c = col(from) + dc
+        while (r != row(to) || c != col(to)) {
+            if (board[idx(r, c)] != CheckersCell.Empty) return false
+            r += dr
+            c += dc
+        }
+        return true
     }
 
     private fun simplePaths(board: Array<CheckersCell>, side: CheckersSide): List<CheckersPath> {

@@ -17,6 +17,23 @@ class CheckersEngineTest {
     }
 
     @Test
+    fun applySimpleMove_keepsVoidSquaresAndPieceCount() {
+        val b0 = CheckersEngine.initialBoard()
+        val move = CheckersEngine.legalPaths(b0, CheckersSide.Light).first()
+        assertEquals(2, move.cells.size)
+        val b1 = CheckersEngine.applyPath(b0, move)
+        for (i in b1.indices) {
+            val r = CheckersEngine.row(i)
+            val c = CheckersEngine.col(i)
+            if (!CheckersEngine.isPlayable(r, c)) {
+                assertEquals(CheckersCell.Void, b1[i])
+            }
+        }
+        assertEquals(12, b1.count { it == CheckersCell.LightMan })
+        assertEquals(12, b1.count { it == CheckersCell.DarkMan })
+    }
+
+    @Test
     fun start_lightHasLegalMoves() {
         val b = CheckersEngine.initialBoard()
         val moves = CheckersEngine.legalPaths(b, CheckersSide.Light)
