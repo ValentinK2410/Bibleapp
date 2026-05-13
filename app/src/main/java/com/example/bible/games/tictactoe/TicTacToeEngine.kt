@@ -38,6 +38,13 @@ class TicTacToeEngine(
     fun emptyBoard(): Array<TicMark> = Array(cellCount) { TicMark.Empty }
 
     fun winner(board: Array<TicMark>): TicMark? {
+        winningLine(board)?.let { return board[it[0]] }
+        return null
+    }
+
+    /** Индексы ячеек [0 … size²), образующих выигравшую линию длины winLength. */
+    fun winningLine(board: Array<TicMark>): IntArray? {
+        require(board.size == cellCount)
         for (line in winningLines) {
             val a = board[line[0]]
             if (a == TicMark.Empty) continue
@@ -48,13 +55,13 @@ class TicTacToeEngine(
                     break
                 }
             }
-            if (ok) return a
+            if (ok) return line
         }
         return null
     }
 
     fun isDraw(board: Array<TicMark>): Boolean =
-        board.all { it != TicMark.Empty } && winner(board) == null
+        board.all { it != TicMark.Empty } && winningLine(board) == null
 }
 
 /** Вне `buildList { }`: внутри блока receiver — `MutableList`, и свойство `size` было бы длиной списка (0). */

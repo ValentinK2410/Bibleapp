@@ -2,6 +2,7 @@ package com.example.bible
 
 import com.example.bible.games.tictactoe.TicMark
 import com.example.bible.games.tictactoe.TicTacToeEngine
+import org.junit.Assert.assertArrayEquals
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Test
@@ -16,6 +17,7 @@ class TicTacToeEngineTest {
             TicMark.X, TicMark.X, TicMark.X,
         )
         assertEquals(TicMark.X, e.winner(b))
+        assertArrayEquals(intArrayOf(6, 7, 8), e.winningLine(b))
         assertFalse(e.isDraw(b))
     }
 }

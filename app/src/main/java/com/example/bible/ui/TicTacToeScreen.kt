@@ -1,21 +1,20 @@
 package com.example.bible.ui
 
+import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.aspectRatio
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.lazy.grid.GridCells
-import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
-import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -43,7 +42,10 @@ import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.StrokeCap
+import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -78,8 +80,7 @@ fun TicTacToeScreen(
     fun toArray(): Array<TicMark> = Array(cells.size) { cells[it] }
 
     fun gameOver(): Boolean {
-        val w = engine.winner(toArray())
-        return w != null || engine.isDraw(toArray())
+        return engine.winningLine(toArray()) != null || engine.isDraw(toArray())
     }
 
     fun opponent(m: TicMark): TicMark = when (m) {
@@ -140,8 +141,10 @@ fun TicTacToeScreen(
         }
     }
 
-    val win = engine.winner(toArray())
-    val draw = engine.isDraw(toArray())
+    val boardArr = toArray()
+    val winLine = engine.winningLine(boardArr)
+    val win = winLine?.let { boardArr[it[0]].takeIf { mark -> mark != TicMark.Empty } }
+    val draw = engine.isDraw(boardArr)
     val over = win != null || draw
 
     val statusLine =
@@ -258,9 +261,11 @@ fun TicTacToeScreen(
             ) {
                 key(boardSize, mode.name) {
                     TicBoardGrid(
-                        size = boardSize,
+                        boardSize = boardSize,
                         marks = cells,
                         humanCanTap = humanCanTap,
+                        winLine = winLine,
+                        strikeColor = MaterialTheme.colorScheme.tertiary,
                         onCell = { onHumanCell(it) },
                     )
                 }
@@ -281,69 +286,123 @@ fun TicTacToeScreen(
 
 @Composable
 private fun TicBoardGrid(
-    size: Int,
+    boardSize: Int,
     marks: SnapshotStateList<TicMark>,
     humanCanTap: Boolean,
+    winLine: IntArray?,
+    strikeColor: Color,
     onCell: (Int) -> Unit,
 ) {
-    val count = size * size
-    LazyVerticalGrid(
-        columns = GridCells.Fixed(size),
+    val n = boardSize
+    val cellPad = 2.dp
+    val markBoxFraction = 0.78f
+    val xSp = when (n) {
+        3 -> 34.sp
+        4 -> 26.sp
+        5 -> 21.sp
+        else -> 18.sp
+    }
+
+    BoxWithConstraints(
         modifier = Modifier
             .fillMaxWidth()
-            .aspectRatio(1f),
-        contentPadding = PaddingValues(4.dp),
-        horizontalArrangement = Arrangement.spacedBy(4.dp),
-        verticalArrangement = Arrangement.spacedBy(4.dp),
-        userScrollEnabled = false,
+            .aspectRatio(1f)
+            .padding(4.dp),
     ) {
-        items(
-            count = count,
-            key = { it },
-        ) { index ->
-            val mark = marks[index]
-            val clickable = humanCanTap && mark == TicMark.Empty
-            Box(
-                modifier = Modifier
-                    .aspectRatio(1f)
-                    .clip(RoundedCornerShape(8.dp))
-                    .background(MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.6f))
-                    .border(
-                        1.dp,
-                        MaterialTheme.colorScheme.outline.copy(alpha = 0.35f),
-                        RoundedCornerShape(8.dp),
-                    )
-                    .clickable(enabled = clickable) { onCell(index) },
-                contentAlignment = Alignment.Center,
-            ) {
-                when (mark) {
-                    TicMark.X -> Text(
-                        "✕",
-                        fontSize = when (size) {
-                            3 -> 40.sp
-                            4 -> 32.sp
-                            5 -> 26.sp
-                            else -> 22.sp
-                        },
-                        fontWeight = FontWeight.Bold,
-                        color = Color(0xFFD32F2F),
-                        textAlign = TextAlign.Center,
-                    )
-                    TicMark.O -> Text(
-                        "○",
-                        fontSize = when (size) {
-                            3 -> 38.sp
-                            4 -> 30.sp
-                            5 -> 24.sp
-                            else -> 20.sp
-                        },
-                        fontWeight = FontWeight.Bold,
-                        color = Color(0xFF1976D2),
-                        textAlign = TextAlign.Center,
-                    )
-                    TicMark.Empty -> {}
+        Box(Modifier.fillMaxSize()) {
+            Column(Modifier.fillMaxSize()) {
+                for (r in 0 until n) {
+                    Row(
+                        modifier = Modifier
+                            .weight(1f, fill = true)
+                            .fillMaxWidth(),
+                    ) {
+                        for (c in 0 until n) {
+                            val idx = r * n + c
+                            val mark = marks[idx]
+                            val clickable = humanCanTap && mark == TicMark.Empty
+                            Box(
+                                modifier = Modifier
+                                    .weight(1f, fill = true)
+                                    .fillMaxHeight()
+                                    .padding(cellPad)
+                                    .clip(RoundedCornerShape(8.dp))
+                                    .background(MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.6f))
+                                    .border(
+                                        1.dp,
+                                        MaterialTheme.colorScheme.outline.copy(alpha = 0.35f),
+                                        RoundedCornerShape(8.dp),
+                                    )
+                                    .clickable(enabled = clickable) { onCell(idx) },
+                                contentAlignment = Alignment.Center,
+                            ) {
+                                when (mark) {
+                                    TicMark.X -> Text(
+                                        "✕",
+                                        fontSize = xSp,
+                                        fontWeight = FontWeight.Bold,
+                                        color = Color(0xFFD32F2F),
+                                        textAlign = TextAlign.Center,
+                                    )
+
+                                    TicMark.O -> Box(
+                                        Modifier.fillMaxSize(markBoxFraction),
+                                        contentAlignment = Alignment.Center,
+                                    ) {
+                                        TicNoughtRing(
+                                            ringColor = Color(0xFF1976D2),
+                                            modifier = Modifier.fillMaxSize(),
+                                        )
+                                    }
+
+                                    TicMark.Empty -> {}
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+
+            winLine?.let { line ->
+                if (line.size >= 2) {
+                    Canvas(Modifier.fillMaxSize()) {
+                        val cw = size.width / n
+                        val ch = size.height / n
+                        fun center(idx: Int): Offset {
+                            val rr = idx / n
+                            val cc = idx % n
+                            return Offset((cc + 0.5f) * cw, (rr + 0.5f) * ch)
+                        }
+                        drawLine(
+                            color = strikeColor.copy(alpha = 0.95f),
+                            start = center(line.first()),
+                            end = center(line.last()),
+                            strokeWidth = size.minDimension * 0.045f,
+                            cap = StrokeCap.Round,
+                        )
+                    }
                 }
             }
         }
+    }
+}
+
+@Composable
+private fun TicNoughtRing(
+    ringColor: Color,
+    modifier: Modifier = Modifier,
+) {
+    Canvas(modifier.aspectRatio(1f)) {
+        val m = kotlin.math.min(size.width, size.height)
+        val cx = size.width / 2f
+        val cy = size.height / 2f
+        val strokeW = m * 0.11f
+        val radius = (m - strokeW) * 0.5f * 0.92f
+        drawCircle(
+            color = ringColor,
+            radius = radius,
+            center = Offset(cx, cy),
+            style = Stroke(width = strokeW, cap = StrokeCap.Round),
+        )
     }
 }
