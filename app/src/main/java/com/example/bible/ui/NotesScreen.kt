@@ -354,9 +354,7 @@ fun NoteEditorScreen(
     onBack: () -> Unit,
     embeddedBible: (@Composable (Modifier, NoteBibleNavigation?, () -> Unit) -> Unit)? = null,
 ) {
-    var isViewMode by remember(initialNote.id) {
-        mutableStateOf(initialNote.title.isNotBlank() || initialNote.body.isNotBlank())
-    }
+    var isViewMode by remember(initialNote.id) { mutableStateOf(false) }
     var bibleNavRequest by remember { mutableStateOf<NoteBibleNavigation?>(null) }
     var lastNavLinkKey by remember { mutableStateOf<String?>(null) }
     var lastNavShowFullChapter by remember { mutableStateOf(false) }
@@ -454,8 +452,43 @@ fun NoteEditorScreen(
     var colorMode by remember { mutableStateOf(ColorPickerMode.TEXT) }
     var showColorPicker by remember { mutableStateOf(false) }
     var kindMenuExpanded by remember { mutableStateOf(false) }
-    var verseCardExpanded by remember { mutableStateOf(false) }
-    var journalExpanded by remember { mutableStateOf(false) }
+    var verseCardExpanded by remember(initialNote.id) { mutableStateOf(false) }
+    var journalExpanded by remember(initialNote.id) {
+        mutableStateOf(initialNote.journalEntries.isNotEmpty())
+    }
+
+    fun buildEditedNote(): UserNote {
+        val trimmedCustom = customKindLabel.trim()
+        val resolvedKind = when {
+            kind == UserNoteKind.CUSTOM && trimmedCustom.isEmpty() -> UserNoteKind.NOTE
+            kind == UserNoteKind.CUSTOM -> UserNoteKind.CUSTOM
+            else -> kind
+        }
+        return initialNote.copy(
+            title = title,
+            body = textFieldValue.text,
+            spans = spans.filter { it.end <= textFieldValue.text.length },
+            kind = resolvedKind,
+            customKindLabel = if (resolvedKind == UserNoteKind.CUSTOM) trimmedCustom else null,
+            linkedQuestionId = if (kind == UserNoteKind.ANSWER) linkedQuestionId else null,
+            journalEntries = journalEntries.toList(),
+            verseTextSnapshot = initialNote.verseTextSnapshot,
+        )
+    }
+
+    fun persistNote() {
+        val note = buildEditedNote()
+        val unchanged =
+            note.title == initialNote.title &&
+                note.body == initialNote.body &&
+                note.spans == initialNote.spans &&
+                note.kind == initialNote.kind &&
+                note.customKindLabel == initialNote.customKindLabel &&
+                note.linkedQuestionId == initialNote.linkedQuestionId &&
+                note.journalEntries == initialNote.journalEntries
+        if (unchanged) return
+        onSave(note.copy(updatedAt = System.currentTimeMillis()))
+    }
 
     fun currentFormatRange(): Pair<Int, Int>? {
         val text = textFieldValue.text
@@ -617,42 +650,26 @@ fun NoteEditorScreen(
                     )
                 },
                 navigationIcon = {
-                    IconButton(onClick = onBack) {
+                    IconButton(onClick = {
+                        persistNote()
+                        onBack()
+                    }) {
                         Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Назад")
                     }
                 },
                 actions = {
-                    if (isViewMode) {
-                        IconButton(onClick = { isViewMode = false }) {
+                    IconButton(onClick = { isViewMode = !isViewMode }) {
+                        if (isViewMode) {
                             Icon(Icons.Default.Edit, contentDescription = stringResource(R.string.note_switch_to_edit))
-                        }
-                    } else {
-                        IconButton(onClick = { isViewMode = true }) {
+                        } else {
                             Icon(Icons.Default.Visibility, contentDescription = stringResource(R.string.note_switch_to_view))
                         }
-                        IconButton(onClick = {
-                        val trimmedCustom = customKindLabel.trim()
-                        val resolvedKind = when {
-                            kind == UserNoteKind.CUSTOM && trimmedCustom.isEmpty() -> UserNoteKind.NOTE
-                            kind == UserNoteKind.CUSTOM -> UserNoteKind.CUSTOM
-                            else -> kind
-                        }
-                        val note = initialNote.copy(
-                            title = title,
-                            body = textFieldValue.text,
-                            spans = spans.filter { it.end <= textFieldValue.text.length },
-                            updatedAt = System.currentTimeMillis(),
-                            kind = resolvedKind,
-                            customKindLabel = if (resolvedKind == UserNoteKind.CUSTOM) trimmedCustom else null,
-                            linkedQuestionId = if (kind == UserNoteKind.ANSWER) linkedQuestionId else null,
-                            journalEntries = journalEntries.toList(),
-                            verseTextSnapshot = initialNote.verseTextSnapshot,
-                        )
-                        onSave(note)
+                    }
+                    IconButton(onClick = {
+                        persistNote()
                         onBack()
                     }) {
                         Icon(Icons.Default.Check, contentDescription = "Сохранить")
-                    }
                     }
                 },
             )
@@ -1004,26 +1021,54 @@ fun NoteEditorScreen(
                                 modifier = Modifier
                                     .fillMaxWidth()
                                     .padding(horizontal = 8.dp, vertical = 4.dp)
-                                    .heightIn(max = 160.dp)
+                                    .heightIn(max = 280.dp)
                                     .verticalScroll(rememberScrollState()),
                                 verticalArrangement = Arrangement.spacedBy(6.dp),
                             ) {
                                 journalEntries.sortedBy { it.createdAt }.forEach { entry ->
-                                    Column(
+                                    Row(
                                         modifier = Modifier
                                             .fillMaxWidth()
                                             .background(
                                                 MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f),
                                                 RoundedCornerShape(8.dp),
                                             )
-                                            .padding(8.dp),
+                                            .padding(start = 8.dp, top = 4.dp, bottom = 4.dp),
+                                        verticalAlignment = Alignment.Top,
                                     ) {
-                                        Text(
-                                            dateFormat.format(java.util.Date(entry.createdAt)),
-                                            style = MaterialTheme.typography.labelSmall,
-                                            color = MaterialTheme.colorScheme.outline,
-                                        )
-                                        Text(entry.text, style = MaterialTheme.typography.bodyMedium)
+                                        Column(Modifier.weight(1f)) {
+                                            Text(
+                                                dateFormat.format(java.util.Date(entry.createdAt)),
+                                                style = MaterialTheme.typography.labelSmall,
+                                                color = MaterialTheme.colorScheme.outline,
+                                            )
+                                            TextField(
+                                                value = entry.text,
+                                                onValueChange = { newText ->
+                                                    journalEntries = journalEntries.map { item ->
+                                                        if (item.id == entry.id) item.copy(text = newText) else item
+                                                    }.toMutableList()
+                                                },
+                                                modifier = Modifier.fillMaxWidth(),
+                                                textStyle = MaterialTheme.typography.bodyMedium,
+                                                colors = editorFieldColors,
+                                            )
+                                        }
+                                        IconButton(
+                                            onClick = {
+                                                journalEntries = journalEntries
+                                                    .filter { it.id != entry.id }
+                                                    .toMutableList()
+                                            },
+                                            modifier = Modifier.size(36.dp),
+                                        ) {
+                                            Icon(
+                                                Icons.Default.Delete,
+                                                contentDescription = "Удалить запись хронологии",
+                                                tint = MaterialTheme.colorScheme.outline,
+                                                modifier = Modifier.size(18.dp),
+                                            )
+                                        }
                                     }
                                 }
                             }
