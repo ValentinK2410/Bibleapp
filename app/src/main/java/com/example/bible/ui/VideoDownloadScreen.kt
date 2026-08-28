@@ -1,10 +1,18 @@
 package com.example.bible.ui
 
+import android.content.Context
+import android.content.Intent
+import android.media.MediaPlayer
+import android.net.Uri
+import android.provider.DocumentsContract
 import android.os.Handler
 import android.os.Looper
 import android.util.Log
 import android.widget.Toast
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -12,35 +20,51 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.KeyboardActions
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.ContentPaste
 import androidx.compose.material.icons.filled.Download
+import androidx.compose.material.icons.filled.Folder
 import androidx.compose.material.icons.filled.HighQuality
 import androidx.compose.material.icons.filled.MusicNote
+import androidx.compose.material.icons.filled.Pause
+import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material.icons.filled.Refresh
+import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.Videocam
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CenterAlignedTopAppBar
+import androidx.compose.material3.Checkbox
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ElevatedCard
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.Icon
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
@@ -56,19 +80,59 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalClipboardManager
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.bible.data.FonkiExtractor
+import com.example.bible.data.LegalAudioTrack
+import com.example.bible.data.LocalDeviceAudioScan
+import com.example.bible.data.PlaylistInspection
 import com.example.bible.data.VideoExtractor
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import java.util.Locale
 
 private const val TAG = "VideoDownload"
+
+private fun ytDlpErrorUserMessage(msg: String): String = when {
+    "No address associated with hostname" in msg ||
+        "Unable to resolve host" in msg || "DNS" in msg.uppercase() ||
+        "Network is unreachable" in msg || "Connection refused" in msg ->
+        "Пожалуйста, подключитесь к сети Интернет"
+    "HTTP Error 403" in msg ->
+        "Доступ запрещён (403). Возможно, ссылка устарела."
+    "HTTP Error 404" in msg ->
+        "Видео не найдено (404). Проверьте ссылку."
+    "is not a valid URL" in msg || "Unsupported URL" in msg ->
+        "Неподдерживаемая ссылка."
+    "Unable to extract" in msg || "please report this issue" in msg ->
+        "Эта платформа временно не поддерживается.\nНажмите ↻ для обновления yt-dlp."
+    "yt-dlp -U" in msg ->
+        "Требуется обновление. Нажмите ↻ в правом верхнем углу."
+    "not a bot" in msg.lowercase() || "sign in to confirm" in msg.lowercase() ->
+        "YouTube запросил проверку (бот). Нажмите ↻ и обновите yt-dlp, затем повторите. Если снова ошибка — попробуйте позже или другую сеть (Wi‑Fi / мобильный интернет)."
+    else -> msg
+}
 
 enum class MediaDownloadImportTarget {
     Video,
     Audio,
+}
+
+private class OpenYandexMusicFilesTree : ActivityResultContracts.OpenDocumentTree() {
+    override fun createIntent(context: Context, input: Uri?): Intent {
+        return super.createIntent(context, input).apply {
+            addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+            addFlags(Intent.FLAG_GRANT_PERSISTABLE_URI_PERMISSION)
+            putExtra(
+                DocumentsContract.EXTRA_INITIAL_URI,
+                input ?: LocalDeviceAudioScan.yandexInitialTreeUri(),
+            )
+        }
+    }
 }
 
 private enum class DownloadStatus {
@@ -86,6 +150,81 @@ private val VIDEO_QUALITIES = listOf(
     QualityOption("720p", 720),
     QualityOption("1080p", 1080),
 )
+
+private fun formatDurationSeconds(sec: Long?): String {
+    if (sec == null || sec <= 0L) return ""
+    val h = sec / 3600L
+    val m = (sec % 3600L) / 60L
+    val s = sec % 60L
+    val ss = s.toString().padStart(2, '0')
+    return if (h > 0L) "${h}:${m.toString().padStart(2, '0')}:$ss" else "${m}:$ss"
+}
+
+/**
+ * Однозначный ключ страницы ролика для сопоставления с [com.example.bible.data.BibleUserVideo.sourceUrl] /
+ * [com.example.bible.data.BibleUserAudio.sourceUrl] после загрузки.
+ */
+private fun canonicalDownloadSourceUrl(raw: String): String {
+    val trimmed = raw.trim()
+    if (trimmed.isEmpty()) return ""
+    val uri = Uri.parse(trimmed)
+
+    fun youtubeCanon(idCandidate: String): String? {
+        val id = idCandidate.filter { it.isLetterOrDigit() || it == '-' || it == '_' }
+        if (id.length < 8) return null
+        return "yt:$id"
+    }
+
+    val hostFull = uri.host ?: return trimmed.lowercase(Locale.ROOT)
+    val host = hostFull.lowercase(Locale.ROOT).removePrefix("www.")
+
+    run {
+        if ("youtu.be" in host || host == "youtu.be") {
+            val seg = uri.pathSegments.firstOrNull().orEmpty()
+            youtubeCanon(seg)?.let { return it }
+        }
+        if ("youtube." in host || host == "youtube.com" || host == "youtube-nocookie.com" ||
+            host == "m.youtube.com"
+        ) {
+            uri.getQueryParameter("v")?.let { v -> youtubeCanon(v)?.let { return it } }
+            val segs = uri.pathSegments
+            if (segs.size >= 2) {
+                val kind = segs[0].lowercase(Locale.ROOT)
+                if (kind == "shorts" || kind == "embed" || kind == "live") {
+                    youtubeCanon(segs[1])?.let { return it }
+                }
+            }
+        }
+    }
+
+    val scheme = (uri.scheme ?: "https").lowercase(Locale.ROOT)
+    val path = (uri.path ?: "").trim('/').lowercase(Locale.ROOT)
+    return buildString {
+        append(scheme)
+        append("://")
+        append(host)
+        if (path.isNotEmpty()) {
+            append('/')
+            append(path)
+        }
+    }
+}
+
+private fun openExternalMediaPreview(context: android.content.Context, pageUrl: String) {
+    try {
+        context.startActivity(
+            Intent(Intent.ACTION_VIEW, Uri.parse(pageUrl)).apply {
+                addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+            },
+        )
+    } catch (e: Throwable) {
+        Toast.makeText(
+            context,
+            "Не удалось открыть ссылку: ${e.message}",
+            Toast.LENGTH_SHORT,
+        ).show()
+    }
+}
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -115,6 +254,7 @@ private fun MediaDownloadScreen(
     val context = LocalContext.current
     val clipboard = LocalClipboardManager.current
     val scope = rememberCoroutineScope()
+    val mainHandler = remember { Handler(Looper.getMainLooper()) }
 
     var url by remember { mutableStateOf("") }
     var audioOnly by remember { mutableStateOf(importTarget == MediaDownloadImportTarget.Audio) }
@@ -125,6 +265,26 @@ private fun MediaDownloadScreen(
     var progress by remember { mutableFloatStateOf(-1f) }
     var ytdlpReady by remember { mutableStateOf(false) }
     var fonkiLyrics by remember { mutableStateOf<String?>(null) }
+    var playlistInspection by remember { mutableStateOf<PlaylistInspection?>(null) }
+    var playlistBusy by remember { mutableStateOf(false) }
+    var playlistParseError by remember { mutableStateOf<String?>(null) }
+    var selectedIds by remember { mutableStateOf<Set<String>>(emptySet()) }
+    /** Не вызывать yt-dlp, если [canonicalDownloadSourceUrl] уже есть в текущей медиатеке. */
+    var skipDuplicates by remember { mutableStateOf(true) }
+
+    val bibleVideos by viewModel.bibleUserVideos.collectAsStateWithLifecycle()
+    val bibleAudios by viewModel.bibleUserAudios.collectAsStateWithLifecycle()
+    val importedCanonicalSources =
+        remember(bibleVideos, bibleAudios, importTarget) {
+            val urls =
+                when (importTarget) {
+                    MediaDownloadImportTarget.Video ->
+                        bibleVideos.mapNotNull { it.sourceUrl }
+                    MediaDownloadImportTarget.Audio ->
+                        bibleAudios.mapNotNull { it.sourceUrl }
+                }
+            urls.map(::canonicalDownloadSourceUrl).filter { it.isNotEmpty() }.toSet()
+        }
 
     LaunchedEffect(Unit) {
         try {
@@ -147,6 +307,51 @@ private fun MediaDownloadScreen(
         }
     }
 
+    fun loadPlaylistOutline() {
+        val trimmedUrl = url.trim()
+        playlistParseError = null
+        if (trimmedUrl.isBlank()) {
+            playlistParseError = "Укажите ссылку"
+            return
+        }
+        if (!trimmedUrl.startsWith("http")) {
+            playlistParseError = "Ссылка должна начинаться с http или https"
+            return
+        }
+        if (FonkiExtractor.isFonkiUrl(trimmedUrl)) {
+            playlistParseError = "Для fonki.pro режим списка не используется"
+            return
+        }
+        playlistBusy = true
+        scope.launch(Dispatchers.IO) {
+            try {
+                val inspection = VideoExtractor.inspectPlaylist(trimmedUrl)
+                if (inspection.items.isEmpty()) {
+                    throw RuntimeException("Список пуст или не удалось распознать ответ платформы")
+                }
+                mainHandler.post {
+                    playlistInspection = inspection
+                    selectedIds = inspection.items.map { it.stableId }.toSet()
+                    playlistBusy = false
+                    Toast.makeText(
+                        context,
+                        "Отметьте дорожки и нажмите «Скачать» — или «Выбрать всё»",
+                        Toast.LENGTH_LONG,
+                    ).show()
+                }
+            } catch (e: Throwable) {
+                Log.e(TAG, "Playlist inspect failed", e)
+                mainHandler.post {
+                    playlistBusy = false
+                    playlistInspection = null
+                    selectedIds = emptySet()
+                    playlistParseError =
+                        ytDlpErrorUserMessage(e.message ?: "Не удалось получить список")
+                }
+            }
+        }
+    }
+
     fun startDownload() {
         val trimmedUrl = url.trim()
         val typeLabel = if (audioOnly) "аудио" else "видео"
@@ -158,17 +363,23 @@ private fun MediaDownloadScreen(
             errorText = "Ссылка должна начинаться с http:// или https://"
             return
         }
-        errorText = ""
-        progress = -1f
-        status = DownloadStatus.DOWNLOADING
-        val platform = VideoExtractor.detectPlatform(trimmedUrl)
-        val qualityLabel = if (!audioOnly) " (${selectedQuality}p)" else ""
-        statusText = "Скачивание: $platform$qualityLabel..."
 
-        val mainHandler = Handler(Looper.getMainLooper())
         fonkiLyrics = null
 
         if (FonkiExtractor.isFonkiUrl(trimmedUrl)) {
+            if (skipDuplicates) {
+                val c = canonicalDownloadSourceUrl(trimmedUrl)
+                if (c.isNotEmpty() && c in importedCanonicalSources) {
+                    errorText =
+                        "Этот источник уже сохранён в медиатеке. Снимите галочку «Не скачивать повторно», чтобы загрузить снова."
+                    Toast.makeText(context, "Уже в медиатеке", Toast.LENGTH_SHORT).show()
+                    return
+                }
+            }
+            errorText = ""
+            progress = -1f
+            status = DownloadStatus.DOWNLOADING
+            statusText = "Скачивание с fonki.pro..."
             scope.launch(Dispatchers.IO) {
                 try {
                     mainHandler.post { statusText = "Загрузка страницы fonki.pro..." }
@@ -240,48 +451,233 @@ private fun MediaDownloadScreen(
             return
         }
 
+        val inspected = playlistInspection
+        val playlistMode =
+            inspected != null && inspected.items.isNotEmpty()
+        val batch = inspected?.items
+            ?.filter { selectedIds.contains(it.stableId) }
+            .orEmpty()
+        if (playlistMode && batch.isEmpty()) {
+            errorText = "Отметьте хотя бы один элемент в списке"
+            return
+        }
+
+        if (batch.isEmpty() && skipDuplicates) {
+            val c = canonicalDownloadSourceUrl(trimmedUrl)
+            if (c.isNotEmpty() && c in importedCanonicalSources) {
+                errorText =
+                    "Этот источник уже сохранён в медиатеке. Снимите галочку «Не скачивать повторно», чтобы загрузить снова."
+                Toast.makeText(context, "Уже в медиатеке", Toast.LENGTH_SHORT).show()
+                return
+            }
+        }
+
+        errorText = ""
+        progress = -1f
+        status = DownloadStatus.DOWNLOADING
+
+        val qualityLabel = if (!audioOnly) " (${selectedQuality}p)" else ""
+        statusText =
+            if (playlistMode && batch.isNotEmpty()) {
+                "${VideoExtractor.detectPlatform(trimmedUrl)} · загрузка выбранного (${batch.size})$qualityLabel"
+            } else {
+                val platform = VideoExtractor.detectPlatform(trimmedUrl)
+                "Скачивание: $platform$qualityLabel..."
+            }
+
         scope.launch(Dispatchers.IO) {
             try {
-                Log.d(TAG, "Starting download: $trimmedUrl audio=$audioOnly q=$selectedQuality")
-                val file = VideoExtractor.download(
-                    url = trimmedUrl,
-                    audioOnly = audioOnly,
-                    videoQuality = selectedQuality,
-                    onProgress = { p, eta ->
-                        mainHandler.post {
-                            progress = p
-                            val etaText = if (eta > 0) " · ~${eta}с" else ""
-                            statusText = "Скачивание: ${p.toInt()}%$etaText"
+                if (playlistMode && batch.isNotEmpty()) {
+                    var okCount = 0
+                    var skippedCount = 0
+                    val knownCanon = importedCanonicalSources.toMutableSet()
+                    val failLines = mutableListOf<String>()
+                    for ((idx, item) in batch.withIndex()) {
+                        val canon = canonicalDownloadSourceUrl(item.pageUrl)
+                        if (skipDuplicates && canon.isNotEmpty() && canon in knownCanon) {
+                            skippedCount++
+                            mainHandler.post {
+                                progress = -1f
+                                statusText =
+                                    "${idx + 1}/${batch.size}: пропуск — уже в медиатеке (${item.title.take(40)})"
+                            }
+                            continue
                         }
-                    },
-                )
-                Log.d(TAG, "Download complete: ${file.absolutePath}")
+                        try {
+                            mainHandler.post {
+                                progress = -1f
+                                statusText =
+                                    "${idx + 1}/${batch.size}: ${item.title.take(48)}"
+                            }
+                            val file = VideoExtractor.download(
+                                url = item.pageUrl,
+                                audioOnly = audioOnly,
+                                videoQuality = selectedQuality,
+                                onProgress = { p, eta ->
+                                    mainHandler.post {
+                                        progress = p
+                                        val etaText = if (eta > 0) " · ~${eta}с" else ""
+                                        val shortTitle = item.title.take(36)
+                                        statusText =
+                                            "${idx + 1}/${batch.size}: ${p.toInt()}%$etaText — $shortTitle"
+                                    }
+                                },
+                            )
 
-                mainHandler.post {
-                    status = DownloadStatus.DONE
-                    statusText = "Скачано: ${file.name}"
-                    url = ""
-                    progress = 100f
-                    val toastOk = when (importTarget) {
-                        MediaDownloadImportTarget.Video -> "Файл добавлен в «Медиа → Видео»"
-                        MediaDownloadImportTarget.Audio -> "Файл добавлен в «Медиа → Аудио»"
-                    }
-                    when (importTarget) {
-                        MediaDownloadImportTarget.Video -> viewModel.importBibleVideoFromPublicDownloadFile(
-                            sourceFile = file,
-                            title = file.nameWithoutExtension,
-                            sourceUrl = trimmedUrl,
-                        ) { err ->
-                            if (err != null) Toast.makeText(context, err, Toast.LENGTH_LONG).show()
-                            else Toast.makeText(context, toastOk, Toast.LENGTH_SHORT).show()
+                            mainHandler.post {
+                                val toastOk = when (importTarget) {
+                                    MediaDownloadImportTarget.Video -> "Файл добавлен в «Медиа → Видео»"
+                                    MediaDownloadImportTarget.Audio -> "Файл добавлен в «Медиа → Аудио»"
+                                }
+                                when (importTarget) {
+                                    MediaDownloadImportTarget.Video ->
+                                        viewModel.importBibleVideoFromPublicDownloadFile(
+                                            sourceFile = file,
+                                            title = file.nameWithoutExtension,
+                                            sourceUrl = item.pageUrl,
+                                        ) { err ->
+                                            if (err != null) {
+                                                Toast.makeText(context, err, Toast.LENGTH_LONG).show()
+                                            } else {
+                                                Toast.makeText(
+                                                    context,
+                                                    toastOk,
+                                                    Toast.LENGTH_SHORT,
+                                                ).show()
+                                            }
+                                        }
+                                    MediaDownloadImportTarget.Audio ->
+                                        viewModel.importBibleAudioFromPublicDownloadFile(
+                                            sourceFile = file,
+                                            title = file.nameWithoutExtension,
+                                            sourceUrl = item.pageUrl,
+                                        ) { err ->
+                                            if (err != null) {
+                                                Toast.makeText(context, err, Toast.LENGTH_LONG).show()
+                                            } else {
+                                                Toast.makeText(
+                                                    context,
+                                                    toastOk,
+                                                    Toast.LENGTH_SHORT,
+                                                ).show()
+                                            }
+                                        }
+                                }
+                            }
+                            if (canon.isNotEmpty()) knownCanon.add(canon)
+                            okCount++
+                        } catch (e: Throwable) {
+                            Log.e(TAG, "Batch download failed for ${item.pageUrl}", e)
+                            val line =
+                                ytDlpErrorUserMessage(e.message ?: "ошибка")
+                            failLines += "${item.title.take(52)}… — $line"
                         }
-                        MediaDownloadImportTarget.Audio -> viewModel.importBibleAudioFromPublicDownloadFile(
-                            sourceFile = file,
-                            title = file.nameWithoutExtension,
-                            sourceUrl = trimmedUrl,
-                        ) { err ->
-                            if (err != null) Toast.makeText(context, err, Toast.LENGTH_LONG).show()
-                            else Toast.makeText(context, toastOk, Toast.LENGTH_SHORT).show()
+                    }
+
+                    mainHandler.post {
+                        val allSkippedOk =
+                            failLines.isEmpty() && skippedCount == batch.size && batch.isNotEmpty()
+                        status =
+                            when {
+                                okCount > 0 || allSkippedOk -> DownloadStatus.DONE
+                                else -> DownloadStatus.ERROR
+                            }
+                        progress =
+                            when {
+                                failLines.isNotEmpty() -> -1f
+                                okCount > 0 || allSkippedOk -> 100f
+                                else -> -1f
+                            }
+                        statusText =
+                            when {
+                                skippedCount > 0 && okCount > 0 ->
+                                    "Готово: $okCount скачано, $skippedCount пропущено (уже в медиатеке)"
+                                skippedCount > 0 && okCount == 0 && failLines.isEmpty() ->
+                                    "Пропущено $skippedCount из ${batch.size} — уже в медиатеке"
+                                else ->
+                                    "Файлов готово: $okCount из ${batch.size}"
+                            }
+                        if (failLines.isEmpty()) {
+                            when {
+                                okCount > 0 && skippedCount > 0 ->
+                                    Toast.makeText(
+                                        context,
+                                        "Добавлено: $okCount, пропущено (уже есть): $skippedCount",
+                                        Toast.LENGTH_LONG,
+                                    ).show()
+                                okCount > 0 ->
+                                    Toast.makeText(
+                                        context,
+                                        "Успешно добавлено: $okCount",
+                                        Toast.LENGTH_SHORT,
+                                    ).show()
+                                allSkippedOk ->
+                                    Toast.makeText(
+                                        context,
+                                        "Все выбранные записи уже есть в медиатеке",
+                                        Toast.LENGTH_LONG,
+                                    ).show()
+                            }
+                            if (okCount > 0 || allSkippedOk) {
+                                url = ""
+                                playlistInspection = null
+                                selectedIds = emptySet()
+                            }
+                        }
+                        errorText =
+                            if (failLines.isNotEmpty()) {
+                                Toast.makeText(
+                                    context,
+                                    "Не удалось скачать ${failLines.size} из ${batch.size}",
+                                    Toast.LENGTH_LONG,
+                                ).show()
+                                failLines.take(3).joinToString("\n")
+                            } else {
+                                ""
+                            }
+                    }
+                } else {
+                    Log.d(TAG, "Starting download: $trimmedUrl audio=$audioOnly q=$selectedQuality")
+                    val file = VideoExtractor.download(
+                        url = trimmedUrl,
+                        audioOnly = audioOnly,
+                        videoQuality = selectedQuality,
+                        onProgress = { p, eta ->
+                            mainHandler.post {
+                                progress = p
+                                val etaText = if (eta > 0) " · ~${eta}с" else ""
+                                statusText = "Скачивание: ${p.toInt()}%$etaText"
+                            }
+                        },
+                    )
+                    Log.d(TAG, "Download complete: ${file.absolutePath}")
+
+                    mainHandler.post {
+                        status = DownloadStatus.DONE
+                        statusText = "Скачано: ${file.name}"
+                        url = ""
+                        progress = 100f
+                        val toastOk = when (importTarget) {
+                            MediaDownloadImportTarget.Video -> "Файл добавлен в «Медиа → Видео»"
+                            MediaDownloadImportTarget.Audio -> "Файл добавлен в «Медиа → Аудио»"
+                        }
+                        when (importTarget) {
+                            MediaDownloadImportTarget.Video -> viewModel.importBibleVideoFromPublicDownloadFile(
+                                sourceFile = file,
+                                title = file.nameWithoutExtension,
+                                sourceUrl = trimmedUrl,
+                            ) { err ->
+                                if (err != null) Toast.makeText(context, err, Toast.LENGTH_LONG).show()
+                                else Toast.makeText(context, toastOk, Toast.LENGTH_SHORT).show()
+                            }
+                            MediaDownloadImportTarget.Audio -> viewModel.importBibleAudioFromPublicDownloadFile(
+                                sourceFile = file,
+                                title = file.nameWithoutExtension,
+                                sourceUrl = trimmedUrl,
+                            ) { err ->
+                                if (err != null) Toast.makeText(context, err, Toast.LENGTH_LONG).show()
+                                else Toast.makeText(context, toastOk, Toast.LENGTH_SHORT).show()
+                            }
                         }
                     }
                 }
@@ -290,25 +686,7 @@ private fun MediaDownloadScreen(
                 val msg = e.message ?: "Неизвестная ошибка"
                 mainHandler.post {
                     status = DownloadStatus.ERROR
-                    errorText = when {
-                        "No address associated with hostname" in msg ||
-                        "Unable to resolve host" in msg || "DNS" in msg.uppercase() ||
-                        "Network is unreachable" in msg || "Connection refused" in msg ->
-                            "Пожалуйста, подключитесь к сети Интернет"
-                        "HTTP Error 403" in msg ->
-                            "Доступ запрещён (403). Возможно, ссылка устарела."
-                        "HTTP Error 404" in msg ->
-                            "Видео не найдено (404). Проверьте ссылку."
-                        "is not a valid URL" in msg || "Unsupported URL" in msg ->
-                            "Неподдерживаемая ссылка."
-                        "Unable to extract" in msg || "please report this issue" in msg ->
-                            "Эта платформа временно не поддерживается.\nНажмите ↻ для обновления yt-dlp."
-                        "yt-dlp -U" in msg ->
-                            "Требуется обновление. Нажмите ↻ в правом верхнем углу."
-                        "not a bot" in msg.lowercase() || "sign in to confirm" in msg.lowercase() ->
-                            "YouTube запросил проверку (бот). Нажмите ↻ и обновите yt-dlp, затем повторите. Если снова ошибка — попробуйте позже или другую сеть (Wi‑Fi / мобильный интернет)."
-                        else -> msg
-                    }
+                    errorText = ytDlpErrorUserMessage(msg)
                     statusText = ""
                     progress = -1f
                 }
@@ -319,7 +697,13 @@ private fun MediaDownloadScreen(
     Scaffold(
         topBar = {
             CenterAlignedTopAppBar(
-                title = { Text("Скачать медиа", style = MaterialTheme.typography.titleLarge) },
+                title = {
+                    Text(
+                        if (importTarget == MediaDownloadImportTarget.Audio) "Скачать аудио"
+                        else "Скачать медиа",
+                        style = MaterialTheme.typography.titleLarge,
+                    )
+                },
                 navigationIcon = {
                     IconButton(onClick = onBack) {
                         Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Назад")
@@ -370,6 +754,33 @@ private fun MediaDownloadScreen(
                 Spacer(Modifier.height(12.dp))
             }
 
+            if (importTarget == MediaDownloadImportTarget.Audio) {
+                LegalAudioSearchCard(
+                    viewModel = viewModel,
+                    downloading = status == DownloadStatus.DOWNLOADING,
+                    onDownloadingChanged = { busy, text ->
+                        if (busy) {
+                            status = DownloadStatus.DOWNLOADING
+                            statusText = text
+                            errorText = ""
+                            progress = -1f
+                        }
+                    },
+                    onImported = { title ->
+                        status = DownloadStatus.DONE
+                        statusText = "Сохранено: $title"
+                        progress = 100f
+                    },
+                    onError = { msg ->
+                        status = DownloadStatus.ERROR
+                        errorText = msg
+                        statusText = ""
+                        progress = -1f
+                    },
+                )
+                Spacer(Modifier.height(12.dp))
+            }
+
             ElevatedCard(
                 modifier = Modifier.fillMaxWidth(),
                 shape = RoundedCornerShape(16.dp),
@@ -382,9 +793,15 @@ private fun MediaDownloadScreen(
                     )
                     Spacer(Modifier.height(4.dp))
                     Text(
-                        "YouTube, Rutube, VK Video, Vimeo, TikTok, Дзен и др.",
+                        "YouTube (в т. ч. плейлисты), Rutube, VK, Vimeo, TikTok, Дзен и др.",
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                    Text(
+                        "«Показать список» — разбор состава для выборочной загрузки. Кнопка ▶ открывает ролик в приложении платформы (просмотр до скачивания).",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        modifier = Modifier.padding(top = 6.dp),
                     )
                     Spacer(Modifier.height(10.dp))
 
@@ -404,6 +821,24 @@ private fun MediaDownloadScreen(
                             leadingIcon = {
                                 Icon(Icons.Default.MusicNote, null, Modifier.size(18.dp))
                             },
+                        )
+                    }
+
+                    Spacer(Modifier.height(6.dp))
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .clickable { skipDuplicates = !skipDuplicates },
+                        verticalAlignment = Alignment.CenterVertically,
+                    ) {
+                        Checkbox(
+                            checked = skipDuplicates,
+                            onCheckedChange = { skipDuplicates = it },
+                        )
+                        Text(
+                            "Не скачивать повторно, если такой источник уже есть в медиатеке",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
                         )
                     }
 
@@ -442,6 +877,9 @@ private fun MediaDownloadScreen(
                         onValueChange = {
                             url = it
                             if (errorText.isNotEmpty()) errorText = ""
+                            playlistInspection = null
+                            selectedIds = emptySet()
+                            playlistParseError = null
                         },
                         modifier = Modifier.fillMaxWidth(),
                         placeholder = { Text("https://...") },
@@ -449,7 +887,12 @@ private fun MediaDownloadScreen(
                         trailingIcon = {
                             IconButton(onClick = {
                                 val text = clipboard.getText()?.text ?: ""
-                                if (text.isNotBlank()) url = text
+                                if (text.isNotBlank()) {
+                                    url = text
+                                    playlistInspection = null
+                                    selectedIds = emptySet()
+                                    playlistParseError = null
+                                }
                             }) {
                                 Icon(Icons.Default.ContentPaste, "Вставить")
                             }
@@ -461,14 +904,295 @@ private fun MediaDownloadScreen(
                         shape = RoundedCornerShape(12.dp),
                     )
 
+                    if (!FonkiExtractor.isFonkiUrl(url.trim())) {
+                        Spacer(Modifier.height(10.dp))
+
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.spacedBy(10.dp),
+                        ) {
+                            OutlinedButton(
+                                onClick = { loadPlaylistOutline() },
+                                modifier = Modifier.weight(1f),
+                                enabled =
+                                ytdlpReady &&
+                                    url.trim().startsWith("http") &&
+                                    status != DownloadStatus.DOWNLOADING &&
+                                    !playlistBusy,
+                            ) {
+                                if (playlistBusy) {
+                                    CircularProgressIndicator(
+                                        modifier = Modifier.size(16.dp),
+                                        strokeWidth = 2.dp,
+                                    )
+                                    Spacer(Modifier.width(6.dp))
+                                }
+                                Text("Показать список")
+                            }
+
+                            AnimatedVisibility(
+                                visible = playlistInspection != null &&
+                                    playlistInspection!!.items.size > 1,
+                            ) {
+                                TextButton(
+                                    onClick = {
+                                        val pi = playlistInspection ?: return@TextButton
+                                        selectedIds = pi.items.map { it.stableId }.toSet()
+                                    },
+                                    enabled = status != DownloadStatus.DOWNLOADING && !playlistBusy,
+                                ) {
+                                    Text("Все")
+                                }
+                            }
+
+                            AnimatedVisibility(
+                                visible = playlistInspection != null &&
+                                    playlistInspection!!.items.size > 1,
+                            ) {
+                                TextButton(
+                                    onClick = { selectedIds = emptySet() },
+                                    enabled = status != DownloadStatus.DOWNLOADING && !playlistBusy,
+                                ) {
+                                    Text("Снять")
+                                }
+                            }
+
+                            AnimatedVisibility(visible = playlistInspection != null) {
+                                TextButton(
+                                    onClick = {
+                                        playlistInspection = null
+                                        selectedIds = emptySet()
+                                        playlistParseError = null
+                                    },
+                                    enabled = !playlistBusy,
+                                ) {
+                                    Text("Скрыть")
+                                }
+                            }
+                        }
+
+                        AnimatedVisibility(
+                            visible = playlistBusy ||
+                                playlistParseError != null ||
+                                playlistInspection != null,
+                            modifier = Modifier.padding(top = 8.dp),
+                        ) {
+                            Column {
+                                AnimatedVisibility(
+                                    visible = playlistParseError != null,
+                                ) {
+                                    Text(
+                                        playlistParseError.orEmpty(),
+                                        color = MaterialTheme.colorScheme.error,
+                                        style = MaterialTheme.typography.bodySmall,
+                                        modifier = Modifier.padding(bottom = 8.dp),
+                                    )
+                                }
+
+                                playlistInspection?.let { insp ->
+                                    val inPlaylistLibrary =
+                                        insp.items.count { listItem ->
+                                            val k =
+                                                canonicalDownloadSourceUrl(listItem.pageUrl)
+                                            k.isNotEmpty() && k in importedCanonicalSources
+                                        }
+                                    Text(
+                                        insp.playlistTitle?.let { t -> "\u00AB$t\u00BB" }
+                                            ?: "${insp.items.size} дорож.",
+                                        fontWeight = FontWeight.SemiBold,
+                                        style = MaterialTheme.typography.titleSmall,
+                                        modifier = Modifier.padding(bottom = 6.dp),
+                                    )
+                                    Row(
+                                        verticalAlignment =
+                                        Alignment.CenterVertically,
+                                        modifier = Modifier.padding(bottom = 4.dp),
+                                    ) {
+                                        Text(
+                                            "Выбрано ${selectedIds.size} из ${insp.items.size}" +
+                                                if (inPlaylistLibrary > 0) {
+                                                    " · уже сохранено: $inPlaylistLibrary"
+                                                } else {
+                                                    ""
+                                                },
+                                            style = MaterialTheme.typography.labelMedium,
+                                            color = MaterialTheme.colorScheme.primary,
+                                        )
+                                    }
+
+                                    Card(
+                                        modifier = Modifier.fillMaxWidth(),
+                                        shape = RoundedCornerShape(12.dp),
+                                        colors = CardDefaults.cardColors(
+                                            containerColor = MaterialTheme.colorScheme.surfaceContainerHighest,
+                                        ),
+                                    ) {
+                                        LazyColumn(
+                                            modifier = Modifier
+                                                .fillMaxWidth()
+                                                .heightIn(max = 320.dp),
+                                        ) {
+                                            itemsIndexed(
+                                                items = insp.items,
+                                                key = { _, item -> item.stableId },
+                                            ) { index, item ->
+                                                if (index > 0) {
+                                                    HorizontalDivider(
+                                                        color =
+                                                        MaterialTheme.colorScheme.outlineVariant,
+                                                    )
+                                                }
+                                                val checked = selectedIds.contains(item.stableId)
+                                                val durLabel = formatDurationSeconds(item.durationSec)
+                                                val itemUrlKey =
+                                                    canonicalDownloadSourceUrl(item.pageUrl)
+                                                val alreadyImported =
+                                                    itemUrlKey.isNotEmpty() &&
+                                                    itemUrlKey in importedCanonicalSources
+                                                Row(
+                                                    Modifier
+                                                        .fillMaxWidth()
+                                                        .clickable(
+                                                            enabled =
+                                                            status !=
+                                                                DownloadStatus.DOWNLOADING,
+                                                        ) {
+                                                            selectedIds =
+                                                                if (checked) {
+                                                                    selectedIds - item.stableId
+                                                                } else {
+                                                                    selectedIds + item.stableId
+                                                                }
+                                                        }
+                                                        .padding(
+                                                            horizontal =
+                                                            10.dp,
+                                                            vertical = 4.dp,
+                                                        ),
+                                                    verticalAlignment =
+                                                    Alignment.CenterVertically,
+                                                ) {
+                                                    Checkbox(
+                                                        checked = checked,
+                                                        enabled =
+                                                        status !=
+                                                            DownloadStatus.DOWNLOADING,
+                                                        onCheckedChange = { sel ->
+                                                            selectedIds =
+                                                                if (sel) {
+                                                                    selectedIds + item.stableId
+                                                                } else {
+                                                                    selectedIds - item.stableId
+                                                                }
+                                                        },
+                                                    )
+                                                    Column(
+                                                        Modifier.weight(1f),
+                                                    ) {
+                                                        Text(
+                                                            item.title,
+                                                            maxLines =
+                                                            3,
+                                                            overflow =
+                                                            TextOverflow.Ellipsis,
+                                                            style = MaterialTheme.typography.bodyMedium,
+                                                        )
+                                                        val metaGreen = Color(0xFF388E3C)
+                                                        if (
+                                                            alreadyImported ||
+                                                            durLabel.isNotBlank()
+                                                        ) {
+                                                            Row(
+                                                                verticalAlignment =
+                                                                Alignment.CenterVertically,
+                                                                modifier =
+                                                                Modifier.padding(
+                                                                    top =
+                                                                    2.dp,
+                                                                ),
+                                                            ) {
+                                                                if (alreadyImported) {
+                                                                    Icon(
+                                                                        Icons.Default.Check,
+                                                                        contentDescription = null,
+                                                                        modifier =
+                                                                        Modifier.size(16.dp),
+                                                                        tint =
+                                                                        metaGreen,
+                                                                    )
+                                                                    Spacer(
+                                                                        Modifier.width(4.dp),
+                                                                    )
+                                                                    Text(
+                                                                        "Уже сохранено в медиатеке",
+                                                                        style =
+                                                                        MaterialTheme.typography.labelSmall,
+                                                                        fontWeight =
+                                                                        FontWeight.Medium,
+                                                                        color = metaGreen,
+                                                                    )
+                                                                }
+                                                                if (
+                                                                    alreadyImported &&
+                                                                    durLabel.isNotBlank()
+                                                                ) {
+                                                                    Text(
+                                                                        " · ",
+                                                                        style =
+                                                                        MaterialTheme.typography.labelSmall,
+                                                                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                                                    )
+                                                                }
+                                                                if (durLabel.isNotBlank()) {
+                                                                    Text(
+                                                                        durLabel,
+                                                                        style =
+                                                                        MaterialTheme.typography.labelSmall,
+                                                                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                                                    )
+                                                                }
+                                                            }
+                                                        }
+                                                    }
+                                                    IconButton(
+                                                        onClick =
+                                                        {
+                                                            openExternalMediaPreview(
+                                                                context,
+                                                                item.pageUrl,
+                                                            )
+                                                        },
+                                                        modifier = Modifier.size(40.dp),
+                                                    ) {
+                                                        Icon(
+                                                            Icons.Default.PlayArrow,
+                                                            contentDescription = "Открыть в приложении платформы (просмотр или прослушивание)",
+                                                        )
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+
                     Spacer(Modifier.height(8.dp))
+
+                    val trimmedLink = url.trim()
+                    val listBlocksDownload =
+                        playlistInspection != null && selectedIds.isEmpty()
 
                     Button(
                         onClick = { startDownload() },
                         modifier = Modifier.fillMaxWidth(),
                         shape = RoundedCornerShape(12.dp),
-                        enabled = (ytdlpReady || FonkiExtractor.isFonkiUrl(url.trim())) &&
-                            status != DownloadStatus.DOWNLOADING,
+                        enabled = (ytdlpReady ||
+                            FonkiExtractor.isFonkiUrl(trimmedLink)) &&
+                            status != DownloadStatus.DOWNLOADING &&
+                            !playlistBusy &&
+                            !listBlocksDownload,
                     ) {
                         if (status == DownloadStatus.DOWNLOADING) {
                             CircularProgressIndicator(
@@ -478,10 +1202,16 @@ private fun MediaDownloadScreen(
                             )
                             Spacer(Modifier.width(8.dp))
                         } else {
-                            Icon(Icons.Default.Download, null)
+                            Icon(Icons.Default.Download, contentDescription = null)
                             Spacer(Modifier.width(8.dp))
                         }
-                        Text("Скачать")
+                        val label =
+                            if (playlistInspection != null) {
+                                "Скачать выбранное (${selectedIds.size})"
+                            } else {
+                                "Скачать"
+                            }
+                        Text(label)
                     }
 
                     AnimatedVisibility(visible = status == DownloadStatus.DOWNLOADING) {
@@ -593,3 +1323,271 @@ private fun MediaDownloadScreen(
         }
     }
 }
+
+@Composable
+private fun LegalAudioSearchCard(
+    viewModel: BibleViewModel,
+    downloading: Boolean,
+    onDownloadingChanged: (busy: Boolean, text: String) -> Unit,
+    onImported: (title: String) -> Unit,
+    onError: (String) -> Unit,
+) {
+    val context = LocalContext.current
+    val results by viewModel.legalAudioSearchResults.collectAsStateWithLifecycle()
+    val loading by viewModel.legalAudioSearchLoading.collectAsStateWithLifecycle()
+    val localHint by viewModel.legalAudioLocalHint.collectAsStateWithLifecycle()
+    var query by remember { mutableStateOf("") }
+    var previewId by remember { mutableStateOf<String?>(null) }
+    var downloadingId by remember { mutableStateOf<String?>(null) }
+
+    val folderLauncher = rememberLauncherForActivityResult(
+        contract = OpenYandexMusicFilesTree(),
+    ) { uri ->
+        if (uri == null) return@rememberLauncherForActivityResult
+        try {
+            context.contentResolver.takePersistableUriPermission(
+                uri,
+                Intent.FLAG_GRANT_READ_URI_PERMISSION,
+            )
+        } catch (_: Exception) {
+        }
+        previewId = null
+        viewModel.searchAudioInDocumentTree(uri, query)
+    }
+
+    DisposableEffect(previewId) {
+        val id = previewId
+        val track = results.firstOrNull { it.id == id }
+        if (id == null || track == null) {
+            return@DisposableEffect onDispose { }
+        }
+        val player = MediaPlayer()
+        try {
+            when {
+                track.fileUrl.startsWith("content:", ignoreCase = true) ->
+                    player.setDataSource(context, Uri.parse(track.fileUrl))
+                track.isLocalOnDevice() ->
+                    player.setDataSource(track.fileUrl.removePrefix("file://"))
+                else ->
+                    player.setDataSource(track.fileUrl)
+            }
+            player.setOnPreparedListener { mp ->
+                try {
+                    mp.start()
+                } catch (_: Exception) {
+                }
+            }
+            player.setOnCompletionListener { previewId = null }
+            player.setOnErrorListener { _, _, _ ->
+                previewId = null
+                Toast.makeText(context, "Не удалось прослушать, попробуйте скачать", Toast.LENGTH_SHORT).show()
+                true
+            }
+            player.prepareAsync()
+        } catch (_: Exception) {
+            previewId = null
+            Toast.makeText(context, "Не удалось прослушать", Toast.LENGTH_SHORT).show()
+        }
+        onDispose {
+            try {
+                player.release()
+            } catch (_: Exception) {
+            }
+        }
+    }
+
+    fun runSearch() {
+        previewId = null
+        viewModel.searchLegalAudio(query)
+    }
+
+    ElevatedCard(
+        modifier = Modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(16.dp),
+    ) {
+        Column(Modifier.padding(16.dp)) {
+            Text(
+                "Поиск легальной музыки",
+                style = MaterialTheme.typography.titleMedium,
+                fontWeight = FontWeight.Bold,
+            )
+            Spacer(Modifier.height(4.dp))
+            Text(
+                "Openverse и Wikimedia Commons — открытые лицензии. Плюс файлы на телефоне, если система пускает в Android/data/ru.yandex.music/files.",
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+            Spacer(Modifier.height(10.dp))
+            OutlinedTextField(
+                value = query,
+                onValueChange = { query = it },
+                modifier = Modifier.fillMaxWidth(),
+                placeholder = { Text("Гимн, классика, имя исполнителя…") },
+                singleLine = true,
+                shape = RoundedCornerShape(12.dp),
+                keyboardOptions = KeyboardOptions(imeAction = ImeAction.Search),
+                keyboardActions = KeyboardActions(onSearch = { runSearch() }),
+                trailingIcon = {
+                    IconButton(onClick = { runSearch() }, enabled = !loading) {
+                        if (loading) {
+                            CircularProgressIndicator(Modifier.size(18.dp), strokeWidth = 2.dp)
+                        } else {
+                            Icon(Icons.Filled.Search, contentDescription = "Искать")
+                        }
+                    }
+                },
+            )
+            Spacer(Modifier.height(8.dp))
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+            ) {
+                Button(
+                    onClick = { runSearch() },
+                    enabled = !loading,
+                    modifier = Modifier.weight(1f),
+                ) {
+                    Text(if (loading) "Ищу…" else "Найти")
+                }
+                OutlinedButton(
+                    onClick = { folderLauncher.launch(LocalDeviceAudioScan.yandexInitialTreeUri()) },
+                    enabled = !loading,
+                    modifier = Modifier.weight(1f),
+                ) {
+                    Icon(Icons.Filled.Folder, contentDescription = null, modifier = Modifier.size(18.dp))
+                    Spacer(Modifier.width(6.dp))
+                    Text("Папка")
+                }
+            }
+            Text(
+                "«Папка» — выберите Android/data/ru.yandex.music/files, если проводник её открывает.",
+                style = MaterialTheme.typography.labelSmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                modifier = Modifier.padding(top = 6.dp),
+            )
+
+            localHint?.let { hint ->
+                Text(
+                    hint,
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    modifier = Modifier.padding(top = 8.dp),
+                )
+            }
+
+            if (!loading && query.isNotBlank() && results.isEmpty() && localHint == null) {
+                Text(
+                    "Ничего не найдено. Попробуйте другое слово — лучше ищутся гимны, классика, фольклор и CC-треки.",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    modifier = Modifier.padding(top = 8.dp),
+                )
+            }
+
+            if (results.isNotEmpty()) {
+                Spacer(Modifier.height(8.dp))
+                Text(
+                    "Найдено: ${results.size}",
+                    style = MaterialTheme.typography.labelMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+                LazyColumn(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .heightIn(max = 320.dp)
+                        .padding(top = 6.dp),
+                    verticalArrangement = Arrangement.spacedBy(6.dp),
+                ) {
+                    items(results, key = { it.id }) { track ->
+                        val busy = downloadingId == track.id || (downloading && downloadingId != null)
+                        Card(
+                            modifier = Modifier.fillMaxWidth(),
+                            shape = RoundedCornerShape(12.dp),
+                        ) {
+                            Row(
+                                Modifier.padding(10.dp),
+                                verticalAlignment = Alignment.CenterVertically,
+                            ) {
+                                Icon(
+                                    Icons.Filled.MusicNote,
+                                    contentDescription = null,
+                                    tint = MaterialTheme.colorScheme.primary,
+                                    modifier = Modifier.size(28.dp),
+                                )
+                                Column(
+                                    Modifier
+                                        .weight(1f)
+                                        .padding(horizontal = 10.dp),
+                                ) {
+                                    Text(
+                                        track.displayTitle(),
+                                        fontWeight = FontWeight.Medium,
+                                        maxLines = 2,
+                                        overflow = TextOverflow.Ellipsis,
+                                    )
+                                    val meta = buildString {
+                                        append(track.originLabel())
+                                        append(" · ")
+                                        append(track.licenseLabel())
+                                        val d = track.durationSec
+                                        if (d != null && d > 0) {
+                                            append(" · ")
+                                            append(formatDurationSeconds(d.toLong()))
+                                        }
+                                    }
+                                    Text(
+                                        meta,
+                                        style = MaterialTheme.typography.labelSmall,
+                                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                        maxLines = 1,
+                                        overflow = TextOverflow.Ellipsis,
+                                    )
+                                }
+                                IconButton(
+                                    onClick = {
+                                        previewId = if (previewId == track.id) null else track.id
+                                    },
+                                    enabled = !busy,
+                                ) {
+                                    Icon(
+                                        if (previewId == track.id) Icons.Filled.Pause else Icons.Filled.PlayArrow,
+                                        contentDescription = "Прослушать",
+                                    )
+                                }
+                                IconButton(
+                                    onClick = {
+                                        downloadingId = track.id
+                                        previewId = null
+                                        onDownloadingChanged(true, "Скачивание: ${track.displayTitle()}")
+                                        viewModel.importLegalAudioTrack(track) { err ->
+                                            downloadingId = null
+                                            if (err != null) {
+                                                onError(err)
+                                                Toast.makeText(context, err, Toast.LENGTH_LONG).show()
+                                            } else {
+                                                onImported(track.displayTitle())
+                                                Toast.makeText(
+                                                    context,
+                                                    "Добавлено в «Медиа → Аудио»",
+                                                    Toast.LENGTH_SHORT,
+                                                ).show()
+                                            }
+                                        }
+                                    },
+                                    enabled = !busy,
+                                ) {
+                                    if (downloadingId == track.id) {
+                                        CircularProgressIndicator(Modifier.size(18.dp), strokeWidth = 2.dp)
+                                    } else {
+                                        Icon(Icons.Filled.Download, contentDescription = "Скачать")
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+

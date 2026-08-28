@@ -36,6 +36,9 @@ import com.example.bible.data.BibleVideoLibrary
 import com.example.bible.data.WebImageSearch
 import com.example.bible.data.CommonsVideoSearch
 import com.example.bible.data.CommonsSearchResult
+import com.example.bible.data.LegalAudioSearch
+import com.example.bible.data.LegalAudioTrack
+import com.example.bible.data.LocalDeviceAudioScan
 import com.example.bible.data.SafeImagePolicy
 import com.example.bible.data.MediaRepository
 import com.example.bible.data.SongItem
@@ -1784,6 +1787,109 @@ class BibleViewModel(
         }
     }
 
+    private val _legalAudioSearchLoading = MutableStateFlow(false)
+    val legalAudioSearchLoading: StateFlow<Boolean> = _legalAudioSearchLoading.asStateFlow()
+
+    private val _legalAudioSearchResults = MutableStateFlow<List<LegalAudioTrack>>(emptyList())
+    val legalAudioSearchResults: StateFlow<List<LegalAudioTrack>> = _legalAudioSearchResults.asStateFlow()
+
+    private val _legalAudioLocalHint = MutableStateFlow<String?>(null)
+    val legalAudioLocalHint: StateFlow<String?> = _legalAudioLocalHint.asStateFlow()
+
+    fun clearLegalAudioSearch() {
+        _legalAudioSearchResults.value = emptyList()
+        _legalAudioLocalHint.value = null
+    }
+
+    fun searchLegalAudio(query: String) {
+        val q = query.trim()
+        viewModelScope.launch {
+            _legalAudioSearchLoading.value = true
+            try {
+                val local = withContext(Dispatchers.IO) {
+                    LocalDeviceAudioScan.scanYandexMusicFiles(q)
+                }
+                _legalAudioLocalHint.value = local.hint
+                val net = if (q.isEmpty()) {
+                    emptyList()
+                } else {
+                    withContext(Dispatchers.IO) { LegalAudioSearch.search(q) }
+                }
+                _legalAudioSearchResults.value = (local.tracks + net).distinctBy { it.id }
+            } finally {
+                _legalAudioSearchLoading.value = false
+            }
+        }
+    }
+
+    fun searchAudioInDocumentTree(treeUri: Uri, query: String) {
+        viewModelScope.launch {
+            _legalAudioSearchLoading.value = true
+            try {
+                val local = withContext(Dispatchers.IO) {
+                    LocalDeviceAudioScan.scanDocumentTree(appContext, treeUri, query)
+                }
+                val rest = _legalAudioSearchResults.value.filter { !it.isLocalOnDevice() }
+                _legalAudioSearchResults.value = (local + rest).distinctBy { it.id }
+                _legalAudioLocalHint.value = if (local.isEmpty()) {
+                    "В выбранной папке нет обычных аудиофайлов (mp3, ogg, m4a…)."
+                } else {
+                    "Из выбранной папки: ${local.size}"
+                }
+            } finally {
+                _legalAudioSearchLoading.value = false
+            }
+        }
+    }
+
+    fun importLegalAudioTrack(track: LegalAudioTrack, onDone: (String?) -> Unit) {
+        val tags = listOf(track.originLabel(), track.licenseLabel()).filter { it.isNotBlank() }
+        when {
+            track.fileUrl.startsWith("content:", ignoreCase = true) ->
+                importBibleAudioFromUri(
+                    uri = Uri.parse(track.fileUrl),
+                    title = track.displayTitle(),
+                    tags = tags,
+                    source = track.origin,
+                    sourceUrl = track.pageUrl,
+                    onDone = onDone,
+                )
+            track.isLocalOnDevice() -> {
+                val path = track.fileUrl.removePrefix("file://")
+                val file = File(path)
+                viewModelScope.launch {
+                    val result = withContext(Dispatchers.IO) {
+                        bibleAudioLibrary.importFromFile(file)
+                    }
+                    result.fold(
+                        onSuccess = { fileName ->
+                            preferences.saveBibleAudio(
+                                BibleUserAudio(
+                                    title = track.displayTitle().ifBlank { "Без названия" },
+                                    tags = tags,
+                                    fileName = fileName,
+                                    source = track.origin,
+                                    sourceUrl = track.pageUrl,
+                                ),
+                            )
+                            onDone(null)
+                        },
+                        onFailure = { e -> onDone(e.message ?: "Ошибка импорта") },
+                    )
+                }
+            }
+            else ->
+                importBibleAudioFromRemoteUrl(
+                    fullUrl = track.fileUrl,
+                    title = track.displayTitle(),
+                    tags = tags,
+                    sourceUrl = track.pageUrl.ifBlank { track.fileUrl },
+                    source = track.origin,
+                    onDone = onDone,
+                )
+        }
+    }
+
     fun importBibleVideoFromUri(
         uri: Uri,
         title: String,
@@ -1938,6 +2044,7 @@ class BibleViewModel(
         title: String,
         tags: List<String>,
         sourceUrl: String,
+        source: String = "commons",
         onDone: (String?) -> Unit,
     ) {
         viewModelScope.launch {
@@ -1952,7 +2059,7 @@ class BibleViewModel(
                             title = title.trim().ifBlank { "Без названия" },
                             tags = normTags,
                             fileName = fileName,
-                            source = "commons",
+                            source = source.ifBlank { "commons" },
                             sourceUrl = sourceUrl,
                         ),
                     )
