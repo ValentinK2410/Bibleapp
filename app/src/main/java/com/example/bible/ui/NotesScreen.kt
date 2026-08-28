@@ -406,7 +406,12 @@ fun NoteEditorScreen(
     }
     var title by remember(initialNote.id) { mutableStateOf(initialNote.title) }
     var textFieldValue by remember(initialNote.id) {
-        mutableStateOf(TextFieldValue(initialNote.body, TextRange(initialNote.body.length)))
+        val body = if (initialNote.body.isBlank() && initialNote.journalEntries.isNotEmpty()) {
+            initialNote.journalEntries.sortedBy { it.createdAt }.joinToString("\n\n") { it.text }
+        } else {
+            initialNote.body
+        }
+        mutableStateOf(TextFieldValue(body, TextRange(body.length)))
     }
     var spans by remember(initialNote.id) { mutableStateOf(initialNote.spans.toMutableList()) }
     var kind by remember(initialNote.id) { mutableStateOf(initialNote.kind) }
@@ -425,7 +430,13 @@ fun NoteEditorScreen(
     }
     var linkedQuestionId by remember(initialNote.id) { mutableStateOf(initialNote.linkedQuestionId) }
     var journalEntries by remember(initialNote.id) {
-        mutableStateOf(initialNote.journalEntries.toMutableList())
+        mutableStateOf(
+            if (initialNote.body.isBlank() && initialNote.journalEntries.isNotEmpty()) {
+                mutableListOf<NoteJournalEntry>()
+            } else {
+                initialNote.journalEntries.toMutableList()
+            },
+        )
     }
     var linkMenuExpanded by remember { mutableStateOf(false) }
     val dateFormat = remember {
@@ -453,9 +464,6 @@ fun NoteEditorScreen(
     var showColorPicker by remember { mutableStateOf(false) }
     var kindMenuExpanded by remember { mutableStateOf(false) }
     var verseCardExpanded by remember(initialNote.id) { mutableStateOf(false) }
-    var journalExpanded by remember(initialNote.id) {
-        mutableStateOf(initialNote.journalEntries.isNotEmpty())
-    }
 
     fun buildEditedNote(): UserNote {
         val trimmedCustom = customKindLabel.trim()
@@ -782,7 +790,7 @@ fun NoteEditorScreen(
                             spans = spans.ifEmpty { initialNote.spans },
                             kind = kind,
                             customKindLabel = customKindLabel,
-                            journalEntries = journalEntries.ifEmpty { initialNote.journalEntries },
+                            journalEntries = journalEntries,
                             dateFormat = dateFormat,
                             bibleLinksEnabled = embeddedBible != null,
                             onScriptureLinkClick = ::navigateEmbeddedBible,
@@ -970,109 +978,6 @@ fun NoteEditorScreen(
                                 }
                             }
                         }
-                        Row(
-                            verticalAlignment = Alignment.CenterVertically,
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(horizontal = 4.dp),
-                        ) {
-                            if (journalEntries.isNotEmpty()) {
-                                TextButton(onClick = { journalExpanded = !journalExpanded }) {
-                                    Icon(
-                                        Icons.Default.History,
-                                        contentDescription = null,
-                                        modifier = Modifier.size(18.dp),
-                                    )
-                                    Text(
-                                        "Хронология (${journalEntries.size})",
-                                        modifier = Modifier.padding(start = 6.dp),
-                                    )
-                                    Icon(
-                                        Icons.Default.ExpandMore,
-                                        contentDescription = null,
-                                        modifier = Modifier
-                                            .padding(start = 2.dp)
-                                            .size(18.dp)
-                                            .rotate(if (journalExpanded) 180f else 0f),
-                                    )
-                                }
-                            }
-                            Spacer(Modifier.weight(1f))
-                            TextButton(
-                                onClick = {
-                                    val t = textFieldValue.text.trim()
-                                    if (t.isEmpty()) return@TextButton
-                                    journalEntries = (journalEntries + NoteJournalEntry(text = t)).toMutableList()
-                                    textFieldValue = TextFieldValue("")
-                                    spans = mutableListOf()
-                                    journalExpanded = true
-                                },
-                            ) {
-                                Icon(
-                                    Icons.Default.History,
-                                    contentDescription = null,
-                                    modifier = Modifier.size(18.dp),
-                                )
-                                Text("В хронологию", modifier = Modifier.padding(start = 6.dp))
-                            }
-                        }
-                        AnimatedVisibility(visible = journalExpanded && journalEntries.isNotEmpty()) {
-                            Column(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .padding(horizontal = 8.dp, vertical = 4.dp)
-                                    .heightIn(max = 280.dp)
-                                    .verticalScroll(rememberScrollState()),
-                                verticalArrangement = Arrangement.spacedBy(6.dp),
-                            ) {
-                                journalEntries.sortedBy { it.createdAt }.forEach { entry ->
-                                    Row(
-                                        modifier = Modifier
-                                            .fillMaxWidth()
-                                            .background(
-                                                MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f),
-                                                RoundedCornerShape(8.dp),
-                                            )
-                                            .padding(start = 8.dp, top = 4.dp, bottom = 4.dp),
-                                        verticalAlignment = Alignment.Top,
-                                    ) {
-                                        Column(Modifier.weight(1f)) {
-                                            Text(
-                                                dateFormat.format(java.util.Date(entry.createdAt)),
-                                                style = MaterialTheme.typography.labelSmall,
-                                                color = MaterialTheme.colorScheme.outline,
-                                            )
-                                            TextField(
-                                                value = entry.text,
-                                                onValueChange = { newText ->
-                                                    journalEntries = journalEntries.map { item ->
-                                                        if (item.id == entry.id) item.copy(text = newText) else item
-                                                    }.toMutableList()
-                                                },
-                                                modifier = Modifier.fillMaxWidth(),
-                                                textStyle = MaterialTheme.typography.bodyMedium,
-                                                colors = editorFieldColors,
-                                            )
-                                        }
-                                        IconButton(
-                                            onClick = {
-                                                journalEntries = journalEntries
-                                                    .filter { it.id != entry.id }
-                                                    .toMutableList()
-                                            },
-                                            modifier = Modifier.size(36.dp),
-                                        ) {
-                                            Icon(
-                                                Icons.Default.Delete,
-                                                contentDescription = "Удалить запись хронологии",
-                                                tint = MaterialTheme.colorScheme.outline,
-                                                modifier = Modifier.size(18.dp),
-                                            )
-                                        }
-                                    }
-                                }
-                            }
-                        }
                         TextField(
                             value = textFieldValue,
                             onValueChange = { newValue ->
@@ -1098,13 +1003,6 @@ fun NoteEditorScreen(
                                 fontSize = 17.sp,
                                 lineHeight = 26.sp,
                             ),
-                            placeholder = {
-                                Text(
-                                    "Мысли, вопросы, ответы, личное понимание…",
-                                    color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.45f),
-                                    fontSize = 17.sp,
-                                )
-                            },
                             visualTransformation = spanVisualTransformation,
                             colors = editorFieldColors,
                         )
