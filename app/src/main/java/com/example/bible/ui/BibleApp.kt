@@ -44,6 +44,7 @@ import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.filled.ArrowForward
 import androidx.compose.material.icons.automirrored.filled.List
 import androidx.compose.material.icons.automirrored.filled.VolumeUp
+import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.AccountTree
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.CloudDownload
@@ -79,6 +80,7 @@ import androidx.compose.material.icons.automirrored.filled.StickyNote2
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.filled.Stop
 import androidx.compose.material.icons.filled.Public
+import androidx.compose.material.icons.filled.VolumeOff
 import androidx.compose.material.icons.filled.ViewModule
 import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.Checkbox
@@ -153,6 +155,7 @@ import androidx.navigation.NavType
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
+import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import android.net.Uri
@@ -186,6 +189,7 @@ import com.example.bible.data.LexiconMediaRefs
 import com.example.bible.data.WordSpanMediaAttachment
 import com.example.bible.data.findForTap
 import com.example.bible.data.newWordSpanMediaId
+import com.example.bible.data.CanonBookEntry
 import com.example.bible.data.TranslationId
 import com.example.bible.data.AttachmentKind
 import com.example.bible.data.VerseAttachment
@@ -197,6 +201,7 @@ import com.example.bible.data.isValidForRestore
 import com.example.bible.data.ResumePersistAction
 import com.example.bible.data.resumePersistActionForNavDestination
 import com.example.bible.data.InterlinearTts
+import com.example.bible.data.UserMediaPlaylistKind
 import com.example.bible.data.UserNote
 import com.example.bible.data.VerseRef
 import com.example.bible.data.matchesVerseLocation
@@ -226,7 +231,8 @@ import com.example.bible.data.BibleAudioPlayer
 import com.example.bible.data.chapterCountForDownloadEntireBible
 import com.example.bible.data.TimemarkProject
 import com.example.bible.data.TimemarkStore
-import com.example.bible.data.verseNumberAtChapterAudioPosition
+import com.example.bible.data.timemarkPlaybackStartMs
+import com.example.bible.data.verseRangeForTimemarkPosition
 
 /** Контуры мимики: отдельная область композиции, чтобы обновление кадра не инвалидировало весь NavHost. */
 @Composable
@@ -517,6 +523,20 @@ private fun LoadingScreen() {
     }
 }
 
+/** Короткий заголовок главы в шапке читалки: «Гал 1:2», как аббревиатуры в сетке книг. */
+private fun readerChapterTitle(bookId: String, chapterNum: Int, verse: Int = 1): String {
+    val abbr = BibleCanon.byId(bookId)?.abbrRu ?: bookId
+    return "$abbr $chapterNum:${verse.coerceAtLeast(1)}"
+}
+
+/** Второй перевод в режиме сравнения при открытии из читалки. */
+private fun defaultDualCompanionTranslation(primary: TranslationId): TranslationId =
+    when (primary) {
+        TranslationId.SYNODAL -> TranslationId.WEB
+        TranslationId.WEB -> TranslationId.SYNODAL
+        else -> TranslationId.SYNODAL
+    }
+
 @Composable
 private fun ErrorScreen(
     message: String,
@@ -602,6 +622,17 @@ private fun BibleNavHost(
         onDispose { navLifecycleOwner.lifecycle.removeObserver(observer) }
     }
 
+    val navBackStackEntry by navController.currentBackStackEntryAsState()
+    var wasOnReadRoute by remember { mutableStateOf(false) }
+    LaunchedEffect(navBackStackEntry?.destination?.route) {
+        val route = navBackStackEntry?.destination?.route.orEmpty()
+        val onRead = route.startsWith("read/")
+        if (wasOnReadRoute && !onRead) {
+            com.example.bible.data.BibleAudioPlayer.stopForNavigation()
+        }
+        wasOnReadRoute = onRead
+    }
+
     NavHost(
         navController = navController,
         startDestination = "books",
@@ -613,6 +644,9 @@ private fun BibleNavHost(
             var showBookNarratorPicker by remember { mutableStateOf(false) }
             var fullBibleDlConfirm by remember { mutableStateOf(false) }
             var fullBibleProgress by remember { mutableStateOf<Triple<Int, Int, String>?>(null) }
+            var previewBook by remember { mutableStateOf<CanonBookEntry?>(null) }
+            val bookPickerLongPressTts by viewModel.bookPickerLongPressTts.collectAsStateWithLifecycle()
+            val bookNameTts = rememberVerseTextToSpeech(TranslationId.SYNODAL)
             val booksScreenContext = LocalContext.current
             val canPop = navController.previousBackStackEntry != null
             Scaffold(
@@ -637,6 +671,29 @@ private fun BibleNavHost(
                                 }
                             },
                             actions = {
+                                IconButton(
+                                    onClick = {
+                                        viewModel.setBookPickerLongPressTts(!bookPickerLongPressTts)
+                                    },
+                                ) {
+                                    Icon(
+                                        imageVector = if (bookPickerLongPressTts) {
+                                            Icons.AutoMirrored.Filled.VolumeUp
+                                        } else {
+                                            Icons.Default.VolumeOff
+                                        },
+                                        contentDescription = if (bookPickerLongPressTts) {
+                                            stringResource(R.string.book_picker_long_press_tts_on)
+                                        } else {
+                                            stringResource(R.string.book_picker_long_press_tts_off)
+                                        },
+                                        tint = if (bookPickerLongPressTts) {
+                                            MaterialTheme.colorScheme.primary
+                                        } else {
+                                            MaterialTheme.colorScheme.onSurfaceVariant
+                                        },
+                                    )
+                                }
                                 IconButton(
                                     onClick = {
                                         bookLayoutMode = if (bookLayoutMode == BookLayoutMode.GRID) {
@@ -751,6 +808,9 @@ private fun BibleNavHost(
                             .background(MaterialTheme.colorScheme.background)
                     },
                 ) {
+                    previewBook?.let { entry ->
+                        BookPickerPreviewBanner(entry = entry)
+                    }
                     DailyVerseCard(
                         entry = dailyVerse,
                         onClick = {
@@ -764,7 +824,16 @@ private fun BibleNavHost(
                             .weight(1f),
                         booksWithAudio = booksWithAudio,
                         onBookClick = { bookId ->
+                            com.example.bible.data.BibleAudioPlayer.stopForNavigation()
                             navController.navigate("chapters/$bookId")
+                        },
+                        onBookLongPress = { entry ->
+                            previewBook = entry
+                            if (bookPickerLongPressTts) {
+                                bookNameTts.speak(entry.nameRu)
+                            } else {
+                                bookNameTts.stop()
+                            }
                         },
                     )
                 }
@@ -895,7 +964,36 @@ private fun BibleNavHost(
                 }
             }
         }
-        composable("dual") {
+        composable(
+            route = "dual?bookId={bookId}&chapter={chapter}",
+            arguments = listOf(
+                navArgument("bookId") {
+                    type = NavType.StringType
+                    nullable = true
+                    defaultValue = null
+                },
+                navArgument("chapter") {
+                    type = NavType.IntType
+                    defaultValue = 0
+                },
+            ),
+        ) { entry ->
+            val dualBookId = entry.arguments?.getString("bookId")
+            val dualChapter = entry.arguments?.getInt("chapter")?.takeIf { it > 0 }
+            val dualInitialPanes = remember(dualBookId, dualChapter, translation) {
+                if (dualBookId != null && dualChapter != null) {
+                    listOf(
+                        PaneState(translation, dualBookId, dualChapter),
+                        PaneState(
+                            defaultDualCompanionTranslation(translation),
+                            dualBookId,
+                            dualChapter,
+                        ),
+                    )
+                } else {
+                    null
+                }
+            }
             val bibleUserImages by viewModel.bibleUserImages.collectAsStateWithLifecycle()
             val userNotes by viewModel.userNotes.collectAsStateWithLifecycle()
             val semanticHighlightSession by viewModel.semanticHighlightSession.collectAsStateWithLifecycle()
@@ -906,6 +1004,7 @@ private fun BibleNavHost(
             val bibleUserAudios by viewModel.bibleUserAudios.collectAsStateWithLifecycle()
             val wordSpanMediaAttachments by viewModel.wordSpanMediaAttachments.collectAsStateWithLifecycle()
             DualBibleScreen(
+                initialPanes = dualInitialPanes,
                 library = library,
                 bookmarkKeys = bookmarkKeys,
                 textHighlights = textHighlights,
@@ -922,6 +1021,30 @@ private fun BibleNavHost(
                 },
                 onPauseMainAudioForAttachment = { viewModel.pauseAudioIfPlaying() },
                 onExit = { navController.navigateUp() },
+                onClosePane = { keepPane ->
+                    scope.launch {
+                        viewModel.setTranslation(keepPane.translation)
+                    }
+                    val bookId = keepPane.bookId
+                    val chapter = keepPane.chapter
+                    when {
+                        bookId != null && chapter != null ->
+                            navController.navigate("read/$bookId/$chapter/0") {
+                                popUpTo("dual") { inclusive = true }
+                                launchSingleTop = true
+                            }
+                        bookId != null ->
+                            navController.navigate("chapters/$bookId") {
+                                popUpTo("dual") { inclusive = true }
+                                launchSingleTop = true
+                            }
+                        else ->
+                            navController.navigate("books") {
+                                popUpTo("dual") { inclusive = true }
+                                launchSingleTop = true
+                            }
+                    }
+                },
                 mediaLibraryImages = bibleUserImages,
                 mediaLibraryAudios = bibleUserAudios,
                 onVerseNote = { ref, bookName, verseText ->
@@ -991,6 +1114,11 @@ private fun BibleNavHost(
                         launchSingleTop = true
                     }
                 },
+                onOpenPipePuzzle = {
+                    navController.navigate("kids_pipes") {
+                        launchSingleTop = true
+                    }
+                },
             )
         }
         composable("kids_tictactoe") {
@@ -1001,6 +1129,9 @@ private fun BibleNavHost(
         }
         composable("kids_go") {
             GoScreen(onBack = { navController.navigateUp() })
+        }
+        composable("kids_pipes") {
+            PipePuzzleScreen(onBack = { navController.navigateUp() })
         }
         composable("kids_edit_sections") {
             KidsEditHubSectionsScreen(
@@ -1066,6 +1197,7 @@ private fun BibleNavHost(
                 onOpenSensorLab = { navController.navigate("experiment_sensor_lab") },
                 onOpenSoundLab = { navController.navigate("experiment_sound_lab") },
                 onOpenWifi = { navController.navigate("experiment_wifi") },
+                onOpenAuto = { navController.navigate("experiment_auto") },
             )
         }
         composable("experiment_camera") {
@@ -1123,6 +1255,11 @@ private fun BibleNavHost(
         }
         composable("experiment_wifi") {
             ExperimentWifiScreen(
+                onBack = { navController.navigateUp() },
+            )
+        }
+        composable("experiment_auto") {
+            ExperimentAutoScreen(
                 onBack = { navController.navigateUp() },
             )
         }
@@ -1443,6 +1580,27 @@ private fun BibleNavHost(
                 viewModel = viewModel,
                 onBack = { navController.navigateUp() },
                 onOpenVideoDownload = { navController.navigate("video_download") },
+                onOpenPlaylists = { navController.navigate("media_video_playlists") },
+            )
+        }
+        composable("media_video_playlists") {
+            UserMediaPlaylistsListScreen(
+                viewModel = viewModel,
+                kind = UserMediaPlaylistKind.VIDEO,
+                onBack = { navController.navigateUp() },
+                onOpenPlaylist = { plId -> navController.navigate("media_video_playlist/$plId") },
+            )
+        }
+        composable(
+            "media_video_playlist/{playlistId}",
+            arguments = listOf(navArgument("playlistId") { type = NavType.StringType }),
+        ) { entry ->
+            val plId = entry.arguments?.getString("playlistId") ?: return@composable
+            UserMediaPlaylistDetailScreen(
+                viewModel = viewModel,
+                playlistId = plId,
+                kind = UserMediaPlaylistKind.VIDEO,
+                onBack = { navController.navigateUp() },
             )
         }
         composable("media_audios") {
@@ -1450,6 +1608,27 @@ private fun BibleNavHost(
                 viewModel = viewModel,
                 onBack = { navController.navigateUp() },
                 onOpenAudioDownload = { navController.navigate("audio_download") },
+                onOpenPlaylists = { navController.navigate("media_audio_playlists") },
+            )
+        }
+        composable("media_audio_playlists") {
+            UserMediaPlaylistsListScreen(
+                viewModel = viewModel,
+                kind = UserMediaPlaylistKind.AUDIO,
+                onBack = { navController.navigateUp() },
+                onOpenPlaylist = { plId -> navController.navigate("media_audio_playlist/$plId") },
+            )
+        }
+        composable(
+            "media_audio_playlist/{playlistId}",
+            arguments = listOf(navArgument("playlistId") { type = NavType.StringType }),
+        ) { entry ->
+            val plId = entry.arguments?.getString("playlistId") ?: return@composable
+            UserMediaPlaylistDetailScreen(
+                viewModel = viewModel,
+                playlistId = plId,
+                kind = UserMediaPlaylistKind.AUDIO,
+                onBack = { navController.navigateUp() },
             )
         }
         composable("audio_download") {
@@ -1469,20 +1648,36 @@ private fun BibleNavHost(
             )
         }
         composable("other_books") {
+            val quranHistory by viewModel.quranReadingHistory.collectAsStateWithLifecycle()
+            val quranTrace by viewModel.quranReadingTrace.collectAsStateWithLifecycle()
             OtherBooksScreen(
                 preferences = preferences,
+                quranReadingHistory = quranHistory,
+                quranReadingTrace = quranTrace,
+                onClearQuranReadingHistory = { viewModel.clearQuranReadingHistory() },
+                onOpenQuranAyah = { surah, ayah ->
+                    navController.navigate("quran/$surah/v/$ayah")
+                },
                 onBack = { navController.navigateUp() },
                 onOpenQuran = { navController.navigate("quran") },
             )
         }
         composable("quran") { navEntry ->
             val quranRepo = rememberQuranRepository()
+            val quranHistory by viewModel.quranReadingHistory.collectAsStateWithLifecycle()
+            val lastQuranReading = remember(quranHistory) {
+                quranHistory.maxByOrNull { it.timestamp }
+            }
             QuranSurahListScreen(
                 repository = quranRepo,
                 navBackStackEntry = navEntry,
                 onBack = { navController.navigateUp() },
                 onOpenSurah = { n -> navController.navigate("quran/$n") },
                 onOpenSearch = { navController.navigate("quran_search") },
+                lastReading = lastQuranReading,
+                onContinueReading = { surah, ayah ->
+                    navController.navigate("quran/$surah/v/$ayah")
+                },
             )
         }
         composable("quran_search") {
@@ -1506,6 +1701,13 @@ private fun BibleNavHost(
                 onOpenArabicSandbox = { verse ->
                     navController.navigate("quran_arabic_sandbox/$n/v/$verse")
                 },
+                onBeginReadingSession = { surah, name, ayah ->
+                    viewModel.beginQuranReadingSession(surah, name, ayah)
+                },
+                onVisibleAyah = { surah, name, ayah ->
+                    viewModel.onQuranVisibleAyah(surah, name, ayah)
+                },
+                onFlushReadingDwell = { viewModel.flushQuranReadingDwell() },
             )
         }
         composable("quran/{surah}/v/{verse}") { entry ->
@@ -1521,6 +1723,13 @@ private fun BibleNavHost(
                 onOpenArabicSandbox = { verse ->
                     navController.navigate("quran_arabic_sandbox/$n/v/$verse")
                 },
+                onBeginReadingSession = { surah, name, ayah ->
+                    viewModel.beginQuranReadingSession(surah, name, ayah)
+                },
+                onVisibleAyah = { surah, name, ayah ->
+                    viewModel.onQuranVisibleAyah(surah, name, ayah)
+                },
+                onFlushReadingDwell = { viewModel.flushQuranReadingDwell() },
             )
         }
         composable("quran_arabic_sandbox/{surah}") { entry ->
@@ -1574,7 +1783,42 @@ private fun BibleNavHost(
         composable("strongs") {
             StrongsScreen(onBack = { navController.navigateUp() })
         }
-        composable("timemark_editor") {
+        composable(
+            route = "timemark_editor?bookId={bookId}&chapter={chapter}&translationCode={translationCode}&narratorId={narratorId}",
+            arguments = listOf(
+                navArgument("bookId") {
+                    type = NavType.StringType
+                    nullable = true
+                    defaultValue = null
+                },
+                navArgument("chapter") {
+                    type = NavType.IntType
+                    defaultValue = 0
+                },
+                navArgument("translationCode") {
+                    type = NavType.StringType
+                    nullable = true
+                    defaultValue = null
+                },
+                navArgument("narratorId") {
+                    type = NavType.StringType
+                    nullable = true
+                    defaultValue = null
+                },
+            ),
+        ) { entry ->
+            val timemarkBookId = entry.arguments?.getString("bookId")
+            val timemarkChapter = entry.arguments?.getInt("chapter")?.takeIf { it > 0 }
+            val timemarkTranslationCode = entry.arguments?.getString("translationCode")
+            val timemarkNarratorId = entry.arguments?.getString("narratorId")
+            val prefillFromReading = timemarkBookId != null && timemarkChapter != null
+            LaunchedEffect(timemarkTranslationCode) {
+                val code = timemarkTranslationCode ?: return@LaunchedEffect
+                val tid = TranslationId.fromCode(code)
+                if (tid != translation) {
+                    viewModel.setTranslation(tid)
+                }
+            }
             val bibleUserImages by viewModel.bibleUserImages.collectAsStateWithLifecycle()
             TimemarkEditorScreen(
                 library = library,
@@ -1582,201 +1826,95 @@ private fun BibleNavHost(
                 narratorId = narratorId,
                 onBack = { navController.navigateUp() },
                 mediaLibraryImages = bibleUserImages,
+                initialBookId = timemarkBookId,
+                initialChapter = timemarkChapter,
+                initialNarratorId = timemarkNarratorId,
+                autoSelectDownloadedAudio = prefillFromReading,
             )
         }
         composable("chapters/{bookId}") { entry ->
             val bookId = entry.arguments?.getString("bookId") ?: return@composable
-            val canon = BibleCanon.byId(bookId) ?: return@composable
-            val loaded = library.getBook(translation, bookId)
-            val isOnlineTranslation = loaded == null && translation.onlineCode != null
-            val chapters = loaded?.chapters ?: (1..canon.chapters).map { n ->
-                BibleChapter(number = n, verses = emptyList())
-            }
-            val book = loaded ?: BibleBook(
-                id = canon.id,
-                name = BibleCanon.displayName(canon, translation),
-                chapters = chapters,
-            )
-            val titleText = "${book.name} - ${translation.labelRu}"
-            val chapterScope = rememberCoroutineScope()
-            val chapterCtx = LocalContext.current
-            var dlProgress by remember { mutableStateOf<Pair<Int, Int>?>(null) }
-            var dlError by remember { mutableStateOf<String?>(null) }
-            Scaffold(
-                topBar = {
-                    CenterAlignedTopAppBar(
-                        title = {
-                            if (dlProgress != null) {
-                                val (done, total) = dlProgress!!
-                                Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                                    Text(
-                                        "Скачивание $done / $total",
-                                        style = MaterialTheme.typography.titleSmall,
-                                    )
-                                    androidx.compose.material3.LinearProgressIndicator(
-                                        progress = { if (total > 0) done.toFloat() / total else 0f },
-                                        modifier = Modifier
-                                            .fillMaxWidth()
-                                            .padding(horizontal = 16.dp, vertical = 4.dp),
-                                    )
-                                }
-                            } else {
-                                Text(
-                                    titleText,
-                                    style = MaterialTheme.typography.titleMedium,
-                                )
-                            }
-                        },
-                        navigationIcon = {
-                            IconButton(onClick = { navController.navigateUp() }) {
-                                Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = stringResource(R.string.back))
-                            }
-                        },
-                        actions = {
-                            if (book.chapters.isNotEmpty() && dlProgress == null) {
-                                val chaptersWithAudioForBtn = remember(translation, bookId, narratorId, downloadTick) {
-                                    val eff = com.example.bible.data.narratorForTranslation(translation, narratorId).id
-                                    viewModel.downloadedChaptersFor(eff, bookId)
-                                }
-                                val allDownloaded = chaptersWithAudioForBtn.size >= book.chapters.size
-                                IconButton(
-                                    onClick = {
-                                        if (allDownloaded) return@IconButton
-                                        val narrator = com.example.bible.data.narratorForTranslation(translation, narratorId)
-                                        val chaptersToDownload = book.chapters
-                                            .map { it.number }
-                                            .filter { it !in chaptersWithAudioForBtn }
-                                        val total = chaptersToDownload.size
-                                        if (total == 0) return@IconButton
-                                        dlError = null
-                                        dlProgress = 0 to total
-                                        chapterScope.launch(kotlinx.coroutines.Dispatchers.IO) {
-                                            var done = 0
-                                            var errors = 0
-                                            for (ch in chaptersToDownload) {
-                                                try {
-                                                    com.example.bible.data.BibleAudioPlayer.downloadChapter(
-                                                        chapterCtx, narrator, bookId, ch,
-                                                    )
-                                                } catch (_: Exception) {
-                                                    errors++
-                                                }
-                                                done++
-                                                dlProgress = done to total
-                                            }
-                                            dlProgress = null
-                                            if (errors > 0) {
-                                                dlError = "Не удалось скачать $errors из $total глав"
-                                            }
-                                        }
-                                    },
-                                ) {
-                                    Icon(
-                                        Icons.Default.Download,
-                                        contentDescription = "Скачать все главы",
-                                        tint = if (allDownloaded)
-                                            MaterialTheme.colorScheme.primary
-                                        else MaterialTheme.colorScheme.onSurfaceVariant,
-                                    )
-                                }
-                            }
-                            if (dlProgress != null) {
-                                CircularProgressIndicator(
-                                    modifier = Modifier
-                                        .padding(end = 8.dp)
-                                        .size(24.dp),
-                                    strokeWidth = 2.dp,
-                                )
-                            }
-                        },
+            if (BibleCanon.byId(bookId) == null) return@composable
+            when (val shellState = rememberBookShell(library, translation, bookId)) {
+                BibleBookShellState.Loading -> {
+                    Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                        CircularProgressIndicator()
+                    }
+                }
+                is BibleBookShellState.Ready -> {
+                    val book = shellState.book
+                    ChaptersRouteContent(
+                        book = book,
+                        bookId = bookId,
+                        translation = translation,
+                        isOnlineTranslation = false,
+                        viewModel = viewModel,
+                        narratorId = narratorId,
+                        downloadTick = downloadTick,
+                        navController = navController,
                     )
-                },
-            ) { padding ->
-                if (book.chapters.isEmpty()) {
-                    Box(
-                        modifier = Modifier
-                            .padding(padding)
-                            .fillMaxSize(),
-                        contentAlignment = Alignment.Center,
-                    ) {
-                        Text(
-                            text = stringResource(R.string.no_chapters_loaded),
-                            style = MaterialTheme.typography.bodyLarge,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant,
-                            textAlign = TextAlign.Center,
-                            modifier = Modifier.padding(24.dp),
-                        )
-                    }
-                } else {
-                    Column(modifier = Modifier.padding(padding)) {
-                        if (dlError != null) {
-                            Text(
-                                dlError!!,
-                                color = MaterialTheme.colorScheme.error,
-                                style = MaterialTheme.typography.labelSmall,
-                                modifier = Modifier.padding(horizontal = 16.dp, vertical = 4.dp),
-                            )
-                        }
-                        val chaptersWithAudio = remember(translation, bookId, narratorId, downloadTick) {
-                            val fromAssets = book.chapters.mapNotNull { ch ->
-                                if (viewModel.hasChapterAudio(translation, bookId, ch.number)) ch.number else null
-                            }.toSet()
-                            val eff = com.example.bible.data.narratorForTranslation(translation, narratorId).id
-                            val downloaded = viewModel.downloadedChaptersFor(eff, bookId)
-                            fromAssets + downloaded
-                        }
-                        ChapterGrid(
-                            modifier = Modifier.fillMaxSize(),
-                            book = book,
-                            chaptersWithAudio = chaptersWithAudio,
-                            onChapterClick = { chapter ->
-                                navController.navigate("verses/$bookId/$chapter")
-                            },
-                        )
-                    }
+                }
+                is BibleBookShellState.Fallback -> {
+                    ChaptersRouteContent(
+                        book = shellState.book,
+                        bookId = bookId,
+                        translation = translation,
+                        isOnlineTranslation = shellState.isOnlineOnly,
+                        viewModel = viewModel,
+                        narratorId = narratorId,
+                        downloadTick = downloadTick,
+                        navController = navController,
+                    )
                 }
             }
         }
         composable("verses/{bookId}/{chapter}") { entry ->
             val bookId = entry.arguments?.getString("bookId") ?: return@composable
             val chapterNum = entry.arguments?.getString("chapter")?.toIntOrNull() ?: return@composable
-            val canon = BibleCanon.byId(bookId) ?: return@composable
-            val localBook = library.getBook(translation, bookId)
-            if (localBook == null && translation.onlineCode != null) {
-                LaunchedEffect(Unit) {
-                    navController.navigate("read/$bookId/$chapterNum/0") {
-                        popUpTo("verses/$bookId/$chapterNum") { inclusive = true }
+            val chapterLoad = rememberLoadedChapter(library, translation, bookId, chapterNum)
+            when (chapterLoad) {
+                BibleChapterLoadState.Loading -> {
+                    Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                        CircularProgressIndicator()
                     }
                 }
-                return@composable
-            }
-            val book = localBook ?: return@composable
-            val chapter = book.chapters.find { it.number == chapterNum } ?: return@composable
-            val titleText = "${book.name} $chapterNum - ${translation.labelRu}"
-            Scaffold(
-                topBar = {
-                    CenterAlignedTopAppBar(
-                        title = {
-                            Text(
-                                titleText,
-                                style = MaterialTheme.typography.titleMedium,
+                BibleChapterLoadState.NotFound -> {
+                    if (translation.onlineCode != null) {
+                        LaunchedEffect(Unit) {
+                            navController.navigate("read/$bookId/$chapterNum/0") {
+                                popUpTo("verses/$bookId/$chapterNum") { inclusive = true }
+                            }
+                        }
+                    }
+                }
+                is BibleChapterLoadState.Ready -> {
+                    val titleText = "${chapterLoad.bookName} $chapterNum - ${translation.labelRu}"
+                    Scaffold(
+                        topBar = {
+                            CenterAlignedTopAppBar(
+                                title = {
+                                    Text(
+                                        titleText,
+                                        style = MaterialTheme.typography.titleMedium,
+                                    )
+                                },
+                                navigationIcon = {
+                                    IconButton(onClick = { navController.navigateUp() }) {
+                                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = stringResource(R.string.back))
+                                    }
+                                },
                             )
                         },
-                        navigationIcon = {
-                            IconButton(onClick = { navController.navigateUp() }) {
-                                Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = stringResource(R.string.back))
-                            }
-                        },
-                    )
-                },
-            ) { padding ->
-                VerseGrid(
-                    modifier = Modifier.padding(padding),
-                    verses = chapter.verses,
-                    onVerseClick = { verseNum ->
-                        navController.navigate("read/$bookId/$chapterNum/$verseNum")
-                    },
-                )
+                    ) { padding ->
+                        VerseGrid(
+                            modifier = Modifier.padding(padding),
+                            verses = chapterLoad.chapter.verses,
+                            onVerseClick = { verseNum ->
+                                navController.navigate("read/$bookId/$chapterNum/$verseNum")
+                            },
+                        )
+                    }
+                }
             }
         }
         composable(
@@ -1792,8 +1930,12 @@ private fun BibleNavHost(
             val chapterNum = entry.arguments?.getString("chapter")?.toIntOrNull() ?: return@composable
             val scrollVerse = entry.arguments?.getInt("scrollVerse") ?: 0
             val canon = BibleCanon.byId(bookId)
-            val localBook = library.getBook(translation, bookId)
-            val isOnline = localBook == null && translation.onlineCode != null
+            val bookShell = rememberBookShell(library, translation, bookId)
+            val chapterLoad = rememberLoadedChapter(library, translation, bookId, chapterNum)
+            val isOnline = when (bookShell) {
+                is BibleBookShellState.Fallback -> bookShell.isOnlineOnly
+                else -> false
+            }
             val onlineLoading by viewModel.onlineChapterLoading.collectAsStateWithLifecycle()
             val onlineVerses by viewModel.onlineChapterVerses.collectAsStateWithLifecycle()
             val onlineError by viewModel.onlineChapterError.collectAsStateWithLifecycle()
@@ -1802,34 +1944,101 @@ private fun BibleNavHost(
             val bibleUserAudios by viewModel.bibleUserAudios.collectAsStateWithLifecycle()
             val userNotes by viewModel.userNotes.collectAsStateWithLifecycle()
 
-            LaunchedEffect(translation, bookId, chapterNum) {
+            LaunchedEffect(translation, bookId, chapterNum, isOnline) {
                 if (isOnline) {
                     viewModel.loadOnlineChapter(translation, bookId, chapterNum)
                 }
             }
 
-            val bookName = localBook?.name
-                ?: BibleCanon.displayName(canon ?: BibleCanon.allBooks.first(), translation)
-            val totalChapters = canon?.chapters ?: localBook?.chapters?.size ?: 1
+            val bookName = when (bookShell) {
+                is BibleBookShellState.Ready -> bookShell.book.name
+                is BibleBookShellState.Fallback -> bookShell.book.name
+                BibleBookShellState.Loading ->
+                    BibleCanon.displayName(canon ?: BibleCanon.allBooks.first(), translation)
+            }
+            val totalChapters = when (bookShell) {
+                is BibleBookShellState.Ready -> bookShell.book.chapters.size
+                is BibleBookShellState.Fallback -> bookShell.book.chapters.size
+                BibleBookShellState.Loading -> canon?.chapters ?: 1
+            }
             val chapter: BibleChapter? = if (isOnline) {
                 if (onlineVerses.isNotEmpty()) BibleChapter(chapterNum, onlineVerses) else null
-            } else {
-                localBook?.chapters?.find { it.number == chapterNum }
+            } else when (chapterLoad) {
+                is BibleChapterLoadState.Ready -> chapterLoad.chapter
+                else -> null
             }
-            val chapterIndex = if (isOnline) chapterNum - 1 else (localBook?.chapters?.indexOf(chapter) ?: -1)
+            val chapterIndex = if (isOnline) chapterNum - 1 else chapterNum - 1
             val hasPrev = chapterIndex > 0
             val hasNext = chapterIndex < totalChapters - 1
 
+            var readerVisibleVerse by remember(bookId, chapterNum) {
+                mutableIntStateOf(scrollVerse.coerceAtLeast(1))
+            }
+            LaunchedEffect(scrollVerse) {
+                if (scrollVerse > 0) readerVisibleVerse = scrollVerse
+            }
+            val chapterShortTitle = readerChapterTitle(bookId, chapterNum, readerVisibleVerse)
+
+            if (!isOnline && chapterLoad is BibleChapterLoadState.Loading) {
+                Scaffold(
+                    topBar = {
+                        ReaderChapterTopBar(
+                            navigationIcon = {
+                                ReaderTopIconButton(onClick = { navController.navigateUp() }) {
+                                    Icon(
+                                        Icons.AutoMirrored.Filled.ArrowBack,
+                                        contentDescription = "Назад",
+                                        modifier = Modifier.size(ReaderTopBarIconSize),
+                                    )
+                                }
+                            },
+                            centerContent = {
+                                Text(
+                                    chapterShortTitle,
+                                    style = MaterialTheme.typography.titleSmall,
+                                    fontWeight = FontWeight.SemiBold,
+                                    maxLines = 1,
+                                    color = ReaderTopBarColors.Content,
+                                )
+                            },
+                            actions = {},
+                            restoreLightStatusBarIcons = !isDark,
+                        )
+                    },
+                ) { padding ->
+                    Box(
+                        modifier = Modifier.padding(padding).fillMaxSize(),
+                        contentAlignment = Alignment.Center,
+                    ) {
+                        CircularProgressIndicator()
+                    }
+                }
+                return@composable
+            }
             if (isOnline && onlineLoading) {
                 Scaffold(
                     topBar = {
-                        CenterAlignedTopAppBar(
-                            title = { Text("$bookName $chapterNum") },
+                        ReaderChapterTopBar(
                             navigationIcon = {
-                                IconButton(onClick = { navController.navigateUp() }) {
-                                    Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Назад")
+                                ReaderTopIconButton(onClick = { navController.navigateUp() }) {
+                                    Icon(
+                                        Icons.AutoMirrored.Filled.ArrowBack,
+                                        contentDescription = "Назад",
+                                        modifier = Modifier.size(ReaderTopBarIconSize),
+                                    )
                                 }
                             },
+                            centerContent = {
+                                Text(
+                                    chapterShortTitle,
+                                    style = MaterialTheme.typography.titleSmall,
+                                    fontWeight = FontWeight.SemiBold,
+                                    maxLines = 1,
+                                    color = ReaderTopBarColors.Content,
+                                )
+                            },
+                            actions = {},
+                            restoreLightStatusBarIcons = !isDark,
                         )
                     },
                 ) { padding ->
@@ -1849,13 +2058,27 @@ private fun BibleNavHost(
             if (isOnline && onlineError != null) {
                 Scaffold(
                     topBar = {
-                        CenterAlignedTopAppBar(
-                            title = { Text("$bookName $chapterNum") },
+                        ReaderChapterTopBar(
                             navigationIcon = {
-                                IconButton(onClick = { navController.navigateUp() }) {
-                                    Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Назад")
+                                ReaderTopIconButton(onClick = { navController.navigateUp() }) {
+                                    Icon(
+                                        Icons.AutoMirrored.Filled.ArrowBack,
+                                        contentDescription = "Назад",
+                                        modifier = Modifier.size(ReaderTopBarIconSize),
+                                    )
                                 }
                             },
+                            centerContent = {
+                                Text(
+                                    chapterShortTitle,
+                                    style = MaterialTheme.typography.titleSmall,
+                                    fontWeight = FontWeight.SemiBold,
+                                    maxLines = 1,
+                                    color = ReaderTopBarColors.Content,
+                                )
+                            },
+                            actions = {},
+                            restoreLightStatusBarIcons = !isDark,
                         )
                     },
                 ) { padding ->
@@ -1870,11 +2093,15 @@ private fun BibleNavHost(
             }
             if (chapter == null) return@composable
 
-            val book = localBook ?: com.example.bible.data.BibleBook(
-                id = bookId,
-                name = bookName,
-                chapters = listOf(chapter),
-            )
+            val book = when (bookShell) {
+                is BibleBookShellState.Ready -> bookShell.book.copy(chapters = listOf(chapter))
+                is BibleBookShellState.Fallback -> bookShell.book.copy(chapters = listOf(chapter))
+                BibleBookShellState.Loading -> com.example.bible.data.BibleBook(
+                    id = bookId,
+                    name = bookName,
+                    chapters = listOf(chapter),
+                )
+            }
 
             DisposableEffect(Unit) {
                 onDispose { viewModel.flushReadingDwell() }
@@ -1906,9 +2133,12 @@ private fun BibleNavHost(
             var showNarratorPicker by remember { mutableStateOf(false) }
             var showStudyTools by remember { mutableStateOf(false) }
             var studyVerse by remember { mutableIntStateOf(1) }
-            val interlinearHebrewSandboxAvailable = remember(bookId) {
-                BibleCanon.isOldTestament(bookId) &&
-                    library.getBook(TranslationId.INTERLINEAR, bookId) != null
+            var interlinearHebrewSandboxAvailable by remember(bookId) { mutableStateOf(false) }
+            LaunchedEffect(bookId, library) {
+                interlinearHebrewSandboxAvailable = kotlinx.coroutines.withContext(kotlinx.coroutines.Dispatchers.IO) {
+                    BibleCanon.isOldTestament(bookId) &&
+                        library.hasLocalBook(TranslationId.INTERLINEAR, bookId)
+                }
             }
 
             LaunchedEffect(showStudyTools) {
@@ -1927,102 +2157,191 @@ private fun BibleNavHost(
             val readerUserLexiconRules by viewModel.readerUserLexiconRules.collectAsStateWithLifecycle()
             val readerPresetLexiconRules by viewModel.readerPresetLexiconRules.collectAsStateWithLifecycle()
             val lexiconPresetEnabled by viewModel.lexiconPresetEnabled.collectAsStateWithLifecycle()
-            val readingAudioNarrator = remember(translation, narratorId) {
-                com.example.bible.data.narratorForTranslation(translation, narratorId)
+            val readingAudioNarrator = remember(translation, narratorId, bookId) {
+                com.example.bible.data.narratorForReading(translation, bookId, narratorId)
+            }
+            var timemarkProjectsRefresh by remember { mutableIntStateOf(0) }
+            val readerLifecycleOwner = LocalLifecycleOwner.current
+            DisposableEffect(readerLifecycleOwner) {
+                val observer = LifecycleEventObserver { _, event ->
+                    if (event == Lifecycle.Event.ON_RESUME) {
+                        timemarkProjectsRefresh++
+                    }
+                }
+                readerLifecycleOwner.lifecycle.addObserver(observer)
+                onDispose { readerLifecycleOwner.lifecycle.removeObserver(observer) }
+            }
+            val hasChapterTimemarks = remember(
+                translation,
+                bookId,
+                chapterNum,
+                timemarkProjectsRefresh,
+            ) {
+                TimemarkStore.hasTimemarksForChapter(
+                    readerContext,
+                    translation.code,
+                    bookId,
+                    chapterNum,
+                )
+            }
+            val timemarksMatchNarration = remember(
+                translation,
+                bookId,
+                chapterNum,
+                readingAudioNarrator.id,
+                timemarkProjectsRefresh,
+            ) {
+                TimemarkStore.findProjectMatchingNarration(
+                    readerContext,
+                    translation.code,
+                    bookId,
+                    chapterNum,
+                    readingAudioNarrator.id,
+                ) != null
+            }
+            val timemarkChaptersForBook = remember(translation, bookId, timemarkProjectsRefresh) {
+                TimemarkStore.chaptersWithTimemarksForBook(
+                    readerContext,
+                    translation.code,
+                    bookId,
+                )
+            }
+            val timemarkBooks = remember(translation, timemarkProjectsRefresh) {
+                TimemarkStore.booksWithTimemarks(readerContext, translation.code)
+            }
+            LaunchedEffect(bookId) {
+                val st = com.example.bible.data.BibleAudioPlayer.state.value
+                if (
+                    st.bookId.isNotBlank() &&
+                    st.bookId != bookId &&
+                    (st.isPlaying || st.isLoading)
+                ) {
+                    com.example.bible.data.BibleAudioPlayer.stopForNavigation()
+                }
             }
             LaunchedEffect(bookId, chapterNum, scrollVerse) {
                 com.example.bible.data.BibleAudioPlayer.chapterContinueNavigation.collect { (bid, nextCh) ->
                     if (bid == bookId && chapterNum == nextCh - 1) {
-                        navController.navigate("read/$bid/$nextCh/0") {
-                            popUpTo("read/$bookId/$chapterNum/$scrollVerse") { inclusive = true }
-                            launchSingleTop = true
+                        runCatching {
+                            navController.navigate("read/$bid/$nextCh/0") {
+                                popUpTo("read/$bookId/$chapterNum/$scrollVerse") { inclusive = true }
+                                launchSingleTop = true
+                            }
                         }
                     }
                 }
             }
             Scaffold(
                 topBar = {
-                    CenterAlignedTopAppBar(
-                        title = {
-                            Column(
-                                horizontalAlignment = Alignment.CenterHorizontally,
-                                modifier = Modifier.clickable { showQuickNav = true },
-                            ) {
-                                Text(
-                                    "${book.name} $chapterNum",
-                                    style = MaterialTheme.typography.titleMedium,
-                                )
-                                Text(
-                                    translation.shortLabel,
-                                    style = MaterialTheme.typography.labelSmall,
-                                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    ReaderChapterTopBar(
+                        navigationIcon = {
+                            ReaderTopIconButton(onClick = { navController.navigateUp() }) {
+                                Icon(
+                                    Icons.AutoMirrored.Filled.ArrowBack,
+                                    contentDescription = stringResource(R.string.back),
+                                    modifier = Modifier.size(ReaderTopBarIconSize),
                                 )
                             }
                         },
-                        navigationIcon = {
-                            Row {
-                                if (hasPrev) {
-                                    IconButton(onClick = {
-                                        val prev = if (isOnline) chapterNum - 1 else book.chapters[chapterIndex - 1].number
+                        centerContent = {
+                            ReaderChapterNavTitle(
+                                title = chapterShortTitle,
+                                onTitleClick = { showQuickNav = true },
+                                onPrevChapter = if (hasPrev) {
+                                    {
+                                        val prev = chapterNum - 1
                                         navController.navigate("read/$bookId/$prev/0") {
                                             popUpTo("read/$bookId/$chapterNum/$scrollVerse") { inclusive = true }
                                             launchSingleTop = true
                                         }
-                                    }) {
-                                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = stringResource(R.string.prev_chapter))
                                     }
                                 } else {
-                                    IconButton(onClick = { navController.navigateUp() }) {
-                                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = stringResource(R.string.back))
+                                    null
+                                },
+                                onNextChapter = if (hasNext) {
+                                    {
+                                        val next = chapterNum + 1
+                                        navController.navigate("read/$bookId/$next/0") {
+                                            popUpTo("read/$bookId/$chapterNum/$scrollVerse") { inclusive = true }
+                                            launchSingleTop = true
+                                        }
                                     }
-                                }
-                            }
+                                } else {
+                                    null
+                                },
+                                prevContentDescription = stringResource(R.string.prev_chapter),
+                                nextContentDescription = stringResource(R.string.next_chapter),
+                            )
                         },
                         actions = {
-                            if (hasNext) {
-                                IconButton(onClick = {
-                                    val next = if (isOnline) chapterNum + 1 else book.chapters[chapterIndex + 1].number
-                                    navController.navigate("read/$bookId/$next/0") {
-                                        popUpTo("read/$bookId/$chapterNum/$scrollVerse") { inclusive = true }
-                                        launchSingleTop = true
-                                    }
-                                }) {
-                                    Icon(Icons.AutoMirrored.Filled.ArrowForward, contentDescription = stringResource(R.string.next_chapter))
-                                }
+                            ReaderTopIconButton(onClick = { navController.navigate("search") }) {
+                                Icon(
+                                    Icons.Default.Search,
+                                    contentDescription = stringResource(R.string.search_title),
+                                    modifier = Modifier.size(ReaderTopBarIconSize),
+                                )
                             }
-                            IconButton(onClick = {
-                                val isCurrentChapter = bibleAudioState.isPlaying &&
-                                    bibleAudioState.bookId == bookId &&
-                                    bibleAudioState.chapter == chapterNum &&
-                                    bibleAudioState.narratorId == readingAudioNarrator.id
-                                if (isCurrentChapter) {
-                                    com.example.bible.data.BibleAudioPlayer.togglePlay()
-                                } else {
-                                    com.example.bible.data.BibleAudioPlayer.playChapter(
-                                        readerContext, readingAudioNarrator, bookId, chapterNum,
-                                    )
-                                }
+                            ReaderTopIconButton(onClick = {
+                                com.example.bible.data.BibleAudioPlayer.stopForNavigation()
+                                navController.navigate("dual?bookId=$bookId&chapter=$chapterNum")
                             }) {
+                                Icon(
+                                    Icons.Default.Add,
+                                    contentDescription = stringResource(R.string.menu_dual_bible),
+                                    modifier = Modifier.size(ReaderTopBarIconSize),
+                                    tint = ReaderTopBarColors.Accent,
+                                )
+                            }
+                            ReaderTopIconButton(
+                                onClick = {
+                                    playReaderChapterAudio(
+                                        readerContext,
+                                        readingAudioNarrator,
+                                        bookId,
+                                        chapterNum,
+                                        readerVisibleVerse.coerceAtLeast(1),
+                                        translation,
+                                    )
+                                },
+                                showTimemarkBadge = hasChapterTimemarks,
+                            ) {
                                 val isThisChapterAudio = bibleAudioState.isPlaying &&
                                     bibleAudioState.bookId == bookId &&
                                     bibleAudioState.chapter == chapterNum &&
                                     bibleAudioState.narratorId == readingAudioNarrator.id
                                 Icon(
                                     imageVector = if (isThisChapterAudio) Icons.Default.Pause else Icons.Default.Headphones,
-                                    contentDescription = "Слушать",
-                                    tint = if (isThisChapterAudio) MaterialTheme.colorScheme.primary
-                                    else MaterialTheme.colorScheme.onSurfaceVariant,
+                                    contentDescription = if (hasChapterTimemarks) {
+                                        stringResource(R.string.timemark_listen_with_cues_cd)
+                                    } else {
+                                        "Слушать"
+                                    },
+                                    tint = when {
+                                        isThisChapterAudio -> ReaderTopBarColors.Accent
+                                        hasChapterTimemarks -> ReaderTopBarColors.Accent
+                                        else -> ReaderTopBarColors.ContentMuted
+                                    },
+                                    modifier = Modifier.size(ReaderTopBarIconSize),
                                 )
                             }
-                            IconButton(onClick = {
-                                studyVerse = scrollVerse.coerceAtLeast(1)
+                            ReaderTopIconButton(onClick = {
+                                studyVerse = readerVisibleVerse.coerceAtLeast(1)
                                 showStudyTools = true
                             }) {
-                                Icon(Icons.AutoMirrored.Filled.MenuBook, contentDescription = "Изучение", tint = MaterialTheme.colorScheme.primary)
+                                Icon(
+                                    Icons.AutoMirrored.Filled.MenuBook,
+                                    contentDescription = "Изучение",
+                                    tint = ReaderTopBarColors.Accent,
+                                    modifier = Modifier.size(ReaderTopBarIconSize),
+                                )
                             }
                             Box {
-                                IconButton(onClick = { showMoreMenu = true }) {
-                                    Icon(Icons.Filled.MoreVert, contentDescription = "Ещё")
+                                ReaderTopIconButton(onClick = { showMoreMenu = true }) {
+                                    Icon(
+                                        Icons.Filled.MoreVert,
+                                        contentDescription = "Ещё",
+                                        modifier = Modifier.size(ReaderTopBarIconSize),
+                                    )
                                 }
                                 val readerMenuMaxH = (LocalConfiguration.current.screenHeightDp * 0.58f).dp
                                 DropdownMenu(
@@ -2050,6 +2369,9 @@ private fun BibleNavHost(
                                         navController = navController,
                                         onShowTextSizeDialog = { showTextSizeDialog = true },
                                         onShowBookNarratorPicker = { showNarratorPicker = true },
+                                        timemarkBookId = bookId,
+                                        timemarkChapter = chapterNum,
+                                        timemarkNarratorId = readingAudioNarrator.id,
                                     )
                                     HorizontalDivider()
                                     if (BibleCanon.isOldTestament(bookId)) {
@@ -2057,11 +2379,13 @@ private fun BibleNavHost(
                                             text = { Text(stringResource(R.string.menu_audio_hebrew_chapter)) },
                                             onClick = {
                                                 showMoreMenu = false
-                                                BibleAudioPlayer.playChapter(
+                                                playReaderChapterAudio(
                                                     readerContext,
                                                     BibleAudioNarrators.hebrewOt,
                                                     bookId,
                                                     chapterNum,
+                                                    readerVisibleVerse.coerceAtLeast(1),
+                                                    translation,
                                                 )
                                             },
                                             leadingIcon = {
@@ -2078,11 +2402,13 @@ private fun BibleNavHost(
                                             text = { Text(stringResource(R.string.menu_audio_greek_chapter)) },
                                             onClick = {
                                                 showMoreMenu = false
-                                                BibleAudioPlayer.playChapter(
+                                                playReaderChapterAudio(
                                                     readerContext,
                                                     BibleAudioNarrators.greekNt,
                                                     bookId,
                                                     chapterNum,
+                                                    readerVisibleVerse.coerceAtLeast(1),
+                                                    translation,
                                                 )
                                             },
                                             leadingIcon = {
@@ -2148,6 +2474,7 @@ private fun BibleNavHost(
                                         text = { Text("К книгам") },
                                         onClick = {
                                             showMoreMenu = false
+                                            com.example.bible.data.BibleAudioPlayer.stopForNavigation()
                                             navController.navigate("books") {
                                                 popUpTo("books") { inclusive = true }
                                                 launchSingleTop = true
@@ -2181,6 +2508,7 @@ private fun BibleNavHost(
                                 }
                             }
                         },
+                        restoreLightStatusBarIcons = !isDark,
                     )
                 },
             ) { padding ->
@@ -2204,6 +2532,7 @@ private fun BibleNavHost(
                 Box(modifier = Modifier.padding(padding).fillMaxSize()) {
                 Column(modifier = Modifier.fillMaxSize()) {
                     ScrollableTabRow(
+                        modifier = Modifier.height(36.dp),
                         selectedTabIndex = pagerState.currentPage,
                         containerColor = MaterialTheme.colorScheme.surface,
                         contentColor = MaterialTheme.colorScheme.primary,
@@ -2211,6 +2540,7 @@ private fun BibleNavHost(
                     ) {
                         translations.forEachIndexed { index, tid ->
                             Tab(
+                                modifier = Modifier.height(36.dp),
                                 selected = pagerState.currentPage == index,
                                 onClick = { scope.launch { pagerState.animateScrollToPage(index) } },
                                 text = { Text(tid.labelRu, fontSize = 12.sp, maxLines = 1) },
@@ -2223,10 +2553,12 @@ private fun BibleNavHost(
                             modifier = Modifier.fillMaxSize(),
                         ) { page ->
                             val pageTrans = translations[page]
-                            val pageBook = library.getBook(pageTrans, bookId)
-                            val pageChapter = pageBook?.chapters?.find { it.number == chapterNum }
-
-                            val isPageOnline = pageBook == null && pageTrans.onlineCode != null
+                            val pageChapterLoad = rememberLoadedChapter(library, pageTrans, bookId, chapterNum)
+                            val pageShell = rememberBookShell(library, pageTrans, bookId)
+                            val isPageOnline = when (pageShell) {
+                                is BibleBookShellState.Fallback -> pageShell.isOnlineOnly
+                                else -> false
+                            }
                             var onlineVersesPage by remember(pageTrans, bookId, chapterNum) {
                                 mutableStateOf<List<BibleVerse>?>(null)
                             }
@@ -2248,39 +2580,57 @@ private fun BibleNavHost(
                                 }
                             }
 
+                            val pageChapter = when (pageChapterLoad) {
+                                is BibleChapterLoadState.Ready -> pageChapterLoad.chapter
+                                else -> null
+                            }
                             val effectiveVerses = pageChapter?.verses ?: onlineVersesPage
-                            val effectiveBookName = pageBook?.name
-                                ?: BibleCanon.displayName(
-                                    BibleCanon.byId(bookId) ?: BibleCanon.allBooks.first(),
-                                    pageTrans,
-                                )
-                            val timemarkProjectsForPage = remember(pageTrans, bookId, chapterNum, readerContext) {
-                                TimemarkStore.listProjectsForChapter(
+                            val effectiveBookName = when (pageChapterLoad) {
+                                is BibleChapterLoadState.Ready -> pageChapterLoad.bookName
+                                else -> when (pageShell) {
+                                    is BibleBookShellState.Ready -> pageShell.book.name
+                                    is BibleBookShellState.Fallback -> pageShell.book.name
+                                    else -> BibleCanon.displayName(
+                                        BibleCanon.byId(bookId) ?: BibleCanon.allBooks.first(),
+                                        pageTrans,
+                                    )
+                                }
+                            }
+                            val pageHasTimemarks = remember(
+                                pageTrans,
+                                bookId,
+                                chapterNum,
+                                timemarkProjectsRefresh,
+                            ) {
+                                TimemarkStore.hasTimemarksForChapter(
                                     readerContext,
                                     pageTrans.code,
                                     bookId,
                                     chapterNum,
-                                ).filter { it.cues.isNotEmpty() }
+                                )
                             }
-                            var selectedTimemarkId by remember(pageTrans, bookId, chapterNum) {
-                                mutableStateOf<String?>(null)
-                            }
-                            LaunchedEffect(timemarkProjectsForPage) {
-                                if (selectedTimemarkId != null && timemarkProjectsForPage.none { it.id == selectedTimemarkId }) {
-                                    selectedTimemarkId = null
-                                }
-                            }
-                            val timemarkForPage = selectedTimemarkId?.let { id ->
-                                timemarkProjectsForPage.find { it.id == id }
+                            val timemarkForPage = remember(
+                                pageTrans,
+                                bookId,
+                                chapterNum,
+                                readingAudioNarrator.id,
+                                timemarkProjectsRefresh,
+                            ) {
+                                TimemarkStore.findProjectMatchingNarration(
+                                    readerContext,
+                                    pageTrans.code,
+                                    bookId,
+                                    chapterNum,
+                                    readingAudioNarrator.id,
+                                )
                             }
                             val verseNumbersWithNotes = remember(userNotes, bookId, chapterNum) {
                                 userNotes.verseNumbersWithNotesInChapter(bookId, chapterNum)
                             }
                             val isReaderPagerPageActive = page == pagerState.currentPage
-                            val onHebrewSandboxWholeVerse = remember(bookId, pageTrans, library) {
+                            val onHebrewSandboxWholeVerse = remember(bookId, pageTrans) {
                                 if (pageTrans != TranslationId.INTERLINEAR ||
-                                    !BibleCanon.isOldTestament(bookId) ||
-                                    library.getBook(TranslationId.INTERLINEAR, bookId) == null
+                                    !BibleCanon.isOldTestament(bookId)
                                 ) {
                                     null
                                 } else {
@@ -2295,15 +2645,6 @@ private fun BibleNavHost(
                             when {
                                 effectiveVerses != null && effectiveVerses.isNotEmpty() -> {
                                     Column(Modifier.fillMaxSize()) {
-                                        if (timemarkProjectsForPage.isNotEmpty()) {
-                                            TimemarkSourceSelector(
-                                                projects = timemarkProjectsForPage,
-                                                selectedProjectId = selectedTimemarkId,
-                                                onSelectPlain = { selectedTimemarkId = null },
-                                                onSelectProject = { p -> selectedTimemarkId = p.id },
-                                                modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
-                                            )
-                                        }
                                         ReaderContent(
                                         modifier = Modifier.weight(1f),
                                         verses = effectiveVerses,
@@ -2325,6 +2666,9 @@ private fun BibleNavHost(
                                             viewModel.playVerseAudio(pageTrans, ref.bookId, ref.chapter, ttsFallback)
                                         },
                                         onNavigateToVerse = { targetBookId, targetChapter, targetVerse ->
+                                            if (targetBookId != bookId) {
+                                                com.example.bible.data.BibleAudioPlayer.stopForNavigation()
+                                            }
                                             navController.navigate("read/$targetBookId/$targetChapter/$targetVerse")
                                         },
                                         audioPlaybackState = audioPlaybackState,
@@ -2337,6 +2681,8 @@ private fun BibleNavHost(
                                         onPauseMainAudioForAttachment = { viewModel.pauseAudioIfPlaying() },
                                         bibleChapterAudioBarBottomInset = bibleAudioBarInsetDp,
                                         timemarkProject = timemarkForPage,
+                                        chapterHasTimemarks = pageHasTimemarks,
+                                        timemarksMatchNarration = timemarkForPage != null,
                                         mediaLibraryImages = bibleUserImages,
                                         mediaLibraryVideos = bibleUserVideos,
                                         mediaLibraryAudios = bibleUserAudios,
@@ -2369,10 +2715,40 @@ private fun BibleNavHost(
                                         onReadingDwellVerse = { v, t ->
                                             viewModel.onReadingVisibleVerse(t, bookId, bookName, chapterNum, v)
                                         },
+                                        onVisibleVerseChanged = if (isReaderPagerPageActive) {
+                                            { readerVisibleVerse = it }
+                                        } else {
+                                            null
+                                        },
                                         onLexiconLookupOpened = { viewModel.recordReadingToolUse("Словари") },
                                         mimicScrollDy = viewModel.mimicScrollDy,
                                         readerFingerScrollEnabled = !mimicControlEnabled,
                                         onOpenInterlinearHebrewSandboxWholeVerse = onHebrewSandboxWholeVerse,
+                                        onPlayChapterAudio = { narrator, visibleVerse ->
+                                            playReaderChapterAudio(
+                                                readerContext,
+                                                narrator,
+                                                bookId,
+                                                chapterNum,
+                                                visibleVerse,
+                                                pageTrans,
+                                            )
+                                        },
+                                        onPlayTimemarkVerseAudio = if (timemarkForPage != null) {
+                                            { ref ->
+                                                playReaderChapterAudio(
+                                                    readerContext,
+                                                    readingAudioNarrator,
+                                                    bookId,
+                                                    chapterNum,
+                                                    ref.verse,
+                                                    pageTrans,
+                                                    forceVerseStart = true,
+                                                )
+                                            }
+                                        } else {
+                                            null
+                                        },
                                     )
                                     }
                                 }
@@ -2409,6 +2785,12 @@ private fun BibleNavHost(
                     modifier = Modifier.align(Alignment.BottomCenter),
                     onBarHeightChanged = { bibleAudioBarInsetDp = it },
                 )
+                ReaderFontScaleFabControls(
+                    readerFontScale = readerFontScale,
+                    onAdjustFontScale = { delta -> viewModel.adjustReaderFontScale(delta) },
+                    modifier = Modifier.align(Alignment.BottomEnd),
+                    bottomInset = bibleAudioBarInsetDp,
+                )
                 }
             }
             if (showNarratorPicker) {
@@ -2426,11 +2808,16 @@ private fun BibleNavHost(
                     library = library,
                     translation = translation,
                     currentBookId = bookId,
+                    chaptersWithTimemarks = timemarkChaptersForBook,
+                    booksWithTimemarks = timemarkBooks,
                     onNavigate = { targetBookId, targetChapter ->
                         showQuickNav = false
-                        navController.navigate("read/$targetBookId/$targetChapter/0") {
-                            popUpTo("read/$bookId/$chapterNum/$scrollVerse") { inclusive = true }
-                            launchSingleTop = true
+                        com.example.bible.data.BibleAudioPlayer.stopForNavigation()
+                        runCatching {
+                            navController.navigate("read/$targetBookId/$targetChapter/0") {
+                                popUpTo("read/$bookId/$chapterNum/$scrollVerse") { inclusive = true }
+                                launchSingleTop = true
+                            }
                         }
                     },
                     onDismiss = { showQuickNav = false },
@@ -2446,10 +2833,14 @@ private fun BibleNavHost(
                     bookName = book.name,
                     chapter = chapterNum,
                     verse = studyVerse,
+                    initialTab = 1,
                     viewModel = viewModel,
                     onDismiss = { showStudyTools = false },
                     onNavigateToVerse = { targetBookId, targetChapter, targetVerse ->
                         showStudyTools = false
+                        if (targetBookId != bookId) {
+                            com.example.bible.data.BibleAudioPlayer.stopForNavigation()
+                        }
                         navController.navigate("read/$targetBookId/$targetChapter/$targetVerse")
                     },
                     totalVerses = chapter.verses.size,
@@ -2473,10 +2864,17 @@ private fun BibleNavHost(
             val bookId = entry.arguments?.getString("bookId") ?: return@composable
             val ch = entry.arguments?.getInt("chapter") ?: return@composable
             val v = entry.arguments?.getInt("verse") ?: return@composable
-            val book = library.getBook(translation, bookId)
             val canon = BibleCanon.byId(bookId)
-            val title = book?.name ?: canon?.let { BibleCanon.displayName(it, translation) } ?: bookId
-            val verseText = book?.chapters?.find { it.number == ch }?.verses?.find { it.number == v }?.text.orEmpty()
+            val chapterLoad = rememberLoadedChapter(library, translation, bookId, ch)
+            val title = when (chapterLoad) {
+                is BibleChapterLoadState.Ready -> chapterLoad.bookName
+                else -> canon?.let { BibleCanon.displayName(it, translation) } ?: bookId
+            }
+            val verseText = when (chapterLoad) {
+                is BibleChapterLoadState.Ready ->
+                    chapterLoad.chapter.verses.find { it.number == v }?.text.orEmpty()
+                else -> ""
+            }
 
             val commentaryState by viewModel.commentaryState.collectAsStateWithLifecycle()
             val speakCommentaryTts = rememberStudyTextToSpeech(translation)
@@ -2873,7 +3271,13 @@ private fun BibleNavHost(
             val noteId = entry.arguments?.getString("noteId") ?: return@composable
             val notes by viewModel.userNotes.collectAsStateWithLifecycle()
             val noteCustomKinds by viewModel.noteCustomKinds.collectAsStateWithLifecycle()
+            val audioNarratorId by viewModel.audioNarratorId.collectAsStateWithLifecycle()
             val note = notes.find { it.id == noteId } ?: UserNote(id = noteId)
+            val lastRead = readingHistory.firstOrNull()
+            val bibleInitialTranslation =
+                note.verseTranslationCode?.let { TranslationId.fromCode(it) } ?: translation
+            val bibleInitialBookId = note.verseBookId ?: lastRead?.bookId ?: "gen"
+            val bibleInitialChapter = note.verseChapter ?: lastRead?.chapter ?: 1
             NoteEditorScreen(
                 initialNote = note,
                 allNotes = notes,
@@ -2881,6 +3285,25 @@ private fun BibleNavHost(
                 onAddCustomKind = { viewModel.addNoteCustomKind(it) },
                 onSave = { viewModel.saveNote(it) },
                 onBack = { navController.navigateUp() },
+                embeddedBible = { bibleModifier, navigationRequest, onNavigationConsumed ->
+                    NoteEditorBiblePane(
+                        modifier = bibleModifier,
+                        library = library,
+                        initialTranslation = bibleInitialTranslation,
+                        initialBookId = bibleInitialBookId,
+                        initialChapter = bibleInitialChapter,
+                        narratorId = audioNarratorId,
+                        bookmarkKeys = bookmarkKeys,
+                        onToggleBookmark = { viewModel.toggleBookmark(it) },
+                        readerFontScale = readerFontScale,
+                        onAdjustReaderFontScale = { viewModel.adjustReaderFontScale(it) },
+                        onPlayAudio = { ref, ttsFallback ->
+                            viewModel.playVerseAudio(ref.translation, ref.bookId, ref.chapter, ttsFallback)
+                        },
+                        navigationRequest = navigationRequest,
+                        onNavigationConsumed = onNavigationConsumed,
+                    )
+                },
             )
         }
     }
@@ -2917,6 +3340,11 @@ private fun BibleNavHost(
     }
 }
 
+private enum class BibleSearchContentTab {
+    Results,
+    History,
+}
+
 @Composable
 private fun SearchScreen(
     modifier: Modifier = Modifier,
@@ -2948,6 +3376,16 @@ private fun SearchScreen(
     var showTranslationPicker by remember { mutableStateOf(false) }
     val translationChipScroll = rememberScrollState()
     val historyShown = remember(searchHistory) { searchHistory.reversed().take(12) }
+    var contentTab by remember(searchHistory.isNotEmpty()) {
+        mutableStateOf(
+            if (searchHistory.isNotEmpty()) BibleSearchContentTab.History else BibleSearchContentTab.Results,
+        )
+    }
+    LaunchedEffect(query) {
+        if (query.isNotBlank()) {
+            contentTab = BibleSearchContentTab.Results
+        }
+    }
 
     Column(
         modifier = modifier
@@ -3107,23 +3545,58 @@ private fun SearchScreen(
             )
         }
 
+        if (historyShown.isNotEmpty()) {
+            val resultsTabIndex = 0
+            val historyTabIndex = 1
+            val selectedTabIndex = when (contentTab) {
+                BibleSearchContentTab.Results -> resultsTabIndex
+                BibleSearchContentTab.History -> historyTabIndex
+            }
+            val resultsCountLabel = if (searchInProgress) "…" else "${results.size}"
+            ScrollableTabRow(
+                selectedTabIndex = selectedTabIndex,
+                edgePadding = 12.dp,
+                modifier = Modifier.fillMaxWidth(),
+            ) {
+                Tab(
+                    selected = contentTab == BibleSearchContentTab.Results,
+                    onClick = { contentTab = BibleSearchContentTab.Results },
+                    text = {
+                        Text(
+                            if (query.isNotBlank()) {
+                                stringResource(R.string.bible_search_tab_results_count, resultsCountLabel)
+                            } else {
+                                stringResource(R.string.bible_search_tab_results)
+                            },
+                        )
+                    },
+                )
+                Tab(
+                    selected = contentTab == BibleSearchContentTab.History,
+                    onClick = { contentTab = BibleSearchContentTab.History },
+                    text = {
+                        Text(stringResource(R.string.bible_search_tab_history_count, historyShown.size))
+                    },
+                )
+            }
+        }
+
         LazyColumn(
             modifier = Modifier
                 .weight(1f)
                 .fillMaxWidth(),
             contentPadding = PaddingValues(bottom = 16.dp),
         ) {
-            if (historyShown.isNotEmpty()) {
+            if (historyShown.isNotEmpty() && contentTab == BibleSearchContentTab.History) {
                 item {
                     Text(
                         text = stringResource(R.string.bible_search_history_title),
-                        style = MaterialTheme.typography.titleSmall,
-                        color = MaterialTheme.colorScheme.primary,
+                        style = MaterialTheme.typography.labelLarge,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
                         modifier = Modifier
-                            .padding(horizontal = 20.dp)
-                            .padding(top = 8.dp),
+                            .padding(horizontal = 16.dp)
+                            .padding(top = 8.dp, bottom = 4.dp),
                     )
-                    Spacer(Modifier.height(6.dp))
                 }
                 items(
                     items = historyShown,
@@ -3131,53 +3604,54 @@ private fun SearchScreen(
                 ) { entry ->
                     BibleSearchHistoryRow(
                         entry = entry,
-                        onApply = { onApplyHistoryQuery(entry) },
+                        onApply = {
+                            onApplyHistoryQuery(entry)
+                            contentTab = BibleSearchContentTab.Results
+                        },
                         onRemove = { onRemoveHistoryEntry(entry) },
+                        compact = true,
                     )
-                    Spacer(Modifier.height(6.dp))
-                }
-                item {
-                    Spacer(Modifier.height(4.dp))
                     HorizontalDivider(
-                        color = MaterialTheme.colorScheme.outlineVariant,
-                        modifier = Modifier.padding(horizontal = 12.dp),
+                        color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f),
+                        modifier = Modifier.padding(start = 16.dp),
                     )
                 }
-            }
-            if (query.isBlank()) {
-                item {
-                    Text(
-                        text = stringResource(R.string.search_empty_hint),
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        modifier = Modifier.padding(horizontal = 20.dp, vertical = 16.dp),
-                    )
+            } else {
+                if (query.isBlank()) {
+                    item {
+                        Text(
+                            text = stringResource(R.string.search_empty_hint),
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            modifier = Modifier.padding(horizontal = 20.dp, vertical = 16.dp),
+                        )
+                    }
                 }
-            }
-            if (query.isNotBlank() && searchInProgress && results.isEmpty()) {
-                item {
-                    Text(
-                        text = stringResource(R.string.bible_search_loading),
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        modifier = Modifier.padding(horizontal = 20.dp, vertical = 12.dp),
-                    )
+                if (query.isNotBlank() && searchInProgress && results.isEmpty()) {
+                    item {
+                        Text(
+                            text = stringResource(R.string.bible_search_loading),
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            modifier = Modifier.padding(horizontal = 20.dp, vertical = 12.dp),
+                        )
+                    }
                 }
-            }
-            itemsIndexed(
-                results,
-                key = { index, hit ->
-                    "${hit.translation.code}|${hit.bookId}|${hit.chapter}|${hit.verse}|$index"
-                },
-            ) { _, hit ->
-                SearchResultItem(
-                    hit = hit,
-                    query = query,
-                    settings = settings,
-                    showTranslationBadge = settings.translationMode == BibleSearchTranslationMode.ALL,
-                    onClick = { onResultClick(hit) },
-                )
-                HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
+                itemsIndexed(
+                    results,
+                    key = { index, hit ->
+                        "${hit.translation.code}|${hit.bookId}|${hit.chapter}|${hit.verse}|$index"
+                    },
+                ) { _, hit ->
+                    SearchResultItem(
+                        hit = hit,
+                        query = query,
+                        settings = settings,
+                        showTranslationBadge = settings.translationMode == BibleSearchTranslationMode.ALL,
+                        onClick = { onResultClick(hit) },
+                    )
+                    HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
+                }
             }
         }
     }
@@ -3188,45 +3662,77 @@ private fun BibleSearchHistoryRow(
     entry: BibleSearchHistoryEntry,
     onApply: () -> Unit,
     onRemove: () -> Unit,
+    compact: Boolean = false,
 ) {
-    Card(
-        onClick = onApply,
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(horizontal = 12.dp),
-        colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.45f),
-        ),
-    ) {
+    if (compact) {
         Row(
             Modifier
                 .fillMaxWidth()
-                .padding(horizontal = 4.dp, vertical = 2.dp),
+                .clickable(onClick = onApply)
+                .padding(start = 16.dp, end = 4.dp, top = 6.dp, bottom = 6.dp),
             verticalAlignment = Alignment.CenterVertically,
         ) {
-            Column(
-                Modifier
-                    .weight(1f)
-                    .padding(start = 12.dp, end = 4.dp, top = 10.dp, bottom = 10.dp),
-            ) {
+            Column(Modifier.weight(1f)) {
                 Text(
                     entry.query,
                     style = MaterialTheme.typography.bodyMedium,
-                    maxLines = 3,
+                    maxLines = 1,
                     overflow = TextOverflow.Ellipsis,
                 )
                 Text(
                     formatBibleSearchHistoryTime(entry.timestamp),
                     style = MaterialTheme.typography.labelSmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    modifier = Modifier.padding(top = 4.dp),
                 )
             }
-            IconButton(onClick = onRemove) {
+            IconButton(onClick = onRemove, modifier = Modifier.size(36.dp)) {
                 Icon(
                     Icons.Default.Close,
                     contentDescription = stringResource(R.string.bible_search_history_remove_cd),
+                    modifier = Modifier.size(18.dp),
                 )
+            }
+        }
+    } else {
+        Card(
+            onClick = onApply,
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 12.dp),
+            colors = CardDefaults.cardColors(
+                containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.45f),
+            ),
+        ) {
+            Row(
+                Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 4.dp, vertical = 2.dp),
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                Column(
+                    Modifier
+                        .weight(1f)
+                        .padding(start = 12.dp, end = 4.dp, top = 10.dp, bottom = 10.dp),
+                ) {
+                    Text(
+                        entry.query,
+                        style = MaterialTheme.typography.bodyMedium,
+                        maxLines = 3,
+                        overflow = TextOverflow.Ellipsis,
+                    )
+                    Text(
+                        formatBibleSearchHistoryTime(entry.timestamp),
+                        style = MaterialTheme.typography.labelSmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        modifier = Modifier.padding(top = 4.dp),
+                    )
+                }
+                IconButton(onClick = onRemove) {
+                    Icon(
+                        Icons.Default.Close,
+                        contentDescription = stringResource(R.string.bible_search_history_remove_cd),
+                    )
+                }
             }
         }
     }
@@ -3778,49 +4284,66 @@ private fun BookmarksScreen(
             }
         }
         items(filteredRefs, key = { it.toKey() }) { ref ->
-            val bookName = library.getBook(ref.translation, ref.bookId)?.name
-                ?: BibleCanon.byId(ref.bookId)?.let { BibleCanon.displayName(it, ref.translation) }
-                ?: ref.bookId
-            val tags = bookmarkTagsMap[ref.toKey()].orEmpty()
-            ListItem(
-                headlineContent = {
-                    Text(
-                        "${ref.translation.labelRu} · $bookName ${ref.chapter}:${ref.verse}",
-                        style = MaterialTheme.typography.titleMedium,
-                    )
-                },
-                supportingContent = {
-                    Column {
-                        val verseText = library.getBook(ref.translation, ref.bookId)
-                            ?.chapters?.find { it.number == ref.chapter }
-                            ?.verses?.find { it.number == ref.verse }
-                            ?.text
-                        Text(
-                            verseText.orEmpty(),
-                            maxLines = 2,
-                            overflow = TextOverflow.Ellipsis,
-                            style = MaterialTheme.typography.bodyMedium,
-                        )
-                        if (tags.isNotEmpty()) {
-                            Text(
-                                tags.joinToString(" · "),
-                                style = MaterialTheme.typography.labelSmall,
-                                color = MaterialTheme.colorScheme.primary,
-                                modifier = Modifier.padding(top = 4.dp),
-                            )
-                        }
-                    }
-                },
-                trailingContent = {
-                    TextButton(onClick = { tagEditRef = ref }) {
-                        Text(stringResource(R.string.bookmarks_tags))
-                    }
-                },
-                modifier = Modifier.clickable { onOpen(ref) },
+            BookmarkListRow(
+                ref = ref,
+                library = library,
+                tags = bookmarkTagsMap[ref.toKey()].orEmpty(),
+                onOpen = { onOpen(ref) },
+                onEditTags = { tagEditRef = ref },
             )
             HorizontalDivider()
         }
     }
+}
+
+@Composable
+private fun BookmarkListRow(
+    ref: VerseRef,
+    library: BibleLibrary,
+    tags: Set<String>,
+    onOpen: () -> Unit,
+    onEditTags: () -> Unit,
+) {
+    val loadedName = rememberBookName(library, ref.translation, ref.bookId)
+    val bookName = loadedName
+        ?: BibleCanon.byId(ref.bookId)?.let { BibleCanon.displayName(it, ref.translation) }
+        ?: ref.bookId
+    val chapterState = rememberLoadedChapter(library, ref.translation, ref.bookId, ref.chapter)
+    val verseText = (chapterState as? BibleChapterLoadState.Ready)
+        ?.chapter?.verses?.find { it.number == ref.verse }?.text
+        .orEmpty()
+    ListItem(
+        headlineContent = {
+            Text(
+                "${ref.translation.labelRu} · $bookName ${ref.chapter}:${ref.verse}",
+                style = MaterialTheme.typography.titleMedium,
+            )
+        },
+        supportingContent = {
+            Column {
+                Text(
+                    verseText,
+                    maxLines = 2,
+                    overflow = TextOverflow.Ellipsis,
+                    style = MaterialTheme.typography.bodyMedium,
+                )
+                if (tags.isNotEmpty()) {
+                    Text(
+                        tags.joinToString(" · "),
+                        style = MaterialTheme.typography.labelSmall,
+                        color = MaterialTheme.colorScheme.primary,
+                        modifier = Modifier.padding(top = 4.dp),
+                    )
+                }
+            }
+        },
+        trailingContent = {
+            TextButton(onClick = onEditTags) {
+                Text(stringResource(R.string.bookmarks_tags))
+            }
+        },
+        modifier = Modifier.clickable(onClick = onOpen),
+    )
 }
 
 private fun formatHistoryDwell(totalSeconds: Int): String {
@@ -4345,7 +4868,8 @@ private fun DailyVerseCard(
                 Text(
                     entry.textRu,
                     style = MaterialTheme.typography.bodyMedium,
-                    color = colors.onPrimaryContainer,
+                    color = colors.onSurface,
+                    fontWeight = FontWeight.Medium,
                     maxLines = 2,
                     overflow = TextOverflow.Ellipsis,
                 )
@@ -4361,123 +4885,39 @@ private fun DailyVerseCard(
     }
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
-@Composable
-private fun QuickNavigatorSheet(
-    library: BibleLibrary,
-    translation: TranslationId,
-    currentBookId: String,
-    onNavigate: (bookId: String, chapter: Int) -> Unit,
-    onDismiss: () -> Unit,
-) {
-    var selectedBookId by remember { mutableStateOf(currentBookId) }
-    var step by remember { mutableStateOf(if (currentBookId.isNotEmpty()) "chapters" else "books") }
+/** Служебный пункт в [LazyColumn] читалки перед списком стихов (кнопки подстрочника). */
+private const val READER_LAZY_HEADER_ITEMS = 1
 
-    ModalBottomSheet(
-        onDismissRequest = onDismiss,
-        containerColor = MaterialTheme.colorScheme.surface,
-    ) {
-        Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .heightIn(max = 450.dp)
-                .padding(bottom = 16.dp),
-        ) {
-            if (step == "chapters") {
-                val canon = BibleCanon.byId(selectedBookId)
-                val book = library.getBook(translation, selectedBookId)
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = 16.dp, vertical = 8.dp),
-                    verticalAlignment = Alignment.CenterVertically,
-                ) {
-                    TextButton(onClick = { step = "books" }) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = null, modifier = Modifier.size(18.dp))
-                        Spacer(Modifier.width(4.dp))
-                        Text("Книги")
-                    }
-                    Spacer(Modifier.weight(1f))
-                    Text(
-                        canon?.nameRu ?: selectedBookId,
-                        style = MaterialTheme.typography.titleMedium,
-                    )
-                    Spacer(Modifier.weight(1f))
-                }
-                HorizontalDivider()
-                if (book != null && book.chapters.isNotEmpty()) {
-                    LazyVerticalGrid(
-                        columns = GridCells.Fixed(5),
-                        modifier = Modifier.fillMaxWidth(),
-                        contentPadding = PaddingValues(8.dp),
-                        horizontalArrangement = Arrangement.spacedBy(4.dp),
-                        verticalArrangement = Arrangement.spacedBy(4.dp),
-                    ) {
-                        gridItems(book.chapters, key = { it.number }) { ch ->
-                            Box(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .heightIn(min = 44.dp)
-                                    .background(MaterialTheme.colorScheme.surfaceVariant, MaterialTheme.shapes.small)
-                                    .clickable { onNavigate(selectedBookId, ch.number) },
-                                contentAlignment = Alignment.Center,
-                            ) {
-                                Text("${ch.number}", fontWeight = FontWeight.Bold)
-                            }
-                        }
-                    }
-                } else {
-                    Text(
-                        "Нет данных",
-                        modifier = Modifier.padding(16.dp),
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    )
-                }
-            } else {
-                Text(
-                    "Выберите книгу",
-                    style = MaterialTheme.typography.titleMedium,
-                    modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
-                )
-                HorizontalDivider()
-                LazyVerticalGrid(
-                    columns = GridCells.Fixed(6),
-                    modifier = Modifier.fillMaxWidth(),
-                    contentPadding = PaddingValues(4.dp),
-                    horizontalArrangement = Arrangement.spacedBy(0.dp),
-                    verticalArrangement = Arrangement.spacedBy(0.dp),
-                ) {
-                    gridItems(BibleCanon.allBooks, key = { it.id }) { entry ->
-                        val color = groupTextColor(entry.group)
-                        Box(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .heightIn(min = 42.dp)
-                                .border(0.5.dp, MaterialTheme.colorScheme.outlineVariant)
-                                .background(
-                                    if (entry.id == selectedBookId) MaterialTheme.colorScheme.primaryContainer
-                                    else MaterialTheme.colorScheme.surfaceContainerLow,
-                                )
-                                .clickable {
-                                    selectedBookId = entry.id
-                                    step = "chapters"
-                                },
-                            contentAlignment = Alignment.Center,
-                        ) {
-                            Text(
-                                entry.abbrRu,
-                                color = color,
-                                fontSize = 12.sp,
-                                fontWeight = FontWeight.Bold,
-                                textAlign = TextAlign.Center,
-                            )
-                        }
-                    }
-                }
-            }
-        }
-    }
+/** Индекс стиха в lazy-списке читалки. */
+private fun readerLazyListIndexForVerse(verseIndex: Int): Int =
+    verseIndex + READER_LAZY_HEADER_ITEMS
+
+/** Плавно прижимает озвучиваемый стих к верхней границе списка. */
+private suspend fun LazyListState.animateTimemarkVerseToTop(verseIndex: Int) {
+    if (verseIndex < 0) return
+    animateScrollToItem(readerLazyListIndexForVerse(verseIndex), scrollOffset = 0)
 }
+
+/** Первый видимый стих у верхней границы экрана (для «Изучение» и навигации). */
+private fun topVisibleVerseNumber(
+    listState: LazyListState,
+    verses: List<BibleVerse>,
+): Int? {
+    if (verses.isEmpty()) return null
+    val info = listState.layoutInfo
+    if (info.visibleItemsInfo.isEmpty()) return null
+    for (item in info.visibleItemsInfo.sortedBy { it.index }) {
+        val li = item.index
+        if (li <= 0) continue
+        val vIdx = li - 1
+        if (vIdx !in verses.indices) continue
+        return verses[vIdx].number
+    }
+    return null
+}
+
+/** Старт/продолжение озвучки главы с таймкода первого видимого стиха (если есть проект). */
+// см. playReaderChapterAudio в ReaderChapterAudio.kt
 
 /** Стих, ближе всего к центру экрана (для учёта времени чтения). */
 private fun primaryVisibleVerseNumber(
@@ -4503,6 +4943,18 @@ private fun primaryVisibleVerseNumber(
         }
     }
     return bestVerse
+}
+
+/** Подсветка стиха при синхронизации с таймкодом озвучки. */
+@Composable
+private fun Modifier.readerTimemarkVerseHighlight(active: Boolean): Modifier {
+    if (!active) return this
+    val shape = RoundedCornerShape(8.dp)
+    val scheme = MaterialTheme.colorScheme
+    return this
+        .background(scheme.primary.copy(alpha = 0.12f), shape)
+        .border(2.dp, scheme.primary, shape)
+        .padding(horizontal = 6.dp, vertical = 4.dp)
 }
 
 @OptIn(ExperimentalFoundationApi::class)
@@ -4535,6 +4987,10 @@ private fun ReaderContent(
     bibleChapterAudioBarBottomInset: Dp = 0.dp,
     /** Сохранённый проект таймкодов для этой главы (перевод должен совпадать с [translation]). */
     timemarkProject: TimemarkProject? = null,
+    /** Есть ли сохранённые таймкоды для главы (независимо от текущей озвучки). */
+    chapterHasTimemarks: Boolean = false,
+    /** Таймкоды совпадают с выбранной озвучкой. */
+    timemarksMatchNarration: Boolean = false,
     /** Картинки из «Медиа → Картинки» для вложений к стиху. */
     mediaLibraryImages: List<com.example.bible.data.BibleUserImage> = emptyList(),
     /** Видео из «Медиа → Видео» (лексикон, вложения). */
@@ -4561,12 +5017,16 @@ private fun ReaderContent(
     trackReadingDwell: Boolean = false,
     onPauseDwellTracking: () -> Unit = {},
     onReadingDwellVerse: ((verse: Int, translation: TranslationId) -> Unit)? = null,
+    onVisibleVerseChanged: ((verse: Int) -> Unit)? = null,
     onLexiconLookupOpened: () -> Unit = {},
     mimicScrollDy: Flow<Float> = emptyFlow(),
     /** false — в читалке отключить прокрутку списка пальцем (при мимике стихи листаются только с открытым ртом). */
     readerFingerScrollEnabled: Boolean = true,
     /** Подстрочник Винокурова (ВЗ): открыть весь стих в песочнице иврита. */
     onOpenInterlinearHebrewSandboxWholeVerse: ((VerseRef) -> Unit)? = null,
+    onPlayChapterAudio: ((com.example.bible.data.AudioNarrator, Int) -> Unit)? = null,
+    /** Озвучка главы с позиции таймкода для выбранного стиха. */
+    onPlayTimemarkVerseAudio: ((VerseRef) -> Unit)? = null,
 ) {
     val highlightsForReader = remember(textHighlights, translation, bookId, chapter) {
         textHighlights.filter {
@@ -4628,36 +5088,65 @@ private fun ReaderContent(
             }
     }
     val bibleChapterAudioState by BibleAudioPlayer.state.collectAsState()
-    var timemarkVerseRange by remember(timemarkProject?.id) { mutableStateOf<IntRange?>(null) }
     var timemarkBarInset by remember(timemarkProject?.id) { mutableStateOf(0.dp) }
-    val audioHighlightVerse: Int? = run {
-        val s = bibleChapterAudioState
-        if (s.bookId != bookId || s.chapter != chapter || s.durationMs <= 0) {
-            null
-        } else {
-            verseNumberAtChapterAudioPosition(verses, s.positionMs, s.durationMs)
+    val chapterAudioOnThisPage = bibleChapterAudioState.bookId == bookId &&
+        bibleChapterAudioState.chapter == chapter
+    val timemarkVerseRange = remember(
+        timemarkProject,
+        bibleChapterAudioState.positionMs,
+        chapterAudioOnThisPage,
+    ) {
+        val project = timemarkProject ?: return@remember null
+        if (!chapterAudioOnThisPage) return@remember null
+        verseRangeForTimemarkPosition(
+            bibleChapterAudioState.positionMs.toLong(),
+            project.cues,
+        )
+    }
+    LaunchedEffect(
+        listState,
+        verses,
+        onVisibleVerseChanged,
+        timemarkProject?.id,
+        timemarkVerseRange?.first,
+        bibleChapterAudioState.isPlaying,
+    ) {
+        if (onVisibleVerseChanged == null || verses.isEmpty()) return@LaunchedEffect
+        val timemarkVerse = timemarkVerseRange?.first
+        if (timemarkProject != null && bibleChapterAudioState.isPlaying && timemarkVerse != null) {
+            onVisibleVerseChanged(timemarkVerse)
+            return@LaunchedEffect
         }
+        snapshotFlow { topVisibleVerseNumber(listState, verses) }
+            .distinctUntilChanged()
+            .collect { v ->
+                if (v != null) onVisibleVerseChanged(v)
+            }
     }
     LaunchedEffect(scrollToVerse, verses) {
         if (scrollToVerse <= 0) return@LaunchedEffect
         val idx = verses.indexOfFirst { it.number == scrollToVerse }
         if (idx >= 0) {
-            listState.scrollToItem(idx)
+            listState.scrollToItem(readerLazyListIndexForVerse(idx), scrollOffset = 0)
         }
     }
-    LaunchedEffect(audioHighlightVerse, bibleChapterAudioState.isPlaying, verses) {
-        if (!bibleChapterAudioState.isPlaying) return@LaunchedEffect
-        val v = audioHighlightVerse ?: return@LaunchedEffect
-        val idx = verses.indexOfFirst { it.number == v }
-        if (idx >= 0) {
-            listState.scrollToItem(idx)
-        }
-    }
-    LaunchedEffect(timemarkVerseRange?.first, timemarkVerseRange?.last, verses) {
+    LaunchedEffect(
+        timemarkVerseRange?.first,
+        timemarkVerseRange?.last,
+        verses,
+        bibleChapterAudioState.isPlaying,
+        timemarkProject?.id,
+    ) {
+        if (timemarkProject == null || !bibleChapterAudioState.isPlaying) return@LaunchedEffect
         val r = timemarkVerseRange ?: return@LaunchedEffect
         val idx = verses.indexOfFirst { it.number == r.first }
         if (idx >= 0) {
-            listState.scrollToItem(idx)
+            listState.animateTimemarkVerseToTop(idx)
+        }
+    }
+    LaunchedEffect(timemarkProject?.id, chapterAudioOnThisPage) {
+        if (timemarkProject == null || !chapterAudioOnThisPage) {
+            timemarkBarInset = 0.dp
         }
     }
 
@@ -4703,9 +5192,16 @@ private fun ReaderContent(
                 listOf("interlinear_chapter_tts"),
                 key = { it },
             ) {
-                if (translation == TranslationId.INTERLINEAR && interlinearTts != null) {
-                    val allWords = verses.flatMap { v -> v.interlinearWords ?: emptyList() }
-                    if (allWords.isNotEmpty()) {
+                if (translation == TranslationId.INTERLINEAR) {
+                    val origNarrator = remember(bookId) {
+                        com.example.bible.data.originalLanguageNarratorForBook(bookId)
+                    }
+                    if (origNarrator != null) {
+                        val chapterAudioLabel = if (BibleCanon.isOldTestament(bookId)) {
+                            stringResource(R.string.menu_audio_hebrew_chapter)
+                        } else {
+                            stringResource(R.string.menu_audio_greek_chapter)
+                        }
                         Row(
                             modifier = Modifier
                                 .fillMaxWidth()
@@ -4714,19 +5210,70 @@ private fun ReaderContent(
                             verticalAlignment = Alignment.CenterVertically,
                         ) {
                             FilledTonalButton(
-                                onClick = { interlinearTts.speakSequence(allWords, bookId) },
+                                onClick = {
+                                    val visibleVerse = topVisibleVerseNumber(listState, verses) ?: 1
+                                    val st = bibleChapterAudioState
+                                    val isSame = st.isPlaying &&
+                                        st.bookId == bookId &&
+                                        st.chapter == chapter &&
+                                        st.narratorId == origNarrator.id
+                                    if (isSame) {
+                                        com.example.bible.data.BibleAudioPlayer.togglePlay()
+                                    } else {
+                                        interlinearTts?.stop()
+                                        if (onPlayChapterAudio != null) {
+                                            onPlayChapterAudio(origNarrator, visibleVerse)
+                                        } else {
+                                            com.example.bible.data.BibleAudioPlayer.playChapter(
+                                                readerContext,
+                                                origNarrator,
+                                                bookId,
+                                                chapter,
+                                            )
+                                        }
+                                    }
+                                },
                                 modifier = Modifier.weight(1f),
                             ) {
-                                Text(
-                                    stringResource(R.string.interlinear_speak_chapter_sequence),
-                                    maxLines = 2,
-                                )
+                                Text(chapterAudioLabel, maxLines = 2)
                             }
-                            TextButton(onClick = { interlinearTts.stop() }) {
+                            TextButton(onClick = {
+                                interlinearTts?.stop()
+                                com.example.bible.data.BibleAudioPlayer.release()
+                            }) {
                                 Text(stringResource(R.string.interlinear_stop_speech))
                             }
                         }
+                    } else if (interlinearTts != null) {
+                        val allWords = verses.flatMap { v -> v.interlinearWords ?: emptyList() }
+                        if (allWords.isNotEmpty()) {
+                            Row(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(bottom = 8.dp),
+                                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                                verticalAlignment = Alignment.CenterVertically,
+                            ) {
+                                FilledTonalButton(
+                                    onClick = { interlinearTts.speakSequence(allWords, bookId) },
+                                    modifier = Modifier.weight(1f),
+                                ) {
+                                    Text(
+                                        stringResource(R.string.interlinear_speak_chapter_sequence),
+                                        maxLines = 2,
+                                    )
+                                }
+                                TextButton(onClick = { interlinearTts.stop() }) {
+                                    Text(stringResource(R.string.interlinear_stop_speech))
+                                }
+                            }
+                        }
                     }
+                }
+                if (chapterHasTimemarks && !(timemarkProject != null && chapterAudioOnThisPage && bibleChapterAudioState.isPlaying)) {
+                    TimemarkChapterHintBanner(
+                        matchesCurrentNarration = timemarksMatchNarration,
+                    )
                 }
             }
             itemsIndexed(
@@ -4739,32 +5286,10 @@ private fun ReaderContent(
                 }
                 val firstNoteId = notesHere.firstOrNull()?.id
                 val isTimemarkHighlight = timemarkVerseRange?.contains(verse.number) == true
-                val isBibleChapterAudioHighlight =
-                    timemarkVerseRange == null && audioHighlightVerse == verse.number
                 Column(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .then(
-                            when {
-                                isTimemarkHighlight -> {
-                                    Modifier
-                                        .background(
-                                            MaterialTheme.colorScheme.secondaryContainer.copy(alpha = 0.55f),
-                                            RoundedCornerShape(8.dp),
-                                        )
-                                        .padding(horizontal = 4.dp, vertical = 3.dp)
-                                }
-                                isBibleChapterAudioHighlight -> {
-                                    Modifier
-                                        .background(
-                                            MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.42f),
-                                            RoundedCornerShape(8.dp),
-                                        )
-                                        .padding(horizontal = 4.dp, vertical = 3.dp)
-                                }
-                                else -> Modifier
-                            },
-                        ),
+                        .readerTimemarkVerseHighlight(isTimemarkHighlight),
                 ) {
                     verse.imageUrl?.let { url ->
                         AsyncImage(
@@ -4826,9 +5351,9 @@ private fun ReaderContent(
                             ) {
                                 Text(
                                     text = "${verse.number}",
-                                    fontSize = 10.sp,
+                                    fontSize = if (isTimemarkHighlight) 11.sp else 10.sp,
                                     color = MaterialTheme.colorScheme.primary,
-                                    fontWeight = FontWeight.Bold,
+                                    fontWeight = if (isTimemarkHighlight) FontWeight.ExtraBold else FontWeight.Bold,
                                     modifier = Modifier
                                         .padding(top = 1.dp, end = 1.dp)
                                         .combinedClickable(
@@ -4952,13 +5477,10 @@ private fun ReaderContent(
             modifier = Modifier.align(Alignment.BottomCenter),
             horizontalAlignment = Alignment.CenterHorizontally,
         ) {
-            if (timemarkProject != null) {
+            if (timemarkProject != null && chapterAudioOnThisPage) {
                 TimemarkReaderBar(
                     project = timemarkProject,
-                    bookId = bookId,
-                    chapter = chapter,
-                    bibleChapterAudioState = bibleChapterAudioState,
-                    onActiveVerseRange = { timemarkVerseRange = it },
+                    positionMs = bibleChapterAudioState.positionMs.toLong(),
                     onHeightChanged = { timemarkBarInset = it },
                 )
             }
@@ -4988,6 +5510,7 @@ private fun ReaderContent(
             speak = speak.speak,
             onStopSpeech = speak.stop,
             onPlayAudio = onPlayAudio,
+            onPlayTimemarkVerseAudio = onPlayTimemarkVerseAudio,
             onOpenCommentary = { ref ->
                 onVerseCommentary(ref)
             },
@@ -5008,6 +5531,9 @@ private fun ReaderContent(
                 { t: VerseActionTarget -> fn(t.ref, t.bookName, t.verseText) }
             },
             onOpenExistingVerseNote = onOpenExistingVerseNote,
+            translation = translation,
+            chapterVerseCount = verses.size,
+            chapterVerseTexts = verses.associate { it.number to it.text },
         )
         wordMediaDialog?.let { (sel, existing) ->
             WordMediaAttachmentDialog(
@@ -5053,6 +5579,159 @@ private fun ReaderContent(
                 },
                 onDismiss = { dictionaryLookup = null },
             )
+        }
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun ChaptersRouteContent(
+    book: BibleBook,
+    bookId: String,
+    translation: TranslationId,
+    isOnlineTranslation: Boolean,
+    viewModel: BibleViewModel,
+    narratorId: String,
+    downloadTick: Int,
+    navController: androidx.navigation.NavHostController,
+) {
+    val titleText = "${book.name} - ${translation.labelRu}"
+    val chapterScope = rememberCoroutineScope()
+    val chapterCtx = LocalContext.current
+    var dlProgress by remember { mutableStateOf<Pair<Int, Int>?>(null) }
+    var dlError by remember { mutableStateOf<String?>(null) }
+    Scaffold(
+        topBar = {
+            CenterAlignedTopAppBar(
+                title = {
+                    if (dlProgress != null) {
+                        val (done, total) = dlProgress!!
+                        Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                            Text(
+                                "Скачивание $done / $total",
+                                style = MaterialTheme.typography.titleSmall,
+                            )
+                            androidx.compose.material3.LinearProgressIndicator(
+                                progress = { if (total > 0) done.toFloat() / total else 0f },
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(horizontal = 16.dp, vertical = 4.dp),
+                            )
+                        }
+                    } else {
+                        Text(
+                            titleText,
+                            style = MaterialTheme.typography.titleMedium,
+                        )
+                    }
+                },
+                navigationIcon = {
+                    IconButton(onClick = { navController.navigateUp() }) {
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = stringResource(R.string.back))
+                    }
+                },
+                actions = {
+                    if (book.chapters.isNotEmpty() && dlProgress == null && !isOnlineTranslation) {
+                        val chaptersWithAudioForBtn = remember(translation, bookId, narratorId, downloadTick) {
+                            val eff = com.example.bible.data.narratorForTranslation(translation, narratorId).id
+                            viewModel.downloadedChaptersFor(eff, bookId)
+                        }
+                        val allDownloaded = chaptersWithAudioForBtn.size >= book.chapters.size
+                        IconButton(
+                            onClick = {
+                                if (allDownloaded) return@IconButton
+                                val narrator = com.example.bible.data.narratorForTranslation(translation, narratorId)
+                                val chaptersToDownload = book.chapters
+                                    .map { it.number }
+                                    .filter { it !in chaptersWithAudioForBtn }
+                                val total = chaptersToDownload.size
+                                if (total == 0) return@IconButton
+                                dlError = null
+                                dlProgress = 0 to total
+                                chapterScope.launch(kotlinx.coroutines.Dispatchers.IO) {
+                                    var done = 0
+                                    var errors = 0
+                                    for (ch in chaptersToDownload) {
+                                        try {
+                                            com.example.bible.data.BibleAudioPlayer.downloadChapter(
+                                                chapterCtx, narrator, bookId, ch,
+                                            )
+                                        } catch (_: Exception) {
+                                            errors++
+                                        }
+                                        done++
+                                        dlProgress = done to total
+                                    }
+                                    dlProgress = null
+                                    if (errors > 0) {
+                                        dlError = "Не удалось скачать $errors из $total глав"
+                                    }
+                                }
+                            },
+                        ) {
+                            Icon(
+                                Icons.Default.Download,
+                                contentDescription = "Скачать все главы",
+                                tint = if (allDownloaded)
+                                    MaterialTheme.colorScheme.primary
+                                else MaterialTheme.colorScheme.onSurfaceVariant,
+                            )
+                        }
+                    }
+                    if (dlProgress != null) {
+                        CircularProgressIndicator(
+                            modifier = Modifier
+                                .padding(end = 8.dp)
+                                .size(24.dp),
+                            strokeWidth = 2.dp,
+                        )
+                    }
+                },
+            )
+        },
+    ) { padding ->
+        if (book.chapters.isEmpty()) {
+            Box(
+                modifier = Modifier
+                    .padding(padding)
+                    .fillMaxSize(),
+                contentAlignment = Alignment.Center,
+            ) {
+                Text(
+                    text = stringResource(R.string.no_chapters_loaded),
+                    style = MaterialTheme.typography.bodyLarge,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    textAlign = TextAlign.Center,
+                    modifier = Modifier.padding(24.dp),
+                )
+            }
+        } else {
+            Column(modifier = Modifier.padding(padding)) {
+                if (dlError != null) {
+                    Text(
+                        dlError!!,
+                        color = MaterialTheme.colorScheme.error,
+                        style = MaterialTheme.typography.labelSmall,
+                        modifier = Modifier.padding(horizontal = 16.dp, vertical = 4.dp),
+                    )
+                }
+                val chaptersWithAudio = remember(translation, bookId, narratorId, downloadTick) {
+                    val fromAssets = book.chapters.mapNotNull { ch ->
+                        if (viewModel.hasChapterAudio(translation, bookId, ch.number)) ch.number else null
+                    }.toSet()
+                    val eff = com.example.bible.data.narratorForTranslation(translation, narratorId).id
+                    val downloaded = viewModel.downloadedChaptersFor(eff, bookId)
+                    fromAssets + downloaded
+                }
+                ChapterGrid(
+                    modifier = Modifier.fillMaxSize(),
+                    book = book,
+                    chaptersWithAudio = chaptersWithAudio,
+                    onChapterClick = { chapter ->
+                        navController.navigate("verses/$bookId/$chapter")
+                    },
+                )
+            }
         }
     }
 }
