@@ -40,6 +40,7 @@ import androidx.compose.material.icons.filled.MusicNote
 import androidx.compose.material.icons.outlined.CheckCircle
 import androidx.compose.material.icons.automirrored.filled.OpenInNew
 import androidx.compose.material.icons.filled.PlayArrow
+import androidx.compose.material.icons.filled.Pause
 import androidx.compose.material.icons.filled.Remove
 import androidx.compose.material.icons.filled.Download
 import androidx.compose.material.icons.filled.Share
@@ -69,6 +70,7 @@ import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.key
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -1489,7 +1491,10 @@ fun PickLibraryMediaForPlaylistSheet(
     val context = LocalContext.current
     val videos by viewModel.bibleUserVideos.collectAsStateWithLifecycle()
     val audios by viewModel.bibleUserAudios.collectAsStateWithLifecycle()
+    val playbackProgress by viewModel.userMediaPlaybackProgress.collectAsStateWithLifecycle()
     var searchQuery by remember { mutableStateOf("") }
+    var previewAudio by remember { mutableStateOf<Pair<BibleUserAudio, File>?>(null) }
+    var previewVideo by remember { mutableStateOf<Pair<List<Pair<BibleUserVideo, File>>, Int>?>(null) }
 
     val availableVideos = remember(videos, existingItemIds, searchQuery) {
         videos
@@ -1543,6 +1548,34 @@ fun PickLibraryMediaForPlaylistSheet(
         selectedIds.clear()
     }
 
+    fun previewAudioTrack(audio: BibleUserAudio) {
+        val file = MediaCatalogPaths.audioFile(context, audio.fileName)
+        if (!file.exists()) {
+            Toast.makeText(context, "Файл не найден", Toast.LENGTH_SHORT).show()
+            return
+        }
+        if (previewAudio?.first?.id == audio.id) {
+            previewAudio = null
+            return
+        }
+        previewVideo = null
+        previewAudio = audio to file
+    }
+
+    fun previewVideoTrack(video: BibleUserVideo) {
+        val file = MediaCatalogPaths.videoFile(context, video.fileName)
+        if (!file.exists()) {
+            Toast.makeText(context, "Файл не найден", Toast.LENGTH_SHORT).show()
+            return
+        }
+        if (previewVideo?.first?.firstOrNull()?.first?.id == video.id) {
+            previewVideo = null
+            return
+        }
+        previewAudio = null
+        previewVideo = listOf(video to file) to 0
+    }
+
     ModalBottomSheet(
         onDismissRequest = onDismiss,
         sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true),
@@ -1573,7 +1606,7 @@ fun PickLibraryMediaForPlaylistSheet(
                     availableCount == 0 ->
                         "Ничего не найдено"
                     else ->
-                        "Отметьте несколько файлов и нажмите «Добавить». Доступно: $availableCount"
+                        "▶ — прослушать для ознакомления, галочка — выбрать. Доступно: $availableCount"
                 },
                 style = MaterialTheme.typography.labelMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
@@ -1612,7 +1645,7 @@ fun PickLibraryMediaForPlaylistSheet(
             LazyColumn(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(360.dp),
+                    .height(if (previewAudio != null) 220.dp else 360.dp),
                 verticalArrangement = Arrangement.spacedBy(8.dp),
             ) {
                 when (kind) {
@@ -1656,6 +1689,17 @@ fun PickLibraryMediaForPlaylistSheet(
                                                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                                             )
                                         }
+                                    }
+                                    val isPreviewing = previewVideo?.first?.firstOrNull()?.first?.id == video.id
+                                    FilledTonalIconButton(
+                                        onClick = { previewVideoTrack(video) },
+                                        modifier = Modifier.size(36.dp),
+                                    ) {
+                                        Icon(
+                                            if (isPreviewing) Icons.Filled.Pause else Icons.Filled.PlayArrow,
+                                            contentDescription = if (isPreviewing) "Остановить" else "Просмотреть",
+                                            modifier = Modifier.size(20.dp),
+                                        )
                                     }
                                 }
                             }
@@ -1711,13 +1755,79 @@ fun PickLibraryMediaForPlaylistSheet(
                                             )
                                         }
                                     }
+                                    val isPreviewing = previewAudio?.first?.id == audio.id
+                                    FilledTonalIconButton(
+                                        onClick = { previewAudioTrack(audio) },
+                                        modifier = Modifier.size(36.dp),
+                                    ) {
+                                        Icon(
+                                            if (isPreviewing) Icons.Filled.Pause else Icons.Filled.PlayArrow,
+                                            contentDescription = if (isPreviewing) "Остановить" else "Прослушать",
+                                            modifier = Modifier.size(20.dp),
+                                        )
+                                    }
                                 }
                             }
                         }
                     }
                 }
             }
+            previewAudio?.let { (audio, file) ->
+                Spacer(Modifier.height(8.dp))
+                key(audio.id) {
+                    PlaylistAudioPlayer(
+                        tracks = listOf(audio to file),
+                        startIndex = 0,
+                        embedded = true,
+                        autoPlayOnStart = true,
+                        restartOnTrackListChange = true,
+                        onClose = { previewAudio = null },
+                        initialSeekByMediaId = buildInitialSeekMap(listOf(audio.id), playbackProgress),
+                        onPlaybackProgress = { mediaId, pos, dur ->
+                            viewModel.updateMediaPlaybackProgress(mediaId, UserMediaKind.AUDIO, pos, dur)
+                        },
+                        onMarkFullyWatched = { mediaId, dur ->
+                            viewModel.markMediaFullyWatched(mediaId, UserMediaKind.AUDIO, dur)
+                        },
+                    )
+                }
+            }
         }
+    }
+
+    previewVideo?.let { (tracks, ix) ->
+        LibraryVideoPlayerDialog(
+            tracks = tracks,
+            startIndex = ix,
+            initialSeekByMediaId = buildInitialSeekMap(tracks.map { it.first.id }, playbackProgress),
+            onPlaybackProgress = { mediaId, pos, dur ->
+                viewModel.updateMediaPlaybackProgress(mediaId, UserMediaKind.VIDEO, pos, dur)
+            },
+            onMarkFullyWatched = { mediaId, dur ->
+                viewModel.markMediaFullyWatched(mediaId, UserMediaKind.VIDEO, dur)
+            },
+            onDismiss = { previewVideo = null },
+            onOpenInOtherApp = { file ->
+                try {
+                    val uri = FileProvider.getUriForFile(
+                        context,
+                        "${context.packageName}.provider",
+                        file,
+                    )
+                    val intent = Intent(Intent.ACTION_VIEW).apply {
+                        setDataAndType(uri, "video/*")
+                        addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+                    }
+                    context.startActivity(Intent.createChooser(intent, "Видео"))
+                } catch (e: Exception) {
+                    Toast.makeText(
+                        context,
+                        e.message ?: "Не удалось открыть",
+                        Toast.LENGTH_SHORT,
+                    ).show()
+                }
+            },
+        )
     }
 }
 
