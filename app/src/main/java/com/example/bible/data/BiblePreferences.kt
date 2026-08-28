@@ -14,6 +14,7 @@ import androidx.datastore.preferences.core.stringSetPreferencesKey
 import androidx.datastore.preferences.preferencesDataStore
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.map
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
@@ -21,6 +22,8 @@ import org.json.JSONArray
 import org.json.JSONObject
 
 private val Context.bibleDataStore: DataStore<Preferences> by preferencesDataStore(name = "bible_user_prefs")
+
+private const val READING_TRACE_MAX_ENTRIES = 800
 
 private object Keys {
     val TRANSLATION = stringPreferencesKey("translation")
@@ -50,6 +53,10 @@ private object Keys {
     val USER_BIBLE_IMAGES_JSON = stringPreferencesKey("user_bible_images_json")
     val USER_BIBLE_VIDEOS_JSON = stringPreferencesKey("user_bible_videos_json")
     val USER_BIBLE_AUDIOS_JSON = stringPreferencesKey("user_bible_audios_json")
+    /** JSON-массив пользовательских плейлистов видео/аудио (см. [UserMediaPlaylist]). */
+    val USER_MEDIA_PLAYLISTS_JSON = stringPreferencesKey("user_media_playlists_json")
+    /** JSON-массив прогресса просмотра/прослушивания медиафайлов. */
+    val USER_MEDIA_PLAYBACK_PROGRESS_JSON = stringPreferencesKey("user_media_playback_progress_json")
     val USER_SEMANTIC_LEXICON_JSON = stringPreferencesKey("user_semantic_lexicon_json")
     val LEXICON_PRESET_ENABLED = booleanPreferencesKey("lexicon_preset_enabled")
     /** Пустой набор = все оси пресета включены. */
@@ -67,6 +74,8 @@ private object Keys {
     val MEDIA_HOME_SECTION_ORDER = stringPreferencesKey("media_home_section_order")
     /** Порядок пунктов главного меню экрана книг (см. [BooksMainMenuOrder]), без «Настройки» и переводов. */
     val BOOKS_MAIN_MENU_ORDER = stringPreferencesKey("books_main_menu_order")
+    /** Озвучка полного названия книги при долгом нажатии на экране выбора книг. */
+    val BOOK_PICKER_LONG_PRESS_TTS = booleanPreferencesKey("book_picker_long_press_tts")
     /** Ключ пресета темы приложения (см. [com.example.bible.ui.theme.BibleAppThemePreset]). */
     val APP_THEME_PRESET = stringPreferencesKey("bible_app_theme_preset")
     /** Управление мимикой: камера в фоне, курсор по носу, прокрутка читалки. */
@@ -88,6 +97,10 @@ private object Keys {
     val MIMIC_MEDIAPIPE_FACE_GEOMETRY = booleanPreferencesKey("mimic_mediapipe_face_geometry")
     /** JSON-массив: история поиска по переводу Корана (запрос + время). */
     val QURAN_SEARCH_HISTORY_JSON = stringPreferencesKey("quran_search_history_json")
+    /** Посещения аятов Корана (сура + аят). */
+    val QURAN_READING_HISTORY_JSON = stringPreferencesKey("quran_reading_history_json")
+    /** Хронология чтения Корана (стих за стихом). */
+    val QURAN_READING_TRACE_JSON = stringPreferencesKey("quran_reading_trace_json")
     /** JSON-массив: история поиска по текстам Библии. */
     val BIBLE_SEARCH_HISTORY_JSON = stringPreferencesKey("bible_search_history_json")
     /** Множитель размера шрифта текста аятов Корана (арабский, транслит., перевод, тафсир в карточке). */
@@ -380,10 +393,18 @@ class BiblePreferences(
         }
     }
 
-    /** Пользовательские разделы и правки экрана «Детям». */
-    val kidsUserSections: Flow<KidsUserSectionsState> = appContext.bibleDataStore.data.map { prefs ->
-        KidsUserSectionsState.fromJson(prefs[Keys.KIDS_USER_SECTIONS_JSON])
+    val bookPickerLongPressTts: Flow<Boolean> = appContext.bibleDataStore.data.map { prefs ->
+        prefs[Keys.BOOK_PICKER_LONG_PRESS_TTS] ?: true
     }
+
+    suspend fun setBookPickerLongPressTts(enabled: Boolean) {
+        appContext.bibleDataStore.edit { it[Keys.BOOK_PICKER_LONG_PRESS_TTS] = enabled }
+    }
+
+    /** Пользовательские разделы и правки экрана «Детям». */
+    val kidsUserSections: Flow<KidsUserSectionsState> = appContext.bibleDataStore.data
+        .map { prefs -> KidsUserSectionsState.fromJson(prefs[Keys.KIDS_USER_SECTIONS_JSON]) }
+        .flowOn(kotlinx.coroutines.Dispatchers.Default)
 
     suspend fun setKidsUserSections(state: KidsUserSectionsState) {
         appContext.bibleDataStore.edit { prefs ->
@@ -756,6 +777,54 @@ class BiblePreferences(
         }
     }
 
+    val quranReadingHistory: Flow<List<QuranReadingHistoryEntry>> = appContext.bibleDataStore.data.map { prefs ->
+        QuranReadingHistoryEntry.parseList(prefs[Keys.QURAN_READING_HISTORY_JSON].orEmpty())
+    }
+
+    val quranReadingTrace: Flow<List<QuranReadingTraceEntry>> = appContext.bibleDataStore.data.map { prefs ->
+        QuranReadingTraceEntry.parseList(prefs[Keys.QURAN_READING_TRACE_JSON].orEmpty())
+    }
+
+    suspend fun addQuranHistoryEntry(entry: QuranReadingHistoryEntry) {
+        appContext.bibleDataStore.edit { prefs ->
+            val cur = QuranReadingHistoryEntry.parseList(prefs[Keys.QURAN_READING_HISTORY_JSON].orEmpty()).toMutableList()
+            cur.removeAll { it.surahNumber == entry.surahNumber && it.ayahNumber == entry.ayahNumber }
+            cur.add(0, entry.copy(timestamp = System.currentTimeMillis()))
+            prefs[Keys.QURAN_READING_HISTORY_JSON] = QuranReadingHistoryEntry.toJsonArray(cur)
+        }
+    }
+
+    suspend fun mergeQuranReadingAnalytics(
+        surahNumber: Int,
+        ayahNumber: Int,
+        dwellDeltaSeconds: Int,
+    ) {
+        if (dwellDeltaSeconds <= 0) return
+        appContext.bibleDataStore.edit { prefs ->
+            val cur = QuranReadingHistoryEntry.parseList(prefs[Keys.QURAN_READING_HISTORY_JSON].orEmpty()).toMutableList()
+            val idx = cur.indexOfFirst { it.surahNumber == surahNumber && it.ayahNumber == ayahNumber }
+            if (idx < 0) return@edit
+            val e = cur[idx]
+            cur[idx] = e.copy(dwellSeconds = e.dwellSeconds + dwellDeltaSeconds.coerceAtLeast(0))
+            prefs[Keys.QURAN_READING_HISTORY_JSON] = QuranReadingHistoryEntry.toJsonArray(cur)
+        }
+    }
+
+    suspend fun appendQuranReadingTrace(entry: QuranReadingTraceEntry) {
+        appContext.bibleDataStore.edit { prefs ->
+            val cur = QuranReadingTraceEntry.parseList(prefs[Keys.QURAN_READING_TRACE_JSON].orEmpty()).toMutableList()
+            cur.add(entry)
+            prefs[Keys.QURAN_READING_TRACE_JSON] = QuranReadingTraceEntry.toJsonArray(cur)
+        }
+    }
+
+    suspend fun clearQuranReadingHistory() {
+        appContext.bibleDataStore.edit { prefs ->
+            prefs[Keys.QURAN_READING_HISTORY_JSON] = "[]"
+            prefs[Keys.QURAN_READING_TRACE_JSON] = "[]"
+        }
+    }
+
     suspend fun appendBibleSearchHistory(displayQuery: String, dedupKey: String) {
         val q = displayQuery.trim()
         if (dedupKey.isBlank() || q.isEmpty()) return
@@ -863,6 +932,9 @@ class BiblePreferences(
         appContext.bibleDataStore.edit { prefs ->
             val cur = ReadingTraceEntry.parseList(prefs[Keys.READING_TRACE_JSON].orEmpty()).toMutableList()
             cur.add(entry)
+            while (cur.size > READING_TRACE_MAX_ENTRIES) {
+                cur.removeAt(0)
+            }
             prefs[Keys.READING_TRACE_JSON] = ReadingTraceEntry.toJsonArray(cur)
         }
     }
@@ -1050,6 +1122,119 @@ class BiblePreferences(
         appContext.bibleDataStore.edit { prefs ->
             val cur = BibleUserVideo.parseList(prefs[Keys.USER_BIBLE_VIDEOS_JSON].orEmpty())
             prefs[Keys.USER_BIBLE_VIDEOS_JSON] = BibleUserVideo.toJsonArray(cur.filter { it.id != id })
+            stripMediaFromUserPlaylists(
+                prefs,
+                mediaId = id,
+                kind = UserMediaPlaylistKind.VIDEO,
+            )
+            stripMediaPlaybackProgress(prefs, id)
+        }
+    }
+
+    private fun stripMediaPlaybackProgress(prefs: MutablePreferences, mediaId: String) {
+        val map = UserMediaPlaybackProgress.parseMap(
+            prefs[Keys.USER_MEDIA_PLAYBACK_PROGRESS_JSON].orEmpty(),
+        ).toMutableMap()
+        if (map.remove(mediaId) != null) {
+            prefs[Keys.USER_MEDIA_PLAYBACK_PROGRESS_JSON] = UserMediaPlaybackProgress.toJsonArray(map)
+        }
+    }
+
+    private fun stripMediaFromUserPlaylists(
+        prefs: MutablePreferences,
+        mediaId: String,
+        kind: UserMediaPlaylistKind,
+    ) {
+        val playlists = UserMediaPlaylist.parseList(prefs[Keys.USER_MEDIA_PLAYLISTS_JSON].orEmpty())
+        val now = System.currentTimeMillis()
+        val updated = playlists.map { pl ->
+            if (pl.kind != kind || mediaId !in pl.itemIds) {
+                pl
+            } else {
+                pl.copy(
+                    itemIds = pl.itemIds.filter { it != mediaId },
+                    updatedAt = now,
+                )
+            }
+        }
+        prefs[Keys.USER_MEDIA_PLAYLISTS_JSON] = UserMediaPlaylist.toJsonArray(updated)
+    }
+
+    val userMediaPlaylists: Flow<List<UserMediaPlaylist>> = appContext.bibleDataStore.data.map { prefs ->
+        UserMediaPlaylist.parseList(prefs[Keys.USER_MEDIA_PLAYLISTS_JSON].orEmpty())
+    }
+
+    suspend fun saveUserMediaPlaylist(playlist: UserMediaPlaylist) {
+        appContext.bibleDataStore.edit { prefs ->
+            val cur = UserMediaPlaylist.parseList(prefs[Keys.USER_MEDIA_PLAYLISTS_JSON].orEmpty()).toMutableList()
+            val ix = cur.indexOfFirst { it.id == playlist.id }
+            val stamped = playlist.copy(updatedAt = System.currentTimeMillis())
+            if (ix >= 0) cur[ix] = stamped else cur.add(0, stamped)
+            prefs[Keys.USER_MEDIA_PLAYLISTS_JSON] = UserMediaPlaylist.toJsonArray(cur)
+        }
+    }
+
+    suspend fun deleteUserMediaPlaylist(id: String) {
+        appContext.bibleDataStore.edit { prefs ->
+            val cur = UserMediaPlaylist.parseList(prefs[Keys.USER_MEDIA_PLAYLISTS_JSON].orEmpty())
+            prefs[Keys.USER_MEDIA_PLAYLISTS_JSON] = UserMediaPlaylist.toJsonArray(cur.filter { it.id != id })
+        }
+    }
+
+    suspend fun addMediaItemToUserPlaylist(playlistId: String, mediaItemId: String) {
+        addMediaItemsToUserPlaylist(playlistId, listOf(mediaItemId))
+    }
+
+    suspend fun addMediaItemsToUserPlaylist(playlistId: String, mediaItemIds: List<String>) {
+        if (mediaItemIds.isEmpty()) return
+        appContext.bibleDataStore.edit { prefs ->
+            val cur = UserMediaPlaylist.parseList(prefs[Keys.USER_MEDIA_PLAYLISTS_JSON].orEmpty()).toMutableList()
+            val ix = cur.indexOfFirst { it.id == playlistId }
+            if (ix < 0) return@edit
+            val pl = cur[ix]
+            val toAdd = mediaItemIds.filter { it !in pl.itemIds }
+            if (toAdd.isEmpty()) return@edit
+            cur[ix] = pl.copy(
+                itemIds = pl.itemIds + toAdd,
+                updatedAt = System.currentTimeMillis(),
+            )
+            prefs[Keys.USER_MEDIA_PLAYLISTS_JSON] = UserMediaPlaylist.toJsonArray(cur)
+        }
+    }
+
+    suspend fun removeMediaItemFromUserPlaylist(playlistId: String, mediaItemId: String) {
+        appContext.bibleDataStore.edit { prefs ->
+            val cur = UserMediaPlaylist.parseList(prefs[Keys.USER_MEDIA_PLAYLISTS_JSON].orEmpty()).toMutableList()
+            val ix = cur.indexOfFirst { it.id == playlistId }
+            if (ix < 0) return@edit
+            val pl = cur[ix]
+            if (mediaItemId !in pl.itemIds) return@edit
+            cur[ix] = pl.copy(
+                itemIds = pl.itemIds.filter { it != mediaItemId },
+                updatedAt = System.currentTimeMillis(),
+            )
+            prefs[Keys.USER_MEDIA_PLAYLISTS_JSON] = UserMediaPlaylist.toJsonArray(cur)
+        }
+    }
+
+    /**
+     * Установить новый порядок элементов плейлиста (та же мультимножина id, что была).
+     */
+    suspend fun setUserMediaPlaylistItemOrder(playlistId: String, orderedItemIds: List<String>) {
+        appContext.bibleDataStore.edit { prefs ->
+            val cur = UserMediaPlaylist.parseList(prefs[Keys.USER_MEDIA_PLAYLISTS_JSON].orEmpty()).toMutableList()
+            val ix = cur.indexOfFirst { it.id == playlistId }
+            if (ix < 0) return@edit
+            val pl = cur[ix]
+            if (pl.itemIds.size != orderedItemIds.size) return@edit
+            val prevCounts = pl.itemIds.groupingBy { it }.eachCount()
+            val newCounts = orderedItemIds.groupingBy { it }.eachCount()
+            if (prevCounts != newCounts) return@edit
+            cur[ix] = pl.copy(
+                itemIds = orderedItemIds,
+                updatedAt = System.currentTimeMillis(),
+            )
+            prefs[Keys.USER_MEDIA_PLAYLISTS_JSON] = UserMediaPlaylist.toJsonArray(cur)
         }
     }
 
@@ -1070,6 +1255,68 @@ class BiblePreferences(
         appContext.bibleDataStore.edit { prefs ->
             val cur = BibleUserAudio.parseList(prefs[Keys.USER_BIBLE_AUDIOS_JSON].orEmpty())
             prefs[Keys.USER_BIBLE_AUDIOS_JSON] = BibleUserAudio.toJsonArray(cur.filter { it.id != id })
+            stripMediaFromUserPlaylists(
+                prefs,
+                mediaId = id,
+                kind = UserMediaPlaylistKind.AUDIO,
+            )
+            stripMediaPlaybackProgress(prefs, id)
+        }
+    }
+
+    val userMediaPlaybackProgress: Flow<Map<String, UserMediaPlaybackProgress>> =
+        appContext.bibleDataStore.data.map { prefs ->
+            UserMediaPlaybackProgress.parseMap(
+                prefs[Keys.USER_MEDIA_PLAYBACK_PROGRESS_JSON].orEmpty(),
+            )
+        }
+
+    suspend fun upsertMediaPlaybackProgress(progress: UserMediaPlaybackProgress) {
+        appContext.bibleDataStore.edit { prefs ->
+            val map = UserMediaPlaybackProgress.parseMap(
+                prefs[Keys.USER_MEDIA_PLAYBACK_PROGRESS_JSON].orEmpty(),
+            ).toMutableMap()
+            map[progress.mediaId] = progress.copy(updatedAt = System.currentTimeMillis())
+            prefs[Keys.USER_MEDIA_PLAYBACK_PROGRESS_JSON] = UserMediaPlaybackProgress.toJsonArray(map)
+        }
+    }
+
+    suspend fun markMediaFullyWatched(mediaId: String, kind: UserMediaKind, durationMs: Long = 0L) {
+        appContext.bibleDataStore.edit { prefs ->
+            val map = UserMediaPlaybackProgress.parseMap(
+                prefs[Keys.USER_MEDIA_PLAYBACK_PROGRESS_JSON].orEmpty(),
+            ).toMutableMap()
+            val prev = map[mediaId]
+            val dur = durationMs.takeIf { it > 0 } ?: prev?.durationMs ?: 0L
+            map[mediaId] = UserMediaPlaybackProgress(
+                mediaId = mediaId,
+                kind = kind,
+                positionMs = dur,
+                durationMs = dur,
+                completed = true,
+                updatedAt = System.currentTimeMillis(),
+            )
+            prefs[Keys.USER_MEDIA_PLAYBACK_PROGRESS_JSON] = UserMediaPlaybackProgress.toJsonArray(map)
+        }
+    }
+
+    suspend fun unmarkMediaFullyWatched(mediaId: String) {
+        appContext.bibleDataStore.edit { prefs ->
+            val map = UserMediaPlaybackProgress.parseMap(
+                prefs[Keys.USER_MEDIA_PLAYBACK_PROGRESS_JSON].orEmpty(),
+            ).toMutableMap()
+            val prev = map[mediaId] ?: return@edit
+            map[mediaId] = prev.copy(
+                completed = false,
+                updatedAt = System.currentTimeMillis(),
+            )
+            prefs[Keys.USER_MEDIA_PLAYBACK_PROGRESS_JSON] = UserMediaPlaybackProgress.toJsonArray(map)
+        }
+    }
+
+    suspend fun clearMediaPlaybackProgress(mediaId: String) {
+        appContext.bibleDataStore.edit { prefs ->
+            stripMediaPlaybackProgress(prefs, mediaId)
         }
     }
 

@@ -24,6 +24,8 @@ import java.io.File
 import com.example.bible.data.AudioPlaybackState
 import com.example.bible.data.CommentaryRepository
 import com.example.bible.data.HistoryEntry
+import com.example.bible.data.QuranReadingHistoryEntry
+import com.example.bible.data.QuranReadingTraceEntry
 import com.example.bible.data.ReadingTraceEntry
 import com.example.bible.data.BibleImageLibrary
 import com.example.bible.data.BibleUserImage
@@ -45,6 +47,14 @@ import com.example.bible.data.SemanticDisplayStyle
 import com.example.bible.data.SemanticHighlightSession
 import com.example.bible.data.SemanticScope
 import com.example.bible.data.TextHighlight
+import com.example.bible.data.MediaCatalogPaths
+import com.example.bible.data.UserMediaPlaylist
+import com.example.bible.data.UserMediaPlaylistKind
+import com.example.bible.data.UserMediaKind
+import com.example.bible.data.UserMediaPlaybackProgress
+import com.example.bible.data.UserMediaPlaylistShareError
+import com.example.bible.data.UserMediaPlaylistShareOutcome
+import com.example.bible.data.UserMediaPlaylistSharePackage
 import com.example.bible.data.WordSpanMediaAttachment
 import com.example.bible.data.LexiconTone
 import com.example.bible.data.PresetSemanticLexicon
@@ -54,6 +64,7 @@ import com.example.bible.data.BooksMainMenuOrder
 import com.example.bible.data.MediaHomeSectionOrder
 import com.example.bible.data.OfflineDownloadBookOrder
 import com.example.bible.data.KidsUserSectionsState
+import com.example.bible.data.KidsUserMediaStorage
 import com.example.bible.ui.theme.BibleAppThemePreset
 import com.example.bible.data.StudyBulkDownloader
 import com.example.bible.data.StudyContentCache
@@ -320,7 +331,7 @@ class BibleViewModel(
                 val highlights = mutableListOf<TextHighlight>()
                 val canon = BibleCanon.byId(session.bookId)
                 val totalChapters = canon?.chapters
-                    ?: library.getBook(translation, session.bookId)?.chapters?.size ?: 1
+                    ?: library.loadBookShell(translation, session.bookId)?.chapters?.size ?: 1
                 val chapterRange = when (session.scope) {
                     SemanticScope.VERSE, SemanticScope.CHAPTER -> session.chapter..session.chapter
                     SemanticScope.BOOK -> 1..totalChapters
@@ -378,8 +389,8 @@ class BibleViewModel(
         bookId: String,
         chapter: Int,
     ): List<com.example.bible.data.BibleVerse> {
-        val book = library.getBook(translation, bookId)
-        val local = book?.chapters?.find { it.number == chapter }?.verses
+        val chapterObj = library.loadChapter(translation, bookId, chapter)
+        val local = chapterObj?.verses
         if (local != null && local.isNotEmpty()) return local
         return fetchOnlineVerses(translation, bookId, chapter)
     }
@@ -408,6 +419,16 @@ class BibleViewModel(
 
     fun setSongHighlightLineWhilePlaying(enabled: Boolean) {
         viewModelScope.launch { preferences.setSongHighlightLineWhilePlaying(enabled) }
+    }
+
+    val bookPickerLongPressTts: StateFlow<Boolean> = preferences.bookPickerLongPressTts.stateIn(
+        viewModelScope,
+        SharingStarted.WhileSubscribed(5000),
+        true,
+    )
+
+    fun setBookPickerLongPressTts(enabled: Boolean) {
+        viewModelScope.launch { preferences.setBookPickerLongPressTts(enabled) }
     }
 
     val videoLibraryTitleScale: StateFlow<Float> = preferences.videoLibraryTitleScale.stateIn(
@@ -826,6 +847,12 @@ class BibleViewModel(
     }
 
     fun playVerseAudio(translation: TranslationId, bookId: String, chapter: Int, ttsFallback: () -> Unit) {
+        if (translation == TranslationId.INTERLINEAR) {
+            com.example.bible.data.originalLanguageNarratorForBook(bookId)?.let { narrator ->
+                com.example.bible.data.BibleAudioPlayer.playChapter(appContext, narrator, bookId, chapter)
+                return
+            }
+        }
         mediaRepository.playChapterAudio(
             translation = translation,
             bookId = bookId,
@@ -860,9 +887,13 @@ class BibleViewModel(
     }
 
     override fun onCleared() {
-        kotlinx.coroutines.runBlocking {
-            readingDwellMutex.withLock { commitReadingDwellSegmentLocked() }
+        val flushThread = Thread {
+            kotlinx.coroutines.runBlocking {
+                readingDwellMutex.withLock { commitReadingDwellSegmentLocked() }
+            }
         }
+        flushThread.start()
+        flushThread.join(400)
         mediaRepository.stop()
         super.onCleared()
     }
@@ -884,6 +915,153 @@ class BibleViewModel(
         SharingStarted.WhileSubscribed(5000),
         emptyList(),
     )
+
+    val quranReadingHistory: StateFlow<List<QuranReadingHistoryEntry>> = preferences.quranReadingHistory.stateIn(
+        viewModelScope,
+        SharingStarted.WhileSubscribed(5000),
+        emptyList(),
+    )
+
+    val quranReadingTrace: StateFlow<List<QuranReadingTraceEntry>> = preferences.quranReadingTrace.stateIn(
+        viewModelScope,
+        SharingStarted.WhileSubscribed(5000),
+        emptyList(),
+    )
+
+    private val quranDwellMutex = Mutex()
+    private var quranDwellSurah: Int = 0
+    private var quranDwellSurahName: String = ""
+    private var quranDwellAyah: Int = 0
+    private var quranDwellStartMs: Long = 0L
+
+    fun beginQuranReadingSession(surahNumber: Int, surahNameRu: String, initialAyah: Int) {
+        viewModelScope.launch {
+            quranDwellMutex.withLock {
+                commitQuranDwellSegmentLocked()
+                val ayah = initialAyah.coerceAtLeast(1)
+                quranDwellSurah = surahNumber
+                quranDwellSurahName = surahNameRu
+                quranDwellAyah = ayah
+                quranDwellStartMs = System.currentTimeMillis()
+                val now = System.currentTimeMillis()
+                preferences.addQuranHistoryEntry(
+                    QuranReadingHistoryEntry(
+                        surahNumber = surahNumber,
+                        surahNameRu = surahNameRu,
+                        ayahNumber = ayah,
+                        timestamp = now,
+                    ),
+                )
+                preferences.appendQuranReadingTrace(
+                    QuranReadingTraceEntry(
+                        timestamp = now,
+                        surahNumber = surahNumber,
+                        surahNameRu = surahNameRu,
+                        ayahNumber = ayah,
+                    ),
+                )
+            }
+        }
+    }
+
+    fun onQuranVisibleAyah(surahNumber: Int, surahNameRu: String, ayah: Int) {
+        viewModelScope.launch {
+            quranDwellMutex.withLock {
+                val a = ayah.coerceAtLeast(1)
+                if (surahNumber != quranDwellSurah) {
+                    commitQuranDwellSegmentLocked()
+                    quranDwellSurah = surahNumber
+                    quranDwellSurahName = surahNameRu
+                    quranDwellAyah = a
+                    quranDwellStartMs = System.currentTimeMillis()
+                    val now = System.currentTimeMillis()
+                    preferences.addQuranHistoryEntry(
+                        QuranReadingHistoryEntry(
+                            surahNumber = surahNumber,
+                            surahNameRu = surahNameRu,
+                            ayahNumber = a,
+                            timestamp = now,
+                        ),
+                    )
+                    preferences.appendQuranReadingTrace(
+                        QuranReadingTraceEntry(
+                            timestamp = now,
+                            surahNumber = surahNumber,
+                            surahNameRu = surahNameRu,
+                            ayahNumber = a,
+                        ),
+                    )
+                    return@withLock
+                }
+                if (a != quranDwellAyah) {
+                    commitQuranDwellSegmentLocked()
+                    quranDwellAyah = a
+                    quranDwellStartMs = System.currentTimeMillis()
+                    val now = System.currentTimeMillis()
+                    preferences.addQuranHistoryEntry(
+                        QuranReadingHistoryEntry(
+                            surahNumber = surahNumber,
+                            surahNameRu = surahNameRu,
+                            ayahNumber = a,
+                            timestamp = now,
+                        ),
+                    )
+                    preferences.appendQuranReadingTrace(
+                        QuranReadingTraceEntry(
+                            timestamp = now,
+                            surahNumber = surahNumber,
+                            surahNameRu = surahNameRu,
+                            ayahNumber = a,
+                        ),
+                    )
+                }
+            }
+        }
+    }
+
+    fun flushQuranReadingDwell() {
+        viewModelScope.launch {
+            quranDwellMutex.withLock {
+                commitQuranDwellSegmentLocked()
+                quranDwellSurah = 0
+                quranDwellSurahName = ""
+                quranDwellAyah = 0
+            }
+        }
+    }
+
+    fun clearQuranReadingHistory() {
+        viewModelScope.launch {
+            preferences.clearQuranReadingHistory()
+        }
+    }
+
+    private suspend fun commitQuranDwellSegmentLocked() {
+        if (quranDwellSurah <= 0 || quranDwellAyah <= 0) return
+        val elapsed = System.currentTimeMillis() - quranDwellStartMs
+        val sec = if (elapsed >= 3_000L) {
+            (elapsed / 1000L).toInt().coerceIn(1, 900)
+        } else {
+            0
+        }
+        if (sec > 0) {
+            preferences.mergeQuranReadingAnalytics(
+                surahNumber = quranDwellSurah,
+                ayahNumber = quranDwellAyah,
+                dwellDeltaSeconds = sec,
+            )
+            preferences.appendQuranReadingTrace(
+                QuranReadingTraceEntry(
+                    timestamp = System.currentTimeMillis(),
+                    surahNumber = quranDwellSurah,
+                    surahNameRu = quranDwellSurahName,
+                    ayahNumber = quranDwellAyah,
+                    dwellSeconds = sec,
+                ),
+            )
+        }
+        quranDwellStartMs = System.currentTimeMillis()
+    }
 
     fun addHistoryEntry(
         translation: TranslationId,
@@ -1290,6 +1468,296 @@ class BibleViewModel(
         emptyList(),
     )
 
+    val userMediaPlaylists: StateFlow<List<UserMediaPlaylist>> = preferences.userMediaPlaylists.stateIn(
+        viewModelScope,
+        SharingStarted.WhileSubscribed(5000),
+        emptyList(),
+    )
+
+    fun createUserMediaPlaylist(name: String, kind: UserMediaPlaylistKind, initialItemIds: List<String> = emptyList()) {
+        val n = name.trim()
+        if (n.isEmpty()) return
+        viewModelScope.launch {
+            preferences.saveUserMediaPlaylist(
+                UserMediaPlaylist(
+                    name = n,
+                    kind = kind,
+                    itemIds = initialItemIds,
+                ),
+            )
+        }
+    }
+
+    fun renameUserMediaPlaylist(playlistId: String, newName: String) {
+        val n = newName.trim()
+        if (n.isEmpty()) return
+        viewModelScope.launch {
+            val cur = userMediaPlaylists.value
+            val pl = cur.firstOrNull { it.id == playlistId } ?: return@launch
+            preferences.saveUserMediaPlaylist(pl.copy(name = n))
+        }
+    }
+
+    fun deleteUserMediaPlaylist(playlistId: String) {
+        viewModelScope.launch {
+            preferences.deleteUserMediaPlaylist(playlistId)
+        }
+    }
+
+    fun addItemToUserMediaPlaylist(playlistId: String, mediaItemId: String) {
+        addItemsToUserMediaPlaylist(playlistId, listOf(mediaItemId))
+    }
+
+    fun addItemsToUserMediaPlaylist(playlistId: String, mediaItemIds: List<String>) {
+        if (mediaItemIds.isEmpty()) return
+        viewModelScope.launch {
+            preferences.addMediaItemsToUserPlaylist(playlistId, mediaItemIds)
+        }
+    }
+
+    fun removeItemFromUserMediaPlaylist(playlistId: String, mediaItemId: String) {
+        viewModelScope.launch {
+            preferences.removeMediaItemFromUserPlaylist(playlistId, mediaItemId)
+        }
+    }
+
+    fun setUserMediaPlaylistItemOrder(playlistId: String, orderedItemIds: List<String>) {
+        viewModelScope.launch {
+            preferences.setUserMediaPlaylistItemOrder(playlistId, orderedItemIds)
+        }
+    }
+
+    fun importUserMediaPlaylistFromFile(file: File, onDone: (String) -> Unit) {
+        viewModelScope.launch {
+            val outcome = UserMediaPlaylistSharePackage.importFromFile(
+                appContext,
+                file,
+                bibleUserVideos.value,
+                bibleUserAudios.value,
+                bibleVideoLibrary,
+                bibleAudioLibrary,
+            )
+            when (outcome) {
+                is UserMediaPlaylistShareOutcome.Ok -> {
+                    outcome.videos.forEach { preferences.saveBibleVideo(it) }
+                    outcome.audios.forEach { preferences.saveBibleAudio(it) }
+                    val existing = userMediaPlaylists.value
+                    val name = uniqueUserMediaPlaylistName(outcome.playlist.name, existing)
+                    preferences.saveUserMediaPlaylist(outcome.playlist.copy(name = name))
+                    val filesBit = when {
+                        outcome.filesCopied > 0 ->
+                            " Файлов скопировано: ${outcome.filesCopied}."
+                        outcome.linksOnly ->
+                            " Файлы не вложены — их можно скачать по ссылкам в плейлисте."
+                        else -> ""
+                    }
+                    onDone("Плейлист «$name» импортирован.$filesBit")
+                }
+                is UserMediaPlaylistShareOutcome.Err -> onDone(
+                    when (outcome.error) {
+                        UserMediaPlaylistShareError.MISSING_MANIFEST ->
+                            "В файле нет описания плейлиста"
+                        UserMediaPlaylistShareError.FULL_APP_BACKUP ->
+                            "Это полный архив приложения, а не плейлист"
+                        UserMediaPlaylistShareError.WRONG_FORMAT ->
+                            "Неизвестный формат файла"
+                        UserMediaPlaylistShareError.EMPTY ->
+                            "Плейлист пустой"
+                        UserMediaPlaylistShareError.IO_OR_PARSE ->
+                            "Не удалось прочитать файл"
+                    },
+                )
+            }
+        }
+    }
+
+    fun downloadUserMediaItemFromUrl(
+        mediaId: String,
+        kind: UserMediaKind,
+        onDone: (ok: Boolean, message: String) -> Unit,
+    ) {
+        viewModelScope.launch {
+            when (kind) {
+                UserMediaKind.VIDEO -> {
+                    val v = bibleUserVideos.value.firstOrNull { it.id == mediaId } ?: run {
+                        onDone(false, "Запись не найдена")
+                        return@launch
+                    }
+                    val url = v.sourceUrl?.takeIf { it.isNotBlank() } ?: run {
+                        onDone(false, "Нет ссылки для скачивания")
+                        return@launch
+                    }
+                    val result = withContext(Dispatchers.IO) {
+                        bibleVideoLibrary.downloadFromUrl(url)
+                    }
+                    result.fold(
+                        onSuccess = { name ->
+                            preferences.saveBibleVideo(v.copy(fileName = name))
+                            onDone(true, "Скачано: ${v.title}")
+                        },
+                        onFailure = { e -> onDone(false, e.message ?: "Ошибка загрузки") },
+                    )
+                }
+                UserMediaKind.AUDIO -> {
+                    val a = bibleUserAudios.value.firstOrNull { it.id == mediaId } ?: run {
+                        onDone(false, "Запись не найдена")
+                        return@launch
+                    }
+                    val url = a.sourceUrl?.takeIf { it.isNotBlank() } ?: run {
+                        onDone(false, "Нет ссылки для скачивания")
+                        return@launch
+                    }
+                    val result = withContext(Dispatchers.IO) {
+                        bibleAudioLibrary.downloadFromUrl(url)
+                    }
+                    result.fold(
+                        onSuccess = { name ->
+                            preferences.saveBibleAudio(a.copy(fileName = name))
+                            onDone(true, "Скачано: ${a.title}")
+                        },
+                        onFailure = { e -> onDone(false, e.message ?: "Ошибка загрузки") },
+                    )
+                }
+            }
+        }
+    }
+
+    fun downloadMissingUserMediaPlaylistFiles(
+        playlistId: String,
+        onProgress: (done: Int, total: Int) -> Unit,
+        onDone: (ok: Int, fail: Int) -> Unit,
+    ) {
+        viewModelScope.launch {
+            val pl = userMediaPlaylists.value.firstOrNull { it.id == playlistId } ?: run {
+                onDone(0, 0)
+                return@launch
+            }
+            val videos = bibleUserVideos.value.associateBy { it.id }
+            val audios = bibleUserAudios.value.associateBy { it.id }
+            val videoTasks = if (pl.kind == UserMediaPlaylistKind.VIDEO) {
+                pl.itemIds.mapNotNull { id ->
+                    val v = videos[id] ?: return@mapNotNull null
+                    val f = MediaCatalogPaths.videoFile(appContext, v.fileName)
+                    if (f.isFile && f.length() > 64) return@mapNotNull null
+                    val url = v.sourceUrl?.takeIf { it.isNotBlank() } ?: return@mapNotNull null
+                    v to url
+                }
+            } else {
+                emptyList()
+            }
+            val audioTasks = if (pl.kind == UserMediaPlaylistKind.AUDIO) {
+                pl.itemIds.mapNotNull { id ->
+                    val a = audios[id] ?: return@mapNotNull null
+                    val f = MediaCatalogPaths.audioFile(appContext, a.fileName)
+                    if (f.isFile && f.length() > 64) return@mapNotNull null
+                    val url = a.sourceUrl?.takeIf { it.isNotBlank() } ?: return@mapNotNull null
+                    a to url
+                }
+            } else {
+                emptyList()
+            }
+            val total = videoTasks.size + audioTasks.size
+            if (total == 0) {
+                onDone(0, 0)
+                return@launch
+            }
+            var ok = 0
+            var fail = 0
+            var index = 0
+            for ((item, url) in videoTasks) {
+                onProgress(index, total)
+                val result = withContext(Dispatchers.IO) {
+                    bibleVideoLibrary.downloadFromUrl(url)
+                }
+                result.fold(
+                    onSuccess = { name ->
+                        preferences.saveBibleVideo(item.copy(fileName = name))
+                        ok++
+                    },
+                    onFailure = { fail++ },
+                )
+                index++
+            }
+            for ((item, url) in audioTasks) {
+                onProgress(index, total)
+                val result = withContext(Dispatchers.IO) {
+                    bibleAudioLibrary.downloadFromUrl(url)
+                }
+                result.fold(
+                    onSuccess = { name ->
+                        preferences.saveBibleAudio(item.copy(fileName = name))
+                        ok++
+                    },
+                    onFailure = { fail++ },
+                )
+                index++
+            }
+            onProgress(total, total)
+            onDone(ok, fail)
+        }
+    }
+
+    private fun uniqueUserMediaPlaylistName(
+        base: String,
+        existing: List<UserMediaPlaylist>,
+    ): String {
+        if (existing.none { it.name.equals(base, ignoreCase = true) }) return base
+        var n = 2
+        while (existing.any { it.name.equals("$base ($n)", ignoreCase = true) }) n++
+        return "$base ($n)"
+    }
+
+    val userMediaPlaybackProgress: StateFlow<Map<String, UserMediaPlaybackProgress>> =
+        preferences.userMediaPlaybackProgress.stateIn(
+            viewModelScope,
+            SharingStarted.Eagerly,
+            emptyMap(),
+        )
+
+    fun updateMediaPlaybackProgress(
+        mediaId: String,
+        kind: UserMediaKind,
+        positionMs: Long,
+        durationMs: Long,
+    ) {
+        if (mediaId.isBlank()) return
+        // Плеер до prepare пишет duration=1 и position=0 — это затирало «продолжить с …».
+        if (durationMs < 1_500L && positionMs < 2_000L) return
+        val completed = durationMs > 0 && positionMs >= durationMs * 0.92
+        viewModelScope.launch {
+            preferences.upsertMediaPlaybackProgress(
+                UserMediaPlaybackProgress(
+                    mediaId = mediaId,
+                    kind = kind,
+                    positionMs = if (completed) durationMs else positionMs.coerceAtLeast(0),
+                    durationMs = durationMs.coerceAtLeast(0),
+                    completed = completed,
+                ),
+            )
+        }
+    }
+
+    fun markMediaFullyWatched(mediaId: String, kind: UserMediaKind, durationMs: Long = 0L) {
+        if (mediaId.isBlank()) return
+        viewModelScope.launch {
+            preferences.markMediaFullyWatched(mediaId, kind, durationMs)
+        }
+    }
+
+    fun unmarkMediaFullyWatched(mediaId: String) {
+        if (mediaId.isBlank()) return
+        viewModelScope.launch {
+            preferences.unmarkMediaFullyWatched(mediaId)
+        }
+    }
+
+    fun clearMediaPlaybackProgress(mediaId: String) {
+        if (mediaId.isBlank()) return
+        viewModelScope.launch {
+            preferences.clearMediaPlaybackProgress(mediaId)
+        }
+    }
+
     private val _commonsVideoSearchLoading = MutableStateFlow(false)
     val commonsVideoSearchLoading: StateFlow<Boolean> = _commonsVideoSearchLoading.asStateFlow()
 
@@ -1418,6 +1886,50 @@ class BibleViewModel(
                 },
                 onFailure = { e -> onDone(e.message ?: "Ошибка импорта") },
             )
+        }
+    }
+
+    fun importBibleAudiosFromUris(
+        uris: List<Uri>,
+        source: String,
+        tags: List<String> = emptyList(),
+        onDone: (ok: Int, fail: Int) -> Unit,
+    ) {
+        if (uris.isEmpty()) {
+            onDone(0, 0)
+            return
+        }
+        viewModelScope.launch {
+            val normTags = tags.map { it.trim() }.filter { it.isNotEmpty() }
+            var ok = 0
+            var fail = 0
+            for (uri in uris) {
+                val title = withContext(Dispatchers.IO) {
+                    KidsUserMediaStorage.displayName(appContext, uri)
+                        ?.substringBeforeLast('.')
+                        ?.trim()
+                        .orEmpty()
+                        .ifBlank { "Без названия" }
+                }
+                val result = withContext(Dispatchers.IO) {
+                    bibleAudioLibrary.importFromUri(uri)
+                }
+                result.fold(
+                    onSuccess = { fileName ->
+                        preferences.saveBibleAudio(
+                            BibleUserAudio(
+                                title = title,
+                                tags = normTags,
+                                fileName = fileName,
+                                source = source,
+                            ),
+                        )
+                        ok++
+                    },
+                    onFailure = { fail++ },
+                )
+            }
+            onDone(ok, fail)
         }
     }
 

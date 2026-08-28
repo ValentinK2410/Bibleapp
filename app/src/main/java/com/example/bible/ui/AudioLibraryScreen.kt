@@ -23,21 +23,16 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.automirrored.filled.PlaylistPlay
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Delete
-import androidx.compose.material.icons.filled.Download
 import androidx.compose.material.icons.filled.Mic
 import androidx.compose.material.icons.filled.MusicNote
-import androidx.compose.material.icons.filled.PhotoLibrary
-import androidx.compose.material.icons.filled.PlayArrow
-import androidx.compose.material.icons.filled.Share
 import androidx.compose.material.icons.filled.TravelExplore
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Card
-import androidx.compose.material3.ElevatedCard
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
@@ -58,16 +53,16 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.core.content.FileProvider
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.bible.data.BibleUserAudio
 import com.example.bible.data.MediaCatalogPaths
+import com.example.bible.data.UserMediaKind
+import com.example.bible.data.UserMediaPlaylistKind
 import java.io.File
 import java.text.SimpleDateFormat
 import java.util.Date
@@ -84,43 +79,17 @@ private fun BibleUserAudio.matchesMediaSearch(query: String): Boolean {
     }
 }
 
-private fun formatSizeMb(bytes: Long): String =
-    "%.1f МБ".format(bytes / (1024.0 * 1024.0))
-
-private fun sourceLabelRu(source: String) = when (source) {
-    "download" -> "Скачано"
-    "camera", "recorder" -> "Запись"
-    "commons" -> "Интернет (Commons)"
-    else -> "Файлы"
-}
-
-@Composable
-private fun AudioSourceIcon(source: String) {
-    val (icon, accent) = when (source) {
-        "download" -> Icons.Filled.Download to Color(0xFF1565C0)
-        "camera", "recorder" -> Icons.Filled.Mic to Color(0xFF6A1B9A)
-        "commons" -> Icons.Filled.TravelExplore to Color(0xFF00695C)
-        else -> Icons.Filled.PhotoLibrary to Color(0xFF2E7D32)
-    }
-    Box(
-        modifier = Modifier
-            .size(40.dp)
-            .background(accent.copy(alpha = 0.15f), CircleShape),
-        contentAlignment = Alignment.Center,
-    ) {
-        Icon(icon, sourceLabelRu(source), tint = accent, modifier = Modifier.size(22.dp))
-    }
-}
-
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AudioLibraryScreen(
     viewModel: BibleViewModel,
     onBack: () -> Unit,
     onOpenAudioDownload: () -> Unit = {},
+    onOpenPlaylists: () -> Unit = {},
 ) {
     val context = LocalContext.current
     val audios by viewModel.bibleUserAudios.collectAsStateWithLifecycle()
+    val playbackProgress by viewModel.userMediaPlaybackProgress.collectAsStateWithLifecycle()
     val titleScale by viewModel.videoLibraryTitleScale.collectAsStateWithLifecycle()
     val audioItems = remember(audios) {
         audios.filter { MediaCatalogPaths.isLikelyAudioFileName(it.fileName) }
@@ -131,11 +100,15 @@ fun AudioLibraryScreen(
     var metaEditing by remember { mutableStateOf<BibleUserAudio?>(null) }
     var pendingUri by remember { mutableStateOf<Uri?>(null) }
     var pendingSource by remember { mutableStateOf("gallery") }
+    var importingCount by remember { mutableStateOf<Int?>(null) }
 
     var draftTitle by remember { mutableStateOf("") }
     var draftTags by remember { mutableStateOf("") }
 
     var librarySearchQuery by remember { mutableStateOf("") }
+    var playlistTargetAudio by remember { mutableStateOf<BibleUserAudio?>(null) }
+    /** Очередь встроенного плеера: только файлы на диске, порядок как в списке. */
+    var libraryAudioTracksAndStart by remember { mutableStateOf<Pair<List<Pair<BibleUserAudio, File>>, Int>?>(null) }
     /** Если системное приложение не зарегистрировало [MediaStore.Audio.Media.RECORD_SOUND_ACTION], пишем через MediaRecorder. */
     var showInAppRecorder by remember { mutableStateOf(false) }
 
@@ -146,14 +119,26 @@ fun AudioLibraryScreen(
     }
 
     val pickLauncher = rememberLauncherForActivityResult(
-        contract = ActivityResultContracts.GetContent(),
-    ) { uri: Uri? ->
-        if (uri != null) {
-            pendingUri = uri
-            pendingSource = "gallery"
+        contract = ActivityResultContracts.OpenMultipleDocuments(),
+    ) { uris: List<Uri> ->
+        if (uris.isEmpty()) return@rememberLauncherForActivityResult
+        pendingSource = "gallery"
+        if (uris.size == 1) {
+            pendingUri = uris.first()
             draftTitle = ""
             draftTags = ""
             showMetaDialog = true
+        } else {
+            importingCount = uris.size
+            viewModel.importBibleAudiosFromUris(uris, source = "gallery") { ok, fail ->
+                importingCount = null
+                val msg = when {
+                    fail == 0 -> "Добавлено файлов: $ok"
+                    ok == 0 -> "Не удалось добавить файлы"
+                    else -> "Добавлено $ok, ошибок $fail"
+                }
+                Toast.makeText(context, msg, Toast.LENGTH_LONG).show()
+            }
         }
     }
 
@@ -200,6 +185,9 @@ fun AudioLibraryScreen(
                     }
                 },
                 actions = {
+                    IconButton(onClick = onOpenPlaylists) {
+                        Icon(Icons.AutoMirrored.Filled.PlaylistPlay, contentDescription = "Плейлисты")
+                    }
                     TextButton(
                         onClick = { viewModel.adjustVideoLibraryTitleScale(-VideoLibraryFontDefaults.STEP) },
                         enabled = titleScale > VideoLibraryFontDefaults.MIN + 0.001f,
@@ -228,6 +216,12 @@ fun AudioLibraryScreen(
                 .filter { it.matchesMediaSearch(librarySearchQuery) }
                 .sortedByDescending { it.addedAt }
         }
+        val playableFiltered = remember(filteredSorted) {
+            filteredSorted.mapNotNull { a ->
+                val fl = MediaCatalogPaths.audioFile(context, a.fileName)
+                if (fl.exists()) a to fl else null
+            }
+        }
         Column(
             modifier = Modifier
                 .padding(padding)
@@ -246,7 +240,7 @@ fun AudioLibraryScreen(
                 singleLine = true,
             )
             Text(
-                "Иконка — источник; A− / A+ — размер названий (как в разделе «Видео»).",
+                "▶ — в приложении · ⋮ — плейлист, другое приложение, поделиться, удалить · A− / A+ размер названий.",
                 style = MaterialTheme.typography.labelSmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                 modifier = Modifier.padding(horizontal = 16.dp, vertical = 0.dp),
@@ -283,164 +277,127 @@ fun AudioLibraryScreen(
                     modifier = Modifier
                         .fillMaxSize()
                         .weight(1f),
-                    contentPadding = PaddingValues(12.dp),
-                    verticalArrangement = Arrangement.spacedBy(10.dp),
+                    contentPadding = PaddingValues(start = 8.dp, end = 8.dp, top = 4.dp, bottom = 12.dp),
+                    verticalArrangement = Arrangement.spacedBy(4.dp),
                 ) {
                     items(filteredSorted, key = { it.id }) { item ->
                         val f = MediaCatalogPaths.audioFile(context, item.fileName)
                         val titleSp = (VideoLibraryFontDefaults.BASE_TITLE_SP * titleScale).sp
-                        val lineSp = (VideoLibraryFontDefaults.BASE_TITLE_SP * titleScale * 1.35f).sp
                         val metaSp = (VideoLibraryFontDefaults.BASE_META_SP * titleScale).sp
-                        val srcSp = (10f * titleScale).sp
-                        ElevatedCard(modifier = Modifier.fillMaxWidth()) {
-                            Column(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .padding(horizontal = 10.dp, vertical = 8.dp),
-                            ) {
-                                Text(
-                                    text = item.title,
-                                    modifier = Modifier
-                                        .fillMaxWidth()
-                                        .clickable {
-                                            pendingUri = null
-                                            metaEditing = item
-                                            draftTitle = item.title
-                                            draftTags = item.tags.joinToString(", ")
-                                            showMetaDialog = true
-                                        },
-                                    style = MaterialTheme.typography.titleSmall.copy(
-                                        fontSize = titleSp,
-                                        lineHeight = lineSp,
-                                    ),
-                                    maxLines = 4,
-                                    overflow = TextOverflow.Ellipsis,
-                                )
-                                Spacer(Modifier.height(8.dp))
-                                Row(
-                                    modifier = Modifier.fillMaxWidth(),
-                                    verticalAlignment = Alignment.CenterVertically,
-                                ) {
-                                    Row(
-                                        modifier = Modifier
-                                            .weight(1f)
-                                            .clickable {
-                                                pendingUri = null
-                                                metaEditing = item
-                                                draftTitle = item.title
-                                                draftTags = item.tags.joinToString(", ")
-                                                showMetaDialog = true
-                                            },
-                                        verticalAlignment = Alignment.CenterVertically,
-                                    ) {
-                                        AudioSourceIcon(item.source)
-                                        Spacer(Modifier.width(8.dp))
-                                        Box(
-                                            modifier = Modifier.size(64.dp),
-                                            contentAlignment = Alignment.Center,
-                                        ) {
-                                            Box(
-                                                Modifier
-                                                    .fillMaxSize()
-                                                    .background(MaterialTheme.colorScheme.surfaceVariant),
-                                                contentAlignment = Alignment.Center,
-                                            ) {
-                                                Icon(
-                                                    Icons.Filled.MusicNote,
-                                                    contentDescription = null,
-                                                    modifier = Modifier.size(36.dp),
-                                                    tint = Color(0xFFFF9800),
-                                                )
-                                            }
-                                        }
-                                        Spacer(Modifier.width(8.dp))
-                                        Column(modifier = Modifier.weight(1f)) {
-                                            Text(
-                                                buildString {
-                                                    if (f.exists()) {
-                                                        append(formatSizeMb(f.length()))
-                                                        append(" · ")
-                                                    }
-                                                    append(dateFmt.format(Date(item.addedAt)))
-                                                },
-                                                style = MaterialTheme.typography.labelSmall.copy(fontSize = metaSp),
-                                                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                                            )
-                                            Text(
-                                                sourceLabelRu(item.source),
-                                                style = MaterialTheme.typography.labelSmall.copy(
-                                                    fontSize = srcSp,
-                                                    color = MaterialTheme.colorScheme.primary,
-                                                ),
-                                            )
-                                        }
-                                    }
-                                    IconButton(
-                                        onClick = {
-                                            if (!f.exists()) {
-                                                Toast.makeText(context, "Файл не найден", Toast.LENGTH_SHORT).show()
-                                                return@IconButton
-                                            }
-                                            try {
-                                                val uri = FileProvider.getUriForFile(
-                                                    context,
-                                                    "${context.packageName}.provider",
-                                                    f,
-                                                )
-                                                val intent = Intent(Intent.ACTION_VIEW).apply {
-                                                    setDataAndType(uri, "audio/*")
-                                                    addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
-                                                }
-                                                context.startActivity(Intent.createChooser(intent, "Аудио"))
-                                            } catch (e: Exception) {
-                                                Toast.makeText(
-                                                    context,
-                                                    e.message ?: "Не удалось открыть",
-                                                    Toast.LENGTH_SHORT,
-                                                ).show()
-                                            }
-                                        },
-                                    ) {
-                                        Icon(
-                                            Icons.Filled.PlayArrow,
-                                            contentDescription = "Воспроизвести",
-                                            tint = MaterialTheme.colorScheme.primary,
-                                        )
-                                    }
-                                    IconButton(
-                                        onClick = {
-                                            if (!f.exists()) {
-                                                Toast.makeText(context, "Файл не найден", Toast.LENGTH_SHORT).show()
-                                                return@IconButton
-                                            }
-                                            shareMediaFile(context, f, "audio/*")
-                                        },
-                                    ) {
-                                        Icon(
-                                            Icons.Filled.Share,
-                                            contentDescription = "Поделиться",
-                                            tint = MaterialTheme.colorScheme.primary,
-                                        )
-                                    }
-                                    IconButton(
-                                        onClick = {
-                                            viewModel.deleteBibleAudio(item)
-                                            Toast.makeText(context, "Удалено", Toast.LENGTH_SHORT).show()
-                                        },
-                                    ) {
-                                        Icon(
-                                            Icons.Filled.Delete,
-                                            contentDescription = "Удалить",
-                                            tint = MaterialTheme.colorScheme.error,
-                                        )
-                                    }
-                                }
+                        val metaLine = buildString {
+                            if (f.exists()) {
+                                append(mediaLibrarySizeMb(f.length()))
+                                append(" · ")
                             }
+                            append(dateFmt.format(Date(item.addedAt)))
+                            append(" · ")
+                            append(mediaLibrarySourceLabelRu(item.source))
                         }
+                        LibraryCompactAudioRow(
+                            title = item.title,
+                            titleSp = titleSp,
+                            metaSp = metaSp,
+                            metaLine = metaLine,
+                            progress = playbackProgress[item.id],
+                            onPlayInApp = {
+                                if (playableFiltered.isEmpty()) {
+                                    Toast.makeText(context, "Нет файлов для воспроизведения", Toast.LENGTH_SHORT).show()
+                                    return@LibraryCompactAudioRow
+                                }
+                                if (!f.exists()) {
+                                    Toast.makeText(context, "Файл не найден", Toast.LENGTH_SHORT).show()
+                                    return@LibraryCompactAudioRow
+                                }
+                                val ix = playableFiltered.indexOfFirst { it.first.id == item.id }
+                                    .let { i -> if (i >= 0) i else 0 }
+                                libraryAudioTracksAndStart = playableFiltered to ix
+                            },
+                            onPlayExternally = {
+                                if (!f.exists()) {
+                                    Toast.makeText(context, "Файл не найден", Toast.LENGTH_SHORT).show()
+                                    return@LibraryCompactAudioRow
+                                }
+                                try {
+                                    val uri = FileProvider.getUriForFile(
+                                        context,
+                                        "${context.packageName}.provider",
+                                        f,
+                                    )
+                                    val intent = Intent(Intent.ACTION_VIEW).apply {
+                                        setDataAndType(uri, "audio/*")
+                                        addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+                                    }
+                                    context.startActivity(Intent.createChooser(intent, "Аудио"))
+                                } catch (e: Exception) {
+                                    Toast.makeText(
+                                        context,
+                                        e.message ?: "Не удалось открыть",
+                                        Toast.LENGTH_SHORT,
+                                    ).show()
+                                }
+                            },
+                            onEdit = {
+                                pendingUri = null
+                                metaEditing = item
+                                draftTitle = item.title
+                                draftTags = item.tags.joinToString(", ")
+                                showMetaDialog = true
+                            },
+                            onToggleWatched = {
+                                val p = playbackProgress[item.id]
+                                if (p?.completed == true) {
+                                    viewModel.unmarkMediaFullyWatched(item.id)
+                                    Toast.makeText(context, "Отметка снята", Toast.LENGTH_SHORT).show()
+                                } else {
+                                    viewModel.markMediaFullyWatched(
+                                        item.id,
+                                        UserMediaKind.AUDIO,
+                                        p?.durationMs ?: 0L,
+                                    )
+                                    Toast.makeText(context, "Отмечено как прослушанное", Toast.LENGTH_SHORT).show()
+                                }
+                            },
+                            onAddToPlaylist = { playlistTargetAudio = item },
+                            onShare = {
+                                if (!f.exists()) {
+                                    Toast.makeText(context, "Файл не найден", Toast.LENGTH_SHORT).show()
+                                } else {
+                                    shareMediaFile(context, f, "audio/*")
+                                }
+                            },
+                            onDelete = {
+                                viewModel.deleteBibleAudio(item)
+                                Toast.makeText(context, "Удалено", Toast.LENGTH_SHORT).show()
+                            },
+                        )
                     }
                 }
             }
         }
+    }
+
+    playlistTargetAudio?.let { audio ->
+        AddMediaToPlaylistSheet(
+            viewModel = viewModel,
+            kind = UserMediaPlaylistKind.AUDIO,
+            mediaItemId = audio.id,
+            onDismiss = { playlistTargetAudio = null },
+        )
+    }
+
+    libraryAudioTracksAndStart?.let { (tracks, startIx) ->
+        PlaylistAudioPlayerSheet(
+            tracks = tracks,
+            startIndex = startIx,
+            initialSeekByMediaId = buildInitialSeekMap(tracks.map { it.first.id }, playbackProgress),
+            onPlaybackProgress = { mediaId, pos, dur ->
+                viewModel.updateMediaPlaybackProgress(mediaId, UserMediaKind.AUDIO, pos, dur)
+            },
+            onMarkFullyWatched = { mediaId, dur ->
+                viewModel.markMediaFullyWatched(mediaId, UserMediaKind.AUDIO, dur)
+            },
+            onDismiss = { libraryAudioTracksAndStart = null },
+        )
     }
 
     if (showAddSheet) {
@@ -456,7 +413,7 @@ fun AudioLibraryScreen(
                         .fillMaxWidth()
                         .clickable {
                             showAddSheet = false
-                            pickLauncher.launch("audio/*")
+                            pickLauncher.launch(arrayOf("audio/*"))
                         },
                 ) {
                     Row(
@@ -464,7 +421,7 @@ fun AudioLibraryScreen(
                         verticalAlignment = Alignment.CenterVertically,
                     ) {
                         Icon(Icons.Filled.MusicNote, contentDescription = null)
-                        Text("Из файлов / галереи", modifier = Modifier.padding(start = 16.dp))
+                        Text("Из файлов / галереи — можно несколько", modifier = Modifier.padding(start = 16.dp))
                     }
                 }
                 Spacer(Modifier.height(8.dp))
@@ -614,6 +571,15 @@ fun AudioLibraryScreen(
                     Text("Отмена")
                 }
             },
+        )
+    }
+
+    if (importingCount != null) {
+        AlertDialog(
+            onDismissRequest = {},
+            title = { Text("Добавление аудио") },
+            text = { Text("Копирую файлы: $importingCount…") },
+            confirmButton = {},
         )
     }
 
