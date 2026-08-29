@@ -4,6 +4,9 @@ import android.content.Intent
 import android.provider.Settings
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.size
 import androidx.compose.ui.Alignment
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Slider
@@ -16,6 +19,10 @@ import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.material.icons.filled.Key
+import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
@@ -37,6 +44,7 @@ import androidx.compose.material.icons.filled.Save
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.filled.Videocam
 import androidx.compose.material.icons.outlined.Layers
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.HorizontalDivider
@@ -51,6 +59,7 @@ import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -106,6 +115,10 @@ fun MainSettingsScreen(
     onTtsEnginePackageChange: (String) -> Unit,
     onTtsPreferHighQualityChange: (Boolean) -> Unit,
     onOpenTtsSystemSettings: () -> Unit,
+    deepSeekApiKey: String,
+    deepSeekKeyTest: DeepSeekKeyTestUiState,
+    onSaveDeepSeekApiKey: (String) -> Unit,
+    onTestDeepSeekApiKey: (String) -> Unit,
 ) {
     var hintsExpanded by remember { mutableStateOf(false) }
     val context = LocalContext.current
@@ -617,6 +630,14 @@ fun MainSettingsScreen(
                     .clickable(onClick = onOpenNetworkRegion),
             )
             HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp))
+            DeepSeekSettingsSection(
+                hintsExpanded = hintsExpanded,
+                savedKey = deepSeekApiKey,
+                keyTest = deepSeekKeyTest,
+                onSave = onSaveDeepSeekApiKey,
+                onTest = onTestDeepSeekApiKey,
+            )
+            HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp))
             ListItem(
                 headlineContent = { Text(stringResource(R.string.main_settings_menu_order)) },
                 leadingContent = {
@@ -628,4 +649,101 @@ fun MainSettingsScreen(
             )
         }
     }
+}
+
+@Composable
+private fun DeepSeekSettingsSection(
+    hintsExpanded: Boolean,
+    savedKey: String,
+    keyTest: DeepSeekKeyTestUiState,
+    onSave: (String) -> Unit,
+    onTest: (String) -> Unit,
+) {
+    val context = LocalContext.current
+    var draft by remember { mutableStateOf(savedKey) }
+    LaunchedEffect(savedKey) {
+        draft = savedKey
+    }
+    ListItem(
+        headlineContent = { Text(stringResource(R.string.main_settings_deepseek_title)) },
+        supportingContent = {
+            Text(
+                if (hintsExpanded) {
+                    stringResource(R.string.main_settings_deepseek_hint)
+                } else if (savedKey.isNotBlank()) {
+                    stringResource(R.string.main_settings_deepseek_saved)
+                } else {
+                    stringResource(R.string.main_settings_deepseek_empty)
+                },
+            )
+        },
+        leadingContent = {
+            Icon(
+                Icons.Filled.Key,
+                contentDescription = null,
+                tint = MaterialTheme.colorScheme.primary,
+            )
+        },
+        modifier = Modifier.fillMaxWidth(),
+    )
+    OutlinedTextField(
+        value = draft,
+        onValueChange = { draft = it },
+        label = { Text(stringResource(R.string.main_settings_deepseek_key_label)) },
+        singleLine = true,
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 16.dp, vertical = 4.dp),
+        visualTransformation = PasswordVisualTransformation(),
+        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
+    )
+    TextButton(
+        onClick = {
+            context.startActivity(
+                Intent(Intent.ACTION_VIEW, Uri.parse("https://platform.deepseek.com/api_keys")),
+            )
+        },
+        modifier = Modifier.padding(horizontal = 8.dp),
+    ) {
+        Text(stringResource(R.string.main_settings_deepseek_get_key))
+    }
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 8.dp),
+        horizontalArrangement = Arrangement.spacedBy(8.dp),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        TextButton(onClick = { onSave(draft) }) {
+            Text(stringResource(R.string.main_settings_deepseek_save))
+        }
+        TextButton(
+            onClick = { onTest(draft) },
+            enabled = !keyTest.loading,
+        ) {
+            Text(stringResource(R.string.main_settings_deepseek_test))
+        }
+        TextButton(onClick = {
+            draft = ""
+            onSave("")
+        }) {
+            Text(stringResource(R.string.main_settings_deepseek_clear))
+        }
+        if (keyTest.loading) {
+            CircularProgressIndicator(modifier = Modifier.size(18.dp), strokeWidth = 2.dp)
+        }
+    }
+    keyTest.message?.let { msg ->
+        Text(
+            msg,
+            color = if (keyTest.ok) {
+                MaterialTheme.colorScheme.primary
+            } else {
+                MaterialTheme.colorScheme.error
+            },
+            style = MaterialTheme.typography.bodySmall,
+            modifier = Modifier.padding(horizontal = 16.dp, vertical = 4.dp),
+        )
+    }
+    Spacer(Modifier.height(8.dp))
 }

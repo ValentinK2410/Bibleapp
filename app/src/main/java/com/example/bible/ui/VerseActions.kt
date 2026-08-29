@@ -24,13 +24,18 @@ import androidx.compose.material.icons.filled.Bookmark
 import androidx.compose.material.icons.filled.BookmarkBorder
 import androidx.compose.material.icons.filled.ContentCopy
 import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.Headphones
 import androidx.compose.material.icons.filled.Stop
 import androidx.compose.material.icons.filled.Link
 import androidx.compose.material.icons.automirrored.filled.NoteAdd
 import androidx.compose.material.icons.automirrored.filled.StickyNote2
 import androidx.compose.material.icons.filled.Share
+import androidx.compose.material.icons.filled.Psychology
 import androidx.compose.material.icons.filled.School
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.AssistChip
+import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
@@ -64,6 +69,8 @@ import com.example.bible.data.BibleCanon
 import com.example.bible.data.BibleDictionary
 import com.example.bible.data.CrossReferences
 import com.example.bible.data.DictionaryEntry
+import com.example.bible.data.NoteScriptureLinks
+import com.example.bible.data.ScriptureAudioPlayMode
 import com.example.bible.data.TranslationId
 import com.example.bible.data.UserNote
 import com.example.bible.data.VerseAttachment
@@ -304,7 +311,10 @@ fun VerseActionsBottomSheet(
     speak: (String) -> Unit,
     onStopSpeech: () -> Unit = {},
     onPlayAudio: ((VerseRef, () -> Unit) -> Unit)? = null,
+    /** Озвучка главы с таймкода выбранного стиха (если для главы есть проект таймкодов). */
+    onPlayTimemarkVerseAudio: ((VerseRef) -> Unit)? = null,
     onOpenCommentary: (VerseRef) -> Unit,
+    onAskDeepSeek: ((VerseActionTarget) -> Unit)? = null,
     onNavigateToVerse: ((String, Int, Int) -> Unit)? = null,
     onDictionaryWord: ((String) -> Unit)? = null,
     onPauseMainAudioForAttachment: () -> Unit = {},
@@ -320,9 +330,16 @@ fun VerseActionsBottomSheet(
     onOpenExistingVerseNote: ((String) -> Unit)? = null,
     /** Песочница иврита: весь стих (подстрочник Винокурова, ВЗ). */
     onOpenInterlinearHebrewSandboxWholeVerse: ((VerseRef) -> Unit)? = null,
+    translation: TranslationId = TranslationId.SYNODAL,
+    chapterVerseCount: Int = 0,
+    chapterVerseTexts: Map<Int, String> = emptyMap(),
 ) {
     val context = LocalContext.current
     var previewAttachment by remember { mutableStateOf<VerseAttachment?>(null) }
+    var showAudioRangeDialog by remember { mutableStateOf(false) }
+    var audioRangeEndDraft by remember(target?.ref?.verse) {
+        mutableStateOf((target?.ref?.verse ?: 1).toString())
+    }
     previewAttachment?.let { att ->
         AttachmentPreviewDialog(
             attachment = att,
@@ -331,6 +348,90 @@ fun VerseActionsBottomSheet(
         )
     }
     if (target == null) return
+
+    fun copyAudioLink(
+        mode: ScriptureAudioPlayMode,
+        verses: Set<Int>,
+        segmentSpec: String? = null,
+    ) {
+        val texts = chapterVerseTexts.toMutableMap()
+        if (target.verseText.isNotBlank()) {
+            texts.putIfAbsent(target.ref.verse, target.verseText)
+        }
+        val link = NoteScriptureLinks.formatAudioLinkWithVerseTexts(
+            bookId = target.ref.bookId,
+            chapter = target.ref.chapter,
+            verses = verses,
+            mode = mode,
+            translation = translation,
+            verseTextsByNumber = texts,
+            chapterVerseCount = chapterVerseCount,
+            segmentSpec = segmentSpec,
+        )
+        if (link.isBlank()) return
+        val cm = context.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
+        cm.setPrimaryClip(ClipData.newPlainText("audio_link", link))
+        Toast.makeText(context, R.string.verse_audio_link_copied, Toast.LENGTH_SHORT).show()
+    }
+
+    if (showAudioRangeDialog) {
+        AlertDialog(
+            onDismissRequest = { showAudioRangeDialog = false },
+            title = { Text(stringResource(R.string.verse_copy_audio_link_range_title)) },
+            text = {
+                Column {
+                    Text(
+                        stringResource(
+                            R.string.verse_copy_audio_link_range_hint,
+                            target.ref.verse,
+                            chapterVerseCount.coerceAtLeast(target.ref.verse),
+                        ),
+                    )
+                    OutlinedTextField(
+                        value = audioRangeEndDraft,
+                        onValueChange = { audioRangeEndDraft = it.filter { ch -> ch.isDigit() || ch in ",-*" } },
+                        label = { Text(stringResource(R.string.verse_copy_audio_link_range_end)) },
+                        placeholder = { Text(stringResource(R.string.verse_copy_audio_link_range_example)) },
+                        singleLine = true,
+                        modifier = Modifier.padding(top = 8.dp),
+                    )
+                }
+            },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        val start = target.ref.verse
+                        val maxV = chapterVerseCount.coerceAtLeast(start)
+                        val raw = audioRangeEndDraft.trim()
+                        val spec = when {
+                            raw.contains(',') || raw.contains('*') || raw.contains('-') -> raw
+                            else -> {
+                                val end = raw.toIntOrNull() ?: start
+                                val clampedEnd = end.coerceIn(start, maxV)
+                                "$start-$clampedEnd"
+                            }
+                        }
+                        val mode = when {
+                            spec.contains('*') || spec.contains(',') -> ScriptureAudioPlayMode.SEGMENTS
+                            spec.contains('-') -> ScriptureAudioPlayMode.RANGE
+                            else -> ScriptureAudioPlayMode.VERSE
+                        }
+                        val verses = NoteScriptureLinks.expandSegmentSpecToVerses(spec, maxV)
+                        copyAudioLink(mode, verses, segmentSpec = spec)
+                        showAudioRangeDialog = false
+                        onDismiss()
+                    },
+                ) {
+                    Text(stringResource(R.string.verse_copy_audio_link_copy))
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { showAudioRangeDialog = false }) {
+                    Text(stringResource(R.string.timemark_close))
+                }
+            },
+        )
+    }
 
     val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
     val isBookmarked = target.ref.toKey() in bookmarkKeys
@@ -491,6 +592,21 @@ fun VerseActionsBottomSheet(
                     )
                 }
             }
+            if (onPlayTimemarkVerseAudio != null) {
+                ListItem(
+                    headlineContent = { Text(stringResource(R.string.verse_action_play_narration)) },
+                    leadingContent = {
+                        Icon(Icons.Default.Headphones, contentDescription = null)
+                    },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clickable {
+                            onStopSpeech()
+                            onPlayTimemarkVerseAudio(target.ref)
+                            onDismiss()
+                        },
+                )
+            }
             ListItem(
                 headlineContent = { Text(stringResource(R.string.verse_action_speak)) },
                 leadingContent = {
@@ -533,6 +649,50 @@ fun VerseActionsBottomSheet(
                     },
             )
             ListItem(
+                headlineContent = { Text(stringResource(R.string.verse_copy_audio_link_verse)) },
+                leadingContent = {
+                    Icon(Icons.Default.Headphones, contentDescription = null)
+                },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clickable {
+                        copyAudioLink(
+                            ScriptureAudioPlayMode.VERSE,
+                            setOf(target.ref.verse),
+                        )
+                        onDismiss()
+                    },
+            )
+            if (chapterVerseCount > target.ref.verse) {
+                ListItem(
+                    headlineContent = { Text(stringResource(R.string.verse_copy_audio_link_range)) },
+                    leadingContent = {
+                        Icon(Icons.Default.Headphones, contentDescription = null)
+                    },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clickable {
+                            audioRangeEndDraft = (target.ref.verse + 1).coerceAtMost(chapterVerseCount).toString()
+                            showAudioRangeDialog = true
+                        },
+                )
+                ListItem(
+                    headlineContent = { Text(stringResource(R.string.verse_copy_audio_link_to_end)) },
+                    leadingContent = {
+                        Icon(Icons.Default.Headphones, contentDescription = null)
+                    },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clickable {
+                            copyAudioLink(
+                                ScriptureAudioPlayMode.TO_CHAPTER_END,
+                                setOf(target.ref.verse),
+                            )
+                            onDismiss()
+                        },
+                )
+            }
+            ListItem(
                 headlineContent = { Text(stringResource(R.string.verse_action_share)) },
                 leadingContent = {
                     Icon(Icons.Default.Share, contentDescription = null)
@@ -560,6 +720,21 @@ fun VerseActionsBottomSheet(
                         onDismiss()
                     },
             )
+            if (onAskDeepSeek != null) {
+                ListItem(
+                    headlineContent = { Text(stringResource(R.string.verse_action_deepseek)) },
+                    leadingContent = {
+                        Icon(Icons.Filled.Psychology, contentDescription = null)
+                    },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clickable {
+                            val t = target
+                            onAskDeepSeek(t)
+                            onDismiss()
+                        },
+                )
+            }
             if (onOpenInterlinearHebrewSandboxWholeVerse != null &&
                 target.ref.translation == TranslationId.INTERLINEAR &&
                 BibleCanon.isOldTestament(target.ref.bookId)

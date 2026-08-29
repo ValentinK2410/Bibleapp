@@ -8,6 +8,7 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.gestures.detectDragGestures
 import androidx.compose.foundation.gestures.detectTapGestures
+import androidx.compose.foundation.gestures.detectVerticalDragGestures
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -21,6 +22,7 @@ import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
@@ -35,9 +37,11 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Check
+import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material.icons.automirrored.filled.StickyNote2
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -98,6 +102,11 @@ import com.example.bible.data.DictResult
 import com.example.bible.data.DictionaryManager
 import com.example.bible.data.InterlinearTts
 import com.example.bible.data.TextHighlight
+import com.example.bible.data.NoteScriptureLinks
+import com.example.bible.data.ParsedScriptureNavigation
+import com.example.bible.data.ScriptureAudioNavigation
+import com.example.bible.data.ScriptureAudioPlayMode
+import com.example.bible.data.TimemarkStore
 import com.example.bible.data.TranslationId
 import com.example.bible.data.SemanticHighlightSession
 import com.example.bible.data.SemanticLexiconRule
@@ -122,6 +131,53 @@ data class PaneState(
     val chapter: Int? = null,
 )
 
+/** Запрос воспроизведения сегмента озвучки по ссылке из заметки. */
+data class ScriptureAudioPlayRequest(
+    val startVerse: Int,
+    val stopAfterVerse: Int?,
+    val playToChapterEnd: Boolean,
+    val chapterVerseCount: Int = 0,
+    val allSegments: List<com.example.bible.data.ScriptureAudioSegment> = emptyList(),
+    val startSegmentIndex: Int = 0,
+)
+
+/** Запрос открыть место Писания во встроенной Библии редактора заметок. */
+data class NoteBibleNavigation(
+    val bookId: String,
+    val chapter: Int,
+    val verses: Set<Int>,
+    /** false — только указанные стихи; true — вся глава с подсветкой. */
+    val showFullChapter: Boolean = false,
+    val playAudio: Boolean = false,
+    val translationCode: String? = null,
+    val audioPlayMode: ScriptureAudioPlayMode = ScriptureAudioPlayMode.VERSE,
+    val audioSegmentSpec: String? = null,
+    val audioSegmentIndex: Int = 0,
+    val nonce: Long = System.currentTimeMillis(),
+)
+
+/** Прокрутка читалки к стиху (nonce позволяет повторно открыть тот же стих). */
+data class VerseScrollRequest(
+    val bookId: String,
+    val chapter: Int,
+    val verses: Set<Int>,
+    val showFullChapter: Boolean,
+    val playAudio: Boolean = false,
+    val translationCode: String? = null,
+    val audioPlayMode: ScriptureAudioPlayMode = ScriptureAudioPlayMode.VERSE,
+    val audioSegmentSpec: String? = null,
+    val audioSegmentIndex: Int = 0,
+    val nonce: Long,
+) {
+    fun matchesChapter(currentBookId: String, currentChapter: Int): Boolean =
+        bookId == currentBookId && chapter == currentChapter
+
+    fun scrollToVerse(): Int = verses.minOrNull() ?: 1
+}
+
+/** Строка-заголовок перед списком стихов в [ReaderPane]. */
+private const val READER_LAZY_HEADER_ITEMS = 1
+
 data class ScrollSyncState(
     val sourcePane: Int = -1,
     val itemIndex: Int = 0,
@@ -133,6 +189,7 @@ data class ScrollSyncState(
 @Composable
 fun DualBibleScreen(
     library: BibleLibrary,
+    initialPanes: List<PaneState>? = null,
     bookmarkKeys: Set<String>,
     textHighlights: List<TextHighlight>,
     onAddTextHighlight: (TextHighlight) -> Unit,
@@ -144,6 +201,8 @@ fun DualBibleScreen(
     onPlayAudio: ((VerseRef, () -> Unit) -> Unit)? = null,
     onPauseMainAudioForAttachment: () -> Unit = {},
     onExit: () -> Unit,
+    /** Закрыть одну панель и открыть оставшийся перевод в обычной читалке. */
+    onClosePane: (keepPane: PaneState) -> Unit,
     mediaLibraryImages: List<BibleUserImage> = emptyList(),
     userNotes: List<UserNote> = emptyList(),
     semanticHighlightSession: SemanticHighlightSession? = null,
@@ -160,10 +219,12 @@ fun DualBibleScreen(
     onVerseNote: ((VerseRef, bookName: String, verseText: String) -> Unit)? = null,
     /** Открыть существующую заметку по id. */
     onOpenVerseNote: ((String) -> Unit)? = null,
+    viewModel: BibleViewModel? = null,
+    onOpenDeepSeekSettings: () -> Unit = {},
 ) {
-    var panes by remember {
+    var panes by remember(initialPanes) {
         mutableStateOf(
-            listOf(
+            initialPanes ?: listOf(
                 PaneState(TranslationId.SYNODAL),
                 PaneState(TranslationId.WEB),
             ),
@@ -234,6 +295,7 @@ fun DualBibleScreen(
                     readerFontScale = readerFontScale,
                     onAdjustReaderFontScale = onAdjustReaderFontScale,
                     onExit = onExit,
+                    onClosePane = { onClosePane(panes[1]) },
                     onLongPressTopBar = {
                         dragFraction = splitFraction
                         resizeMode = true
@@ -252,6 +314,8 @@ fun DualBibleScreen(
                     onRemoveWordSpanMediaIntersecting = onRemoveWordSpanMediaIntersecting,
                     onVerseNote = onVerseNote,
                     onOpenVerseNote = onOpenVerseNote,
+                    viewModel = viewModel,
+                    onOpenDeepSeekSettings = onOpenDeepSeekSettings,
                 )
             }
 
@@ -289,6 +353,7 @@ fun DualBibleScreen(
                     readerFontScale = readerFontScale,
                     onAdjustReaderFontScale = onAdjustReaderFontScale,
                     onExit = null,
+                    onClosePane = { onClosePane(panes[0]) },
                     onLongPressTopBar = {
                         dragFraction = splitFraction
                         resizeMode = true
@@ -307,6 +372,8 @@ fun DualBibleScreen(
                     onRemoveWordSpanMediaIntersecting = onRemoveWordSpanMediaIntersecting,
                     onVerseNote = onVerseNote,
                     onOpenVerseNote = onOpenVerseNote,
+                    viewModel = viewModel,
+                    onOpenDeepSeekSettings = onOpenDeepSeekSettings,
                 )
             }
         }
@@ -332,7 +399,46 @@ fun DualBibleScreen(
 }
 
 @Composable
-private fun ResizeOverlay(
+internal fun VerticalSplitHandle(
+    modifier: Modifier = Modifier,
+    onDragDeltaPx: (Float) -> Unit,
+    onLongPress: () -> Unit,
+) {
+    Box(
+        modifier
+            .fillMaxWidth()
+            .height(20.dp)
+            .background(MaterialTheme.colorScheme.surfaceContainerHigh)
+            .pointerInput(Unit) {
+                detectVerticalDragGestures { change, dragAmount ->
+                    change.consume()
+                    onDragDeltaPx(dragAmount)
+                }
+            }
+            .pointerInput(Unit) {
+                detectTapGestures(onLongPress = { onLongPress() })
+            },
+        contentAlignment = Alignment.Center,
+    ) {
+        Column(horizontalAlignment = Alignment.CenterHorizontally) {
+            Box(
+                Modifier
+                    .width(48.dp)
+                    .height(4.dp)
+                    .background(MaterialTheme.colorScheme.primary, RoundedCornerShape(2.dp)),
+            )
+            Text(
+                stringResource(R.string.note_editor_split_handle_hint),
+                style = MaterialTheme.typography.labelSmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                modifier = Modifier.padding(top = 2.dp),
+            )
+        }
+    }
+}
+
+@Composable
+internal fun ResizeOverlay(
     fraction: Float,
     totalHeightPx: Int,
     onFractionChange: (Float) -> Unit,
@@ -458,28 +564,36 @@ private fun PaneTopBar(
     onTranslationChange: (TranslationId) -> Unit,
     onBack: () -> Unit,
     onExit: (() -> Unit)?,
+    onClosePane: (() -> Unit)? = null,
     onAdjustFontScale: (Float) -> Unit,
     readerFontScale: Float,
     onLongPress: () -> Unit,
+    onTitleClick: (() -> Unit)? = null,
+    showSyncControl: Boolean = true,
+    showInternalBack: Boolean = false,
 ) {
     var menuOpen by remember { mutableStateOf(false) }
     var showAlphabet by remember { mutableStateOf(false) }
-    val book = state.bookId?.let { library.getBook(state.translation, it) }
+    val bookName = state.bookId?.let { rememberBookName(library, state.translation, it) }
     val titleText = buildString {
         append(state.translation.shortLabel)
-        if (book != null) {
+        if (state.bookId != null) {
             append("  ")
-            append(book.name)
+            append(BibleCanon.byId(state.bookId)?.abbrRu ?: bookName.orEmpty())
+        } else if (bookName != null) {
+            append("  ")
+            append(bookName)
         }
         if (state.chapter != null) {
-            append(" ${state.chapter}")
+            append(':')
+            append(state.chapter)
         }
     }
 
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .height(36.dp)
+            .height(44.dp)
             .background(MaterialTheme.colorScheme.surfaceContainer)
             .pointerInput(Unit) {
                 detectTapGestures(
@@ -490,81 +604,157 @@ private fun PaneTopBar(
         verticalAlignment = Alignment.CenterVertically,
     ) {
         if (onExit != null) {
-            IconButton(onClick = onExit, modifier = Modifier.size(28.dp)) {
+            IconButton(onClick = onExit, modifier = Modifier.size(36.dp)) {
                 Icon(
                     Icons.AutoMirrored.Filled.ArrowBack,
                     contentDescription = null,
                     tint = MaterialTheme.colorScheme.primary,
-                    modifier = Modifier.size(16.dp),
+                    modifier = Modifier.size(20.dp),
+                )
+            }
+        } else if (showInternalBack && (state.chapter != null || state.bookId != null)) {
+            IconButton(onClick = onBack, modifier = Modifier.size(36.dp)) {
+                Icon(
+                    Icons.AutoMirrored.Filled.ArrowBack,
+                    contentDescription = null,
+                    tint = MaterialTheme.colorScheme.primary,
+                    modifier = Modifier.size(20.dp),
                 )
             }
         }
 
-        Text(
-            text = titleText,
-            color = MaterialTheme.colorScheme.onSurface,
-            fontSize = 12.sp,
-            fontWeight = FontWeight.Medium,
-            maxLines = 1,
-            overflow = TextOverflow.Ellipsis,
-            modifier = Modifier
-                .weight(1f)
-                .padding(horizontal = 4.dp),
-        )
-
-        // Alphabet reference for interlinear
-        if (state.translation == TranslationId.INTERLINEAR) {
-            Text(
-                "Αβ",
-                color = MaterialTheme.colorScheme.primary,
-                fontSize = 11.sp,
-                fontWeight = FontWeight.Bold,
+        if (onTitleClick != null) {
+            TextButton(
+                onClick = onTitleClick,
                 modifier = Modifier
-                    .clickable { showAlphabet = true }
+                    .weight(1f)
+                    .padding(horizontal = 2.dp),
+                contentPadding = PaddingValues(horizontal = 4.dp, vertical = 0.dp),
+            ) {
+                Text(
+                    text = titleText,
+                    color = MaterialTheme.colorScheme.primary,
+                    fontSize = 12.sp,
+                    fontWeight = FontWeight.SemiBold,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
+                )
+            }
+        } else {
+            Text(
+                text = titleText,
+                color = MaterialTheme.colorScheme.onSurface,
+                fontSize = 12.sp,
+                fontWeight = FontWeight.Medium,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
+                modifier = Modifier
+                    .weight(1f)
                     .padding(horizontal = 4.dp),
             )
         }
 
+        // Alphabet reference for interlinear
+        if (state.translation == TranslationId.INTERLINEAR) {
+            TextButton(
+                onClick = { showAlphabet = true },
+                modifier = Modifier
+                    .height(40.dp)
+                    .widthIn(min = 44.dp),
+                contentPadding = PaddingValues(horizontal = 4.dp),
+            ) {
+                Text(
+                    "Αβ",
+                    fontSize = 18.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = MaterialTheme.colorScheme.primary,
+                )
+            }
+        }
+
         // Font size controls
-        Text(
-            "A−",
-            color = if (readerFontScale > ReaderFontScaleDefaults.MIN + 0.001f)
-                MaterialTheme.colorScheme.onSurfaceVariant else MaterialTheme.colorScheme.outline,
-            fontSize = 11.sp,
-            fontWeight = FontWeight.Bold,
+        val canDecreaseFont = readerFontScale > ReaderFontScaleDefaults.MIN + 0.001f
+        val canIncreaseFont = readerFontScale < ReaderFontScaleDefaults.MAX - 0.001f
+        TextButton(
+            onClick = { onAdjustFontScale(-ReaderFontScaleDefaults.STEP) },
+            enabled = canDecreaseFont,
             modifier = Modifier
-                .clickable(enabled = readerFontScale > ReaderFontScaleDefaults.MIN + 0.001f) {
-                    onAdjustFontScale(-ReaderFontScaleDefaults.STEP)
-                }
-                .padding(horizontal = 4.dp),
-        )
-        Text(
-            "A+",
-            color = if (readerFontScale < ReaderFontScaleDefaults.MAX - 0.001f)
-                MaterialTheme.colorScheme.onSurfaceVariant else MaterialTheme.colorScheme.outline,
-            fontSize = 11.sp,
-            fontWeight = FontWeight.Bold,
+                .height(40.dp)
+                .widthIn(min = 44.dp),
+            contentPadding = PaddingValues(horizontal = 4.dp),
+        ) {
+            Text(
+                "A−",
+                fontSize = 18.sp,
+                fontWeight = FontWeight.Bold,
+                color = if (canDecreaseFont) {
+                    MaterialTheme.colorScheme.primary
+                } else {
+                    MaterialTheme.colorScheme.outline
+                },
+            )
+        }
+        TextButton(
+            onClick = { onAdjustFontScale(ReaderFontScaleDefaults.STEP) },
+            enabled = canIncreaseFont,
             modifier = Modifier
-                .clickable(enabled = readerFontScale < ReaderFontScaleDefaults.MAX - 0.001f) {
-                    onAdjustFontScale(ReaderFontScaleDefaults.STEP)
-                }
-                .padding(horizontal = 4.dp),
-        )
+                .height(40.dp)
+                .widthIn(min = 44.dp),
+            contentPadding = PaddingValues(horizontal = 4.dp),
+        ) {
+            Text(
+                "A+",
+                fontSize = 18.sp,
+                fontWeight = FontWeight.Bold,
+                color = if (canIncreaseFont) {
+                    MaterialTheme.colorScheme.primary
+                } else {
+                    MaterialTheme.colorScheme.outline
+                },
+            )
+        }
 
         // Sync indicator
-        Text(
-            if (syncMode) "⇅" else "⇉",
-            color = if (syncMode) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.outline,
-            fontSize = 14.sp,
-            modifier = Modifier
-                .clickable { onSyncToggle() }
-                .padding(horizontal = 4.dp),
-        )
+        if (showSyncControl) {
+            TextButton(
+                onClick = onSyncToggle,
+                modifier = Modifier
+                    .height(40.dp)
+                    .widthIn(min = 44.dp),
+                contentPadding = PaddingValues(horizontal = 4.dp),
+            ) {
+                Text(
+                    if (syncMode) "⇅" else "⇉",
+                    fontSize = 20.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = if (syncMode) {
+                        MaterialTheme.colorScheme.primary
+                    } else {
+                        MaterialTheme.colorScheme.outline
+                    },
+                )
+            }
+        }
 
         // Menu
+        if (onClosePane != null) {
+            IconButton(onClick = onClosePane, modifier = Modifier.size(36.dp)) {
+                Icon(
+                    Icons.Default.Close,
+                    contentDescription = stringResource(R.string.dual_close_pane),
+                    tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                    modifier = Modifier.size(20.dp),
+                )
+            }
+        }
         Box {
-            IconButton(onClick = { menuOpen = true }, modifier = Modifier.size(28.dp)) {
-                Icon(Icons.Default.MoreVert, contentDescription = null, tint = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.size(16.dp))
+            IconButton(onClick = { menuOpen = true }, modifier = Modifier.size(40.dp)) {
+                Icon(
+                    Icons.Default.MoreVert,
+                    contentDescription = null,
+                    tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                    modifier = Modifier.size(24.dp),
+                )
             }
             DropdownMenu(expanded = menuOpen, onDismissRequest = { menuOpen = false }) {
                 TranslationId.entries.forEach { tid ->
@@ -591,7 +781,155 @@ private fun PaneTopBar(
 }
 
 @Composable
-private fun BiblePaneColumn(
+fun NoteEditorBiblePane(
+    modifier: Modifier = Modifier,
+    library: BibleLibrary,
+    initialTranslation: TranslationId,
+    initialBookId: String?,
+    initialChapter: Int?,
+    narratorId: String,
+    bookmarkKeys: Set<String>,
+    onToggleBookmark: (VerseRef) -> Unit,
+    readerFontScale: Float,
+    onAdjustReaderFontScale: (Float) -> Unit,
+    onPlayAudio: ((VerseRef, () -> Unit) -> Unit)? = null,
+    navigationRequest: NoteBibleNavigation? = null,
+    onNavigationConsumed: () -> Unit = {},
+) {
+    var paneState by remember(initialTranslation, initialBookId, initialChapter) {
+        mutableStateOf(
+            PaneState(
+                translation = initialTranslation,
+                bookId = initialBookId,
+                chapter = initialChapter,
+            ),
+        )
+    }
+    var scrollToVerseRequest by remember { mutableStateOf<VerseScrollRequest?>(null) }
+    var showQuickNav by remember { mutableStateOf(false) }
+    val dualContext = androidx.compose.ui.platform.LocalContext.current
+    var timemarkProjectsRefresh by remember { mutableIntStateOf(0) }
+    val timemarkChaptersForBook = remember(paneState.translation, paneState.bookId, timemarkProjectsRefresh) {
+        TimemarkStore.chaptersWithTimemarksForBook(
+            dualContext,
+            paneState.translation.code,
+            paneState.bookId.orEmpty(),
+        )
+    }
+    val timemarkBooks = remember(paneState.translation, timemarkProjectsRefresh) {
+        TimemarkStore.booksWithTimemarks(dualContext, paneState.translation.code)
+    }
+    LaunchedEffect(navigationRequest?.nonce) {
+        val req = navigationRequest ?: return@LaunchedEffect
+        val targetTranslation = req.translationCode?.let { TranslationId.fromCode(it) } ?: paneState.translation
+        paneState = paneState.copy(
+            translation = targetTranslation,
+            bookId = req.bookId,
+            chapter = req.chapter,
+        )
+        scrollToVerseRequest = VerseScrollRequest(
+            bookId = req.bookId,
+            chapter = req.chapter,
+            verses = req.verses,
+            showFullChapter = req.showFullChapter,
+            playAudio = req.playAudio,
+            translationCode = req.translationCode,
+            audioPlayMode = req.audioPlayMode,
+            audioSegmentSpec = req.audioSegmentSpec,
+            audioSegmentIndex = req.audioSegmentIndex,
+            nonce = req.nonce,
+        )
+        onNavigationConsumed()
+    }
+    Column(modifier.fillMaxSize()) {
+        Text(
+            stringResource(R.string.note_editor_bible_nav_hint),
+            style = MaterialTheme.typography.labelSmall,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            modifier = Modifier.padding(horizontal = 12.dp, vertical = 4.dp),
+        )
+        BibleAudioMiniBar()
+        HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
+        BiblePaneColumn(
+            modifier = Modifier.weight(1f).fillMaxWidth(),
+            paneIndex = 0,
+            state = paneState,
+            onStateChange = { paneState = it },
+            library = library,
+            bookmarkKeys = bookmarkKeys,
+            onToggleBookmark = onToggleBookmark,
+            syncMode = false,
+            onSyncToggle = {},
+            scrollSync = ScrollSyncState(),
+            onScrollSync = { _, _ -> },
+            textHighlights = emptyList(),
+            onAddTextHighlight = {},
+            onRemoveTextHighlights = { _, _, _ -> },
+            onVerseCommentary = {},
+            onPlayAudio = onPlayAudio,
+            readerFontScale = readerFontScale,
+            onAdjustReaderFontScale = onAdjustReaderFontScale,
+            onExit = null,
+            onLongPressTopBar = {},
+            onOpenQuickNav = { showQuickNav = true },
+            showSyncControl = false,
+            showInternalBack = true,
+            scrollToVerseRequest = scrollToVerseRequest,
+            onPlayChapterFromVerse = { playReq ->
+                val bid = paneState.bookId ?: return@BiblePaneColumn
+                val ch = paneState.chapter ?: return@BiblePaneColumn
+                val narrator = com.example.bible.data.narratorForReading(
+                    paneState.translation,
+                    bid,
+                    narratorId,
+                )
+                if (playReq.allSegments.size > 1) {
+                    playReaderChapterAudioSegments(
+                        dualContext,
+                        narrator,
+                        bid,
+                        ch,
+                        paneState.translation,
+                        playReq.allSegments,
+                        playReq.chapterVerseCount,
+                        startIndex = playReq.startSegmentIndex,
+                    )
+                } else {
+                    playReaderChapterAudio(
+                        dualContext,
+                        narrator,
+                        bid,
+                        ch,
+                        playReq.startVerse,
+                        paneState.translation,
+                        forceVerseStart = true,
+                        stopAfterVerse = playReq.stopAfterVerse,
+                        playToChapterEnd = playReq.playToChapterEnd,
+                        chapterVerseCount = playReq.chapterVerseCount,
+                    )
+                }
+            },
+        )
+    }
+    if (showQuickNav) {
+        QuickNavigatorSheet(
+            library = library,
+            translation = paneState.translation,
+            currentBookId = paneState.bookId.orEmpty(),
+            chaptersWithTimemarks = timemarkChaptersForBook,
+            booksWithTimemarks = timemarkBooks,
+            onNavigate = { bookId, chapter ->
+                paneState = paneState.copy(bookId = bookId, chapter = chapter)
+                showQuickNav = false
+            },
+            onDismiss = { showQuickNav = false },
+        )
+    }
+}
+
+@Composable
+internal fun BiblePaneColumn(
+    modifier: Modifier = Modifier,
     paneIndex: Int,
     state: PaneState,
     onStateChange: (PaneState) -> Unit,
@@ -611,6 +949,7 @@ private fun BiblePaneColumn(
     readerFontScale: Float,
     onAdjustReaderFontScale: (Float) -> Unit,
     onExit: (() -> Unit)?,
+    onClosePane: (() -> Unit)? = null,
     onLongPressTopBar: () -> Unit,
     mediaLibraryImages: List<BibleUserImage> = emptyList(),
     userNotes: List<UserNote> = emptyList(),
@@ -626,8 +965,15 @@ private fun BiblePaneColumn(
     onRemoveWordSpanMediaIntersecting: (VerseRef, Int, Int) -> Unit = { _, _, _ -> },
     onVerseNote: ((VerseRef, bookName: String, verseText: String) -> Unit)? = null,
     onOpenVerseNote: ((String) -> Unit)? = null,
+    onOpenQuickNav: (() -> Unit)? = null,
+    showSyncControl: Boolean = true,
+    showInternalBack: Boolean = false,
+    scrollToVerseRequest: VerseScrollRequest? = null,
+    onPlayChapterFromVerse: ((ScriptureAudioPlayRequest) -> Unit)? = null,
+    viewModel: BibleViewModel? = null,
+    onOpenDeepSeekSettings: () -> Unit = {},
 ) {
-    Column(Modifier.fillMaxSize()) {
+    Column(modifier.fillMaxSize()) {
         PaneTopBar(
             state = state,
             paneIndex = paneIndex,
@@ -645,9 +991,13 @@ private fun BiblePaneColumn(
                 }
             },
             onExit = onExit,
+            onClosePane = onClosePane,
             onAdjustFontScale = onAdjustReaderFontScale,
             readerFontScale = readerFontScale,
             onLongPress = onLongPressTopBar,
+            onTitleClick = onOpenQuickNav,
+            showSyncControl = showSyncControl,
+            showInternalBack = showInternalBack,
         )
         HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant, thickness = 0.5.dp)
 
@@ -662,30 +1012,61 @@ private fun BiblePaneColumn(
             }
             state.chapter == null -> {
                 val bid = state.bookId!!
-                val canon = BibleCanon.byId(bid)!!
-                val localBook = library.getBook(state.translation, bid)
-                val book = localBook ?: BibleBook(
-                    id = canon.id,
-                    name = BibleCanon.displayName(canon, state.translation),
-                    chapters = (1..canon.chapters).map { n -> BibleChapter(number = n, verses = emptyList()) },
-                )
-                ChapterPickerPane(
-                    modifier = Modifier.weight(1f),
-                    book = book,
-                    isOnlineTranslation = localBook == null && state.translation.onlineCode != null,
-                    onChapter = { ch ->
-                        onStateChange(state.copy(chapter = ch))
-                    },
-                    onBack = { onStateChange(state.copy(bookId = null, chapter = null)) },
-                )
+                when (val shellState = rememberBookShell(library, state.translation, bid)) {
+                    BibleBookShellState.Loading -> {
+                        Box(
+                            modifier = Modifier.weight(1f).fillMaxWidth(),
+                            contentAlignment = Alignment.Center,
+                        ) {
+                            CircularProgressIndicator()
+                        }
+                    }
+                    is BibleBookShellState.Ready -> {
+                        ChapterPickerPane(
+                            modifier = Modifier.weight(1f),
+                            book = shellState.book,
+                            isOnlineTranslation = false,
+                            onChapter = { ch ->
+                                onStateChange(state.copy(chapter = ch))
+                            },
+                            onBack = { onStateChange(state.copy(bookId = null, chapter = null)) },
+                        )
+                    }
+                    is BibleBookShellState.Fallback -> {
+                        ChapterPickerPane(
+                            modifier = Modifier.weight(1f),
+                            book = shellState.book,
+                            isOnlineTranslation = shellState.isOnlineOnly,
+                            onChapter = { ch ->
+                                onStateChange(state.copy(chapter = ch))
+                            },
+                            onBack = { onStateChange(state.copy(bookId = null, chapter = null)) },
+                        )
+                    }
+                }
             }
             else -> {
                 val bid = state.bookId!!
-                val localBook = library.getBook(state.translation, bid)
-                val localChapter = localBook?.chapters?.find { it.number == state.chapter }
+                val chapterNum = state.chapter!!
+                val chapterLoad = rememberLoadedChapter(library, state.translation, bid, chapterNum)
+                val bookShell = rememberBookShell(library, state.translation, bid)
                 val canonReader = BibleCanon.byId(bid)!!
-                val bookName = localBook?.name ?: BibleCanon.displayName(canonReader, state.translation)
-                val isOnlinePane = localChapter == null && state.translation.onlineCode != null
+                val bookName = when (chapterLoad) {
+                    is BibleChapterLoadState.Ready -> chapterLoad.bookName
+                    else -> when (bookShell) {
+                        is BibleBookShellState.Ready -> bookShell.book.name
+                        is BibleBookShellState.Fallback -> bookShell.book.name
+                        BibleBookShellState.Loading -> BibleCanon.displayName(canonReader, state.translation)
+                    }
+                }
+                val localChapter = when (chapterLoad) {
+                    is BibleChapterLoadState.Ready -> chapterLoad.chapter
+                    else -> null
+                }
+                val isOnlinePane = when (bookShell) {
+                    is BibleBookShellState.Fallback -> bookShell.isOnlineOnly
+                    else -> false
+                }
 
                 var onlineVerses by remember(state.translation, bid, state.chapter) {
                     mutableStateOf<List<BibleVerse>?>(null)
@@ -753,7 +1134,16 @@ private fun BiblePaneColumn(
                             onRemoveWordSpanMediaIntersecting = onRemoveWordSpanMediaIntersecting,
                             onVerseNote = onVerseNote,
                             onOpenVerseNote = onOpenVerseNote,
+                            scrollToVerseRequest = scrollToVerseRequest,
+                            onPlayChapterFromVerse = onPlayChapterFromVerse,
+                            viewModel = viewModel,
+                            onOpenDeepSeekSettings = onOpenDeepSeekSettings,
                         )
+                    }
+                    !isOnlinePane && chapterLoad is BibleChapterLoadState.Loading -> {
+                        Box(Modifier.weight(1f).fillMaxWidth(), contentAlignment = Alignment.Center) {
+                            CircularProgressIndicator(modifier = Modifier.size(24.dp), strokeWidth = 2.dp)
+                        }
                     }
                     isOnlinePane && onlineLoading -> {
                         Box(Modifier.weight(1f).fillMaxWidth(), contentAlignment = Alignment.Center) {
@@ -902,6 +1292,10 @@ private fun ReaderPane(
     onRemoveWordSpanMediaIntersecting: (VerseRef, Int, Int) -> Unit = { _, _, _ -> },
     onVerseNote: ((VerseRef, bookName: String, verseText: String) -> Unit)? = null,
     onOpenVerseNote: ((String) -> Unit)? = null,
+    scrollToVerseRequest: VerseScrollRequest? = null,
+    onPlayChapterFromVerse: ((ScriptureAudioPlayRequest) -> Unit)? = null,
+    viewModel: BibleViewModel? = null,
+    onOpenDeepSeekSettings: () -> Unit = {},
 ) {
     val verseNumbersWithNotes = remember(userNotes, bookId, chapterNum) {
         userNotes.verseNumbersWithNotesInChapter(bookId, chapterNum)
@@ -914,6 +1308,7 @@ private fun ReaderPane(
     var selectionInfo by remember { mutableStateOf<VerseHighlightSelection?>(null) }
     var clearSelectionSignal by remember { mutableIntStateOf(0) }
     var verseActionsTarget by remember { mutableStateOf<VerseActionTarget?>(null) }
+    var deepSeekTarget by remember { mutableStateOf<VerseActionTarget?>(null) }
     var attachmentPreview by remember { mutableStateOf<VerseAttachment?>(null) }
     val paneContext = LocalContext.current
     val attachmentStore = remember { VerseAttachmentStore.get(paneContext) }
@@ -940,6 +1335,7 @@ private fun ReaderPane(
     DisposableEffect(interlinearTts) {
         onDispose { interlinearTts?.shutdown() }
     }
+    val bibleChapterAudioState by com.example.bible.data.BibleAudioPlayer.state.collectAsState()
 
     ProvideReaderFontScale(multiplier = readerFontScale) {
         val darkBodyStyle = TextStyle(
@@ -951,6 +1347,65 @@ private fun ReaderPane(
 
         val listState = rememberLazyListState()
         val isSyncScrolling = remember { mutableStateOf(false) }
+        val activeLinkRequest = scrollToVerseRequest?.takeIf { it.matchesChapter(bookId, chapterNum) }
+        val highlightVerses = activeLinkRequest?.verses.orEmpty()
+        val displayVerses = remember(verses, activeLinkRequest) {
+            val request = activeLinkRequest
+            if (request != null && !request.showFullChapter && request.verses.isNotEmpty()) {
+                verses.filter { it.number in request.verses }
+            } else {
+                verses
+            }
+        }
+
+        LaunchedEffect(scrollToVerseRequest?.nonce, displayVerses, verses.size) {
+            val request = scrollToVerseRequest ?: return@LaunchedEffect
+            if (!request.matchesChapter(bookId, chapterNum)) return@LaunchedEffect
+            val parsedNav = ParsedScriptureNavigation(
+                bookId = request.bookId,
+                chapter = request.chapter,
+                verses = request.verses,
+                audio = request.translationCode?.let { code ->
+                    ScriptureAudioNavigation(
+                        mode = request.audioPlayMode,
+                        translationCode = code,
+                        segmentSpec = request.audioSegmentSpec,
+                    )
+                },
+            )
+            val audioSegment = if (request.playAudio) {
+                NoteScriptureLinks.resolveAudioSegment(
+                    parsedNav,
+                    request.audioSegmentIndex,
+                    verses.size,
+                )
+            } else {
+                null
+            }
+            val allSegments = if (request.playAudio) {
+                NoteScriptureLinks.allAudioSegmentsForNavigation(parsedNav, verses.size)
+            } else {
+                emptyList()
+            }
+            val target = audioSegment?.startVerse ?: request.scrollToVerse()
+            if (target <= 0) return@LaunchedEffect
+            val verseIdx = displayVerses.indexOfFirst { it.number == target }
+            if (verseIdx < 0) return@LaunchedEffect
+            val listIndex = verseIdx + READER_LAZY_HEADER_ITEMS
+            listState.scrollToItem(listIndex, scrollOffset = 0)
+            if (request.playAudio && audioSegment != null) {
+                onPlayChapterFromVerse?.invoke(
+                    ScriptureAudioPlayRequest(
+                        startVerse = audioSegment.startVerse,
+                        stopAfterVerse = audioSegment.endVerseInclusive,
+                        playToChapterEnd = audioSegment.endVerseInclusive == null,
+                        chapterVerseCount = verses.size,
+                        allSegments = allSegments,
+                        startSegmentIndex = request.audioSegmentIndex,
+                    ),
+                )
+            }
+        }
 
         // Receive sync from other pane
         LaunchedEffect(scrollSync) {
@@ -977,10 +1432,10 @@ private fun ReaderPane(
         }
 
         val bottomPad = if (selectionInfo != null) 88.dp else 0.dp
-        val interlinearChapterWordStarts = remember(verses) {
+        val interlinearChapterWordStarts = remember(displayVerses) {
             var acc = 0
             buildList {
-                for (v in verses) {
+                for (v in displayVerses) {
                     add(acc)
                     acc += v.interlinearWords?.size ?: 0
                 }
@@ -998,9 +1453,16 @@ private fun ReaderPane(
                     listOf("interlinear_chapter_tts"),
                     key = { it },
                 ) {
-                    if (translation == TranslationId.INTERLINEAR && interlinearTts != null) {
-                        val allWords = verses.flatMap { v -> v.interlinearWords ?: emptyList() }
-                        if (allWords.isNotEmpty()) {
+                    if (translation == TranslationId.INTERLINEAR) {
+                        val origNarrator = remember(bookId) {
+                            com.example.bible.data.originalLanguageNarratorForBook(bookId)
+                        }
+                        if (origNarrator != null) {
+                            val chapterAudioLabel = if (BibleCanon.isOldTestament(bookId)) {
+                                stringResource(R.string.menu_audio_hebrew_chapter)
+                            } else {
+                                stringResource(R.string.menu_audio_greek_chapter)
+                            }
                             Row(
                                 modifier = Modifier
                                     .fillMaxWidth()
@@ -1009,31 +1471,89 @@ private fun ReaderPane(
                                 verticalAlignment = Alignment.CenterVertically,
                             ) {
                                 FilledTonalButton(
-                                    onClick = { interlinearTts.speakSequence(allWords, bookId) },
+                                    onClick = {
+                                        val st = bibleChapterAudioState
+                                        val isSame = st.isPlaying &&
+                                            st.bookId == bookId &&
+                                            st.chapter == chapterNum &&
+                                            st.narratorId == origNarrator.id
+                                        if (isSame) {
+                                            com.example.bible.data.BibleAudioPlayer.togglePlay()
+                                        } else {
+                                            interlinearTts?.stop()
+                                            com.example.bible.data.BibleAudioPlayer.playChapter(
+                                                paneContext,
+                                                origNarrator,
+                                                bookId,
+                                                chapterNum,
+                                            )
+                                        }
+                                    },
                                     modifier = Modifier.weight(1f),
                                 ) {
-                                    Text(
-                                        stringResource(R.string.interlinear_speak_chapter_sequence),
-                                        maxLines = 2,
-                                    )
+                                    Text(chapterAudioLabel, maxLines = 2)
                                 }
-                                TextButton(onClick = { interlinearTts.stop() }) {
+                                TextButton(onClick = {
+                                    interlinearTts?.stop()
+                                    com.example.bible.data.BibleAudioPlayer.release()
+                                }) {
                                     Text(stringResource(R.string.interlinear_stop_speech))
+                                }
+                            }
+                        } else if (interlinearTts != null) {
+                            val allWords = verses.flatMap { v -> v.interlinearWords ?: emptyList() }
+                            if (allWords.isNotEmpty()) {
+                                Row(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .padding(bottom = 8.dp),
+                                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                                    verticalAlignment = Alignment.CenterVertically,
+                                ) {
+                                    FilledTonalButton(
+                                        onClick = { interlinearTts.speakSequence(allWords, bookId) },
+                                        modifier = Modifier.weight(1f),
+                                    ) {
+                                        Text(
+                                            stringResource(R.string.interlinear_speak_chapter_sequence),
+                                            maxLines = 2,
+                                        )
+                                    }
+                                    TextButton(onClick = { interlinearTts.stop() }) {
+                                        Text(stringResource(R.string.interlinear_stop_speech))
+                                    }
                                 }
                             }
                         }
                     }
                 }
                 itemsIndexed(
-                    verses,
+                    displayVerses,
                     key = { _, v -> v.number },
                 ) { verseIdx, verse ->
                     val verseRef = VerseRef(translation, bookId, chapterNum, verse.number)
+                    val isLinkHighlight = verse.number in highlightVerses
                     val notesHere = remember(userNotes, verseRef) {
                         userNotes.filter { it.matchesVerseLocation(verseRef) }.sortedByDescending { it.updatedAt }
                     }
                     val firstNoteId = notesHere.firstOrNull()?.id
-                    Column(modifier = Modifier.fillMaxWidth()) {
+                    Column(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .then(
+                                if (isLinkHighlight) {
+                                    Modifier
+                                        .padding(horizontal = 2.dp, vertical = 1.dp)
+                                        .background(
+                                            MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.65f),
+                                            RoundedCornerShape(8.dp),
+                                        )
+                                        .padding(horizontal = 4.dp, vertical = 3.dp)
+                                } else {
+                                    Modifier
+                                },
+                            ),
+                    ) {
                         verse.imageUrl?.let { url ->
                             AsyncImage(
                                 model = url,
@@ -1265,6 +1785,7 @@ private fun ReaderPane(
             onOpenCommentary = { ref ->
                 onVerseCommentary(ref)
             },
+            onAskDeepSeek = viewModel?.let { { t: VerseActionTarget -> deepSeekTarget = t } },
             onPauseMainAudioForAttachment = onPauseMainAudioForAttachment,
             mediaLibraryImages = mediaLibraryImages,
             mediaLibraryVideos = mediaLibraryVideos,
@@ -1280,7 +1801,24 @@ private fun ReaderPane(
                 { t: VerseActionTarget -> fn(t.ref, t.bookName, t.verseText) }
             },
             onOpenExistingVerseNote = onOpenVerseNote,
+            translation = translation,
+            chapterVerseCount = verses.size,
+            chapterVerseTexts = verses.associate { it.number to it.text },
         )
+        val dsVm = viewModel
+        if (dsVm != null) {
+            deepSeekTarget?.let { t ->
+                DeepSeekVerseDialog(
+                    viewModel = dsVm,
+                    target = t,
+                    onDismiss = { deepSeekTarget = null },
+                    onOpenSettings = {
+                        deepSeekTarget = null
+                        onOpenDeepSeekSettings()
+                    },
+                )
+            }
+        }
         dictionaryLookup?.let { st ->
             MultiDictionarySheet(
                 word = st.word,

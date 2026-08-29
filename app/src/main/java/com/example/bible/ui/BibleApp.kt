@@ -1071,6 +1071,8 @@ private fun BibleNavHost(
                 onRemoveWordSpanMediaIntersecting = { ref, a, b ->
                     viewModel.removeWordSpanMediaIntersecting(ref, a, b)
                 },
+                viewModel = viewModel,
+                onOpenDeepSeekSettings = { navController.navigate("main_settings") },
             )
         }
         composable("azbuka") {
@@ -1397,6 +1399,8 @@ private fun BibleNavHost(
         }
         composable("main_settings") {
             val mainSetCtx = LocalContext.current
+            val deepSeekApiKey by viewModel.deepSeekApiKey.collectAsStateWithLifecycle()
+            val deepSeekKeyTest by viewModel.deepSeekKeyTest.collectAsStateWithLifecycle()
             MainSettingsScreen(
                 isDark = isDark,
                 mimicControlEnabled = mimicControlEnabled,
@@ -1434,6 +1438,10 @@ private fun BibleNavHost(
                         )
                     }
                 },
+                deepSeekApiKey = deepSeekApiKey,
+                deepSeekKeyTest = deepSeekKeyTest,
+                onSaveDeepSeekApiKey = { viewModel.setDeepSeekApiKey(it) },
+                onTestDeepSeekApiKey = { viewModel.testDeepSeekKey(it) },
             )
         }
         composable("books_menu_order") {
@@ -2749,6 +2757,8 @@ private fun BibleNavHost(
                                         } else {
                                             null
                                         },
+                                        viewModel = viewModel,
+                                        onOpenDeepSeekSettings = { navController.navigate("main_settings") },
                                     )
                                     }
                                 }
@@ -5027,6 +5037,8 @@ private fun ReaderContent(
     onPlayChapterAudio: ((com.example.bible.data.AudioNarrator, Int) -> Unit)? = null,
     /** Озвучка главы с позиции таймкода для выбранного стиха. */
     onPlayTimemarkVerseAudio: ((VerseRef) -> Unit)? = null,
+    viewModel: BibleViewModel,
+    onOpenDeepSeekSettings: () -> Unit,
 ) {
     val highlightsForReader = remember(textHighlights, translation, bookId, chapter) {
         textHighlights.filter {
@@ -5036,6 +5048,7 @@ private fun ReaderContent(
     var selectionInfo by remember { mutableStateOf<VerseHighlightSelection?>(null) }
     var clearSelectionSignal by remember { mutableIntStateOf(0) }
     var verseActionsTarget by remember { mutableStateOf<VerseActionTarget?>(null) }
+    var deepSeekTarget by remember { mutableStateOf<VerseActionTarget?>(null) }
     var attachmentPreview by remember { mutableStateOf<VerseAttachment?>(null) }
     val readerContext = LocalContext.current
     val attachmentStore = remember { VerseAttachmentStore.get(readerContext) }
@@ -5514,6 +5527,7 @@ private fun ReaderContent(
             onOpenCommentary = { ref ->
                 onVerseCommentary(ref)
             },
+            onAskDeepSeek = { deepSeekTarget = it },
             onNavigateToVerse = onNavigateToVerse,
             onOpenInterlinearHebrewSandboxWholeVerse = onOpenInterlinearHebrewSandboxWholeVerse,
             onDictionaryWord = { word ->
@@ -5535,6 +5549,17 @@ private fun ReaderContent(
             chapterVerseCount = verses.size,
             chapterVerseTexts = verses.associate { it.number to it.text },
         )
+        deepSeekTarget?.let { t ->
+            DeepSeekVerseDialog(
+                viewModel = viewModel,
+                target = t,
+                onDismiss = { deepSeekTarget = null },
+                onOpenSettings = {
+                    deepSeekTarget = null
+                    onOpenDeepSeekSettings()
+                },
+            )
+        }
         wordMediaDialog?.let { (sel, existing) ->
             WordMediaAttachmentDialog(
                 title = stringResource(R.string.word_media_dialog_title),

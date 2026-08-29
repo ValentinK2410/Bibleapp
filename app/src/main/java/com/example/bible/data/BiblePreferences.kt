@@ -111,6 +111,8 @@ private object Keys {
     val INTERLINEAR_HEBREW_SANDBOX_TEXT_SCALE = floatPreferencesKey("interlinear_hebrew_sandbox_text_scale")
     /** Озвучка арабского аята по словам (TTS), а не целой строкой. */
     val QURAN_ARABIC_WORD_BY_WORD_TTS = booleanPreferencesKey("quran_arabic_word_by_word_tts")
+    /** Пользовательский API-ключ DeepSeek (chat completions). */
+    val DEEPSEEK_API_KEY = stringPreferencesKey("deepseek_api_key")
     /** Пауза между циклами повтора воспроизведения на карточке аята (мс). */
     val QURAN_AYAH_REPEAT_PAUSE_MS = longPreferencesKey("quran_ayah_repeat_pause_ms")
     /** Пауза между повторами TTS на карточках интервального повторения языков (мс). */
@@ -635,6 +637,18 @@ class BiblePreferences(
 
     suspend fun setDarkMode(dark: Boolean) {
         appContext.bibleDataStore.edit { it[Keys.DARK_MODE] = dark }
+    }
+
+    val deepSeekApiKey: Flow<String> = appContext.bibleDataStore.data.map { prefs ->
+        prefs[Keys.DEEPSEEK_API_KEY]?.trim().orEmpty()
+    }
+
+    suspend fun setDeepSeekApiKey(key: String) {
+        val trimmed = key.trim()
+        appContext.bibleDataStore.edit { prefs ->
+            if (trimmed.isEmpty()) prefs.remove(Keys.DEEPSEEK_API_KEY)
+            else prefs[Keys.DEEPSEEK_API_KEY] = trimmed
+        }
     }
 
     suspend fun setTranslation(id: TranslationId) {

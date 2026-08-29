@@ -23,6 +23,8 @@ import android.os.Environment
 import java.io.File
 import com.example.bible.data.AudioPlaybackState
 import com.example.bible.data.CommentaryRepository
+import com.example.bible.data.DeepSeekClient
+import com.example.bible.data.DeepSeekMessage
 import com.example.bible.data.HistoryEntry
 import com.example.bible.data.QuranReadingHistoryEntry
 import com.example.bible.data.QuranReadingTraceEntry
@@ -104,6 +106,19 @@ enum class SearchScope {
     NEW_TESTAMENT,
     SINGLE_BOOK,
 }
+
+data class DeepSeekChatUiState(
+    val loading: Boolean = false,
+    val answer: String = "",
+    val error: String? = null,
+    val needsKey: Boolean = false,
+)
+
+data class DeepSeekKeyTestUiState(
+    val loading: Boolean = false,
+    val message: String? = null,
+    val ok: Boolean = false,
+)
 
 /** Где искать по переводам: только в текущем, в одном выбранном или во всех доступных. */
 enum class BibleSearchTranslationMode {
@@ -904,6 +919,127 @@ class BibleViewModel(
     fun toggleDarkMode(isCurrentlyDark: Boolean) {
         viewModelScope.launch {
             preferences.setDarkMode(!isCurrentlyDark)
+        }
+    }
+
+    val deepSeekApiKey: StateFlow<String> = preferences.deepSeekApiKey.stateIn(
+        viewModelScope,
+        SharingStarted.WhileSubscribed(5000),
+        "",
+    )
+
+    private val _deepSeekChat = MutableStateFlow(DeepSeekChatUiState())
+    val deepSeekChat: StateFlow<DeepSeekChatUiState> = _deepSeekChat.asStateFlow()
+
+    private val _deepSeekKeyTest = MutableStateFlow(DeepSeekKeyTestUiState())
+    val deepSeekKeyTest: StateFlow<DeepSeekKeyTestUiState> = _deepSeekKeyTest.asStateFlow()
+
+    private var deepSeekJob: Job? = null
+    private val deepSeekHistory = mutableListOf<DeepSeekMessage>()
+
+    fun setDeepSeekApiKey(key: String) {
+        viewModelScope.launch {
+            preferences.setDeepSeekApiKey(key)
+            _deepSeekKeyTest.value = DeepSeekKeyTestUiState()
+        }
+    }
+
+    fun clearDeepSeekChat() {
+        deepSeekJob?.cancel()
+        deepSeekHistory.clear()
+        _deepSeekChat.value = DeepSeekChatUiState()
+    }
+
+    fun askDeepSeekAboutVerse(bookName: String, chapter: Int, verse: Int, verseText: String) {
+        deepSeekJob?.cancel()
+        deepSeekHistory.clear()
+        deepSeekJob = viewModelScope.launch {
+            val key = preferences.deepSeekApiKey.first()
+            if (key.isBlank()) {
+                _deepSeekChat.value = DeepSeekChatUiState(needsKey = true)
+                return@launch
+            }
+            _deepSeekChat.value = DeepSeekChatUiState(loading = true)
+            deepSeekHistory += DeepSeekMessage(
+                "system",
+                "Ты помощник по изучению Библии. Отвечай по-русски, кратко и по существу. " +
+                    "Не выдумывай цитаты и факты. Если не уверен — скажи об этом.",
+            )
+            deepSeekHistory += DeepSeekMessage(
+                "user",
+                "Объясни стих $bookName $chapter:$verse.\nТекст: «$verseText»\n" +
+                    "Кратко: смысл, контекст, как применить.",
+            )
+            val result = DeepSeekClient.chat(key, deepSeekHistory.toList())
+            result.fold(
+                onSuccess = { text ->
+                    deepSeekHistory += DeepSeekMessage("assistant", text)
+                    _deepSeekChat.value = DeepSeekChatUiState(answer = text)
+                },
+                onFailure = { e ->
+                    if (e is CancellationException) throw e
+                    _deepSeekChat.value = DeepSeekChatUiState(
+                        error = e.message?.ifBlank { null } ?: "Не удалось обратиться к DeepSeek",
+                    )
+                },
+            )
+        }
+    }
+
+    fun askDeepSeekFollowUp(question: String) {
+        val q = question.trim()
+        if (q.isEmpty()) return
+        deepSeekJob?.cancel()
+        deepSeekJob = viewModelScope.launch {
+            val key = preferences.deepSeekApiKey.first()
+            if (key.isBlank()) {
+                _deepSeekChat.value = _deepSeekChat.value.copy(needsKey = true, loading = false)
+                return@launch
+            }
+            val prev = _deepSeekChat.value.answer
+            _deepSeekChat.value = _deepSeekChat.value.copy(loading = true, error = null, needsKey = false)
+            deepSeekHistory += DeepSeekMessage("user", q)
+            val result = DeepSeekClient.chat(key, deepSeekHistory.toList())
+            result.fold(
+                onSuccess = { text ->
+                    deepSeekHistory += DeepSeekMessage("assistant", text)
+                    val combined = if (prev.isBlank()) text else "$prev\n\n—\n\n$text"
+                    _deepSeekChat.value = DeepSeekChatUiState(answer = combined)
+                },
+                onFailure = { e ->
+                    if (e is CancellationException) throw e
+                    if (deepSeekHistory.lastOrNull()?.role == "user") {
+                        deepSeekHistory.removeAt(deepSeekHistory.lastIndex)
+                    }
+                    _deepSeekChat.value = _deepSeekChat.value.copy(
+                        loading = false,
+                        error = e.message?.ifBlank { null } ?: "Не удалось обратиться к DeepSeek",
+                    )
+                },
+            )
+        }
+    }
+
+    fun testDeepSeekKey(keyOverride: String? = null) {
+        viewModelScope.launch {
+            val key = keyOverride?.trim().orEmpty().ifBlank { preferences.deepSeekApiKey.first() }
+            if (key.isBlank()) {
+                _deepSeekKeyTest.value = DeepSeekKeyTestUiState(message = "Введите API-ключ")
+                return@launch
+            }
+            _deepSeekKeyTest.value = DeepSeekKeyTestUiState(loading = true)
+            val result = DeepSeekClient.testKey(key)
+            result.fold(
+                onSuccess = {
+                    _deepSeekKeyTest.value = DeepSeekKeyTestUiState(ok = true, message = "Ключ работает")
+                },
+                onFailure = { e ->
+                    if (e is CancellationException) throw e
+                    _deepSeekKeyTest.value = DeepSeekKeyTestUiState(
+                        message = e.message?.ifBlank { null } ?: "Проверка не удалась",
+                    )
+                },
+            )
         }
     }
 
