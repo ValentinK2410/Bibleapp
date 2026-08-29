@@ -1442,6 +1442,14 @@ private fun BibleNavHost(
                 deepSeekKeyTest = deepSeekKeyTest,
                 onSaveDeepSeekApiKey = { viewModel.setDeepSeekApiKey(it) },
                 onTestDeepSeekApiKey = { viewModel.testDeepSeekKey(it) },
+                onOpenDeepSeekCamera = { navController.navigate("deepseek_camera") },
+            )
+        }
+        composable("deepseek_camera") {
+            DeepSeekCameraScreen(
+                viewModel = viewModel,
+                onBack = { navController.navigateUp() },
+                onOpenSettings = { navController.navigate("main_settings") },
             )
         }
         composable("books_menu_order") {

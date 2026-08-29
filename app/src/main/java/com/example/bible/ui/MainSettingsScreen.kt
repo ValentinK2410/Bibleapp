@@ -21,6 +21,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.filled.Key
+import androidx.compose.material.icons.filled.PhotoCamera
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.foundation.lazy.LazyRow
@@ -119,6 +120,7 @@ fun MainSettingsScreen(
     deepSeekKeyTest: DeepSeekKeyTestUiState,
     onSaveDeepSeekApiKey: (String) -> Unit,
     onTestDeepSeekApiKey: (String) -> Unit,
+    onOpenDeepSeekCamera: () -> Unit,
 ) {
     var hintsExpanded by remember { mutableStateOf(false) }
     val context = LocalContext.current
@@ -636,6 +638,7 @@ fun MainSettingsScreen(
                 keyTest = deepSeekKeyTest,
                 onSave = onSaveDeepSeekApiKey,
                 onTest = onTestDeepSeekApiKey,
+                onOpenCamera = onOpenDeepSeekCamera,
             )
             HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp))
             ListItem(
@@ -658,6 +661,7 @@ private fun DeepSeekSettingsSection(
     keyTest: DeepSeekKeyTestUiState,
     onSave: (String) -> Unit,
     onTest: (String) -> Unit,
+    onOpenCamera: () -> Unit,
 ) {
     val context = LocalContext.current
     var draft by remember { mutableStateOf(savedKey) }
@@ -745,5 +749,21 @@ private fun DeepSeekSettingsSection(
             modifier = Modifier.padding(horizontal = 16.dp, vertical = 4.dp),
         )
     }
+    ListItem(
+        headlineContent = { Text(stringResource(R.string.deepseek_camera_title)) },
+        supportingContent = {
+            Text(stringResource(R.string.deepseek_camera_settings_sub))
+        },
+        leadingContent = {
+            Icon(
+                Icons.Filled.PhotoCamera,
+                contentDescription = null,
+                tint = MaterialTheme.colorScheme.secondary,
+            )
+        },
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable(onClick = onOpenCamera),
+    )
     Spacer(Modifier.height(8.dp))
 }

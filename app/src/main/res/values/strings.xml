@@ -931,6 +931,17 @@
     <string name="deepseek_follow_up">Уточняющий вопрос</string>
     <string name="deepseek_open_settings">Открыть настройки</string>
     <string name="deepseek_send">Отправить</string>
+    <string name="deepseek_camera_title">Камера DeepSeek</string>
+    <string name="deepseek_camera_settings_sub">Превью камеры и расшифровка кадра</string>
+    <string name="deepseek_camera_hint">Наведите камеру на текст или объект и нажмите «Снять и расшифровать».</string>
+    <string name="deepseek_camera_capture">Снять и расшифровать</string>
+    <string name="deepseek_camera_retake">Новый кадр</string>
+    <string name="deepseek_camera_decode">Расшифровать снова</string>
+    <string name="deepseek_camera_flip">Сменить камеру</string>
+    <string name="deepseek_camera_permission">Чтобы показать картинку с камеры, нужен доступ к камере.</string>
+    <string name="deepseek_camera_grant">Разрешить камеру</string>
+    <string name="deepseek_camera_decoding">Расшифровка кадра…</string>
+    <string name="deepseek_camera_capture_failed">Не удалось сделать снимок</string>
     <string name="network_region_system_section">Регион по настройкам системы</string>
     <string name="network_region_country_line">Страна: %1$s (%2$s)</string>
     <string name="network_region_locale_line">Язык и локаль: %1$s</string>

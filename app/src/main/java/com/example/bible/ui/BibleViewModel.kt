@@ -120,6 +120,13 @@ data class DeepSeekKeyTestUiState(
     val ok: Boolean = false,
 )
 
+data class DeepSeekVisionUiState(
+    val loading: Boolean = false,
+    val answer: String = "",
+    val error: String? = null,
+    val needsKey: Boolean = false,
+)
+
 /** Где искать по переводам: только в текущем, в одном выбранном или во всех доступных. */
 enum class BibleSearchTranslationMode {
     /** Перевод, выбранный сейчас в читалке. */
@@ -1014,6 +1021,50 @@ class BibleViewModel(
                     _deepSeekChat.value = _deepSeekChat.value.copy(
                         loading = false,
                         error = e.message?.ifBlank { null } ?: "Не удалось обратиться к DeepSeek",
+                    )
+                },
+            )
+        }
+    }
+
+    private val _deepSeekVision = MutableStateFlow(DeepSeekVisionUiState())
+    val deepSeekVision: StateFlow<DeepSeekVisionUiState> = _deepSeekVision.asStateFlow()
+
+    private var deepSeekVisionJob: Job? = null
+
+    fun clearDeepSeekVision() {
+        deepSeekVisionJob?.cancel()
+        _deepSeekVision.value = DeepSeekVisionUiState()
+    }
+
+    fun analyzeCameraJpeg(jpegBytes: ByteArray) {
+        deepSeekVisionJob?.cancel()
+        deepSeekVisionJob = viewModelScope.launch {
+            val key = preferences.deepSeekApiKey.first()
+            if (key.isBlank()) {
+                _deepSeekVision.value = DeepSeekVisionUiState(needsKey = true)
+                return@launch
+            }
+            if (jpegBytes.isEmpty()) {
+                _deepSeekVision.value = DeepSeekVisionUiState(error = "Не удалось получить кадр с камеры")
+                return@launch
+            }
+            _deepSeekVision.value = DeepSeekVisionUiState(loading = true)
+            val result = DeepSeekClient.chatVision(
+                apiKey = key,
+                jpegBytes = jpegBytes,
+                prompt = "Расшифруй фото с камеры. Если есть текст (книга, страница, надпись, экран) — " +
+                    "выпиши его целиком, сохраняя абзацы и переносы. Если текста мало — опиши, что видно, " +
+                    "и приведи все надписи. Отвечай по-русски. Не выдумывай невидимый текст.",
+            )
+            result.fold(
+                onSuccess = { text ->
+                    _deepSeekVision.value = DeepSeekVisionUiState(answer = text)
+                },
+                onFailure = { e ->
+                    if (e is CancellationException) throw e
+                    _deepSeekVision.value = DeepSeekVisionUiState(
+                        error = e.message?.ifBlank { null } ?: "Не удалось расшифровать кадр",
                     )
                 },
             )
