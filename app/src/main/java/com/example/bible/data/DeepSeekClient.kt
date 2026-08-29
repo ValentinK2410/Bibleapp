@@ -18,14 +18,16 @@ data class DeepSeekMessage(
 object DeepSeekClient {
 
     const val CHAT_URL = "https://api.deepseek.com/chat/completions"
-    const val DEFAULT_MODEL = "deepseek-chat"
+    /** Флагман DeepSeek V4 Pro (самая сильная текстовая модель в API). */
+    const val DEFAULT_MODEL = "deepseek-v4-pro"
     private const val USER_AGENT = "BibleApp/1.0 (Android; DeepSeek)"
 
     suspend fun chat(
         apiKey: String,
         messages: List<DeepSeekMessage>,
         model: String = DEFAULT_MODEL,
-        timeoutMs: Int = 60_000,
+        timeoutMs: Int = 90_000,
+        thinking: Boolean = true,
     ): Result<String> = kotlinx.coroutines.withContext(kotlinx.coroutines.Dispatchers.IO) {
         val key = apiKey.trim()
         if (key.isEmpty()) {
@@ -38,6 +40,10 @@ object DeepSeekClient {
             val body = JSONObject().apply {
                 put("model", model)
                 put("stream", false)
+                put(
+                    "thinking",
+                    JSONObject().put("type", if (thinking) "enabled" else "disabled"),
+                )
                 put(
                     "messages",
                     JSONArray().apply {
@@ -69,13 +75,12 @@ object DeepSeekClient {
             if (code !in 200..299) {
                 return@withContext Result.failure(IllegalStateException(errorMessage(code, raw)))
             }
-            val text = JSONObject(raw)
+            val message = JSONObject(raw)
                 .optJSONArray("choices")
                 ?.optJSONObject(0)
                 ?.optJSONObject("message")
-                ?.optString("content")
-                .orEmpty()
-                .trim()
+            val text = message?.optString("content").orEmpty().trim()
+                .ifBlank { message?.optString("reasoning_content").orEmpty().trim() }
             if (text.isEmpty()) {
                 Result.failure(IllegalStateException("Пустой ответ DeepSeek"))
             } else {
@@ -90,7 +95,8 @@ object DeepSeekClient {
         chat(
             apiKey = apiKey,
             messages = listOf(DeepSeekMessage("user", "Ответь одним словом: ок")),
-            timeoutMs = 25_000,
+            timeoutMs = 40_000,
+            thinking = false,
         )
 
     private fun errorMessage(code: Int, body: String): String {

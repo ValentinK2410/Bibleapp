@@ -918,7 +918,7 @@
     <string name="network_region_title">Сеть и регион</string>
     <string name="network_region_settings_hint">Системная локаль и оценка региона по IP</string>
     <string name="main_settings_deepseek_title">DeepSeek</string>
-    <string name="main_settings_deepseek_hint">Ключ для ИИ-разбора стихов. Получите его на platform.deepseek.com</string>
+    <string name="main_settings_deepseek_hint">Ключ для ИИ-разбора стихов (модель DeepSeek V4 Pro). Получите его на platform.deepseek.com</string>
     <string name="main_settings_deepseek_key_label">API-ключ</string>
     <string name="main_settings_deepseek_get_key">Получить ключ на сайте DeepSeek</string>
     <string name="main_settings_deepseek_save">Сохранить ключ</string>
