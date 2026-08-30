@@ -5566,6 +5566,8 @@ private fun ReaderContent(
                     deepSeekTarget = null
                     onOpenDeepSeekSettings()
                 },
+                chapterVerseCount = verses.size,
+                chapterVerseTexts = verses.associate { it.number to it.text },
             )
         }
         wordMediaDialog?.let { (sel, existing) ->

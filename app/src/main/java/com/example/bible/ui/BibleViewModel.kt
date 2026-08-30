@@ -25,6 +25,8 @@ import com.example.bible.data.AudioPlaybackState
 import com.example.bible.data.CommentaryRepository
 import com.example.bible.data.DeepSeekClient
 import com.example.bible.data.DeepSeekMessage
+import com.example.bible.data.DeepSeekPassageFormatter
+import com.example.bible.data.DeepSeekPassageScope
 import com.example.bible.data.HistoryEntry
 import com.example.bible.data.QuranReadingHistoryEntry
 import com.example.bible.data.QuranReadingTraceEntry
@@ -957,7 +959,18 @@ class BibleViewModel(
         _deepSeekChat.value = DeepSeekChatUiState()
     }
 
-    fun askDeepSeekAboutVerse(bookName: String, chapter: Int, verse: Int, verseText: String) {
+    fun askDeepSeekAboutPassage(
+        translation: TranslationId,
+        bookId: String,
+        bookName: String,
+        chapter: Int,
+        verse: Int,
+        verseText: String,
+        scope: DeepSeekPassageScope,
+        rangeStart: Int = verse,
+        rangeEnd: Int = verse,
+        fallbackChapterTexts: Map<Int, String> = emptyMap(),
+    ) {
         deepSeekJob?.cancel()
         deepSeekHistory.clear()
         deepSeekJob = viewModelScope.launch {
@@ -967,16 +980,33 @@ class BibleViewModel(
                 return@launch
             }
             _deepSeekChat.value = DeepSeekChatUiState(loading = true)
+            val built = withContext(Dispatchers.IO) {
+                buildDeepSeekUserPrompt(
+                    translation = translation,
+                    bookId = bookId,
+                    bookName = bookName,
+                    chapter = chapter,
+                    verse = verse,
+                    verseText = verseText,
+                    scope = scope,
+                    rangeStart = rangeStart,
+                    rangeEnd = rangeEnd,
+                    fallbackChapterTexts = fallbackChapterTexts,
+                )
+            }
+            if (built == null) {
+                _deepSeekChat.value = DeepSeekChatUiState(
+                    error = "Не удалось загрузить текст для этого объёма. Попробуйте стих, диапазон или главу.",
+                )
+                return@launch
+            }
             deepSeekHistory += DeepSeekMessage(
                 "system",
-                "Ты помощник по изучению Библии. Отвечай по-русски, кратко и по существу. " +
-                    "Не выдумывай цитаты и факты. Если не уверен — скажи об этом.",
+                "Ты помощник по изучению Библии. Отвечай по-русски, связно и по существу. " +
+                    "Опирайся только на приведённый текст. Не выдумывай цитаты и факты. " +
+                    "Если текста не хватает — скажи об этом.",
             )
-            deepSeekHistory += DeepSeekMessage(
-                "user",
-                "Объясни стих $bookName $chapter:$verse.\nТекст: «$verseText»\n" +
-                    "Кратко: смысл, контекст, как применить.",
-            )
+            deepSeekHistory += DeepSeekMessage("user", built)
             val result = DeepSeekClient.chat(key, deepSeekHistory.toList())
             result.fold(
                 onSuccess = { text ->
@@ -990,6 +1020,71 @@ class BibleViewModel(
                     )
                 },
             )
+        }
+    }
+
+    private fun buildDeepSeekUserPrompt(
+        translation: TranslationId,
+        bookId: String,
+        bookName: String,
+        chapter: Int,
+        verse: Int,
+        verseText: String,
+        scope: DeepSeekPassageScope,
+        rangeStart: Int,
+        rangeEnd: Int,
+        fallbackChapterTexts: Map<Int, String>,
+    ): String? {
+        val chapterVerses = repository.loadChapter(translation, bookId, chapter)?.verses
+            ?: DeepSeekPassageFormatter.fromMap(
+                fallbackChapterTexts,
+                1,
+                fallbackChapterTexts.keys.maxOrNull() ?: verse,
+            )
+        return when (scope) {
+            DeepSeekPassageScope.VERSE -> {
+                val text = chapterVerses.firstOrNull { it.number == verse }?.text?.ifBlank { null }
+                    ?: verseText
+                "Объясни стих $bookName $chapter:$verse.\nТекст: «$text»\n" +
+                    "Кратко: смысл, ближайший контекст, как применить."
+            }
+            DeepSeekPassageScope.RANGE -> {
+                val a = minOf(rangeStart, rangeEnd).coerceAtLeast(1)
+                val b = maxOf(rangeStart, rangeEnd)
+                val picked = chapterVerses.filter { it.number in a..b }
+                    .ifEmpty { DeepSeekPassageFormatter.fromMap(fallbackChapterTexts, a, b) }
+                if (picked.isEmpty()) return null
+                "Порассуждай над отрывком $bookName $chapter:$a–$b как над цельным пассажем.\n" +
+                    "Тема, ход мысли, связь стихов, как применить.\n\n" +
+                    DeepSeekPassageFormatter.versesBlock(picked)
+            }
+            DeepSeekPassageScope.CHAPTER -> {
+                val verses = chapterVerses.ifEmpty {
+                    DeepSeekPassageFormatter.fromMap(
+                        fallbackChapterTexts,
+                        1,
+                        fallbackChapterTexts.keys.maxOrNull() ?: 1,
+                    )
+                }
+                if (verses.isEmpty()) return null
+                "Порассуждай над главой $bookName $chapter целиком.\n" +
+                    "Структура, главная мысль, ключевые стихи, как глава встраивается в книгу.\n\n" +
+                    DeepSeekPassageFormatter.chapterBlock(chapter, verses)
+            }
+            DeepSeekPassageScope.BOOK -> {
+                val book = repository.loadBook(translation, bookId)
+                if (book == null || book.chapters.none { it.verses.isNotEmpty() }) return null
+                val (body, truncated) = DeepSeekPassageFormatter.bookBlock(book)
+                if (body.isBlank()) return null
+                val note = if (truncated) {
+                    "Текст книги сокращён: опирайся на то, что есть, и не достраивай пропущенные главы как цитаты.\n\n"
+                } else {
+                    ""
+                }
+                "Порассуждай над книгой «$bookName» целиком.\n" +
+                    "Замысел, структура по главам, главные темы, кому адресована, чем важна для чтения.\n\n" +
+                    note + body
+            }
         }
     }
 

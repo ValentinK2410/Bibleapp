@@ -1816,6 +1816,8 @@ private fun ReaderPane(
                         deepSeekTarget = null
                         onOpenDeepSeekSettings()
                     },
+                    chapterVerseCount = verses.size,
+                    chapterVerseTexts = verses.associate { it.number to it.text },
                 )
             }
         }
