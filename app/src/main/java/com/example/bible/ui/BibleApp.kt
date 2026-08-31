@@ -1458,6 +1458,7 @@ private fun BibleNavHost(
                 viewModel = viewModel,
                 onBack = { navController.navigateUp() },
                 onOpenSettings = { navController.navigate("ai_settings") },
+                onOpenMicroblogPost = { id -> navController.navigate("media_microblog_edit/$id") },
             )
         }
         composable("ai_photo_identify") {
@@ -1589,11 +1590,40 @@ private fun BibleNavHost(
             MediaHomeScreen(
                 viewModel = viewModel,
                 onBack = { navController.navigateUp() },
+                onOpenMicroblog = { navController.navigate("media_microblog") },
                 onOpenPictures = { navController.navigate("media_pictures") },
                 onOpenVideos = { navController.navigate("media_videos") },
                 onOpenAudios = { navController.navigate("media_audios") },
                 onOpenMusician = { navController.navigate("media_musician") },
                 onOpenPesnopenie = { navController.navigate("songs") },
+            )
+        }
+        composable("media_microblog") {
+            MicroblogFeedScreen(
+                viewModel = viewModel,
+                onBack = { navController.navigateUp() },
+                onNewPost = { navController.navigate("media_microblog_edit/new") },
+                onOpenPost = { id -> navController.navigate("media_microblog_edit/$id") },
+                onEditPost = { id -> navController.navigate("media_microblog_edit/$id?edit=true") },
+            )
+        }
+        composable(
+            "media_microblog_edit/{postId}?edit={edit}",
+            arguments = listOf(
+                navArgument("postId") { type = NavType.StringType },
+                navArgument("edit") {
+                    type = NavType.BoolType
+                    defaultValue = false
+                },
+            ),
+        ) { entry ->
+            val postId = entry.arguments?.getString("postId") ?: return@composable
+            val startInEdit = entry.arguments?.getBoolean("edit") == true
+            MicroblogEditorScreen(
+                viewModel = viewModel,
+                postId = postId.takeUnless { it == "new" },
+                startInEdit = startInEdit || postId == "new",
+                onBack = { navController.navigateUp() },
             )
         }
         composable("media_musician") {

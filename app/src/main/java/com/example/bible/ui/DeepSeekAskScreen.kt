@@ -4,6 +4,7 @@ import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
@@ -23,13 +24,18 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.filled.Send
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.ContentCopy
 import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.Forum
+import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material.icons.filled.Psychology
 import androidx.compose.material.icons.filled.Speed
 import androidx.compose.material.icons.filled.TravelExplore
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.HorizontalDivider
@@ -50,12 +56,17 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.bible.R
 import com.example.bible.data.AiChatSummary
+import android.content.ClipData
+import android.content.ClipboardManager
+import android.content.Context
+import android.widget.Toast
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
@@ -66,13 +77,17 @@ fun DeepSeekAskScreen(
     viewModel: BibleViewModel,
     onBack: () -> Unit,
     onOpenSettings: () -> Unit,
+    onOpenMicroblogPost: (String) -> Unit = {},
 ) {
+    val context = LocalContext.current
     val state by viewModel.deepSeekAsk.collectAsStateWithLifecycle()
     var draft by remember { mutableStateOf("") }
     var deleteTarget by remember { mutableStateOf<AiChatSummary?>(null) }
+    var shareMenu by remember { mutableStateOf(false) }
     val dateFormat = remember {
         SimpleDateFormat("dd.MM.yyyy HH:mm", Locale.getDefault())
     }
+    val hasConversation = state.messages.any { it.role == "user" || it.role == "assistant" }
     LaunchedEffect(Unit) {
         viewModel.openDeepSeekAsk()
     }
@@ -111,6 +126,73 @@ fun DeepSeekAskScreen(
                 },
                 actions = {
                     if (state.pane == DeepSeekAskPane.CHAT) {
+                        if (hasConversation) {
+                            Box {
+                                IconButton(onClick = { shareMenu = true }) {
+                                    Icon(
+                                        Icons.Filled.MoreVert,
+                                        contentDescription = stringResource(R.string.ai_ask_copy_chat),
+                                    )
+                                }
+                                DropdownMenu(
+                                    expanded = shareMenu,
+                                    onDismissRequest = { shareMenu = false },
+                                ) {
+                                DropdownMenuItem(
+                                    text = { Text(stringResource(R.string.ai_ask_copy_chat)) },
+                                    leadingIcon = {
+                                        Icon(Icons.Filled.ContentCopy, contentDescription = null)
+                                    },
+                                    onClick = {
+                                        shareMenu = false
+                                        val text = viewModel.deepSeekAskPlainText()
+                                        if (text.isBlank()) {
+                                            Toast.makeText(
+                                                context,
+                                                R.string.ai_ask_publish_empty,
+                                                Toast.LENGTH_SHORT,
+                                            ).show()
+                                        } else {
+                                            copyAskChat(context, text)
+                                            Toast.makeText(
+                                                context,
+                                                R.string.ai_ask_copied,
+                                                Toast.LENGTH_SHORT,
+                                            ).show()
+                                        }
+                                    },
+                                )
+                                DropdownMenuItem(
+                                    text = { Text(stringResource(R.string.ai_ask_publish_microblog)) },
+                                    leadingIcon = {
+                                        Icon(Icons.Filled.Forum, contentDescription = null)
+                                    },
+                                    onClick = {
+                                        shareMenu = false
+                                        viewModel.publishDeepSeekAskToMicroblog { result ->
+                                            result.fold(
+                                                onSuccess = { id ->
+                                                    Toast.makeText(
+                                                        context,
+                                                        R.string.ai_ask_published_microblog,
+                                                        Toast.LENGTH_SHORT,
+                                                    ).show()
+                                                    onOpenMicroblogPost(id)
+                                                },
+                                                onFailure = { e ->
+                                                    Toast.makeText(
+                                                        context,
+                                                        e.message ?: context.getString(R.string.ai_ask_publish_empty),
+                                                        Toast.LENGTH_SHORT,
+                                                    ).show()
+                                                },
+                                            )
+                                        }
+                                    },
+                                )
+                            }
+                            }
+                        }
                         IconButton(
                             onClick = {
                                 draft = ""
@@ -375,4 +457,9 @@ private fun DeepSeekAskConversation(
             }
         }
     }
+}
+
+private fun copyAskChat(context: Context, text: String) {
+    val cm = context.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
+    cm.setPrimaryClip(ClipData.newPlainText("ai_chat", text))
 }

@@ -28,6 +28,7 @@ import com.example.bible.data.DeepSeekMessage
 import com.example.bible.data.MicroblogPost
 import com.example.bible.data.MicroblogRepository
 import com.example.bible.data.AiChatRepository
+import com.example.bible.data.AiChatShare
 import com.example.bible.data.AiChatSummary
 import com.example.bible.data.DeepSeekPassageFormatter
 import com.example.bible.data.DeepSeekPassageScope
@@ -1315,6 +1316,25 @@ class BibleViewModel(
 
     fun setDeepSeekAskWebSearch(enabled: Boolean) {
         _deepSeekAsk.value = _deepSeekAsk.value.copy(webSearch = enabled)
+    }
+
+    fun deepSeekAskPlainText(): String {
+        val s = _deepSeekAsk.value
+        return AiChatShare.plainText(s.chatTitle, s.messages)
+    }
+
+    fun publishDeepSeekAskToMicroblog(onResult: (Result<String>) -> Unit) {
+        val s = _deepSeekAsk.value
+        if (s.messages.none { it.role == "user" || it.role == "assistant" }) {
+            onResult(Result.failure(IllegalStateException("Сначала напишите сообщение в чате")))
+            return
+        }
+        viewModelScope.launch {
+            val post = AiChatShare.toMicroblogPost(s.chatTitle, s.messages)
+            microblogRepo.save(post)
+            _microblogPosts.value = microblogRepo.listPosts()
+            onResult(Result.success(post.id))
+        }
     }
 
     fun askDeepSeekQuestion(question: String) {

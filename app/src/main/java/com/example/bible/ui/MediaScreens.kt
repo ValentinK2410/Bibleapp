@@ -49,6 +49,7 @@ import androidx.compose.material.icons.filled.CameraAlt
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.DragHandle
 import androidx.compose.material.icons.filled.MoreVert
+import androidx.compose.material.icons.filled.Forum
 import androidx.compose.material.icons.filled.PhotoLibrary
 import androidx.compose.material.icons.filled.Videocam
 import androidx.compose.material.icons.filled.Close
@@ -172,6 +173,7 @@ private enum class MediaUnionTab {
 
 /** Визуальный стиль карточки на экране «Каталог медиа» (градиенты и акценты). */
 private enum class MediaHomeCardVisual {
+    Microblog,
     Pictures,
     Musician,
     Pesnopenie,
@@ -189,6 +191,21 @@ private data class MediaHomeCardBrushes(
 
 private fun buildMediaHomeBrushes(style: MediaHomeCardVisual, cs: ColorScheme): MediaHomeCardBrushes {
     return when (style) {
+        MediaHomeCardVisual.Microblog -> MediaHomeCardBrushes(
+            cardBrush = Brush.linearGradient(
+                listOf(
+                    cs.secondary.copy(alpha = 0.14f),
+                    cs.primaryContainer.copy(alpha = 0.40f),
+                    cs.surface,
+                ),
+            ),
+            iconBrush = Brush.linearGradient(
+                listOf(cs.secondary, cs.primary.copy(alpha = 0.90f)),
+            ),
+            iconTint = cs.onSecondary,
+            accentBarBrush = Brush.horizontalGradient(listOf(cs.secondary, cs.primary)),
+            bubbleColor = cs.secondary.copy(alpha = 0.14f),
+        )
         MediaHomeCardVisual.Pictures -> MediaHomeCardBrushes(
             cardBrush = Brush.linearGradient(
                 listOf(
@@ -456,6 +473,7 @@ private fun MediaHomeOrderDialog(
 fun MediaHomeScreen(
     viewModel: BibleViewModel,
     onBack: () -> Unit,
+    onOpenMicroblog: () -> Unit = {},
     onOpenPictures: () -> Unit,
     onOpenVideos: () -> Unit,
     onOpenAudios: () -> Unit,
@@ -512,6 +530,13 @@ fun MediaHomeScreen(
         ) {
             sectionOrder.forEach { id ->
                 when (id) {
+                    MediaHomeSectionOrder.MICROBLOG -> MediaHomeSectionElevatedCard(
+                        title = "Микроблог",
+                        subtitle = "Посты: текст со стилями, ссылки и картинки",
+                        icon = Icons.Filled.Forum,
+                        onClick = onOpenMicroblog,
+                        style = MediaHomeCardVisual.Microblog,
+                    )
                     MediaHomeSectionOrder.PICTURES -> MediaHomeSectionElevatedCard(
                         title = "Картинки",
                         subtitle = "Каталог: картинки — галерея, камера или поиск в Google и Яндекс (офлайн)",

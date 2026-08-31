@@ -952,6 +952,11 @@
     <string name="ai_ask_delete_chat_body">«%1$s» будет удалён с устройства.</string>
     <string name="ai_ask_new_chat_cd">Новый чат</string>
     <string name="ai_ask_delete_chat_cd">Удалить чат</string>
+    <string name="ai_ask_copy_chat">Копировать беседу</string>
+    <string name="ai_ask_copied">Беседа скопирована</string>
+    <string name="ai_ask_publish_microblog">В микроблог</string>
+    <string name="ai_ask_published_microblog">Беседа оформлена как пост в Медиа → Микроблог</string>
+    <string name="ai_ask_publish_empty">Сначала напишите сообщение в чате</string>
     <string name="ai_identify_title">Что на фото</string>
     <string name="ai_identify_hint">Наведите камеру или выберите снимок из галереи — ИИ опишет, что видно.</string>
     <string name="ai_identify_capture">Снять и определить</string>
