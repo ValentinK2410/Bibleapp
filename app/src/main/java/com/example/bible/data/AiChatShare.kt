@@ -1,15 +1,13 @@
 package com.example.bible.data
 
-import android.graphics.Color
-
 /** Оформление беседы «Вопрос ИИ» для буфера обмена и поста микроблога. */
 object AiChatShare {
 
-    private val HeaderColor = Color.parseColor("#5E35B1")
-    private val UserColor = Color.parseColor("#1565C0")
-    private val UserBg = Color.parseColor("#1A1565C0")
-    private val UserBodyColor = Color.parseColor("#37474F")
-    private val AiColor = Color.parseColor("#2E7D32")
+    private const val HeaderColor = 0xFF5E35B1.toInt()
+    private const val UserColor = 0xFF1565C0.toInt()
+    private const val UserBg = 0x1A1565C0
+    private const val UserBodyColor = 0xFF37474F.toInt()
+    private const val AiColor = 0xFF2E7D32.toInt()
 
     fun plainText(title: String, messages: List<DeepSeekMessage>): String {
         val turns = messages.filter { it.role == "user" || it.role == "assistant" }
