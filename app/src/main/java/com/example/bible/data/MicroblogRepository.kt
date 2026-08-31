@@ -25,9 +25,10 @@ class MicroblogRepository(private val context: Context) {
         dao.upsert(
             MicroblogPostEntity(
                 id = post.id,
+                title = post.title.trim(),
                 body = post.body,
                 spansJson = spansToJson(post.spans),
-                imagesJson = imageNamesToJson(post.imageFileNames),
+                imagesJson = imagesToJson(post.images),
                 createdAtMs = post.createdAtMs,
                 updatedAtMs = post.updatedAtMs,
             ),
@@ -71,11 +72,53 @@ class MicroblogRepository(private val context: Context) {
         }
     }
 
+    suspend fun cropImage(
+        fileName: String,
+        left: Float,
+        top: Float,
+        right: Float,
+        bottom: Float,
+        outputScale: Float,
+    ): Result<String> = withContext(Dispatchers.IO) {
+        try {
+            val dir = MediaCatalogPaths.microblogDir(context)
+            val src = File(dir, fileName)
+            if (!src.isFile) return@withContext Result.failure(IllegalStateException("Файл не найден"))
+            val bitmap = MicroblogImageOps.loadBitmap(src)
+                ?: return@withContext Result.failure(IllegalStateException("Не удалось прочитать фото"))
+            val cropped = try {
+                MicroblogImageOps.cropAndScale(bitmap, left, top, right, bottom, outputScale)
+            } finally {
+                if (!bitmap.isRecycled) bitmap.recycle()
+            }
+            val outName = "${UUID.randomUUID()}.jpg"
+            val out = File(dir, outName)
+            try {
+                MicroblogImageOps.saveJpeg(cropped, out)
+            } finally {
+                if (!cropped.isRecycled) cropped.recycle()
+            }
+            if (!out.exists() || out.length() == 0L) {
+                out.delete()
+                return@withContext Result.failure(IllegalStateException("Не удалось сохранить кадр"))
+            }
+            Result.success(outName)
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
+
+    suspend fun deleteUnusedImage(fileName: String, stillReferenced: Collection<String>) = withContext(Dispatchers.IO) {
+        if (fileName.isBlank() || fileName in stillReferenced) return@withContext
+        File(MediaCatalogPaths.microblogDir(context), fileName).delete()
+    }
+
     private fun MicroblogPostEntity.toDomain(): MicroblogPost = MicroblogPost(
         id = id,
+        title = title,
         body = body,
         spans = spansFromJson(spansJson),
-        imageFileNames = imageNamesFromJson(imagesJson),
+        images = imagesFromJson(imagesJson),
         createdAtMs = createdAtMs,
         updatedAtMs = updatedAtMs,
     )

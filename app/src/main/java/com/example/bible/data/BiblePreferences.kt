@@ -72,6 +72,8 @@ private object Keys {
     val OFFLINE_DOWNLOAD_BOOK_ORDER_JSON = stringPreferencesKey("offline_download_book_order_json")
     /** Список id разделов каталога медиа через запятую (см. [MediaHomeSectionOrder]). */
     val MEDIA_HOME_SECTION_ORDER = stringPreferencesKey("media_home_section_order")
+    /** Пользовательское название микроблога. */
+    val MICROBLOG_TITLE = stringPreferencesKey("microblog_title")
     /** Порядок пунктов главного меню экрана книг (см. [BooksMainMenuOrder]), без «Настройки» и переводов. */
     val BOOKS_MAIN_MENU_ORDER = stringPreferencesKey("books_main_menu_order")
     /** Озвучка полного названия книги при долгом нажатии на экране выбора книг. */
@@ -381,6 +383,16 @@ class BiblePreferences(
     suspend fun setMediaHomeSectionOrder(ids: List<String>) {
         appContext.bibleDataStore.edit { prefs ->
             prefs[Keys.MEDIA_HOME_SECTION_ORDER] = MediaHomeSectionOrder.toStored(ids)
+        }
+    }
+
+    val microblogTitle: Flow<String> = appContext.bibleDataStore.data.map { prefs ->
+        prefs[Keys.MICROBLOG_TITLE]?.trim().orEmpty().ifEmpty { "Микроблог" }
+    }
+
+    suspend fun setMicroblogTitle(title: String) {
+        appContext.bibleDataStore.edit { prefs ->
+            prefs[Keys.MICROBLOG_TITLE] = title.trim()
         }
     }
 

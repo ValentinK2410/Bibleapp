@@ -26,7 +26,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
@@ -39,6 +38,7 @@ import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.filled.Crop
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.FormatBold
@@ -103,6 +103,7 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import coil.compose.AsyncImage
 import com.example.bible.data.MediaCatalogPaths
+import com.example.bible.data.MicroblogImage
 import com.example.bible.data.MicroblogPost
 import com.example.bible.data.MicroblogSpan
 import java.io.File
@@ -140,22 +141,35 @@ fun MicroblogFeedScreen(
     onEditPost: (String) -> Unit = onOpenPost,
 ) {
     val posts by viewModel.microblogPosts.collectAsStateWithLifecycle()
+    val blogTitle by viewModel.microblogTitle.collectAsStateWithLifecycle()
     val dateFormat = remember { SimpleDateFormat("dd.MM.yyyy HH:mm", Locale.getDefault()) }
     var deleteId by remember { mutableStateOf<String?>(null) }
+    var renameOpen by remember { mutableStateOf(false) }
+    var renameDraft by remember { mutableStateOf("") }
     var query by remember { mutableStateOf("") }
     val filtered = remember(posts, query) {
         val q = query.trim()
         if (q.isEmpty()) posts
-        else posts.filter { it.body.contains(q, ignoreCase = true) }
+        else posts.filter {
+            it.title.contains(q, ignoreCase = true) || it.body.contains(q, ignoreCase = true)
+        }
     }
     LaunchedEffect(Unit) { viewModel.refreshMicroblogPosts() }
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Микроблог") },
+                title = { Text(blogTitle, maxLines = 1, overflow = TextOverflow.Ellipsis) },
                 navigationIcon = {
                     IconButton(onClick = onBack) {
                         Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Назад")
+                    }
+                },
+                actions = {
+                    IconButton(onClick = {
+                        renameDraft = blogTitle
+                        renameOpen = true
+                    }) {
+                        Icon(Icons.Filled.Edit, contentDescription = "Название блога")
                     }
                 },
             )
@@ -245,6 +259,30 @@ fun MicroblogFeedScreen(
             },
         )
     }
+    if (renameOpen) {
+        AlertDialog(
+            onDismissRequest = { renameOpen = false },
+            title = { Text("Название блога") },
+            text = {
+                OutlinedTextField(
+                    value = renameDraft,
+                    onValueChange = { renameDraft = it },
+                    singleLine = true,
+                    label = { Text("Как назвать блог") },
+                    modifier = Modifier.fillMaxWidth(),
+                )
+            },
+            confirmButton = {
+                TextButton(onClick = {
+                    viewModel.setMicroblogTitle(renameDraft)
+                    renameOpen = false
+                }) { Text("Сохранить") }
+            },
+            dismissButton = {
+                TextButton(onClick = { renameOpen = false }) { Text("Отмена") }
+            },
+        )
+    }
 }
 
 private enum class MicroblogCardKind { AI, PHOTO, TEXT }
@@ -263,7 +301,6 @@ private fun MicroblogPostCard(
     onEdit: () -> Unit,
     onDelete: () -> Unit,
 ) {
-    val context = LocalContext.current
     val cs = MaterialTheme.colorScheme
     val kind = microblogCardKind(post)
     val accent = when (kind) {
@@ -319,6 +356,13 @@ private fun MicroblogPostCard(
                         Icon(Icons.Filled.Delete, contentDescription = "Удалить", tint = cs.error)
                     }
                 }
+                if (post.title.isNotBlank()) {
+                    Text(
+                        post.title,
+                        style = MaterialTheme.typography.titleMedium,
+                        fontWeight = FontWeight.SemiBold,
+                    )
+                }
                 if (post.body.isNotBlank()) {
                     MicroblogRichText(
                         text = post.body,
@@ -327,33 +371,92 @@ private fun MicroblogPostCard(
                         maxLines = 8,
                     )
                 }
-                if (post.imageFileNames.isNotEmpty()) {
-                    val names = post.imageFileNames
-                    if (names.size == 1) {
-                        AsyncImage(
-                            model = File(MediaCatalogPaths.microblogDir(context), names.first()),
-                            contentDescription = null,
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .heightIn(min = 140.dp, max = 220.dp)
-                                .clip(RoundedCornerShape(16.dp)),
-                            contentScale = ContentScale.Crop,
-                        )
-                    } else {
-                        LazyRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                            items(names) { name ->
-                                AsyncImage(
-                                    model = File(MediaCatalogPaths.microblogDir(context), name),
-                                    contentDescription = null,
-                                    modifier = Modifier
-                                        .size(112.dp)
-                                        .clip(RoundedCornerShape(14.dp)),
-                                    contentScale = ContentScale.Crop,
-                                )
-                            }
-                        }
-                    }
+                post.images.forEach { image ->
+                    MicroblogFittedImage(
+                        fileName = image.fileName,
+                        displayScale = image.displayScale,
+                        maxHeight = 280.dp,
+                    )
                 }
+            }
+        }
+    }
+}
+
+@Composable
+private fun MicroblogFittedImage(
+    fileName: String,
+    displayScale: Float,
+    maxHeight: androidx.compose.ui.unit.Dp,
+) {
+    val context = LocalContext.current
+    val scale = displayScale.coerceIn(0.35f, 1f)
+    AsyncImage(
+        model = File(MediaCatalogPaths.microblogDir(context), fileName),
+        contentDescription = null,
+        modifier = Modifier
+            .fillMaxWidth(scale)
+            .heightIn(max = maxHeight)
+            .clip(RoundedCornerShape(16.dp)),
+        contentScale = ContentScale.Fit,
+    )
+}
+
+@Composable
+private fun MicroblogEditorImageRow(
+    image: MicroblogImage,
+    onCrop: () -> Unit,
+    onScale: (Float) -> Unit,
+    onRemove: () -> Unit,
+) {
+    val context = LocalContext.current
+    val cs = MaterialTheme.colorScheme
+    Column(
+        Modifier
+            .fillMaxWidth()
+            .clip(RoundedCornerShape(14.dp))
+            .background(cs.surfaceVariant.copy(alpha = 0.45f))
+            .padding(10.dp),
+        verticalArrangement = Arrangement.spacedBy(8.dp),
+    ) {
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            AsyncImage(
+                model = File(MediaCatalogPaths.microblogDir(context), image.fileName),
+                contentDescription = null,
+                modifier = Modifier
+                    .size(72.dp)
+                    .clip(RoundedCornerShape(10.dp)),
+                contentScale = ContentScale.Fit,
+            )
+            Spacer(Modifier.width(10.dp))
+            Column(Modifier.weight(1f)) {
+                Text("Фото в записи", style = MaterialTheme.typography.labelLarge)
+                Text(
+                    "Обрежьте кадр или выберите ширину на экране",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = cs.onSurfaceVariant,
+                )
+            }
+            IconButton(onClick = onCrop) {
+                Icon(Icons.Filled.Crop, contentDescription = "Обрезать и размер файла")
+            }
+            IconButton(onClick = onRemove) {
+                Icon(Icons.Filled.Close, contentDescription = "Убрать", tint = cs.error)
+            }
+        }
+        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+            listOf(0.55f to "Узко", 0.78f to "Средне", 1f to "Широко").forEach { (value, label) ->
+                val selected = kotlin.math.abs(image.displayScale - value) < 0.04f
+                Text(
+                    label,
+                    style = MaterialTheme.typography.labelLarge,
+                    color = if (selected) cs.onPrimary else cs.onSurface,
+                    modifier = Modifier
+                        .clip(RoundedCornerShape(8.dp))
+                        .background(if (selected) cs.primary else cs.surface)
+                        .clickable { onScale(value) }
+                        .padding(horizontal = 10.dp, vertical = 6.dp),
+                )
             }
         }
     }
@@ -371,11 +474,13 @@ fun MicroblogEditorScreen(
     val scope = rememberCoroutineScope()
     var createdAt by remember { mutableStateOf(System.currentTimeMillis()) }
     val id = remember { postId ?: java.util.UUID.randomUUID().toString() }
+    var postTitle by remember { mutableStateOf("") }
     var textFieldValue by remember { mutableStateOf(TextFieldValue("")) }
     var spans by remember { mutableStateOf(listOf<MicroblogSpan>()) }
-    val images = remember { mutableStateListOf<String>() }
+    val images = remember { mutableStateListOf<MicroblogImage>() }
     var loaded by remember { mutableStateOf(postId == null) }
     var isViewMode by remember { mutableStateOf(postId != null && !startInEdit) }
+    var cropTarget by remember { mutableStateOf<String?>(null) }
 
     var isBold by remember { mutableStateOf(false) }
     var isItalic by remember { mutableStateOf(false) }
@@ -395,10 +500,11 @@ fun MicroblogEditorScreen(
             val existing = viewModel.loadMicroblogPost(postId)
             if (existing != null) {
                 createdAt = existing.createdAtMs
+                postTitle = existing.title
                 textFieldValue = TextFieldValue(existing.body)
                 spans = existing.spans
                 images.clear()
-                images.addAll(existing.imageFileNames)
+                images.addAll(existing.images)
             }
             loaded = true
         }
@@ -532,16 +638,17 @@ fun MicroblogEditorScreen(
 
     fun persist() {
         val body = textFieldValue.text
-        if (body.isBlank() && images.isEmpty()) {
+        if (postTitle.isBlank() && body.isBlank() && images.isEmpty()) {
             if (postId != null) viewModel.deleteMicroblogPost(id)
             return
         }
         viewModel.saveMicroblogPost(
             MicroblogPost(
                 id = id,
+                title = postTitle.trim(),
                 body = body,
                 spans = spans.filter { it.start >= 0 && it.end <= body.length && it.start < it.end },
-                imageFileNames = images.toList(),
+                images = images.toList(),
                 createdAtMs = createdAt,
                 updatedAtMs = System.currentTimeMillis(),
             ),
@@ -554,7 +661,10 @@ fun MicroblogEditorScreen(
         if (uri == null) return@rememberLauncherForActivityResult
         scope.launch {
             viewModel.importMicroblogImage(uri).fold(
-                onSuccess = { images.add(it) },
+                onSuccess = { name ->
+                    images.add(MicroblogImage(name))
+                    cropTarget = name
+                },
                 onFailure = {
                     Toast.makeText(context, it.message ?: "Не удалось добавить картинку", Toast.LENGTH_SHORT).show()
                 },
@@ -572,6 +682,32 @@ fun MicroblogEditorScreen(
         onBack()
     }
     BackHandler(onBack = { goBack() })
+
+    val cropFile = cropTarget
+    if (cropFile != null) {
+        MicroblogImageCropScreen(
+            file = File(MediaCatalogPaths.microblogDir(context), cropFile),
+            onCancel = { cropTarget = null },
+            onApply = { left, top, right, bottom, scale ->
+                scope.launch {
+                    viewModel.cropMicroblogImage(cropFile, left, top, right, bottom, scale).fold(
+                        onSuccess = { newName ->
+                            val i = images.indexOfFirst { it.fileName == cropFile }
+                            if (i >= 0) images[i] = images[i].copy(fileName = newName)
+                            if (newName != cropFile) {
+                                viewModel.deleteUnusedMicroblogImage(cropFile, images.map { it.fileName })
+                            }
+                            cropTarget = null
+                        },
+                        onFailure = {
+                            Toast.makeText(context, it.message ?: "Не удалось обрезать фото", Toast.LENGTH_SHORT).show()
+                        },
+                    )
+                }
+            },
+        )
+        return
+    }
 
     val dateLabel = remember(createdAt) {
         SimpleDateFormat("dd.MM.yyyy HH:mm", Locale.getDefault()).format(Date(createdAt))
@@ -631,7 +767,7 @@ fun MicroblogEditorScreen(
         if (!loaded) return@Scaffold
         if (isViewMode) {
             val kind = microblogCardKind(
-                MicroblogPost(body = textFieldValue.text, imageFileNames = images.toList()),
+                MicroblogPost(title = postTitle, body = textFieldValue.text, images = images.toList()),
             )
             val cs = MaterialTheme.colorScheme
             val accent = when (kind) {
@@ -678,6 +814,13 @@ fun MicroblogEditorScreen(
                             color = cs.onSurfaceVariant,
                         )
                     }
+                    if (postTitle.isNotBlank()) {
+                        Text(
+                            postTitle,
+                            style = MaterialTheme.typography.headlineSmall,
+                            fontWeight = FontWeight.SemiBold,
+                        )
+                    }
                     if (textFieldValue.text.isNotBlank()) {
                         MicroblogRichText(
                             text = textFieldValue.text,
@@ -685,15 +828,11 @@ fun MicroblogEditorScreen(
                             style = MaterialTheme.typography.bodyLarge.copy(lineHeight = 24.sp),
                         )
                     }
-                    images.forEach { name ->
-                        AsyncImage(
-                            model = File(MediaCatalogPaths.microblogDir(context), name),
-                            contentDescription = null,
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .heightIn(min = 160.dp, max = 320.dp)
-                                .clip(RoundedCornerShape(18.dp)),
-                            contentScale = ContentScale.Crop,
+                    images.forEach { image ->
+                        MicroblogFittedImage(
+                            fileName = image.fileName,
+                            displayScale = image.displayScale,
+                            maxHeight = 420.dp,
                         )
                     }
                 }
@@ -705,6 +844,15 @@ fun MicroblogEditorScreen(
                 .imePadding()
                 .fillMaxSize(),
         ) {
+            OutlinedTextField(
+                value = postTitle,
+                onValueChange = { postTitle = it },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 16.dp, vertical = 8.dp),
+                singleLine = true,
+                label = { Text("Название записи") },
+            )
             MicroblogFormatBar(
                 isBold = isBold,
                 onBold = { isBold = it; applyFormat() },
@@ -768,33 +916,22 @@ fun MicroblogEditorScreen(
                 },
             )
             if (images.isNotEmpty()) {
-                LazyRow(
-                    modifier = Modifier
+                Column(
+                    Modifier
                         .fillMaxWidth()
                         .padding(horizontal = 12.dp, vertical = 8.dp),
-                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                    verticalArrangement = Arrangement.spacedBy(10.dp),
                 ) {
-                    items(images.size) { index ->
-                        val name = images[index]
-                        Box {
-                            AsyncImage(
-                                model = File(MediaCatalogPaths.microblogDir(context), name),
-                                contentDescription = null,
-                                modifier = Modifier
-                                    .size(88.dp)
-                                    .clip(RoundedCornerShape(10.dp)),
-                                contentScale = ContentScale.Crop,
-                            )
-                            IconButton(
-                                onClick = { images.removeAt(index) },
-                                modifier = Modifier
-                                    .align(Alignment.TopEnd)
-                                    .size(28.dp)
-                                    .background(Color.Black.copy(alpha = 0.45f), CircleShape),
-                            ) {
-                                Icon(Icons.Filled.Close, contentDescription = "Убрать", tint = Color.White, modifier = Modifier.size(16.dp))
-                            }
-                        }
+                    images.forEachIndexed { index, image ->
+                        MicroblogEditorImageRow(
+                            image = image,
+                            onCrop = { cropTarget = image.fileName },
+                            onScale = { images[index] = image.copy(displayScale = it) },
+                            onRemove = {
+                                val removed = images.removeAt(index)
+                                viewModel.deleteUnusedMicroblogImage(removed.fileName, images.map { it.fileName })
+                            },
+                        )
                     }
                 }
             }

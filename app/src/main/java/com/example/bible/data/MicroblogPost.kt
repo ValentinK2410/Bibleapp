@@ -45,18 +45,44 @@ data class MicroblogSpan(
     }
 }
 
+data class MicroblogImage(
+    val fileName: String,
+    val displayScale: Float = 1f,
+) {
+    fun toJson(): JSONObject = JSONObject().apply {
+        put("n", fileName)
+        if (displayScale != 1f) put("s", displayScale.toDouble())
+    }
+
+    companion object {
+        fun fromJson(j: JSONObject): MicroblogImage? {
+            val name = j.optString("n").trim().ifEmpty { j.optString("fileName").trim() }
+            if (name.isEmpty()) return null
+            val scale = j.optDouble("s", j.optDouble("displayScale", 1.0)).toFloat()
+            return MicroblogImage(fileName = name, displayScale = scale.coerceIn(0.35f, 1f))
+        }
+    }
+}
+
 data class MicroblogPost(
     val id: String = UUID.randomUUID().toString(),
+    val title: String = "",
     val body: String = "",
     val spans: List<MicroblogSpan> = emptyList(),
-    val imageFileNames: List<String> = emptyList(),
+    val images: List<MicroblogImage> = emptyList(),
     val createdAtMs: Long = System.currentTimeMillis(),
     val updatedAtMs: Long = System.currentTimeMillis(),
 ) {
+    val imageFileNames: List<String> get() = images.map { it.fileName }
+
     fun previewText(maxChars: Int = 140): String {
+        val head = title.trim()
+        if (head.isNotEmpty()) {
+            return if (head.length <= maxChars) head else head.take(maxChars - 1) + "…"
+        }
         val one = body.trim().replace(Regex("\\s+"), " ")
         if (one.isEmpty()) {
-            return if (imageFileNames.isNotEmpty()) "Изображение" else "Пустой пост"
+            return if (images.isNotEmpty()) "Изображение" else "Пустой пост"
         }
         return if (one.length <= maxChars) one else one.take(maxChars - 1) + "…"
     }
@@ -78,17 +104,27 @@ fun spansFromJson(raw: String): List<MicroblogSpan> {
     }
 }
 
-fun imageNamesToJson(names: List<String>): String {
+fun imageNamesToJson(names: List<String>): String = imagesToJson(names.map { MicroblogImage(it) })
+
+fun imagesToJson(images: List<MicroblogImage>): String {
     val arr = JSONArray()
-    names.forEach { arr.put(it) }
+    images.forEach { arr.put(it.toJson()) }
     return arr.toString()
 }
 
-fun imageNamesFromJson(raw: String): List<String> {
+fun imageNamesFromJson(raw: String): List<String> = imagesFromJson(raw).map { it.fileName }
+
+fun imagesFromJson(raw: String): List<MicroblogImage> {
     if (raw.isBlank()) return emptyList()
     return try {
         val arr = JSONArray(raw)
-        (0 until arr.length()).map { arr.getString(it).trim() }.filter { it.isNotEmpty() }
+        (0 until arr.length()).mapNotNull { i ->
+            when (val item = arr.get(i)) {
+                is String -> item.trim().takeIf { it.isNotEmpty() }?.let { MicroblogImage(it) }
+                is JSONObject -> MicroblogImage.fromJson(item)
+                else -> null
+            }
+        }
     } catch (_: Exception) {
         emptyList()
     }

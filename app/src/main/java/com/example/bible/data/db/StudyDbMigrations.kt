@@ -104,4 +104,10 @@ object StudyDbMigrations {
             )
         }
     }
+
+    val MIGRATION_4_5 = object : Migration(4, 5) {
+        override fun migrate(db: SupportSQLiteDatabase) {
+            db.execSQL("ALTER TABLE `microblog_posts` ADD COLUMN `title` TEXT NOT NULL DEFAULT ''")
+        }
+    }
 }

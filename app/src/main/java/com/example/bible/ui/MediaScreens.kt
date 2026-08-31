@@ -481,6 +481,7 @@ fun MediaHomeScreen(
     onOpenPesnopenie: () -> Unit = {},
 ) {
     val sectionOrder by viewModel.mediaHomeSectionOrder.collectAsStateWithLifecycle()
+    val blogTitle by viewModel.microblogTitle.collectAsStateWithLifecycle()
     var menuExpanded by remember { mutableStateOf(false) }
     var showOrderDialog by remember { mutableStateOf(false) }
     val draftOrder = remember { mutableStateListOf<String>() }
@@ -531,7 +532,7 @@ fun MediaHomeScreen(
             sectionOrder.forEach { id ->
                 when (id) {
                     MediaHomeSectionOrder.MICROBLOG -> MediaHomeSectionElevatedCard(
-                        title = "Микроблог",
+                        title = blogTitle,
                         subtitle = "Посты: текст со стилями, ссылки и картинки",
                         icon = Icons.Filled.Forum,
                         onClick = onOpenMicroblog,

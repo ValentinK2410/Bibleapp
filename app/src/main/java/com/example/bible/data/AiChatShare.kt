@@ -73,6 +73,7 @@ object AiChatShare {
         }
 
         return MicroblogPost(
+            title = head.ifEmpty { "Беседа с ИИ" },
             body = body.toString().trim(),
             spans = spans,
         )

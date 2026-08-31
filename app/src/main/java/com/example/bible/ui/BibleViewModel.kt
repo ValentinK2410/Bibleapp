@@ -3077,8 +3077,35 @@ class BibleViewModel(
         }
     }
 
+    val microblogTitle: StateFlow<String> = preferences.microblogTitle.stateIn(
+        viewModelScope,
+        SharingStarted.WhileSubscribed(5000),
+        "Микроблог",
+    )
+
+    fun setMicroblogTitle(title: String) {
+        viewModelScope.launch {
+            preferences.setMicroblogTitle(title)
+        }
+    }
+
     suspend fun importMicroblogImage(uri: android.net.Uri): Result<String> =
         microblogRepo.importImage(uri)
+
+    suspend fun cropMicroblogImage(
+        fileName: String,
+        left: Float,
+        top: Float,
+        right: Float,
+        bottom: Float,
+        outputScale: Float,
+    ): Result<String> = microblogRepo.cropImage(fileName, left, top, right, bottom, outputScale)
+
+    fun deleteUnusedMicroblogImage(fileName: String, stillReferenced: Collection<String>) {
+        viewModelScope.launch {
+            microblogRepo.deleteUnusedImage(fileName, stillReferenced)
+        }
+    }
 
     /** Порядок пунктов главного меню (экран книг), без «Настройки» и переводов. */
     val booksMainMenuOrder: StateFlow<List<String>> = preferences.booksMainMenuOrder.stateIn(

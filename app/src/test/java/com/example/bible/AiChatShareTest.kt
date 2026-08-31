@@ -20,6 +20,7 @@ class AiChatShareTest {
         assertTrue(plain.contains("Что такое вера?"))
 
         val post = AiChatShare.toMicroblogPost("Вера", messages)
+        assertTrue(post.title == "Вера")
         assertTrue(post.body.startsWith("Беседа с ИИ"))
         assertTrue(post.spans.isNotEmpty())
         assertTrue(post.spans.any { it.bold && it.fontSize == 20 })
