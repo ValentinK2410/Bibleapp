@@ -27,6 +27,7 @@ import com.example.bible.data.DeepSeekClient
 import com.example.bible.data.DeepSeekMessage
 import com.example.bible.data.MicroblogPost
 import com.example.bible.data.MicroblogRepository
+import com.example.bible.data.AiChatRepository
 import com.example.bible.data.AiChatSummary
 import com.example.bible.data.DeepSeekPassageFormatter
 import com.example.bible.data.DeepSeekPassageScope
