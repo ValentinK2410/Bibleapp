@@ -944,6 +944,14 @@
     <string name="ai_ask_mode_quick">Быстрый</string>
     <string name="ai_ask_mode_deep">Глубоко</string>
     <string name="ai_ask_mode_web">Интернет</string>
+    <string name="ai_ask_chats_title">Чаты</string>
+    <string name="ai_ask_new_chat">Новый чат</string>
+    <string name="ai_ask_chats_empty">Сохранённых чатов пока нет. Начните новый — переписка останется в базе приложения. ИИ получает только последние реплики, а не весь архив.</string>
+    <string name="ai_ask_chats_hint">Выберите чат, чтобы продолжить, или откройте новый. История хранится на устройстве.</string>
+    <string name="ai_ask_delete_chat">Удалить чат?</string>
+    <string name="ai_ask_delete_chat_body">«%1$s» будет удалён с устройства.</string>
+    <string name="ai_ask_new_chat_cd">Новый чат</string>
+    <string name="ai_ask_delete_chat_cd">Удалить чат</string>
     <string name="ai_identify_title">Что на фото</string>
     <string name="ai_identify_hint">Наведите камеру или выберите снимок из галереи — ИИ опишет, что видно.</string>
     <string name="ai_identify_capture">Снять и определить</string>
@@ -976,6 +984,8 @@
     <string name="deepseek_camera_capture">Снять и расшифровать</string>
     <string name="deepseek_camera_retake">Новый кадр</string>
     <string name="deepseek_camera_decode">Расшифровать снова</string>
+    <string name="deepseek_camera_copy">Копировать текст</string>
+    <string name="deepseek_camera_copied">Текст скопирован</string>
     <string name="deepseek_camera_flip">Сменить камеру</string>
     <string name="deepseek_camera_permission">Чтобы показать картинку с камеры, нужен доступ к камере.</string>
     <string name="deepseek_camera_grant">Разрешить камеру</string>

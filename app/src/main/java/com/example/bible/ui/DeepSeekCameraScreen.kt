@@ -2,8 +2,12 @@ package com.example.bible.ui
 
 import android.Manifest
 import android.annotation.SuppressLint
+import android.content.ClipData
+import android.content.ClipboardManager
+import android.content.Context
 import android.content.pm.PackageManager
 import android.graphics.BitmapFactory
+import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.camera.core.CameraSelector
@@ -14,6 +18,7 @@ import androidx.camera.lifecycle.ProcessCameraProvider
 import androidx.camera.view.PreviewView
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -28,9 +33,11 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.foundation.text.selection.SelectionContainer
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Cameraswitch
+import androidx.compose.material.icons.filled.ContentCopy
 import androidx.compose.material.icons.filled.PhotoCamera
 import androidx.compose.material.icons.filled.PhotoLibrary
 import androidx.compose.material3.Button
@@ -153,6 +160,16 @@ fun DeepSeekCameraScreen(
                     }
                 },
                 actions = {
+                    if (vision.answer.isNotBlank()) {
+                        IconButton(
+                            onClick = { copyVisionAnswer(context, vision.answer) },
+                        ) {
+                            Icon(
+                                Icons.Filled.ContentCopy,
+                                contentDescription = stringResource(R.string.deepseek_camera_copy),
+                            )
+                        }
+                    }
                     if (hasPermission && capturedJpeg == null) {
                         IconButton(onClick = { useFront = !useFront }) {
                             Icon(
@@ -282,6 +299,7 @@ fun DeepSeekCameraScreen(
                             }
                         } else {
                             Row(
+                                modifier = Modifier.horizontalScroll(rememberScrollState()),
                                 horizontalArrangement = Arrangement.spacedBy(8.dp),
                                 verticalAlignment = Alignment.CenterVertically,
                             ) {
@@ -301,6 +319,19 @@ fun DeepSeekCameraScreen(
                                 ) {
                                     Text(stringResource(R.string.deepseek_camera_decode))
                                 }
+                                if (vision.answer.isNotBlank() && !vision.loading) {
+                                    TextButton(
+                                        onClick = { copyVisionAnswer(context, vision.answer) },
+                                    ) {
+                                        Icon(
+                                            Icons.Filled.ContentCopy,
+                                            contentDescription = null,
+                                            modifier = Modifier.size(18.dp),
+                                        )
+                                        Spacer(Modifier.width(4.dp))
+                                        Text(stringResource(R.string.deepseek_camera_copy))
+                                    }
+                                }
                             }
                             Spacer(Modifier.height(8.dp))
                             when {
@@ -315,10 +346,12 @@ fun DeepSeekCameraScreen(
                                     vision.error!!,
                                     color = MaterialTheme.colorScheme.error,
                                 )
-                                vision.answer.isNotBlank() -> Text(
-                                    vision.answer,
-                                    style = MaterialTheme.typography.bodyMedium,
-                                )
+                                vision.answer.isNotBlank() -> SelectionContainer {
+                                    Text(
+                                        vision.answer,
+                                        style = MaterialTheme.typography.bodyMedium,
+                                    )
+                                }
                             }
                         }
                     }
@@ -388,6 +421,12 @@ private fun DeepSeekLivePreview(
         }
     }
     AndroidView(factory = { previewView }, modifier = modifier)
+}
+
+private fun copyVisionAnswer(context: Context, text: String) {
+    val cm = context.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
+    cm.setPrimaryClip(ClipData.newPlainText("deepseek", text))
+    Toast.makeText(context, R.string.deepseek_camera_copied, Toast.LENGTH_SHORT).show()
 }
 
 private suspend fun captureJpeg(
