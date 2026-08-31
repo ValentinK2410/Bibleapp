@@ -13,6 +13,7 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
@@ -85,12 +86,14 @@ import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.buildAnnotatedString
+import androidx.compose.ui.text.rememberTextMeasurer
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.OffsetMapping
@@ -99,6 +102,8 @@ import androidx.compose.ui.text.input.TransformedText
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.unit.Constraints
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -106,12 +111,15 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import coil.compose.AsyncImage
 import com.example.bible.data.MediaCatalogPaths
 import com.example.bible.data.MicroblogImage
+import com.example.bible.data.MicroblogImageOps
+import com.example.bible.data.MicroblogImageWrap
 import com.example.bible.data.MicroblogPost
 import com.example.bible.data.MicroblogSpan
 import java.io.File
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
+import kotlin.math.roundToInt
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
@@ -501,19 +509,150 @@ private fun MicroblogPreviewSlider(
 private fun MicroblogFittedImage(
     fileName: String,
     displayScale: Float,
-    maxHeight: androidx.compose.ui.unit.Dp,
+    maxHeight: Dp,
 ) {
     val context = LocalContext.current
     val scale = displayScale.coerceIn(0.35f, 1f)
-    AsyncImage(
-        model = File(MediaCatalogPaths.microblogDir(context), fileName),
-        contentDescription = null,
-        modifier = Modifier
-            .fillMaxWidth(scale)
-            .heightIn(max = maxHeight)
-            .clip(RoundedCornerShape(16.dp)),
-        contentScale = ContentScale.Fit,
-    )
+    Box(Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) {
+        AsyncImage(
+            model = File(MediaCatalogPaths.microblogDir(context), fileName),
+            contentDescription = null,
+            modifier = Modifier
+                .fillMaxWidth(scale)
+                .heightIn(max = maxHeight)
+                .clip(RoundedCornerShape(16.dp)),
+            contentScale = ContentScale.Fit,
+        )
+    }
+}
+
+/** Текст поста вместе с картинками: одна из них может обтекаться текстом слева или справа. */
+@Composable
+private fun MicroblogArticleBody(
+    text: String,
+    spans: List<MicroblogSpan>,
+    images: List<MicroblogImage>,
+    style: TextStyle,
+) {
+    val linkColor = MaterialTheme.colorScheme.primary
+    val annotated = remember(text, spans, linkColor) {
+        buildMicroblogAnnotated(text, spans, linkColor)
+    }
+    val floating = if (text.isBlank()) null else images.firstOrNull { it.wrap != MicroblogImageWrap.FULL }
+    Column(verticalArrangement = Arrangement.spacedBy(14.dp)) {
+        if (floating != null) {
+            MicroblogWrappedText(annotated = annotated, style = style, image = floating)
+        } else if (annotated.isNotEmpty()) {
+            MicroblogAnnotatedText(annotated = annotated, style = style)
+        }
+        images.forEach { image ->
+            if (image !== floating) {
+                MicroblogFittedImage(
+                    fileName = image.fileName,
+                    displayScale = if (image.wrap == MicroblogImageWrap.FULL) image.displayScale else 1f,
+                    maxHeight = 420.dp,
+                )
+            }
+        }
+    }
+}
+
+/**
+ * Текст реально обтекает картинку: первые строки измеряются по узкой колонке рядом с фото,
+ * остальной текст идёт под ним на всю ширину.
+ */
+@Composable
+private fun MicroblogWrappedText(
+    annotated: AnnotatedString,
+    style: TextStyle,
+    image: MicroblogImage,
+) {
+    val context = LocalContext.current
+    val density = LocalDensity.current
+    val measurer = rememberTextMeasurer()
+    val file = remember(image.fileName) {
+        File(MediaCatalogPaths.microblogDir(context), image.fileName)
+    }
+    val srcSize = remember(image.fileName) { MicroblogImageOps.readSize(file) }
+    val onLeft = image.wrap == MicroblogImageWrap.LEFT
+
+    BoxWithConstraints(Modifier.fillMaxWidth()) {
+        val totalPx = with(density) { maxWidth.toPx() }
+        val gap = 12.dp
+        val gapPx = with(density) { gap.toPx() }
+        val imageWidthPx = totalPx * image.displayScale.coerceIn(0.28f, 0.6f)
+        val ratio = srcSize?.let { (w, h) -> h.toFloat() / w.toFloat() } ?: 1f
+        val imageHeightPx = (imageWidthPx * ratio).coerceIn(imageWidthPx * 0.4f, totalPx * 1.2f)
+        val narrowPx = (totalPx - imageWidthPx - gapPx).coerceAtLeast(totalPx * 0.28f)
+
+        val splitIndex = remember(annotated, style, narrowPx, imageHeightPx) {
+            if (annotated.isEmpty()) {
+                0
+            } else {
+                val layout = measurer.measure(
+                    text = annotated,
+                    style = style,
+                    constraints = Constraints(maxWidth = narrowPx.roundToInt().coerceAtLeast(1)),
+                )
+                var lastFitting = -1
+                for (line in 0 until layout.lineCount) {
+                    if (layout.getLineBottom(line) <= imageHeightPx) lastFitting = line else break
+                }
+                if (lastFitting < 0) 0 else layout.getLineEnd(lastFitting, visibleEnd = true)
+            }
+        }
+        val head = if (splitIndex > 0) annotated.subSequence(0, splitIndex) else AnnotatedString("")
+        val tail = if (splitIndex < annotated.length) {
+            val rest = annotated.subSequence(splitIndex, annotated.length)
+            val firstVisible = rest.text.indexOfFirst { !it.isWhitespace() }
+            when {
+                firstVisible < 0 -> AnnotatedString("")
+                firstVisible > 0 -> rest.subSequence(firstVisible, rest.length)
+                else -> rest
+            }
+        } else {
+            AnnotatedString("")
+        }
+
+        val imageWidth = with(density) { imageWidthPx.toDp() }
+        val imageHeight = with(density) { imageHeightPx.toDp() }
+        val narrowWidth = with(density) { narrowPx.toDp() }
+
+        Column {
+            Row(verticalAlignment = Alignment.Top) {
+                val photo: @Composable () -> Unit = {
+                    AsyncImage(
+                        model = file,
+                        contentDescription = null,
+                        modifier = Modifier
+                            .size(width = imageWidth, height = imageHeight)
+                            .clip(RoundedCornerShape(14.dp)),
+                        contentScale = ContentScale.Fit,
+                    )
+                }
+                val column: @Composable () -> Unit = {
+                    Box(Modifier.width(narrowWidth)) {
+                        if (head.isNotEmpty()) {
+                            MicroblogAnnotatedText(annotated = head, style = style)
+                        }
+                    }
+                }
+                if (onLeft) {
+                    photo()
+                    Spacer(Modifier.width(gap))
+                    column()
+                } else {
+                    column()
+                    Spacer(Modifier.width(gap))
+                    photo()
+                }
+            }
+            if (tail.isNotEmpty()) {
+                Spacer(Modifier.height(6.dp))
+                MicroblogAnnotatedText(annotated = tail, style = style)
+            }
+        }
+    }
 }
 
 @Composable
@@ -521,6 +660,7 @@ private fun MicroblogEditorImageRow(
     image: MicroblogImage,
     onCrop: () -> Unit,
     onScale: (Float) -> Unit,
+    onWrap: (MicroblogImageWrap) -> Unit,
     onRemove: () -> Unit,
 ) {
     val context = LocalContext.current
@@ -546,7 +686,7 @@ private fun MicroblogEditorImageRow(
             Column(Modifier.weight(1f)) {
                 Text("Фото в записи", style = MaterialTheme.typography.labelLarge)
                 Text(
-                    "Обрежьте кадр или выберите ширину на экране",
+                    "Кадр, ширина и обтекание текстом",
                     style = MaterialTheme.typography.bodySmall,
                     color = cs.onSurfaceVariant,
                 )
@@ -559,21 +699,52 @@ private fun MicroblogEditorImageRow(
             }
         }
         Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-            listOf(0.55f to "Узко", 0.78f to "Средне", 1f to "Широко").forEach { (value, label) ->
-                val selected = kotlin.math.abs(image.displayScale - value) < 0.04f
-                Text(
-                    label,
-                    style = MaterialTheme.typography.labelLarge,
-                    color = if (selected) cs.onPrimary else cs.onSurface,
-                    modifier = Modifier
-                        .clip(RoundedCornerShape(8.dp))
-                        .background(if (selected) cs.primary else cs.surface)
-                        .clickable { onScale(value) }
-                        .padding(horizontal = 10.dp, vertical = 6.dp),
+            listOf(
+                MicroblogImageWrap.FULL to "Во всю ширину",
+                MicroblogImageWrap.LEFT to "Текст справа",
+                MicroblogImageWrap.RIGHT to "Текст слева",
+            ).forEach { (mode, label) ->
+                MicroblogOptionChip(
+                    label = label,
+                    selected = image.wrap == mode,
+                    onClick = { onWrap(mode) },
+                )
+            }
+        }
+        val widthOptions = if (image.wrap == MicroblogImageWrap.FULL) {
+            listOf(0.55f to "Узко", 0.78f to "Средне", 1f to "Широко")
+        } else {
+            listOf(0.32f to "Узко", 0.42f to "Средне", 0.55f to "Широко")
+        }
+        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+            widthOptions.forEach { (value, label) ->
+                MicroblogOptionChip(
+                    label = label,
+                    selected = kotlin.math.abs(image.displayScale - value) < 0.04f,
+                    onClick = { onScale(value) },
                 )
             }
         }
     }
+}
+
+@Composable
+private fun MicroblogOptionChip(
+    label: String,
+    selected: Boolean,
+    onClick: () -> Unit,
+) {
+    val cs = MaterialTheme.colorScheme
+    Text(
+        label,
+        style = MaterialTheme.typography.labelLarge,
+        color = if (selected) cs.onPrimary else cs.onSurface,
+        modifier = Modifier
+            .clip(RoundedCornerShape(9.dp))
+            .background(if (selected) cs.primary else cs.surface)
+            .clickable(onClick = onClick)
+            .padding(horizontal = 10.dp, vertical = 6.dp),
+    )
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -935,20 +1106,12 @@ fun MicroblogEditorScreen(
                             fontWeight = FontWeight.SemiBold,
                         )
                     }
-                    if (textFieldValue.text.isNotBlank()) {
-                        MicroblogRichText(
-                            text = textFieldValue.text,
-                            spans = spans,
-                            style = MaterialTheme.typography.bodyLarge.copy(lineHeight = 24.sp),
-                        )
-                    }
-                    images.forEach { image ->
-                        MicroblogFittedImage(
-                            fileName = image.fileName,
-                            displayScale = image.displayScale,
-                            maxHeight = 420.dp,
-                        )
-                    }
+                    MicroblogArticleBody(
+                        text = textFieldValue.text,
+                        spans = spans,
+                        images = images.toList(),
+                        style = MaterialTheme.typography.bodyLarge.copy(lineHeight = 24.sp),
+                    )
                 }
             }
         } else {
@@ -1041,6 +1204,14 @@ fun MicroblogEditorScreen(
                             image = image,
                             onCrop = { cropTarget = image.fileName },
                             onScale = { images[index] = image.copy(displayScale = it) },
+                            onWrap = { mode ->
+                                val scale = if (mode == MicroblogImageWrap.FULL) {
+                                    if (image.displayScale < 0.55f) 1f else image.displayScale
+                                } else {
+                                    image.displayScale.coerceIn(0.28f, 0.55f)
+                                }
+                                images[index] = image.copy(wrap = mode, displayScale = scale)
+                            },
                             onRemove = {
                                 val removed = images.removeAt(index)
                                 viewModel.deleteUnusedMicroblogImage(removed.fileName, images.map { it.fileName })
@@ -1249,19 +1420,16 @@ private fun MicroblogFormatBar(
 }
 
 @Composable
-private fun MicroblogRichText(
-    text: String,
-    spans: List<MicroblogSpan>,
+private fun MicroblogAnnotatedText(
+    annotated: AnnotatedString,
     style: TextStyle,
+    modifier: Modifier = Modifier,
     maxLines: Int = Int.MAX_VALUE,
 ) {
     val uriHandler = LocalUriHandler.current
-    val linkColor = MaterialTheme.colorScheme.primary
-    val annotated = remember(text, spans, linkColor) {
-        buildMicroblogAnnotated(text, spans, linkColor)
-    }
     ClickableText(
         text = annotated,
+        modifier = modifier,
         style = style,
         maxLines = maxLines,
         overflow = TextOverflow.Ellipsis,

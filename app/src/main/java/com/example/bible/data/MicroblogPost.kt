@@ -45,13 +45,38 @@ data class MicroblogSpan(
     }
 }
 
+/** Как текст поста ведёт себя рядом с картинкой. */
+enum class MicroblogImageWrap {
+    /** Картинка отдельным блоком, текст выше и ниже. */
+    FULL,
+
+    /** Картинка слева, текст обтекает справа. */
+    LEFT,
+
+    /** Картинка справа, текст обтекает слева. */
+    RIGHT,
+    ;
+
+    val key: String get() = name.lowercase()
+
+    companion object {
+        fun fromKey(raw: String?): MicroblogImageWrap = when (raw?.trim()?.lowercase()) {
+            "left" -> LEFT
+            "right" -> RIGHT
+            else -> FULL
+        }
+    }
+}
+
 data class MicroblogImage(
     val fileName: String,
     val displayScale: Float = 1f,
+    val wrap: MicroblogImageWrap = MicroblogImageWrap.FULL,
 ) {
     fun toJson(): JSONObject = JSONObject().apply {
         put("n", fileName)
         if (displayScale != 1f) put("s", displayScale.toDouble())
+        if (wrap != MicroblogImageWrap.FULL) put("w", wrap.key)
     }
 
     companion object {
@@ -59,7 +84,11 @@ data class MicroblogImage(
             val name = j.optString("n").trim().ifEmpty { j.optString("fileName").trim() }
             if (name.isEmpty()) return null
             val scale = j.optDouble("s", j.optDouble("displayScale", 1.0)).toFloat()
-            return MicroblogImage(fileName = name, displayScale = scale.coerceIn(0.35f, 1f))
+            return MicroblogImage(
+                fileName = name,
+                displayScale = scale.coerceIn(0.25f, 1f),
+                wrap = MicroblogImageWrap.fromKey(j.optString("w")),
+            )
         }
     }
 }

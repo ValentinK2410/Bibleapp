@@ -4,7 +4,6 @@ import android.graphics.Bitmap
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.detectDragGestures
 import androidx.compose.foundation.horizontalScroll
@@ -16,13 +15,12 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Check
+import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -37,6 +35,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -46,10 +45,14 @@ import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.ClipOp
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Path
+import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.asImageBitmap
+import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.drawscope.clipPath
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.unit.IntOffset
+import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
 import com.example.bible.data.MicroblogImageOps
 import java.io.File
@@ -61,12 +64,38 @@ import kotlin.math.roundToInt
 private enum class CropAspect(val label: String, val ratio: Float?) {
     FREE("Свободно", null),
     SQUARE("1:1", 1f),
+    R45("4:5", 4f / 5f),
     R43("4:3", 4f / 3f),
+    R32("3:2", 3f / 2f),
     R169("16:9", 16f / 9f),
 }
 
 private enum class CropHandle {
     None, Move, L, R, T, B, TL, TR, BL, BR
+}
+
+/** Геометрия вписанного в экран изображения: рамка задаётся в долях [0..1] от исходного файла. */
+private data class CropLayout(
+    val imageRect: Rect,
+    val srcWidth: Int,
+    val srcHeight: Int,
+) {
+    fun toView(norm: Rect): Rect = Rect(
+        imageRect.left + norm.left * imageRect.width,
+        imageRect.top + norm.top * imageRect.height,
+        imageRect.left + norm.right * imageRect.width,
+        imageRect.top + norm.bottom * imageRect.height,
+    )
+
+    fun toNorm(view: Rect): Rect {
+        if (imageRect.width <= 0f || imageRect.height <= 0f) return Rect(0f, 0f, 1f, 1f)
+        return Rect(
+            ((view.left - imageRect.left) / imageRect.width).coerceIn(0f, 1f),
+            ((view.top - imageRect.top) / imageRect.height).coerceIn(0f, 1f),
+            ((view.right - imageRect.left) / imageRect.width).coerceIn(0f, 1f),
+            ((view.bottom - imageRect.top) / imageRect.height).coerceIn(0f, 1f),
+        )
+    }
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -84,9 +113,7 @@ fun MicroblogImageCropScreen(
         return
     }
     var aspect by remember { mutableStateOf(CropAspect.FREE) }
-    var crop by remember(bitmap.width, bitmap.height) {
-        mutableStateOf(Rect(0.08f, 0.08f, 0.92f, 0.92f))
-    }
+    var crop by remember(bitmap.width, bitmap.height) { mutableStateOf(FullCrop) }
     var outputScale by remember { mutableFloatStateOf(1f) }
     BackHandler(onBack = onCancel)
 
@@ -100,11 +127,16 @@ fun MicroblogImageCropScreen(
                     }
                 },
                 actions = {
-                    IconButton(
-                        onClick = {
-                            onApply(crop.left, crop.top, crop.right, crop.bottom, outputScale)
-                        },
-                    ) {
+                    IconButton(onClick = {
+                        aspect = CropAspect.FREE
+                        crop = FullCrop
+                        outputScale = 1f
+                    }) {
+                        Icon(Icons.Filled.Refresh, contentDescription = "Сбросить")
+                    }
+                    IconButton(onClick = {
+                        onApply(crop.left, crop.top, crop.right, crop.bottom, outputScale)
+                    }) {
                         Icon(Icons.Filled.Check, contentDescription = "Применить")
                     }
                 },
@@ -120,7 +152,8 @@ fun MicroblogImageCropScreen(
                 Modifier
                     .weight(1f)
                     .fillMaxWidth()
-                    .padding(12.dp),
+                    .background(Color(0xFF101214))
+                    .padding(10.dp),
             ) {
                 CropCanvas(
                     bitmap = bitmap,
@@ -134,7 +167,7 @@ fun MicroblogImageCropScreen(
                     .fillMaxWidth()
                     .background(MaterialTheme.colorScheme.surfaceContainerHighest)
                     .padding(horizontal = 16.dp, vertical = 12.dp),
-                verticalArrangement = Arrangement.spacedBy(8.dp),
+                verticalArrangement = Arrangement.spacedBy(10.dp),
             ) {
                 Row(
                     Modifier
@@ -150,21 +183,31 @@ fun MicroblogImageCropScreen(
                             color = if (selected) MaterialTheme.colorScheme.onPrimary
                             else MaterialTheme.colorScheme.onSurface,
                             modifier = Modifier
-                                .clip(RoundedCornerShape(10.dp))
+                                .clip(RoundedCornerShape(12.dp))
                                 .background(
                                     if (selected) MaterialTheme.colorScheme.primary
                                     else MaterialTheme.colorScheme.surfaceVariant,
                                 )
                                 .clickable {
                                     aspect = item
-                                    crop = constrainCrop(crop, item.ratio)
+                                    val ratio = item.ratio
+                                    if (ratio != null) {
+                                        crop = centeredAspectCrop(
+                                            crop,
+                                            bitmap.width,
+                                            bitmap.height,
+                                            ratio,
+                                        )
+                                    }
                                 }
-                                .padding(horizontal = 12.dp, vertical = 8.dp),
+                                .padding(horizontal = 14.dp, vertical = 9.dp),
                         )
                     }
                 }
+                val outW = max(1, ((crop.width * bitmap.width) * outputScale).roundToInt())
+                val outH = max(1, ((crop.height * bitmap.height) * outputScale).roundToInt())
                 Text(
-                    "Размер файла: ${(outputScale * 100).roundToInt()}%",
+                    "Размер файла ${(outputScale * 100).roundToInt()}% — на выходе $outW × $outH px",
                     style = MaterialTheme.typography.labelLarge,
                 )
                 Slider(
@@ -172,10 +215,8 @@ fun MicroblogImageCropScreen(
                     onValueChange = { outputScale = it },
                     valueRange = 0.35f..1f,
                 )
-                val outW = max(1, ((crop.width * bitmap.width) * outputScale).roundToInt())
-                val outH = max(1, ((crop.height * bitmap.height) * outputScale).roundToInt())
                 Text(
-                    "На выходе ≈ $outW × $outH px. Перетащите рамку или углы — так вы сами выбираете кадр.",
+                    "Тяните уголки или края рамки, внутри рамки — перенос кадра целиком.",
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
@@ -192,217 +233,348 @@ private fun CropCanvas(
     onCrop: (Rect) -> Unit,
 ) {
     val imageBitmap = remember(bitmap) { bitmap.asImageBitmap() }
-    val handlePx = with(LocalDensity.current) { 22.dp.toPx() }
+    val density = LocalDensity.current
+    val handlePx = with(density) { 30.dp.toPx() }
+    val minSizePx = with(density) { 56.dp.toPx() }
+
     BoxWithConstraints(Modifier.fillMaxSize()) {
         val boxW = constraints.maxWidth.toFloat()
         val boxH = constraints.maxHeight.toFloat()
-        val fitted = remember(boxW, boxH, bitmap.width, bitmap.height) {
-            MicroblogImageOps.fitRect(boxW, boxH, bitmap.width.toFloat(), bitmap.height.toFloat())
+        val layout = remember(boxW, boxH, bitmap.width, bitmap.height) {
+            val fitted = MicroblogImageOps.fitRect(
+                boxW,
+                boxH,
+                bitmap.width.toFloat(),
+                bitmap.height.toFloat(),
+            )
+            CropLayout(
+                imageRect = Rect(fitted[0], fitted[1], fitted[2], fitted[3]),
+                srcWidth = bitmap.width,
+                srcHeight = bitmap.height,
+            )
         }
-        val imgLeft = fitted[0]
-        val imgTop = fitted[1]
-        val imgRight = fitted[2]
-        val imgBottom = fitted[3]
-        val imgW = imgRight - imgLeft
-        val imgH = imgBottom - imgTop
-
-        fun toView(norm: Rect): Rect = Rect(
-            imgLeft + norm.left * imgW,
-            imgTop + norm.top * imgH,
-            imgLeft + norm.right * imgW,
-            imgTop + norm.bottom * imgH,
-        )
-
-        fun toNorm(view: Rect): Rect = Rect(
-            ((view.left - imgLeft) / imgW).coerceIn(0f, 1f),
-            ((view.top - imgTop) / imgH).coerceIn(0f, 1f),
-            ((view.right - imgLeft) / imgW).coerceIn(0f, 1f),
-            ((view.bottom - imgTop) / imgH).coerceIn(0f, 1f),
-        )
+        // pointerInput не пересоздаётся при изменении рамки: иначе жест обрывался на каждом кадре.
+        val cropLatest = rememberUpdatedState(crop)
+        val aspectLatest = rememberUpdatedState(aspect)
+        val layoutLatest = rememberUpdatedState(layout)
+        val onCropLatest = rememberUpdatedState(onCrop)
+        var activeHandle by remember { mutableStateOf(CropHandle.None) }
 
         Box(
             Modifier
                 .fillMaxSize()
-                .pointerInput(crop, aspect, imgW, imgH) {
+                .pointerInput(Unit) {
                     var handle = CropHandle.None
+                    var startView = Rect.Zero
+                    var total = Offset.Zero
                     detectDragGestures(
-                        onDragStart = { start ->
-                            handle = hitHandle(start, toView(crop), handlePx)
+                        onDragStart = { position ->
+                            startView = layoutLatest.value.toView(cropLatest.value)
+                            handle = hitHandle(position, startView, handlePx)
+                            total = Offset.Zero
+                            activeHandle = handle
                         },
-                        onDragEnd = { handle = CropHandle.None },
-                        onDragCancel = { handle = CropHandle.None },
+                        onDragEnd = {
+                            handle = CropHandle.None
+                            activeHandle = CropHandle.None
+                        },
+                        onDragCancel = {
+                            handle = CropHandle.None
+                            activeHandle = CropHandle.None
+                        },
                         onDrag = { change, amount ->
-                            change.consume()
                             if (handle == CropHandle.None) return@detectDragGestures
-                            val view = toView(crop)
-                            val next = dragCrop(view, handle, amount, Rect(imgLeft, imgTop, imgRight, imgBottom), aspect)
-                            onCrop(constrainCrop(toNorm(next), aspect))
+                            change.consume()
+                            total += amount
+                            val info = layoutLatest.value
+                            // Рамка считается от снимка на старте жеста, поэтому она не «уезжает».
+                            val next = resizeCrop(
+                                start = startView,
+                                handle = handle,
+                                delta = total,
+                                bounds = info.imageRect,
+                                aspect = aspectLatest.value,
+                                minSize = minSizePx,
+                            )
+                            onCropLatest.value(info.toNorm(next))
                         },
                     )
                 },
         ) {
+            val dragging = activeHandle != CropHandle.None
             Canvas(Modifier.fillMaxSize()) {
+                val imageRect = layout.imageRect
                 drawImage(
                     image = imageBitmap,
-                    dstOffset = androidx.compose.ui.unit.IntOffset(imgLeft.roundToInt(), imgTop.roundToInt()),
-                    dstSize = androidx.compose.ui.unit.IntSize(imgW.roundToInt(), imgH.roundToInt()),
+                    dstOffset = IntOffset(imageRect.left.roundToInt(), imageRect.top.roundToInt()),
+                    dstSize = IntSize(imageRect.width.roundToInt(), imageRect.height.roundToInt()),
                 )
-                val view = toView(crop)
-                val overlay = Path().apply { addRect(Rect(0f, 0f, size.width, size.height)) }
-                val hole = Path().apply { addRect(view) }
-                clipPath(hole, ClipOp.Difference) {
-                    drawPath(overlay, Color.Black.copy(alpha = 0.55f))
+                val view = layout.toView(crop)
+                val scrim = Path().apply { addRect(Rect(0f, 0f, size.width, size.height)) }
+                clipPath(Path().apply { addRect(view) }, ClipOp.Difference) {
+                    drawPath(scrim, Color.Black.copy(alpha = 0.6f))
                 }
                 drawRect(
-                    color = Color.White,
+                    color = Color.White.copy(alpha = 0.9f),
                     topLeft = Offset(view.left, view.top),
                     size = Size(view.width, view.height),
-                    style = androidx.compose.ui.graphics.drawscope.Stroke(width = 2.dp.toPx()),
+                    style = Stroke(width = 1.5.dp.toPx()),
+                )
+                if (dragging) {
+                    val gridColor = Color.White.copy(alpha = 0.35f)
+                    val gridStroke = 1.dp.toPx()
+                    for (i in 1..2) {
+                        val x = view.left + view.width * i / 3f
+                        val y = view.top + view.height * i / 3f
+                        drawLine(gridColor, Offset(x, view.top), Offset(x, view.bottom), gridStroke)
+                        drawLine(gridColor, Offset(view.left, y), Offset(view.right, y), gridStroke)
+                    }
+                }
+                val cornerLen = min(28.dp.toPx(), min(view.width, view.height) / 3f)
+                val cornerStroke = 4.dp.toPx()
+                fun corner(x: Float, y: Float, dx: Float, dy: Float) {
+                    drawLine(
+                        Color.White,
+                        Offset(x, y),
+                        Offset(x + dx * cornerLen, y),
+                        cornerStroke,
+                        cap = StrokeCap.Round,
+                    )
+                    drawLine(
+                        Color.White,
+                        Offset(x, y),
+                        Offset(x, y + dy * cornerLen),
+                        cornerStroke,
+                        cap = StrokeCap.Round,
+                    )
+                }
+                corner(view.left, view.top, 1f, 1f)
+                corner(view.right, view.top, -1f, 1f)
+                corner(view.left, view.bottom, 1f, -1f)
+                corner(view.right, view.bottom, -1f, -1f)
+
+                val edgeLen = min(24.dp.toPx(), min(view.width, view.height) / 3f)
+                val centerX = view.left + view.width / 2f
+                val centerY = view.top + view.height / 2f
+                drawLine(
+                    Color.White,
+                    Offset(centerX - edgeLen / 2f, view.top),
+                    Offset(centerX + edgeLen / 2f, view.top),
+                    cornerStroke,
+                    cap = StrokeCap.Round,
+                )
+                drawLine(
+                    Color.White,
+                    Offset(centerX - edgeLen / 2f, view.bottom),
+                    Offset(centerX + edgeLen / 2f, view.bottom),
+                    cornerStroke,
+                    cap = StrokeCap.Round,
+                )
+                drawLine(
+                    Color.White,
+                    Offset(view.left, centerY - edgeLen / 2f),
+                    Offset(view.left, centerY + edgeLen / 2f),
+                    cornerStroke,
+                    cap = StrokeCap.Round,
+                )
+                drawLine(
+                    Color.White,
+                    Offset(view.right, centerY - edgeLen / 2f),
+                    Offset(view.right, centerY + edgeLen / 2f),
+                    cornerStroke,
+                    cap = StrokeCap.Round,
                 )
             }
-            val view = toView(crop)
-            HandleDot(view.left, view.top)
-            HandleDot(view.right, view.top)
-            HandleDot(view.left, view.bottom)
-            HandleDot(view.right, view.bottom)
         }
     }
 }
 
-@Composable
-private fun HandleDot(x: Float, y: Float) {
-    val density = LocalDensity.current
-    Box(
-        Modifier
-            .padding(
-                start = with(density) { (x - 8.dp.toPx()).coerceAtLeast(0f).toDp() },
-                top = with(density) { (y - 8.dp.toPx()).coerceAtLeast(0f).toDp() },
-            )
-            .size(16.dp)
-            .clip(CircleShape)
-            .background(Color.White)
-            .border(2.dp, Color(0xFF1565C0), CircleShape),
-    )
-}
+private val FullCrop = Rect(0f, 0f, 1f, 1f)
 
 private fun hitHandle(p: Offset, view: Rect, handlePx: Float): CropHandle {
-    fun near(x: Float, y: Float) = abs(p.x - x) <= handlePx && abs(p.y - y) <= handlePx
+    val slop = min(handlePx, max(view.width, view.height) / 2f)
+    fun nearCorner(x: Float, y: Float) = abs(p.x - x) <= slop && abs(p.y - y) <= slop
+    val insideY = p.y >= view.top - slop && p.y <= view.bottom + slop
+    val insideX = p.x >= view.left - slop && p.x <= view.right + slop
     return when {
-        near(view.left, view.top) -> CropHandle.TL
-        near(view.right, view.top) -> CropHandle.TR
-        near(view.left, view.bottom) -> CropHandle.BL
-        near(view.right, view.bottom) -> CropHandle.BR
-        abs(p.x - view.left) <= handlePx && p.y in view.top..view.bottom -> CropHandle.L
-        abs(p.x - view.right) <= handlePx && p.y in view.top..view.bottom -> CropHandle.R
-        abs(p.y - view.top) <= handlePx && p.x in view.left..view.right -> CropHandle.T
-        abs(p.y - view.bottom) <= handlePx && p.x in view.left..view.right -> CropHandle.B
+        nearCorner(view.left, view.top) -> CropHandle.TL
+        nearCorner(view.right, view.top) -> CropHandle.TR
+        nearCorner(view.left, view.bottom) -> CropHandle.BL
+        nearCorner(view.right, view.bottom) -> CropHandle.BR
+        abs(p.x - view.left) <= slop && insideY -> CropHandle.L
+        abs(p.x - view.right) <= slop && insideY -> CropHandle.R
+        abs(p.y - view.top) <= slop && insideX -> CropHandle.T
+        abs(p.y - view.bottom) <= slop && insideX -> CropHandle.B
         p.x in view.left..view.right && p.y in view.top..view.bottom -> CropHandle.Move
         else -> CropHandle.None
     }
 }
 
-private fun dragCrop(
-    view: Rect,
+/** Новая рамка считается от [start] и полного смещения пальца, без накопления ошибки. */
+private fun resizeCrop(
+    start: Rect,
     handle: CropHandle,
     delta: Offset,
     bounds: Rect,
     aspect: Float?,
+    minSize: Float,
 ): Rect {
-    var l = view.left
-    var t = view.top
-    var r = view.right
-    var b = view.bottom
-    val minSize = 48f
-    when (handle) {
-        CropHandle.Move -> {
-            var nl = l + delta.x
-            var nt = t + delta.y
-            var nr = r + delta.x
-            var nb = b + delta.y
-            if (nl < bounds.left) {
-                nr += bounds.left - nl
-                nl = bounds.left
-            }
-            if (nt < bounds.top) {
-                nb += bounds.top - nt
-                nt = bounds.top
-            }
-            if (nr > bounds.right) {
-                nl -= nr - bounds.right
-                nr = bounds.right
-            }
-            if (nb > bounds.bottom) {
-                nt -= nb - bounds.bottom
-                nb = bounds.bottom
-            }
-            return Rect(nl, nt, nr, nb)
-        }
-        CropHandle.L -> l += delta.x
-        CropHandle.R -> r += delta.x
-        CropHandle.T -> t += delta.y
-        CropHandle.B -> b += delta.y
-        CropHandle.TL -> { l += delta.x; t += delta.y }
-        CropHandle.TR -> { r += delta.x; t += delta.y }
-        CropHandle.BL -> { l += delta.x; b += delta.y }
-        CropHandle.BR -> { r += delta.x; b += delta.y }
-        CropHandle.None -> return view
+    if (handle == CropHandle.None) return start
+    if (handle == CropHandle.Move) {
+        val dx = delta.x.coerceIn(bounds.left - start.left, bounds.right - start.right)
+        val dy = delta.y.coerceIn(bounds.top - start.top, bounds.bottom - start.bottom)
+        return Rect(start.left + dx, start.top + dy, start.right + dx, start.bottom + dy)
     }
-    if (r - l < minSize) {
-        if (handle == CropHandle.L || handle == CropHandle.TL || handle == CropHandle.BL) l = r - minSize
-        else r = l + minSize
+    val minW = min(minSize, bounds.width)
+    val minH = min(minSize, bounds.height)
+    if (aspect == null) {
+        var l = start.left
+        var t = start.top
+        var r = start.right
+        var b = start.bottom
+        if (handle.touchesLeft) l = (start.left + delta.x).coerceIn(bounds.left, r - minW)
+        if (handle.touchesRight) r = (start.right + delta.x).coerceIn(l + minW, bounds.right)
+        if (handle.touchesTop) t = (start.top + delta.y).coerceIn(bounds.top, b - minH)
+        if (handle.touchesBottom) b = (start.bottom + delta.y).coerceIn(t + minH, bounds.bottom)
+        return Rect(l, t, r, b)
     }
-    if (b - t < minSize) {
-        if (handle == CropHandle.T || handle == CropHandle.TL || handle == CropHandle.TR) t = b - minSize
-        else b = t + minSize
-    }
-    var next = Rect(l, t, r, b)
-    if (aspect != null && aspect > 0f) {
-        next = applyAspect(next, handle, aspect)
-    }
-    return Rect(
-        next.left.coerceAtLeast(bounds.left),
-        next.top.coerceAtLeast(bounds.top),
-        next.right.coerceAtMost(bounds.right),
-        next.bottom.coerceAtMost(bounds.bottom),
-    )
+    return resizeWithAspect(start, handle, delta, bounds, aspect, max(minW, minH * aspect))
 }
 
-private fun applyAspect(rect: Rect, handle: CropHandle, aspect: Float): Rect {
-    val w = rect.width
-    val fromW = Rect(rect.left, rect.top, rect.right, rect.top + w / aspect)
-    val fromH = Rect(rect.left, rect.top, rect.left + rect.height * aspect, rect.bottom)
+private fun resizeWithAspect(
+    start: Rect,
+    handle: CropHandle,
+    delta: Offset,
+    bounds: Rect,
+    aspect: Float,
+    minWidth: Float,
+): Rect {
+    val dirX = if (handle.touchesLeft) -1 else 1
+    val dirY = if (handle.touchesTop) -1 else 1
     return when (handle) {
-        CropHandle.L, CropHandle.R, CropHandle.TL, CropHandle.TR, CropHandle.BL, CropHandle.BR -> {
-            val h = w / aspect
-            when (handle) {
-                CropHandle.TL -> Rect(rect.right - w, rect.bottom - h, rect.right, rect.bottom)
-                CropHandle.TR -> Rect(rect.left, rect.bottom - h, rect.right, rect.bottom)
-                CropHandle.BL -> Rect(rect.right - w, rect.top, rect.right, rect.top + h)
-                else -> Rect(rect.left, rect.top, rect.right, rect.top + h)
-            }
+        CropHandle.TL, CropHandle.TR, CropHandle.BL, CropHandle.BR -> {
+            val anchorX = if (handle.touchesLeft) start.right else start.left
+            val anchorY = if (handle.touchesTop) start.bottom else start.top
+            val widthFromX = start.width + dirX * delta.x
+            val heightFromY = start.height + dirY * delta.y
+            val width = if (abs(delta.x) >= abs(delta.y)) widthFromX else heightFromY * aspect
+            rectFromAnchor(anchorX, anchorY, dirX, dirY, width, aspect, bounds, minWidth)
         }
-        CropHandle.T, CropHandle.B -> fromH
-        else -> fromW
+        CropHandle.L, CropHandle.R -> {
+            val anchorX = if (handle.touchesLeft) start.right else start.left
+            val width = start.width + dirX * delta.x
+            centeredVertically(anchorX, dirX, start.center.y, width, aspect, bounds, minWidth)
+        }
+        else -> {
+            val anchorY = if (handle.touchesTop) start.bottom else start.top
+            val height = start.height + dirY * delta.y
+            centeredHorizontally(anchorY, dirY, start.center.x, height * aspect, aspect, bounds, minWidth)
+        }
     }
 }
 
-private fun constrainCrop(crop: Rect, aspect: Float?): Rect {
-    var l = crop.left.coerceIn(0f, 0.95f)
-    var t = crop.top.coerceIn(0f, 0.95f)
-    var r = crop.right.coerceIn(0.05f, 1f)
-    var b = crop.bottom.coerceIn(0.05f, 1f)
-    if (r - l < 0.08f) r = (l + 0.08f).coerceAtMost(1f)
-    if (b - t < 0.08f) b = (t + 0.08f).coerceAtMost(1f)
-    if (aspect != null && aspect > 0f) {
-        val w = r - l
-        var h = w / aspect
-        if (t + h > 1f) {
-            h = 1f - t
-            val nw = h * aspect
-            r = (l + nw).coerceAtMost(1f)
-            l = r - nw
-        }
-        b = (t + h).coerceAtMost(1f)
-    }
-    return Rect(l.coerceIn(0f, 1f), t.coerceIn(0f, 1f), r.coerceIn(0f, 1f), b.coerceIn(0f, 1f))
+private fun rectFromAnchor(
+    anchorX: Float,
+    anchorY: Float,
+    dirX: Int,
+    dirY: Int,
+    desiredWidth: Float,
+    aspect: Float,
+    bounds: Rect,
+    minWidth: Float,
+): Rect {
+    val maxW = if (dirX > 0) bounds.right - anchorX else anchorX - bounds.left
+    val maxH = if (dirY > 0) bounds.bottom - anchorY else anchorY - bounds.top
+    var w = desiredWidth.coerceAtLeast(minWidth)
+    w = min(w, maxW)
+    w = min(w, maxH * aspect)
+    if (w < 1f) return Rect(anchorX, anchorY, anchorX, anchorY)
+    val h = w / aspect
+    val x2 = anchorX + dirX * w
+    val y2 = anchorY + dirY * h
+    return Rect(min(anchorX, x2), min(anchorY, y2), max(anchorX, x2), max(anchorY, y2))
 }
+
+private fun centeredVertically(
+    anchorX: Float,
+    dirX: Int,
+    centerY: Float,
+    desiredWidth: Float,
+    aspect: Float,
+    bounds: Rect,
+    minWidth: Float,
+): Rect {
+    val maxW = if (dirX > 0) bounds.right - anchorX else anchorX - bounds.left
+    val allowedH = 2f * min(centerY - bounds.top, bounds.bottom - centerY)
+    var w = desiredWidth.coerceAtLeast(minWidth)
+    w = min(w, maxW)
+    w = min(w, allowedH * aspect)
+    if (w < 1f) return Rect(anchorX, centerY, anchorX, centerY)
+    val h = w / aspect
+    val x2 = anchorX + dirX * w
+    return Rect(min(anchorX, x2), centerY - h / 2f, max(anchorX, x2), centerY + h / 2f)
+}
+
+private fun centeredHorizontally(
+    anchorY: Float,
+    dirY: Int,
+    centerX: Float,
+    desiredWidth: Float,
+    aspect: Float,
+    bounds: Rect,
+    minWidth: Float,
+): Rect {
+    val maxH = if (dirY > 0) bounds.bottom - anchorY else anchorY - bounds.top
+    val allowedW = 2f * min(centerX - bounds.left, bounds.right - centerX)
+    var w = desiredWidth.coerceAtLeast(minWidth)
+    w = min(w, allowedW)
+    w = min(w, maxH * aspect)
+    if (w < 1f) return Rect(centerX, anchorY, centerX, anchorY)
+    val h = w / aspect
+    val y2 = anchorY + dirY * h
+    return Rect(centerX - w / 2f, min(anchorY, y2), centerX + w / 2f, max(anchorY, y2))
+}
+
+/**
+ * Пропорции задаются в пикселях файла, поэтому в долях кадр пересчитывается через размеры источника.
+ */
+private fun centeredAspectCrop(
+    current: Rect,
+    srcWidth: Int,
+    srcHeight: Int,
+    aspect: Float,
+): Rect {
+    if (srcWidth <= 0 || srcHeight <= 0) return current
+    val srcW = srcWidth.toFloat()
+    val srcH = srcHeight.toFloat()
+    val centerX = current.center.x.coerceIn(0f, 1f)
+    val centerY = current.center.y.coerceIn(0f, 1f)
+    var widthPx = min(srcW, current.width * srcW)
+    var heightPx = widthPx / aspect
+    val maxHeightPx = min(srcH, current.height * srcH).coerceAtLeast(1f)
+    if (heightPx > maxHeightPx) {
+        heightPx = maxHeightPx
+        widthPx = heightPx * aspect
+    }
+    var w = (widthPx / srcW).coerceIn(0.05f, 1f)
+    var h = (heightPx / srcH).coerceIn(0.05f, 1f)
+    // Кадр должен целиком попадать в изображение — при необходимости уменьшаем с сохранением пропорций.
+    val shrink = min(1f, min(1f / w, 1f / h))
+    w *= shrink
+    h *= shrink
+    val left = (centerX - w / 2f).coerceIn(0f, 1f - w)
+    val top = (centerY - h / 2f).coerceIn(0f, 1f - h)
+    return Rect(left, top, left + w, top + h)
+}
+
+private val CropHandle.touchesLeft: Boolean
+    get() = this == CropHandle.L || this == CropHandle.TL || this == CropHandle.BL
+
+private val CropHandle.touchesRight: Boolean
+    get() = this == CropHandle.R || this == CropHandle.TR || this == CropHandle.BR
+
+private val CropHandle.touchesTop: Boolean
+    get() = this == CropHandle.T || this == CropHandle.TL || this == CropHandle.TR
+
+private val CropHandle.touchesBottom: Boolean
+    get() = this == CropHandle.B || this == CropHandle.BL || this == CropHandle.BR

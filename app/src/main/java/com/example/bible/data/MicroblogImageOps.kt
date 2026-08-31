@@ -15,6 +15,23 @@ object MicroblogImageOps {
     private const val DecodeMaxSide = 4096
     private const val OutputMaxSide = 2048
 
+    /** Размеры файла без декодирования пикселей — нужны для расчёта обтекания текстом. */
+    fun readSize(file: File): Pair<Int, Int>? {
+        if (!file.isFile) return null
+        val bounds = BitmapFactory.Options().apply { inJustDecodeBounds = true }
+        BitmapFactory.decodeFile(file.absolutePath, bounds)
+        if (bounds.outWidth <= 0 || bounds.outHeight <= 0) return null
+        val rotated = try {
+            val orientation = ExifInterface(file.absolutePath)
+                .getAttributeInt(ExifInterface.TAG_ORIENTATION, ExifInterface.ORIENTATION_NORMAL)
+            orientation == ExifInterface.ORIENTATION_ROTATE_90 ||
+                orientation == ExifInterface.ORIENTATION_ROTATE_270
+        } catch (_: Exception) {
+            false
+        }
+        return if (rotated) bounds.outHeight to bounds.outWidth else bounds.outWidth to bounds.outHeight
+    }
+
     fun loadBitmap(file: File): Bitmap? {
         val bounds = BitmapFactory.Options().apply { inJustDecodeBounds = true }
         BitmapFactory.decodeFile(file.absolutePath, bounds)
