@@ -22,6 +22,7 @@ data class DeepSeekMessage(
 object DeepSeekClient {
 
     const val CHAT_URL = "https://api.deepseek.com/chat/completions"
+    const val RESPONSES_URL = "https://api.deepseek.com/responses"
     /** Флагман DeepSeek V4 Pro (самая сильная текстовая модель в API). */
     const val DEFAULT_MODEL = "deepseek-v4-pro"
     /** Единственная модель API, которая принимает изображения. */
@@ -36,6 +37,8 @@ object DeepSeekClient {
         model: String = DEFAULT_MODEL,
         timeoutMs: Int = 90_000,
         thinking: Boolean = true,
+        reasoningEffort: String? = null,
+        webSearch: Boolean = false,
     ): Result<String> = kotlinx.coroutines.withContext(kotlinx.coroutines.Dispatchers.IO) {
         val key = apiKey.trim()
         if (key.isEmpty()) {
@@ -43,6 +46,16 @@ object DeepSeekClient {
         }
         if (messages.isEmpty()) {
             return@withContext Result.failure(IllegalArgumentException("Пустой запрос"))
+        }
+        if (webSearch) {
+            return@withContext respondWithWebSearch(
+                apiKey = key,
+                messages = messages,
+                model = model,
+                timeoutMs = timeoutMs,
+                thinking = thinking,
+                reasoningEffort = reasoningEffort,
+            )
         }
         try {
             val body = JSONObject().apply {
@@ -52,6 +65,9 @@ object DeepSeekClient {
                     "thinking",
                     JSONObject().put("type", if (thinking) "enabled" else "disabled"),
                 )
+                if (thinking) {
+                    put("reasoning_effort", reasoningEffort?.ifBlank { null } ?: "high")
+                }
                 put(
                     "messages",
                     JSONArray().apply {
@@ -65,21 +81,7 @@ object DeepSeekClient {
                     },
                 )
             }.toString()
-            val conn = URL(CHAT_URL).openConnection() as HttpURLConnection
-            conn.requestMethod = "POST"
-            conn.setRequestProperty("Authorization", "Bearer $key")
-            conn.setRequestProperty("Content-Type", "application/json")
-            conn.setRequestProperty("Accept", "application/json")
-            conn.setRequestProperty("User-Agent", USER_AGENT)
-            conn.connectTimeout = 20_000
-            conn.readTimeout = timeoutMs
-            conn.doOutput = true
-            conn.outputStream.use { it.write(body.toByteArray(StandardCharsets.UTF_8)) }
-            val code = conn.responseCode
-            val raw = (if (code in 200..299) conn.inputStream else conn.errorStream)
-                ?.bufferedReader(StandardCharsets.UTF_8)
-                ?.use { it.readText() }
-                .orEmpty()
+            val (code, raw) = postJson(CHAT_URL, key, body, timeoutMs)
             if (code !in 200..299) {
                 return@withContext Result.failure(IllegalStateException(errorMessage(code, raw)))
             }
@@ -97,6 +99,119 @@ object DeepSeekClient {
         } catch (e: Exception) {
             Result.failure(e)
         }
+    }
+
+    private fun respondWithWebSearch(
+        apiKey: String,
+        messages: List<DeepSeekMessage>,
+        model: String,
+        timeoutMs: Int,
+        thinking: Boolean,
+        reasoningEffort: String?,
+    ): Result<String> {
+        val instructions = buildString {
+            val system = messages.filter { it.role == "system" }.joinToString("\n") { it.content }.trim()
+            if (system.isNotEmpty()) {
+                append(system)
+                append("\n\n")
+            }
+            append(
+                "Используй поиск в интернете, чтобы опереться на актуальные источники. " +
+                    "Не выдумывай новости, даты и цитаты. Если источники расходятся — скажи об этом.",
+            )
+        }
+        val input = JSONArray().apply {
+            messages.filter { it.role != "system" }.forEach { m ->
+                put(
+                    JSONObject()
+                        .put("type", "message")
+                        .put("role", m.role)
+                        .put("content", m.content),
+                )
+            }
+        }
+        if (input.length() == 0) {
+            return Result.failure(IllegalArgumentException("Пустой запрос"))
+        }
+        return try {
+            val body = JSONObject().apply {
+                put("model", model)
+                put("stream", false)
+                put("instructions", instructions)
+                put("input", input)
+                put("tools", JSONArray().put(JSONObject().put("type", "web_search")))
+                put("tool_choice", JSONObject().put("type", "web_search"))
+                put(
+                    "reasoning",
+                    JSONObject().put(
+                        "effort",
+                        if (thinking) reasoningEffort?.ifBlank { null } ?: "max" else "none",
+                    ),
+                )
+            }.toString()
+            val (code, raw) = postJson(RESPONSES_URL, apiKey, body, timeoutMs)
+            if (code !in 200..299) {
+                return Result.failure(IllegalStateException(errorMessage(code, raw)))
+            }
+            val json = JSONObject(raw)
+            if (json.optString("status") == "failed") {
+                val msg = json.optJSONObject("error")?.optString("message").orEmpty()
+                return Result.failure(IllegalStateException(msg.ifBlank { "Поиск в интернете не удался" }))
+            }
+            val text = extractResponseText(json)
+            if (text.isEmpty()) {
+                Result.failure(IllegalStateException("Пустой ответ DeepSeek"))
+            } else {
+                Result.success(text)
+            }
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
+
+    private fun extractResponseText(json: JSONObject): String {
+        val shortcut = json.optString("output_text").trim()
+        if (shortcut.isNotEmpty() && shortcut != "null") return shortcut
+        val output = json.optJSONArray("output") ?: return ""
+        val parts = mutableListOf<String>()
+        for (i in 0 until output.length()) {
+            val item = output.optJSONObject(i) ?: continue
+            if (item.optString("type") != "message") continue
+            val content = item.optJSONArray("content") ?: continue
+            for (j in 0 until content.length()) {
+                val part = content.optJSONObject(j) ?: continue
+                val type = part.optString("type")
+                if (type == "output_text" || type == "text") {
+                    val text = part.optString("text").trim()
+                    if (text.isNotEmpty()) parts += text
+                }
+            }
+        }
+        return parts.joinToString("\n").trim()
+    }
+
+    private fun postJson(
+        url: String,
+        apiKey: String,
+        body: String,
+        timeoutMs: Int,
+    ): Pair<Int, String> {
+        val conn = URL(url).openConnection() as HttpURLConnection
+        conn.requestMethod = "POST"
+        conn.setRequestProperty("Authorization", "Bearer $apiKey")
+        conn.setRequestProperty("Content-Type", "application/json")
+        conn.setRequestProperty("Accept", "application/json")
+        conn.setRequestProperty("User-Agent", USER_AGENT)
+        conn.connectTimeout = 20_000
+        conn.readTimeout = timeoutMs
+        conn.doOutput = true
+        conn.outputStream.use { it.write(body.toByteArray(StandardCharsets.UTF_8)) }
+        val code = conn.responseCode
+        val raw = (if (code in 200..299) conn.inputStream else conn.errorStream)
+            ?.bufferedReader(StandardCharsets.UTF_8)
+            ?.use { it.readText() }
+            .orEmpty()
+        return code to raw
     }
 
     suspend fun testKey(apiKey: String): Result<String> =

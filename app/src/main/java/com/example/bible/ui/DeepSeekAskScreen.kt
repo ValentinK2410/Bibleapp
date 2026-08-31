@@ -1,5 +1,6 @@
 package com.example.bible.ui
 
+import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -16,9 +17,13 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.filled.Send
+import androidx.compose.material.icons.filled.Psychology
+import androidx.compose.material.icons.filled.Speed
+import androidx.compose.material.icons.filled.TravelExplore
 import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.FilterChip
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -121,6 +126,53 @@ fun DeepSeekAskScreen(
                 state.error?.let { err ->
                     Text(err, color = MaterialTheme.colorScheme.error)
                 }
+            }
+            Spacer(Modifier.height(8.dp))
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .horizontalScroll(rememberScrollState()),
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+            ) {
+                FilterChip(
+                    selected = state.style == DeepSeekAskStyle.QUICK,
+                    onClick = { viewModel.setDeepSeekAskStyle(DeepSeekAskStyle.QUICK) },
+                    enabled = !state.loading,
+                    leadingIcon = {
+                        Icon(
+                            Icons.Filled.Speed,
+                            contentDescription = null,
+                            modifier = Modifier.size(18.dp),
+                        )
+                    },
+                    label = { Text(stringResource(R.string.ai_ask_mode_quick)) },
+                )
+                FilterChip(
+                    selected = state.style == DeepSeekAskStyle.DEEP,
+                    onClick = { viewModel.setDeepSeekAskStyle(DeepSeekAskStyle.DEEP) },
+                    enabled = !state.loading,
+                    leadingIcon = {
+                        Icon(
+                            Icons.Filled.Psychology,
+                            contentDescription = null,
+                            modifier = Modifier.size(18.dp),
+                        )
+                    },
+                    label = { Text(stringResource(R.string.ai_ask_mode_deep)) },
+                )
+                FilterChip(
+                    selected = state.webSearch,
+                    onClick = { viewModel.setDeepSeekAskWebSearch(!state.webSearch) },
+                    enabled = !state.loading,
+                    leadingIcon = {
+                        Icon(
+                            Icons.Filled.TravelExplore,
+                            contentDescription = null,
+                            modifier = Modifier.size(18.dp),
+                        )
+                    },
+                    label = { Text(stringResource(R.string.ai_ask_mode_web)) },
+                )
             }
             Spacer(Modifier.height(8.dp))
             Row(verticalAlignment = Alignment.Bottom) {

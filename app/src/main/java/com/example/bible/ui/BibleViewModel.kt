@@ -140,11 +140,18 @@ enum class DeepSeekNoteAssistKind {
     SIMPLIFY,
 }
 
+enum class DeepSeekAskStyle {
+    QUICK,
+    DEEP,
+}
+
 data class DeepSeekAskUiState(
     val loading: Boolean = false,
     val messages: List<DeepSeekMessage> = emptyList(),
     val error: String? = null,
     val needsKey: Boolean = false,
+    val style: DeepSeekAskStyle = DeepSeekAskStyle.DEEP,
+    val webSearch: Boolean = false,
 )
 
 data class DeepSeekNoteAssistUiState(
@@ -1213,6 +1220,14 @@ class BibleViewModel(
         _deepSeekAsk.value = DeepSeekAskUiState()
     }
 
+    fun setDeepSeekAskStyle(style: DeepSeekAskStyle) {
+        _deepSeekAsk.value = _deepSeekAsk.value.copy(style = style)
+    }
+
+    fun setDeepSeekAskWebSearch(enabled: Boolean) {
+        _deepSeekAsk.value = _deepSeekAsk.value.copy(webSearch = enabled)
+    }
+
     fun askDeepSeekQuestion(question: String) {
         val q = question.trim()
         if (q.isEmpty()) return
@@ -1230,13 +1245,29 @@ class BibleViewModel(
                         "Если вопрос о Писании — не выдумывай цитаты. На другие темы тоже помогай.",
                 )
             }
+            val style = _deepSeekAsk.value.style
+            val webSearch = _deepSeekAsk.value.webSearch
+            val thinking = style == DeepSeekAskStyle.DEEP
             _deepSeekAsk.value = _deepSeekAsk.value.copy(loading = true, error = null, needsKey = false)
             deepSeekAskHistory += DeepSeekMessage("user", q)
-            val result = DeepSeekClient.chat(key, deepSeekAskHistory.toList())
+            val result = DeepSeekClient.chat(
+                apiKey = key,
+                messages = deepSeekAskHistory.toList(),
+                thinking = thinking,
+                reasoningEffort = if (thinking) "max" else null,
+                webSearch = webSearch,
+                timeoutMs = when {
+                    webSearch -> 150_000
+                    thinking -> 120_000
+                    else -> 45_000
+                },
+            )
             result.fold(
                 onSuccess = { text ->
                     deepSeekAskHistory += DeepSeekMessage("assistant", text)
-                    _deepSeekAsk.value = DeepSeekAskUiState(
+                    _deepSeekAsk.value = _deepSeekAsk.value.copy(
+                        loading = false,
+                        error = null,
                         messages = deepSeekAskHistory.filter { it.role != "system" }.toList(),
                     )
                 },

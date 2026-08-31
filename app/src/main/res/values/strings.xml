@@ -938,9 +938,12 @@
     <string name="ai_hub_settings_desc">API-ключ для работы ИИ</string>
     <string name="ai_settings_title">Настройки ИИ</string>
     <string name="ai_ask_title">Вопрос ИИ</string>
-    <string name="ai_ask_hint">Напишите вопрос. Можно уточнять в том же диалоге.</string>
+    <string name="ai_ask_hint">Напишите вопрос. Можно уточнять в том же диалоге. Режимы: быстрый ответ, глубокое размышление и поиск в интернете (можно включить вместе с быстрым или глубоким).</string>
     <string name="ai_ask_field">Ваш вопрос</string>
     <string name="ai_ask_you">Вы: %1$s</string>
+    <string name="ai_ask_mode_quick">Быстрый</string>
+    <string name="ai_ask_mode_deep">Глубоко</string>
+    <string name="ai_ask_mode_web">Интернет</string>
     <string name="ai_identify_title">Что на фото</string>
     <string name="ai_identify_hint">Наведите камеру или выберите снимок из галереи — ИИ опишет, что видно.</string>
     <string name="ai_identify_capture">Снять и определить</string>
