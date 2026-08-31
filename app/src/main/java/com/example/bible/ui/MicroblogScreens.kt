@@ -27,6 +27,8 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.pager.HorizontalPager
+import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -110,6 +112,7 @@ import java.io.File
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
 private val UrlRegex = Regex("""(?i)\b((?:https?://|www\.)[^\s<>\[\]()]+)""")
@@ -293,6 +296,26 @@ private fun microblogCardKind(post: MicroblogPost): MicroblogCardKind = when {
     else -> MicroblogCardKind.TEXT
 }
 
+/** Заголовок карточки: своё название, иначе первая непустая строка текста. */
+private fun microblogHeadline(post: MicroblogPost): String {
+    val own = post.title.trim()
+    if (own.isNotEmpty()) return own
+    return post.body.lineSequence().map { it.trim() }.firstOrNull { it.isNotEmpty() } ?: "Без названия"
+}
+
+/** Начало текста для превью: без стилей, без строк, дублирующих заголовок. */
+private fun microblogSnippet(post: MicroblogPost, maxChars: Int = 200): String {
+    val skip = setOf(post.title.trim(), "Беседа с ИИ")
+    val text = post.body.lineSequence()
+        .map { it.trim() }
+        .filter { it.isNotEmpty() && it !in skip }
+        .joinToString(" ")
+        .replace(Regex("\\s+"), " ")
+        .trim()
+    if (text.length <= maxChars) return text
+    return text.take(maxChars).trimEnd().trimEnd(',', '.', ';', ':', '—', '-') + "…"
+}
+
 @Composable
 private fun MicroblogPostCard(
     post: MicroblogPost,
@@ -308,38 +331,55 @@ private fun MicroblogPostCard(
         MicroblogCardKind.PHOTO -> listOf(cs.primary, cs.tertiary)
         MicroblogCardKind.TEXT -> listOf(cs.tertiary, cs.secondary)
     }
+    val chipLabel: String
+    val chipColor: Color
+    when (kind) {
+        MicroblogCardKind.AI -> {
+            chipLabel = "Беседа ИИ"
+            chipColor = cs.secondaryContainer
+        }
+        MicroblogCardKind.PHOTO -> {
+            chipLabel = "С фото"
+            chipColor = cs.primaryContainer
+        }
+        MicroblogCardKind.TEXT -> {
+            chipLabel = "Пост"
+            chipColor = cs.tertiaryContainer
+        }
+    }
+    val headline = remember(post.title, post.body) { microblogHeadline(post) }
+    val snippet = remember(post.title, post.body) { microblogSnippet(post) }
+
     ElevatedCard(
         onClick = onOpen,
         modifier = Modifier.fillMaxWidth(),
-        shape = RoundedCornerShape(22.dp),
-        elevation = CardDefaults.elevatedCardElevation(defaultElevation = 3.dp),
+        shape = RoundedCornerShape(26.dp),
+        elevation = CardDefaults.elevatedCardElevation(defaultElevation = 4.dp),
         colors = CardDefaults.elevatedCardColors(containerColor = cs.surface),
     ) {
         Column {
             Box(
                 Modifier
                     .fillMaxWidth()
-                    .height(6.dp)
+                    .height(5.dp)
                     .background(Brush.horizontalGradient(accent)),
             )
+            if (post.images.isNotEmpty()) {
+                MicroblogPreviewSlider(images = post.images, accent = accent)
+            }
             Column(
-                Modifier.padding(horizontal = 16.dp, vertical = 12.dp),
-                verticalArrangement = Arrangement.spacedBy(10.dp),
+                Modifier.padding(start = 18.dp, end = 10.dp, top = 14.dp, bottom = 6.dp),
+                verticalArrangement = Arrangement.spacedBy(8.dp),
             ) {
                 Row(verticalAlignment = Alignment.CenterVertically) {
-                    val chip = when (kind) {
-                        MicroblogCardKind.AI -> "Беседа ИИ" to cs.secondaryContainer
-                        MicroblogCardKind.PHOTO -> "С фото" to cs.primaryContainer
-                        MicroblogCardKind.TEXT -> "Пост" to cs.tertiaryContainer
-                    }
                     Text(
-                        chip.first,
+                        chipLabel,
                         style = MaterialTheme.typography.labelSmall,
                         fontWeight = FontWeight.SemiBold,
                         color = cs.onSecondaryContainer,
                         modifier = Modifier
                             .clip(RoundedCornerShape(8.dp))
-                            .background(chip.second)
+                            .background(chipColor)
                             .padding(horizontal = 8.dp, vertical = 3.dp),
                     )
                     Spacer(Modifier.width(8.dp))
@@ -347,35 +387,109 @@ private fun MicroblogPostCard(
                         dateLabel,
                         style = MaterialTheme.typography.labelMedium,
                         color = cs.onSurfaceVariant,
+                    )
+                }
+                Text(
+                    headline,
+                    style = MaterialTheme.typography.titleLarge,
+                    fontWeight = FontWeight.SemiBold,
+                    maxLines = 2,
+                    overflow = TextOverflow.Ellipsis,
+                )
+                if (snippet.isNotEmpty()) {
+                    Text(
+                        snippet,
+                        style = MaterialTheme.typography.bodyMedium.copy(lineHeight = 21.sp),
+                        color = cs.onSurfaceVariant,
+                        maxLines = 3,
+                        overflow = TextOverflow.Ellipsis,
+                    )
+                }
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Text(
+                        "Читать полностью",
+                        style = MaterialTheme.typography.labelLarge,
+                        fontWeight = FontWeight.SemiBold,
+                        color = cs.primary,
                         modifier = Modifier.weight(1f),
                     )
-                    IconButton(onClick = onEdit, modifier = Modifier.size(36.dp)) {
+                    IconButton(onClick = onEdit, modifier = Modifier.size(38.dp)) {
                         Icon(Icons.Filled.Edit, contentDescription = "Редактировать", tint = cs.primary)
                     }
-                    IconButton(onClick = onDelete, modifier = Modifier.size(36.dp)) {
+                    IconButton(onClick = onDelete, modifier = Modifier.size(38.dp)) {
                         Icon(Icons.Filled.Delete, contentDescription = "Удалить", tint = cs.error)
                     }
                 }
-                if (post.title.isNotBlank()) {
+            }
+        }
+    }
+}
+
+/** Превью картинок поста: листается само, но пользователь может пролистать вручную. */
+@Composable
+private fun MicroblogPreviewSlider(
+    images: List<MicroblogImage>,
+    accent: List<Color>,
+) {
+    val context = LocalContext.current
+    val state = rememberPagerState(pageCount = { images.size })
+    if (images.size > 1) {
+        LaunchedEffect(state, images.size) {
+            while (true) {
+                delay(3200)
+                if (!state.isScrollInProgress) {
+                    state.animateScrollToPage((state.currentPage + 1) % images.size)
+                }
+            }
+        }
+    }
+    Box(
+        Modifier
+            .fillMaxWidth()
+            .height(210.dp)
+            .background(
+                Brush.linearGradient(accent.map { it.copy(alpha = 0.16f) }),
+            ),
+    ) {
+        HorizontalPager(state = state, modifier = Modifier.fillMaxSize()) { page ->
+            AsyncImage(
+                model = File(MediaCatalogPaths.microblogDir(context), images[page].fileName),
+                contentDescription = null,
+                modifier = Modifier.fillMaxSize(),
+                contentScale = ContentScale.Fit,
+            )
+        }
+        if (images.size > 1) {
+            Box(
+                Modifier
+                    .align(Alignment.BottomEnd)
+                    .padding(10.dp)
+                    .clip(RoundedCornerShape(12.dp))
+                    .background(Color.Black.copy(alpha = 0.38f))
+                    .padding(horizontal = 8.dp, vertical = 5.dp),
+            ) {
+                if (images.size <= 6) {
+                    Row(
+                        horizontalArrangement = Arrangement.spacedBy(5.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                    ) {
+                        repeat(images.size) { i ->
+                            val active = i == state.currentPage
+                            Box(
+                                Modifier
+                                    .size(if (active) 7.dp else 5.dp)
+                                    .clip(CircleShape)
+                                    .background(
+                                        if (active) Color.White else Color.White.copy(alpha = 0.5f),
+                                    ),
+                            )
+                        }
+                    }
+                } else {
                     Text(
-                        post.title,
-                        style = MaterialTheme.typography.titleMedium,
-                        fontWeight = FontWeight.SemiBold,
-                    )
-                }
-                if (post.body.isNotBlank()) {
-                    MicroblogRichText(
-                        text = post.body,
-                        spans = post.spans,
-                        style = MaterialTheme.typography.bodyLarge.copy(lineHeight = 22.sp),
-                        maxLines = 8,
-                    )
-                }
-                post.images.forEach { image ->
-                    MicroblogFittedImage(
-                        fileName = image.fileName,
-                        displayScale = image.displayScale,
-                        maxHeight = 280.dp,
+                        "${state.currentPage + 1}/${images.size}",
+                        style = MaterialTheme.typography.labelSmall,
+                        color = Color.White,
                     )
                 }
             }
