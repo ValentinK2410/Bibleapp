@@ -25,6 +25,9 @@ import com.example.bible.data.AudioPlaybackState
 import com.example.bible.data.CommentaryRepository
 import com.example.bible.data.DeepSeekClient
 import com.example.bible.data.DeepSeekMessage
+import com.example.bible.data.MicroblogPost
+import com.example.bible.data.MicroblogRepository
+import com.example.bible.data.AiChatSummary
 import com.example.bible.data.DeepSeekPassageFormatter
 import com.example.bible.data.DeepSeekPassageScope
 import com.example.bible.data.HistoryEntry
@@ -145,6 +148,11 @@ enum class DeepSeekAskStyle {
     DEEP,
 }
 
+enum class DeepSeekAskPane {
+    LIST,
+    CHAT,
+}
+
 data class DeepSeekAskUiState(
     val loading: Boolean = false,
     val messages: List<DeepSeekMessage> = emptyList(),
@@ -152,6 +160,10 @@ data class DeepSeekAskUiState(
     val needsKey: Boolean = false,
     val style: DeepSeekAskStyle = DeepSeekAskStyle.DEEP,
     val webSearch: Boolean = false,
+    val pane: DeepSeekAskPane = DeepSeekAskPane.LIST,
+    val chats: List<AiChatSummary> = emptyList(),
+    val currentChatId: Long? = null,
+    val chatTitle: String = "",
 )
 
 data class DeepSeekNoteAssistUiState(
@@ -1212,12 +1224,88 @@ class BibleViewModel(
     private val _deepSeekAsk = MutableStateFlow(DeepSeekAskUiState())
     val deepSeekAsk: StateFlow<DeepSeekAskUiState> = _deepSeekAsk.asStateFlow()
     private var deepSeekAskJob: Job? = null
-    private val deepSeekAskHistory = mutableListOf<DeepSeekMessage>()
+    private val aiChats = AiChatRepository(appContext)
 
-    fun clearDeepSeekAsk() {
+    fun leaveDeepSeekAsk() {
         deepSeekAskJob?.cancel()
-        deepSeekAskHistory.clear()
-        _deepSeekAsk.value = DeepSeekAskUiState()
+    }
+
+    fun openDeepSeekAsk() {
+        viewModelScope.launch {
+            val chats = aiChats.listSummaries()
+            _deepSeekAsk.value = _deepSeekAsk.value.copy(
+                loading = false,
+                error = null,
+                pane = DeepSeekAskPane.LIST,
+                chats = chats,
+                currentChatId = null,
+                chatTitle = "",
+                messages = emptyList(),
+            )
+        }
+    }
+
+    fun startNewDeepSeekAsk() {
+        deepSeekAskJob?.cancel()
+        _deepSeekAsk.value = _deepSeekAsk.value.copy(
+            pane = DeepSeekAskPane.CHAT,
+            currentChatId = null,
+            chatTitle = "",
+            messages = emptyList(),
+            loading = false,
+            error = null,
+        )
+    }
+
+    fun openDeepSeekAskChat(chatId: Long) {
+        viewModelScope.launch {
+            deepSeekAskJob?.cancel()
+            val stored = aiChats.listMessages(chatId)
+            val title = aiChats.getSummary(chatId)?.title.orEmpty()
+            _deepSeekAsk.value = _deepSeekAsk.value.copy(
+                pane = DeepSeekAskPane.CHAT,
+                currentChatId = chatId,
+                chatTitle = title,
+                messages = stored.map { DeepSeekMessage(it.role, it.content) },
+                loading = false,
+                error = null,
+            )
+        }
+    }
+
+    fun showDeepSeekAskList() {
+        deepSeekAskJob?.cancel()
+        viewModelScope.launch {
+            _deepSeekAsk.value = _deepSeekAsk.value.copy(
+                pane = DeepSeekAskPane.LIST,
+                currentChatId = null,
+                chatTitle = "",
+                messages = emptyList(),
+                loading = false,
+                error = null,
+                chats = aiChats.listSummaries(),
+            )
+        }
+    }
+
+    fun deleteDeepSeekAskChat(chatId: Long) {
+        viewModelScope.launch {
+            aiChats.deleteChat(chatId)
+            val chats = aiChats.listSummaries()
+            val cur = _deepSeekAsk.value
+            if (cur.currentChatId == chatId) {
+                _deepSeekAsk.value = cur.copy(
+                    chats = chats,
+                    currentChatId = null,
+                    chatTitle = "",
+                    messages = emptyList(),
+                    pane = DeepSeekAskPane.LIST,
+                    loading = false,
+                )
+            } else {
+                _deepSeekAsk.value = cur.copy(chats = chats)
+            }
+        }
     }
 
     fun setDeepSeekAskStyle(style: DeepSeekAskStyle) {
@@ -1238,21 +1326,28 @@ class BibleViewModel(
                 _deepSeekAsk.value = _deepSeekAsk.value.copy(needsKey = true, loading = false)
                 return@launch
             }
-            if (deepSeekAskHistory.none { it.role == "system" }) {
-                deepSeekAskHistory += DeepSeekMessage(
-                    "system",
-                    "Ты помощник в приложении для чтения Библии. Отвечай по-русски ясно и по существу. " +
-                        "Если вопрос о Писании — не выдумывай цитаты. На другие темы тоже помогай.",
-                )
-            }
             val style = _deepSeekAsk.value.style
             val webSearch = _deepSeekAsk.value.webSearch
             val thinking = style == DeepSeekAskStyle.DEEP
-            _deepSeekAsk.value = _deepSeekAsk.value.copy(loading = true, error = null, needsKey = false)
-            deepSeekAskHistory += DeepSeekMessage("user", q)
+            val createdNew = _deepSeekAsk.value.currentChatId == null
+            val chatId = _deepSeekAsk.value.currentChatId ?: aiChats.createChat(q)
+            var userMsgId = 0L
+            _deepSeekAsk.value = _deepSeekAsk.value.copy(
+                loading = true,
+                error = null,
+                needsKey = false,
+                pane = DeepSeekAskPane.CHAT,
+                currentChatId = chatId,
+                chatTitle = _deepSeekAsk.value.chatTitle.ifBlank { AiChatRepository.titleFromQuestion(q) },
+            )
+            userMsgId = aiChats.addMessage(chatId, "user", q)
+            val stored = aiChats.listMessages(chatId)
+            _deepSeekAsk.value = _deepSeekAsk.value.copy(
+                messages = stored.map { DeepSeekMessage(it.role, it.content) },
+            )
             val result = DeepSeekClient.chat(
                 apiKey = key,
-                messages = deepSeekAskHistory.toList(),
+                messages = AiChatRepository.apiMessages(stored),
                 thinking = thinking,
                 reasoningEffort = if (thinking) "max" else null,
                 webSearch = webSearch,
@@ -1264,23 +1359,36 @@ class BibleViewModel(
             )
             result.fold(
                 onSuccess = { text ->
-                    deepSeekAskHistory += DeepSeekMessage("assistant", text)
+                    aiChats.addMessage(chatId, "assistant", text)
+                    val after = aiChats.listMessages(chatId)
                     _deepSeekAsk.value = _deepSeekAsk.value.copy(
                         loading = false,
                         error = null,
-                        messages = deepSeekAskHistory.filter { it.role != "system" }.toList(),
+                        messages = after.map { DeepSeekMessage(it.role, it.content) },
+                        chats = aiChats.listSummaries(),
                     )
                 },
                 onFailure = { e ->
                     if (e is CancellationException) throw e
-                    if (deepSeekAskHistory.lastOrNull()?.role == "user") {
-                        deepSeekAskHistory.removeAt(deepSeekAskHistory.lastIndex)
+                    if (createdNew) {
+                        aiChats.deleteChat(chatId)
+                        _deepSeekAsk.value = _deepSeekAsk.value.copy(
+                            loading = false,
+                            currentChatId = null,
+                            chatTitle = "",
+                            messages = emptyList(),
+                            error = e.message?.ifBlank { null } ?: "Не удалось обратиться к DeepSeek",
+                            chats = aiChats.listSummaries(),
+                        )
+                    } else {
+                        if (userMsgId != 0L) aiChats.deleteMessage(userMsgId)
+                        val after = aiChats.listMessages(chatId)
+                        _deepSeekAsk.value = _deepSeekAsk.value.copy(
+                            loading = false,
+                            error = e.message?.ifBlank { null } ?: "Не удалось обратиться к DeepSeek",
+                            messages = after.map { DeepSeekMessage(it.role, it.content) },
+                        )
                     }
-                    _deepSeekAsk.value = _deepSeekAsk.value.copy(
-                        loading = false,
-                        error = e.message?.ifBlank { null } ?: "Не удалось обратиться к DeepSeek",
-                        messages = deepSeekAskHistory.filter { it.role != "system" }.toList(),
-                    )
                 },
             )
         }
@@ -2921,6 +3029,35 @@ class BibleViewModel(
             preferences.setMediaHomeSectionOrder(MediaHomeSectionOrder.normalize(ids))
         }
     }
+
+    private val microblogRepo = MicroblogRepository(appContext)
+    private val _microblogPosts = MutableStateFlow<List<MicroblogPost>>(emptyList())
+    val microblogPosts: StateFlow<List<MicroblogPost>> = _microblogPosts.asStateFlow()
+
+    fun refreshMicroblogPosts() {
+        viewModelScope.launch {
+            _microblogPosts.value = microblogRepo.listPosts()
+        }
+    }
+
+    suspend fun loadMicroblogPost(id: String): MicroblogPost? = microblogRepo.getPost(id)
+
+    fun saveMicroblogPost(post: MicroblogPost) {
+        viewModelScope.launch {
+            microblogRepo.save(post.copy(updatedAtMs = System.currentTimeMillis()))
+            _microblogPosts.value = microblogRepo.listPosts()
+        }
+    }
+
+    fun deleteMicroblogPost(id: String) {
+        viewModelScope.launch {
+            microblogRepo.delete(id)
+            _microblogPosts.value = microblogRepo.listPosts()
+        }
+    }
+
+    suspend fun importMicroblogImage(uri: android.net.Uri): Result<String> =
+        microblogRepo.importImage(uri)
 
     /** Порядок пунктов главного меню (экран книг), без «Настройки» и переводов. */
     val booksMainMenuOrder: StateFlow<List<String>> = preferences.booksMainMenuOrder.stateIn(

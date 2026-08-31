@@ -53,4 +53,55 @@ object StudyDbMigrations {
             db.execSQL("CREATE UNIQUE INDEX IF NOT EXISTS `index_lang_srs_cards_wordKey` ON `lang_srs_cards` (`wordKey`)")
         }
     }
+
+    val MIGRATION_2_3 = object : Migration(2, 3) {
+        override fun migrate(db: SupportSQLiteDatabase) {
+            db.execSQL(
+                """
+                CREATE TABLE IF NOT EXISTS `ai_chats` (
+                  `id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
+                  `title` TEXT NOT NULL,
+                  `createdAtMs` INTEGER NOT NULL,
+                  `updatedAtMs` INTEGER NOT NULL
+                )
+                """.trimIndent(),
+            )
+            db.execSQL(
+                """
+                CREATE TABLE IF NOT EXISTS `ai_chat_messages` (
+                  `id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
+                  `chatId` INTEGER NOT NULL,
+                  `role` TEXT NOT NULL,
+                  `content` TEXT NOT NULL,
+                  `createdAtMs` INTEGER NOT NULL,
+                  FOREIGN KEY(`chatId`) REFERENCES `ai_chats`(`id`) ON UPDATE NO ACTION ON DELETE CASCADE
+                )
+                """.trimIndent(),
+            )
+            db.execSQL(
+                "CREATE INDEX IF NOT EXISTS `index_ai_chat_messages_chatId` ON `ai_chat_messages` (`chatId`)",
+            )
+            db.execSQL(
+                "CREATE INDEX IF NOT EXISTS `index_ai_chat_messages_createdAtMs` ON `ai_chat_messages` (`createdAtMs`)",
+            )
+        }
+    }
+
+    val MIGRATION_3_4 = object : Migration(3, 4) {
+        override fun migrate(db: SupportSQLiteDatabase) {
+            db.execSQL(
+                """
+                CREATE TABLE IF NOT EXISTS `microblog_posts` (
+                  `id` TEXT NOT NULL,
+                  `body` TEXT NOT NULL,
+                  `spansJson` TEXT NOT NULL,
+                  `imagesJson` TEXT NOT NULL,
+                  `createdAtMs` INTEGER NOT NULL,
+                  `updatedAtMs` INTEGER NOT NULL,
+                  PRIMARY KEY(`id`)
+                )
+                """.trimIndent(),
+            )
+        }
+    }
 }

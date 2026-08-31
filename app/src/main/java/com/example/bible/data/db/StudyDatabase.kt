@@ -12,12 +12,17 @@ import androidx.room.RoomDatabase
         StrongsEntryEntity::class,
         LangVocabWordEntity::class,
         LangSrsCardEntity::class,
+        AiChatEntity::class,
+        AiChatMessageEntity::class,
+        MicroblogPostEntity::class,
     ],
-    version = 2,
+    version = 4,
     exportSchema = true,
 )
 abstract class StudyDatabase : RoomDatabase() {
     abstract fun studyDao(): StudyDao
+    abstract fun aiChatDao(): AiChatDao
+    abstract fun microblogDao(): MicroblogDao
 
     companion object {
         private const val DB_NAME = "study_content.db"
@@ -33,7 +38,11 @@ abstract class StudyDatabase : RoomDatabase() {
                     DB_NAME,
                 )
                     .allowMainThreadQueries()
-                    .addMigrations(StudyDbMigrations.MIGRATION_1_2)
+                    .addMigrations(
+                        StudyDbMigrations.MIGRATION_1_2,
+                        StudyDbMigrations.MIGRATION_2_3,
+                        StudyDbMigrations.MIGRATION_3_4,
+                    )
                     .fallbackToDestructiveMigration()
                     .build()
                     .also { instance = it }
