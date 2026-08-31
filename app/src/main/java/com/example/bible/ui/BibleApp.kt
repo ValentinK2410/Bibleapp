@@ -1072,7 +1072,7 @@ private fun BibleNavHost(
                     viewModel.removeWordSpanMediaIntersecting(ref, a, b)
                 },
                 viewModel = viewModel,
-                onOpenDeepSeekSettings = { navController.navigate("main_settings") },
+                onOpenDeepSeekSettings = { navController.navigate("ai_settings") },
             )
         }
         composable("azbuka") {
@@ -1399,8 +1399,6 @@ private fun BibleNavHost(
         }
         composable("main_settings") {
             val mainSetCtx = LocalContext.current
-            val deepSeekApiKey by viewModel.deepSeekApiKey.collectAsStateWithLifecycle()
-            val deepSeekKeyTest by viewModel.deepSeekKeyTest.collectAsStateWithLifecycle()
             MainSettingsScreen(
                 isDark = isDark,
                 mimicControlEnabled = mimicControlEnabled,
@@ -1438,18 +1436,52 @@ private fun BibleNavHost(
                         )
                     }
                 },
-                deepSeekApiKey = deepSeekApiKey,
-                deepSeekKeyTest = deepSeekKeyTest,
-                onSaveDeepSeekApiKey = { viewModel.setDeepSeekApiKey(it) },
-                onTestDeepSeekApiKey = { viewModel.testDeepSeekKey(it) },
-                onOpenDeepSeekCamera = { navController.navigate("deepseek_camera") },
+            )
+        }
+        composable("ai") {
+            AiHubScreen(
+                onBack = { navController.navigateUp() },
+                onOpenAsk = { navController.navigate("ai_ask") },
+                onOpenIdentifyPhoto = { navController.navigate("ai_photo_identify") },
+                onOpenTranscribePhoto = { navController.navigate("ai_photo_transcribe") },
+                onOpenSettings = { navController.navigate("ai_settings") },
+            )
+        }
+        composable("ai_settings") {
+            DeepSeekSettingsScreen(
+                viewModel = viewModel,
+                onBack = { navController.navigateUp() },
+            )
+        }
+        composable("ai_ask") {
+            DeepSeekAskScreen(
+                viewModel = viewModel,
+                onBack = { navController.navigateUp() },
+                onOpenSettings = { navController.navigate("ai_settings") },
+            )
+        }
+        composable("ai_photo_identify") {
+            DeepSeekCameraScreen(
+                viewModel = viewModel,
+                onBack = { navController.navigateUp() },
+                onOpenSettings = { navController.navigate("ai_settings") },
+                mode = DeepSeekVisionMode.IDENTIFY,
+            )
+        }
+        composable("ai_photo_transcribe") {
+            DeepSeekCameraScreen(
+                viewModel = viewModel,
+                onBack = { navController.navigateUp() },
+                onOpenSettings = { navController.navigate("ai_settings") },
+                mode = DeepSeekVisionMode.TRANSCRIBE,
             )
         }
         composable("deepseek_camera") {
             DeepSeekCameraScreen(
                 viewModel = viewModel,
                 onBack = { navController.navigateUp() },
-                onOpenSettings = { navController.navigate("main_settings") },
+                onOpenSettings = { navController.navigate("ai_settings") },
+                mode = DeepSeekVisionMode.TRANSCRIBE,
             )
         }
         composable("books_menu_order") {
@@ -2766,7 +2798,7 @@ private fun BibleNavHost(
                                             null
                                         },
                                         viewModel = viewModel,
-                                        onOpenDeepSeekSettings = { navController.navigate("main_settings") },
+                                        onOpenDeepSeekSettings = { navController.navigate("ai_settings") },
                                     )
                                     }
                                 }
@@ -3303,6 +3335,8 @@ private fun BibleNavHost(
                 onAddCustomKind = { viewModel.addNoteCustomKind(it) },
                 onSave = { viewModel.saveNote(it) },
                 onBack = { navController.navigateUp() },
+                viewModel = viewModel,
+                onOpenAiSettings = { navController.navigate("ai_settings") },
                 embeddedBible = { bibleModifier, navigationRequest, onNavigationConsumed ->
                     NoteEditorBiblePane(
                         modifier = bibleModifier,

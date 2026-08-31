@@ -6,6 +6,7 @@ object BooksMainMenuOrder {
     const val BOOKMARKS = "bookmarks"
     const val HISTORY = "history"
     const val NOTES = "notes"
+    const val AI = "ai"
     const val CONTACTS = "contacts"
     const val DUAL = "dual"
     const val MAPS = "maps"
@@ -30,6 +31,7 @@ object BooksMainMenuOrder {
         BOOKMARKS,
         HISTORY,
         NOTES,
+        AI,
         CONTACTS,
         DUAL,
         MAPS,
@@ -80,6 +82,7 @@ object BooksMainMenuOrder {
         BOOKMARKS -> "Закладки"
         HISTORY -> "История чтения"
         NOTES -> "Заметки"
+        AI -> "ИИ"
         CONTACTS -> "Контакты"
         DUAL -> "Сравнение переводов"
         MAPS -> "Карты"

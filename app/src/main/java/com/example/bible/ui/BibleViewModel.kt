@@ -129,6 +129,32 @@ data class DeepSeekVisionUiState(
     val needsKey: Boolean = false,
 )
 
+enum class DeepSeekVisionMode {
+    TRANSCRIBE,
+    IDENTIFY,
+}
+
+enum class DeepSeekNoteAssistKind {
+    CORRECT,
+    IMPROVE,
+    SIMPLIFY,
+}
+
+data class DeepSeekAskUiState(
+    val loading: Boolean = false,
+    val messages: List<DeepSeekMessage> = emptyList(),
+    val error: String? = null,
+    val needsKey: Boolean = false,
+)
+
+data class DeepSeekNoteAssistUiState(
+    val loading: Boolean = false,
+    val kind: DeepSeekNoteAssistKind? = null,
+    val suggestion: String = "",
+    val error: String? = null,
+    val needsKey: Boolean = false,
+)
+
 /** Где искать по переводам: только в текущем, в одном выбранном или во всех доступных. */
 enum class BibleSearchTranslationMode {
     /** Перевод, выбранный сейчас в читалке. */
@@ -1132,7 +1158,10 @@ class BibleViewModel(
         _deepSeekVision.value = DeepSeekVisionUiState()
     }
 
-    fun analyzeCameraJpeg(jpegBytes: ByteArray) {
+    fun analyzeCameraJpeg(
+        jpegBytes: ByteArray,
+        mode: DeepSeekVisionMode = DeepSeekVisionMode.TRANSCRIBE,
+    ) {
         deepSeekVisionJob?.cancel()
         deepSeekVisionJob = viewModelScope.launch {
             val key = preferences.deepSeekApiKey.first()
@@ -1141,16 +1170,23 @@ class BibleViewModel(
                 return@launch
             }
             if (jpegBytes.isEmpty()) {
-                _deepSeekVision.value = DeepSeekVisionUiState(error = "Не удалось получить кадр с камеры")
+                _deepSeekVision.value = DeepSeekVisionUiState(error = "Не удалось получить изображение")
                 return@launch
             }
             _deepSeekVision.value = DeepSeekVisionUiState(loading = true)
+            val prompt = when (mode) {
+                DeepSeekVisionMode.TRANSCRIBE ->
+                    "Расшифруй фото. Если есть текст (книга, страница, надпись, экран) — " +
+                        "выпиши его целиком, сохраняя абзацы и переносы. Если текста мало — опиши, что видно, " +
+                        "и приведи все надписи. Отвечай по-русски. Не выдумывай невидимый текст."
+                DeepSeekVisionMode.IDENTIFY ->
+                    "Определи, что изображено на фото. Опиши объекты, сцену, людей, предметы и обстановку. " +
+                        "Если есть текст — кратко приведи его. Отвечай по-русски, конкретно. Не выдумывай детали, которых нет."
+            }
             val result = DeepSeekClient.chatVision(
                 apiKey = key,
                 jpegBytes = jpegBytes,
-                prompt = "Расшифруй фото с камеры. Если есть текст (книга, страница, надпись, экран) — " +
-                    "выпиши его целиком, сохраняя абзацы и переносы. Если текста мало — опиши, что видно, " +
-                    "и приведи все надписи. Отвечай по-русски. Не выдумывай невидимый текст.",
+                prompt = prompt,
             )
             result.fold(
                 onSuccess = { text ->
@@ -1159,7 +1195,123 @@ class BibleViewModel(
                 onFailure = { e ->
                     if (e is CancellationException) throw e
                     _deepSeekVision.value = DeepSeekVisionUiState(
-                        error = e.message?.ifBlank { null } ?: "Не удалось расшифровать кадр",
+                        error = e.message?.ifBlank { null } ?: "Не удалось разобрать изображение",
+                    )
+                },
+            )
+        }
+    }
+
+    private val _deepSeekAsk = MutableStateFlow(DeepSeekAskUiState())
+    val deepSeekAsk: StateFlow<DeepSeekAskUiState> = _deepSeekAsk.asStateFlow()
+    private var deepSeekAskJob: Job? = null
+    private val deepSeekAskHistory = mutableListOf<DeepSeekMessage>()
+
+    fun clearDeepSeekAsk() {
+        deepSeekAskJob?.cancel()
+        deepSeekAskHistory.clear()
+        _deepSeekAsk.value = DeepSeekAskUiState()
+    }
+
+    fun askDeepSeekQuestion(question: String) {
+        val q = question.trim()
+        if (q.isEmpty()) return
+        deepSeekAskJob?.cancel()
+        deepSeekAskJob = viewModelScope.launch {
+            val key = preferences.deepSeekApiKey.first()
+            if (key.isBlank()) {
+                _deepSeekAsk.value = _deepSeekAsk.value.copy(needsKey = true, loading = false)
+                return@launch
+            }
+            if (deepSeekAskHistory.none { it.role == "system" }) {
+                deepSeekAskHistory += DeepSeekMessage(
+                    "system",
+                    "Ты помощник в приложении для чтения Библии. Отвечай по-русски ясно и по существу. " +
+                        "Если вопрос о Писании — не выдумывай цитаты. На другие темы тоже помогай.",
+                )
+            }
+            _deepSeekAsk.value = _deepSeekAsk.value.copy(loading = true, error = null, needsKey = false)
+            deepSeekAskHistory += DeepSeekMessage("user", q)
+            val result = DeepSeekClient.chat(key, deepSeekAskHistory.toList())
+            result.fold(
+                onSuccess = { text ->
+                    deepSeekAskHistory += DeepSeekMessage("assistant", text)
+                    _deepSeekAsk.value = DeepSeekAskUiState(
+                        messages = deepSeekAskHistory.filter { it.role != "system" }.toList(),
+                    )
+                },
+                onFailure = { e ->
+                    if (e is CancellationException) throw e
+                    if (deepSeekAskHistory.lastOrNull()?.role == "user") {
+                        deepSeekAskHistory.removeAt(deepSeekAskHistory.lastIndex)
+                    }
+                    _deepSeekAsk.value = _deepSeekAsk.value.copy(
+                        loading = false,
+                        error = e.message?.ifBlank { null } ?: "Не удалось обратиться к DeepSeek",
+                        messages = deepSeekAskHistory.filter { it.role != "system" }.toList(),
+                    )
+                },
+            )
+        }
+    }
+
+    private val _deepSeekNoteAssist = MutableStateFlow(DeepSeekNoteAssistUiState())
+    val deepSeekNoteAssist: StateFlow<DeepSeekNoteAssistUiState> = _deepSeekNoteAssist.asStateFlow()
+    private var deepSeekNoteAssistJob: Job? = null
+
+    fun clearDeepSeekNoteAssist() {
+        deepSeekNoteAssistJob?.cancel()
+        _deepSeekNoteAssist.value = DeepSeekNoteAssistUiState()
+    }
+
+    fun assistNoteText(kind: DeepSeekNoteAssistKind, source: String) {
+        val text = source.trim()
+        deepSeekNoteAssistJob?.cancel()
+        deepSeekNoteAssistJob = viewModelScope.launch {
+            val key = preferences.deepSeekApiKey.first()
+            if (key.isBlank()) {
+                _deepSeekNoteAssist.value = DeepSeekNoteAssistUiState(needsKey = true, kind = kind)
+                return@launch
+            }
+            if (text.isBlank()) {
+                _deepSeekNoteAssist.value = DeepSeekNoteAssistUiState(
+                    kind = kind,
+                    error = "Сначала введите или выделите текст заметки",
+                )
+                return@launch
+            }
+            _deepSeekNoteAssist.value = DeepSeekNoteAssistUiState(loading = true, kind = kind)
+            val prompt = when (kind) {
+                DeepSeekNoteAssistKind.CORRECT ->
+                    "Исправь орфографию, пунктуацию и явные опечатки. Сохрани смысл, тон и абзацы. " +
+                        "Верни только исправленный текст, без пояснений и кавычек.\n\nТекст:\n$text"
+                DeepSeekNoteAssistKind.IMPROVE ->
+                    "Предложи улучшенный вариант: яснее, аккуратнее, без воды. Сохрани смысл и факты. " +
+                        "Верни только новый текст, без пояснений.\n\nТекст:\n$text"
+                DeepSeekNoteAssistKind.SIMPLIFY ->
+                    "Передай смысл доступным простым языком, понятным человеку без специальной подготовки. " +
+                        "Сохрани факты. Верни только новый текст, без пояснений.\n\nТекст:\n$text"
+            }
+            val result = DeepSeekClient.chat(
+                apiKey = key,
+                messages = listOf(
+                    DeepSeekMessage(
+                        "system",
+                        "Ты редактор текста. Отвечай только готовым текстом на русском, без предисловий.",
+                    ),
+                    DeepSeekMessage("user", prompt.take(16_000)),
+                ),
+                thinking = false,
+            )
+            result.fold(
+                onSuccess = { out ->
+                    _deepSeekNoteAssist.value = DeepSeekNoteAssistUiState(kind = kind, suggestion = out)
+                },
+                onFailure = { e ->
+                    if (e is CancellationException) throw e
+                    _deepSeekNoteAssist.value = DeepSeekNoteAssistUiState(
+                        kind = kind,
+                        error = e.message?.ifBlank { null } ?: "Не удалось обработать текст",
                     )
                 },
             )

@@ -16,6 +16,7 @@ import androidx.compose.material.icons.filled.Headphones
 import androidx.compose.material.icons.filled.History
 import androidx.compose.material.icons.filled.Map
 import androidx.compose.material.icons.filled.PermMedia
+import androidx.compose.material.icons.filled.Psychology
 import androidx.compose.material.icons.filled.Public
 import androidx.compose.material.icons.filled.Schedule
 import androidx.compose.material.icons.filled.School
@@ -46,6 +47,9 @@ fun BooksMainMenuOrderedItems(
     navController: NavHostController,
     onShowTextSizeDialog: () -> Unit,
     onShowBookNarratorPicker: () -> Unit,
+    timemarkBookId: String? = null,
+    timemarkChapter: Int? = null,
+    timemarkNarratorId: String? = null,
 ) {
     val primary = MaterialTheme.colorScheme.primary
     menuOrder.forEach { id ->
@@ -69,6 +73,11 @@ fun BooksMainMenuOrderedItems(
                 text = { Text("Заметки") },
                 onClick = { closeMenu(); navController.navigate("notes") },
                 leadingIcon = { Icon(Icons.Default.Edit, contentDescription = null) },
+            )
+            BooksMainMenuOrder.AI -> DropdownMenuItem(
+                text = { Text(stringResource(R.string.ai_hub_title)) },
+                onClick = { closeMenu(); navController.navigate("ai") },
+                leadingIcon = { Icon(Icons.Filled.Psychology, contentDescription = null, tint = primary) },
             )
             BooksMainMenuOrder.CONTACTS -> DropdownMenuItem(
                 text = { Text(stringResource(R.string.contacts_title)) },
@@ -119,7 +128,20 @@ fun BooksMainMenuOrderedItems(
             )
             BooksMainMenuOrder.TIMEMARK -> DropdownMenuItem(
                 text = { Text(stringResource(R.string.timemark_menu)) },
-                onClick = { closeMenu(); navController.navigate("timemark_editor") },
+                onClick = {
+                    closeMenu()
+                    if (timemarkBookId != null) {
+                        com.example.bible.data.BibleAudioPlayer.stopForNavigation()
+                    }
+                    navController.navigate(
+                        timemarkEditorRoute(
+                            bookId = timemarkBookId,
+                            chapter = timemarkChapter,
+                            translationCode = translation.code,
+                            narratorId = timemarkNarratorId ?: narratorId,
+                        ),
+                    )
+                },
                 leadingIcon = {
                     Icon(Icons.Default.Schedule, contentDescription = null, tint = primary)
                 },

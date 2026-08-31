@@ -32,6 +32,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Cameraswitch
 import androidx.compose.material.icons.filled.PhotoCamera
+import androidx.compose.material.icons.filled.PhotoLibrary
 import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -75,6 +76,7 @@ fun DeepSeekCameraScreen(
     viewModel: BibleViewModel,
     onBack: () -> Unit,
     onOpenSettings: () -> Unit,
+    mode: DeepSeekVisionMode = DeepSeekVisionMode.TRANSCRIBE,
 ) {
     val context = LocalContext.current
     val vision by viewModel.deepSeekVision.collectAsStateWithLifecycle()
@@ -95,6 +97,28 @@ fun DeepSeekCameraScreen(
     ) { granted ->
         hasPermission = granted
     }
+    val galleryLauncher = rememberLauncherForActivityResult(
+        ActivityResultContracts.GetContent(),
+    ) { uri ->
+        if (uri == null) return@rememberLauncherForActivityResult
+        scope.launch {
+            val bytes = withContext(Dispatchers.IO) {
+                runCatching {
+                    context.contentResolver.openInputStream(uri)?.use { it.readBytes() }
+                }.getOrNull()
+            }
+            if (bytes == null || bytes.isEmpty()) {
+                android.widget.Toast.makeText(
+                    context,
+                    R.string.deepseek_camera_capture_failed,
+                    android.widget.Toast.LENGTH_SHORT,
+                ).show()
+            } else {
+                capturedJpeg = bytes
+                viewModel.analyzeCameraJpeg(bytes, mode)
+            }
+        }
+    }
 
     DisposableEffect(Unit) {
         onDispose { viewModel.clearDeepSeekVision() }
@@ -109,7 +133,17 @@ fun DeepSeekCameraScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text(stringResource(R.string.deepseek_camera_title)) },
+                title = {
+                    Text(
+                        stringResource(
+                            if (mode == DeepSeekVisionMode.IDENTIFY) {
+                                R.string.ai_identify_title
+                            } else {
+                                R.string.deepseek_camera_title
+                            },
+                        ),
+                    )
+                },
                 navigationIcon = {
                     IconButton(onClick = onBack) {
                         Icon(
@@ -146,15 +180,6 @@ fun DeepSeekCameraScreen(
                         }
                     }
                 }
-                !hasPermission -> {
-                    Column(Modifier.padding(16.dp)) {
-                        Text(stringResource(R.string.deepseek_camera_permission))
-                        Spacer(Modifier.height(12.dp))
-                        Button(onClick = { permissionLauncher.launch(Manifest.permission.CAMERA) }) {
-                            Text(stringResource(R.string.deepseek_camera_grant))
-                        }
-                    }
-                }
                 else -> {
                     Box(
                         modifier = Modifier
@@ -162,19 +187,30 @@ fun DeepSeekCameraScreen(
                             .weight(1f)
                             .background(MaterialTheme.colorScheme.surfaceVariant),
                     ) {
-                        if (previewBitmap != null) {
-                            Image(
+                        when {
+                            previewBitmap != null -> Image(
                                 bitmap = previewBitmap,
                                 contentDescription = null,
                                 modifier = Modifier.fillMaxSize(),
                                 contentScale = ContentScale.Fit,
                             )
-                        } else {
-                            DeepSeekLivePreview(
+                            hasPermission -> DeepSeekLivePreview(
                                 useFront = useFront,
                                 onImageCaptureReady = { imageCapture = it },
                                 modifier = Modifier.fillMaxSize(),
                             )
+                            else -> Column(
+                                Modifier
+                                    .fillMaxSize()
+                                    .padding(24.dp),
+                                verticalArrangement = Arrangement.Center,
+                            ) {
+                                Text(stringResource(R.string.deepseek_camera_permission))
+                                Spacer(Modifier.height(12.dp))
+                                Button(onClick = { permissionLauncher.launch(Manifest.permission.CAMERA) }) {
+                                    Text(stringResource(R.string.deepseek_camera_grant))
+                                }
+                            }
                         }
                     }
                     Column(
@@ -186,7 +222,13 @@ fun DeepSeekCameraScreen(
                     ) {
                         if (capturedJpeg == null) {
                             Text(
-                                stringResource(R.string.deepseek_camera_hint),
+                                stringResource(
+                                    if (mode == DeepSeekVisionMode.IDENTIFY) {
+                                        R.string.ai_identify_hint
+                                    } else {
+                                        R.string.deepseek_camera_hint
+                                    },
+                                ),
                                 style = MaterialTheme.typography.bodyMedium,
                                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                             )
@@ -210,7 +252,7 @@ fun DeepSeekCameraScreen(
                                             ).show()
                                         } else {
                                             capturedJpeg = jpeg
-                                            viewModel.analyzeCameraJpeg(jpeg)
+                                            viewModel.analyzeCameraJpeg(jpeg, mode)
                                         }
                                     }
                                 },
@@ -219,7 +261,24 @@ fun DeepSeekCameraScreen(
                             ) {
                                 Icon(Icons.Filled.PhotoCamera, contentDescription = null)
                                 Spacer(Modifier.width(8.dp))
-                                Text(stringResource(R.string.deepseek_camera_capture))
+                                Text(
+                                    stringResource(
+                                        if (mode == DeepSeekVisionMode.IDENTIFY) {
+                                            R.string.ai_identify_capture
+                                        } else {
+                                            R.string.deepseek_camera_capture
+                                        },
+                                    ),
+                                )
+                            }
+                            Spacer(Modifier.height(8.dp))
+                            OutlinedButton(
+                                onClick = { galleryLauncher.launch("image/*") },
+                                modifier = Modifier.fillMaxWidth(),
+                            ) {
+                                Icon(Icons.Filled.PhotoLibrary, contentDescription = null)
+                                Spacer(Modifier.width(8.dp))
+                                Text(stringResource(R.string.ai_photo_gallery))
                             }
                         } else {
                             Row(
@@ -236,7 +295,7 @@ fun DeepSeekCameraScreen(
                                 }
                                 TextButton(
                                     onClick = {
-                                        capturedJpeg?.let { viewModel.analyzeCameraJpeg(it) }
+                                        capturedJpeg?.let { viewModel.analyzeCameraJpeg(it, mode) }
                                     },
                                     enabled = !vision.loading,
                                 ) {

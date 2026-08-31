@@ -8,6 +8,8 @@ import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.ime
 import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
+import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.rememberScrollState
@@ -49,6 +51,7 @@ import androidx.compose.material.icons.filled.Visibility
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.AssistChip
 import androidx.compose.material3.AssistChipDefaults
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
@@ -69,6 +72,7 @@ import androidx.compose.material3.TextButton
 import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.key
@@ -102,6 +106,7 @@ import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.res.stringResource
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.bible.R
 import androidx.compose.ui.text.buildAnnotatedString
 import com.example.bible.data.NoteJournalEntry
@@ -343,7 +348,7 @@ private val bgColors = listOf(
 
 private val fontSizeOptions = listOf(12, 14, 16, 18, 20, 24, 28, 32)
 
-@OptIn(ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalLayoutApi::class)
 @Composable
 fun NoteEditorScreen(
     initialNote: UserNote,
@@ -353,6 +358,8 @@ fun NoteEditorScreen(
     onSave: (UserNote) -> Unit,
     onBack: () -> Unit,
     embeddedBible: (@Composable (Modifier, NoteBibleNavigation?, () -> Unit) -> Unit)? = null,
+    viewModel: BibleViewModel,
+    onOpenAiSettings: () -> Unit,
 ) {
     var isViewMode by remember(initialNote.id) { mutableStateOf(false) }
     var bibleNavRequest by remember { mutableStateOf<NoteBibleNavigation?>(null) }
@@ -464,6 +471,34 @@ fun NoteEditorScreen(
     var showColorPicker by remember { mutableStateOf(false) }
     var kindMenuExpanded by remember { mutableStateOf(false) }
     var verseCardExpanded by remember(initialNote.id) { mutableStateOf(false) }
+    val noteAssist by viewModel.deepSeekNoteAssist.collectAsStateWithLifecycle()
+    var assistFrom by remember { mutableIntStateOf(0) }
+    var assistTo by remember { mutableIntStateOf(0) }
+    DisposableEffect(Unit) {
+        onDispose { viewModel.clearDeepSeekNoteAssist() }
+    }
+
+    fun requestNoteAssist(kind: DeepSeekNoteAssistKind) {
+        val text = textFieldValue.text
+        val sel = textFieldValue.selection
+        val useSel = !sel.collapsed && sel.min < sel.max
+        assistFrom = if (useSel) sel.min else 0
+        assistTo = if (useSel) sel.max else text.length
+        val source = if (useSel) text.substring(sel.min, sel.max) else text
+        viewModel.assistNoteText(kind, source)
+    }
+
+    fun applyNoteAssist(suggestion: String) {
+        val text = textFieldValue.text
+        val start = assistFrom.coerceIn(0, text.length)
+        val end = assistTo.coerceIn(start, text.length)
+        val newText = text.replaceRange(start, end, suggestion)
+        textFieldValue = TextFieldValue(newText, TextRange(start + suggestion.length))
+        if (start == 0 && end == text.length) {
+            spans = mutableListOf()
+        }
+        viewModel.clearDeepSeekNoteAssist()
+    }
 
     fun buildEditedNote(): UserNote {
         val trimmedCustom = customKindLabel.trim()
@@ -1006,6 +1041,31 @@ fun NoteEditorScreen(
                             visualTransformation = spanVisualTransformation,
                             colors = editorFieldColors,
                         )
+                        FlowRow(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(horizontal = 8.dp, vertical = 4.dp),
+                            horizontalArrangement = Arrangement.spacedBy(4.dp),
+                        ) {
+                                TextButton(
+                                    onClick = { requestNoteAssist(DeepSeekNoteAssistKind.CORRECT) },
+                                    enabled = !noteAssist.loading,
+                                ) {
+                                    Text(stringResource(R.string.note_ai_correct))
+                                }
+                                TextButton(
+                                    onClick = { requestNoteAssist(DeepSeekNoteAssistKind.IMPROVE) },
+                                    enabled = !noteAssist.loading,
+                                ) {
+                                    Text(stringResource(R.string.note_ai_improve))
+                                }
+                                TextButton(
+                                    onClick = { requestNoteAssist(DeepSeekNoteAssistKind.SIMPLIFY) },
+                                    enabled = !noteAssist.loading,
+                                ) {
+                                    Text(stringResource(R.string.note_ai_simplify))
+                                }
+                        }
                         Surface(tonalElevation = 2.dp) {
                             FormatToolbar(
                                 isBold = isBold,
@@ -1135,6 +1195,51 @@ fun NoteEditorScreen(
                 }
             }
         }
+    }
+    if (noteAssist.loading || noteAssist.needsKey || noteAssist.error != null || noteAssist.suggestion.isNotBlank()) {
+        AlertDialog(
+            onDismissRequest = { viewModel.clearDeepSeekNoteAssist() },
+            title = {
+                Text(
+                    when (noteAssist.kind) {
+                        DeepSeekNoteAssistKind.CORRECT -> stringResource(R.string.note_ai_correct)
+                        DeepSeekNoteAssistKind.IMPROVE -> stringResource(R.string.note_ai_improve)
+                        DeepSeekNoteAssistKind.SIMPLIFY -> stringResource(R.string.note_ai_simplify)
+                        null -> stringResource(R.string.note_ai_title)
+                    },
+                )
+            },
+            text = {
+                Column(Modifier.verticalScroll(rememberScrollState())) {
+                    when {
+                        noteAssist.needsKey -> Text(stringResource(R.string.deepseek_needs_key))
+                        noteAssist.loading -> CircularProgressIndicator()
+                        noteAssist.error != null -> Text(
+                            noteAssist.error!!,
+                            color = MaterialTheme.colorScheme.error,
+                        )
+                        else -> Text(noteAssist.suggestion)
+                    }
+                }
+            },
+            confirmButton = {
+                when {
+                    noteAssist.needsKey -> TextButton(onClick = onOpenAiSettings) {
+                        Text(stringResource(R.string.deepseek_open_settings))
+                    }
+                    noteAssist.suggestion.isNotBlank() -> TextButton(
+                        onClick = { applyNoteAssist(noteAssist.suggestion) },
+                    ) {
+                        Text(stringResource(R.string.note_ai_apply))
+                    }
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { viewModel.clearDeepSeekNoteAssist() }) {
+                    Text(stringResource(R.string.timemark_close))
+                }
+            },
+        )
     }
     if (showAddKindDialog) {
         AlertDialog(
