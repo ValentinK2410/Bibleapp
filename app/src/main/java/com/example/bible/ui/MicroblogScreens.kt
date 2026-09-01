@@ -115,12 +115,21 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import coil.compose.AsyncImage
+import com.example.bible.data.MICROBLOG_IMAGE_AT_END
 import com.example.bible.data.MediaCatalogPaths
 import com.example.bible.data.MicroblogImage
 import com.example.bible.data.MicroblogImageOps
 import com.example.bible.data.MicroblogImageWrap
 import com.example.bible.data.MicroblogPost
 import com.example.bible.data.MicroblogSpan
+import com.example.bible.data.adjustMicroblogImageAnchors
+import com.example.bible.data.microblogCanMoveInsertAt
+import com.example.bible.data.microblogDescribeInsertAt
+import com.example.bible.data.microblogMoveInsertAt
+import com.example.bible.data.microblogParagraphSlots
+import com.example.bible.data.microblogResolvedInsertAt
+import com.example.bible.data.microblogSlotIndex
+import com.example.bible.data.microblogSnapInsertAt
 import java.io.File
 import java.text.SimpleDateFormat
 import java.util.Date
@@ -547,7 +556,54 @@ private fun MicroblogFittedImage(
     }
 }
 
-/** Текст поста вместе с картинками: одна из них может обтекаться текстом слева или справа. */
+private sealed class MicroblogBodyBlock {
+    data class TextRun(val start: Int, val end: Int) : MicroblogBodyBlock()
+    data class FullImage(val index: Int) : MicroblogBodyBlock()
+    data class WrapImage(val index: Int, val textStart: Int, val textEnd: Int) : MicroblogBodyBlock()
+}
+
+private fun buildMicroblogBodyBlocks(
+    text: String,
+    images: List<MicroblogImage>,
+): List<MicroblogBodyBlock> {
+    if (images.isEmpty()) {
+        return if (text.isEmpty()) emptyList() else listOf(MicroblogBodyBlock.TextRun(0, text.length))
+    }
+    data class Placed(val index: Int, val image: MicroblogImage, val at: Int)
+    val placed = images.mapIndexed { i, img ->
+        Placed(i, img, microblogResolvedInsertAt(img.insertAt, text.length))
+    }.sortedWith(compareBy({ it.at }, { it.index }))
+
+    val blocks = mutableListOf<MicroblogBodyBlock>()
+    var cursor = 0
+    for ((i, item) in placed.withIndex()) {
+        if (cursor < item.at) {
+            blocks.add(MicroblogBodyBlock.TextRun(cursor, item.at))
+            cursor = item.at
+        }
+        val nextAt = placed.getOrNull(i + 1)?.at ?: text.length
+        if (item.image.wrap != MicroblogImageWrap.FULL && cursor < nextAt) {
+            blocks.add(MicroblogBodyBlock.WrapImage(item.index, cursor, nextAt))
+            cursor = nextAt
+        } else {
+            blocks.add(MicroblogBodyBlock.FullImage(item.index))
+        }
+    }
+    if (cursor < text.length) {
+        blocks.add(MicroblogBodyBlock.TextRun(cursor, text.length))
+    }
+    return blocks
+}
+
+private fun trimNewlinesRange(text: String, start: Int, end: Int): Pair<Int, Int>? {
+    var s = start.coerceIn(0, text.length)
+    var e = end.coerceIn(0, text.length)
+    while (s < e && text[s] == '\n') s++
+    while (e > s && text[e - 1] == '\n') e--
+    return if (e > s) s to e else null
+}
+
+/** Текст поста вместе с картинками: фото стоят на якорях между абзацами, одно из них может обтекаться. */
 @Composable
 private fun MicroblogArticleBody(
     text: String,
@@ -561,32 +617,42 @@ private fun MicroblogArticleBody(
     val annotated = remember(text, spans, linkColor) {
         buildMicroblogAnnotated(text, spans, linkColor)
     }
-    val floatingIndex = if (text.isBlank()) {
-        null
-    } else {
-        images.indexOfFirst { it.wrap != MicroblogImageWrap.FULL }.takeIf { it >= 0 }
-    }
+    val blocks = remember(text, images) { buildMicroblogBodyBlocks(text, images) }
     Column(verticalArrangement = Arrangement.spacedBy(14.dp)) {
-        if (floatingIndex != null) {
-            MicroblogWrappedText(
-                annotated = annotated,
-                style = style,
-                image = images[floatingIndex],
-                selected = selectedImageIndex == floatingIndex,
-                onClick = onImageClick?.let { { it(floatingIndex) } },
-            )
-        } else if (annotated.isNotEmpty()) {
-            MicroblogAnnotatedText(annotated = annotated, style = style)
-        }
-        images.forEachIndexed { index, image ->
-            if (index != floatingIndex) {
-                MicroblogFittedImage(
-                    fileName = image.fileName,
-                    displayScale = if (image.wrap == MicroblogImageWrap.FULL) image.displayScale else 1f,
-                    maxHeight = 420.dp,
-                    selected = selectedImageIndex == index,
-                    onClick = onImageClick?.let { { it(index) } },
-                )
+        blocks.forEach { block ->
+            when (block) {
+                is MicroblogBodyBlock.TextRun -> {
+                    val range = trimNewlinesRange(text, block.start, block.end) ?: return@forEach
+                    MicroblogAnnotatedText(
+                        annotated = annotated.subSequence(range.first, range.second),
+                        style = style,
+                    )
+                }
+                is MicroblogBodyBlock.FullImage -> {
+                    val image = images[block.index]
+                    MicroblogFittedImage(
+                        fileName = image.fileName,
+                        displayScale = if (image.wrap == MicroblogImageWrap.FULL) image.displayScale else 1f,
+                        maxHeight = 420.dp,
+                        selected = selectedImageIndex == block.index,
+                        onClick = onImageClick?.let { { it(block.index) } },
+                    )
+                }
+                is MicroblogBodyBlock.WrapImage -> {
+                    val range = trimNewlinesRange(text, block.textStart, block.textEnd)
+                    val slice = if (range != null) {
+                        annotated.subSequence(range.first, range.second)
+                    } else {
+                        AnnotatedString("")
+                    }
+                    MicroblogWrappedText(
+                        annotated = slice,
+                        style = style,
+                        image = images[block.index],
+                        selected = selectedImageIndex == block.index,
+                        onClick = onImageClick?.let { { it(block.index) } },
+                    )
+                }
             }
         }
     }
@@ -710,15 +776,21 @@ private fun MicroblogImageEditorPanel(
     image: MicroblogImage,
     index: Int,
     total: Int,
-    hasText: Boolean,
+    bodyText: String,
+    canMoveUp: Boolean,
+    canMoveDown: Boolean,
     onCrop: () -> Unit,
     onScale: (Float) -> Unit,
     onWrap: (MicroblogImageWrap) -> Unit,
     onMoveUp: () -> Unit,
     onMoveDown: () -> Unit,
+    onPlaceAtCursor: () -> Unit,
+    onPlaceAt: (Int) -> Unit,
     onRemove: () -> Unit,
 ) {
     val cs = MaterialTheme.colorScheme
+    val hasText = bodyText.isNotBlank()
+    val placeLabel = microblogDescribeInsertAt(bodyText, image.insertAt)
     Card(
         modifier = Modifier.fillMaxWidth(),
         shape = RoundedCornerShape(16.dp),
@@ -735,11 +807,11 @@ private fun MicroblogImageEditorPanel(
                     fontWeight = FontWeight.SemiBold,
                     modifier = Modifier.weight(1f),
                 )
-                IconButton(onClick = onMoveUp, enabled = index > 0) {
-                    Icon(Icons.Filled.ArrowUpward, contentDescription = "Выше")
+                IconButton(onClick = onMoveUp, enabled = canMoveUp) {
+                    Icon(Icons.Filled.ArrowUpward, contentDescription = "Выше по тексту")
                 }
-                IconButton(onClick = onMoveDown, enabled = index < total - 1) {
-                    Icon(Icons.Filled.ArrowDownward, contentDescription = "Ниже")
+                IconButton(onClick = onMoveDown, enabled = canMoveDown) {
+                    Icon(Icons.Filled.ArrowDownward, contentDescription = "Ниже по тексту")
                 }
                 IconButton(onClick = onCrop) {
                     Icon(Icons.Filled.Crop, contentDescription = "Обрезать")
@@ -750,15 +822,48 @@ private fun MicroblogImageEditorPanel(
             }
             Text(
                 when {
-                    !hasText -> "Добавьте текст ниже — тогда можно включить обтекание."
-                    image.wrap == MicroblogImageWrap.LEFT -> "Текст обтекает фото справа (фото слева)."
-                    image.wrap == MicroblogImageWrap.RIGHT -> "Текст обтекает фото слева (фото справа)."
-                    index == 0 -> "Фото на всю ширину над или под текстом."
-                    else -> "Фото блоком под текстом. Стрелками меняйте порядок."
+                    !hasText -> "Добавьте текст ниже — тогда фото можно поставить до или после абзаца и включить обтекание."
+                    image.wrap == MicroblogImageWrap.LEFT -> "Текст обтекает фото справа. Сейчас: $placeLabel."
+                    image.wrap == MicroblogImageWrap.RIGHT -> "Текст обтекает фото слева. Сейчас: $placeLabel."
+                    else -> "Фото блоком в тексте. Сейчас: $placeLabel."
                 },
                 style = MaterialTheme.typography.bodySmall,
                 color = cs.onSurfaceVariant,
             )
+            Text("Место в тексте", style = MaterialTheme.typography.labelMedium)
+            Row(
+                Modifier
+                    .fillMaxWidth()
+                    .horizontalScroll(rememberScrollState()),
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+            ) {
+                val slots = microblogParagraphSlots(bodyText)
+                val currentSlot = microblogSlotIndex(bodyText, image.insertAt)
+                MicroblogOptionChip(
+                    label = "К курсору",
+                    selected = false,
+                    enabled = hasText,
+                    onClick = onPlaceAtCursor,
+                )
+                if (hasText) {
+                    slots.forEachIndexed { i, slot ->
+                        val label = when {
+                            i == 0 -> "До 1-го"
+                            i == slots.lastIndex -> "После последнего"
+                            else -> "После $i-го"
+                        }
+                        MicroblogOptionChip(
+                            label = label,
+                            selected = currentSlot == i,
+                            onClick = {
+                                onPlaceAt(
+                                    if (slot >= bodyText.length) MICROBLOG_IMAGE_AT_END else slot,
+                                )
+                            },
+                        )
+                    }
+                }
+            }
             Text("Расположение", style = MaterialTheme.typography.labelMedium)
             Row(
                 Modifier
@@ -1042,7 +1147,8 @@ fun MicroblogEditorScreen(
         scope.launch {
             viewModel.importMicroblogImage(uri).fold(
                 onSuccess = { name ->
-                    images.add(MicroblogImage(name))
+                    val at = microblogSnapInsertAt(textFieldValue.text, textFieldValue.selection.min)
+                    images.add(MicroblogImage(fileName = name, insertAt = at))
                     selectedImageIndex = images.lastIndex
                     cropTarget = name
                 },
@@ -1258,7 +1364,7 @@ fun MicroblogEditorScreen(
                 modifier = Modifier.padding(start = 16.dp, end = 16.dp, top = 4.dp),
             )
             Text(
-                "Нажмите на фото в превью, чтобы настроить его. Стрелками меняйте порядок блоков.",
+                "Нажмите на фото в превью, чтобы настроить его. Стрелками двигайте фото до или после абзаца, «К курсору» ставит его к позиции в тексте.",
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                 modifier = Modifier.padding(start = 16.dp, end = 16.dp, bottom = 8.dp),
@@ -1306,7 +1412,17 @@ fun MicroblogEditorScreen(
                             image = image,
                             index = idx,
                             total = images.size,
-                            hasText = textFieldValue.text.isNotBlank(),
+                            bodyText = textFieldValue.text,
+                            canMoveUp = if (textFieldValue.text.isNotBlank()) {
+                                microblogCanMoveInsertAt(textFieldValue.text, image.insertAt, -1)
+                            } else {
+                                idx > 0
+                            },
+                            canMoveDown = if (textFieldValue.text.isNotBlank()) {
+                                microblogCanMoveInsertAt(textFieldValue.text, image.insertAt, 1)
+                            } else {
+                                idx < images.lastIndex
+                            },
                             onCrop = { cropTarget = image.fileName },
                             onScale = { images[idx] = image.copy(displayScale = it) },
                             onWrap = { mode ->
@@ -1318,19 +1434,38 @@ fun MicroblogEditorScreen(
                                 images[idx] = image.copy(wrap = mode, displayScale = scale)
                             },
                             onMoveUp = {
-                                if (idx > 0) {
+                                val body = textFieldValue.text
+                                if (body.isNotBlank()) {
+                                    images[idx] = image.copy(
+                                        insertAt = microblogMoveInsertAt(body, image.insertAt, -1),
+                                    )
+                                } else if (idx > 0) {
                                     val item = images.removeAt(idx)
                                     images.add(idx - 1, item)
                                     selectedImageIndex = idx - 1
                                 }
                             },
                             onMoveDown = {
-                                if (idx < images.lastIndex) {
+                                val body = textFieldValue.text
+                                if (body.isNotBlank()) {
+                                    images[idx] = image.copy(
+                                        insertAt = microblogMoveInsertAt(body, image.insertAt, 1),
+                                    )
+                                } else if (idx < images.lastIndex) {
                                     val item = images.removeAt(idx)
                                     images.add(idx + 1, item)
                                     selectedImageIndex = idx + 1
                                 }
                             },
+                            onPlaceAtCursor = {
+                                images[idx] = image.copy(
+                                    insertAt = microblogSnapInsertAt(
+                                        textFieldValue.text,
+                                        textFieldValue.selection.min,
+                                    ),
+                                )
+                            },
+                            onPlaceAt = { at -> images[idx] = image.copy(insertAt = at) },
                             onRemove = {
                                 val removed = images.removeAt(idx)
                                 viewModel.deleteUnusedMicroblogImage(
@@ -1381,6 +1516,17 @@ fun MicroblogEditorScreen(
                             new.selection.min
                         }.coerceIn(0, maxOf(old.text.length, new.text.length))
                         spans = adjustMicroblogSpans(spans, changePos, diff)
+                        if (images.isNotEmpty()) {
+                            val shifted = adjustMicroblogImageAnchors(
+                                images.toList(),
+                                changePos,
+                                diff,
+                                new.text.length,
+                            )
+                            shifted.forEachIndexed { i, img ->
+                                if (i < images.size && images[i] != img) images[i] = img
+                            }
+                        }
                         if (diff > 0) applyTyping(changePos, changePos + diff)
                     }
                     textFieldValue = new
@@ -1437,6 +1583,17 @@ fun MicroblogEditorScreen(
                             val newText = textFieldValue.text.substring(0, pos) + insert +
                                 textFieldValue.text.substring(pos)
                             spans = adjustMicroblogSpans(spans, pos, insert.length)
+                            if (images.isNotEmpty()) {
+                                val shifted = adjustMicroblogImageAnchors(
+                                    images.toList(),
+                                    pos,
+                                    insert.length,
+                                    newText.length,
+                                )
+                                shifted.forEachIndexed { i, img ->
+                                    if (i < images.size && images[i] != img) images[i] = img
+                                }
+                            }
                             textFieldValue = TextFieldValue(newText, TextRange(pos, pos + insert.length))
                             isUnderline = true
                             applyFormat(link = url)
