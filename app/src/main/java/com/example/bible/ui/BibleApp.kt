@@ -840,7 +840,7 @@ private fun BibleNavHost(
             }
             if (showBookNarratorPicker) {
                 NarratorPickerDialog(
-                    currentId = narratorId,
+                    currentId = com.example.bible.data.narratorForTranslation(translation, narratorId).id,
                     onSelect = { id ->
                         viewModel.setAudioNarrator(id)
                         showBookNarratorPicker = false
@@ -2875,7 +2875,7 @@ private fun BibleNavHost(
             }
             if (showNarratorPicker) {
                 NarratorPickerDialog(
-                    currentId = narratorId,
+                    currentId = com.example.bible.data.narratorForTranslation(translation, narratorId).id,
                     onSelect = { id ->
                         viewModel.setAudioNarrator(id)
                         showNarratorPicker = false

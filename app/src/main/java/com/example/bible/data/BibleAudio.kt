@@ -73,8 +73,8 @@ object BibleAudioNarrators {
 /**
  * Привязка озвучки к переводу:
  * - **WEB** — англ. дорожка `web`;
- * - **РБО** — `rbo`; **Кулаковых** — `bti`;
- * - **Синодальный**, **Новый русский**, **Подстрочный** — диктор из настроек ([preferredNarratorId]),
+ * - **РБО** — `rbo`; **Кулаковых** — `bti`; **Новый русский** — `new-russian`;
+ * - **Синодальный**, **Подстрочный** — диктор из настроек ([preferredNarratorId]),
  *   по умолчанию **Бондаренко** (см. [BiblePreferences.audioNarratorId]).
  * Идентификатор `web` в настройках для русских переводов подменяется на `bondarenko`.
  * Выбор **На иврите (ВЗ)** / **На греческом (НЗ)** в настройках имеет приоритет над привязкой к переводу.
@@ -91,8 +91,8 @@ fun narratorForTranslation(
         TranslationId.WEB -> BibleAudioNarrators.byId("web")
         TranslationId.RBO -> BibleAudioNarrators.byId("rbo")
         TranslationId.BTI -> BibleAudioNarrators.byId("bti")
+        TranslationId.NRT -> BibleAudioNarrators.byId("new-russian")
         TranslationId.SYNODAL,
-        TranslationId.NRT,
         TranslationId.INTERLINEAR,
         -> {
             val id = if (preferredNarratorId == "web") "bondarenko" else preferredNarratorId
