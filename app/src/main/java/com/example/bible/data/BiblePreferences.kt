@@ -27,6 +27,8 @@ private const val READING_TRACE_MAX_ENTRIES = 800
 
 private object Keys {
     val TRANSLATION = stringPreferencesKey("translation")
+    /** JSON: код перевода → ARGB подсветки вкладки в читалке. */
+    val TRANSLATION_TAB_COLORS_JSON = stringPreferencesKey("translation_tab_colors_json")
     val BOOKMARKS = stringSetPreferencesKey("bookmarks")
     val HIGHLIGHTS_JSON = stringPreferencesKey("text_highlights_json")
     val READER_FONT_SCALE = floatPreferencesKey("reader_font_scale")
@@ -357,6 +359,19 @@ class BiblePreferences(
 
     val selectedTranslation: Flow<TranslationId> = appContext.bibleDataStore.data.map { prefs ->
         TranslationId.fromCode(prefs[Keys.TRANSLATION] ?: TranslationId.SYNODAL.code)
+    }
+
+    val translationTabColors: Flow<Map<String, Int>> = appContext.bibleDataStore.data.map { prefs ->
+        parseTranslationTabColors(prefs[Keys.TRANSLATION_TAB_COLORS_JSON].orEmpty())
+    }
+
+    suspend fun setTranslationTabColor(id: TranslationId, colorArgb: Int?) {
+        appContext.bibleDataStore.edit { prefs ->
+            val cur = parseTranslationTabColors(prefs[Keys.TRANSLATION_TAB_COLORS_JSON].orEmpty()).toMutableMap()
+            if (colorArgb == null) cur.remove(id.code) else cur[id.code] = colorArgb
+            if (cur.isEmpty()) prefs.remove(Keys.TRANSLATION_TAB_COLORS_JSON)
+            else prefs[Keys.TRANSLATION_TAB_COLORS_JSON] = translationTabColorsToJson(cur)
+        }
     }
 
     val bookmarkKeys: Flow<Set<String>> = appContext.bibleDataStore.data.map { prefs ->
@@ -1504,6 +1519,29 @@ private fun applyJsonToMutablePreferences(prefs: MutablePreferences, root: JSONO
             }
         }
     }
+}
+
+private fun parseTranslationTabColors(json: String): Map<String, Int> {
+    if (json.isBlank()) return emptyMap()
+    return try {
+        val o = JSONObject(json)
+        val out = mutableMapOf<String, Int>()
+        val keys = o.keys()
+        while (keys.hasNext()) {
+            val k = keys.next()
+            if (TranslationId.entries.none { it.code.equals(k, ignoreCase = true) }) continue
+            out[k] = o.getInt(k)
+        }
+        out
+    } catch (_: Exception) {
+        emptyMap()
+    }
+}
+
+private fun translationTabColorsToJson(map: Map<String, Int>): String {
+    val o = JSONObject()
+    map.forEach { (k, argb) -> o.put(k, argb) }
+    return o.toString()
 }
 
 private fun parseBookmarkTagsJson(json: String): Map<String, Set<String>> {

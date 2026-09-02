@@ -42,6 +42,7 @@ private val SETTINGS_KEYS = setOf(
     "books_main_menu_order",
     "media_home_section_order",
     "bible_app_theme_preset",
+    "translation_tab_colors_json",
 )
 
 /** Пользовательский контент в DataStore. */

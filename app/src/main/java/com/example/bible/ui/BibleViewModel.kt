@@ -254,6 +254,12 @@ class BibleViewModel(
         TranslationId.SYNODAL,
     )
 
+    val translationTabColors: StateFlow<Map<String, Int>> = preferences.translationTabColors.stateIn(
+        viewModelScope,
+        SharingStarted.WhileSubscribed(5000),
+        emptyMap(),
+    )
+
     val bookmarkKeys: StateFlow<Set<String>> = preferences.bookmarkKeys.stateIn(
         viewModelScope,
         SharingStarted.WhileSubscribed(5000),
@@ -783,6 +789,10 @@ class BibleViewModel(
 
     suspend fun setTranslation(id: TranslationId) {
         preferences.setTranslation(id)
+    }
+
+    fun setTranslationTabColor(id: TranslationId, colorArgb: Int?) {
+        viewModelScope.launch { preferences.setTranslationTabColor(id, colorArgb) }
     }
 
     fun toggleBookmark(ref: VerseRef) {

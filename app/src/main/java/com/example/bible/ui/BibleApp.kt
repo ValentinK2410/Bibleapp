@@ -38,6 +38,7 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
@@ -105,6 +106,8 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Slider
 import androidx.compose.material3.ScrollableTabRow
 import androidx.compose.material3.Tab
+import androidx.compose.material3.TabRowDefaults
+import androidx.compose.material3.TabRowDefaults.tabIndicatorOffset
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
@@ -568,7 +571,7 @@ private fun ErrorScreen(
     }
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class)
 @Composable
 private fun BibleNavHost(
     navController: NavHostController,
@@ -582,6 +585,7 @@ private fun BibleNavHost(
     preferences: BiblePreferences,
 ) {
     val translation by viewModel.selectedTranslation.collectAsStateWithLifecycle()
+    val translationTabColors by viewModel.translationTabColors.collectAsStateWithLifecycle()
     val bookmarkKeys by viewModel.bookmarkKeys.collectAsStateWithLifecycle()
     val bookmarkTagsMap by viewModel.bookmarkTagsMap.collectAsStateWithLifecycle()
     val searchQuery by viewModel.searchQuery.collectAsStateWithLifecycle()
@@ -2209,6 +2213,7 @@ private fun BibleNavHost(
             var showMoreMenu by remember { mutableStateOf(false) }
             var showAlphabet by remember { mutableStateOf(false) }
             var showNarratorPicker by remember { mutableStateOf(false) }
+            var showTabColorsDialog by remember { mutableStateOf(false) }
             var showStudyTools by remember { mutableStateOf(false) }
             var studyVerse by remember { mutableIntStateOf(1) }
             var interlinearHebrewSandboxAvailable by remember(bookId) { mutableStateOf(false) }
@@ -2571,6 +2576,14 @@ private fun BibleNavHost(
                                         leadingIcon = { Icon(Icons.Default.FormatListNumbered, contentDescription = null) },
                                     )
                                     HorizontalDivider()
+                                    DropdownMenuItem(
+                                        text = { Text("Подсветка вкладок") },
+                                        onClick = {
+                                            showMoreMenu = false
+                                            showTabColorsDialog = true
+                                        },
+                                        leadingIcon = { Icon(Icons.Default.FormatColorFill, contentDescription = null) },
+                                    )
                                     TranslationId.entries.forEach { tid ->
                                         DropdownMenuItem(
                                             text = { Text(tid.labelRu) },
@@ -2579,7 +2592,20 @@ private fun BibleNavHost(
                                                 scope.launch { viewModel.setTranslation(tid) }
                                             },
                                             trailingIcon = {
-                                                if (tid == translation) Icon(Icons.Default.Check, contentDescription = null)
+                                                Row(verticalAlignment = Alignment.CenterVertically) {
+                                                    translationTabColors[tid.code]?.let { argb ->
+                                                        Box(
+                                                            Modifier
+                                                                .padding(end = 8.dp)
+                                                                .size(12.dp)
+                                                                .clip(CircleShape)
+                                                                .background(Color(argb)),
+                                                        )
+                                                    }
+                                                    if (tid == translation) {
+                                                        Icon(Icons.Default.Check, contentDescription = null)
+                                                    }
+                                                }
                                             },
                                         )
                                     }
@@ -2609,19 +2635,43 @@ private fun BibleNavHost(
 
                 Box(modifier = Modifier.padding(padding).fillMaxSize()) {
                 Column(modifier = Modifier.fillMaxSize()) {
+                    val selectedTabArgb = translationTabColors[translations[pagerState.currentPage].code]
+                    val tabIndicatorColor = selectedTabArgb?.let { Color(it) } ?: MaterialTheme.colorScheme.primary
                     ScrollableTabRow(
                         modifier = Modifier.height(36.dp),
                         selectedTabIndex = pagerState.currentPage,
                         containerColor = MaterialTheme.colorScheme.surface,
-                        contentColor = MaterialTheme.colorScheme.primary,
+                        contentColor = tabIndicatorColor,
                         edgePadding = 8.dp,
+                        indicator = { tabPositions ->
+                            if (pagerState.currentPage in tabPositions.indices) {
+                                TabRowDefaults.SecondaryIndicator(
+                                    Modifier.tabIndicatorOffset(tabPositions[pagerState.currentPage]),
+                                    color = tabIndicatorColor,
+                                )
+                            }
+                        },
                     ) {
                         translations.forEachIndexed { index, tid ->
+                            val selected = pagerState.currentPage == index
                             Tab(
                                 modifier = Modifier.height(36.dp),
-                                selected = pagerState.currentPage == index,
+                                selected = selected,
                                 onClick = { scope.launch { pagerState.animateScrollToPage(index) } },
-                                text = { Text(tid.labelRu, fontSize = 12.sp, maxLines = 1) },
+                                text = {
+                                    Box(
+                                        Modifier.combinedClickable(
+                                            onClick = { scope.launch { pagerState.animateScrollToPage(index) } },
+                                            onLongClick = { showTabColorsDialog = true },
+                                        ),
+                                    ) {
+                                        TranslationTabLabel(
+                                            translation = tid,
+                                            selected = selected,
+                                            highlightArgb = translationTabColors[tid.code],
+                                        )
+                                    }
+                                },
                             )
                         }
                     }
@@ -2872,6 +2922,13 @@ private fun BibleNavHost(
                     bottomInset = bibleAudioBarInsetDp,
                 )
                 }
+            }
+            if (showTabColorsDialog) {
+                TranslationTabColorsDialog(
+                    colors = translationTabColors,
+                    onPick = { tid, argb -> viewModel.setTranslationTabColor(tid, argb) },
+                    onDismiss = { showTabColorsDialog = false },
+                )
             }
             if (showNarratorPicker) {
                 NarratorPickerDialog(
