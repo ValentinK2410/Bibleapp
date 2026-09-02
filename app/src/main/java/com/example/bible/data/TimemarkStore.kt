@@ -84,6 +84,66 @@ object TimemarkStore {
         return out.sortedByDescending { it.updatedAt }
     }
 
+    fun listAllProjects(context: Context): List<TimemarkProject> =
+        listProjectFiles(context).mapNotNull { f ->
+            load(context, f.nameWithoutExtension)
+        }.sortedByDescending { it.updatedAt }
+
+    fun listProjectsForBook(context: Context, bookId: String): List<TimemarkProject> =
+        listAllProjects(context).filter { it.bookId == bookId }
+
+    /** Есть ли сохранённые метки (непустые cues) для главы и перевода. */
+    fun hasTimemarksForChapter(
+        context: Context,
+        translationCode: String,
+        bookId: String,
+        chapter: Int,
+    ): Boolean = listProjectsForChapter(context, translationCode, bookId, chapter)
+        .any { it.cues.isNotEmpty() }
+
+    /** Номера глав книги, для которых есть метки в данном переводе. */
+    fun chaptersWithTimemarksForBook(
+        context: Context,
+        translationCode: String,
+        bookId: String,
+    ): Set<Int> = listProjectsForBook(context, bookId)
+        .asSequence()
+        .filter { it.translationCode == translationCode && it.cues.isNotEmpty() }
+        .map { it.chapter }
+        .toSet()
+
+    /** Id книг, у которых есть хотя бы одна глава с метками в данном переводе. */
+    fun booksWithTimemarks(
+        context: Context,
+        translationCode: String,
+    ): Set<String> = listAllProjects(context)
+        .asSequence()
+        .filter { it.translationCode == translationCode && it.cues.isNotEmpty() }
+        .map { it.bookId }
+        .toSet()
+
+    /**
+     * Книги и главы с непустыми таймкодами сразу по всем переводам.
+     * Нужно на экранах выбора: открытый перевод не должен скрывать чужие метки.
+     */
+    fun presenceIndex(context: Context): TimemarkPresenceIndex {
+        val byBook = mutableMapOf<String, MutableSet<String>>()
+        val byChapter = mutableMapOf<String, MutableMap<Int, MutableSet<String>>>()
+        for (p in listAllProjects(context)) {
+            if (p.cues.isEmpty() || p.bookId.isBlank() || p.translationCode.isBlank()) continue
+            byBook.getOrPut(p.bookId) { mutableSetOf() }.add(p.translationCode)
+            byChapter.getOrPut(p.bookId) { mutableMapOf() }
+                .getOrPut(p.chapter) { mutableSetOf() }
+                .add(p.translationCode)
+        }
+        return TimemarkPresenceIndex(
+            translationsByBook = byBook.mapValues { it.value.toSet() },
+            translationsByChapter = byChapter.mapValues { bookMap ->
+                bookMap.value.mapValues { it.value.toSet() }
+            },
+        )
+    }
+
     /**
      * Один проект (самый свежий), если нужна обратная совместимость.
      */
@@ -94,6 +154,70 @@ object TimemarkStore {
         chapter: Int,
     ): TimemarkProject? =
         listProjectsForChapter(context, translationCode, bookId, chapter).firstOrNull()
+
+    /**
+     * Проект таймкодов для главы, если [TimemarkProject.audioFilePath] указывает на ту же
+     * озвучку, что и [localAudioFile] для выбранного диктора.
+     */
+    fun findProjectMatchingNarration(
+        context: Context,
+        translationCode: String,
+        bookId: String,
+        chapter: Int,
+        narratorId: String,
+    ): TimemarkProject? {
+        val candidates = listProjectsForChapter(context, translationCode, bookId, chapter)
+            .filter { it.cues.isNotEmpty() }
+        if (candidates.isEmpty()) return null
+
+        candidates
+            .filter { audioFileMatchesChapterNarration(context, narratorId, bookId, chapter, it.audioFilePath) }
+            .maxByOrNull { it.updatedAt }
+            ?.let { return it }
+
+        // Импорт с другого телефона: один проект на главу или метки без «своего» файла озвучки.
+        val expectedName = localAudioFile(context, narratorId, bookId, chapter).name
+        val chapterCompatible = candidates.filter { project ->
+            chapterNarrationCompatible(project, expectedName)
+        }
+        return chapterCompatible.maxByOrNull { it.updatedAt }
+    }
+
+    /** Метки можно накладывать на озвучку главы, даже если файл лежит не в bible_audio. */
+    private fun chapterNarrationCompatible(project: TimemarkProject, expectedAudioName: String): Boolean {
+        val path = project.audioFilePath
+        if (path.isBlank()) return true
+        val file = File(path)
+        if (!file.isFile) return true
+        return file.name.equals(expectedAudioName, ignoreCase = true)
+    }
+
+    fun audioFileMatchesChapterNarration(
+        context: Context,
+        narratorId: String,
+        bookId: String,
+        chapter: Int,
+        projectAudioPath: String,
+    ): Boolean {
+        if (projectAudioPath.isBlank()) return false
+        val projectFile = File(projectAudioPath)
+        if (!projectFile.isFile) return false
+        val expected = localAudioFile(context, narratorId, bookId, chapter)
+        if (projectFile.name.equals(expected.name, ignoreCase = true)) return true
+        return sameChapterAudioFile(projectFile, expected)
+    }
+
+    private fun sameChapterAudioFile(projectFile: File, expected: File): Boolean {
+        if (projectFile.exists() && expected.exists()) {
+            return try {
+                projectFile.canonicalPath == expected.canonicalPath
+            } catch (_: Exception) {
+                projectFile.absolutePath == expected.absolutePath
+            }
+        }
+        return projectFile.name == expected.name &&
+            projectFile.parentFile?.name == expected.parentFile?.name
+    }
 
     private fun toJson(p: TimemarkProject): String {
         val o = JSONObject()

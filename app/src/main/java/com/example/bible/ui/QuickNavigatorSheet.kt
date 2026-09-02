@@ -14,8 +14,6 @@ import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.layout.offset
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items as gridItems
@@ -35,7 +33,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -52,15 +49,9 @@ fun QuickNavigatorSheet(
     currentBookId: String,
     onNavigate: (bookId: String, chapter: Int) -> Unit,
     onDismiss: () -> Unit,
-    chaptersWithTimemarks: Set<Int> = emptySet(),
-    booksWithTimemarks: Set<String> = emptySet(),
-    timemarkDotColor: Color = Color.Unspecified,
 ) {
-    val dotColor = if (timemarkDotColor == Color.Unspecified) {
-        MaterialTheme.colorScheme.primary
-    } else {
-        timemarkDotColor
-    }
+    val presence = rememberTimemarkPresenceIndex()
+    val tabColors = rememberTranslationTabColorsMap()
     var selectedBookId by remember { mutableStateOf(currentBookId) }
     var step by remember { mutableStateOf(if (currentBookId.isNotEmpty()) "chapters" else "books") }
 
@@ -119,13 +110,13 @@ fun QuickNavigatorSheet(
                                 verticalArrangement = Arrangement.spacedBy(4.dp),
                             ) {
                                 gridItems(book.chapters, key = { it.number }) { ch ->
-                                    val hasTimemarks = ch.number in chaptersWithTimemarks
+                                    val chapterCodes = presence.forChapter(selectedBookId, ch.number)
                                     Box(
                                         modifier = Modifier
                                             .fillMaxWidth()
                                             .heightIn(min = 44.dp)
                                             .background(
-                                                if (hasTimemarks) {
+                                                if (chapterCodes.isNotEmpty()) {
                                                     MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.65f)
                                                 } else {
                                                     MaterialTheme.colorScheme.surfaceVariant
@@ -136,16 +127,14 @@ fun QuickNavigatorSheet(
                                         contentAlignment = Alignment.Center,
                                     ) {
                                         Text("${ch.number}", fontWeight = FontWeight.Bold)
-                                        if (hasTimemarks) {
-                                            TimemarkPresenceDot(
-                                                visible = true,
-                                                color = dotColor,
-                                                modifier = Modifier
-                                                    .align(Alignment.TopEnd)
-                                                    .offset(x = (-4).dp, y = 4.dp),
-                                                size = 6.dp,
-                                            )
-                                        }
+                                        TimemarkPresenceDots(
+                                            translationCodes = chapterCodes,
+                                            tabColors = tabColors,
+                                            modifier = Modifier
+                                                .align(Alignment.TopEnd)
+                                                .padding(top = 3.dp, end = 3.dp),
+                                            size = 6.dp,
+                                        )
                                     }
                                 }
                             }
@@ -174,7 +163,7 @@ fun QuickNavigatorSheet(
                 ) {
                     gridItems(BibleCanon.allBooks, key = { it.id }) { entry ->
                         val color = groupTextColor(entry.group)
-                        val hasTimemarks = entry.id in booksWithTimemarks
+                        val bookCodes = presence.forBook(entry.id)
                         Box(
                             modifier = Modifier
                                 .fillMaxWidth()
@@ -197,16 +186,14 @@ fun QuickNavigatorSheet(
                                 fontWeight = FontWeight.Bold,
                                 textAlign = TextAlign.Center,
                             )
-                            if (hasTimemarks) {
-                                TimemarkPresenceDot(
-                                    visible = true,
-                                    color = dotColor,
-                                    modifier = Modifier
-                                        .align(Alignment.BottomEnd)
-                                        .offset(x = (-3).dp, y = (-3).dp),
-                                    size = 5.dp,
-                                )
-                            }
+                            TimemarkPresenceDots(
+                                translationCodes = bookCodes,
+                                tabColors = tabColors,
+                                modifier = Modifier
+                                    .align(Alignment.BottomEnd)
+                                    .padding(end = 2.dp, bottom = 2.dp),
+                                size = 5.dp,
+                            )
                         }
                     }
                 }

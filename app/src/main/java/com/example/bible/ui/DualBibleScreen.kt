@@ -106,7 +106,6 @@ import com.example.bible.data.NoteScriptureLinks
 import com.example.bible.data.ParsedScriptureNavigation
 import com.example.bible.data.ScriptureAudioNavigation
 import com.example.bible.data.ScriptureAudioPlayMode
-import com.example.bible.data.TimemarkStore
 import com.example.bible.data.TranslationId
 import com.example.bible.data.SemanticHighlightSession
 import com.example.bible.data.SemanticLexiconRule
@@ -811,17 +810,6 @@ fun NoteEditorBiblePane(
     var scrollToVerseRequest by remember { mutableStateOf<VerseScrollRequest?>(null) }
     var showQuickNav by remember { mutableStateOf(false) }
     val dualContext = androidx.compose.ui.platform.LocalContext.current
-    var timemarkProjectsRefresh by remember { mutableIntStateOf(0) }
-    val timemarkChaptersForBook = remember(paneState.translation, paneState.bookId, timemarkProjectsRefresh) {
-        TimemarkStore.chaptersWithTimemarksForBook(
-            dualContext,
-            paneState.translation.code,
-            paneState.bookId.orEmpty(),
-        )
-    }
-    val timemarkBooks = remember(paneState.translation, timemarkProjectsRefresh) {
-        TimemarkStore.booksWithTimemarks(dualContext, paneState.translation.code)
-    }
     LaunchedEffect(navigationRequest?.nonce) {
         val req = navigationRequest ?: return@LaunchedEffect
         val targetTranslation = req.translationCode?.let { TranslationId.fromCode(it) } ?: paneState.translation
@@ -919,9 +907,6 @@ fun NoteEditorBiblePane(
             library = library,
             translation = paneState.translation,
             currentBookId = paneState.bookId.orEmpty(),
-            chaptersWithTimemarks = timemarkChaptersForBook,
-            booksWithTimemarks = timemarkBooks,
-            timemarkDotColor = timemarkIndicatorColor(null),
             onNavigate = { bookId, chapter ->
                 paneState = paneState.copy(bookId = bookId, chapter = chapter)
                 showQuickNav = false
@@ -1008,11 +993,8 @@ internal fun BiblePaneColumn(
 
         when {
             state.bookId == null -> {
-                val timemarkDotColor = timemarkIndicatorColor(translationTabColors[state.translation.code])
                 BookSelectionGrid(
                     modifier = Modifier.weight(1f).fillMaxWidth(),
-                    booksWithTimemarks = rememberBooksWithTimemarks(state.translation.code),
-                    timemarkDotColor = timemarkDotColor,
                     onBookClick = { id ->
                         onStateChange(state.copy(bookId = id, chapter = null))
                     },
@@ -1033,9 +1015,8 @@ internal fun BiblePaneColumn(
                         ChapterPickerPane(
                             modifier = Modifier.weight(1f),
                             book = shellState.book,
+                            bookId = bid,
                             isOnlineTranslation = false,
-                            chaptersWithTimemarks = rememberChaptersWithTimemarks(state.translation.code, bid),
-                            timemarkDotColor = timemarkIndicatorColor(translationTabColors[state.translation.code]),
                             onChapter = { ch ->
                                 onStateChange(state.copy(chapter = ch))
                             },
@@ -1046,9 +1027,8 @@ internal fun BiblePaneColumn(
                         ChapterPickerPane(
                             modifier = Modifier.weight(1f),
                             book = shellState.book,
+                            bookId = bid,
                             isOnlineTranslation = shellState.isOnlineOnly,
-                            chaptersWithTimemarks = rememberChaptersWithTimemarks(state.translation.code, bid),
-                            timemarkDotColor = timemarkIndicatorColor(translationTabColors[state.translation.code]),
                             onChapter = { ch ->
                                 onStateChange(state.copy(chapter = ch))
                             },
@@ -1203,17 +1183,13 @@ internal fun BiblePaneColumn(
 private fun ChapterPickerPane(
     modifier: Modifier = Modifier,
     book: BibleBook,
+    bookId: String = book.id,
     isOnlineTranslation: Boolean = false,
-    chaptersWithTimemarks: Set<Int> = emptySet(),
-    timemarkDotColor: Color = Color.Unspecified,
     onChapter: (Int) -> Unit,
     onBack: () -> Unit,
 ) {
-    val dotColor = if (timemarkDotColor == Color.Unspecified) {
-        MaterialTheme.colorScheme.primary
-    } else {
-        timemarkDotColor
-    }
+    val presence = rememberTimemarkPresenceIndex()
+    val tabColors = rememberTranslationTabColorsMap()
     Column(modifier.fillMaxSize()) {
         if (book.chapters.isEmpty()) {
             Text(
@@ -1233,7 +1209,7 @@ private fun ChapterPickerPane(
             ) {
                 gridItems(book.chapters, key = { it.number }) { ch: BibleChapter ->
                     val verseCount = ch.verses.size
-                    val hasTimemarks = ch.number in chaptersWithTimemarks
+                    val chapterCodes = presence.forChapter(bookId, ch.number)
                     Box(
                         modifier = Modifier
                             .fillMaxWidth()
@@ -1269,13 +1245,13 @@ private fun ChapterPickerPane(
                                 )
                             }
                         }
-                        TimemarkPresenceDot(
-                            visible = hasTimemarks,
-                            color = dotColor,
+                        TimemarkPresenceDots(
+                            translationCodes = chapterCodes,
+                            tabColors = tabColors,
                             modifier = Modifier
                                 .align(Alignment.TopEnd)
-                                .padding(top = 5.dp, end = 5.dp),
-                            size = 8.dp,
+                                .padding(top = 4.dp, end = 4.dp),
+                            size = 7.dp,
                         )
                     }
                 }

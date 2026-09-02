@@ -799,8 +799,6 @@ private fun BibleNavHost(
                     val downloaded = viewModel.booksWithDownloadedAudio(eff)
                     fromAssets + downloaded
                 }
-                val booksWithTimemarks = rememberBooksWithTimemarks(translation.code)
-                val timemarkDotColor = timemarkIndicatorColor(translationTabColors[translation.code])
                 val dailyVerse = remember { DailyVerse.forToday() }
                 Column(
                     modifier = if (bookLayoutMode == BookLayoutMode.GRID) {
@@ -829,8 +827,6 @@ private fun BibleNavHost(
                             .fillMaxSize()
                             .weight(1f),
                         booksWithAudio = booksWithAudio,
-                        booksWithTimemarks = booksWithTimemarks,
-                        timemarkDotColor = timemarkDotColor,
                         onBookClick = { bookId ->
                             com.example.bible.data.BibleAudioPlayer.stopForNavigation()
                             navController.navigate("chapters/$bookId")
@@ -2287,16 +2283,6 @@ private fun BibleNavHost(
                     readingAudioNarrator.id,
                 ) != null
             }
-            val timemarkChaptersForBook = remember(translation, bookId, timemarkProjectsRefresh) {
-                TimemarkStore.chaptersWithTimemarksForBook(
-                    readerContext,
-                    translation.code,
-                    bookId,
-                )
-            }
-            val timemarkBooks = remember(translation, timemarkProjectsRefresh) {
-                TimemarkStore.booksWithTimemarks(readerContext, translation.code)
-            }
             LaunchedEffect(bookId) {
                 val st = com.example.bible.data.BibleAudioPlayer.state.value
                 if (
@@ -2950,9 +2936,6 @@ private fun BibleNavHost(
                     library = library,
                     translation = translation,
                     currentBookId = bookId,
-                    chaptersWithTimemarks = timemarkChaptersForBook,
-                    booksWithTimemarks = timemarkBooks,
-                    timemarkDotColor = timemarkIndicatorColor(translationTabColors[translation.code]),
                     onNavigate = { targetBookId, targetChapter ->
                         showQuickNav = false
                         com.example.bible.data.BibleAudioPlayer.stopForNavigation()
@@ -4645,16 +4628,12 @@ private fun HistoryScreen(
 private fun ChapterGrid(
     modifier: Modifier = Modifier,
     book: BibleBook,
+    bookId: String = book.id,
     chaptersWithAudio: Set<Int> = emptySet(),
-    chaptersWithTimemarks: Set<Int> = emptySet(),
-    timemarkDotColor: Color = Color.Unspecified,
     onChapterClick: (Int) -> Unit,
 ) {
-    val dotColor = if (timemarkDotColor == Color.Unspecified) {
-        MaterialTheme.colorScheme.primary
-    } else {
-        timemarkDotColor
-    }
+    val presence = rememberTimemarkPresenceIndex()
+    val tabColors = rememberTranslationTabColorsMap()
     LazyVerticalGrid(
         columns = GridCells.Fixed(5),
         modifier = modifier.fillMaxSize(),
@@ -4664,7 +4643,7 @@ private fun ChapterGrid(
     ) {
         gridItems(book.chapters, key = { it.number }) { chapter: BibleChapter ->
             val hasAudio = chapter.number in chaptersWithAudio
-            val hasTimemarks = chapter.number in chaptersWithTimemarks
+            val chapterCodes = presence.forChapter(bookId, chapter.number)
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -4698,13 +4677,13 @@ private fun ChapterGrid(
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                     )
                 }
-                TimemarkPresenceDot(
-                    visible = hasTimemarks,
-                    color = dotColor,
+                TimemarkPresenceDots(
+                    translationCodes = chapterCodes,
+                    tabColors = tabColors,
                     modifier = Modifier
                         .align(Alignment.TopEnd)
-                        .padding(top = 6.dp, end = 6.dp),
-                    size = 8.dp,
+                        .padding(top = 4.dp, end = 4.dp),
+                    size = 7.dp,
                 )
             }
         }
@@ -5901,14 +5880,11 @@ private fun ChaptersRouteContent(
                     val downloaded = viewModel.downloadedChaptersFor(eff, bookId)
                     fromAssets + downloaded
                 }
-                val chaptersWithTimemarks = rememberChaptersWithTimemarks(translation.code, bookId)
-                val translationTabColors by viewModel.translationTabColors.collectAsStateWithLifecycle()
                 ChapterGrid(
                     modifier = Modifier.fillMaxSize(),
                     book = book,
+                    bookId = bookId,
                     chaptersWithAudio = chaptersWithAudio,
-                    chaptersWithTimemarks = chaptersWithTimemarks,
-                    timemarkDotColor = timemarkIndicatorColor(translationTabColors[translation.code]),
                     onChapterClick = { chapter ->
                         navController.navigate("verses/$bookId/$chapter")
                     },

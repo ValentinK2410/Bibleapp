@@ -35,3 +35,18 @@ data class TimemarkProject(
     val cues: List<TimemarkCue> = emptyList(),
     val updatedAt: Long = System.currentTimeMillis(),
 )
+
+/** Какие переводы имеют таймкоды у книги / главы — без фильтра по открытой вкладке. */
+data class TimemarkPresenceIndex(
+    val translationsByBook: Map<String, Set<String>> = emptyMap(),
+    val translationsByChapter: Map<String, Map<Int, Set<String>>> = emptyMap(),
+) {
+    fun forBook(bookId: String): Set<String> = translationsByBook[bookId].orEmpty()
+
+    fun forChapter(bookId: String, chapter: Int): Set<String> =
+        translationsByChapter[bookId]?.get(chapter).orEmpty()
+
+    companion object {
+        val Empty = TimemarkPresenceIndex()
+    }
+}

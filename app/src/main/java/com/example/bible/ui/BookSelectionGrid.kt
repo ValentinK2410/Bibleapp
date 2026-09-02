@@ -7,6 +7,8 @@ import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
+import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.defaultMinSize
@@ -54,10 +56,14 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.compose.LocalLifecycleOwner
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.bible.data.BibleCanon
+import com.example.bible.data.BiblePreferences
 import com.example.bible.data.CanonBookEntry
 import com.example.bible.data.CanonBookGroup
+import com.example.bible.data.TimemarkPresenceIndex
 import com.example.bible.data.TimemarkStore
+import com.example.bible.data.TranslationId
 
 enum class BookLayoutMode {
     GRID,
@@ -67,6 +73,16 @@ enum class BookLayoutMode {
 @Composable
 fun timemarkIndicatorColor(highlightArgb: Int?): Color =
     highlightArgb?.let { Color(it) } ?: MaterialTheme.colorScheme.primary
+
+fun orderedTimemarkTranslationCodes(codes: Set<String>): List<String> {
+    if (codes.isEmpty()) return emptyList()
+    val byLower = codes.associateBy { it.lowercase() }
+    val known = TranslationId.entries.mapNotNull { byLower[it.code.lowercase()] }
+    val rest = codes.filter { code ->
+        TranslationId.entries.none { it.code.equals(code, ignoreCase = true) }
+    }.sorted()
+    return known + rest
+}
 
 @Composable
 fun TimemarkPresenceDot(
@@ -84,6 +100,35 @@ fun TimemarkPresenceDot(
     )
 }
 
+@OptIn(ExperimentalLayoutApi::class)
+@Composable
+fun TimemarkPresenceDots(
+    translationCodes: Set<String>,
+    tabColors: Map<String, Int>,
+    modifier: Modifier = Modifier,
+    size: Dp = 7.dp,
+) {
+    val codes = remember(translationCodes) { orderedTimemarkTranslationCodes(translationCodes) }
+    if (codes.isEmpty()) return
+    FlowRow(
+        modifier = modifier,
+        horizontalArrangement = Arrangement.spacedBy(2.dp),
+        verticalArrangement = Arrangement.spacedBy(2.dp),
+        maxItemsInEachRow = 4,
+    ) {
+        val outline = MaterialTheme.colorScheme.surface
+        for (code in codes) {
+            Box(
+                Modifier
+                    .size(size)
+                    .border(0.6.dp, outline, CircleShape)
+                    .clip(CircleShape)
+                    .background(timemarkIndicatorColor(tabColors[code])),
+            )
+        }
+    }
+}
+
 @Composable
 fun rememberTimemarkCatalogTick(): Int {
     val lifecycleOwner = LocalLifecycleOwner.current
@@ -99,22 +144,18 @@ fun rememberTimemarkCatalogTick(): Int {
 }
 
 @Composable
-fun rememberBooksWithTimemarks(translationCode: String): Set<String> {
+fun rememberTranslationTabColorsMap(): Map<String, Int> {
     val context = LocalContext.current
-    val tick = rememberTimemarkCatalogTick()
-    return remember(translationCode, tick) {
-        TimemarkStore.booksWithTimemarks(context, translationCode)
-    }
+    val prefs = remember(context.applicationContext) { BiblePreferences(context.applicationContext) }
+    val colors by prefs.translationTabColors.collectAsStateWithLifecycle(emptyMap())
+    return colors
 }
 
 @Composable
-fun rememberChaptersWithTimemarks(translationCode: String, bookId: String): Set<Int> {
+fun rememberTimemarkPresenceIndex(): TimemarkPresenceIndex {
     val context = LocalContext.current
     val tick = rememberTimemarkCatalogTick()
-    return remember(translationCode, bookId, tick) {
-        if (bookId.isBlank()) emptySet()
-        else TimemarkStore.chaptersWithTimemarksForBook(context, translationCode, bookId)
-    }
+    return remember(tick) { TimemarkStore.presenceIndex(context) }
 }
 
 @Composable
@@ -196,30 +237,19 @@ fun BookSelectionContent(
     layoutMode: BookLayoutMode,
     modifier: Modifier = Modifier,
     booksWithAudio: Set<String> = emptySet(),
-    booksWithTimemarks: Set<String> = emptySet(),
-    timemarkDotColor: Color = Color.Unspecified,
     onBookClick: (String) -> Unit,
     onBookLongPress: (CanonBookEntry) -> Unit = {},
 ) {
-    val dotColor = if (timemarkDotColor == Color.Unspecified) {
-        MaterialTheme.colorScheme.primary
-    } else {
-        timemarkDotColor
-    }
     when (layoutMode) {
         BookLayoutMode.GRID -> BookSelectionGrid(
             modifier = modifier,
             booksWithAudio = booksWithAudio,
-            booksWithTimemarks = booksWithTimemarks,
-            timemarkDotColor = dotColor,
             onBookClick = onBookClick,
             onBookLongPress = onBookLongPress,
         )
         BookLayoutMode.LIST -> BookSelectionList(
             modifier = modifier,
             booksWithAudio = booksWithAudio,
-            booksWithTimemarks = booksWithTimemarks,
-            timemarkDotColor = dotColor,
             onBookClick = onBookClick,
             onBookLongPress = onBookLongPress,
         )
@@ -230,18 +260,13 @@ fun BookSelectionContent(
 fun BookSelectionGrid(
     modifier: Modifier = Modifier,
     booksWithAudio: Set<String> = emptySet(),
-    booksWithTimemarks: Set<String> = emptySet(),
-    timemarkDotColor: Color = Color.Unspecified,
     onBookClick: (String) -> Unit,
     onBookLongPress: (CanonBookEntry) -> Unit = {},
 ) {
     val books = BibleCanon.allBooks
     var selectedId by remember { mutableStateOf<String?>(null) }
-    val dotColor = if (timemarkDotColor == Color.Unspecified) {
-        MaterialTheme.colorScheme.primary
-    } else {
-        timemarkDotColor
-    }
+    val presence = rememberTimemarkPresenceIndex()
+    val tabColors = rememberTranslationTabColorsMap()
 
     CompositionLocalProvider(LocalLayoutDirection provides LayoutDirection.Ltr) {
         LazyVerticalGrid(
@@ -261,8 +286,8 @@ fun BookSelectionGrid(
                     entry = entry,
                     selected = selectedId == entry.id,
                     hasAudio = entry.id in booksWithAudio,
-                    hasTimemarks = entry.id in booksWithTimemarks,
-                    timemarkDotColor = dotColor,
+                    timemarkCodes = presence.forBook(entry.id),
+                    tabColors = tabColors,
                     onClick = {
                         selectedId = entry.id
                         onBookClick(entry.id)
@@ -279,12 +304,12 @@ fun BookSelectionGrid(
 private fun BookSelectionList(
     modifier: Modifier = Modifier,
     booksWithAudio: Set<String> = emptySet(),
-    booksWithTimemarks: Set<String> = emptySet(),
-    timemarkDotColor: Color,
     onBookClick: (String) -> Unit,
     onBookLongPress: (CanonBookEntry) -> Unit = {},
 ) {
     val books = BibleCanon.allBooks
+    val presence = rememberTimemarkPresenceIndex()
+    val tabColors = rememberTranslationTabColorsMap()
     LazyColumn(
         modifier = modifier
             .fillMaxSize()
@@ -321,9 +346,9 @@ private fun BookSelectionList(
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis,
                 )
-                TimemarkPresenceDot(
-                    visible = entry.id in booksWithTimemarks,
-                    color = timemarkDotColor,
+                TimemarkPresenceDots(
+                    translationCodes = presence.forBook(entry.id),
+                    tabColors = tabColors,
                 )
                 if (entry.id in booksWithAudio) {
                     Icon(
@@ -345,8 +370,8 @@ private fun BookCell(
     entry: CanonBookEntry,
     selected: Boolean,
     hasAudio: Boolean = false,
-    hasTimemarks: Boolean = false,
-    timemarkDotColor: Color,
+    timemarkCodes: Set<String> = emptySet(),
+    tabColors: Map<String, Int> = emptyMap(),
     onClick: () -> Unit,
     onLongClick: () -> Unit,
 ) {
@@ -408,13 +433,13 @@ private fun BookCell(
                     )
                 }
             }
-            TimemarkPresenceDot(
-                visible = hasTimemarks,
-                color = timemarkDotColor,
+            TimemarkPresenceDots(
+                translationCodes = timemarkCodes,
+                tabColors = tabColors,
                 modifier = Modifier
                     .align(Alignment.TopEnd)
-                    .padding(top = 3.dp, end = 4.dp),
-                size = 8.dp,
+                    .padding(top = 3.dp, end = 3.dp),
+                size = 7.dp,
             )
         }
     }
