@@ -1,9 +1,9 @@
 package com.example.bible.ui
 
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
-import androidx.compose.foundation.clickable
-import androidx.compose.foundation.isSystemInDarkTheme
+import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -19,6 +19,7 @@ import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items as lazyGridItems
 import androidx.compose.foundation.lazy.items as lazyColumnItems
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Headphones
@@ -29,7 +30,9 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -37,17 +40,24 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.luminance
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleEventObserver
+import androidx.lifecycle.compose.LocalLifecycleOwner
 import com.example.bible.data.BibleCanon
 import com.example.bible.data.CanonBookEntry
 import com.example.bible.data.CanonBookGroup
+import com.example.bible.data.TimemarkStore
 
 enum class BookLayoutMode {
     GRID,
@@ -55,35 +65,128 @@ enum class BookLayoutMode {
 }
 
 @Composable
+fun timemarkIndicatorColor(highlightArgb: Int?): Color =
+    highlightArgb?.let { Color(it) } ?: MaterialTheme.colorScheme.primary
+
+@Composable
+fun TimemarkPresenceDot(
+    visible: Boolean,
+    color: Color,
+    modifier: Modifier = Modifier,
+    size: Dp = 7.dp,
+) {
+    if (!visible) return
+    Box(
+        modifier
+            .size(size)
+            .clip(CircleShape)
+            .background(color),
+    )
+}
+
+@Composable
+fun rememberTimemarkCatalogTick(): Int {
+    val lifecycleOwner = LocalLifecycleOwner.current
+    var tick by remember { mutableIntStateOf(0) }
+    DisposableEffect(lifecycleOwner) {
+        val observer = LifecycleEventObserver { _, event ->
+            if (event == Lifecycle.Event.ON_RESUME) tick++
+        }
+        lifecycleOwner.lifecycle.addObserver(observer)
+        onDispose { lifecycleOwner.lifecycle.removeObserver(observer) }
+    }
+    return tick
+}
+
+@Composable
+fun rememberBooksWithTimemarks(translationCode: String): Set<String> {
+    val context = LocalContext.current
+    val tick = rememberTimemarkCatalogTick()
+    return remember(translationCode, tick) {
+        TimemarkStore.booksWithTimemarks(context, translationCode)
+    }
+}
+
+@Composable
+fun rememberChaptersWithTimemarks(translationCode: String, bookId: String): Set<Int> {
+    val context = LocalContext.current
+    val tick = rememberTimemarkCatalogTick()
+    return remember(translationCode, bookId, tick) {
+        if (bookId.isBlank()) emptySet()
+        else TimemarkStore.chaptersWithTimemarksForBook(context, translationCode, bookId)
+    }
+}
+
+@Composable
 fun groupTextColor(group: CanonBookGroup): Color {
-    val dark = isSystemInDarkTheme()
-    return if (dark) {
+    val darkUi = MaterialTheme.colorScheme.background.luminance() < 0.45f
+    return if (darkUi) {
         when (group) {
-            CanonBookGroup.PENTATEUCH -> Color(0xFFB8C5E8)
-            CanonBookGroup.HISTORY -> Color(0xFFD4A574)
-            CanonBookGroup.WISDOM -> Color(0xFF7BCB8A)
-            CanonBookGroup.MAJOR_PROPHETS -> Color(0xFFE8A0B0)
-            CanonBookGroup.MINOR_PROPHETS -> Color(0xFF9AAD6E)
-            CanonBookGroup.GOSPELS -> Color(0xFFE8A060)
-            CanonBookGroup.ACTS -> Color(0xFF5EC4E0)
-            CanonBookGroup.GENERAL_EPISTLES -> Color(0xFF5DD65D)
-            CanonBookGroup.PAULINE -> Color(0xFFE8D860)
-            CanonBookGroup.HEBREWS -> Color(0xFFF5F5F5)
-            CanonBookGroup.REVELATION -> Color(0xFFC06060)
+            CanonBookGroup.PENTATEUCH -> Color(0xFF9DB8FF)
+            CanonBookGroup.HISTORY -> Color(0xFFE8B080)
+            CanonBookGroup.WISDOM -> Color(0xFF7FE095)
+            CanonBookGroup.MAJOR_PROPHETS -> Color(0xFFFF9DB5)
+            CanonBookGroup.MINOR_PROPHETS -> Color(0xFFB8CF80)
+            CanonBookGroup.GOSPELS -> Color(0xFFFFB366)
+            CanonBookGroup.ACTS -> Color(0xFF6ADCF5)
+            CanonBookGroup.GENERAL_EPISTLES -> Color(0xFF7AEE7A)
+            CanonBookGroup.PAULINE -> Color(0xFFFFEB80)
+            CanonBookGroup.HEBREWS -> Color(0xFFF0F0F0)
+            CanonBookGroup.REVELATION -> Color(0xFFFF8080)
         }
     } else {
         when (group) {
-            CanonBookGroup.PENTATEUCH -> Color(0xFF2E4A8F)
-            CanonBookGroup.HISTORY -> Color(0xFF8B5E2F)
-            CanonBookGroup.WISDOM -> Color(0xFF2D7A3E)
-            CanonBookGroup.MAJOR_PROPHETS -> Color(0xFFA33050)
-            CanonBookGroup.MINOR_PROPHETS -> Color(0xFF556B2F)
-            CanonBookGroup.GOSPELS -> Color(0xFFB86E1A)
-            CanonBookGroup.ACTS -> Color(0xFF1A7A8F)
-            CanonBookGroup.GENERAL_EPISTLES -> Color(0xFF2D8F2D)
-            CanonBookGroup.PAULINE -> Color(0xFF8F7A1A)
-            CanonBookGroup.HEBREWS -> Color(0xFF444444)
-            CanonBookGroup.REVELATION -> Color(0xFF9A2020)
+            CanonBookGroup.PENTATEUCH -> Color(0xFF152E66)
+            CanonBookGroup.HISTORY -> Color(0xFF6B4018)
+            CanonBookGroup.WISDOM -> Color(0xFF1B5C28)
+            CanonBookGroup.MAJOR_PROPHETS -> Color(0xFF7A1838)
+            CanonBookGroup.MINOR_PROPHETS -> Color(0xFF3D4F18)
+            CanonBookGroup.GOSPELS -> Color(0xFF8A4E08)
+            CanonBookGroup.ACTS -> Color(0xFF0E5666)
+            CanonBookGroup.GENERAL_EPISTLES -> Color(0xFF1A661A)
+            CanonBookGroup.PAULINE -> Color(0xFF665508)
+            CanonBookGroup.HEBREWS -> Color(0xFF2A2A2A)
+            CanonBookGroup.REVELATION -> Color(0xFF7A1010)
+        }
+    }
+}
+
+/** Крупное название книги после долгого нажатия на плитке. */
+@Composable
+fun BookPickerPreviewBanner(
+    entry: CanonBookEntry,
+    modifier: Modifier = Modifier,
+) {
+    val textColor = groupTextColor(entry.group)
+    Surface(
+        modifier = modifier
+            .fillMaxWidth()
+            .padding(horizontal = 8.dp, vertical = 4.dp),
+        shape = RoundedCornerShape(14.dp),
+        color = MaterialTheme.colorScheme.surfaceContainerHighest,
+        tonalElevation = 2.dp,
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 16.dp, vertical = 12.dp),
+            horizontalAlignment = Alignment.CenterHorizontally,
+        ) {
+            Text(
+                text = entry.abbrRu,
+                style = MaterialTheme.typography.titleLarge,
+                fontWeight = FontWeight.Bold,
+                color = textColor,
+            )
+            Text(
+                text = entry.nameRu,
+                style = MaterialTheme.typography.headlineSmall,
+                fontWeight = FontWeight.SemiBold,
+                color = textColor,
+                textAlign = TextAlign.Center,
+                maxLines = 2,
+                overflow = TextOverflow.Ellipsis,
+            )
         }
     }
 }
@@ -93,11 +196,33 @@ fun BookSelectionContent(
     layoutMode: BookLayoutMode,
     modifier: Modifier = Modifier,
     booksWithAudio: Set<String> = emptySet(),
+    booksWithTimemarks: Set<String> = emptySet(),
+    timemarkDotColor: Color = Color.Unspecified,
     onBookClick: (String) -> Unit,
+    onBookLongPress: (CanonBookEntry) -> Unit = {},
 ) {
+    val dotColor = if (timemarkDotColor == Color.Unspecified) {
+        MaterialTheme.colorScheme.primary
+    } else {
+        timemarkDotColor
+    }
     when (layoutMode) {
-        BookLayoutMode.GRID -> BookSelectionGrid(modifier = modifier, booksWithAudio = booksWithAudio, onBookClick = onBookClick)
-        BookLayoutMode.LIST -> BookSelectionList(modifier = modifier, booksWithAudio = booksWithAudio, onBookClick = onBookClick)
+        BookLayoutMode.GRID -> BookSelectionGrid(
+            modifier = modifier,
+            booksWithAudio = booksWithAudio,
+            booksWithTimemarks = booksWithTimemarks,
+            timemarkDotColor = dotColor,
+            onBookClick = onBookClick,
+            onBookLongPress = onBookLongPress,
+        )
+        BookLayoutMode.LIST -> BookSelectionList(
+            modifier = modifier,
+            booksWithAudio = booksWithAudio,
+            booksWithTimemarks = booksWithTimemarks,
+            timemarkDotColor = dotColor,
+            onBookClick = onBookClick,
+            onBookLongPress = onBookLongPress,
+        )
     }
 }
 
@@ -105,10 +230,18 @@ fun BookSelectionContent(
 fun BookSelectionGrid(
     modifier: Modifier = Modifier,
     booksWithAudio: Set<String> = emptySet(),
+    booksWithTimemarks: Set<String> = emptySet(),
+    timemarkDotColor: Color = Color.Unspecified,
     onBookClick: (String) -> Unit,
+    onBookLongPress: (CanonBookEntry) -> Unit = {},
 ) {
     val books = BibleCanon.allBooks
     var selectedId by remember { mutableStateOf<String?>(null) }
+    val dotColor = if (timemarkDotColor == Color.Unspecified) {
+        MaterialTheme.colorScheme.primary
+    } else {
+        timemarkDotColor
+    }
 
     CompositionLocalProvider(LocalLayoutDirection provides LayoutDirection.Ltr) {
         LazyVerticalGrid(
@@ -128,21 +261,28 @@ fun BookSelectionGrid(
                     entry = entry,
                     selected = selectedId == entry.id,
                     hasAudio = entry.id in booksWithAudio,
+                    hasTimemarks = entry.id in booksWithTimemarks,
+                    timemarkDotColor = dotColor,
                     onClick = {
                         selectedId = entry.id
                         onBookClick(entry.id)
                     },
+                    onLongClick = { onBookLongPress(entry) },
                 )
             }
         }
     }
 }
 
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
 private fun BookSelectionList(
     modifier: Modifier = Modifier,
     booksWithAudio: Set<String> = emptySet(),
+    booksWithTimemarks: Set<String> = emptySet(),
+    timemarkDotColor: Color,
     onBookClick: (String) -> Unit,
+    onBookLongPress: (CanonBookEntry) -> Unit = {},
 ) {
     val books = BibleCanon.allBooks
     LazyColumn(
@@ -156,7 +296,10 @@ private fun BookSelectionList(
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .clickable { onBookClick(entry.id) }
+                    .combinedClickable(
+                        onClick = { onBookClick(entry.id) },
+                        onLongClick = { onBookLongPress(entry) },
+                    )
                     .padding(horizontal = 16.dp, vertical = 10.dp),
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.spacedBy(16.dp),
@@ -171,12 +314,16 @@ private fun BookSelectionList(
                 )
                 Text(
                     text = entry.nameRu,
-                    color = textColor.copy(alpha = 0.75f),
+                    color = textColor.copy(alpha = 0.88f),
                     fontSize = 13.sp,
                     fontFamily = FontFamily.SansSerif,
                     modifier = Modifier.weight(1f),
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis,
+                )
+                TimemarkPresenceDot(
+                    visible = entry.id in booksWithTimemarks,
+                    color = timemarkDotColor,
                 )
                 if (entry.id in booksWithAudio) {
                     Icon(
@@ -192,44 +339,47 @@ private fun BookSelectionList(
     }
 }
 
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
 private fun BookCell(
     entry: CanonBookEntry,
     selected: Boolean,
     hasAudio: Boolean = false,
+    hasTimemarks: Boolean = false,
+    timemarkDotColor: Color,
     onClick: () -> Unit,
+    onLongClick: () -> Unit,
 ) {
     val textColor = groupTextColor(entry.group)
+    val scheme = MaterialTheme.colorScheme
     val shape = RoundedCornerShape(12.dp)
+    val borderColor = if (selected) textColor.copy(alpha = 0.55f) else scheme.outline.copy(alpha = 0.45f)
     Surface(
         modifier = Modifier
             .fillMaxWidth()
-            .border(
-                width = 0.5.dp,
-                color = MaterialTheme.colorScheme.outlineVariant,
-                shape = shape,
-            )
+            .border(width = if (selected) 1.5.dp else 1.dp, color = borderColor, shape = shape)
             .clip(shape)
-            .clickable(onClick = onClick),
+            .combinedClickable(
+                onClick = onClick,
+                onLongClick = onLongClick,
+            ),
         shape = shape,
-        color = if (selected)
-            MaterialTheme.colorScheme.surfaceContainerHighest
-        else
-            MaterialTheme.colorScheme.surfaceContainer,
-        tonalElevation = if (selected) 4.dp else 1.dp,
+        color = if (selected) scheme.surfaceContainerHighest else scheme.surfaceContainerHigh,
+        tonalElevation = if (selected) 3.dp else 0.dp,
+        shadowElevation = if (selected) 2.dp else 0.dp,
     ) {
         Box(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(vertical = 6.dp, horizontal = 2.dp),
+                .padding(vertical = 7.dp, horizontal = 2.dp),
             contentAlignment = Alignment.Center,
         ) {
             Column(horizontalAlignment = Alignment.CenterHorizontally) {
                 Text(
                     text = entry.abbrRu,
                     color = textColor,
-                    fontSize = 13.sp,
-                    lineHeight = 15.sp,
+                    fontSize = 14.sp,
+                    lineHeight = 16.sp,
                     fontFamily = FontFamily.SansSerif,
                     fontWeight = FontWeight.Bold,
                     textAlign = TextAlign.Center,
@@ -238,10 +388,11 @@ private fun BookCell(
                 )
                 Text(
                     text = entry.nameRu,
-                    color = textColor.copy(alpha = 0.65f),
-                    fontSize = 8.sp,
-                    lineHeight = 10.sp,
+                    color = textColor.copy(alpha = 0.9f),
+                    fontSize = 9.sp,
+                    lineHeight = 11.sp,
                     fontFamily = FontFamily.SansSerif,
+                    fontWeight = FontWeight.Medium,
                     textAlign = TextAlign.Center,
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis,
@@ -250,13 +401,21 @@ private fun BookCell(
                     Icon(
                         Icons.Default.Headphones,
                         contentDescription = null,
-                        tint = MaterialTheme.colorScheme.primary,
+                        tint = scheme.primary,
                         modifier = Modifier
-                            .padding(top = 1.dp)
-                            .size(width = 12.dp, height = 10.dp),
+                            .padding(top = 2.dp)
+                            .size(14.dp),
                     )
                 }
             }
+            TimemarkPresenceDot(
+                visible = hasTimemarks,
+                color = timemarkDotColor,
+                modifier = Modifier
+                    .align(Alignment.TopEnd)
+                    .padding(top = 3.dp, end = 4.dp),
+                size = 8.dp,
+            )
         }
     }
 }
