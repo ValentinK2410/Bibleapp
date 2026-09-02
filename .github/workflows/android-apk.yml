@@ -1,0 +1,67 @@
+name: Android APK
+
+on:
+  push:
+    branches: [master]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    steps:
+      - name: Free disk space
+        run: |
+          sudo rm -rf /usr/share/dotnet /opt/ghc /usr/local/lib/android/sdk/ndk || true
+          df -h
+
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 17
+          cache: gradle
+
+      - name: Set up Android SDK
+        uses: android-actions/setup-android@v3
+
+      - name: Make gradlew executable
+        run: chmod +x gradlew
+
+      - name: Build release APK
+        env:
+          CI: "true"
+        run: ./gradlew :app:assembleRelease --no-daemon --stacktrace
+
+      - name: Prepare downloadable APK
+        run: |
+          mkdir -p dist
+          APK=$(find app/build/outputs/apk/release -name "*.apk" | head -n 1)
+          test -n "$APK"
+          cp "$APK" dist/Bible.apk
+          ls -lh dist/Bible.apk
+
+      - name: Publish latest download
+        uses: ncipollo/release-action@v1
+        with:
+          tag: latest
+          name: Скачать приложение
+          artifacts: dist/Bible.apk
+          artifactContentType: application/vnd.android.package-archive
+          allowUpdates: true
+          replacesArtifacts: true
+          makeLatest: true
+          body: |
+            Готовая сборка приложения для Android.
+
+            1. Скачайте **Bible.apk** в разделе Assets.
+            2. На телефоне разрешите установку из неизвестного источника.
+            3. Откройте файл и установите.
+
+            Сборка: `${{ github.sha }}`

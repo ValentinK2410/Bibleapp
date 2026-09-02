@@ -40,6 +40,10 @@ android {
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
             )
+            // GitHub Actions: подписанный APK, который можно сразу установить.
+            if (System.getenv("CI") == "true") {
+                signingConfig = signingConfigs.getByName("debug")
+            }
         }
     }
     compileOptions {
