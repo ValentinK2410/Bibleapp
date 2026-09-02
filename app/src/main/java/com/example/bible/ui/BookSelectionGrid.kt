@@ -25,11 +25,13 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Headphones
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.DisposableEffect
@@ -82,6 +84,66 @@ fun orderedTimemarkTranslationCodes(codes: Set<String>): List<String> {
         TranslationId.entries.none { it.code.equals(code, ignoreCase = true) }
     }.sorted()
     return known + rest
+}
+
+fun translationLabelRu(code: String): String =
+    TranslationId.entries.find { it.code.equals(code, ignoreCase = true) }?.labelRu ?: code
+
+@Composable
+fun TimemarkTranslationsDialog(
+    title: String,
+    translationCodes: Set<String>,
+    tabColors: Map<String, Int>,
+    onDismiss: () -> Unit,
+    subtitle: String? = null,
+) {
+    val codes = remember(translationCodes) { orderedTimemarkTranslationCodes(translationCodes) }
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = { Text(title) },
+        text = {
+            Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
+                if (!subtitle.isNullOrBlank()) {
+                    Text(
+                        subtitle,
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                }
+                if (codes.isEmpty()) {
+                    Text(
+                        "Нет таймкодов озвучки ни в одном переводе.",
+                        style = MaterialTheme.typography.bodyMedium,
+                    )
+                } else {
+                    Text(
+                        "Переводы с озвучкой (таймкоды):",
+                        style = MaterialTheme.typography.bodyMedium,
+                    )
+                    for (code in codes) {
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(10.dp),
+                        ) {
+                            Box(
+                                Modifier
+                                    .size(12.dp)
+                                    .clip(CircleShape)
+                                    .background(timemarkIndicatorColor(tabColors[code])),
+                            )
+                            Text(
+                                translationLabelRu(code),
+                                style = MaterialTheme.typography.bodyLarge,
+                            )
+                        }
+                    }
+                }
+            }
+        },
+        confirmButton = {
+            TextButton(onClick = onDismiss) { Text("ОК") }
+        },
+    )
 }
 
 @Composable
@@ -265,34 +327,49 @@ fun BookSelectionGrid(
 ) {
     val books = BibleCanon.allBooks
     var selectedId by remember { mutableStateOf<String?>(null) }
+    var infoBook by remember { mutableStateOf<CanonBookEntry?>(null) }
     val presence = rememberTimemarkPresenceIndex()
     val tabColors = rememberTranslationTabColorsMap()
 
     CompositionLocalProvider(LocalLayoutDirection provides LayoutDirection.Ltr) {
-        LazyVerticalGrid(
-            columns = GridCells.Fixed(5),
-            modifier = modifier
-                .fillMaxSize()
-                .background(MaterialTheme.colorScheme.background),
-            contentPadding = PaddingValues(4.dp),
-            horizontalArrangement = Arrangement.spacedBy(4.dp),
-            verticalArrangement = Arrangement.spacedBy(4.dp),
-        ) {
-            lazyGridItems(
-                items = books,
-                key = { it.id },
-            ) { entry ->
-                BookCell(
-                    entry = entry,
-                    selected = selectedId == entry.id,
-                    hasAudio = entry.id in booksWithAudio,
-                    timemarkCodes = presence.forBook(entry.id),
+        Box(modifier.fillMaxSize()) {
+            LazyVerticalGrid(
+                columns = GridCells.Fixed(5),
+                modifier = Modifier
+                    .fillMaxSize()
+                    .background(MaterialTheme.colorScheme.background),
+                contentPadding = PaddingValues(4.dp),
+                horizontalArrangement = Arrangement.spacedBy(4.dp),
+                verticalArrangement = Arrangement.spacedBy(4.dp),
+            ) {
+                lazyGridItems(
+                    items = books,
+                    key = { it.id },
+                ) { entry ->
+                    BookCell(
+                        entry = entry,
+                        selected = selectedId == entry.id,
+                        hasAudio = entry.id in booksWithAudio,
+                        timemarkCodes = presence.forBook(entry.id),
+                        tabColors = tabColors,
+                        onClick = {
+                            selectedId = entry.id
+                            onBookClick(entry.id)
+                        },
+                        onLongClick = {
+                            infoBook = entry
+                            onBookLongPress(entry)
+                        },
+                    )
+                }
+            }
+            infoBook?.let { entry ->
+                TimemarkTranslationsDialog(
+                    title = entry.nameRu,
+                    subtitle = entry.abbrRu,
+                    translationCodes = presence.forBook(entry.id),
                     tabColors = tabColors,
-                    onClick = {
-                        selectedId = entry.id
-                        onBookClick(entry.id)
-                    },
-                    onLongClick = { onBookLongPress(entry) },
+                    onDismiss = { infoBook = null },
                 )
             }
         }
@@ -310,8 +387,10 @@ private fun BookSelectionList(
     val books = BibleCanon.allBooks
     val presence = rememberTimemarkPresenceIndex()
     val tabColors = rememberTranslationTabColorsMap()
+    var infoBook by remember { mutableStateOf<CanonBookEntry?>(null) }
+    Box(modifier.fillMaxSize()) {
     LazyColumn(
-        modifier = modifier
+        modifier = Modifier
             .fillMaxSize()
             .background(MaterialTheme.colorScheme.background),
         contentPadding = PaddingValues(vertical = 4.dp),
@@ -323,7 +402,10 @@ private fun BookSelectionList(
                     .fillMaxWidth()
                     .combinedClickable(
                         onClick = { onBookClick(entry.id) },
-                        onLongClick = { onBookLongPress(entry) },
+                        onLongClick = {
+                            infoBook = entry
+                            onBookLongPress(entry)
+                        },
                     )
                     .padding(horizontal = 16.dp, vertical = 10.dp),
                 verticalAlignment = Alignment.CenterVertically,
@@ -362,6 +444,16 @@ private fun BookSelectionList(
             HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant, thickness = 0.5.dp)
         }
     }
+        infoBook?.let { entry ->
+            TimemarkTranslationsDialog(
+                title = entry.nameRu,
+                subtitle = entry.abbrRu,
+                translationCodes = presence.forBook(entry.id),
+                tabColors = tabColors,
+                onDismiss = { infoBook = null },
+            )
+        }
+    }
 }
 
 @OptIn(ExperimentalFoundationApi::class)
@@ -393,52 +485,46 @@ private fun BookCell(
         tonalElevation = if (selected) 3.dp else 0.dp,
         shadowElevation = if (selected) 2.dp else 0.dp,
     ) {
-        Box(
+        Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(vertical = 7.dp, horizontal = 2.dp),
-            contentAlignment = Alignment.Center,
+                .padding(top = 8.dp, bottom = 6.dp, start = 5.dp, end = 5.dp),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.spacedBy(2.dp),
         ) {
-            Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                Text(
-                    text = entry.abbrRu,
-                    color = textColor,
-                    fontSize = 14.sp,
-                    lineHeight = 16.sp,
-                    fontFamily = FontFamily.SansSerif,
-                    fontWeight = FontWeight.Bold,
-                    textAlign = TextAlign.Center,
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis,
+            Text(
+                text = entry.abbrRu,
+                color = textColor,
+                fontSize = 14.sp,
+                lineHeight = 16.sp,
+                fontFamily = FontFamily.SansSerif,
+                fontWeight = FontWeight.Bold,
+                textAlign = TextAlign.Center,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
+            )
+            Text(
+                text = entry.nameRu,
+                color = textColor.copy(alpha = 0.9f),
+                fontSize = 9.sp,
+                lineHeight = 11.sp,
+                fontFamily = FontFamily.SansSerif,
+                fontWeight = FontWeight.Medium,
+                textAlign = TextAlign.Center,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
+            )
+            if (hasAudio) {
+                Icon(
+                    Icons.Default.Headphones,
+                    contentDescription = null,
+                    tint = scheme.primary,
+                    modifier = Modifier.size(14.dp),
                 )
-                Text(
-                    text = entry.nameRu,
-                    color = textColor.copy(alpha = 0.9f),
-                    fontSize = 9.sp,
-                    lineHeight = 11.sp,
-                    fontFamily = FontFamily.SansSerif,
-                    fontWeight = FontWeight.Medium,
-                    textAlign = TextAlign.Center,
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis,
-                )
-                if (hasAudio) {
-                    Icon(
-                        Icons.Default.Headphones,
-                        contentDescription = null,
-                        tint = scheme.primary,
-                        modifier = Modifier
-                            .padding(top = 2.dp)
-                            .size(14.dp),
-                    )
-                }
             }
             TimemarkPresenceDots(
                 translationCodes = timemarkCodes,
                 tabColors = tabColors,
-                modifier = Modifier
-                    .align(Alignment.TopEnd)
-                    .padding(top = 3.dp, end = 3.dp),
                 size = 7.dp,
             )
         }

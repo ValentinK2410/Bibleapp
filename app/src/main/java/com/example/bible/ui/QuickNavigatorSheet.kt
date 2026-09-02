@@ -111,7 +111,7 @@ fun QuickNavigatorSheet(
                             ) {
                                 gridItems(book.chapters, key = { it.number }) { ch ->
                                     val chapterCodes = presence.forChapter(selectedBookId, ch.number)
-                                    Box(
+                                    Column(
                                         modifier = Modifier
                                             .fillMaxWidth()
                                             .heightIn(min = 44.dp)
@@ -123,16 +123,15 @@ fun QuickNavigatorSheet(
                                                 },
                                                 MaterialTheme.shapes.small,
                                             )
-                                            .clickable { onNavigate(selectedBookId, ch.number) },
-                                        contentAlignment = Alignment.Center,
+                                            .clickable { onNavigate(selectedBookId, ch.number) }
+                                            .padding(vertical = 4.dp, horizontal = 2.dp),
+                                        horizontalAlignment = Alignment.CenterHorizontally,
+                                        verticalArrangement = Arrangement.spacedBy(2.dp),
                                     ) {
                                         Text("${ch.number}", fontWeight = FontWeight.Bold)
                                         TimemarkPresenceDots(
                                             translationCodes = chapterCodes,
                                             tabColors = tabColors,
-                                            modifier = Modifier
-                                                .align(Alignment.TopEnd)
-                                                .padding(top = 3.dp, end = 3.dp),
                                             size = 6.dp,
                                         )
                                     }
@@ -164,7 +163,7 @@ fun QuickNavigatorSheet(
                     gridItems(BibleCanon.allBooks, key = { it.id }) { entry ->
                         val color = groupTextColor(entry.group)
                         val bookCodes = presence.forBook(entry.id)
-                        Box(
+                        Column(
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .heightIn(min = 42.dp)
@@ -176,8 +175,10 @@ fun QuickNavigatorSheet(
                                 .clickable {
                                     selectedBookId = entry.id
                                     step = "chapters"
-                                },
-                            contentAlignment = Alignment.Center,
+                                }
+                                .padding(vertical = 4.dp, horizontal = 2.dp),
+                            horizontalAlignment = Alignment.CenterHorizontally,
+                            verticalArrangement = Arrangement.spacedBy(2.dp),
                         ) {
                             Text(
                                 entry.abbrRu,
@@ -189,9 +190,6 @@ fun QuickNavigatorSheet(
                             TimemarkPresenceDots(
                                 translationCodes = bookCodes,
                                 tabColors = tabColors,
-                                modifier = Modifier
-                                    .align(Alignment.BottomEnd)
-                                    .padding(end = 2.dp, bottom = 2.dp),
                                 size = 5.dp,
                             )
                         }

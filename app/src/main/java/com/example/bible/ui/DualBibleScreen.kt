@@ -1179,6 +1179,7 @@ internal fun BiblePaneColumn(
     }
 }
 
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
 private fun ChapterPickerPane(
     modifier: Modifier = Modifier,
@@ -1190,6 +1191,7 @@ private fun ChapterPickerPane(
 ) {
     val presence = rememberTimemarkPresenceIndex()
     val tabColors = rememberTranslationTabColorsMap()
+    var infoChapter by remember { mutableStateOf<Int?>(null) }
     Column(modifier.fillMaxSize()) {
         if (book.chapters.isEmpty()) {
             Text(
@@ -1210,7 +1212,7 @@ private fun ChapterPickerPane(
                 gridItems(book.chapters, key = { it.number }) { ch: BibleChapter ->
                     val verseCount = ch.verses.size
                     val chapterCodes = presence.forChapter(bookId, ch.number)
-                    Box(
+                    Column(
                         modifier = Modifier
                             .fillMaxWidth()
                             .heightIn(min = 52.dp)
@@ -1220,43 +1222,50 @@ private fun ChapterPickerPane(
                                 RoundedCornerShape(8.dp),
                             )
                             .background(MaterialTheme.colorScheme.surfaceContainerLow, RoundedCornerShape(8.dp))
-                            .clickable { onChapter(ch.number) }
-                            .padding(vertical = 6.dp),
-                        contentAlignment = Alignment.Center,
-                    ) {
-                        Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                            Text(
-                                "${ch.number}",
-                                color = MaterialTheme.colorScheme.onSurface,
-                                fontWeight = FontWeight.Bold,
-                                fontSize = 16.sp,
+                            .combinedClickable(
+                                onClick = { onChapter(ch.number) },
+                                onLongClick = { infoChapter = ch.number },
                             )
-                            if (!isOnlineTranslation || verseCount > 0) {
-                                Text(
-                                    "$verseCount",
-                                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                                    fontSize = 10.sp,
-                                )
-                            } else {
-                                Text(
-                                    "⟳",
-                                    color = MaterialTheme.colorScheme.primary,
-                                    fontSize = 10.sp,
-                                )
-                            }
+                            .padding(vertical = 6.dp, horizontal = 4.dp),
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        verticalArrangement = Arrangement.spacedBy(2.dp),
+                    ) {
+                        Text(
+                            "${ch.number}",
+                            color = MaterialTheme.colorScheme.onSurface,
+                            fontWeight = FontWeight.Bold,
+                            fontSize = 16.sp,
+                        )
+                        if (!isOnlineTranslation || verseCount > 0) {
+                            Text(
+                                "$verseCount",
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                fontSize = 10.sp,
+                            )
+                        } else {
+                            Text(
+                                "⟳",
+                                color = MaterialTheme.colorScheme.primary,
+                                fontSize = 10.sp,
+                            )
                         }
                         TimemarkPresenceDots(
                             translationCodes = chapterCodes,
                             tabColors = tabColors,
-                            modifier = Modifier
-                                .align(Alignment.TopEnd)
-                                .padding(top = 4.dp, end = 4.dp),
                             size = 7.dp,
                         )
                     }
                 }
             }
         }
+    }
+    infoChapter?.let { chapterNum ->
+        TimemarkTranslationsDialog(
+            title = "${book.name}, гл. $chapterNum",
+            translationCodes = presence.forChapter(bookId, chapterNum),
+            tabColors = tabColors,
+            onDismiss = { infoChapter = null },
+        )
     }
 }
 

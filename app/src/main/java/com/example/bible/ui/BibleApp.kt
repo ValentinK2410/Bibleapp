@@ -4624,6 +4624,7 @@ private fun HistoryScreen(
     }
 }
 
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
 private fun ChapterGrid(
     modifier: Modifier = Modifier,
@@ -4634,9 +4635,11 @@ private fun ChapterGrid(
 ) {
     val presence = rememberTimemarkPresenceIndex()
     val tabColors = rememberTranslationTabColorsMap()
+    var infoChapter by remember { mutableStateOf<Int?>(null) }
+    Box(modifier.fillMaxSize()) {
     LazyVerticalGrid(
         columns = GridCells.Fixed(5),
-        modifier = modifier.fillMaxSize(),
+        modifier = Modifier.fillMaxSize(),
         contentPadding = PaddingValues(4.dp),
         horizontalArrangement = Arrangement.spacedBy(0.dp),
         verticalArrangement = Arrangement.spacedBy(0.dp),
@@ -4644,48 +4647,56 @@ private fun ChapterGrid(
         gridItems(book.chapters, key = { it.number }) { chapter: BibleChapter ->
             val hasAudio = chapter.number in chaptersWithAudio
             val chapterCodes = presence.forChapter(bookId, chapter.number)
-            Box(
+            Column(
                 modifier = Modifier
                     .fillMaxWidth()
                     .heightIn(min = 64.dp)
                     .border(0.5.dp, MaterialTheme.colorScheme.outlineVariant)
-                    .clickable { onChapterClick(chapter.number) }
-                    .padding(vertical = 8.dp, horizontal = 4.dp),
-                contentAlignment = Alignment.Center,
-            ) {
-                Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                    Row(verticalAlignment = Alignment.CenterVertically) {
-                        Text(
-                            text = "${chapter.number}",
-                            style = MaterialTheme.typography.titleMedium,
-                            fontWeight = FontWeight.Bold,
-                        )
-                        if (hasAudio) {
-                            Icon(
-                                Icons.Default.Headphones,
-                                contentDescription = null,
-                                tint = MaterialTheme.colorScheme.primary,
-                                modifier = Modifier
-                                    .padding(start = 4.dp)
-                                    .size(14.dp),
-                            )
-                        }
-                    }
-                    Text(
-                        text = "${chapter.verses.size}",
-                        style = MaterialTheme.typography.labelSmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    .combinedClickable(
+                        onClick = { onChapterClick(chapter.number) },
+                        onLongClick = { infoChapter = chapter.number },
                     )
+                    .padding(vertical = 8.dp, horizontal = 4.dp),
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.spacedBy(2.dp),
+            ) {
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Text(
+                        text = "${chapter.number}",
+                        style = MaterialTheme.typography.titleMedium,
+                        fontWeight = FontWeight.Bold,
+                    )
+                    if (hasAudio) {
+                        Icon(
+                            Icons.Default.Headphones,
+                            contentDescription = null,
+                            tint = MaterialTheme.colorScheme.primary,
+                            modifier = Modifier
+                                .padding(start = 4.dp)
+                                .size(14.dp),
+                        )
+                    }
                 }
+                Text(
+                    text = "${chapter.verses.size}",
+                    style = MaterialTheme.typography.labelSmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
                 TimemarkPresenceDots(
                     translationCodes = chapterCodes,
                     tabColors = tabColors,
-                    modifier = Modifier
-                        .align(Alignment.TopEnd)
-                        .padding(top = 4.dp, end = 4.dp),
                     size = 7.dp,
                 )
             }
+        }
+    }
+        infoChapter?.let { chapterNum ->
+            TimemarkTranslationsDialog(
+                title = "${book.name}, гл. $chapterNum",
+                translationCodes = presence.forChapter(bookId, chapterNum),
+                tabColors = tabColors,
+                onDismiss = { infoChapter = null },
+            )
         }
     }
 }
