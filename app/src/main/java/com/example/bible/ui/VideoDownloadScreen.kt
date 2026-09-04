@@ -35,23 +35,31 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.automirrored.filled.PlaylistPlay
 import androidx.compose.material.icons.filled.Check
+import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.ContentPaste
 import androidx.compose.material.icons.filled.Download
+import androidx.compose.material.icons.filled.ExpandLess
+import androidx.compose.material.icons.filled.ExpandMore
 import androidx.compose.material.icons.filled.Folder
-import androidx.compose.material.icons.filled.HighQuality
+import androidx.compose.material.icons.filled.Link
 import androidx.compose.material.icons.filled.MusicNote
 import androidx.compose.material.icons.filled.Pause
 import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.Videocam
+import androidx.compose.material3.AssistChip
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
@@ -60,6 +68,7 @@ import androidx.compose.material3.Checkbox
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ElevatedCard
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.Icon
 import androidx.compose.material3.HorizontalDivider
@@ -70,6 +79,10 @@ import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SegmentedButton
+import androidx.compose.material3.SegmentedButtonDefaults
+import androidx.compose.material3.SingleChoiceSegmentedButtonRow
+import androidx.compose.material3.Switch
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -207,6 +220,123 @@ private fun openExternalMediaPreview(context: android.content.Context, pageUrl: 
     }
 }
 
+/** Ролик в списке плейлиста: превью с длительностью, отметка «уже на телефоне» и выбор. */
+@Composable
+private fun PlaylistDownloadRow(
+    title: String,
+    thumbnail: String?,
+    durationLabel: String,
+    checked: Boolean,
+    alreadyOnPhone: Boolean,
+    enabled: Boolean,
+    onToggle: () -> Unit,
+    onPreview: () -> Unit,
+) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 8.dp, vertical = 3.dp)
+            .clip(RoundedCornerShape(18.dp))
+            .background(
+                if (checked) {
+                    MaterialTheme.colorScheme.secondaryContainer.copy(alpha = 0.45f)
+                } else {
+                    Color.Transparent
+                },
+            )
+            .clickable(enabled = enabled, onClick = onToggle)
+            .padding(8.dp),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        Box(
+            modifier = Modifier
+                .size(width = 104.dp, height = 58.dp)
+                .clip(RoundedCornerShape(12.dp))
+                .background(MaterialTheme.colorScheme.surfaceVariant)
+                .clickable(onClick = onPreview),
+        ) {
+            if (!thumbnail.isNullOrBlank()) {
+                AsyncImage(
+                    model = thumbnail,
+                    contentDescription = null,
+                    modifier = Modifier.fillMaxSize(),
+                    contentScale = ContentScale.Crop,
+                )
+            } else {
+                Icon(
+                    Icons.Default.Videocam,
+                    contentDescription = null,
+                    modifier = Modifier
+                        .align(Alignment.Center)
+                        .size(22.dp),
+                    tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+            }
+            Box(
+                modifier = Modifier
+                    .align(Alignment.Center)
+                    .size(28.dp)
+                    .clip(CircleShape)
+                    .background(Color(0x99000000)),
+                contentAlignment = Alignment.Center,
+            ) {
+                Icon(
+                    Icons.Default.PlayArrow,
+                    contentDescription = "Открыть на платформе",
+                    tint = Color.White,
+                    modifier = Modifier.size(18.dp),
+                )
+            }
+            if (durationLabel.isNotBlank()) {
+                Text(
+                    durationLabel,
+                    style = MaterialTheme.typography.labelSmall,
+                    color = Color.White,
+                    modifier = Modifier
+                        .align(Alignment.BottomEnd)
+                        .padding(4.dp)
+                        .clip(RoundedCornerShape(4.dp))
+                        .background(Color(0xCC000000))
+                        .padding(horizontal = 4.dp, vertical = 1.dp),
+                )
+            }
+        }
+        Spacer(Modifier.width(12.dp))
+        Column(Modifier.weight(1f)) {
+            Text(
+                title,
+                style = MaterialTheme.typography.bodyMedium,
+                maxLines = 2,
+                overflow = TextOverflow.Ellipsis,
+            )
+            if (alreadyOnPhone) {
+                Row(
+                    modifier = Modifier.padding(top = 2.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
+                    Icon(
+                        Icons.Default.CheckCircle,
+                        contentDescription = null,
+                        modifier = Modifier.size(14.dp),
+                        tint = MaterialTheme.colorScheme.tertiary,
+                    )
+                    Spacer(Modifier.width(4.dp))
+                    Text(
+                        "Уже на телефоне",
+                        style = MaterialTheme.typography.labelSmall,
+                        color = MaterialTheme.colorScheme.tertiary,
+                    )
+                }
+            }
+        }
+        Checkbox(
+            checked = checked,
+            onCheckedChange = { onToggle() },
+            enabled = enabled,
+        )
+    }
+}
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun VideoDownloadScreen(
@@ -252,6 +382,12 @@ private fun MediaDownloadScreen(
     var selectedIds by remember { mutableStateOf<Set<String>>(emptySet()) }
     /** Не скачивать, если на телефоне уже есть файл с таким же названием. */
     var skipDuplicates by remember { mutableStateOf(true) }
+    /** Настройки свёрнуты, когда открыт список: он важнее и занимает всю высоту. */
+    var optionsExpanded by remember { mutableStateOf(true) }
+
+    LaunchedEffect(playlistInspection) {
+        optionsExpanded = playlistInspection == null
+    }
 
     // Загрузка живёт в фоновом сервисе, поэтому состояние берём из общей очереди, а не из composition.
     val queue by MediaDownloadQueue.state.collectAsStateWithLifecycle()
@@ -557,11 +693,20 @@ private fun MediaDownloadScreen(
             }
         },
     ) { padding ->
+        // Со списком высоту делит он сам (weight), без списка — прокручиваем настройки целиком.
+        val listOpen = playlistInspection != null
         Column(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(padding)
-                .padding(horizontal = 16.dp),
+                .padding(horizontal = 16.dp)
+                .then(
+                    if (listOpen) {
+                        Modifier
+                    } else {
+                        Modifier.verticalScroll(rememberScrollState())
+                    },
+                ),
         ) {
             if (!ytdlpReady && errorText.isEmpty()) {
                 Row(
@@ -604,89 +749,35 @@ private fun MediaDownloadScreen(
             }
 
             ElevatedCard(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .weight(1f),
-                shape = RoundedCornerShape(16.dp),
+                modifier = Modifier.fillMaxWidth(),
+                shape = RoundedCornerShape(24.dp),
             ) {
                 Column(
                     modifier = Modifier
-                        .fillMaxSize()
+                        .fillMaxWidth()
                         .padding(16.dp),
+                    verticalArrangement = Arrangement.spacedBy(12.dp),
                 ) {
-                    Text(
-                        "Вставьте ссылку",
-                        style = MaterialTheme.typography.titleMedium,
-                        fontWeight = FontWeight.Bold,
-                    )
-                    Spacer(Modifier.height(10.dp))
-
-                    Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                        FilterChip(
+                    SingleChoiceSegmentedButtonRow(modifier = Modifier.fillMaxWidth()) {
+                        SegmentedButton(
                             selected = !audioOnly,
                             onClick = { audioOnly = false },
-                            label = { Text("Видео") },
-                            leadingIcon = {
+                            shape = SegmentedButtonDefaults.itemShape(index = 0, count = 2),
+                            icon = {
                                 Icon(Icons.Default.Videocam, null, Modifier.size(18.dp))
                             },
+                            label = { Text("Видео") },
                         )
-                        FilterChip(
+                        SegmentedButton(
                             selected = audioOnly,
                             onClick = { audioOnly = true },
-                            label = { Text("Аудио") },
-                            leadingIcon = {
+                            shape = SegmentedButtonDefaults.itemShape(index = 1, count = 2),
+                            icon = {
                                 Icon(Icons.Default.MusicNote, null, Modifier.size(18.dp))
                             },
+                            label = { Text("Аудио") },
                         )
                     }
-
-                    Spacer(Modifier.height(6.dp))
-                    Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .clickable { skipDuplicates = !skipDuplicates },
-                        verticalAlignment = Alignment.CenterVertically,
-                    ) {
-                        Checkbox(
-                            checked = skipDuplicates,
-                            onCheckedChange = { skipDuplicates = it },
-                        )
-                        Text(
-                            "Не скачивать повторно, если файл с таким названием уже есть на телефоне",
-                            style = MaterialTheme.typography.bodySmall,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        )
-                    }
-
-                    AnimatedVisibility(visible = !audioOnly) {
-                        Column(modifier = Modifier.padding(top = 8.dp)) {
-                            Row(verticalAlignment = Alignment.CenterVertically) {
-                                Icon(
-                                    Icons.Default.HighQuality, null,
-                                    modifier = Modifier.size(18.dp),
-                                    tint = MaterialTheme.colorScheme.primary,
-                                )
-                                Spacer(Modifier.width(6.dp))
-                                Text(
-                                    "Качество видео",
-                                    style = MaterialTheme.typography.labelMedium,
-                                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                                )
-                            }
-                            Spacer(Modifier.height(6.dp))
-                            Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
-                                VIDEO_QUALITIES.forEach { q ->
-                                    FilterChip(
-                                        selected = selectedQuality == q.height,
-                                        onClick = { selectedQuality = q.height },
-                                        label = { Text(q.label, fontSize = 13.sp) },
-                                    )
-                                }
-                            }
-                        }
-                    }
-
-                    Spacer(Modifier.height(10.dp))
 
                     OutlinedTextField(
                         value = url,
@@ -698,41 +789,51 @@ private fun MediaDownloadScreen(
                             playlistParseError = null
                         },
                         modifier = Modifier.fillMaxWidth(),
-                        placeholder = { Text("https://...") },
+                        placeholder = { Text("Вставьте ссылку") },
+                        leadingIcon = { Icon(Icons.Default.Link, contentDescription = null) },
                         singleLine = true,
                         trailingIcon = {
-                            IconButton(onClick = {
-                                val text = clipboard.getText()?.text ?: ""
-                                if (text.isNotBlank()) {
-                                    url = text
+                            if (url.isNotBlank()) {
+                                IconButton(onClick = {
+                                    url = ""
                                     playlistInspection = null
                                     selectedIds = emptySet()
                                     playlistParseError = null
+                                }) {
+                                    Icon(Icons.Default.Close, "Очистить")
                                 }
-                            }) {
-                                Icon(Icons.Default.ContentPaste, "Вставить")
+                            } else {
+                                IconButton(onClick = {
+                                    val text = clipboard.getText()?.text ?: ""
+                                    if (text.isNotBlank()) {
+                                        url = text
+                                        playlistInspection = null
+                                        selectedIds = emptySet()
+                                        playlistParseError = null
+                                    }
+                                }) {
+                                    Icon(Icons.Default.ContentPaste, "Вставить")
+                                }
                             }
                         },
                         isError = errorText.isNotEmpty(),
                         supportingText = if (errorText.isNotEmpty()) {
                             { Text(errorText, color = MaterialTheme.colorScheme.error) }
                         } else null,
-                        shape = RoundedCornerShape(12.dp),
+                        shape = RoundedCornerShape(16.dp),
                     )
 
-                    if (!FonkiExtractor.isFonkiUrl(url.trim())) {
-                        Spacer(Modifier.height(10.dp))
-
-                        Row(
-                            modifier = Modifier.fillMaxWidth(),
-                            horizontalArrangement = Arrangement.spacedBy(4.dp),
-                            verticalAlignment = Alignment.CenterVertically,
-                        ) {
-                            OutlinedButton(
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(8.dp),
+                    ) {
+                        if (!FonkiExtractor.isFonkiUrl(url.trim())) {
+                            FilledTonalButton(
                                 onClick = { loadPlaylistOutline() },
-                                contentPadding = PaddingValues(horizontal = 12.dp, vertical = 8.dp),
-                                enabled =
-                                ytdlpReady &&
+                                shape = RoundedCornerShape(14.dp),
+                                contentPadding = PaddingValues(horizontal = 16.dp, vertical = 10.dp),
+                                enabled = ytdlpReady &&
                                     url.trim().startsWith("http") &&
                                     status != DownloadStatus.DOWNLOADING &&
                                     !playlistBusy,
@@ -742,294 +843,203 @@ private fun MediaDownloadScreen(
                                         modifier = Modifier.size(16.dp),
                                         strokeWidth = 2.dp,
                                     )
-                                    Spacer(Modifier.width(6.dp))
+                                } else {
+                                    Icon(
+                                        Icons.AutoMirrored.Filled.PlaylistPlay,
+                                        contentDescription = null,
+                                        modifier = Modifier.size(18.dp),
+                                    )
                                 }
-                                Text(
-                                    "Показать список",
-                                    maxLines = 1,
-                                    softWrap = false,
-                                )
-                            }
-
-                            AnimatedVisibility(
-                                visible = playlistInspection != null &&
-                                    playlistInspection!!.items.size > 1,
-                            ) {
-                                TextButton(
-                                    onClick = {
-                                        val pi = playlistInspection ?: return@TextButton
-                                        selectedIds = pi.items.map { it.stableId }.toSet()
-                                    },
-                                    enabled = status != DownloadStatus.DOWNLOADING && !playlistBusy,
-                                ) {
-                                    Text("Все")
-                                }
-                            }
-
-                            AnimatedVisibility(
-                                visible = playlistInspection != null &&
-                                    playlistInspection!!.items.size > 1,
-                            ) {
-                                TextButton(
-                                    onClick = { selectedIds = emptySet() },
-                                    enabled = status != DownloadStatus.DOWNLOADING && !playlistBusy,
-                                ) {
-                                    Text("Снять")
-                                }
-                            }
-
-                            AnimatedVisibility(visible = playlistInspection != null) {
-                                TextButton(
-                                    onClick = {
-                                        playlistInspection = null
-                                        selectedIds = emptySet()
-                                        playlistParseError = null
-                                    },
-                                    enabled = !playlistBusy,
-                                ) {
-                                    Text("Скрыть")
-                                }
+                                Spacer(Modifier.width(8.dp))
+                                Text("Показать список", maxLines = 1, softWrap = false)
                             }
                         }
-
-                        if (playlistBusy ||
-                            playlistParseError != null ||
-                            playlistInspection != null
+                        Spacer(Modifier.weight(1f))
+                        TextButton(
+                            onClick = { optionsExpanded = !optionsExpanded },
+                            contentPadding = PaddingValues(horizontal = 12.dp, vertical = 8.dp),
                         ) {
-                            Column(
-                                modifier = Modifier
-                                    .padding(top = 8.dp)
-                                    .weight(1f)
-                                    .fillMaxWidth(),
-                            ) {
-                                AnimatedVisibility(
-                                    visible = playlistParseError != null,
-                                ) {
-                                    Text(
-                                        playlistParseError.orEmpty(),
-                                        color = MaterialTheme.colorScheme.error,
-                                        style = MaterialTheme.typography.bodySmall,
-                                        modifier = Modifier.padding(bottom = 8.dp),
-                                    )
-                                }
-
-                                playlistInspection?.let { insp ->
-                                    val inPlaylistLibrary =
-                                        insp.items.count { listItem ->
-                                            alreadyHaveNamedMedia(
-                                                listItem.title,
-                                                existingNamedMediaKeys,
-                                            )
-                                        }
-                                    Text(
-                                        insp.playlistTitle?.let { t -> "\u00AB$t\u00BB" }
-                                            ?: "${insp.items.size} дорож.",
-                                        fontWeight = FontWeight.SemiBold,
-                                        style = MaterialTheme.typography.titleSmall,
-                                        modifier = Modifier.padding(bottom = 6.dp),
-                                    )
-                                    Row(
-                                        verticalAlignment =
-                                        Alignment.CenterVertically,
-                                        modifier = Modifier.padding(bottom = 4.dp),
-                                    ) {
-                                        Text(
-                                            "Выбрано ${selectedIds.size} из ${insp.items.size}" +
-                                                if (inPlaylistLibrary > 0) {
-                                                    " · уже есть на телефоне: $inPlaylistLibrary"
-                                                } else {
-                                                    ""
-                                                },
-                                            style = MaterialTheme.typography.labelMedium,
-                                            color = MaterialTheme.colorScheme.primary,
-                                        )
-                                    }
-
-                                    Card(
-                                        modifier = Modifier
-                                            .fillMaxWidth()
-                                            .weight(1f),
-                                        shape = RoundedCornerShape(12.dp),
-                                        colors = CardDefaults.cardColors(
-                                            containerColor = MaterialTheme.colorScheme.surfaceContainerHighest,
-                                        ),
-                                    ) {
-                                        LazyColumn(
-                                            modifier = Modifier.fillMaxSize(),
-                                        ) {
-                                            itemsIndexed(
-                                                items = insp.items,
-                                                key = { _, item -> item.stableId },
-                                            ) { index, item ->
-                                                if (index > 0) {
-                                                    HorizontalDivider(
-                                                        color =
-                                                        MaterialTheme.colorScheme.outlineVariant,
-                                                    )
-                                                }
-                                                val checked = selectedIds.contains(item.stableId)
-                                                val durLabel = formatDurationSeconds(item.durationSec)
-                                                val alreadyImported =
-                                                    alreadyHaveNamedMedia(
-                                                        item.title,
-                                                        existingNamedMediaKeys,
-                                                    )
-                                                Row(
-                                                    Modifier
-                                                        .fillMaxWidth()
-                                                        .clickable(
-                                                            enabled =
-                                                            status !=
-                                                                DownloadStatus.DOWNLOADING,
-                                                        ) {
-                                                            selectedIds =
-                                                                if (checked) {
-                                                                    selectedIds - item.stableId
-                                                                } else {
-                                                                    selectedIds + item.stableId
-                                                                }
-                                                        }
-                                                        .padding(
-                                                            horizontal =
-                                                            10.dp,
-                                                            vertical = 4.dp,
-                                                        ),
-                                                    verticalAlignment =
-                                                    Alignment.CenterVertically,
-                                                ) {
-                                                    Checkbox(
-                                                        checked = checked,
-                                                        enabled =
-                                                        status !=
-                                                            DownloadStatus.DOWNLOADING,
-                                                        onCheckedChange = { sel ->
-                                                            selectedIds =
-                                                                if (sel) {
-                                                                    selectedIds + item.stableId
-                                                                } else {
-                                                                    selectedIds - item.stableId
-                                                                }
-                                                        },
-                                                    )
-                                                    Box(
-                                                        modifier = Modifier
-                                                            .size(width = 72.dp, height = 40.dp)
-                                                            .clip(RoundedCornerShape(6.dp))
-                                                            .background(
-                                                                MaterialTheme.colorScheme.surfaceVariant,
-                                                            ),
-                                                        contentAlignment = Alignment.Center,
-                                                    ) {
-                                                        val thumb = item.thumbnail
-                                                        if (!thumb.isNullOrBlank()) {
-                                                            AsyncImage(
-                                                                model = thumb,
-                                                                contentDescription = null,
-                                                                modifier = Modifier.fillMaxSize(),
-                                                                contentScale = ContentScale.Crop,
-                                                            )
-                                                        } else {
-                                                            Icon(
-                                                                Icons.Default.Videocam,
-                                                                contentDescription = null,
-                                                                modifier = Modifier.size(20.dp),
-                                                                tint = MaterialTheme.colorScheme.onSurfaceVariant,
-                                                            )
-                                                        }
-                                                    }
-                                                    Spacer(Modifier.width(8.dp))
-                                                    Column(
-                                                        Modifier.weight(1f),
-                                                    ) {
-                                                        Text(
-                                                            item.title,
-                                                            maxLines =
-                                                            3,
-                                                            overflow =
-                                                            TextOverflow.Ellipsis,
-                                                            style = MaterialTheme.typography.bodyMedium,
-                                                        )
-                                                        val metaGreen = Color(0xFF388E3C)
-                                                        if (
-                                                            alreadyImported ||
-                                                            durLabel.isNotBlank()
-                                                        ) {
-                                                            Row(
-                                                                verticalAlignment =
-                                                                Alignment.CenterVertically,
-                                                                modifier =
-                                                                Modifier.padding(
-                                                                    top =
-                                                                    2.dp,
-                                                                ),
-                                                            ) {
-                                                                if (alreadyImported) {
-                                                                    Icon(
-                                                                        Icons.Default.Check,
-                                                                        contentDescription = null,
-                                                                        modifier =
-                                                                        Modifier.size(16.dp),
-                                                                        tint =
-                                                                        metaGreen,
-                                                                    )
-                                                                    Spacer(
-                                                                        Modifier.width(4.dp),
-                                                                    )
-                                                                    Text(
-                                                                        "Файл уже есть на телефоне",
-                                                                        style =
-                                                                        MaterialTheme.typography.labelSmall,
-                                                                        fontWeight =
-                                                                        FontWeight.Medium,
-                                                                        color = metaGreen,
-                                                                    )
-                                                                }
-                                                                if (
-                                                                    alreadyImported &&
-                                                                    durLabel.isNotBlank()
-                                                                ) {
-                                                                    Text(
-                                                                        " · ",
-                                                                        style =
-                                                                        MaterialTheme.typography.labelSmall,
-                                                                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                                                                    )
-                                                                }
-                                                                if (durLabel.isNotBlank()) {
-                                                                    Text(
-                                                                        durLabel,
-                                                                        style =
-                                                                        MaterialTheme.typography.labelSmall,
-                                                                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                                                                    )
-                                                                }
-                                                            }
-                                                        }
-                                                    }
-                                                    IconButton(
-                                                        onClick =
-                                                        {
-                                                            openExternalMediaPreview(
-                                                                context,
-                                                                item.pageUrl,
-                                                            )
-                                                        },
-                                                        modifier = Modifier.size(40.dp),
-                                                    ) {
-                                                        Icon(
-                                                            Icons.Default.PlayArrow,
-                                                            contentDescription = "Открыть в приложении платформы (просмотр или прослушивание)",
-                                                        )
-                                                    }
-                                                }
-                                            }
-                                        }
-                                    }
-                                }
-                            }
+                            Text("Настройки")
+                            Spacer(Modifier.width(4.dp))
+                            Icon(
+                                if (optionsExpanded) {
+                                    Icons.Default.ExpandLess
+                                } else {
+                                    Icons.Default.ExpandMore
+                                },
+                                contentDescription = null,
+                                modifier = Modifier.size(18.dp),
+                            )
                         }
                     }
 
+                    AnimatedVisibility(visible = optionsExpanded) {
+                        Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
+                            AnimatedVisibility(visible = !audioOnly) {
+                                Column {
+                                    Text(
+                                        "Качество видео",
+                                        style = MaterialTheme.typography.labelMedium,
+                                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                    )
+                                    Spacer(Modifier.height(6.dp))
+                                    Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                                        VIDEO_QUALITIES.forEach { q ->
+                                            FilterChip(
+                                                selected = selectedQuality == q.height,
+                                                onClick = { selectedQuality = q.height },
+                                                shape = RoundedCornerShape(12.dp),
+                                                label = { Text(q.label, fontSize = 13.sp) },
+                                            )
+                                        }
+                                    }
+                                }
+                            }
+
+                            Row(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .clip(RoundedCornerShape(12.dp))
+                                    .clickable { skipDuplicates = !skipDuplicates }
+                                    .padding(vertical = 4.dp),
+                                verticalAlignment = Alignment.CenterVertically,
+                            ) {
+                                Column(Modifier.weight(1f)) {
+                                    Text(
+                                        "Не скачивать повторно",
+                                        style = MaterialTheme.typography.bodyMedium,
+                                    )
+                                    Text(
+                                        "Пропускать файлы с таким же названием",
+                                        style = MaterialTheme.typography.labelSmall,
+                                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                    )
+                                }
+                                Switch(
+                                    checked = skipDuplicates,
+                                    onCheckedChange = { skipDuplicates = it },
+                                )
+                            }
+                        }
+                    }
+                }
+            }
+
+            AnimatedVisibility(visible = playlistParseError != null) {
+                Text(
+                    playlistParseError.orEmpty(),
+                    color = MaterialTheme.colorScheme.error,
+                    style = MaterialTheme.typography.bodySmall,
+                    modifier = Modifier.padding(top = 8.dp),
+                )
+            }
+
+            playlistInspection?.let { insp ->
+                val onPhoneCount = insp.items.count { listItem ->
+                    alreadyHaveNamedMedia(listItem.title, existingNamedMediaKeys)
+                }
+                Spacer(Modifier.height(12.dp))
+                Card(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .weight(1f),
+                    shape = RoundedCornerShape(24.dp),
+                    colors = CardDefaults.cardColors(
+                        containerColor = MaterialTheme.colorScheme.surfaceContainerLow,
+                    ),
+                ) {
+                    Column(Modifier.fillMaxSize()) {
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(start = 16.dp, end = 8.dp, top = 12.dp),
+                            verticalAlignment = Alignment.CenterVertically,
+                        ) {
+                            Column(Modifier.weight(1f)) {
+                                Text(
+                                    insp.playlistTitle?.let { t -> "\u00AB$t\u00BB" }
+                                        ?: "${insp.items.size} дорож.",
+                                    style = MaterialTheme.typography.titleSmall,
+                                    fontWeight = FontWeight.SemiBold,
+                                    maxLines = 2,
+                                    overflow = TextOverflow.Ellipsis,
+                                )
+                                Text(
+                                    "Выбрано ${selectedIds.size} из ${insp.items.size}" +
+                                        if (onPhoneCount > 0) " · уже есть: $onPhoneCount" else "",
+                                    style = MaterialTheme.typography.labelMedium,
+                                    color = MaterialTheme.colorScheme.primary,
+                                )
+                            }
+                            IconButton(
+                                onClick = {
+                                    playlistInspection = null
+                                    selectedIds = emptySet()
+                                    playlistParseError = null
+                                },
+                                enabled = !playlistBusy,
+                            ) {
+                                Icon(Icons.Default.Close, contentDescription = "Скрыть список")
+                            }
+                        }
+
+                        if (insp.items.size > 1) {
+                            Row(
+                                modifier = Modifier.padding(start = 16.dp, top = 4.dp, bottom = 8.dp),
+                                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                            ) {
+                                AssistChip(
+                                    onClick = {
+                                        selectedIds = insp.items.map { it.stableId }.toSet()
+                                    },
+                                    enabled = status != DownloadStatus.DOWNLOADING && !playlistBusy,
+                                    shape = RoundedCornerShape(12.dp),
+                                    label = { Text("Выбрать все") },
+                                )
+                                AssistChip(
+                                    onClick = { selectedIds = emptySet() },
+                                    enabled = status != DownloadStatus.DOWNLOADING && !playlistBusy,
+                                    shape = RoundedCornerShape(12.dp),
+                                    label = { Text("Снять") },
+                                )
+                            }
+                        } else {
+                            Spacer(Modifier.height(8.dp))
+                        }
+
+                        HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
+
+                        LazyColumn(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .weight(1f),
+                            contentPadding = PaddingValues(vertical = 4.dp),
+                        ) {
+                            items(insp.items, key = { it.stableId }) { item ->
+                                PlaylistDownloadRow(
+                                    title = item.title,
+                                    thumbnail = item.thumbnail,
+                                    durationLabel = formatDurationSeconds(item.durationSec),
+                                    checked = selectedIds.contains(item.stableId),
+                                    alreadyOnPhone = alreadyHaveNamedMedia(
+                                        item.title,
+                                        existingNamedMediaKeys,
+                                    ),
+                                    enabled = status != DownloadStatus.DOWNLOADING,
+                                    onToggle = {
+                                        selectedIds = if (selectedIds.contains(item.stableId)) {
+                                            selectedIds - item.stableId
+                                        } else {
+                                            selectedIds + item.stableId
+                                        }
+                                    },
+                                    onPreview = {
+                                        openExternalMediaPreview(context, item.pageUrl)
+                                    },
+                                )
+                            }
+                        }
+                    }
                 }
             }
 
