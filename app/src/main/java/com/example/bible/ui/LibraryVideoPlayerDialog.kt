@@ -67,7 +67,6 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Slider
-import androidx.compose.material3.SliderDefaults
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
@@ -117,6 +116,9 @@ import kotlin.math.roundToInt
 
 private val VIDEO_SPEED_PRESETS =
     floatArrayOf(0.5f, 0.75f, 1f, 1.25f, 1.5f, 1.75f, 2f, 2.25f, 2.5f)
+
+/** Цвет просмотренной части шкалы: яркий на любом кадре, как в привычных плеерах. */
+private val PLAYER_ACCENT = Color(0xFFFF4B3E)
 
 @Suppress("DEPRECATION")
 private fun MediaPlayer.applyPlaybackSpeedVideoLegacy(speed: Float) {
@@ -199,6 +201,7 @@ private suspend fun MediaPlayer.prepareAsyncSuspendVideo(): Boolean =
         }
     }
 
+@OptIn(androidx.compose.material3.ExperimentalMaterial3Api::class)
 @Composable
 fun LibraryVideoPlayerDialog(
     tracks: List<Pair<BibleUserVideo, File>>,
@@ -738,413 +741,405 @@ fun LibraryVideoPlayerDialog(
                         }
                     }
 
-                AndroidView(
-                    modifier = videoModifier,
-                    factory = { ctx ->
-                        TextureView(ctx).apply {
-                            layoutParams = ViewGroup.LayoutParams(
-                                ViewGroup.LayoutParams.MATCH_PARENT,
-                                ViewGroup.LayoutParams.MATCH_PARENT,
-                            )
-                            surfaceTextureListener =
-                                object : TextureView.SurfaceTextureListener {
-                                    override fun onSurfaceTextureAvailable(
-                                        surfTex: SurfaceTexture,
-                                        width: Int,
-                                        height: Int,
-                                    ) {
-                                        try {
+                Box(videoModifier) {
+                    AndroidView(
+                        modifier = Modifier.fillMaxSize(),
+                        factory = { ctx ->
+                            TextureView(ctx).apply {
+                                layoutParams = ViewGroup.LayoutParams(
+                                    ViewGroup.LayoutParams.MATCH_PARENT,
+                                    ViewGroup.LayoutParams.MATCH_PARENT,
+                                )
+                                surfaceTextureListener =
+                                    object : TextureView.SurfaceTextureListener {
+                                        override fun onSurfaceTextureAvailable(
+                                            surfTex: SurfaceTexture,
+                                            width: Int,
+                                            height: Int,
+                                        ) {
+                                            try {
+                                                surfaceHolder?.release()
+                                            } catch (_: Exception) {}
+                                            surfaceHolder = Surface(surfTex)
+                                        }
+
+                                        override fun onSurfaceTextureSizeChanged(
+                                            surfTex: SurfaceTexture,
+                                            width: Int,
+                                            height: Int,
+                                        ) {}
+
+                                        override fun onSurfaceTextureDestroyed(surfTex: SurfaceTexture): Boolean {
+                                            surfaceReady = false
+                                            try {
+                                                player.setSurface(null)
+                                            } catch (_: Exception) {}
                                             surfaceHolder?.release()
-                                        } catch (_: Exception) {}
-                                        surfaceHolder = Surface(surfTex)
+                                            surfaceHolder = null
+                                            return true
+                                        }
+
+                                        override fun onSurfaceTextureUpdated(surfTex: SurfaceTexture) {}
                                     }
+                            }
+                        },
+                    )
 
-                                    override fun onSurfaceTextureSizeChanged(
-                                        surfTex: SurfaceTexture,
-                                        width: Int,
-                                        height: Int,
-                                    ) {}
-
-                                    override fun onSurfaceTextureDestroyed(surfTex: SurfaceTexture): Boolean {
-                                        surfaceReady = false
-                                        try {
-                                            player.setSurface(null)
-                                        } catch (_: Exception) {}
-                                        surfaceHolder?.release()
-                                        surfaceHolder = null
-                                        return true
-                                    }
-
-                                    override fun onSurfaceTextureUpdated(surfTex: SurfaceTexture) {}
-                                }
+                // Жесты поверх всего кадра: тап — панель, двойной тап — ±10 с,
+                // вертикальный свайп — яркость (слева) и громкость (справа), горизонтальный — перемотка.
+                Box(
+                    Modifier
+                        .fillMaxSize()
+                        .pointerInput(durationMs) {
+                            detectTapGestures(
+                                onTap = {
+                                    if (controlsVisible) controlsVisible = false else pokeControls()
+                                },
+                                onDoubleTap = { offset ->
+                                    val back = offset.x < size.width / 2f
+                                    applySeekTo(positionMs + if (back) -10_000 else 10_000)
+                                    seekFeedbackSec = if (back) -10 else 10
+                                    pokeControls()
+                                },
+                            )
                         }
-                    },
+                        .pointerInput(durationMs, maxVolume) {
+                            var mode = 0 // 1 — перемотка, 2 — яркость, 3 — громкость
+                            var startX = 0f
+                            var accum = 0f
+                            var target = 0
+                            detectDragGestures(
+                                onDragStart = { offset ->
+                                    mode = 0
+                                    startX = offset.x
+                                    accum = 0f
+                                    target = positionMs
+                                },
+                                onDragCancel = {
+                                    if (mode == 1) sliderDragging = false
+                                    mode = 0
+                                    gestureHint = null
+                                },
+                                onDragEnd = {
+                                    if (mode == 1) {
+                                        sliderDragging = false
+                                        applySeekTo(target)
+                                    }
+                                    mode = 0
+                                    gestureHint = null
+                                },
+                            ) { change, drag ->
+                                change.consume()
+                                if (mode == 0) {
+                                    mode = when {
+                                        abs(drag.x) > abs(drag.y) -> 1
+                                        startX < size.width / 2f -> 2
+                                        else -> 3
+                                    }
+                                    if (mode == 1) {
+                                        sliderDragging = true
+                                        pokeControls()
+                                    }
+                                }
+                                when (mode) {
+                                    1 -> {
+                                        val span = minOf(durationMs, 120_000).coerceAtLeast(10_000)
+                                        val msPerPx = span.toFloat() / size.width.toFloat()
+                                        target = (target + drag.x * msPerPx).toInt()
+                                            .coerceIn(0, durationMs)
+                                        positionMs = target
+                                        pokeControls()
+                                    }
+                                    2 -> {
+                                        accum -= drag.y
+                                        val step = size.height / 220f
+                                        if (abs(accum) >= step) {
+                                            val delta = (accum / step) * 0.01f
+                                            accum = 0f
+                                            val next = (brightness + delta).coerceIn(0.02f, 1f)
+                                            brightness = next
+                                            dialogWindow?.let { w ->
+                                                w.attributes = w.attributes.apply {
+                                                    screenBrightness = next
+                                                }
+                                            }
+                                            gestureHint = GestureHint(
+                                                brightnessHint = true,
+                                                value = next,
+                                                label = "${(next * 100).roundToInt()}%",
+                                            )
+                                        }
+                                    }
+                                    else -> {
+                                        accum -= drag.y
+                                        val step = size.height / (maxVolume * 1.6f)
+                                        if (abs(accum) >= step) {
+                                            val steps = (accum / step).toInt()
+                                            accum = 0f
+                                            val cur = audioManager
+                                                ?.getStreamVolume(AudioManager.STREAM_MUSIC) ?: 0
+                                            val next = (cur + steps).coerceIn(0, maxVolume)
+                                            audioManager?.setStreamVolume(
+                                                AudioManager.STREAM_MUSIC,
+                                                next,
+                                                0,
+                                            )
+                                            gestureHint = GestureHint(
+                                                brightnessHint = false,
+                                                value = next.toFloat() / maxVolume,
+                                                label = "$next / $maxVolume",
+                                            )
+                                        }
+                                    }
+                                }
+                            }
+                        },
                 )
-            }
 
-            // Жесты поверх всего кадра: тап — панель, двойной тап — ±10 с,
-            // вертикальный свайп — яркость (слева) и громкость (справа), горизонтальный — перемотка.
-            Box(
-                Modifier
-                    .fillMaxSize()
-                    .pointerInput(durationMs) {
-                        detectTapGestures(
-                            onTap = {
-                                if (controlsVisible) controlsVisible = false else pokeControls()
-                            },
-                            onDoubleTap = { offset ->
-                                val back = offset.x < size.width / 2f
-                                applySeekTo(positionMs + if (back) -10_000 else 10_000)
-                                seekFeedbackSec = if (back) -10 else 10
-                                pokeControls()
-                            },
+                // Крупная подсказка при двойном тапе
+                androidx.compose.animation.AnimatedVisibility(
+                    visible = seekFeedbackSec != 0,
+                    enter = fadeIn(),
+                    exit = fadeOut(),
+                    modifier = Modifier
+                        .align(if (seekFeedbackSec < 0) Alignment.CenterStart else Alignment.CenterEnd)
+                        .padding(horizontal = 48.dp),
+                ) {
+                    Row(
+                        modifier = Modifier
+                            .clip(RoundedCornerShape(24.dp))
+                            .background(Color.Black.copy(alpha = 0.55f))
+                            .padding(horizontal = 16.dp, vertical = 10.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                    ) {
+                        Icon(
+                            if (seekFeedbackSec < 0) Icons.Filled.Replay10 else Icons.Filled.Forward10,
+                            contentDescription = null,
+                            tint = Color.White,
+                        )
+                        Spacer(Modifier.width(8.dp))
+                        Text(
+                            "${if (seekFeedbackSec < 0) "−" else "+"}10 с",
+                            color = Color.White,
+                            style = MaterialTheme.typography.titleSmall,
                         )
                     }
-                    .pointerInput(durationMs, maxVolume) {
-                        var mode = 0 // 1 — перемотка, 2 — яркость, 3 — громкость
-                        var startX = 0f
-                        var accum = 0f
-                        var target = 0
-                        detectDragGestures(
-                            onDragStart = { offset ->
-                                mode = 0
-                                startX = offset.x
-                                accum = 0f
-                                target = positionMs
-                            },
-                            onDragCancel = {
-                                if (mode == 1) sliderDragging = false
-                                mode = 0
-                                gestureHint = null
-                            },
-                            onDragEnd = {
-                                if (mode == 1) {
-                                    sliderDragging = false
-                                    applySeekTo(target)
-                                }
-                                mode = 0
-                                gestureHint = null
-                            },
-                        ) { change, drag ->
-                            change.consume()
-                            if (mode == 0) {
-                                mode = when {
-                                    abs(drag.x) > abs(drag.y) -> 1
-                                    startX < size.width / 2f -> 2
-                                    else -> 3
-                                }
-                                if (mode == 1) {
-                                    sliderDragging = true
-                                    pokeControls()
-                                }
-                            }
-                            when (mode) {
-                                1 -> {
-                                    val span = minOf(durationMs, 120_000).coerceAtLeast(10_000)
-                                    val msPerPx = span.toFloat() / size.width.toFloat()
-                                    target = (target + drag.x * msPerPx).toInt()
-                                        .coerceIn(0, durationMs)
-                                    positionMs = target
-                                    pokeControls()
-                                }
-                                2 -> {
-                                    accum -= drag.y
-                                    val step = size.height / 220f
-                                    if (abs(accum) >= step) {
-                                        val delta = (accum / step) * 0.01f
-                                        accum = 0f
-                                        val next = (brightness + delta).coerceIn(0.02f, 1f)
-                                        brightness = next
-                                        dialogWindow?.let { w ->
-                                            w.attributes = w.attributes.apply {
-                                                screenBrightness = next
-                                            }
-                                        }
-                                        gestureHint = GestureHint(
-                                            brightnessHint = true,
-                                            value = next,
-                                            label = "${(next * 100).roundToInt()}%",
-                                        )
-                                    }
-                                }
-                                else -> {
-                                    accum -= drag.y
-                                    val step = size.height / (maxVolume * 1.6f)
-                                    if (abs(accum) >= step) {
-                                        val steps = (accum / step).toInt()
-                                        accum = 0f
-                                        val cur = audioManager
-                                            ?.getStreamVolume(AudioManager.STREAM_MUSIC) ?: 0
-                                        val next = (cur + steps).coerceIn(0, maxVolume)
-                                        audioManager?.setStreamVolume(
-                                            AudioManager.STREAM_MUSIC,
-                                            next,
-                                            0,
-                                        )
-                                        gestureHint = GestureHint(
-                                            brightnessHint = false,
-                                            value = next.toFloat() / maxVolume,
-                                            label = "$next / $maxVolume",
-                                        )
-                                    }
-                                }
-                            }
-                        }
-                    },
-            )
-
-            // Крупная подсказка при двойном тапе
-            androidx.compose.animation.AnimatedVisibility(
-                visible = seekFeedbackSec != 0,
-                enter = fadeIn(),
-                exit = fadeOut(),
-                modifier = Modifier
-                    .align(if (seekFeedbackSec < 0) Alignment.CenterStart else Alignment.CenterEnd)
-                    .padding(horizontal = 48.dp),
-            ) {
-                Row(
-                    modifier = Modifier
-                        .clip(RoundedCornerShape(24.dp))
-                        .background(Color.Black.copy(alpha = 0.55f))
-                        .padding(horizontal = 16.dp, vertical = 10.dp),
-                    verticalAlignment = Alignment.CenterVertically,
-                ) {
-                    Icon(
-                        if (seekFeedbackSec < 0) Icons.Filled.Replay10 else Icons.Filled.Forward10,
-                        contentDescription = null,
-                        tint = Color.White,
-                    )
-                    Spacer(Modifier.width(8.dp))
-                    Text(
-                        "${if (seekFeedbackSec < 0) "−" else "+"}10 с",
-                        color = Color.White,
-                        style = MaterialTheme.typography.titleSmall,
-                    )
                 }
-            }
 
-            gestureHint?.let { hint ->
-                Column(
-                    modifier = Modifier
-                        .align(Alignment.Center)
-                        .clip(RoundedCornerShape(20.dp))
-                        .background(Color.Black.copy(alpha = 0.6f))
-                        .padding(horizontal = 20.dp, vertical = 14.dp),
-                    horizontalAlignment = Alignment.CenterHorizontally,
-                ) {
-                    Icon(
-                        if (hint.brightnessHint) {
-                            Icons.Filled.BrightnessHigh
-                        } else {
-                            Icons.AutoMirrored.Filled.VolumeUp
-                        },
-                        contentDescription = null,
-                        tint = Color.White,
-                    )
-                    Spacer(Modifier.height(6.dp))
-                    Text(hint.label, color = Color.White, style = MaterialTheme.typography.labelLarge)
-                    Spacer(Modifier.height(6.dp))
-                    LinearProgressIndicator(
-                        progress = { hint.value.coerceIn(0f, 1f) },
-                        modifier = Modifier
-                            .width(120.dp)
-                            .height(4.dp)
-                            .clip(RoundedCornerShape(2.dp)),
-                        color = Color.White,
-                        trackColor = Color.White.copy(alpha = 0.3f),
-                    )
-                }
-            }
-
-            androidx.compose.animation.AnimatedVisibility(
-                visible = controlsVisible,
-                enter = fadeIn(),
-                exit = fadeOut(),
-            ) {
-                Box(Modifier.fillMaxSize()) {
-                    // Верхняя панель
-                    Row(
-                        modifier = Modifier
-                            .align(Alignment.TopCenter)
-                            .fillMaxWidth()
-                            .background(
-                                Brush.verticalGradient(
-                                    0f to Color.Black.copy(alpha = 0.72f),
-                                    1f to Color.Transparent,
-                                ),
-                            )
-                            .statusBarsPadding()
-                            .padding(horizontal = 4.dp, vertical = 4.dp),
-                        verticalAlignment = Alignment.CenterVertically,
-                    ) {
-                        IconButton(onClick = { finishPlayerUi() }) {
-                            Icon(
-                                Icons.AutoMirrored.Filled.ArrowBack,
-                                contentDescription = "Закрыть",
-                                tint = Color.White,
-                            )
-                        }
-                        Column(Modifier.weight(1f)) {
-                            Text(
-                                tracks.getOrNull(currentIx)?.first?.title.orEmpty(),
-                                maxLines = 1,
-                                overflow = TextOverflow.Ellipsis,
-                                color = Color.White,
-                                style = MaterialTheme.typography.titleSmall,
-                            )
-                            if (tracks.size > 1) {
-                                Text(
-                                    "${currentIx + 1} из ${tracks.size}",
-                                    color = Color.White.copy(alpha = 0.7f),
-                                    style = MaterialTheme.typography.labelSmall,
-                                )
-                            }
-                        }
-                        IconButton(
-                            onClick = {
-                                val f = tracksRef.value
-                                    .getOrNull(currentIxAtomic.get())?.second ?: return@IconButton
-                                onOpenInOtherApp(f)
-                            },
-                        ) {
-                            Icon(
-                                Icons.AutoMirrored.Filled.OpenInNew,
-                                contentDescription = "Открыть в другом приложении",
-                                tint = Color.White,
-                            )
-                        }
-                        IconButton(
-                            onClick = {
-                                settingsOpen = true
-                                pokeControls()
-                            },
-                        ) {
-                            Icon(
-                                Icons.Filled.MoreVert,
-                                contentDescription = "Настройки воспроизведения",
-                                tint = Color.White,
-                            )
-                        }
-                    }
-
-                    // Центральный транспорт
-                    Row(
-                        modifier = Modifier.align(Alignment.Center),
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.spacedBy(20.dp),
-                    ) {
-                        IconButton(
-                            enabled = surfaceReady && currentIx > 0,
-                            onClick = {
-                                val sVal = surfaceHolder ?: return@IconButton
-                                playbackScope.launch { playIndex(currentIx - 1, sVal) }
-                                pokeControls()
-                            },
-                        ) {
-                            Icon(
-                                Icons.Filled.SkipPrevious,
-                                contentDescription = "Предыдущее",
-                                tint = if (currentIx > 0) Color.White else Color.White.copy(alpha = 0.35f),
-                                modifier = Modifier.size(34.dp),
-                            )
-                        }
-                        IconButton(
-                            onClick = {
-                                applySeekTo(positionMs - 10_000)
-                                seekFeedbackSec = -10
-                                pokeControls()
-                            },
-                        ) {
-                            Icon(
-                                Icons.Filled.Replay10,
-                                contentDescription = "Назад на 10 секунд",
-                                tint = Color.White,
-                                modifier = Modifier.size(34.dp),
-                            )
-                        }
-                        Box(
-                            modifier = Modifier
-                                .size(72.dp)
-                                .clip(CircleShape)
-                                .background(Color.Black.copy(alpha = 0.45f)),
-                            contentAlignment = Alignment.Center,
-                        ) {
-                            IconButton(
-                                onClick = {
-                                    togglePlayPause()
-                                    pokeControls()
-                                },
-                                modifier = Modifier.fillMaxSize(),
-                            ) {
-                                Icon(
-                                    if (isPlaying) Icons.Filled.Pause else Icons.Filled.PlayArrow,
-                                    contentDescription = if (isPlaying) "Пауза" else "Играть",
-                                    tint = Color.White,
-                                    modifier = Modifier.size(44.dp),
-                                )
-                            }
-                        }
-                        IconButton(
-                            onClick = {
-                                applySeekTo(positionMs + 10_000)
-                                seekFeedbackSec = 10
-                                pokeControls()
-                            },
-                        ) {
-                            Icon(
-                                Icons.Filled.Forward10,
-                                contentDescription = "Вперёд на 10 секунд",
-                                tint = Color.White,
-                                modifier = Modifier.size(34.dp),
-                            )
-                        }
-                        IconButton(
-                            enabled = surfaceReady && currentIx < tracks.lastIndex,
-                            onClick = {
-                                val sVal = surfaceHolder ?: return@IconButton
-                                playbackScope.launch { playIndex(currentIx + 1, sVal) }
-                                pokeControls()
-                            },
-                        ) {
-                            Icon(
-                                Icons.Filled.SkipNext,
-                                contentDescription = "Следующее",
-                                tint = if (currentIx < tracks.lastIndex) {
-                                    Color.White
-                                } else {
-                                    Color.White.copy(alpha = 0.35f)
-                                },
-                                modifier = Modifier.size(34.dp),
-                            )
-                        }
-                    }
-
-                    // Нижняя панель: время, шкала, скорость и полноэкранный режим
+                gestureHint?.let { hint ->
                     Column(
                         modifier = Modifier
-                            .align(Alignment.BottomCenter)
-                            .fillMaxWidth()
-                            .background(
-                                Brush.verticalGradient(
-                                    0f to Color.Transparent,
-                                    1f to Color.Black.copy(alpha = 0.82f),
-                                ),
-                            )
-                            .navigationBarsPadding()
-                            .padding(horizontal = 12.dp, vertical = 8.dp),
+                            .align(Alignment.Center)
+                            .clip(RoundedCornerShape(20.dp))
+                            .background(Color.Black.copy(alpha = 0.6f))
+                            .padding(horizontal = 20.dp, vertical = 14.dp),
+                        horizontalAlignment = Alignment.CenterHorizontally,
                     ) {
+                        Icon(
+                            if (hint.brightnessHint) {
+                                Icons.Filled.BrightnessHigh
+                            } else {
+                                Icons.AutoMirrored.Filled.VolumeUp
+                            },
+                            contentDescription = null,
+                            tint = Color.White,
+                        )
+                        Spacer(Modifier.height(6.dp))
+                        Text(hint.label, color = Color.White, style = MaterialTheme.typography.labelLarge)
+                        Spacer(Modifier.height(6.dp))
+                        LinearProgressIndicator(
+                            progress = { hint.value.coerceIn(0f, 1f) },
+                            modifier = Modifier
+                                .width(120.dp)
+                                .height(4.dp)
+                                .clip(RoundedCornerShape(2.dp)),
+                            color = Color.White,
+                            trackColor = Color.White.copy(alpha = 0.3f),
+                        )
+                    }
+                }
+
+                androidx.compose.animation.AnimatedVisibility(
+                    visible = controlsVisible,
+                    enter = fadeIn(),
+                    exit = fadeOut(),
+                ) {
+                    Box(Modifier.fillMaxSize()) {
+                        // Верхняя панель
                         Row(
-                            Modifier.fillMaxWidth(),
+                            modifier = Modifier
+                                .align(Alignment.TopCenter)
+                                .fillMaxWidth()
+                                .background(
+                                    Brush.verticalGradient(
+                                        0f to Color.Black.copy(alpha = 0.72f),
+                                        1f to Color.Transparent,
+                                    ),
+                                )
+                                .then(if (fullscreen) Modifier.statusBarsPadding() else Modifier)
+                                .padding(horizontal = 4.dp, vertical = 4.dp),
                             verticalAlignment = Alignment.CenterVertically,
                         ) {
-                            Text(
-                                formatVideoTimelineMs(positionMs),
-                                style = MaterialTheme.typography.labelMedium,
-                                color = Color.White,
-                            )
+                            IconButton(onClick = { finishPlayerUi() }) {
+                                Icon(
+                                    Icons.AutoMirrored.Filled.ArrowBack,
+                                    contentDescription = "Закрыть",
+                                    tint = Color.White,
+                                )
+                            }
+                            Column(Modifier.weight(1f)) {
+                                Text(
+                                    tracks.getOrNull(currentIx)?.first?.title.orEmpty(),
+                                    maxLines = 1,
+                                    overflow = TextOverflow.Ellipsis,
+                                    color = Color.White,
+                                    style = MaterialTheme.typography.titleSmall,
+                                )
+                                if (tracks.size > 1) {
+                                    Text(
+                                        "${currentIx + 1} из ${tracks.size}",
+                                        color = Color.White.copy(alpha = 0.7f),
+                                        style = MaterialTheme.typography.labelSmall,
+                                    )
+                                }
+                            }
+                            IconButton(
+                                onClick = {
+                                    val f = tracksRef.value
+                                        .getOrNull(currentIxAtomic.get())?.second ?: return@IconButton
+                                    onOpenInOtherApp(f)
+                                },
+                            ) {
+                                Icon(
+                                    Icons.AutoMirrored.Filled.OpenInNew,
+                                    contentDescription = "Открыть в другом приложении",
+                                    tint = Color.White,
+                                )
+                            }
+                            IconButton(
+                                onClick = {
+                                    settingsOpen = true
+                                    pokeControls()
+                                },
+                            ) {
+                                Icon(
+                                    Icons.Filled.MoreVert,
+                                    contentDescription = "Настройки воспроизведения",
+                                    tint = Color.White,
+                                )
+                            }
+                        }
+
+                        // Центральный транспорт
+                        Row(
+                            modifier = Modifier.align(Alignment.Center),
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(20.dp),
+                        ) {
+                            IconButton(
+                                enabled = surfaceReady && currentIx > 0,
+                                onClick = {
+                                    val sVal = surfaceHolder ?: return@IconButton
+                                    playbackScope.launch { playIndex(currentIx - 1, sVal) }
+                                    pokeControls()
+                                },
+                            ) {
+                                Icon(
+                                    Icons.Filled.SkipPrevious,
+                                    contentDescription = "Предыдущее",
+                                    tint = if (currentIx > 0) Color.White else Color.White.copy(alpha = 0.35f),
+                                    modifier = Modifier.size(34.dp),
+                                )
+                            }
+                            IconButton(
+                                onClick = {
+                                    applySeekTo(positionMs - 10_000)
+                                    seekFeedbackSec = -10
+                                    pokeControls()
+                                },
+                            ) {
+                                Icon(
+                                    Icons.Filled.Replay10,
+                                    contentDescription = "Назад на 10 секунд",
+                                    tint = Color.White,
+                                    modifier = Modifier.size(34.dp),
+                                )
+                            }
+                            Box(
+                                modifier = Modifier
+                                    .size(72.dp)
+                                    .clip(CircleShape)
+                                    .background(Color.Black.copy(alpha = 0.45f)),
+                                contentAlignment = Alignment.Center,
+                            ) {
+                                IconButton(
+                                    onClick = {
+                                        togglePlayPause()
+                                        pokeControls()
+                                    },
+                                    modifier = Modifier.fillMaxSize(),
+                                ) {
+                                    Icon(
+                                        if (isPlaying) Icons.Filled.Pause else Icons.Filled.PlayArrow,
+                                        contentDescription = if (isPlaying) "Пауза" else "Играть",
+                                        tint = Color.White,
+                                        modifier = Modifier.size(44.dp),
+                                    )
+                                }
+                            }
+                            IconButton(
+                                onClick = {
+                                    applySeekTo(positionMs + 10_000)
+                                    seekFeedbackSec = 10
+                                    pokeControls()
+                                },
+                            ) {
+                                Icon(
+                                    Icons.Filled.Forward10,
+                                    contentDescription = "Вперёд на 10 секунд",
+                                    tint = Color.White,
+                                    modifier = Modifier.size(34.dp),
+                                )
+                            }
+                            IconButton(
+                                enabled = surfaceReady && currentIx < tracks.lastIndex,
+                                onClick = {
+                                    val sVal = surfaceHolder ?: return@IconButton
+                                    playbackScope.launch { playIndex(currentIx + 1, sVal) }
+                                    pokeControls()
+                                },
+                            ) {
+                                Icon(
+                                    Icons.Filled.SkipNext,
+                                    contentDescription = "Следующее",
+                                    tint = if (currentIx < tracks.lastIndex) {
+                                        Color.White
+                                    } else {
+                                        Color.White.copy(alpha = 0.35f)
+                                    },
+                                    modifier = Modifier.size(34.dp),
+                                )
+                            }
+                        }
+
+                        // Нижняя панель: время, шкала, скорость и полноэкранный режим
+                        Column(
+                            modifier = Modifier
+                                .align(Alignment.BottomCenter)
+                                .fillMaxWidth()
+                                .background(
+                                    Brush.verticalGradient(
+                                        0f to Color.Transparent,
+                                        1f to Color.Black.copy(alpha = 0.82f),
+                                    ),
+                                )
+                                .then(if (fullscreen) Modifier.navigationBarsPadding() else Modifier)
+                                .padding(start = 12.dp, end = 6.dp, top = 6.dp, bottom = 4.dp),
+                        ) {
+                            val playedFraction =
+                                (positionMs.toFloat() / durationMs.toFloat()).coerceIn(0f, 1f)
                             Slider(
-                                value = (positionMs.toFloat() / durationMs.toFloat())
-                                    .coerceIn(0f, 1f),
+                                value = playedFraction,
                                 onValueChange = { f ->
                                     sliderDragging = true
                                     positionMs = (f * durationMs).toInt()
@@ -1156,56 +1151,95 @@ fun LibraryVideoPlayerDialog(
                                     applySeekTo(positionMs)
                                 },
                                 modifier = Modifier
-                                    .weight(1f)
-                                    .padding(horizontal = 8.dp),
-                                colors = SliderDefaults.colors(
-                                    thumbColor = Color.White,
-                                    activeTrackColor = Color.White,
-                                    inactiveTrackColor = Color.White.copy(alpha = 0.3f),
-                                ),
-                            )
-                            Text(
-                                formatVideoTimelineMs(durationMs),
-                                style = MaterialTheme.typography.labelMedium,
-                                color = Color.White.copy(alpha = 0.8f),
-                            )
-                            TextButton(
-                                onClick = {
-                                    settingsOpen = true
-                                    pokeControls()
+                                    .fillMaxWidth()
+                                    .height(20.dp),
+                                thumb = {
+                                    Box(
+                                        Modifier
+                                            .size(if (sliderDragging) 16.dp else 11.dp)
+                                            .clip(CircleShape)
+                                            .background(PLAYER_ACCENT),
+                                    )
                                 },
-                                contentPadding = PaddingValues(horizontal = 8.dp),
+                                track = {
+                                    Box(
+                                        Modifier
+                                            .fillMaxWidth()
+                                            .height(3.dp)
+                                            .clip(RoundedCornerShape(2.dp))
+                                            .background(Color.White.copy(alpha = 0.28f)),
+                                    ) {
+                                        Box(
+                                            Modifier
+                                                .fillMaxWidth(playedFraction)
+                                                .fillMaxHeight()
+                                                .clip(RoundedCornerShape(2.dp))
+                                                .background(PLAYER_ACCENT),
+                                        )
+                                    }
+                                },
+                            )
+
+                            Row(
+                                Modifier.fillMaxWidth(),
+                                verticalAlignment = Alignment.CenterVertically,
                             ) {
                                 Text(
-                                    "${trimSpeedLabel(speed)}×",
-                                    color = Color.White,
+                                    "${formatVideoTimelineMs(positionMs)} / ${formatVideoTimelineMs(durationMs)}",
                                     style = MaterialTheme.typography.labelMedium,
+                                    color = Color.White,
                                 )
-                            }
-                            IconButton(
-                                onClick = {
-                                    fullscreen = !fullscreen
-                                    pokeControls()
-                                },
-                            ) {
-                                Icon(
-                                    if (fullscreen) {
-                                        Icons.Filled.FullscreenExit
-                                    } else {
-                                        Icons.Filled.Fullscreen
+                                Spacer(Modifier.weight(1f))
+                                TextButton(
+                                    onClick = {
+                                        settingsOpen = true
+                                        pokeControls()
                                     },
-                                    contentDescription = if (fullscreen) {
-                                        "Выйти из полноэкранного режима"
-                                    } else {
-                                        "Полноэкранный режим"
-                                    },
-                                    tint = Color.White,
-                                )
+                                    contentPadding = PaddingValues(horizontal = 10.dp),
+                                ) {
+                                    Text(
+                                        "${trimSpeedLabel(speed)}×",
+                                        color = Color.White,
+                                        style = MaterialTheme.typography.labelMedium,
+                                    )
+                                }
+                                Box(
+                                    modifier = Modifier
+                                        .size(36.dp)
+                                        .clip(CircleShape)
+                                        .background(Color.White.copy(alpha = 0.16f)),
+                                    contentAlignment = Alignment.Center,
+                                ) {
+                                    IconButton(
+                                        onClick = {
+                                            fullscreen = !fullscreen
+                                            pokeControls()
+                                        },
+                                        modifier = Modifier.fillMaxSize(),
+                                    ) {
+                                        Icon(
+                                            if (fullscreen) {
+                                                Icons.Filled.FullscreenExit
+                                            } else {
+                                                Icons.Filled.Fullscreen
+                                            },
+                                            contentDescription = if (fullscreen) {
+                                                "Выйти из полноэкранного режима"
+                                            } else {
+                                                "Развернуть на весь экран"
+                                            },
+                                            tint = Color.White,
+                                            modifier = Modifier.size(22.dp),
+                                        )
+                                    }
+                                }
                             }
                         }
                     }
                 }
+                }
             }
+
 
             if (settingsOpen) {
                 VideoPlayerSettingsPanel(
