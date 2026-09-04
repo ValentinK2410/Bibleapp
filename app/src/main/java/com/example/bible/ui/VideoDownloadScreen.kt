@@ -5,6 +5,7 @@ import android.content.Intent
 import android.media.MediaPlayer
 import android.net.Uri
 import android.provider.DocumentsContract
+import android.os.Environment
 import android.os.Handler
 import android.os.Looper
 import android.util.Log
@@ -12,15 +13,19 @@ import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
+import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -62,6 +67,7 @@ import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
@@ -77,6 +83,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalClipboardManager
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
@@ -85,15 +92,18 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import coil.compose.AsyncImage
 import com.example.bible.data.FonkiExtractor
 import com.example.bible.data.LegalAudioTrack
 import com.example.bible.data.LocalDeviceAudioScan
+import com.example.bible.data.MediaCatalogPaths
+import com.example.bible.data.MediaDownloadDedup
 import com.example.bible.data.PlaylistInspection
 import com.example.bible.data.VideoExtractor
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import java.util.Locale
+import java.io.File
 
 private const val TAG = "VideoDownload"
 
@@ -160,54 +170,35 @@ private fun formatDurationSeconds(sec: Long?): String {
     return if (h > 0L) "${h}:${m.toString().padStart(2, '0')}:$ss" else "${m}:$ss"
 }
 
-/**
- * Однозначный ключ страницы ролика для сопоставления с [com.example.bible.data.BibleUserVideo.sourceUrl] /
- * [com.example.bible.data.BibleUserAudio.sourceUrl] после загрузки.
- */
-private fun canonicalDownloadSourceUrl(raw: String): String {
-    val trimmed = raw.trim()
-    if (trimmed.isEmpty()) return ""
-    val uri = Uri.parse(trimmed)
+private const val SKIP_NAMED_MEDIA_HINT =
+    "Файл с таким названием уже есть на телефоне. Снимите галочку «Не скачивать повторно», чтобы загрузить снова."
 
-    fun youtubeCanon(idCandidate: String): String? {
-        val id = idCandidate.filter { it.isLetterOrDigit() || it == '-' || it == '_' }
-        if (id.length < 8) return null
-        return "yt:$id"
-    }
+private fun biblePublicDownloadsDir(): File =
+    File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS), "Bible")
 
-    val hostFull = uri.host ?: return trimmed.lowercase(Locale.ROOT)
-    val host = hostFull.lowercase(Locale.ROOT).removePrefix("www.")
+private fun existingMediaStemKeys(
+    context: Context,
+    videos: List<com.example.bible.data.BibleUserVideo>,
+    audios: List<com.example.bible.data.BibleUserAudio>,
+): Set<String> =
+    MediaDownloadDedup.collectStems(
+        titles = videos.map { it.title } + audios.map { it.title },
+        fileNames = videos.map { it.fileName } + audios.map { it.fileName },
+        dirs = listOf(
+            MediaCatalogPaths.videosDir(context),
+            MediaCatalogPaths.audiosDir(context),
+            biblePublicDownloadsDir(),
+        ),
+    )
 
-    run {
-        if ("youtu.be" in host || host == "youtu.be") {
-            val seg = uri.pathSegments.firstOrNull().orEmpty()
-            youtubeCanon(seg)?.let { return it }
-        }
-        if ("youtube." in host || host == "youtube.com" || host == "youtube-nocookie.com" ||
-            host == "m.youtube.com"
-        ) {
-            uri.getQueryParameter("v")?.let { v -> youtubeCanon(v)?.let { return it } }
-            val segs = uri.pathSegments
-            if (segs.size >= 2) {
-                val kind = segs[0].lowercase(Locale.ROOT)
-                if (kind == "shorts" || kind == "embed" || kind == "live") {
-                    youtubeCanon(segs[1])?.let { return it }
-                }
-            }
-        }
-    }
+private fun alreadyHaveNamedMedia(titleOrFileName: String, keys: Set<String>): Boolean {
+    val k = MediaDownloadDedup.stemKey(titleOrFileName)
+    return k.isNotEmpty() && k in keys
+}
 
-    val scheme = (uri.scheme ?: "https").lowercase(Locale.ROOT)
-    val path = (uri.path ?: "").trim('/').lowercase(Locale.ROOT)
-    return buildString {
-        append(scheme)
-        append("://")
-        append(host)
-        if (path.isNotEmpty()) {
-            append('/')
-            append(path)
-        }
-    }
+private fun addKnownStem(raw: String, keys: MutableSet<String>) {
+    val k = MediaDownloadDedup.stemKey(raw)
+    if (k.isNotEmpty()) keys.add(k)
 }
 
 private fun openExternalMediaPreview(context: android.content.Context, pageUrl: String) {
@@ -269,21 +260,14 @@ private fun MediaDownloadScreen(
     var playlistBusy by remember { mutableStateOf(false) }
     var playlistParseError by remember { mutableStateOf<String?>(null) }
     var selectedIds by remember { mutableStateOf<Set<String>>(emptySet()) }
-    /** Не вызывать yt-dlp, если [canonicalDownloadSourceUrl] уже есть в текущей медиатеке. */
+    /** Не скачивать, если на телефоне уже есть файл с таким же названием. */
     var skipDuplicates by remember { mutableStateOf(true) }
 
     val bibleVideos by viewModel.bibleUserVideos.collectAsStateWithLifecycle()
     val bibleAudios by viewModel.bibleUserAudios.collectAsStateWithLifecycle()
-    val importedCanonicalSources =
-        remember(bibleVideos, bibleAudios, importTarget) {
-            val urls =
-                when (importTarget) {
-                    MediaDownloadImportTarget.Video ->
-                        bibleVideos.mapNotNull { it.sourceUrl }
-                    MediaDownloadImportTarget.Audio ->
-                        bibleAudios.mapNotNull { it.sourceUrl }
-                }
-            urls.map(::canonicalDownloadSourceUrl).filter { it.isNotEmpty() }.toSet()
+    val existingNamedMediaKeys =
+        remember(bibleVideos, bibleAudios) {
+            existingMediaStemKeys(context, bibleVideos, bibleAudios)
         }
 
     LaunchedEffect(Unit) {
@@ -367,15 +351,6 @@ private fun MediaDownloadScreen(
         fonkiLyrics = null
 
         if (FonkiExtractor.isFonkiUrl(trimmedUrl)) {
-            if (skipDuplicates) {
-                val c = canonicalDownloadSourceUrl(trimmedUrl)
-                if (c.isNotEmpty() && c in importedCanonicalSources) {
-                    errorText =
-                        "Этот источник уже сохранён в медиатеке. Снимите галочку «Не скачивать повторно», чтобы загрузить снова."
-                    Toast.makeText(context, "Уже в медиатеке", Toast.LENGTH_SHORT).show()
-                    return
-                }
-            }
             errorText = ""
             progress = -1f
             status = DownloadStatus.DOWNLOADING
@@ -384,6 +359,30 @@ private fun MediaDownloadScreen(
                 try {
                     mainHandler.post { statusText = "Загрузка страницы fonki.pro..." }
                     val song = FonkiExtractor.extract(trimmedUrl)
+                    val importTitle = buildString {
+                        if (song.artist.isNotBlank()) append("${song.artist} - ")
+                        append(song.title)
+                    }
+                    val namedKeys = existingMediaStemKeys(context, bibleVideos, bibleAudios)
+                    if (skipDuplicates &&
+                        (
+                            alreadyHaveNamedMedia(importTitle, namedKeys) ||
+                                alreadyHaveNamedMedia(song.title, namedKeys)
+                            )
+                    ) {
+                        mainHandler.post {
+                            status = DownloadStatus.DONE
+                            statusText = "Пропуск: файл «${song.title}» уже есть на телефоне"
+                            progress = 100f
+                            errorText = SKIP_NAMED_MEDIA_HINT
+                            Toast.makeText(
+                                context,
+                                "Файл с таким названием уже есть",
+                                Toast.LENGTH_SHORT,
+                            ).show()
+                        }
+                        return@launch
+                    }
                     mainHandler.post {
                         fonkiLyrics = "${song.title}\n${song.artist}\n\n${song.lyrics}"
                         statusText = "Скачивание аудио: ${song.title}..."
@@ -405,10 +404,6 @@ private fun MediaDownloadScreen(
 
                     FonkiExtractor.saveLyrics(song)
 
-                    val importTitle = buildString {
-                        if (song.artist.isNotBlank()) append("${song.artist} - ")
-                        append(song.title)
-                    }
                     mainHandler.post {
                         status = DownloadStatus.DONE
                         statusText = "Скачано: ${audioFile.name}"
@@ -462,16 +457,6 @@ private fun MediaDownloadScreen(
             return
         }
 
-        if (batch.isEmpty() && skipDuplicates) {
-            val c = canonicalDownloadSourceUrl(trimmedUrl)
-            if (c.isNotEmpty() && c in importedCanonicalSources) {
-                errorText =
-                    "Этот источник уже сохранён в медиатеке. Снимите галочку «Не скачивать повторно», чтобы загрузить снова."
-                Toast.makeText(context, "Уже в медиатеке", Toast.LENGTH_SHORT).show()
-                return
-            }
-        }
-
         errorText = ""
         progress = -1f
         status = DownloadStatus.DOWNLOADING
@@ -490,16 +475,15 @@ private fun MediaDownloadScreen(
                 if (playlistMode && batch.isNotEmpty()) {
                     var okCount = 0
                     var skippedCount = 0
-                    val knownCanon = importedCanonicalSources.toMutableSet()
+                    val knownStems = existingMediaStemKeys(context, bibleVideos, bibleAudios).toMutableSet()
                     val failLines = mutableListOf<String>()
                     for ((idx, item) in batch.withIndex()) {
-                        val canon = canonicalDownloadSourceUrl(item.pageUrl)
-                        if (skipDuplicates && canon.isNotEmpty() && canon in knownCanon) {
+                        if (skipDuplicates && alreadyHaveNamedMedia(item.title, knownStems)) {
                             skippedCount++
                             mainHandler.post {
                                 progress = -1f
                                 statusText =
-                                    "${idx + 1}/${batch.size}: пропуск — уже в медиатеке (${item.title.take(40)})"
+                                    "${idx + 1}/${batch.size}: пропуск — файл уже есть (${item.title.take(40)})"
                             }
                             continue
                         }
@@ -513,6 +497,7 @@ private fun MediaDownloadScreen(
                                 url = item.pageUrl,
                                 audioOnly = audioOnly,
                                 videoQuality = selectedQuality,
+                                skipIfFileExists = skipDuplicates,
                                 onProgress = { p, eta ->
                                     mainHandler.post {
                                         progress = p
@@ -564,7 +549,9 @@ private fun MediaDownloadScreen(
                                         }
                                 }
                             }
-                            if (canon.isNotEmpty()) knownCanon.add(canon)
+                            addKnownStem(item.title, knownStems)
+                            addKnownStem(file.name, knownStems)
+                            addKnownStem(file.nameWithoutExtension, knownStems)
                             okCount++
                         } catch (e: Throwable) {
                             Log.e(TAG, "Batch download failed for ${item.pageUrl}", e)
@@ -591,9 +578,9 @@ private fun MediaDownloadScreen(
                         statusText =
                             when {
                                 skippedCount > 0 && okCount > 0 ->
-                                    "Готово: $okCount скачано, $skippedCount пропущено (уже в медиатеке)"
+                                    "Готово: $okCount скачано, $skippedCount пропущено (файл уже есть)"
                                 skippedCount > 0 && okCount == 0 && failLines.isEmpty() ->
-                                    "Пропущено $skippedCount из ${batch.size} — уже в медиатеке"
+                                    "Пропущено $skippedCount из ${batch.size} — файл с таким названием уже есть"
                                 else ->
                                     "Файлов готово: $okCount из ${batch.size}"
                             }
@@ -602,7 +589,7 @@ private fun MediaDownloadScreen(
                                 okCount > 0 && skippedCount > 0 ->
                                     Toast.makeText(
                                         context,
-                                        "Добавлено: $okCount, пропущено (уже есть): $skippedCount",
+                                        "Добавлено: $okCount, пропущено (файл уже есть): $skippedCount",
                                         Toast.LENGTH_LONG,
                                     ).show()
                                 okCount > 0 ->
@@ -614,7 +601,7 @@ private fun MediaDownloadScreen(
                                 allSkippedOk ->
                                     Toast.makeText(
                                         context,
-                                        "Все выбранные записи уже есть в медиатеке",
+                                        "Все выбранные файлы уже есть на телефоне",
                                         Toast.LENGTH_LONG,
                                     ).show()
                             }
@@ -638,10 +625,41 @@ private fun MediaDownloadScreen(
                     }
                 } else {
                     Log.d(TAG, "Starting download: $trimmedUrl audio=$audioOnly q=$selectedQuality")
+                    if (skipDuplicates) {
+                        try {
+                            mainHandler.post { statusText = "Проверка названия файла..." }
+                            val info = VideoExtractor.fetchInfo(trimmedUrl)
+                            val keys = existingMediaStemKeys(context, bibleVideos, bibleAudios)
+                            if (
+                                alreadyHaveNamedMedia(info.title, keys) ||
+                                alreadyHaveNamedMedia(info.filename, keys)
+                            ) {
+                                mainHandler.post {
+                                    status = DownloadStatus.DONE
+                                    statusText =
+                                        "Пропуск: файл «${info.title}» уже есть на телефоне"
+                                    progress = 100f
+                                    errorText = SKIP_NAMED_MEDIA_HINT
+                                    Toast.makeText(
+                                        context,
+                                        "Файл с таким названием уже есть",
+                                        Toast.LENGTH_SHORT,
+                                    ).show()
+                                }
+                                return@launch
+                            }
+                            mainHandler.post {
+                                statusText = "Скачивание: ${info.title.take(48)}..."
+                            }
+                        } catch (e: Throwable) {
+                            Log.w(TAG, "Не удалось проверить название перед загрузкой", e)
+                        }
+                    }
                     val file = VideoExtractor.download(
                         url = trimmedUrl,
                         audioOnly = audioOnly,
                         videoQuality = selectedQuality,
+                        skipIfFileExists = skipDuplicates,
                         onProgress = { p, eta ->
                             mainHandler.post {
                                 progress = p
@@ -734,6 +752,99 @@ private fun MediaDownloadScreen(
                 },
             )
         },
+        bottomBar = {
+            Surface(tonalElevation = 3.dp, shadowElevation = 12.dp) {
+                Column(
+                    modifier = Modifier
+                        .navigationBarsPadding()
+                        .padding(horizontal = 16.dp, vertical = 12.dp),
+                ) {
+                    AnimatedVisibility(visible = status == DownloadStatus.DOWNLOADING) {
+                        Column(modifier = Modifier.padding(bottom = 10.dp)) {
+                            if (progress >= 0f) {
+                                LinearProgressIndicator(
+                                    progress = { (progress / 100f).coerceIn(0f, 1f) },
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .height(6.dp)
+                                        .clip(RoundedCornerShape(3.dp)),
+                                )
+                            } else {
+                                LinearProgressIndicator(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .height(6.dp)
+                                        .clip(RoundedCornerShape(3.dp)),
+                                )
+                            }
+                            Spacer(Modifier.height(6.dp))
+                            Text(
+                                statusText,
+                                style = MaterialTheme.typography.bodySmall,
+                                color = MaterialTheme.colorScheme.primary,
+                                maxLines = 2,
+                                overflow = TextOverflow.Ellipsis,
+                            )
+                        }
+                    }
+
+                    AnimatedVisibility(
+                        visible = status == DownloadStatus.DONE && statusText.isNotBlank(),
+                    ) {
+                        Row(
+                            modifier = Modifier.padding(bottom = 10.dp),
+                            verticalAlignment = Alignment.CenterVertically,
+                        ) {
+                            Icon(
+                                Icons.Default.Check,
+                                contentDescription = null,
+                                tint = MaterialTheme.colorScheme.tertiary,
+                                modifier = Modifier.size(18.dp),
+                            )
+                            Spacer(Modifier.width(8.dp))
+                            Text(
+                                statusText,
+                                style = MaterialTheme.typography.bodySmall,
+                                color = MaterialTheme.colorScheme.tertiary,
+                                maxLines = 2,
+                                overflow = TextOverflow.Ellipsis,
+                            )
+                        }
+                    }
+
+                    Button(
+                        onClick = { startDownload() },
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(52.dp),
+                        shape = RoundedCornerShape(16.dp),
+                        enabled = (ytdlpReady || FonkiExtractor.isFonkiUrl(url.trim())) &&
+                            status != DownloadStatus.DOWNLOADING &&
+                            !playlistBusy &&
+                            !(playlistInspection != null && selectedIds.isEmpty()),
+                    ) {
+                        if (status == DownloadStatus.DOWNLOADING) {
+                            CircularProgressIndicator(
+                                modifier = Modifier.size(20.dp),
+                                strokeWidth = 2.dp,
+                                color = MaterialTheme.colorScheme.onPrimary,
+                            )
+                        } else {
+                            Icon(Icons.Default.Download, contentDescription = null)
+                        }
+                        Spacer(Modifier.width(10.dp))
+                        Text(
+                            if (playlistInspection != null) {
+                                "Скачать выбранное (${selectedIds.size})"
+                            } else {
+                                "Скачать"
+                            },
+                            style = MaterialTheme.typography.titleSmall,
+                        )
+                    }
+                }
+            }
+        },
     ) { padding ->
         Column(
             modifier = Modifier
@@ -782,26 +893,20 @@ private fun MediaDownloadScreen(
             }
 
             ElevatedCard(
-                modifier = Modifier.fillMaxWidth(),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .weight(1f),
                 shape = RoundedCornerShape(16.dp),
             ) {
-                Column(modifier = Modifier.padding(16.dp)) {
+                Column(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(16.dp),
+                ) {
                     Text(
                         "Вставьте ссылку",
                         style = MaterialTheme.typography.titleMedium,
                         fontWeight = FontWeight.Bold,
-                    )
-                    Spacer(Modifier.height(4.dp))
-                    Text(
-                        "YouTube (в т. ч. плейлисты), Rutube, VK, Vimeo, TikTok, Дзен и др.",
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    )
-                    Text(
-                        "«Показать список» — разбор состава для выборочной загрузки. Кнопка ▶ открывает ролик в приложении платформы (просмотр до скачивания).",
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        modifier = Modifier.padding(top = 6.dp),
                     )
                     Spacer(Modifier.height(10.dp))
 
@@ -836,7 +941,7 @@ private fun MediaDownloadScreen(
                             onCheckedChange = { skipDuplicates = it },
                         )
                         Text(
-                            "Не скачивать повторно, если такой источник уже есть в медиатеке",
+                            "Не скачивать повторно, если файл с таким названием уже есть на телефоне",
                             style = MaterialTheme.typography.bodySmall,
                             color = MaterialTheme.colorScheme.onSurfaceVariant,
                         )
@@ -909,11 +1014,12 @@ private fun MediaDownloadScreen(
 
                         Row(
                             modifier = Modifier.fillMaxWidth(),
-                            horizontalArrangement = Arrangement.spacedBy(10.dp),
+                            horizontalArrangement = Arrangement.spacedBy(4.dp),
+                            verticalAlignment = Alignment.CenterVertically,
                         ) {
                             OutlinedButton(
                                 onClick = { loadPlaylistOutline() },
-                                modifier = Modifier.weight(1f),
+                                contentPadding = PaddingValues(horizontal = 12.dp, vertical = 8.dp),
                                 enabled =
                                 ytdlpReady &&
                                     url.trim().startsWith("http") &&
@@ -927,7 +1033,11 @@ private fun MediaDownloadScreen(
                                     )
                                     Spacer(Modifier.width(6.dp))
                                 }
-                                Text("Показать список")
+                                Text(
+                                    "Показать список",
+                                    maxLines = 1,
+                                    softWrap = false,
+                                )
                             }
 
                             AnimatedVisibility(
@@ -971,13 +1081,16 @@ private fun MediaDownloadScreen(
                             }
                         }
 
-                        AnimatedVisibility(
-                            visible = playlistBusy ||
-                                playlistParseError != null ||
-                                playlistInspection != null,
-                            modifier = Modifier.padding(top = 8.dp),
+                        if (playlistBusy ||
+                            playlistParseError != null ||
+                            playlistInspection != null
                         ) {
-                            Column {
+                            Column(
+                                modifier = Modifier
+                                    .padding(top = 8.dp)
+                                    .weight(1f)
+                                    .fillMaxWidth(),
+                            ) {
                                 AnimatedVisibility(
                                     visible = playlistParseError != null,
                                 ) {
@@ -992,9 +1105,10 @@ private fun MediaDownloadScreen(
                                 playlistInspection?.let { insp ->
                                     val inPlaylistLibrary =
                                         insp.items.count { listItem ->
-                                            val k =
-                                                canonicalDownloadSourceUrl(listItem.pageUrl)
-                                            k.isNotEmpty() && k in importedCanonicalSources
+                                            alreadyHaveNamedMedia(
+                                                listItem.title,
+                                                existingNamedMediaKeys,
+                                            )
                                         }
                                     Text(
                                         insp.playlistTitle?.let { t -> "\u00AB$t\u00BB" }
@@ -1011,7 +1125,7 @@ private fun MediaDownloadScreen(
                                         Text(
                                             "Выбрано ${selectedIds.size} из ${insp.items.size}" +
                                                 if (inPlaylistLibrary > 0) {
-                                                    " · уже сохранено: $inPlaylistLibrary"
+                                                    " · уже есть на телефоне: $inPlaylistLibrary"
                                                 } else {
                                                     ""
                                                 },
@@ -1021,16 +1135,16 @@ private fun MediaDownloadScreen(
                                     }
 
                                     Card(
-                                        modifier = Modifier.fillMaxWidth(),
+                                        modifier = Modifier
+                                            .fillMaxWidth()
+                                            .weight(1f),
                                         shape = RoundedCornerShape(12.dp),
                                         colors = CardDefaults.cardColors(
                                             containerColor = MaterialTheme.colorScheme.surfaceContainerHighest,
                                         ),
                                     ) {
                                         LazyColumn(
-                                            modifier = Modifier
-                                                .fillMaxWidth()
-                                                .heightIn(max = 320.dp),
+                                            modifier = Modifier.fillMaxSize(),
                                         ) {
                                             itemsIndexed(
                                                 items = insp.items,
@@ -1044,11 +1158,11 @@ private fun MediaDownloadScreen(
                                                 }
                                                 val checked = selectedIds.contains(item.stableId)
                                                 val durLabel = formatDurationSeconds(item.durationSec)
-                                                val itemUrlKey =
-                                                    canonicalDownloadSourceUrl(item.pageUrl)
                                                 val alreadyImported =
-                                                    itemUrlKey.isNotEmpty() &&
-                                                    itemUrlKey in importedCanonicalSources
+                                                    alreadyHaveNamedMedia(
+                                                        item.title,
+                                                        existingNamedMediaKeys,
+                                                    )
                                                 Row(
                                                     Modifier
                                                         .fillMaxWidth()
@@ -1086,6 +1200,33 @@ private fun MediaDownloadScreen(
                                                                 }
                                                         },
                                                     )
+                                                    Box(
+                                                        modifier = Modifier
+                                                            .size(width = 72.dp, height = 40.dp)
+                                                            .clip(RoundedCornerShape(6.dp))
+                                                            .background(
+                                                                MaterialTheme.colorScheme.surfaceVariant,
+                                                            ),
+                                                        contentAlignment = Alignment.Center,
+                                                    ) {
+                                                        val thumb = item.thumbnail
+                                                        if (!thumb.isNullOrBlank()) {
+                                                            AsyncImage(
+                                                                model = thumb,
+                                                                contentDescription = null,
+                                                                modifier = Modifier.fillMaxSize(),
+                                                                contentScale = ContentScale.Crop,
+                                                            )
+                                                        } else {
+                                                            Icon(
+                                                                Icons.Default.Videocam,
+                                                                contentDescription = null,
+                                                                modifier = Modifier.size(20.dp),
+                                                                tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                                                            )
+                                                        }
+                                                    }
+                                                    Spacer(Modifier.width(8.dp))
                                                     Column(
                                                         Modifier.weight(1f),
                                                     ) {
@@ -1124,7 +1265,7 @@ private fun MediaDownloadScreen(
                                                                         Modifier.width(4.dp),
                                                                     )
                                                                     Text(
-                                                                        "Уже сохранено в медиатеке",
+                                                                        "Файл уже есть на телефоне",
                                                                         style =
                                                                         MaterialTheme.typography.labelSmall,
                                                                         fontWeight =
@@ -1178,86 +1319,6 @@ private fun MediaDownloadScreen(
                         }
                     }
 
-                    Spacer(Modifier.height(8.dp))
-
-                    val trimmedLink = url.trim()
-                    val listBlocksDownload =
-                        playlistInspection != null && selectedIds.isEmpty()
-
-                    Button(
-                        onClick = { startDownload() },
-                        modifier = Modifier.fillMaxWidth(),
-                        shape = RoundedCornerShape(12.dp),
-                        enabled = (ytdlpReady ||
-                            FonkiExtractor.isFonkiUrl(trimmedLink)) &&
-                            status != DownloadStatus.DOWNLOADING &&
-                            !playlistBusy &&
-                            !listBlocksDownload,
-                    ) {
-                        if (status == DownloadStatus.DOWNLOADING) {
-                            CircularProgressIndicator(
-                                modifier = Modifier.size(20.dp),
-                                strokeWidth = 2.dp,
-                                color = MaterialTheme.colorScheme.onPrimary,
-                            )
-                            Spacer(Modifier.width(8.dp))
-                        } else {
-                            Icon(Icons.Default.Download, contentDescription = null)
-                            Spacer(Modifier.width(8.dp))
-                        }
-                        val label =
-                            if (playlistInspection != null) {
-                                "Скачать выбранное (${selectedIds.size})"
-                            } else {
-                                "Скачать"
-                            }
-                        Text(label)
-                    }
-
-                    AnimatedVisibility(visible = status == DownloadStatus.DOWNLOADING) {
-                        Column(modifier = Modifier.padding(top = 8.dp)) {
-                            if (progress >= 0f) {
-                                LinearProgressIndicator(
-                                    progress = { (progress / 100f).coerceIn(0f, 1f) },
-                                    modifier = Modifier
-                                        .fillMaxWidth()
-                                        .height(6.dp)
-                                        .clip(RoundedCornerShape(3.dp)),
-                                )
-                            } else {
-                                LinearProgressIndicator(
-                                    modifier = Modifier
-                                        .fillMaxWidth()
-                                        .height(4.dp)
-                                        .clip(RoundedCornerShape(2.dp)),
-                                )
-                            }
-                            Spacer(Modifier.height(4.dp))
-                            Text(
-                                statusText,
-                                style = MaterialTheme.typography.bodySmall,
-                                color = MaterialTheme.colorScheme.primary,
-                            )
-                        }
-                    }
-
-                    AnimatedVisibility(visible = status == DownloadStatus.DONE) {
-                        Card(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(top = 8.dp),
-                            colors = CardDefaults.cardColors(containerColor = Color(0x224CAF50)),
-                            shape = RoundedCornerShape(8.dp),
-                        ) {
-                            Text(
-                                statusText,
-                                modifier = Modifier.padding(12.dp),
-                                style = MaterialTheme.typography.bodyMedium,
-                                fontWeight = FontWeight.Bold,
-                                color = Color(0xFF4CAF50),
-                            )
-                        }
-                    }
                 }
             }
 

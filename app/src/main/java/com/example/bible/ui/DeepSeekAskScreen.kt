@@ -27,10 +27,15 @@ import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.ContentCopy
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Forum
+import androidx.compose.material.icons.filled.Mic
 import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material.icons.filled.Psychology
+import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material.icons.filled.Speed
+import androidx.compose.material.icons.filled.Stop
 import androidx.compose.material.icons.filled.TravelExplore
+import androidx.compose.material.icons.filled.VolumeOff
+import androidx.compose.material.icons.filled.VolumeUp
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
@@ -53,6 +58,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -63,6 +69,8 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.bible.R
 import com.example.bible.data.AiChatSummary
+import com.example.bible.data.AiChatVoiceText
+import com.example.bible.data.TranslationId
 import android.content.ClipData
 import android.content.ClipboardManager
 import android.content.Context
@@ -82,17 +90,59 @@ fun DeepSeekAskScreen(
     val context = LocalContext.current
     val state by viewModel.deepSeekAsk.collectAsStateWithLifecycle()
     var draft by remember { mutableStateOf("") }
+    var speakAnswers by rememberSaveable { mutableStateOf(false) }
+    var replyWasLoading by remember { mutableStateOf(false) }
     var deleteTarget by remember { mutableStateOf<AiChatSummary?>(null) }
     var shareMenu by remember { mutableStateOf(false) }
     val dateFormat = remember {
         SimpleDateFormat("dd.MM.yyyy HH:mm", Locale.getDefault())
     }
     val hasConversation = state.messages.any { it.role == "user" || it.role == "assistant" }
+    val tts = rememberStudyTextToSpeech(TranslationId.SYNODAL)
+    var lastQuestion by remember { mutableStateOf("") }
+    val speech = rememberAiSpeechToText(
+        onPartial = { draft = it },
+        onFinal = { text ->
+            draft = text
+            when {
+                text.isBlank() -> Unit
+                state.loading ->
+                    Toast.makeText(context, R.string.ai_ask_wait_reply, Toast.LENGTH_SHORT).show()
+                else -> {
+                    tts.stop()
+                    lastQuestion = text
+                    viewModel.askDeepSeekQuestion(text)
+                    draft = ""
+                }
+            }
+        },
+    )
+    // Ответ не пришёл (обрыв связи) — возвращаем вопрос в поле, чтобы его не пришлось диктовать заново.
+    LaunchedEffect(state.error) {
+        if (state.error != null && draft.isBlank() && lastQuestion.isNotBlank()) {
+            draft = lastQuestion
+        }
+    }
+    LaunchedEffect(state.loading, state.messages, speakAnswers) {
+        val finished = replyWasLoading && !state.loading
+        replyWasLoading = state.loading
+        if (finished && speakAnswers && state.error == null) {
+            val last = state.messages.lastOrNull { it.role == "assistant" }
+            if (last != null) {
+                tts.speak(AiChatVoiceText.forSpeech(last.content))
+            }
+        }
+        if (!speakAnswers) tts.stop()
+    }
     LaunchedEffect(Unit) {
         viewModel.openDeepSeekAsk()
     }
     DisposableEffect(Unit) {
-        onDispose { viewModel.leaveDeepSeekAsk() }
+        onDispose {
+            tts.stop()
+            speech.stop()
+            viewModel.leaveDeepSeekAsk()
+        }
     }
     val goBack = {
         if (state.pane == DeepSeekAskPane.CHAT) {
@@ -196,6 +246,8 @@ fun DeepSeekAskScreen(
                         IconButton(
                             onClick = {
                                 draft = ""
+                                tts.stop()
+                                speech.stop()
                                 viewModel.startNewDeepSeekAsk()
                             },
                             enabled = !state.loading,
@@ -241,12 +293,38 @@ fun DeepSeekAskScreen(
                     state = state,
                     draft = draft,
                     onDraftChange = { draft = it },
+                    listening = speech.listening,
+                    speakAnswers = speakAnswers,
+                    onToggleSpeakAnswers = {
+                        speakAnswers = !speakAnswers
+                        if (!speakAnswers) tts.stop()
+                    },
+                    onSpeakMessage = { text ->
+                        tts.speak(AiChatVoiceText.forSpeech(text))
+                    },
+                    onMicClick = {
+                        tts.stop()
+                        if (speech.listening) speech.stop() else speech.start()
+                    },
                     onQuick = { viewModel.setDeepSeekAskStyle(DeepSeekAskStyle.QUICK) },
                     onDeep = { viewModel.setDeepSeekAskStyle(DeepSeekAskStyle.DEEP) },
                     onToggleWeb = { viewModel.setDeepSeekAskWebSearch(!state.webSearch) },
                     onSend = {
                         val q = draft.trim()
                         if (q.isNotEmpty()) {
+                            speech.stop()
+                            tts.stop()
+                            lastQuestion = q
+                            viewModel.askDeepSeekQuestion(q)
+                            draft = ""
+                        }
+                    },
+                    onRetry = {
+                        val q = lastQuestion.trim().ifBlank { draft.trim() }
+                        if (q.isNotEmpty()) {
+                            tts.stop()
+                            speech.stop()
+                            lastQuestion = q
                             viewModel.askDeepSeekQuestion(q)
                             draft = ""
                         }
@@ -353,10 +431,16 @@ private fun DeepSeekAskConversation(
     state: DeepSeekAskUiState,
     draft: String,
     onDraftChange: (String) -> Unit,
+    listening: Boolean,
+    speakAnswers: Boolean,
+    onToggleSpeakAnswers: () -> Unit,
+    onSpeakMessage: (String) -> Unit,
+    onMicClick: () -> Unit,
     onQuick: () -> Unit,
     onDeep: () -> Unit,
     onToggleWeb: () -> Unit,
     onSend: () -> Unit,
+    onRetry: () -> Unit,
 ) {
     Column(Modifier.fillMaxSize()) {
         Column(
@@ -375,29 +459,55 @@ private fun DeepSeekAskConversation(
             }
             state.messages.forEach { msg ->
                 val isUser = msg.role == "user"
-                Text(
-                    if (isUser) {
-                        stringResource(R.string.ai_ask_you, msg.content)
-                    } else {
-                        msg.content
-                    },
-                    style = if (isUser) {
-                        MaterialTheme.typography.bodyMedium
-                    } else {
-                        MaterialTheme.typography.bodyLarge
-                    },
-                    color = if (isUser) {
-                        MaterialTheme.colorScheme.onSurfaceVariant
-                    } else {
-                        MaterialTheme.colorScheme.onSurface
-                    },
-                )
+                if (isUser) {
+                    Text(
+                        stringResource(R.string.ai_ask_you, msg.content),
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                } else {
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        verticalAlignment = Alignment.Top,
+                    ) {
+                        Text(
+                            msg.content,
+                            style = MaterialTheme.typography.bodyLarge,
+                            color = MaterialTheme.colorScheme.onSurface,
+                            modifier = Modifier.weight(1f),
+                        )
+                        IconButton(
+                            onClick = { onSpeakMessage(msg.content) },
+                            enabled = !state.loading,
+                        ) {
+                            Icon(
+                                Icons.Filled.VolumeUp,
+                                contentDescription = stringResource(R.string.ai_ask_speak_cd),
+                            )
+                        }
+                    }
+                }
             }
             if (state.loading) {
                 CircularProgressIndicator(modifier = Modifier.size(28.dp), strokeWidth = 2.dp)
             }
             state.error?.let { err ->
-                Text(err, color = MaterialTheme.colorScheme.error)
+                Column {
+                    Text(err, color = MaterialTheme.colorScheme.error)
+                    TextButton(
+                        onClick = onRetry,
+                        enabled = !state.loading,
+                        contentPadding = PaddingValues(horizontal = 8.dp, vertical = 4.dp),
+                    ) {
+                        Icon(
+                            Icons.Filled.Refresh,
+                            contentDescription = null,
+                            modifier = Modifier.size(18.dp),
+                        )
+                        Spacer(Modifier.width(6.dp))
+                        Text(stringResource(R.string.ai_ask_retry))
+                    }
+                }
             }
         }
         Spacer(Modifier.height(8.dp))
@@ -434,6 +544,19 @@ private fun DeepSeekAskConversation(
                 },
                 label = { Text(stringResource(R.string.ai_ask_mode_web)) },
             )
+            FilterChip(
+                selected = speakAnswers,
+                onClick = onToggleSpeakAnswers,
+                enabled = !state.loading,
+                leadingIcon = {
+                    Icon(
+                        if (speakAnswers) Icons.Filled.VolumeUp else Icons.Filled.VolumeOff,
+                        contentDescription = null,
+                        modifier = Modifier.size(18.dp),
+                    )
+                },
+                label = { Text(stringResource(R.string.ai_ask_speak_answers)) },
+            )
         }
         Spacer(Modifier.height(8.dp))
         Row(verticalAlignment = Alignment.Bottom) {
@@ -441,11 +564,33 @@ private fun DeepSeekAskConversation(
                 value = draft,
                 onValueChange = onDraftChange,
                 modifier = Modifier.weight(1f),
-                label = { Text(stringResource(R.string.ai_ask_field)) },
+                label = {
+                    Text(
+                        stringResource(
+                            if (listening) R.string.ai_ask_listening else R.string.ai_ask_field,
+                        ),
+                    )
+                },
                 minLines = 2,
                 enabled = !state.loading,
             )
-            Spacer(Modifier.width(8.dp))
+            Spacer(Modifier.width(4.dp))
+            IconButton(
+                onClick = onMicClick,
+                enabled = !state.loading,
+            ) {
+                Icon(
+                    if (listening) Icons.Filled.Stop else Icons.Filled.Mic,
+                    contentDescription = stringResource(
+                        if (listening) R.string.ai_ask_voice_stop_cd else R.string.ai_ask_voice_cd,
+                    ),
+                    tint = if (listening) {
+                        MaterialTheme.colorScheme.error
+                    } else {
+                        MaterialTheme.colorScheme.primary
+                    },
+                )
+            }
             IconButton(
                 onClick = onSend,
                 enabled = !state.loading && draft.isNotBlank(),

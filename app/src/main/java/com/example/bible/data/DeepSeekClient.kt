@@ -6,9 +6,16 @@ import android.util.Base64
 import org.json.JSONArray
 import org.json.JSONObject
 import java.io.ByteArrayOutputStream
+import java.io.EOFException
+import java.io.IOException
 import java.net.HttpURLConnection
+import java.net.ProtocolException
+import java.net.SocketException
+import java.net.SocketTimeoutException
 import java.net.URL
+import java.net.UnknownHostException
 import java.nio.charset.StandardCharsets
+import javax.net.ssl.SSLException
 
 data class DeepSeekMessage(
     val role: String,
@@ -28,6 +35,8 @@ object DeepSeekClient {
     /** Единственная модель API, которая принимает изображения. */
     const val VISION_MODEL = "deepseek-v4-flash-vision-exp"
     private const val USER_AGENT = "BibleApp/1.0 (Android; DeepSeek)"
+    private const val NETWORK_ATTEMPTS = 3
+    private const val RETRY_DELAY_MS = 700L
     private const val VISION_MAX_SIDE = 1600
     private const val VISION_JPEG_QUALITY = 82
 
@@ -97,7 +106,7 @@ object DeepSeekClient {
                 Result.success(text)
             }
         } catch (e: Exception) {
-            Result.failure(e)
+            Result.failure(IllegalStateException(networkErrorMessage(e), e))
         }
     }
 
@@ -165,7 +174,7 @@ object DeepSeekClient {
                 Result.success(text)
             }
         } catch (e: Exception) {
-            Result.failure(e)
+            Result.failure(IllegalStateException(networkErrorMessage(e), e))
         }
     }
 
@@ -190,7 +199,32 @@ object DeepSeekClient {
         return parts.joinToString("\n").trim()
     }
 
+    /**
+     * Мобильная сеть часто рвёт соединение на первой попытке («Connection reset»),
+     * поэтому сетевые сбои повторяем с паузой; ответы сервера (в том числе ошибки) возвращаем как есть.
+     */
     private fun postJson(
+        url: String,
+        apiKey: String,
+        body: String,
+        timeoutMs: Int,
+    ): Pair<Int, String> {
+        var lastError: IOException? = null
+        for (attempt in 0 until NETWORK_ATTEMPTS) {
+            try {
+                return postJsonOnce(url, apiKey, body, timeoutMs)
+            } catch (e: IOException) {
+                if (!isRetriableNetworkError(e)) throw e
+                lastError = e
+                if (attempt < NETWORK_ATTEMPTS - 1) {
+                    Thread.sleep(RETRY_DELAY_MS * (attempt + 1))
+                }
+            }
+        }
+        throw lastError ?: IOException("Сеть недоступна")
+    }
+
+    private fun postJsonOnce(
         url: String,
         apiKey: String,
         body: String,
@@ -202,16 +236,50 @@ object DeepSeekClient {
         conn.setRequestProperty("Content-Type", "application/json")
         conn.setRequestProperty("Accept", "application/json")
         conn.setRequestProperty("User-Agent", USER_AGENT)
+        // Без keep-alive: переиспользованный из пула сокет — частая причина «Connection reset».
+        conn.setRequestProperty("Connection", "close")
         conn.connectTimeout = 20_000
         conn.readTimeout = timeoutMs
         conn.doOutput = true
-        conn.outputStream.use { it.write(body.toByteArray(StandardCharsets.UTF_8)) }
-        val code = conn.responseCode
-        val raw = (if (code in 200..299) conn.inputStream else conn.errorStream)
-            ?.bufferedReader(StandardCharsets.UTF_8)
-            ?.use { it.readText() }
-            .orEmpty()
-        return code to raw
+        try {
+            conn.outputStream.use { it.write(body.toByteArray(StandardCharsets.UTF_8)) }
+            val code = conn.responseCode
+            val raw = (if (code in 200..299) conn.inputStream else conn.errorStream)
+                ?.bufferedReader(StandardCharsets.UTF_8)
+                ?.use { it.readText() }
+                .orEmpty()
+            return code to raw
+        } finally {
+            conn.disconnect()
+        }
+    }
+
+    private fun isRetriableNetworkError(e: IOException): Boolean {
+        if (e is SocketTimeoutException) return false
+        if (e is SocketException || e is SSLException || e is EOFException || e is ProtocolException) {
+            return true
+        }
+        val msg = e.message.orEmpty().lowercase()
+        return "connection reset" in msg ||
+            "unexpected end of stream" in msg ||
+            "connection abort" in msg ||
+            "connection closed by peer" in msg
+    }
+
+    /** Человеческий текст вместо «Connection reset» и прочих системных сообщений. */
+    private fun networkErrorMessage(e: Exception): String {
+        val raw = e.message.orEmpty()
+        val lower = raw.lowercase()
+        return when {
+            e is UnknownHostException ->
+                "Нет доступа к серверу ИИ. Проверьте интернет и повторите."
+            e is SocketTimeoutException ->
+                "Сервер ИИ не ответил вовремя. Повторите вопрос."
+            e is SSLException || e is SocketException || e is EOFException ||
+                "connection reset" in lower || "unexpected end of stream" in lower ->
+                "Связь с сервером ИИ оборвалась. Проверьте интернет и нажмите «Повторить»."
+            else -> raw.ifBlank { "Не удалось обратиться к DeepSeek" }
+        }
     }
 
     suspend fun testKey(apiKey: String): Result<String> =
@@ -265,21 +333,7 @@ object DeepSeekClient {
                     ),
                 )
             }.toString()
-            val conn = URL(CHAT_URL).openConnection() as HttpURLConnection
-            conn.requestMethod = "POST"
-            conn.setRequestProperty("Authorization", "Bearer $key")
-            conn.setRequestProperty("Content-Type", "application/json")
-            conn.setRequestProperty("Accept", "application/json")
-            conn.setRequestProperty("User-Agent", USER_AGENT)
-            conn.connectTimeout = 20_000
-            conn.readTimeout = timeoutMs
-            conn.doOutput = true
-            conn.outputStream.use { it.write(body.toByteArray(StandardCharsets.UTF_8)) }
-            val code = conn.responseCode
-            val raw = (if (code in 200..299) conn.inputStream else conn.errorStream)
-                ?.bufferedReader(StandardCharsets.UTF_8)
-                ?.use { it.readText() }
-                .orEmpty()
+            val (code, raw) = postJson(CHAT_URL, key, body, timeoutMs)
             if (code !in 200..299) {
                 return@withContext Result.failure(IllegalStateException(errorMessage(code, raw)))
             }
@@ -295,7 +349,7 @@ object DeepSeekClient {
                 Result.success(text)
             }
         } catch (e: Exception) {
-            Result.failure(e)
+            Result.failure(IllegalStateException(networkErrorMessage(e), e))
         }
     }
 
