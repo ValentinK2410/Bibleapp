@@ -2,6 +2,7 @@ package com.example.bible.data
 
 import org.json.JSONArray
 import org.json.JSONObject
+import java.io.File
 import java.util.UUID
 
 /**
@@ -19,6 +20,10 @@ data class SongItem(
     val lyrics: String = "",
     /** Локальные аудиофайлы (несколько дорожек — выбор при воспроизведении). */
     val audioPaths: List<String> = emptyList(),
+    /** Подписи дорожек (параллельно [audioPaths]; при импорте/экспорте сохраняют названия). */
+    val audioLabels: List<String> = emptyList(),
+    /** Прямые URL дорожек с сайта (fonki / holychords), параллельно [audioPaths]. */
+    val audioSourceUrls: List<String> = emptyList(),
     val videoPath: String? = null,
     val sourceUrl: String? = null,
     val tags: List<String> = emptyList(),
@@ -30,6 +35,14 @@ data class SongItem(
     val audioPath: String? get() = audioPaths.firstOrNull()
 
     fun hasLyricSync(): Boolean = lyricCues.isNotEmpty() && audioPaths.isNotEmpty()
+
+    /** Название дорожки для UI: [audioLabels] или имя файла без расширения. */
+    fun displayAudioLabel(index: Int): String {
+        audioLabels.getOrNull(index)?.takeIf { it.isNotBlank() }?.let { return it }
+        val path = audioPaths.getOrNull(index) ?: return ""
+        val file = File(path)
+        return file.nameWithoutExtension.ifBlank { file.name }
+    }
     fun toJson(): JSONObject = JSONObject().apply {
         put("id", id)
         put("title", title)
@@ -42,6 +55,12 @@ data class SongItem(
                 put("audios", JSONArray().apply { audioPaths.forEach { put(it) } })
                 put("audio", audioPaths[0])
             }
+        }
+        if (audioLabels.isNotEmpty()) {
+            put("audioLabels", JSONArray().apply { audioLabels.forEach { put(it) } })
+        }
+        if (audioSourceUrls.isNotEmpty()) {
+            put("audioSourceUrls", JSONArray().apply { audioSourceUrls.forEach { put(it) } })
         }
         if (videoPath != null) put("video", videoPath)
         if (sourceUrl != null) put("url", sourceUrl)
@@ -84,6 +103,18 @@ data class SongItem(
                     j.optString("audio").takeIf { it.isNotBlank() }?.let { paths.add(it) }
                 }
                 paths.toList()
+            },
+            audioLabels = if (j.has("audioLabels")) {
+                val arr = j.getJSONArray("audioLabels")
+                (0 until arr.length()).map { arr.optString(it, "") }
+            } else {
+                emptyList()
+            },
+            audioSourceUrls = if (j.has("audioSourceUrls")) {
+                val arr = j.getJSONArray("audioSourceUrls")
+                (0 until arr.length()).map { arr.optString(it, "") }
+            } else {
+                emptyList()
             },
             videoPath = if (j.has("video")) j.getString("video") else null,
             sourceUrl = if (j.has("url")) j.getString("url") else null,

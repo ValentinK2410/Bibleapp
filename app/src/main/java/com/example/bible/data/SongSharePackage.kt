@@ -35,7 +35,7 @@ enum class SongShareImportError {
 }
 
 sealed class SongShareImportOutcome {
-    data class Ok(val result: SongShareImportResult) : SongShareImportOutcome()
+    data class Ok(val results: List<SongShareImportResult>) : SongShareImportOutcome()
     data class Err(val error: SongShareImportError) : SongShareImportOutcome()
 }
 
@@ -57,6 +57,7 @@ data class SongShareImportResult(
 object SongSharePackage {
 
     const val FORMAT = "bible_song_share"
+    const val FORMAT_MULTI = "bible_songs_share"
     private const val VERSION = 1
     const val MANIFEST_NAME = "manifest.json"
     const val SONG_JSON_NAME = "song.json"
@@ -72,6 +73,9 @@ object SongSharePackage {
         return song.audioPaths.any { path -> File(path).isFile }
     }
 
+    fun shareableSongs(songs: List<SongItem>): List<SongItem> =
+        songs.filter { canShareSong(it) }
+
     /**
      * @param highlightLineWhilePlaying подсказка получателю (сохраняется в manifest).
      */
@@ -79,58 +83,90 @@ object SongSharePackage {
         context: Context,
         song: SongItem,
         highlightLineWhilePlaying: Boolean,
+    ): File = exportSongsToZip(
+        context,
+        listOf(song),
+        highlightLineWhilePlaying,
+    )
+
+    /**
+     * Один или несколько песенных пакетов в одном ZIP.
+     */
+    suspend fun exportSongsToZip(
+        context: Context,
+        songs: List<SongItem>,
+        highlightLineWhilePlaying: Boolean,
     ): File = withContext(Dispatchers.IO) {
-        require(canShareSong(song)) { "need lyrics and at least one audio file on device" }
-        val audioFiles = song.audioPaths.map { File(it) }.filter { it.isFile }
-        require(audioFiles.isNotEmpty()) { "no audio files" }
+        val shareable = shareableSongs(songs)
+        require(shareable.isNotEmpty()) { "no shareable songs" }
 
         val zipFile = File(
             context.cacheDir,
-            "bible_song_${song.id.take(8)}_${System.currentTimeMillis()}.zip",
+            if (shareable.size == 1) {
+                "bible_song_${shareable[0].id.take(8)}_${System.currentTimeMillis()}.zip"
+            } else {
+                "bible_songs_${shareable.size}_${System.currentTimeMillis()}.zip"
+            },
         )
 
-        val relativePaths = audioFiles.mapIndexed { i, src ->
-            val ext = src.name.substringAfterLast('.', "").let { e ->
-                if (e.isNotBlank() && e.length <= 8) ".$e" else ""
-            }
-            "${MEDIA_DIR.trimEnd('/')}track_$i$ext"
-        }
-
         val manifest = JSONObject().apply {
-            put("format", FORMAT)
+            put("format", if (shareable.size == 1) FORMAT else FORMAT_MULTI)
             put("version", VERSION)
             put("highlightLineWhilePlaying", highlightLineWhilePlaying)
+            if (shareable.size > 1) put("count", shareable.size)
         }
-
-        val songJson = songToPortableJson(song, relativePaths)
 
         ZipOutputStream(FileOutputStream(zipFile)).use { zos ->
             zos.putNextEntry(ZipEntry(MANIFEST_NAME))
             zos.write(manifest.toString().toByteArray(Charsets.UTF_8))
             zos.closeEntry()
 
-            zos.putNextEntry(ZipEntry(SONG_JSON_NAME))
-            zos.write(songJson.toString().toByteArray(Charsets.UTF_8))
-            zos.closeEntry()
-
-            audioFiles.forEachIndexed { i, src ->
-                val entryName = relativePaths[i]
-                zos.putNextEntry(ZipEntry(entryName))
-                FileInputStream(src).use { it.copyTo(zos) }
-                zos.closeEntry()
+            shareable.forEachIndexed { songIdx, song ->
+                val prefix = if (shareable.size == 1) "" else "songs/$songIdx/"
+                writeSongEntries(zos, song, prefix, highlightLineWhilePlaying)
             }
         }
         zipFile
     }
 
+    private fun writeSongEntries(
+        zos: ZipOutputStream,
+        song: SongItem,
+        prefix: String,
+        @Suppress("UNUSED_PARAMETER") highlightLineWhilePlaying: Boolean,
+    ) {
+        val audioFiles = song.audioPaths.map { File(it) }.filter { it.isFile }
+        require(audioFiles.isNotEmpty()) { "no audio files" }
+
+        val mediaPrefix = "${prefix}${MEDIA_DIR}"
+        val labels = resolveAudioLabels(song, audioFiles)
+        val usedZipNames = mutableSetOf<String>()
+        val relativePaths = audioFiles.mapIndexed { i, src ->
+            val zipFileName = uniqueMediaFileName(labels[i], src, i, usedZipNames)
+            "${mediaPrefix}$zipFileName"
+        }
+
+        val songJson = songToPortableJson(song, relativePaths, labels)
+        val songEntry = "${prefix}$SONG_JSON_NAME"
+        zos.putNextEntry(ZipEntry(songEntry))
+        zos.write(songJson.toString().toByteArray(Charsets.UTF_8))
+        zos.closeEntry()
+
+        audioFiles.forEachIndexed { i, src ->
+            zos.putNextEntry(ZipEntry(relativePaths[i]))
+            FileInputStream(src).use { it.copyTo(zos) }
+            zos.closeEntry()
+        }
+    }
+
     /**
-     * Импорт: новая песня с новым [SongItem.id], аудио копируются в `files/songs_audio/`.
+     * Импорт: новые песни с новыми id, аудио копируются в `files/songs_audio/`.
      */
     suspend fun importFromZip(context: Context, zipFile: File): SongShareImportOutcome =
         withContext(Dispatchers.IO) {
             try {
                 var manifest: JSONObject? = null
-                var songJo: JSONObject? = null
+                val songJsonByPath = mutableMapOf<String, JSONObject>()
                 val mediaExtracted = mutableMapOf<String, File>()
 
                 val workDir = File(context.cacheDir, "song_pkg_${System.currentTimeMillis()}").apply { mkdirs() }
@@ -143,41 +179,39 @@ object SongSharePackage {
                                 pathsEqualIgnoreCase(canonName, MANIFEST_NAME) -> {
                                     try {
                                         zf.getInputStream(entry).use { ins ->
-                                            val text = ins.readBytes().utf8TextDropBom()
-                                            manifest = JSONObject(text)
+                                            manifest = JSONObject(ins.readBytes().utf8TextDropBom())
                                         }
                                     } catch (e: Exception) {
                                         Log.w(IMPORT_TAG, "bad manifest json", e)
                                     }
                                 }
-                                pathsEqualIgnoreCase(canonName, SONG_JSON_NAME) -> {
+                                pathsEqualIgnoreCase(canonName, SONG_JSON_NAME) ||
+                                    canonName.endsWith("/$SONG_JSON_NAME", ignoreCase = true) -> {
                                     try {
                                         zf.getInputStream(entry).use { ins ->
-                                            val text = ins.readBytes().utf8TextDropBom()
-                                            songJo = JSONObject(text)
+                                            songJsonByPath[canonName.lowercase()] =
+                                                JSONObject(ins.readBytes().utf8TextDropBom())
                                         }
                                     } catch (e: Exception) {
-                                        Log.w(IMPORT_TAG, "bad song.json", e)
+                                        Log.w(IMPORT_TAG, "bad song.json at $canonName", e)
                                     }
                                 }
                                 else -> {
-                                    val mediaKey = mediaFolderKeyFromAnyPath(canonName)
+                                    val mediaKey = mediaStorageKey(canonName)
                                         ?: looseAudioMediaKey(canonName)
                                     if (mediaKey == null) continue
-                                    val short = mediaKey.removePrefix("media/").trimStart('/')
-                                    if (short.isBlank()) continue
-                                    val out = File(workDir, short.replace('/', '_'))
+                                    val out = File(workDir, mediaKey.replace('/', '_'))
                                     out.parentFile?.mkdirs()
                                     try {
                                         zf.getInputStream(entry).use { ins ->
                                             FileOutputStream(out).use { os -> ins.copyTo(os) }
                                         }
                                         if (out.length() == 0L) {
-                                            Log.w(IMPORT_TAG, "zero-length audio entry: $canonName")
                                             out.delete()
                                             continue
                                         }
                                         mediaExtracted[mediaKey] = out
+                                        mediaExtracted[canonicalZipEntryName(canonName).lowercase()] = out
                                     } catch (e: Exception) {
                                         Log.w(IMPORT_TAG, "extract fail: $canonName", e)
                                         runCatching { out.delete() }
@@ -186,22 +220,15 @@ object SongSharePackage {
                             }
                         }
                     }
-                    Log.i(
-                        IMPORT_TAG,
-                        "zip=${zipFile.length()}B mediaFiles=${mediaExtracted.size} keys=${mediaExtracted.keys}",
-                    )
 
                     val man = manifest ?: run {
-                        Log.w(IMPORT_TAG, "no manifest.json in zip")
                         return@withContext SongShareImportOutcome.Err(SongShareImportError.MISSING_MANIFEST)
                     }
                     val fmt = man.optString("format", "")
                     if (fmt == "bible_app_export") {
-                        Log.w(IMPORT_TAG, "user opened full app backup in song importer")
                         return@withContext SongShareImportOutcome.Err(SongShareImportError.FULL_APP_BACKUP)
                     }
-                    if (fmt != FORMAT) {
-                        Log.w(IMPORT_TAG, "format=$fmt expected $FORMAT")
+                    if (fmt != FORMAT && fmt != FORMAT_MULTI) {
                         return@withContext SongShareImportOutcome.Err(SongShareImportError.WRONG_FORMAT)
                     }
                     val highlightHint = if (man.has("highlightLineWhilePlaying")) {
@@ -209,53 +236,50 @@ object SongSharePackage {
                     } else {
                         null
                     }
-                    val sj = songJo
-                    if (sj == null) {
-                        Log.w(IMPORT_TAG, "missing or invalid song.json")
+
+                    val songEntries = when (fmt) {
+                        FORMAT_MULTI -> songJsonByPath.entries
+                            .filter { (path, _) ->
+                                Regex("""(?i)songs/\d+/song\.json$""").containsMatchIn(path)
+                            }
+                            .sortedBy { it.key }
+                            .map { it.value }
+                        else -> {
+                            val sj = songJsonByPath.entries
+                                .firstOrNull { (path, _) -> pathsEqualIgnoreCase(path, SONG_JSON_NAME) }
+                                ?.value
+                                ?: songJsonByPath.values.firstOrNull()
+                            if (sj == null) {
+                                return@withContext SongShareImportOutcome.Err(SongShareImportError.MISSING_OR_BAD_SONG_JSON)
+                            }
+                            listOf(sj)
+                        }
+                    }
+                    if (songEntries.isEmpty()) {
                         return@withContext SongShareImportOutcome.Err(SongShareImportError.MISSING_OR_BAD_SONG_JSON)
                     }
 
-                    val relList = mutableListOf<String>()
-                    if (sj.has("audios")) {
-                        val arr = sj.getJSONArray("audios")
-                        for (i in 0 until arr.length()) {
-                            arr.optString(i)?.takeIf { it.isNotBlank() }?.let { relList.add(it) }
-                        }
-                    }
-                    if (sj.has("audio")) {
-                        val a = sj.optString("audio", "")
-                        if (a.isNotBlank() && a !in relList) relList.add(0, a)
-                    }
-                    if (relList.isEmpty()) {
-                        Log.w(IMPORT_TAG, "song.json has no audio refs")
-                        return@withContext SongShareImportOutcome.Err(SongShareImportError.NO_AUDIO_REFS)
-                    }
-
                     val destDir = File(context.filesDir, "songs_audio").apply { mkdirs() }
-                    val stamp = System.currentTimeMillis()
-                    val newAudioPaths = relList.mapIndexed { idx, rel ->
-                        val extracted = resolveExtractedMedia(mediaExtracted, rel, idx, relList.size)
-                            ?: run {
-                                Log.w(
-                                    IMPORT_TAG,
-                                    "no zip entry for audio ref=$rel keys=${mediaExtracted.keys} relCount=${relList.size}",
-                                )
-                                return@withContext SongShareImportOutcome.Err(SongShareImportError.MEDIA_ENTRY_MISSING)
-                            }
-                        val ext = extracted.name.substringAfterLast('.', "").let { e ->
-                            if (e.isNotBlank() && e.length <= 8) ".$e" else ""
-                        }
-                        val final = File(destDir, "import_${stamp}_${idx}$ext")
-                        extracted.copyTo(final, overwrite = true)
-                        final.absolutePath
+                    val baseStamp = System.currentTimeMillis()
+                    val results = mutableListOf<SongShareImportResult>()
+                    val isMulti = fmt == FORMAT_MULTI
+                    songEntries.forEachIndexed { songIdx, sj ->
+                        val songMediaPrefix = if (isMulti) "songs/$songIdx/" else ""
+                        val scopedMedia = scopedMediaForSong(mediaExtracted, songMediaPrefix)
+                        val imported = importSongJson(
+                            sj = sj,
+                            mediaExtracted = scopedMedia,
+                            destDir = destDir,
+                            stamp = baseStamp + songIdx,
+                        ) ?: return@withContext SongShareImportOutcome.Err(SongShareImportError.MEDIA_ENTRY_MISSING)
+                        results.add(
+                            SongShareImportResult(
+                                song = imported,
+                                highlightLineWhilePlayingHint = highlightHint,
+                            ),
+                        )
                     }
-
-                    SongShareImportOutcome.Ok(
-                        SongShareImportResult(
-                            song = songFromPortableJson(sj, newAudioPaths),
-                            highlightLineWhilePlayingHint = highlightHint,
-                        ),
-                    )
+                    SongShareImportOutcome.Ok(results)
                 } finally {
                     workDir.deleteRecursively()
                 }
@@ -264,6 +288,69 @@ object SongSharePackage {
                 SongShareImportOutcome.Err(SongShareImportError.IO_OR_PARSE)
             }
         }
+
+    private fun importSongJson(
+        sj: JSONObject,
+        mediaExtracted: Map<String, File>,
+        destDir: File,
+        stamp: Long,
+    ): SongItem? {
+        val relList = mutableListOf<String>()
+        if (sj.has("audios")) {
+            val arr = sj.getJSONArray("audios")
+            for (i in 0 until arr.length()) {
+                arr.optString(i)?.takeIf { it.isNotBlank() }?.let { relList.add(it) }
+            }
+        }
+        if (sj.has("audio")) {
+            val a = sj.optString("audio", "")
+            if (a.isNotBlank() && a !in relList) relList.add(0, a)
+        }
+        if (relList.isEmpty()) return null
+
+        val labels = readAudioLabels(sj, relList)
+        val newAudioPaths = relList.mapIndexed { idx, rel ->
+            val extracted = resolveExtractedMedia(mediaExtracted, rel, idx, relList.size) ?: return null
+            val ext = extracted.name.substringAfterLast('.', "").let { e ->
+                if (e.isNotBlank() && e.length <= 8) ".$e" else ""
+            }
+            val baseName = labels.getOrNull(idx)?.takeIf { it.isNotBlank() }
+                ?: rel.substringAfterLast('/').substringBeforeLast('.').ifBlank { "track_$idx" }
+            val final = uniqueMediaDestFile(destDir, baseName, ext, stamp, idx)
+            extracted.copyTo(final, overwrite = true)
+            final.absolutePath
+        }
+        return songFromPortableJson(sj, newAudioPaths, labels)
+    }
+
+    private fun readAudioLabels(sj: JSONObject, relList: List<String>): List<String> {
+        val labels = mutableListOf<String>()
+        if (sj.has("audioLabels")) {
+            val arr = sj.getJSONArray("audioLabels")
+            for (i in 0 until arr.length()) {
+                labels.add(arr.optString(i, ""))
+            }
+        }
+        while (labels.size < relList.size) {
+            val rel = relList[labels.size]
+            labels.add(rel.substringAfterLast('/').substringBeforeLast('.'))
+        }
+        return labels
+    }
+
+    /** Оставляет только медиа текущей песни (для multi-ZIP — без чужих `songs/N/`). */
+    private fun scopedMediaForSong(
+        allMedia: Map<String, File>,
+        songPrefix: String,
+    ): Map<String, File> {
+        if (songPrefix.isBlank()) {
+            return allMedia.filterKeys { key ->
+                !Regex("""(?i)^songs/\d+/""").containsMatchIn(key)
+            }
+        }
+        val prefixLower = songPrefix.lowercase()
+        return allMedia.filterKeys { it.startsWith(prefixLower) }
+    }
 
     private fun ByteArray.utf8TextDropBom(): String {
         var s = this.toString(Charsets.UTF_8)
@@ -278,16 +365,23 @@ object SongSharePackage {
         canonicalZipEntryName(a).equals(canonicalZipEntryName(b), ignoreCase = true)
 
     /**
-     * Находит в пути сегмент `media` (без ложных срабатываний на `notmedia/`) и возвращает ключ `media/...`.
-     * Поддерживает вложение: `папка/media/track_0.mp3`.
+     * Ключ медиа в архиве: полный путь от `songs/N/` или `media/`, чтобы дорожки разных песен не пересекались.
      */
-    private fun mediaFolderKeyFromAnyPath(canonName: String): String? {
+    private fun mediaStorageKey(canonName: String): String? {
         val parts = canonicalZipEntryName(canonName).split('/').filter { it.isNotBlank() }
         val mi = parts.indexOfFirst { it.equals("media", ignoreCase = true) }
         if (mi < 0) return null
         val rest = parts.drop(mi + 1).joinToString("/")
         if (rest.isBlank()) return null
-        return "media/${rest.lowercase()}"
+        val keyStart = if (mi >= 2 &&
+            parts[mi - 2].equals("songs", ignoreCase = true) &&
+            parts[mi - 1].all { it.isDigit() }
+        ) {
+            mi - 2
+        } else {
+            mi
+        }
+        return parts.drop(keyStart).joinToString("/").lowercase()
     }
 
     /** Порядок файлов как при экспорте: track_0, track_1, … иначе по пути в архиве. */
@@ -310,26 +404,35 @@ object SongSharePackage {
         indexInList: Int,
         relListSize: Int,
     ): File? {
-        lookupMediaFile(map, normalizeAudioRefToMediaKey(rel))?.let { return it }
-        val normRel = rel.replace('\\', '/').trimStart('/')
-        val refTail = normRel.substringAfterLast('/').ifBlank { null }
-        if (refTail != null) {
-            map.entries.find { (_, f) -> f.name.equals(refTail, ignoreCase = true) }?.value?.let { return it }
+        val normRel = rel.replace('\\', '/').trimStart('/').removePrefix("./").lowercase()
+        lookupMediaFile(map, normRel)?.let { return it }
+
+        val songPrefix = Regex("""(?i)^(songs/\d+/)""").find(normRel)?.groupValues?.get(1)?.lowercase() ?: ""
+        val scoped = if (songPrefix.isBlank()) map else map.filterKeys { it.startsWith(songPrefix) }
+
+        val refTail = normRel.substringAfterLast('/')
+        if (refTail.isNotBlank()) {
+            scoped.entries.find { (k, f) ->
+                f.name.equals(refTail, ignoreCase = true) || k.endsWith("/$refTail")
+            }?.value?.let { return it }
         }
         Regex("""(?i)track_(\d+)""").find(normRel)?.groupValues?.get(1)?.toIntOrNull()?.let { trackNum ->
-            map.entries.find { (k, _) -> Regex("""(?i)track_$trackNum(\.|$)""").containsMatchIn(k) }?.value?.let {
-                return it
-            }
+            scoped.entries.find { (k, _) ->
+                Regex("""(?i)track_$trackNum(\.|$)""").containsMatchIn(k)
+            }?.value?.let { return it }
         }
-        val ordered = orderedMediaFiles(map)
+        // Старые архивы без «/» между media и track: songs/0/mediarack_0.mp3
+        Regex("""(?i)mediatrack_(\d+)""").find(normRel)?.groupValues?.get(1)?.toIntOrNull()?.let { trackNum ->
+            scoped.entries.find { (k, _) ->
+                Regex("""(?i)(mediatrack_|track_)$trackNum(\.|$)""").containsMatchIn(k)
+            }?.value?.let { return it }
+        }
+        val ordered = orderedMediaFiles(scoped)
         if (indexInList in ordered.indices && ordered.size >= relListSize) {
             return ordered[indexInList]
         }
-        if (relListSize == 1 && ordered.isNotEmpty()) {
+        if (relListSize == 1 && ordered.size == 1) {
             return ordered[0]
-        }
-        if (relListSize == 1 && map.size == 1) {
-            return map.values.first()
         }
         return null
     }
@@ -345,40 +448,90 @@ object SongSharePackage {
         if (base.isBlank()) return null
         if (pathsEqualIgnoreCase(base, MANIFEST_NAME) || pathsEqualIgnoreCase(base, SONG_JSON_NAME)) return null
         if (base.equals("thumbs.db", ignoreCase = true)) return null
+        val parts = full.split('/').filter { it.isNotBlank() }
+        val songPrefix = if (parts.size >= 3 &&
+            parts[0].equals("songs", ignoreCase = true) &&
+            parts[1].all { it.isDigit() }
+        ) {
+            "${parts[0]}/${parts[1]}/"
+        } else {
+            ""
+        }
         if (Regex("""(?i)^track_\d+\.""").containsMatchIn(base)) {
-            return "media/${base.lowercase()}"
+            return "${songPrefix}media/${base.lowercase()}"
         }
         val ext = base.substringAfterLast('.', "").lowercase()
         if (ext.isBlank() || ext.length > 8 || ext !in LOOSE_AUDIO_EXT) return null
-        return "media/${base.lowercase()}"
+        return "${songPrefix}media/${base.lowercase()}"
     }
 
-    private fun normalizeAudioRefToMediaKey(ref: String): String {
-        val c = ref.replace('\\', '/').trimStart('/')
-        val without = if (c.lowercase().startsWith("media/")) {
-            c.drop(6).trimStart('/')
-        } else {
-            c.removePrefix("media/").trimStart('/')
-        }
-        return "media/${without.lowercase()}"
-    }
+    private fun normalizeAudioRefToMediaKey(ref: String): String =
+        ref.replace('\\', '/').trimStart('/').removePrefix("./").lowercase()
 
     private fun lookupMediaFile(map: Map<String, File>, key: String): File? {
         map[key]?.let { return it }
-        val keyNorm = key.trimEnd('/')
+        val keyNorm = key.trimEnd('/').lowercase()
         map.entries.find { (k, _) ->
-            k.trimEnd('/').equals(keyNorm, ignoreCase = true)
+            k.trimEnd('/').lowercase() == keyNorm
         }?.value?.let { return it }
-        val tail = keyNorm.removePrefix("media/").trimStart('/')
+        val tail = keyNorm.substringAfterLast('/')
         if (tail.isNotBlank()) {
             map.entries.find { (k, _) ->
-                k.trimEnd('/').lowercase().endsWith("/${tail.lowercase()}")
+                k.trimEnd('/').lowercase().endsWith("/$tail")
             }?.value?.let { return it }
         }
         return null
     }
 
-    private fun songToPortableJson(song: SongItem, relativeAudioPaths: List<String>): JSONObject {
+    private fun resolveAudioLabels(song: SongItem, files: List<File>): List<String> =
+        files.mapIndexed { i, file ->
+            song.audioLabels.getOrNull(i)?.takeIf { it.isNotBlank() }
+                ?: file.nameWithoutExtension.ifBlank { file.name }
+        }
+
+    private fun sanitizeMediaBaseName(raw: String): String =
+        raw.replace(Regex("""[^\w\d._\-() ]"""), "_").take(120).trim().ifBlank { "track" }
+
+    private fun uniqueMediaFileName(
+        label: String,
+        src: File,
+        index: Int,
+        used: MutableSet<String>,
+    ): String {
+        val ext = src.name.substringAfterLast('.', "").let { e ->
+            if (e.isNotBlank() && e.length <= 8) ".$e" else ""
+        }
+        val base = sanitizeMediaBaseName(label.ifBlank { src.nameWithoutExtension.ifBlank { "track_$index" } })
+        var name = "$base$ext"
+        var n = 1
+        while (name.lowercase() in used) {
+            name = "${base}_$n$ext"
+            n++
+        }
+        used.add(name.lowercase())
+        return name
+    }
+
+    private fun uniqueMediaDestFile(dir: File, baseName: String, ext: String, stamp: Long, idx: Int): File {
+        val base = sanitizeMediaBaseName(baseName)
+        var file = File(dir, "$base$ext")
+        if (!file.exists()) return file
+        var n = 1
+        while (file.exists()) {
+            file = File(dir, "${base}_$n$ext")
+            n++
+        }
+        if (file.exists()) {
+            file = File(dir, "${base}_${stamp}_$idx$ext")
+        }
+        return file
+    }
+
+    private fun songToPortableJson(
+        song: SongItem,
+        relativeAudioPaths: List<String>,
+        labels: List<String>,
+    ): JSONObject {
         return JSONObject().apply {
             put("title", song.title)
             put("artist", song.artist)
@@ -390,6 +543,9 @@ object SongSharePackage {
                     put("audios", JSONArray().apply { relativeAudioPaths.forEach { put(it) } })
                     put("audio", relativeAudioPaths[0])
                 }
+            }
+            if (labels.isNotEmpty()) {
+                put("audioLabels", JSONArray().apply { labels.forEach { put(it) } })
             }
             if (song.tags.isNotEmpty()) {
                 put("tags", JSONArray().apply { song.tags.forEach { put(it) } })
@@ -414,7 +570,11 @@ object SongSharePackage {
         }
     }
 
-    private fun songFromPortableJson(j: JSONObject, resolvedAudioPaths: List<String>): SongItem {
+    private fun songFromPortableJson(
+        j: JSONObject,
+        resolvedAudioPaths: List<String>,
+        labels: List<String>,
+    ): SongItem {
         val lyricCues = if (j.has("lyricCues")) {
             val arr = j.getJSONArray("lyricCues")
             (0 until arr.length()).map { idx ->
@@ -436,6 +596,7 @@ object SongSharePackage {
             artist = j.optString("artist", ""),
             lyrics = j.optString("lyrics", ""),
             audioPaths = resolvedAudioPaths,
+            audioLabels = labels.take(resolvedAudioPaths.size),
             videoPath = null,
             sourceUrl = j.optString("url", "").takeIf { it.isNotBlank() },
             tags = tags,

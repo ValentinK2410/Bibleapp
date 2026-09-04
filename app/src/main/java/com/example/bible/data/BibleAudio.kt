@@ -7,6 +7,7 @@ import android.media.MediaPlayer
 import android.os.Build
 import android.os.Handler
 import android.os.Looper
+import android.os.SystemClock
 import android.util.Log
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableSharedFlow
@@ -100,6 +101,28 @@ fun narratorForTranslation(
         }
     }
 }
+
+/** Озвучка оригинала для подстрочника: ВЗ — иврит, НЗ — греческий. */
+fun originalLanguageNarratorForBook(bookId: String): AudioNarrator? = when {
+    BibleCanon.isOldTestament(bookId) -> BibleAudioNarrators.hebrewOt
+    BibleCanon.isNewTestament(bookId) -> BibleAudioNarrators.greekNt
+    else -> null
+}
+
+/**
+ * Озвучка в читалке: для [TranslationId.INTERLINEAR] — дорожка оригинала (иврит/греческий),
+ * иначе [narratorForTranslation].
+ */
+fun narratorForReading(
+    translation: TranslationId,
+    bookId: String,
+    preferredNarratorId: String,
+): AudioNarrator =
+    if (translation == TranslationId.INTERLINEAR) {
+        originalLanguageNarratorForBook(bookId) ?: narratorForTranslation(translation, preferredNarratorId)
+    } else {
+        narratorForTranslation(translation, preferredNarratorId)
+    }
 
 /**
  * Озвучка главы WEB (англ.): публичные MP3 WordProject (KJV), нумерация книг **1…66 в классическом протестантском порядке**
@@ -343,6 +366,35 @@ object BibleAudioPlayer {
     private val sleepTickRunnable = Runnable { tickSleepTimer() }
     private var sleepEndAtMs: Long = 0L
     private var pendingSleepStopAfterChapter = false
+    private var stopAtPositionMs: Int? = null
+    private var segmentStopEndVerse: Int? = null
+    private var segmentStopChapterVerseCount: Int = 0
+    private var segmentStopTimemarkMs: Int? = null
+    private var segmentStopListener: (() -> Unit)? = null
+    /** Не останавливать сразу после seek на границе предыдущего сегмента. */
+    private var segmentStopGraceUntilElapsed: Long = 0L
+
+    private val segmentStopPollRunnable = object : Runnable {
+        override fun run() {
+            try {
+                player?.let { mp ->
+                    if (mp.isPlaying) {
+                        val pos = mp.currentPosition
+                        _state.value = _state.value.copy(positionMs = pos)
+                        checkSegmentStopPosition(pos)
+                    }
+                }
+            } catch (_: Exception) {
+            }
+            if (stopAtPositionMs != null && _state.value.isPlaying) {
+                mainHandler.postDelayed(this, 250)
+            }
+        }
+    }
+
+    fun setSegmentStopListener(listener: (() -> Unit)?) {
+        segmentStopListener = listener
+    }
 
     private val _state = MutableStateFlow(BiblePlayerState())
     val state: StateFlow<BiblePlayerState> = _state.asStateFlow()
@@ -378,6 +430,86 @@ object BibleAudioPlayer {
 
     fun setContinueChapters(enabled: Boolean) {
         _continueChapters.value = enabled
+    }
+
+    fun setStopAtPositionMs(ms: Int?) {
+        stopAtPositionMs = ms?.coerceAtLeast(0)
+        if (stopAtPositionMs != null && _state.value.isPlaying) {
+            startSegmentStopPolling()
+        } else if (stopAtPositionMs == null) {
+            stopSegmentStopPolling()
+        }
+    }
+
+    fun clearStopAtPosition() {
+        stopAtPositionMs = null
+        stopSegmentStopPolling()
+    }
+
+    /** Настроить автопаузу после [endVerse] (с таймкодами или оценкой по длительности главы). */
+    fun applySegmentStop(
+        endVerse: Int?,
+        chapterVerseCount: Int,
+        timemarkStopMs: Int?,
+    ) {
+        segmentStopEndVerse = endVerse
+        segmentStopChapterVerseCount = chapterVerseCount.coerceAtLeast(0)
+        segmentStopTimemarkMs = timemarkStopMs?.takeIf { it > 0 }
+        resolveSegmentStopMs(_state.value.durationMs)
+    }
+
+    fun clearSegmentStop() {
+        segmentStopEndVerse = null
+        segmentStopChapterVerseCount = 0
+        segmentStopTimemarkMs = null
+        clearStopAtPosition()
+    }
+
+    private fun resolveSegmentStopMs(durationMs: Int) {
+        val end = segmentStopEndVerse ?: run {
+            clearStopAtPosition()
+            return
+        }
+        val stop = segmentStopTimemarkMs?.takeIf { it > 0 }
+            ?: com.example.bible.data.estimatedPlaybackStopAfterMs(
+                endVerse = end,
+                chapterVerseCount = segmentStopChapterVerseCount,
+                chapterDurationMs = durationMs,
+            )
+        if (stop != null && stop > 0) {
+            segmentStopGraceUntilElapsed = SystemClock.elapsedRealtime() + 400L
+            setStopAtPositionMs(stop)
+        }
+    }
+
+    private fun startSegmentStopPolling() {
+        mainHandler.removeCallbacks(segmentStopPollRunnable)
+        mainHandler.post(segmentStopPollRunnable)
+    }
+
+    private fun stopSegmentStopPolling() {
+        mainHandler.removeCallbacks(segmentStopPollRunnable)
+    }
+
+    private fun checkSegmentStopPosition(positionMs: Int) {
+        val stop = stopAtPositionMs ?: return
+        if (SystemClock.elapsedRealtime() < segmentStopGraceUntilElapsed) return
+        if (positionMs < stop - 150) return
+        try {
+            player?.let { mp ->
+                if (mp.isPlaying) {
+                    mp.pause()
+                    _state.value = _state.value.copy(isPlaying = false, positionMs = stop.coerceAtMost(positionMs))
+                }
+            }
+        } catch (_: Exception) {
+        }
+        stopAtPositionMs = null
+        stopSegmentStopPolling()
+        val listener = segmentStopListener
+        if (listener != null) {
+            mainHandler.post(listener)
+        }
     }
 
     fun setPlaybackSpeed(speed: Float) {
@@ -467,21 +599,39 @@ object BibleAudioPlayer {
         narrator: AudioNarrator,
         bookId: String,
         chapter: Int,
+        startPositionMs: Int? = null,
+        stopAtPositionMs: Int? = null,
+        /** true после [applySegmentStop] — не сбрасывать сегмент при перезапуске MediaPlayer */
+        preserveSegmentStop: Boolean = false,
     ) {
+        if (!preserveSegmentStop) {
+            clearSegmentStop()
+        }
         val key = "${narrator.id}/$bookId/$chapter"
+        if (stopAtPositionMs != null) {
+            setStopAtPositionMs(stopAtPositionMs)
+        } else if (key != currentKey && segmentStopEndVerse == null) {
+            clearStopAtPosition()
+        }
         if (key == currentKey && player != null) {
             appContext = context.applicationContext
             try {
+                val seekMs = startPositionMs?.coerceAtLeast(0)
+                if (seekMs != null) {
+                    player!!.seekTo(seekMs)
+                    _state.value = _state.value.copy(positionMs = seekMs)
+                }
                 applyPlaybackSpeed(player!!)
                 player!!.start()
                 _state.value = _state.value.copy(isPlaying = true, error = null)
+                resolveSegmentStopMs(_state.value.durationMs)
             } catch (e: Exception) {
                 Log.e(TAG, "resume failed", e)
             }
             return
         }
 
-        release()
+        release(clearSegmentConfig = !preserveSegmentStop)
         appContext = context.applicationContext
         currentKey = key
         _state.value = BiblePlayerState(
@@ -517,6 +667,7 @@ object BibleAudioPlayer {
 
         try {
             val mp = MediaPlayer()
+            player = mp
             when {
                 local.exists() && local.length() > 1024 -> mp.setDataSource(local.absolutePath)
                 bundledAfd != null -> bundledAfd.use {
@@ -525,15 +676,29 @@ object BibleAudioPlayer {
                 else -> mp.setDataSource(remoteUrl!!)
             }
             mp.setOnPreparedListener { prepared ->
+                if (player !== mp) {
+                    try {
+                        prepared.release()
+                    } catch (_: Exception) {}
+                    return@setOnPreparedListener
+                }
                 applyPlaybackSpeed(prepared)
+                val seekMs = startPositionMs?.coerceIn(0, prepared.duration.coerceAtLeast(0)) ?: 0
+                if (seekMs > 0) {
+                    prepared.seekTo(seekMs)
+                }
                 prepared.start()
                 _state.value = _state.value.copy(
                     isPlaying = true,
                     isLoading = false,
                     durationMs = prepared.duration,
+                    positionMs = seekMs,
                 )
+                stopAtPositionMs?.let { setStopAtPositionMs(it) }
+                resolveSegmentStopMs(prepared.duration)
             }
             mp.setOnCompletionListener {
+                if (player !== mp) return@setOnCompletionListener
                 if (pendingSleepStopAfterChapter) {
                     applySleepStop()
                     return@setOnCompletionListener
@@ -558,6 +723,7 @@ object BibleAudioPlayer {
                 _state.value = _state.value.copy(isPlaying = false, positionMs = 0)
             }
             mp.setOnErrorListener { _, what, extra ->
+                if (player !== mp) return@setOnErrorListener true
                 Log.e(TAG, "MediaPlayer error: what=$what extra=$extra")
                 _state.value = _state.value.copy(
                     isPlaying = false,
@@ -584,6 +750,7 @@ object BibleAudioPlayer {
                 applyPlaybackSpeed(mp)
                 mp.start()
                 _state.value = _state.value.copy(isPlaying = true)
+                resolveSegmentStopMs(_state.value.durationMs)
             }
         } catch (e: Exception) {
             Log.e(TAG, "togglePlay failed", e)
@@ -601,6 +768,13 @@ object BibleAudioPlayer {
         } catch (_: Exception) {}
     }
 
+    /** Полная остановка при уходе с чтения или смене книги — отменяет и загрузку дорожки. */
+    fun stopForNavigation() {
+        if (player != null || _state.value.isLoading || _state.value.bookId.isNotBlank()) {
+            release()
+        }
+    }
+
     fun seekTo(ms: Int) {
         try {
             player?.seekTo(ms)
@@ -612,14 +786,25 @@ object BibleAudioPlayer {
         if (_state.value.isPlaying) {
             try {
                 player?.let {
-                    _state.value = _state.value.copy(positionMs = it.currentPosition)
+                    val pos = it.currentPosition
+                    _state.value = _state.value.copy(positionMs = pos)
+                    checkSegmentStopPosition(pos)
                 }
             } catch (_: Exception) {}
         }
     }
 
-    fun release() {
+    fun release(clearSegmentConfig: Boolean = true) {
         cancelSleepTimerInternal()
+        stopSegmentStopPolling()
+        stopAtPositionMs = null
+        if (clearSegmentConfig) {
+            segmentStopListener = null
+            segmentStopEndVerse = null
+            segmentStopChapterVerseCount = 0
+            segmentStopTimemarkMs = null
+            segmentStopGraceUntilElapsed = 0L
+        }
         try {
             player?.stop()
             player?.release()

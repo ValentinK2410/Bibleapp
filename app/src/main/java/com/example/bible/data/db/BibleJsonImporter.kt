@@ -12,34 +12,67 @@ import org.json.JSONObject
 object BibleJsonImporter {
     private val importLock = Any()
 
+    /** Увеличивать при смене JSON в assets/bible/NRT/ — перезапишет НРП в Room у установленных пользователей. */
+    private const val NRT_ASSET_REVISION = 2
+
     fun importFromAssetsIfNeeded(context: Context, database: BibleDatabase) {
         synchronized(importLock) {
             val dao = database.bibleDao()
-            if (dao.countAllVerses() > 0) return
+            if (dao.countAllVerses() > 0) {
+                reimportNrtIfNeeded(context, database)
+                return
+            }
             database.runInTransaction {
                 if (dao.countAllVerses() > 0) return@runInTransaction
-                val hadPerBook = TranslationId.entries.any { hasTranslationFolder(context, it) }
-                if (hadPerBook) {
-                    for (t in TranslationId.entries) {
-                        val ids = listBookFileIds(context, t) ?: continue
-                        for (bookId in ids) {
-                            val path = "bible/${t.assetsFolder}/$bookId.json"
-                            val json = readAssetString(context, path)
-                            val parsed = parseSingleBookToRows(t, json) ?: continue
-                            dao.replaceBook(parsed.book, parsed.verses, parsed.interlinear)
-                        }
-                    }
-                } else {
-                    importLegacyIfPresent(context, database, TranslationId.WEB, "bible_web_sample.json", dao)
-                    importLegacyIfPresent(context, database, TranslationId.SYNODAL, "bible_synodal_sample.json", dao)
-                }
+                importAllFromAssets(context, dao)
             }
+        }
+    }
+
+    private fun importAllFromAssets(context: Context, dao: BibleDao) {
+        val hadPerBook = TranslationId.entries.any { hasTranslationFolder(context, it) }
+        if (hadPerBook) {
+            for (t in TranslationId.entries) {
+                importTranslationFromAssets(context, dao, t)
+            }
+        } else {
+            importLegacyIfPresent(context, TranslationId.WEB, "bible_web_sample.json", dao)
+            importLegacyIfPresent(context, TranslationId.SYNODAL, "bible_synodal_sample.json", dao)
+        }
+        markNrtAssetRevisionApplied(context)
+    }
+
+    private fun reimportNrtIfNeeded(context: Context, database: BibleDatabase) {
+        val prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
+        if (prefs.getInt(KEY_NRT_REVISION, 0) >= NRT_ASSET_REVISION) return
+        if (!hasTranslationFolder(context, TranslationId.NRT)) return
+        database.runInTransaction {
+            val dao = database.bibleDao()
+            dao.deleteTranslation(TranslationId.NRT.code)
+            importTranslationFromAssets(context, dao, TranslationId.NRT)
+        }
+        markNrtAssetRevisionApplied(context)
+    }
+
+    private fun markNrtAssetRevisionApplied(context: Context) {
+        context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
+            .edit()
+            .putInt(KEY_NRT_REVISION, NRT_ASSET_REVISION)
+            .apply()
+    }
+
+    private fun importTranslationFromAssets(context: Context, dao: BibleDao, translation: TranslationId) {
+        val ids = listBookFileIds(context, translation) ?: return
+        for (bookId in ids) {
+            val path = "bible/${translation.assetsFolder}/$bookId.json"
+            val json = readAssetString(context, path)
+            val parsed = parseSingleBookToRows(translation, json) ?: continue
+            dao.replaceBook(parsed.book, parsed.verses, parsed.interlinear)
         }
     }
 
     private fun importLegacyIfPresent(
         context: Context,
-        database: BibleDatabase,
         translation: TranslationId,
         assetName: String,
         dao: BibleDao,
@@ -167,4 +200,7 @@ object BibleJsonImporter {
 
     private fun readAssetString(context: Context, name: String): String =
         context.assets.open(name).bufferedReader().use { it.readText() }
+
+    private const val PREFS_NAME = "bible_json_import"
+    private const val KEY_NRT_REVISION = "nrt_asset_revision"
 }

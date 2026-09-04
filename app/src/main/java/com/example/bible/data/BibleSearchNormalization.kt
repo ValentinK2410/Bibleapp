@@ -220,11 +220,13 @@ internal fun buildVerseNormAlignment(text: String, settings: SearchSettings): Ve
         val sb = StringBuilder()
         val starts = ArrayList<Int>()
         var word = ArrayList<CharOrig>()
-        fun flushWord(sepOrig: Int?) {
+        var pendingSepOrig: Int? = null
+        fun flushWord() {
             if (word.isEmpty()) return
             if (sb.isNotEmpty()) {
                 sb.append(' ')
-                starts.add(sepOrig ?: word[0].orig)
+                starts.add(pendingSepOrig ?: word[0].orig)
+                pendingSepOrig = null
             }
             for (co in word) {
                 sb.append(co.ch)
@@ -236,10 +238,11 @@ internal fun buildVerseNormAlignment(text: String, settings: SearchSettings): Ve
             if (co.ch.isLetterOrDigit()) {
                 word.add(co)
             } else {
-                flushWord(co.orig)
+                flushWord()
+                pendingSepOrig = co.orig
             }
         }
-        flushWord(null)
+        flushWord()
         var norm = sb.toString()
         val trimStart = norm.indexOfFirst { !it.isWhitespace() }.let { t -> if (t < 0) norm.length else t }
         val trimEnd = norm.indexOfLast { !it.isWhitespace() }.let { t -> if (t < 0) -1 else t }
@@ -316,19 +319,24 @@ internal fun findNormHighlightRanges(
 private fun mapNormRangesToOriginal(
     ranges: List<IntRange>,
     alignment: VerseNormAlignment,
-    textLength: Int,
+    text: String,
 ): List<IntRange> {
     if (ranges.isEmpty()) return emptyList()
     val n = alignment.normalized.length
     if (n == 0) return emptyList()
+    val textLength = text.length
     val s = alignment.origStartPerNormIndex
-    fun origEndExclusive(idx: Int): Int =
-        if (idx + 1 < n) s[idx + 1] else textLength
+    fun origCharEndExclusive(normIndex: Int): Int {
+        val origStart = s[normIndex].coerceIn(0, textLength)
+        if (origStart >= textLength) return textLength
+        val cp = text.codePointAt(origStart)
+        return (origStart + Character.charCount(cp)).coerceAtMost(textLength)
+    }
     return ranges.map { r ->
         val a = r.first.coerceIn(0, n - 1)
         val b = r.last.coerceIn(0, n - 1)
         val start = s[a].coerceIn(0, textLength)
-        val endExcl = origEndExclusive(b).coerceIn(start, textLength)
+        val endExcl = origCharEndExclusive(b).coerceIn(start, textLength)
         start until endExcl
     }.mergeOverlappingRanges()
 }
@@ -353,5 +361,5 @@ private fun computeSearchHighlightRangesImpl(
     if (alignment.normalized.isEmpty()) return emptyList()
     val normRanges = findNormHighlightRanges(alignment.normalized, pq, settings)
     if (normRanges.isEmpty()) return emptyList()
-    return mapNormRangesToOriginal(normRanges, alignment, text.length)
+    return mapNormRangesToOriginal(normRanges, alignment, text)
 }

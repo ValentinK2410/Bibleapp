@@ -11,6 +11,8 @@ data class UserContact(
     val phone: String,
     val email: String,
     val notes: String,
+    /** День рождения (календарная дата), в днях с эпохи ISO; null — не указана. */
+    val birthEpochDay: Long?,
     val latitude: Double?,
     val longitude: Double?,
 ) {
@@ -44,6 +46,12 @@ object UserContactJson {
         val phone = o.optString("phone", "").trim()
         val email = o.optString("email", "").trim()
         val notes = o.optString("notes", "").trim()
+        val birthEpochDay =
+            when {
+                o.has("birthEpochDay") && !o.isNull("birthEpochDay") ->
+                    o.optLong("birthEpochDay", Long.MIN_VALUE).takeIf { it != Long.MIN_VALUE }
+                else -> birthdayEpochDayFromLegacyJson(o.optString("birthDate", "").trim())
+            }
         val lat = o.takeIf { it.has("latitude") }?.optDouble("latitude", Double.NaN)?.takeIf { it.isFinite() }
         val lon = o.takeIf { it.has("longitude") }?.optDouble("longitude", Double.NaN)?.takeIf { it.isFinite() }
         return UserContact(
@@ -52,6 +60,7 @@ object UserContactJson {
             phone = phone,
             email = email,
             notes = notes,
+            birthEpochDay = birthEpochDay,
             latitude = lat,
             longitude = lon,
         )
@@ -67,6 +76,9 @@ object UserContactJson {
                     put("phone", c.phone)
                     put("email", c.email)
                     put("notes", c.notes)
+                    if (c.birthEpochDay != null) {
+                        put("birthEpochDay", c.birthEpochDay)
+                    }
                     if (c.latitude != null && c.longitude != null) {
                         put("latitude", c.latitude)
                         put("longitude", c.longitude)

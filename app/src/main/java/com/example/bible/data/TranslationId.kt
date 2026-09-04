@@ -19,6 +19,6 @@ enum class TranslationId(
 
     companion object {
         fun fromCode(code: String): TranslationId =
-            entries.find { it.code == code } ?: SYNODAL
+            entries.find { it.code.equals(code, ignoreCase = true) } ?: SYNODAL
     }
 }

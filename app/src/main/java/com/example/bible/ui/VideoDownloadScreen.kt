@@ -1,10 +1,13 @@
 package com.example.bible.ui
 
+import android.Manifest
 import android.content.Context
 import android.content.Intent
+import android.content.pm.PackageManager
 import android.media.MediaPlayer
 import android.net.Uri
 import android.provider.DocumentsContract
+import android.os.Build
 import android.os.Environment
 import android.os.Handler
 import android.os.Looper
@@ -91,15 +94,20 @@ import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.core.content.ContextCompat
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import coil.compose.AsyncImage
+import com.example.bible.R
 import com.example.bible.data.FonkiExtractor
 import com.example.bible.data.LegalAudioTrack
 import com.example.bible.data.LocalDeviceAudioScan
 import com.example.bible.data.MediaCatalogPaths
 import com.example.bible.data.MediaDownloadDedup
+import com.example.bible.data.MediaDownloadQueue
+import com.example.bible.data.MediaDownloadTask
 import com.example.bible.data.PlaylistInspection
 import com.example.bible.data.VideoExtractor
+import com.example.bible.service.MediaDownloadService
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -107,25 +115,7 @@ import java.io.File
 
 private const val TAG = "VideoDownload"
 
-private fun ytDlpErrorUserMessage(msg: String): String = when {
-    "No address associated with hostname" in msg ||
-        "Unable to resolve host" in msg || "DNS" in msg.uppercase() ||
-        "Network is unreachable" in msg || "Connection refused" in msg ->
-        "Пожалуйста, подключитесь к сети Интернет"
-    "HTTP Error 403" in msg ->
-        "Доступ запрещён (403). Возможно, ссылка устарела."
-    "HTTP Error 404" in msg ->
-        "Видео не найдено (404). Проверьте ссылку."
-    "is not a valid URL" in msg || "Unsupported URL" in msg ->
-        "Неподдерживаемая ссылка."
-    "Unable to extract" in msg || "please report this issue" in msg ->
-        "Эта платформа временно не поддерживается.\nНажмите ↻ для обновления yt-dlp."
-    "yt-dlp -U" in msg ->
-        "Требуется обновление. Нажмите ↻ в правом верхнем углу."
-    "not a bot" in msg.lowercase() || "sign in to confirm" in msg.lowercase() ->
-        "YouTube запросил проверку (бот). Нажмите ↻ и обновите yt-dlp, затем повторите. Если снова ошибка — попробуйте позже или другую сеть (Wi‑Fi / мобильный интернет)."
-    else -> msg
-}
+private fun ytDlpErrorUserMessage(msg: String): String = VideoExtractor.userMessage(msg)
 
 enum class MediaDownloadImportTarget {
     Video,
@@ -250,10 +240,10 @@ private fun MediaDownloadScreen(
     var url by remember { mutableStateOf("") }
     var audioOnly by remember { mutableStateOf(importTarget == MediaDownloadImportTarget.Audio) }
     var selectedQuality by remember { mutableIntStateOf(720) }
-    var status by remember { mutableStateOf(DownloadStatus.IDLE) }
-    var statusText by remember { mutableStateOf("") }
+    var localStatus by remember { mutableStateOf(DownloadStatus.IDLE) }
+    var localStatusText by remember { mutableStateOf("") }
     var errorText by remember { mutableStateOf("") }
-    var progress by remember { mutableFloatStateOf(-1f) }
+    var localProgress by remember { mutableFloatStateOf(-1f) }
     var ytdlpReady by remember { mutableStateOf(false) }
     var fonkiLyrics by remember { mutableStateOf<String?>(null) }
     var playlistInspection by remember { mutableStateOf<PlaylistInspection?>(null) }
@@ -262,6 +252,27 @@ private fun MediaDownloadScreen(
     var selectedIds by remember { mutableStateOf<Set<String>>(emptySet()) }
     /** Не скачивать, если на телефоне уже есть файл с таким же названием. */
     var skipDuplicates by remember { mutableStateOf(true) }
+
+    // Загрузка живёт в фоновом сервисе, поэтому состояние берём из общей очереди, а не из composition.
+    val queue by MediaDownloadQueue.state.collectAsStateWithLifecycle()
+    val status = when {
+        queue.running -> DownloadStatus.DOWNLOADING
+        queue.error != null -> DownloadStatus.ERROR
+        queue.finishedMessage != null -> DownloadStatus.DONE
+        else -> localStatus
+    }
+    val statusText = when {
+        queue.running -> queue.statusText
+        queue.finishedMessage != null -> queue.finishedMessage.orEmpty()
+        else -> localStatusText
+    }
+    val progress = if (queue.running) queue.progress else localProgress
+
+    LaunchedEffect(queue.failures) {
+        if (queue.failures.isNotEmpty()) {
+            errorText = queue.failures.joinToString("\n")
+        }
+    }
 
     val bibleVideos by viewModel.bibleUserVideos.collectAsStateWithLifecycle()
     val bibleAudios by viewModel.bibleUserAudios.collectAsStateWithLifecycle()
@@ -276,7 +287,7 @@ private fun MediaDownloadScreen(
                 VideoExtractor.init(context)
             }
             ytdlpReady = true
-            statusText = "Обновление yt-dlp..."
+            localStatusText = "Обновление yt-dlp..."
             try {
                 withContext(Dispatchers.IO) {
                     VideoExtractor.ensureUpdated(context)
@@ -284,7 +295,7 @@ private fun MediaDownloadScreen(
             } catch (e: Throwable) {
                 Log.w(TAG, "yt-dlp update failed: ${e.message}")
             }
-            statusText = ""
+            localStatusText = ""
         } catch (e: Throwable) {
             Log.e(TAG, "Init failed", e)
             errorText = "Ошибка инициализации: ${e.message}"
@@ -336,6 +347,23 @@ private fun MediaDownloadScreen(
         }
     }
 
+    val notificationPermission = rememberLauncherForActivityResult(
+        ActivityResultContracts.RequestPermission(),
+    ) { }
+
+    fun askNotificationPermission() {
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU) return
+        val granted = ContextCompat.checkSelfPermission(
+            context,
+            Manifest.permission.POST_NOTIFICATIONS,
+        ) == PackageManager.PERMISSION_GRANTED
+        if (!granted) notificationPermission.launch(Manifest.permission.POST_NOTIFICATIONS)
+    }
+
+    /**
+     * Ставит выбранное в очередь фонового сервиса: сама загрузка переживает выход с экрана
+     * и из приложения, прогресс дублируется в шторке уведомлений.
+     */
     fun startDownload() {
         val trimmedUrl = url.trim()
         val typeLabel = if (audioOnly) "аудио" else "видео"
@@ -348,107 +376,8 @@ private fun MediaDownloadScreen(
             return
         }
 
-        fonkiLyrics = null
-
-        if (FonkiExtractor.isFonkiUrl(trimmedUrl)) {
-            errorText = ""
-            progress = -1f
-            status = DownloadStatus.DOWNLOADING
-            statusText = "Скачивание с fonki.pro..."
-            scope.launch(Dispatchers.IO) {
-                try {
-                    mainHandler.post { statusText = "Загрузка страницы fonki.pro..." }
-                    val song = FonkiExtractor.extract(trimmedUrl)
-                    val importTitle = buildString {
-                        if (song.artist.isNotBlank()) append("${song.artist} - ")
-                        append(song.title)
-                    }
-                    val namedKeys = existingMediaStemKeys(context, bibleVideos, bibleAudios)
-                    if (skipDuplicates &&
-                        (
-                            alreadyHaveNamedMedia(importTitle, namedKeys) ||
-                                alreadyHaveNamedMedia(song.title, namedKeys)
-                            )
-                    ) {
-                        mainHandler.post {
-                            status = DownloadStatus.DONE
-                            statusText = "Пропуск: файл «${song.title}» уже есть на телефоне"
-                            progress = 100f
-                            errorText = SKIP_NAMED_MEDIA_HINT
-                            Toast.makeText(
-                                context,
-                                "Файл с таким названием уже есть",
-                                Toast.LENGTH_SHORT,
-                            ).show()
-                        }
-                        return@launch
-                    }
-                    mainHandler.post {
-                        fonkiLyrics = "${song.title}\n${song.artist}\n\n${song.lyrics}"
-                        statusText = "Скачивание аудио: ${song.title}..."
-                    }
-
-                    val trackUrl = song.tracks.firstOrNull()?.url
-                        ?: throw RuntimeException("Аудиофайл не найден")
-                    val audioFile = FonkiExtractor.downloadAudio(
-                        context = context,
-                        url = trackUrl,
-                        songTitle = song.title,
-                        songArtist = song.artist,
-                    ) { pct ->
-                        mainHandler.post {
-                            progress = pct.toFloat()
-                            statusText = "Скачивание: $pct%"
-                        }
-                    }
-
-                    FonkiExtractor.saveLyrics(song)
-
-                    mainHandler.post {
-                        status = DownloadStatus.DONE
-                        statusText = "Скачано: ${audioFile.name}"
-                        url = ""
-                        progress = 100f
-                        Toast.makeText(context, "Песня и текст сохранены!", Toast.LENGTH_SHORT).show()
-                        val doneMsg = when (importTarget) {
-                            MediaDownloadImportTarget.Video -> "Аудио добавлено в «Медиа → Видео»"
-                            MediaDownloadImportTarget.Audio -> "Аудио добавлено в «Медиа → Аудио»"
-                        }
-                        when (importTarget) {
-                            MediaDownloadImportTarget.Video -> viewModel.importBibleVideoFromPublicDownloadFile(
-                                sourceFile = audioFile,
-                                title = importTitle,
-                                sourceUrl = trimmedUrl,
-                            ) { err ->
-                                if (err != null) Toast.makeText(context, err, Toast.LENGTH_LONG).show()
-                                else Toast.makeText(context, doneMsg, Toast.LENGTH_SHORT).show()
-                            }
-                            MediaDownloadImportTarget.Audio -> viewModel.importBibleAudioFromPublicDownloadFile(
-                                sourceFile = audioFile,
-                                title = importTitle,
-                                sourceUrl = trimmedUrl,
-                            ) { err ->
-                                if (err != null) Toast.makeText(context, err, Toast.LENGTH_LONG).show()
-                                else Toast.makeText(context, doneMsg, Toast.LENGTH_SHORT).show()
-                            }
-                        }
-                    }
-                } catch (e: Throwable) {
-                    Log.e(TAG, "Fonki download failed", e)
-                    mainHandler.post {
-                        status = DownloadStatus.ERROR
-                        errorText = e.message ?: "Ошибка загрузки с fonki.pro"
-                        statusText = ""
-                        progress = -1f
-                    }
-                }
-            }
-            return
-        }
-
         val inspected = playlistInspection
-        val playlistMode =
-            inspected != null && inspected.items.isNotEmpty()
+        val playlistMode = inspected != null && inspected.items.isNotEmpty()
         val batch = inspected?.items
             ?.filter { selectedIds.contains(it.stableId) }
             .orEmpty()
@@ -458,258 +387,40 @@ private fun MediaDownloadScreen(
         }
 
         errorText = ""
-        progress = -1f
-        status = DownloadStatus.DOWNLOADING
+        fonkiLyrics = null
+        localStatus = DownloadStatus.IDLE
+        localStatusText = ""
+        localProgress = -1f
+        MediaDownloadQueue.clearResult()
 
-        val qualityLabel = if (!audioOnly) " (${selectedQuality}p)" else ""
-        statusText =
-            if (playlistMode && batch.isNotEmpty()) {
-                "${VideoExtractor.detectPlatform(trimmedUrl)} · загрузка выбранного (${batch.size})$qualityLabel"
-            } else {
-                val platform = VideoExtractor.detectPlatform(trimmedUrl)
-                "Скачивание: $platform$qualityLabel..."
-            }
-
-        scope.launch(Dispatchers.IO) {
-            try {
-                if (playlistMode && batch.isNotEmpty()) {
-                    var okCount = 0
-                    var skippedCount = 0
-                    val knownStems = existingMediaStemKeys(context, bibleVideos, bibleAudios).toMutableSet()
-                    val failLines = mutableListOf<String>()
-                    for ((idx, item) in batch.withIndex()) {
-                        if (skipDuplicates && alreadyHaveNamedMedia(item.title, knownStems)) {
-                            skippedCount++
-                            mainHandler.post {
-                                progress = -1f
-                                statusText =
-                                    "${idx + 1}/${batch.size}: пропуск — файл уже есть (${item.title.take(40)})"
-                            }
-                            continue
-                        }
-                        try {
-                            mainHandler.post {
-                                progress = -1f
-                                statusText =
-                                    "${idx + 1}/${batch.size}: ${item.title.take(48)}"
-                            }
-                            val file = VideoExtractor.download(
-                                url = item.pageUrl,
-                                audioOnly = audioOnly,
-                                videoQuality = selectedQuality,
-                                skipIfFileExists = skipDuplicates,
-                                onProgress = { p, eta ->
-                                    mainHandler.post {
-                                        progress = p
-                                        val etaText = if (eta > 0) " · ~${eta}с" else ""
-                                        val shortTitle = item.title.take(36)
-                                        statusText =
-                                            "${idx + 1}/${batch.size}: ${p.toInt()}%$etaText — $shortTitle"
-                                    }
-                                },
-                            )
-
-                            mainHandler.post {
-                                val toastOk = when (importTarget) {
-                                    MediaDownloadImportTarget.Video -> "Файл добавлен в «Медиа → Видео»"
-                                    MediaDownloadImportTarget.Audio -> "Файл добавлен в «Медиа → Аудио»"
-                                }
-                                when (importTarget) {
-                                    MediaDownloadImportTarget.Video ->
-                                        viewModel.importBibleVideoFromPublicDownloadFile(
-                                            sourceFile = file,
-                                            title = file.nameWithoutExtension,
-                                            sourceUrl = item.pageUrl,
-                                        ) { err ->
-                                            if (err != null) {
-                                                Toast.makeText(context, err, Toast.LENGTH_LONG).show()
-                                            } else {
-                                                Toast.makeText(
-                                                    context,
-                                                    toastOk,
-                                                    Toast.LENGTH_SHORT,
-                                                ).show()
-                                            }
-                                        }
-                                    MediaDownloadImportTarget.Audio ->
-                                        viewModel.importBibleAudioFromPublicDownloadFile(
-                                            sourceFile = file,
-                                            title = file.nameWithoutExtension,
-                                            sourceUrl = item.pageUrl,
-                                        ) { err ->
-                                            if (err != null) {
-                                                Toast.makeText(context, err, Toast.LENGTH_LONG).show()
-                                            } else {
-                                                Toast.makeText(
-                                                    context,
-                                                    toastOk,
-                                                    Toast.LENGTH_SHORT,
-                                                ).show()
-                                            }
-                                        }
-                                }
-                            }
-                            addKnownStem(item.title, knownStems)
-                            addKnownStem(file.name, knownStems)
-                            addKnownStem(file.nameWithoutExtension, knownStems)
-                            okCount++
-                        } catch (e: Throwable) {
-                            Log.e(TAG, "Batch download failed for ${item.pageUrl}", e)
-                            val line =
-                                ytDlpErrorUserMessage(e.message ?: "ошибка")
-                            failLines += "${item.title.take(52)}… — $line"
-                        }
-                    }
-
-                    mainHandler.post {
-                        val allSkippedOk =
-                            failLines.isEmpty() && skippedCount == batch.size && batch.isNotEmpty()
-                        status =
-                            when {
-                                okCount > 0 || allSkippedOk -> DownloadStatus.DONE
-                                else -> DownloadStatus.ERROR
-                            }
-                        progress =
-                            when {
-                                failLines.isNotEmpty() -> -1f
-                                okCount > 0 || allSkippedOk -> 100f
-                                else -> -1f
-                            }
-                        statusText =
-                            when {
-                                skippedCount > 0 && okCount > 0 ->
-                                    "Готово: $okCount скачано, $skippedCount пропущено (файл уже есть)"
-                                skippedCount > 0 && okCount == 0 && failLines.isEmpty() ->
-                                    "Пропущено $skippedCount из ${batch.size} — файл с таким названием уже есть"
-                                else ->
-                                    "Файлов готово: $okCount из ${batch.size}"
-                            }
-                        if (failLines.isEmpty()) {
-                            when {
-                                okCount > 0 && skippedCount > 0 ->
-                                    Toast.makeText(
-                                        context,
-                                        "Добавлено: $okCount, пропущено (файл уже есть): $skippedCount",
-                                        Toast.LENGTH_LONG,
-                                    ).show()
-                                okCount > 0 ->
-                                    Toast.makeText(
-                                        context,
-                                        "Успешно добавлено: $okCount",
-                                        Toast.LENGTH_SHORT,
-                                    ).show()
-                                allSkippedOk ->
-                                    Toast.makeText(
-                                        context,
-                                        "Все выбранные файлы уже есть на телефоне",
-                                        Toast.LENGTH_LONG,
-                                    ).show()
-                            }
-                            if (okCount > 0 || allSkippedOk) {
-                                url = ""
-                                playlistInspection = null
-                                selectedIds = emptySet()
-                            }
-                        }
-                        errorText =
-                            if (failLines.isNotEmpty()) {
-                                Toast.makeText(
-                                    context,
-                                    "Не удалось скачать ${failLines.size} из ${batch.size}",
-                                    Toast.LENGTH_LONG,
-                                ).show()
-                                failLines.take(3).joinToString("\n")
-                            } else {
-                                ""
-                            }
-                    }
-                } else {
-                    Log.d(TAG, "Starting download: $trimmedUrl audio=$audioOnly q=$selectedQuality")
-                    if (skipDuplicates) {
-                        try {
-                            mainHandler.post { statusText = "Проверка названия файла..." }
-                            val info = VideoExtractor.fetchInfo(trimmedUrl)
-                            val keys = existingMediaStemKeys(context, bibleVideos, bibleAudios)
-                            if (
-                                alreadyHaveNamedMedia(info.title, keys) ||
-                                alreadyHaveNamedMedia(info.filename, keys)
-                            ) {
-                                mainHandler.post {
-                                    status = DownloadStatus.DONE
-                                    statusText =
-                                        "Пропуск: файл «${info.title}» уже есть на телефоне"
-                                    progress = 100f
-                                    errorText = SKIP_NAMED_MEDIA_HINT
-                                    Toast.makeText(
-                                        context,
-                                        "Файл с таким названием уже есть",
-                                        Toast.LENGTH_SHORT,
-                                    ).show()
-                                }
-                                return@launch
-                            }
-                            mainHandler.post {
-                                statusText = "Скачивание: ${info.title.take(48)}..."
-                            }
-                        } catch (e: Throwable) {
-                            Log.w(TAG, "Не удалось проверить название перед загрузкой", e)
-                        }
-                    }
-                    val file = VideoExtractor.download(
-                        url = trimmedUrl,
+        val importAsAudio = importTarget == MediaDownloadImportTarget.Audio
+        val tasks =
+            if (playlistMode) {
+                batch.map { item ->
+                    MediaDownloadTask(
+                        url = item.pageUrl,
+                        title = item.title,
                         audioOnly = audioOnly,
                         videoQuality = selectedQuality,
-                        skipIfFileExists = skipDuplicates,
-                        onProgress = { p, eta ->
-                            mainHandler.post {
-                                progress = p
-                                val etaText = if (eta > 0) " · ~${eta}с" else ""
-                                statusText = "Скачивание: ${p.toInt()}%$etaText"
-                            }
-                        },
+                        skipIfExists = skipDuplicates,
+                        importAsAudio = importAsAudio,
                     )
-                    Log.d(TAG, "Download complete: ${file.absolutePath}")
-
-                    mainHandler.post {
-                        status = DownloadStatus.DONE
-                        statusText = "Скачано: ${file.name}"
-                        url = ""
-                        progress = 100f
-                        val toastOk = when (importTarget) {
-                            MediaDownloadImportTarget.Video -> "Файл добавлен в «Медиа → Видео»"
-                            MediaDownloadImportTarget.Audio -> "Файл добавлен в «Медиа → Аудио»"
-                        }
-                        when (importTarget) {
-                            MediaDownloadImportTarget.Video -> viewModel.importBibleVideoFromPublicDownloadFile(
-                                sourceFile = file,
-                                title = file.nameWithoutExtension,
-                                sourceUrl = trimmedUrl,
-                            ) { err ->
-                                if (err != null) Toast.makeText(context, err, Toast.LENGTH_LONG).show()
-                                else Toast.makeText(context, toastOk, Toast.LENGTH_SHORT).show()
-                            }
-                            MediaDownloadImportTarget.Audio -> viewModel.importBibleAudioFromPublicDownloadFile(
-                                sourceFile = file,
-                                title = file.nameWithoutExtension,
-                                sourceUrl = trimmedUrl,
-                            ) { err ->
-                                if (err != null) Toast.makeText(context, err, Toast.LENGTH_LONG).show()
-                                else Toast.makeText(context, toastOk, Toast.LENGTH_SHORT).show()
-                            }
-                        }
-                    }
                 }
-            } catch (e: Throwable) {
-                Log.e(TAG, "Download failed", e)
-                val msg = e.message ?: "Неизвестная ошибка"
-                mainHandler.post {
-                    status = DownloadStatus.ERROR
-                    errorText = ytDlpErrorUserMessage(msg)
-                    statusText = ""
-                    progress = -1f
-                }
+            } else {
+                listOf(
+                    MediaDownloadTask(
+                        url = trimmedUrl,
+                        title = "",
+                        audioOnly = audioOnly,
+                        videoQuality = selectedQuality,
+                        skipIfExists = skipDuplicates,
+                        importAsAudio = importAsAudio,
+                    ),
+                )
             }
-        }
+        askNotificationPermission()
+        MediaDownloadService.enqueue(context, tasks)
+        Toast.makeText(context, R.string.media_download_started, Toast.LENGTH_LONG).show()
     }
 
     Scaffold(
@@ -730,7 +441,7 @@ private fun MediaDownloadScreen(
                 actions = {
                     IconButton(onClick = {
                         scope.launch {
-                            statusText = "Обновление yt-dlp..."
+                            localStatusText = "Обновление yt-dlp..."
                             try {
                                 val result = withContext(Dispatchers.IO) {
                                     VideoExtractor.updateYtDlp(context)
@@ -744,7 +455,7 @@ private fun MediaDownloadScreen(
                             } catch (e: Throwable) {
                                 Toast.makeText(context, "Ошибка: ${e.message}", Toast.LENGTH_SHORT).show()
                             }
-                            statusText = ""
+                            localStatusText = ""
                         }
                     }) {
                         Icon(Icons.Default.Refresh, contentDescription = "Обновить yt-dlp")
@@ -871,22 +582,22 @@ private fun MediaDownloadScreen(
                     downloading = status == DownloadStatus.DOWNLOADING,
                     onDownloadingChanged = { busy, text ->
                         if (busy) {
-                            status = DownloadStatus.DOWNLOADING
-                            statusText = text
+                            localStatus = DownloadStatus.DOWNLOADING
+                            localStatusText = text
                             errorText = ""
-                            progress = -1f
+                            localProgress = -1f
                         }
                     },
                     onImported = { title ->
-                        status = DownloadStatus.DONE
-                        statusText = "Сохранено: $title"
-                        progress = 100f
+                        localStatus = DownloadStatus.DONE
+                        localStatusText = "Сохранено: $title"
+                        localProgress = 100f
                     },
                     onError = { msg ->
-                        status = DownloadStatus.ERROR
+                        localStatus = DownloadStatus.ERROR
                         errorText = msg
-                        statusText = ""
-                        progress = -1f
+                        localStatusText = ""
+                        localProgress = -1f
                     },
                 )
                 Spacer(Modifier.height(12.dp))

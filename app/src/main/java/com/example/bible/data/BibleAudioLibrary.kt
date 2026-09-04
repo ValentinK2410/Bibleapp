@@ -19,6 +19,27 @@ class BibleAudioLibrary(private val context: Context) {
 
     fun fileFor(storedName: String): File = File(dir, storedName)
 
+    suspend fun importFromFile(sourceFile: File): Result<String> = withContext(Dispatchers.IO) {
+        try {
+            if (!sourceFile.isFile || !sourceFile.canRead()) {
+                return@withContext Result.failure(IllegalStateException("Файл недоступен"))
+            }
+            val ext = sourceFile.extension.lowercase().ifBlank { "mp3" }
+            val name = "${UUID.randomUUID()}.$ext"
+            val out = File(dir, name)
+            sourceFile.inputStream().use { input ->
+                out.outputStream().use { input.copyTo(it) }
+            }
+            if (!out.exists() || out.length() == 0L) {
+                out.delete()
+                return@withContext Result.failure(IllegalStateException("Пустой файл"))
+            }
+            Result.success(name)
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
+
     suspend fun importFromExternalFile(sourceFile: File): Result<String> = withContext(Dispatchers.IO) {
         try {
             if (!sourceFile.isFile || !sourceFile.canRead()) {

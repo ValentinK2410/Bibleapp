@@ -31,9 +31,14 @@ abstract class BibleDao {
 
     @Query(
         "SELECT translationCode, bookId, chapterNumber, verseNumber, text FROM bible_verses " +
-            "WHERE translationCode = :code ORDER BY bookId, chapterNumber, verseNumber",
+            "WHERE translationCode = :code ORDER BY bookId, chapterNumber, verseNumber " +
+            "LIMIT :limit OFFSET :offset",
     )
-    abstract fun getVersesForSearchByTranslation(code: String): List<BibleVerseSearchRow>
+    abstract fun getVersesForSearchByTranslationPage(
+        code: String,
+        limit: Int,
+        offset: Int,
+    ): List<BibleVerseSearchRow>
 
     @Query("SELECT bookId, name FROM bible_books WHERE translationCode = :code ORDER BY bookId")
     abstract fun getBookTitlesForTranslation(code: String): List<BibleBookTitleRow>
@@ -49,6 +54,29 @@ abstract class BibleDao {
             "ORDER BY chapterNumber, verseNumber",
     )
     abstract fun getVersesForBook(code: String, bookId: String): List<BibleVerseEntity>
+
+    @Query(
+        "SELECT * FROM bible_verses WHERE translationCode = :code AND bookId = :bookId " +
+            "AND chapterNumber = :chapter ORDER BY verseNumber",
+    )
+    abstract fun getVersesForChapter(code: String, bookId: String, chapter: Int): List<BibleVerseEntity>
+
+    @Query(
+        "SELECT MAX(chapterNumber) FROM bible_verses WHERE translationCode = :code AND bookId = :bookId",
+    )
+    abstract fun getMaxChapterNumber(code: String, bookId: String): Int?
+
+    @Query(
+        "SELECT * FROM bible_interlinear_words WHERE translationCode = :code AND bookId = :bookId " +
+            "AND chapterNumber = :chapter ORDER BY verseNumber, wordIndex",
+    )
+    abstract fun getInterlinearForChapter(code: String, bookId: String, chapter: Int): List<BibleInterlinearWordEntity>
+
+    @Query(
+        "SELECT * FROM bible_interlinear_words WHERE translationCode = :code AND bookId = :bookId " +
+            "ORDER BY chapterNumber, verseNumber, wordIndex",
+    )
+    abstract fun getInterlinearForBook(code: String, bookId: String): List<BibleInterlinearWordEntity>
 
     @Query(
         "SELECT translationCode, bookId, chapterNumber, verseNumber, text FROM bible_verses " +
@@ -99,6 +127,22 @@ abstract class BibleDao {
 
     @Query("DELETE FROM bible_books WHERE translationCode = :code AND bookId = :bookId")
     abstract fun deleteBook(code: String, bookId: String)
+
+    @Query("DELETE FROM bible_interlinear_words WHERE translationCode = :code")
+    abstract fun deleteInterlinearForTranslation(code: String)
+
+    @Query("DELETE FROM bible_verses WHERE translationCode = :code")
+    abstract fun deleteVersesForTranslation(code: String)
+
+    @Query("DELETE FROM bible_books WHERE translationCode = :code")
+    abstract fun deleteBooksForTranslation(code: String)
+
+    @Transaction
+    open fun deleteTranslation(code: String) {
+        deleteInterlinearForTranslation(code)
+        deleteVersesForTranslation(code)
+        deleteBooksForTranslation(code)
+    }
 
     @RawQuery
     abstract fun searchVersesFastSql(query: SupportSQLiteQuery): List<BibleVerseSearchRow>

@@ -2,13 +2,14 @@ package com.example.bible.data
 
 /** Идентификаторы карточек на экране «Каталог медиа» (порядок задаёт пользователь). */
 object MediaHomeSectionOrder {
+    const val MICROBLOG = "microblog"
     const val PICTURES = "pictures"
     const val MUSICIAN = "musician"
     const val PESNOPENIE = "pesnopenie"
     const val VIDEOS = "videos"
     const val AUDIOS = "audios"
 
-    val allIds: List<String> = listOf(PICTURES, MUSICIAN, PESNOPENIE, VIDEOS, AUDIOS)
+    val allIds: List<String> = listOf(MICROBLOG, PICTURES, MUSICIAN, PESNOPENIE, VIDEOS, AUDIOS)
 
     fun defaultOrder(): List<String> = allIds.toList()
 
@@ -39,6 +40,7 @@ object MediaHomeSectionOrder {
     fun toStored(ids: List<String>): String = normalize(ids).joinToString(",")
 
     fun titleRu(id: String): String = when (id) {
+        MICROBLOG -> "Микроблог"
         PICTURES -> "Картинки"
         MUSICIAN -> "Для музыканта"
         PESNOPENIE -> "Песнопение"

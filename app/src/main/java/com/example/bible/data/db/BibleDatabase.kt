@@ -26,7 +26,6 @@ abstract class BibleDatabase : RoomDatabase() {
                     BibleDatabase::class.java,
                     DB_NAME,
                 )
-                    .allowMainThreadQueries()
                     .addMigrations(MIGRATION_1_2, MIGRATION_2_3)
                     .fallbackToDestructiveMigration()
                     .build()

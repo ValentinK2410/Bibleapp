@@ -65,6 +65,8 @@ private val USER_DATA_KEYS = setOf(
     "lexicon_user_tones",
     "word_span_media_json",
     "bible_search_history_json",
+    "quran_reading_history_json",
+    "quran_reading_trace_json",
 )
 
 /**
@@ -292,6 +294,8 @@ object AppDataExport {
                     "reading_trace_json",
                     "bookmark_tags_json",
                     "bible_search_history_json",
+                    "quran_reading_history_json",
+                    "quran_reading_trace_json",
                 )
             }
             if (options.personalNotes) {
@@ -316,7 +320,11 @@ object AppDataExport {
                 userKeys += "user_song_tags"
             }
             if (options.songMediaFiles && "user_songs_json" !in userKeys) userKeys += "user_songs_json"
-            if (options.quranSearchHistory) userKeys += "quran_search_history_json"
+            if (options.quranSearchHistory) {
+                userKeys += "quran_search_history_json"
+                userKeys += "quran_reading_history_json"
+                userKeys += "quran_reading_trace_json"
+            }
 
             val manifest = JSONObject().apply {
                 put("format", "bible_app_export")
