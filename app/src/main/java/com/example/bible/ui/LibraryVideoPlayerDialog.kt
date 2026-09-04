@@ -31,7 +31,6 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.navigationBarsPadding
@@ -40,6 +39,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -88,6 +88,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.compose.ui.window.Dialog
@@ -119,6 +120,9 @@ private val VIDEO_SPEED_PRESETS =
 
 /** Цвет просмотренной части шкалы: яркий на любом кадре, как в привычных плеерах. */
 private val PLAYER_ACCENT = Color(0xFFFF4B3E)
+
+/** Минимальная высота области управления: верхняя панель, кнопки и шкала друг на друга не налезают. */
+private val CONTROLS_MIN_HEIGHT = 300.dp
 
 @Suppress("DEPRECATION")
 private fun MediaPlayer.applyPlaybackSpeedVideoLegacy(speed: Float) {
@@ -723,27 +727,41 @@ fun LibraryVideoPlayerDialog(
                 Modifier.fillMaxSize(),
                 contentAlignment = Alignment.Center,
             ) {
-                val videoModifier =
-                    if (videoWidthPx <= 0 || videoHeightPx <= 0) {
-                        Modifier.fillMaxSize()
+                // Размер кадра на экране: по нему выравниваем управление, чтобы оно
+                // лежало на видео, а не улетало к краям телефона.
+                val videoAsp =
+                    if (videoWidthPx > 0 && videoHeightPx > 0) {
+                        videoWidthPx.toFloat() / videoHeightPx.toFloat()
                     } else {
-                        val videoAsp = videoWidthPx.toFloat() / videoHeightPx.toFloat()
-                        val containerAsp =
-                            if (maxHeight > 0.dp) maxWidth / maxHeight else videoAsp
-                        if (videoAsp > containerAsp) {
-                            Modifier
-                                .fillMaxWidth()
-                                .aspectRatio(videoAsp)
-                        } else {
-                            Modifier
-                                .fillMaxHeight()
-                                .aspectRatio(videoAsp)
-                        }
+                        null
                     }
+                val containerAsp = if (maxHeight > 0.dp) maxWidth / maxHeight else 1f
+                val videoWidth: Dp
+                val videoHeight: Dp
+                if (videoAsp == null) {
+                    videoWidth = maxWidth
+                    videoHeight = maxHeight
+                } else if (videoAsp > containerAsp) {
+                    videoWidth = maxWidth
+                    videoHeight = maxWidth / videoAsp
+                } else {
+                    videoWidth = maxHeight * videoAsp
+                    videoHeight = maxHeight
+                }
+                // Трём рядам кнопок нужна своя высота: у низкого кадра панели
+                // выходят чуть за его границы, но остаются рядом с картинкой.
+                val controlsHeight = maxOf(videoHeight, minOf(maxHeight, CONTROLS_MIN_HEIGHT))
 
-                Box(videoModifier) {
+                Box(
+                    modifier = Modifier
+                        .width(maxWidth)
+                        .height(controlsHeight),
+                    contentAlignment = Alignment.Center,
+                ) {
                     AndroidView(
-                        modifier = Modifier.fillMaxSize(),
+                        modifier = Modifier
+                            .width(videoWidth)
+                            .height(videoHeight),
                         factory = { ctx ->
                             TextureView(ctx).apply {
                                 layoutParams = ViewGroup.LayoutParams(
@@ -1338,7 +1356,8 @@ private fun VideoPlayerSettingsPanel(
                 .clip(RoundedCornerShape(topStart = 24.dp, topEnd = 24.dp))
                 .background(Color(0xFF1B1B1B))
                 .navigationBarsPadding()
-                .padding(horizontal = 20.dp, vertical = 16.dp)
+                .verticalScroll(rememberScrollState())
+                .padding(start = 20.dp, end = 20.dp, top = 16.dp, bottom = 24.dp)
                 .pointerInput(Unit) { detectTapGestures(onTap = {}) },
         ) {
             Row(verticalAlignment = Alignment.CenterVertically) {
