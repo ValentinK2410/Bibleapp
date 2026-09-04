@@ -52,6 +52,10 @@ data class MediaDownloadState(
     val statusText: String = "",
     /** Проценты текущего файла; отрицательное значение — прогресс неизвестен. */
     val progress: Float = -1f,
+    /** Название файла, который качается прямо сейчас. */
+    val currentTitle: String = "",
+    /** Последний успешно скачанный файл — чтобы было видно, что именно уже сохранено. */
+    val lastCompleted: String? = null,
     val index: Int = 0,
     val total: Int = 0,
     val downloaded: Int = 0,
@@ -59,7 +63,10 @@ data class MediaDownloadState(
     val failures: List<String> = emptyList(),
     val finishedMessage: String? = null,
     val error: String? = null,
-)
+) {
+    /** Сколько файлов ещё в очереди после текущего. */
+    val remaining: Int get() = (total - index).coerceAtLeast(0)
+}
 
 /**
  * Общая точка наблюдения: [com.example.bible.service.MediaDownloadService] пишет, экран читает.

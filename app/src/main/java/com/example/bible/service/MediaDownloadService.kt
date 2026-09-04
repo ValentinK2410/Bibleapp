@@ -47,6 +47,7 @@ class MediaDownloadService : Service() {
     private var worker: Job? = null
 
     private var cancelled = false
+    private var lastCompleted: String? = null
     private var total = 0
     private var index = 0
     private var downloaded = 0
@@ -104,26 +105,30 @@ class MediaDownloadService : Service() {
     }
 
     private suspend fun runTask(task: MediaDownloadTask, known: MutableSet<String>) {
-        val shortTitle = task.title.take(48)
-        publish(text = position() + shortTitle, progress = -1f)
-        updateNotification(shortTitle.ifBlank { task.url }, -1f)
+        var label = task.title
+        publish(
+            text = position() + getString(com.example.bible.R.string.media_download_preparing),
+            progress = -1f,
+            title = label,
+        )
+        updateNotification(label.ifBlank { task.url }, -1f)
         try {
             if (FonkiExtractor.isFonkiUrl(task.url)) {
                 downloadFonki(task, known)
                 return
             }
-            val plannedTitle = task.title.ifBlank {
+            label = task.title.ifBlank {
                 runCatching { VideoExtractor.fetchInfo(task.url).title }.getOrDefault("")
             }
-            if (task.skipIfExists && isKnown(plannedTitle, known)) {
+            if (task.skipIfExists && isKnown(label, known)) {
                 skipped++
                 publish(
                     text = position() + getString(com.example.bible.R.string.media_download_skip_existing),
                     progress = -1f,
+                    title = label,
                 )
                 return
             }
-            val label = plannedTitle.take(48).ifBlank { task.url }
             val file = VideoExtractor.download(
                 url = task.url,
                 audioOnly = task.audioOnly,
@@ -132,19 +137,20 @@ class MediaDownloadService : Service() {
                 onProgress = { percent, eta ->
                     val etaText = if (eta > 0) " · ~${eta}с" else ""
                     publish(
-                        text = "${position()}${percent.toInt()}%$etaText — $label",
+                        text = "${position()}${percent.toInt()}%$etaText",
                         progress = percent,
+                        title = label,
                     )
-                    updateNotification(label, percent)
+                    updateNotification(label.ifBlank { task.url }, percent)
                 },
             )
-            importFile(file, plannedTitle.ifBlank { file.nameWithoutExtension }, task, known)
+            importFile(file, label.ifBlank { file.nameWithoutExtension }, task, known)
         } catch (e: CancellationException) {
             throw e
         } catch (e: Throwable) {
             Log.e(TAG, "Download failed: ${task.url}", e)
             val reason = VideoExtractor.userMessage(e.message ?: "ошибка")
-            failures += if (shortTitle.isBlank()) reason else "$shortTitle — $reason"
+            failures += if (label.isBlank()) reason else "${label.take(48)} — $reason"
         }
     }
 
@@ -159,6 +165,7 @@ class MediaDownloadService : Service() {
             publish(
                 text = position() + getString(com.example.bible.R.string.media_download_skip_existing),
                 progress = -1f,
+                title = title,
             )
             return
         }
@@ -170,8 +177,8 @@ class MediaDownloadService : Service() {
             songTitle = song.title,
             songArtist = song.artist,
         ) { percent ->
-            publish(text = "${position()}$percent% — ${title.take(48)}", progress = percent.toFloat())
-            updateNotification(title.take(48), percent.toFloat())
+            publish(text = "${position()}$percent%", progress = percent.toFloat(), title = title)
+            updateNotification(title, percent.toFloat())
         }
         runCatching { FonkiExtractor.saveLyrics(song) }
         importFile(file, title, task, known)
@@ -195,6 +202,12 @@ class MediaDownloadService : Service() {
             return
         }
         downloaded++
+        lastCompleted = title.ifBlank { file.nameWithoutExtension }
+        publish(
+            text = position() + getString(com.example.bible.R.string.media_download_saved),
+            progress = 100f,
+            title = title,
+        )
         remember(title, known)
         remember(file.name, known)
         remember(file.nameWithoutExtension, known)
@@ -219,6 +232,8 @@ class MediaDownloadService : Service() {
                 running = false,
                 progress = -1f,
                 statusText = "",
+                currentTitle = "",
+                lastCompleted = lastCompleted,
                 index = index,
                 total = total,
                 downloaded = downloaded,
@@ -229,6 +244,7 @@ class MediaDownloadService : Service() {
             )
         }
         showSummaryNotification(message)
+        lastCompleted = null
         total = 0
         index = 0
         downloaded = 0
@@ -248,9 +264,11 @@ class MediaDownloadService : Service() {
                 running = false,
                 progress = -1f,
                 statusText = "",
+                currentTitle = "",
                 finishedMessage = getString(com.example.bible.R.string.media_download_cancelled),
             )
         }
+        lastCompleted = null
         total = 0
         index = 0
         downloaded = 0
@@ -260,14 +278,17 @@ class MediaDownloadService : Service() {
         stopSelf()
     }
 
-    private fun position(): String = if (total > 1) "$index/$total: " else ""
+    private fun position(): String =
+        if (total > 1) getString(com.example.bible.R.string.media_download_position, index, total) + " · " else ""
 
-    private fun publish(text: String, progress: Float) {
+    private fun publish(text: String, progress: Float, title: String = "") {
         MediaDownloadQueue.update {
             it.copy(
                 running = true,
                 statusText = text,
                 progress = progress,
+                currentTitle = title,
+                lastCompleted = lastCompleted,
                 index = index,
                 total = total,
                 downloaded = downloaded,
@@ -341,11 +362,24 @@ class MediaDownloadService : Service() {
             Intent(this, MediaDownloadService::class.java).apply { action = ACTION_CANCEL },
             PendingIntent.FLAG_IMMUTABLE,
         )
+        val heading = if (total > 1) {
+            getString(com.example.bible.R.string.media_download_position, index, total)
+        } else {
+            getString(com.example.bible.R.string.media_download_notif_title)
+        }
+        val remaining = (total - index).coerceAtLeast(0)
         return NotificationCompat.Builder(this, CHANNEL_ID)
             .setSmallIcon(android.R.drawable.stat_sys_download)
-            .setContentTitle(getString(com.example.bible.R.string.media_download_notif_title))
+            .setContentTitle(heading)
             .setContentText(text)
-            .setSubText(if (total > 1) "$index/$total" else null)
+            .setStyle(NotificationCompat.BigTextStyle().bigText(text))
+            .setSubText(
+                if (total > 1) {
+                    getString(com.example.bible.R.string.media_download_remaining, remaining)
+                } else {
+                    null
+                },
+            )
             .setProgress(100, progress.toInt().coerceIn(0, 100), progress < 0f)
             .setOngoing(true)
             .setOnlyAlertOnce(true)

@@ -102,6 +102,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalClipboardManager
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.style.TextOverflow
@@ -632,6 +633,48 @@ private fun MediaDownloadScreen(
                                 maxLines = 2,
                                 overflow = TextOverflow.Ellipsis,
                             )
+                            if (queue.currentTitle.isNotBlank()) {
+                                Text(
+                                    queue.currentTitle,
+                                    style = MaterialTheme.typography.labelSmall,
+                                    color = MaterialTheme.colorScheme.onSurface,
+                                    maxLines = 2,
+                                    overflow = TextOverflow.Ellipsis,
+                                )
+                            }
+                            if (queue.total > 1) {
+                                Text(
+                                    stringResource(
+                                        R.string.media_download_counters,
+                                        queue.downloaded,
+                                        queue.skipped,
+                                        queue.remaining,
+                                    ),
+                                    style = MaterialTheme.typography.labelSmall,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                )
+                            }
+                            queue.lastCompleted?.let { done ->
+                                Row(
+                                    modifier = Modifier.padding(top = 2.dp),
+                                    verticalAlignment = Alignment.CenterVertically,
+                                ) {
+                                    Icon(
+                                        Icons.Default.CheckCircle,
+                                        contentDescription = null,
+                                        modifier = Modifier.size(14.dp),
+                                        tint = MaterialTheme.colorScheme.tertiary,
+                                    )
+                                    Spacer(Modifier.width(4.dp))
+                                    Text(
+                                        stringResource(R.string.media_download_last_saved, done),
+                                        style = MaterialTheme.typography.labelSmall,
+                                        color = MaterialTheme.colorScheme.tertiary,
+                                        maxLines = 1,
+                                        overflow = TextOverflow.Ellipsis,
+                                    )
+                                }
+                            }
                         }
                     }
 
