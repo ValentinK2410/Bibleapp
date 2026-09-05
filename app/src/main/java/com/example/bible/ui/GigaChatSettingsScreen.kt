@@ -4,6 +4,8 @@ import android.content.Intent
 import android.net.Uri
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
+import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -46,7 +48,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.bible.R
 import com.example.bible.data.GigaChatClient
 
-@OptIn(ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalLayoutApi::class)
 @Composable
 fun GigaChatSettingsScreen(
     viewModel: BibleViewModel,
@@ -152,12 +154,12 @@ fun GigaChatSettingsScreen(
             ) {
                 Text(stringResource(R.string.gigachat_settings_get_key))
             }
-            Row(
+            FlowRow(
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(horizontal = 8.dp),
-                horizontalArrangement = Arrangement.spacedBy(8.dp),
-                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(4.dp),
+                verticalArrangement = Arrangement.Center,
             ) {
                 TextButton(onClick = { viewModel.setGigaChatAuthKey(draft) }) {
                     Text(stringResource(R.string.gigachat_settings_save))
@@ -175,7 +177,12 @@ fun GigaChatSettingsScreen(
                     Text(stringResource(R.string.gigachat_settings_clear))
                 }
                 if (keyTest.loading) {
-                    CircularProgressIndicator(modifier = Modifier.size(18.dp), strokeWidth = 2.dp)
+                    CircularProgressIndicator(
+                        modifier = Modifier
+                            .padding(8.dp)
+                            .size(18.dp),
+                        strokeWidth = 2.dp,
+                    )
                 }
             }
             keyTest.message?.let { msg ->

@@ -1520,6 +1520,7 @@ class BibleViewModel(
 
     fun setGigaChatAuthKey(key: String) {
         viewModelScope.launch {
+            GigaChatClient.clearTokenCache()
             preferences.setGigaChatAuthKey(key)
             _gigaChatKeyTest.value = DeepSeekKeyTestUiState()
             if (key.isBlank() && _gigaChatAsk.value.needsKey) {
@@ -1532,6 +1533,7 @@ class BibleViewModel(
 
     fun setGigaChatScope(scope: String) {
         viewModelScope.launch {
+            GigaChatClient.clearTokenCache()
             preferences.setGigaChatScope(scope)
         }
     }
@@ -1597,6 +1599,7 @@ class BibleViewModel(
                 return@launch
             }
             preferences.setGigaChatAuthKey(key)
+            GigaChatClient.clearTokenCache()
             _gigaChatKeyTest.value = DeepSeekKeyTestUiState(loading = true)
             val result = GigaChatClient.testKey(key, scope)
             result.fold(

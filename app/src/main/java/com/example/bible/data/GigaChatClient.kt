@@ -33,16 +33,24 @@ object GigaChatClient {
     const val SCOPE_B2B = "GIGACHAT_API_B2B"
     const val SCOPE_CORP = "GIGACHAT_API_CORP"
 
-    private const val CHAT_URL = "https://api.giga.chat/v1/chat/completions"
-    private const val MODELS_URL = "https://api.giga.chat/v1/models"
-    private const val OAUTH_PRIMARY = "https://ngw.devices.sberbank.ru:9443/api/v2/oauth"
-    private const val OAUTH_FALLBACK = "https://api.giga.chat/api/v2/oauth"
+    private val chatUrls = listOf(
+        "https://api.giga.chat/v1/chat/completions",
+        "https://gigachat.devices.sberbank.ru/api/v1/chat/completions",
+    )
+    private val oauthUrls = listOf(
+        "https://api.giga.chat/api/v2/oauth",
+        "https://ngw.devices.sberbank.ru:9443/api/v2/oauth",
+    )
     private const val USER_AGENT = "BibleApp/1.0 (Android; GigaChat)"
     private const val NETWORK_ATTEMPTS = 3
     private const val RETRY_DELAY_MS = 700L
     private const val TOKEN_SKEW_MS = 60_000L
 
-    private val sberHosts = setOf("api.giga.chat", "ngw.devices.sberbank.ru")
+    private val sberHosts = setOf(
+        "api.giga.chat",
+        "ngw.devices.sberbank.ru",
+        "gigachat.devices.sberbank.ru",
+    )
 
     @Volatile
     private var cachedAuthKey: String = ""
@@ -87,23 +95,7 @@ object GigaChatClient {
             )
         }.toString()
         try {
-            var token = accessToken(key, scope)
-            var (code, raw) = postJson(CHAT_URL, token, body, timeoutMs)
-            if (code == 401) {
-                invalidateToken()
-                token = accessToken(key, scope)
-                val retry = postJson(CHAT_URL, token, body, timeoutMs)
-                code = retry.first
-                raw = retry.second
-            }
-            if (code !in 200..299) {
-                return@withContext Result.failure(IllegalStateException(errorMessage(code, raw)))
-            }
-            val message = JSONObject(raw)
-                .optJSONArray("choices")
-                ?.optJSONObject(0)
-                ?.optJSONObject("message")
-            val text = message?.optString("content").orEmpty().trim()
+            val text = completeChat(key, scope, body, timeoutMs)
             if (text.isEmpty()) {
                 Result.failure(IllegalStateException("Пустой ответ GigaChat"))
             } else {
@@ -117,41 +109,57 @@ object GigaChatClient {
     suspend fun testKey(
         authKey: String,
         scope: String = SCOPE_PERS,
-    ): Result<String> = kotlinx.coroutines.withContext(kotlinx.coroutines.Dispatchers.IO) {
-        val key = normalizeAuthKey(authKey)
-        if (key.isEmpty()) {
-            return@withContext Result.failure(IllegalStateException("Введите ключ авторизации GigaChat"))
-        }
-        try {
-            val token = accessToken(key, scope)
-            val (code, raw) = getJson(MODELS_URL, token, 40_000)
-            if (code !in 200..299) {
-                return@withContext Result.failure(IllegalStateException(errorMessage(code, raw)))
-            }
-            val ids = JSONObject(raw).optJSONArray("data")
-                ?.let { arr ->
-                    (0 until arr.length()).mapNotNull { i ->
-                        arr.optJSONObject(i)?.optString("id")?.takeIf { it.isNotBlank() }
-                    }
-                }
-                .orEmpty()
-            if (ids.isEmpty()) {
-                Result.success("Ключ работает")
-            } else {
-                Result.success("Ключ работает. Модели: ${ids.take(4).joinToString()}")
-            }
-        } catch (e: Exception) {
-            Result.failure(IllegalStateException(networkErrorMessage(e), e))
-        }
-    }
+    ): Result<String> = chat(
+        authKey = authKey,
+        messages = listOf(DeepSeekMessage("user", "Ответь одним словом: ок")),
+        scope = scope,
+        timeoutMs = 40_000,
+    ).map { "Ключ работает. $DEFAULT_MODEL отвечает." }
 
     fun normalizeAuthKey(raw: String): String =
         raw.trim().removePrefix("Basic ").trim()
 
     @Synchronized
+    fun clearTokenCache() {
+        cachedAuthKey = ""
+        cachedScope = ""
+        cachedToken = ""
+        tokenExpiresAtMs = 0
+    }
+
+    @Synchronized
     private fun invalidateToken() {
         cachedToken = ""
         tokenExpiresAtMs = 0
+    }
+
+    private fun completeChat(
+        authKey: String,
+        scope: String,
+        body: String,
+        timeoutMs: Int,
+    ): String {
+        var token = accessToken(authKey, scope)
+        var lastError: Exception? = null
+        for (url in chatUrls) {
+            var (code, raw) = postJson(url, token, body, timeoutMs)
+            if (code == 401) {
+                invalidateToken()
+                token = accessToken(authKey, scope)
+                val retry = postJson(url, token, body, timeoutMs)
+                code = retry.first
+                raw = retry.second
+            }
+            if (code in 200..299) {
+                val message = JSONObject(raw)
+                    .optJSONArray("choices")
+                    ?.optJSONObject(0)
+                    ?.optJSONObject("message")
+                return message?.optString("content").orEmpty().trim()
+            }
+            lastError = IllegalStateException(errorMessage(code, raw))
+        }
+        throw lastError ?: IOException("Не удалось обратиться к GigaChat")
     }
 
     @Synchronized
@@ -167,7 +175,7 @@ object GigaChatClient {
         }
         val form = "scope=${if (scope.isBlank()) SCOPE_PERS else scope}"
         var lastError: Exception? = null
-        for (oauthUrl in listOf(OAUTH_PRIMARY, OAUTH_FALLBACK)) {
+        for (oauthUrl in oauthUrls) {
             try {
                 val (code, raw) = postForm(oauthUrl, authKey, form, 30_000)
                 if (code !in 200..299) {
@@ -215,46 +223,44 @@ object GigaChatClient {
         }
     }
 
-    private fun getJson(
-        url: String,
-        accessToken: String,
-        timeoutMs: Int,
-    ): Pair<Int, String> = withRetry {
-        openConn(url).apply {
-            requestMethod = "GET"
-            setRequestProperty("Authorization", "Bearer $accessToken")
-            setRequestProperty("Accept", "application/json")
-            setRequestProperty("User-Agent", USER_AGENT)
-            setRequestProperty("Connection", "close")
-            connectTimeout = 20_000
-            readTimeout = timeoutMs
-        }.useConn(::readResponse)
-    }
-
     private fun postForm(
         url: String,
         authKey: String,
         form: String,
         timeoutMs: Int,
-    ): Pair<Int, String> = withRetry {
-        openConn(url).apply {
-            requestMethod = "POST"
-            setRequestProperty("Authorization", "Basic $authKey")
-            setRequestProperty("Content-Type", "application/x-www-form-urlencoded")
-            setRequestProperty("Accept", "application/json")
-            setRequestProperty("RqUID", UUID.randomUUID().toString())
-            setRequestProperty("User-Agent", USER_AGENT)
-            setRequestProperty("Connection", "close")
-            connectTimeout = 20_000
-            readTimeout = timeoutMs
-            doOutput = true
-        }.useConn { conn ->
-            conn.outputStream.use { it.write(form.toByteArray(StandardCharsets.UTF_8)) }
-            readResponse(conn)
+    ): Pair<Int, String> {
+        var current = url
+        repeat(4) {
+            val (code, raw, location) = withRetry {
+                openConn(current).apply {
+                    requestMethod = "POST"
+                    instanceFollowRedirects = false
+                    setRequestProperty("Authorization", "Basic $authKey")
+                    setRequestProperty("Content-Type", "application/x-www-form-urlencoded")
+                    setRequestProperty("Accept", "application/json")
+                    setRequestProperty("RqUID", UUID.randomUUID().toString())
+                    setRequestProperty("User-Agent", USER_AGENT)
+                    setRequestProperty("Connection", "close")
+                    connectTimeout = 20_000
+                    readTimeout = timeoutMs
+                    doOutput = true
+                }.useConn { conn ->
+                    conn.outputStream.use { it.write(form.toByteArray(StandardCharsets.UTF_8)) }
+                    val loc = conn.getHeaderField("Location").orEmpty()
+                    val (c, body) = readResponse(conn)
+                    Triple(c, body, loc)
+                }
+            }
+            if (code in 300..399 && location.isNotBlank()) {
+                current = if (location.startsWith("http")) location else URL(URL(current), location).toString()
+                continue
+            }
+            return code to raw
         }
+        return 403 to """{"message":"oauth redirect loop"}"""
     }
 
-    private fun withRetry(block: () -> Pair<Int, String>): Pair<Int, String> {
+    private fun <T> withRetry(block: () -> T): T {
         var lastError: IOException? = null
         for (attempt in 0 until NETWORK_ATTEMPTS) {
             try {
@@ -342,13 +348,20 @@ object GigaChatClient {
             val json = JSONObject(body)
             json.optJSONObject("error")?.optString("message").orEmpty()
                 .ifBlank { json.optString("message") }
-                .ifBlank { json.optString("status_code") }
-        }.getOrDefault("")
-        return when (code) {
-            401 -> "Ключ отклонён. Проверьте Authorization Key в Studio."
-            403 -> "Нет доступа к этой версии API. Проверьте scope (физлицо / бизнес)."
-            402, 429 -> "Лимит GigaChat исчерпан или слишком много запросов. Подождите и повторите."
-            else -> apiMsg.ifBlank { "Ошибка GigaChat (HTTP $code)" }
+        }.getOrDefault("").trim()
+        val lower = apiMsg.lowercase()
+        return when {
+            "scope is empty" in lower || "scope data format" in lower ->
+                "Не передана версия API. Оставьте scope «Физлицо» и проверьте ключ ещё раз."
+            "scope from db" in lower ->
+                "Ключ не подходит к выбранному scope. Для Ultra нужен проект физлица (GIGACHAT_API_PERS)."
+            apiMsg.isNotBlank() -> apiMsg
+            code == 401 -> "Ключ отклонён. Проверьте Authorization Key в Studio."
+            code == 403 ->
+                "GigaChat отказал в доступе. Для Ultra оставьте scope «Физлицо» и ключ из Freemium-проекта."
+            code == 402 || code == 429 ->
+                "Лимит GigaChat исчерпан или слишком много запросов. Подождите и повторите."
+            else -> "Ошибка GigaChat (HTTP $code)"
         }
     }
 }
