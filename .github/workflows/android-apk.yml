@@ -47,6 +47,24 @@ jobs:
           cp "$APK" dist/Bible.apk
           ls -lh dist/Bible.apk
 
+      - name: Prepare release notes
+        run: |
+          {
+            echo "Готовая сборка приложения для Android."
+            echo
+            echo "1. Скачайте **Bible.apk** в разделе Assets."
+            echo "2. На телефоне разрешите установку из неизвестного источника."
+            echo "3. Откройте файл и установите."
+            echo
+            # Свежий раздел CHANGELOG.md — чтобы прямо на странице скачивания было видно, что нового.
+            awk '/^## /{n++} n==1' CHANGELOG.md
+            echo
+            echo "Полная история изменений: [CHANGELOG.md](https://github.com/ValentinK2410/Bibleapp/blob/master/CHANGELOG.md)"
+            echo
+            echo "Сборка: \`${{ github.sha }}\`"
+          } > dist/release-notes.md
+          cat dist/release-notes.md
+
       - name: Publish latest download
         uses: ncipollo/release-action@v1
         with:
@@ -57,11 +75,4 @@ jobs:
           allowUpdates: true
           replacesArtifacts: true
           makeLatest: true
-          body: |
-            Готовая сборка приложения для Android.
-
-            1. Скачайте **Bible.apk** в разделе Assets.
-            2. На телефоне разрешите установку из неизвестного источника.
-            3. Откройте файл и установите.
-
-            Сборка: `${{ github.sha }}`
+          bodyFile: dist/release-notes.md
