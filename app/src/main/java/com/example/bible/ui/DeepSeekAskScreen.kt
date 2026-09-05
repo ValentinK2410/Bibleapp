@@ -101,7 +101,7 @@ fun DeepSeekAskScreen(
         SimpleDateFormat("dd.MM.yyyy HH:mm", Locale.getDefault())
     }
     val hasConversation = state.messages.any { it.role == "user" || it.role == "assistant" }
-    val tts = rememberStudyTextToSpeech(TranslationId.SYNODAL)
+    val tts = rememberAiChatTextToSpeech()
     var lastQuestion by remember { mutableStateOf("") }
     val speech = rememberAiSpeechToText(
         onPartial = { draft = it },

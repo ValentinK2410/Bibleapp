@@ -61,7 +61,9 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.bible.R
 import com.example.bible.data.BibleTtsController
+import com.example.bible.data.applyAiChatVoice
 import com.example.bible.data.applyTtsVoiceForTranslation
+import com.example.bible.data.resolveTtsEnginePackage
 import com.example.bible.data.BibleUserAudio
 import com.example.bible.data.BibleUserImage
 import com.example.bible.data.BibleUserVideo
@@ -196,6 +198,68 @@ fun rememberStudyTextToSpeech(translation: TranslationId): BibleVoiceTts {
                     chunks.forEachIndexed { index, chunk ->
                         val queueMode = if (index == 0) TextToSpeech.QUEUE_FLUSH else TextToSpeech.QUEUE_ADD
                         val utteranceId = "study_${System.nanoTime()}_$index"
+                        engine.speak(chunk, queueMode, null, utteranceId)
+                    }
+                }
+            },
+            stop = { tts?.stop() },
+        )
+    }
+}
+
+/**
+ * Озвучка ответов ИИ (GigaChat, DeepSeek): те же скорость и тон, что в настройках приложения,
+ * движок Google TTS по умолчанию (если установлен), иначе системный.
+ */
+@Composable
+fun rememberAiChatTextToSpeech(): BibleVoiceTts {
+    val context = LocalContext.current
+    var tts by remember { mutableStateOf<TextToSpeech?>(null) }
+    val ttsUser by BibleTtsController.settings.collectAsStateWithLifecycle()
+    val app = context.applicationContext
+    val engineKey = remember(ttsUser.enginePackage) {
+        resolveTtsEnginePackage(app, ttsUser)
+    }
+
+    DisposableEffect(engineKey) {
+        var engine: TextToSpeech? = null
+        val init = TextToSpeech.OnInitListener { status ->
+            if (status == TextToSpeech.SUCCESS) {
+                engine?.let { e ->
+                    applyAiChatVoice(e, BibleTtsController.settings.value)
+                    tts = e
+                }
+            }
+        }
+        engine = if (engineKey.isNotEmpty()) {
+            TextToSpeech(app, init, engineKey)
+        } else {
+            TextToSpeech(app, init)
+        }
+        onDispose {
+            runCatching {
+                engine?.stop()
+                engine?.shutdown()
+            }
+            tts = null
+        }
+    }
+
+    LaunchedEffect(ttsUser, tts) {
+        val e = tts ?: return@LaunchedEffect
+        applyAiChatVoice(e, ttsUser)
+    }
+
+    return remember {
+        BibleVoiceTts(
+            speak = { text: String ->
+                tts?.let { engine ->
+                    val trimmed = text.trim()
+                    if (trimmed.isEmpty()) return@let
+                    val chunks = splitTtsChunks(trimmed)
+                    chunks.forEachIndexed { index, chunk ->
+                        val queueMode = if (index == 0) TextToSpeech.QUEUE_FLUSH else TextToSpeech.QUEUE_ADD
+                        val utteranceId = "ai_chat_${System.nanoTime()}_$index"
                         engine.speak(chunk, queueMode, null, utteranceId)
                     }
                 }

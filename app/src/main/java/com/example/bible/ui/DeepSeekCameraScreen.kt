@@ -53,10 +53,12 @@ import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -70,6 +72,7 @@ import androidx.core.content.ContextCompat
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.bible.R
+import com.example.bible.data.AiChatVoiceText
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.suspendCancellableCoroutine
@@ -95,6 +98,9 @@ fun DeepSeekCameraScreen(
     val deepSeekVision by viewModel.deepSeekVision.collectAsStateWithLifecycle()
     val gigaChatVision by viewModel.gigaChatVision.collectAsStateWithLifecycle()
     val vision = if (engine == VisionAiEngine.GIGACHAT) gigaChatVision else deepSeekVision
+    val tts = rememberAiChatTextToSpeech()
+    var speakAnswer by rememberSaveable { mutableStateOf(engine == VisionAiEngine.GIGACHAT) }
+    var replyWasLoading by remember { mutableStateOf(false) }
     val deepSeekKey by viewModel.deepSeekApiKey.collectAsStateWithLifecycle()
     val gigaChatKey by viewModel.gigaChatAuthKey.collectAsStateWithLifecycle()
     val hasKey = if (engine == VisionAiEngine.GIGACHAT) gigaChatKey else deepSeekKey
@@ -152,7 +158,24 @@ fun DeepSeekCameraScreen(
     }
 
     DisposableEffect(engine) {
-        onDispose { clearVision() }
+        onDispose {
+            tts.stop()
+            clearVision()
+        }
+    }
+    LaunchedEffect(vision.loading, vision.answer, speakAnswer, engine) {
+        val finished = replyWasLoading && !vision.loading
+        replyWasLoading = vision.loading
+        if (
+            engine == VisionAiEngine.GIGACHAT &&
+            finished &&
+            speakAnswer &&
+            vision.error == null &&
+            vision.answer.isNotBlank()
+        ) {
+            tts.speak(AiChatVoiceText.forSpeech(vision.answer))
+        }
+        if (!speakAnswer) tts.stop()
     }
 
     val previewBitmap = remember(capturedJpeg) {
@@ -387,14 +410,12 @@ fun DeepSeekCameraScreen(
                                     color = MaterialTheme.colorScheme.error,
                                 )
                                 vision.answer.isNotBlank() -> {
-                                    if (mode == DeepSeekVisionMode.IDENTIFY) {
-                                        Text(
-                                            stringResource(R.string.ai_identify_saved_chat),
-                                            style = MaterialTheme.typography.bodySmall,
-                                            color = MaterialTheme.colorScheme.onSurfaceVariant,
-                                        )
-                                        Spacer(Modifier.height(8.dp))
-                                    }
+                                    Text(
+                                        stringResource(R.string.ai_identify_saved_chat),
+                                        style = MaterialTheme.typography.bodySmall,
+                                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                    )
+                                    Spacer(Modifier.height(8.dp))
                                     SelectionContainer {
                                         Text(
                                             vision.answer,

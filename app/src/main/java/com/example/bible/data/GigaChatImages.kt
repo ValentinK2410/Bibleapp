@@ -148,6 +148,11 @@ object GigaChatImages {
         return if (jpegTag.isNullOrBlank()) label else "$label\n$jpegTag"
     }
 
+    fun transcribeUserMessage(jpegTag: String?): String {
+        val label = "Расшифровать текст с фото"
+        return if (jpegTag.isNullOrBlank()) label else "$label\n$jpegTag"
+    }
+
     fun saveToGallery(context: Context, file: File): Result<Unit> {
         if (!file.isFile || file.length() < 1) {
             return Result.failure(IllegalStateException("Файл изображения не найден"))

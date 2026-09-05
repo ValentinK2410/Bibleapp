@@ -1236,10 +1236,8 @@ class BibleViewModel(
             result.fold(
                 onSuccess = { text ->
                     _deepSeekVision.value = DeepSeekVisionUiState(answer = text)
-                    if (mode == DeepSeekVisionMode.IDENTIFY) {
-                        rememberIdentifyPhotoRequest(aiChats, jpegBytes, text)
-                        _deepSeekAsk.value = _deepSeekAsk.value.copy(chats = aiChats.listSummaries())
-                    }
+                    rememberVisionPhotoRequest(aiChats, mode, jpegBytes, text)
+                    _deepSeekAsk.value = _deepSeekAsk.value.copy(chats = aiChats.listSummaries())
                 },
                 onFailure = { e ->
                     if (e is CancellationException) throw e
@@ -1359,7 +1357,7 @@ class BibleViewModel(
             return
         }
         viewModelScope.launch {
-            val post = AiChatShare.toMicroblogPost(s.chatTitle, s.messages)
+            val post = AiChatShare.toMicroblogPost(appContext, s.chatTitle, s.messages)
             microblogRepo.save(post)
             _microblogPosts.value = microblogRepo.listPosts()
             onResult(Result.success(post.id))
@@ -1646,7 +1644,7 @@ class BibleViewModel(
             return
         }
         viewModelScope.launch {
-            val post = AiChatShare.toMicroblogPost(s.chatTitle, s.messages)
+            val post = AiChatShare.toMicroblogPost(appContext, s.chatTitle, s.messages)
             microblogRepo.save(post)
             _microblogPosts.value = microblogRepo.listPosts()
             onResult(Result.success(post.id))
@@ -1675,15 +1673,20 @@ class BibleViewModel(
         )
     }
 
-    private suspend fun rememberIdentifyPhotoRequest(
+    private suspend fun rememberVisionPhotoRequest(
         repo: AiChatRepository,
+        mode: DeepSeekVisionMode,
         jpegBytes: ByteArray,
         answer: String,
     ) {
         val dir = GigaChatImages.dir(appContext)
         val tag = GigaChatImages.saveJpeg(dir, jpegBytes)
-        val chatId = repo.createChat("Что на фото")
-        repo.addMessage(chatId, "user", GigaChatImages.identifyUserMessage(tag))
+        val (title, userMessage) = when (mode) {
+            DeepSeekVisionMode.IDENTIFY -> "Что на фото" to GigaChatImages.identifyUserMessage(tag)
+            DeepSeekVisionMode.TRANSCRIBE -> "Текст с фото" to GigaChatImages.transcribeUserMessage(tag)
+        }
+        val chatId = repo.createChat(title)
+        repo.addMessage(chatId, "user", userMessage)
         repo.addMessage(chatId, "assistant", answer)
     }
 
@@ -1765,10 +1768,8 @@ class BibleViewModel(
                 onSuccess = { text ->
                     val answer = localizeGigaChatReply(text)
                     _gigaChatVision.value = DeepSeekVisionUiState(answer = answer)
-                    if (mode == DeepSeekVisionMode.IDENTIFY) {
-                        rememberIdentifyPhotoRequest(gigaChats, packed, answer)
-                        _gigaChatAsk.value = _gigaChatAsk.value.copy(chats = gigaChats.listSummaries())
-                    }
+                    rememberVisionPhotoRequest(gigaChats, mode, packed, answer)
+                    _gigaChatAsk.value = _gigaChatAsk.value.copy(chats = gigaChats.listSummaries())
                 },
                 onFailure = { e ->
                     if (e is CancellationException) throw e

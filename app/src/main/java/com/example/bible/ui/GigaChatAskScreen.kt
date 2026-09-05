@@ -11,7 +11,6 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -23,7 +22,6 @@ import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.filled.Send
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.ContentCopy
-import androidx.compose.material.icons.filled.Download
 import androidx.compose.material.icons.filled.Forum
 import androidx.compose.material.icons.filled.Mic
 import androidx.compose.material.icons.filled.MoreVert
@@ -62,13 +60,11 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import coil.compose.AsyncImage
 import com.example.bible.R
 import com.example.bible.data.AiChatSummary
 import com.example.bible.data.AiChatVoiceText
 import com.example.bible.data.GigaChatContentPart
 import com.example.bible.data.GigaChatImages
-import com.example.bible.data.TranslationId
 import java.io.File
 import java.text.SimpleDateFormat
 import java.util.Locale
@@ -93,7 +89,7 @@ fun GigaChatAskScreen(
         SimpleDateFormat("dd.MM.yyyy HH:mm", Locale.getDefault())
     }
     val hasConversation = state.messages.any { it.role == "user" || it.role == "assistant" }
-    val tts = rememberStudyTextToSpeech(TranslationId.SYNODAL)
+    val tts = rememberAiChatTextToSpeech()
     val speech = rememberGigaChatVoiceRecorder(
         onRecorded = { file ->
             if (state.loading) {
@@ -452,7 +448,12 @@ private fun GigaChatAskConversation(
                     modifier = Modifier.size(18.dp),
                 )
             },
-            label = { Text(stringResource(R.string.ai_ask_speak_answers)) },
+            label = { Text(stringResource(R.string.gigachat_speak_answers)) },
+        )
+        Text(
+            stringResource(R.string.gigachat_speak_answers_hint),
+            style = MaterialTheme.typography.bodySmall,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
         )
         Spacer(Modifier.height(8.dp))
         Row(verticalAlignment = Alignment.Bottom) {
@@ -524,27 +525,12 @@ internal fun AiChatUserRichMessage(
         }
         parts.forEach { part ->
             if (part is GigaChatContentPart.Image) {
-                Box(Modifier.fillMaxWidth()) {
-                    AsyncImage(
-                        model = part.file,
-                        contentDescription = stringResource(R.string.gigachat_image_cd),
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .heightIn(max = 280.dp),
-                        contentScale = ContentScale.Fit,
-                    )
-                    if (onSaveImage != null) {
-                        IconButton(
-                            onClick = { onSaveImage(part.file) },
-                            modifier = Modifier.align(Alignment.BottomEnd),
-                        ) {
-                            Icon(
-                                Icons.Filled.Download,
-                                contentDescription = stringResource(R.string.gigachat_image_save_cd),
-                            )
-                        }
-                    }
-                }
+                AiChatImageBlock(
+                    file = part.file,
+                    maxHeight = 280.dp,
+                    enabled = onSaveImage != null,
+                    onSaveImage = { onSaveImage?.invoke(it) },
+                )
             }
         }
     }
@@ -570,26 +556,12 @@ private fun GigaChatAssistantMessage(
                         part.value,
                         style = MaterialTheme.typography.bodyLarge,
                     )
-                    is GigaChatContentPart.Image -> Box(Modifier.fillMaxWidth()) {
-                        AsyncImage(
-                            model = part.file,
-                            contentDescription = stringResource(R.string.gigachat_image_cd),
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .heightIn(max = 420.dp),
-                            contentScale = ContentScale.Fit,
-                        )
-                        IconButton(
-                            onClick = { onSaveImage(part.file) },
-                            enabled = enabled,
-                            modifier = Modifier.align(Alignment.BottomEnd),
-                        ) {
-                            Icon(
-                                Icons.Filled.Download,
-                                contentDescription = stringResource(R.string.gigachat_image_save_cd),
-                            )
-                        }
-                    }
+                    is GigaChatContentPart.Image -> AiChatImageBlock(
+                        file = part.file,
+                        maxHeight = 420.dp,
+                        enabled = enabled,
+                        onSaveImage = onSaveImage,
+                    )
                     GigaChatContentPart.MissingImage -> Text(
                         stringResource(R.string.gigachat_image_missing),
                         style = MaterialTheme.typography.bodyMedium,

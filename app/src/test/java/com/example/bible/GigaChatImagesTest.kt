@@ -46,6 +46,15 @@ class GigaChatImagesTest {
     }
 
     @Test
+    fun transcribeUserMessageKeepsPhotoTag() {
+        val dir = File(createTempDir(), "photos").apply { mkdirs() }
+        val tag = GigaChatImages.saveJpeg(dir, byteArrayOf(1, 2, 3, 4))
+        val msg = GigaChatImages.transcribeUserMessage(tag)
+        assertTrue(msg.startsWith("Расшифровать текст с фото"))
+        assertTrue(msg.contains(tag!!))
+    }
+
+    @Test
     fun identifyUserMessageKeepsPhotoTag() {
         val dir = File(createTempDir(), "photos").apply { mkdirs() }
         val tag = GigaChatImages.saveJpeg(dir, byteArrayOf(1, 2, 3, 4))

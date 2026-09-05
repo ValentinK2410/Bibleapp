@@ -1,5 +1,9 @@
 package com.example.bible.data
 
+import android.content.Context
+import java.io.File
+import java.util.UUID
+
 /** Оформление беседы «Вопрос ИИ» для буфера обмена и поста микроблога. */
 object AiChatShare {
 
@@ -31,16 +35,32 @@ object AiChatShare {
         }.trim()
     }
 
-    fun toMicroblogPost(title: String, messages: List<DeepSeekMessage>): MicroblogPost {
+    fun toMicroblogPost(
+        context: Context,
+        title: String,
+        messages: List<DeepSeekMessage>,
+    ): MicroblogPost {
+        val imagesDir = GigaChatImages.dir(context)
+        val microblogDir = MediaCatalogPaths.microblogDir(context)
         val turns = messages.filter { it.role == "user" || it.role == "assistant" }
         val spans = mutableListOf<MicroblogSpan>()
         val body = StringBuilder()
+        val images = mutableListOf<MicroblogImage>()
 
         fun add(text: String, style: MicroblogSpan.(Int, Int) -> MicroblogSpan) {
             val start = body.length
             body.append(text)
             val end = body.length
             if (end > start) spans += MicroblogSpan(start = start, end = end).style(start, end)
+        }
+
+        fun attachImage(file: File) {
+            val name = copyImageToMicroblog(file, microblogDir) ?: return
+            images += MicroblogImage(
+                fileName = name,
+                insertAt = body.length.coerceAtLeast(0),
+                wrap = MicroblogImageWrap.FULL,
+            )
         }
 
         add("Беседа с ИИ") { _, _ -> copy(bold = true, fontSize = 20, colorArgb = HeaderColor) }
@@ -62,20 +82,45 @@ object AiChatShare {
                 }
             }
             body.append('\n')
-            val content = GigaChatImages.stripForApi(m.content)
-            if (content.isNotEmpty()) {
-                add(content) { _, _ ->
-                    if (isUser) copy(fontSize = 16, colorArgb = UserBodyColor)
-                    else copy(fontSize = 16)
+            val parts = GigaChatImages.parts(m.content, imagesDir)
+            for (part in parts) {
+                when (part) {
+                    is GigaChatContentPart.Text -> {
+                        val text = part.value.trim()
+                        if (text.isNotEmpty()) {
+                            add(text) { _, _ ->
+                                if (isUser) copy(fontSize = 16, colorArgb = UserBodyColor)
+                                else copy(fontSize = 16)
+                            }
+                            body.append('\n')
+                        }
+                    }
+                    is GigaChatContentPart.Image -> attachImage(part.file)
+                    GigaChatContentPart.MissingImage -> {
+                        add("[изображение]") { _, _ -> copy(fontSize = 16, italic = true) }
+                        body.append('\n')
+                    }
                 }
             }
-            body.append('\n')
         }
 
         return MicroblogPost(
             title = head.ifEmpty { "Беседа с ИИ" },
             body = body.toString().trim(),
             spans = spans,
+            images = images,
         )
+    }
+
+    private fun copyImageToMicroblog(src: File, microblogDir: File): String? {
+        if (!src.isFile || src.length() < 1L) return null
+        microblogDir.mkdirs()
+        val ext = src.extension.lowercase().ifBlank { "jpg" }
+        val name = "${UUID.randomUUID()}.$ext"
+        val dest = File(microblogDir, name)
+        return runCatching {
+            src.copyTo(dest, overwrite = true)
+            name
+        }.getOrNull()
     }
 }

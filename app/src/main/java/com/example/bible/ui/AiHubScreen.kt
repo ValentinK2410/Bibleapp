@@ -2,15 +2,10 @@ package com.example.bible.ui
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
@@ -21,14 +16,12 @@ import androidx.compose.material.icons.filled.Key
 import androidx.compose.material.icons.filled.TextSnippet
 import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
@@ -43,6 +36,7 @@ fun AiHubScreen(
     onOpenTranscribePhoto: () -> Unit,
     onOpenSettings: () -> Unit,
 ) {
+    val scheme = MaterialTheme.colorScheme
     Scaffold(
         topBar = {
             CenterAlignedTopAppBar(
@@ -63,8 +57,8 @@ fun AiHubScreen(
                 .padding(padding)
                 .fillMaxSize()
                 .verticalScroll(rememberScrollState())
-                .padding(20.dp),
-            verticalArrangement = Arrangement.spacedBy(12.dp),
+                .padding(horizontal = 20.dp, vertical = 16.dp),
+            verticalArrangement = Arrangement.spacedBy(14.dp),
         ) {
             Text(
                 text = stringResource(R.string.ai_hub_hint),
@@ -72,62 +66,38 @@ fun AiHubScreen(
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
             Spacer(Modifier.height(4.dp))
-            AiHubSectionButton(
-                icon = { Icon(Icons.Filled.Chat, contentDescription = null, modifier = Modifier.size(28.dp)) },
+            AiHubActionCard(
+                icon = Icons.Filled.Chat,
+                iconBackground = scheme.primaryContainer,
+                iconTint = scheme.onPrimaryContainer,
                 title = stringResource(R.string.ai_hub_ask),
                 description = stringResource(R.string.ai_hub_ask_desc),
                 onClick = onOpenAsk,
             )
-            AiHubSectionButton(
-                icon = { Icon(Icons.Filled.ImageSearch, contentDescription = null, modifier = Modifier.size(28.dp)) },
+            AiHubActionCard(
+                icon = Icons.Filled.ImageSearch,
+                iconBackground = scheme.tertiaryContainer,
+                iconTint = scheme.onTertiaryContainer,
                 title = stringResource(R.string.ai_hub_identify),
                 description = stringResource(R.string.ai_hub_identify_desc),
                 onClick = onOpenIdentifyPhoto,
             )
-            AiHubSectionButton(
-                icon = { Icon(Icons.Filled.TextSnippet, contentDescription = null, modifier = Modifier.size(28.dp)) },
+            AiHubActionCard(
+                icon = Icons.Filled.TextSnippet,
+                iconBackground = scheme.secondaryContainer,
+                iconTint = scheme.onSecondaryContainer,
                 title = stringResource(R.string.ai_hub_transcribe),
                 description = stringResource(R.string.ai_hub_transcribe_desc),
                 onClick = onOpenTranscribePhoto,
             )
-            AiHubSectionButton(
-                icon = { Icon(Icons.Filled.Key, contentDescription = null, modifier = Modifier.size(28.dp)) },
+            AiHubActionCard(
+                icon = Icons.Filled.Key,
+                iconBackground = scheme.surfaceVariant,
+                iconTint = scheme.onSurfaceVariant,
                 title = stringResource(R.string.ai_hub_settings),
                 description = stringResource(R.string.ai_hub_settings_desc),
                 onClick = onOpenSettings,
             )
-        }
-    }
-}
-
-@Composable
-private fun AiHubSectionButton(
-    icon: @Composable () -> Unit,
-    title: String,
-    description: String,
-    onClick: () -> Unit,
-) {
-    FilledTonalButton(
-        onClick = onClick,
-        modifier = Modifier.fillMaxWidth(),
-        contentPadding = PaddingValues(horizontal = 16.dp, vertical = 14.dp),
-    ) {
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.Start,
-        ) {
-            icon()
-            Spacer(Modifier.width(14.dp))
-            Column(Modifier.weight(1f)) {
-                Text(text = title, style = MaterialTheme.typography.titleSmall)
-                Spacer(Modifier.height(4.dp))
-                Text(
-                    text = description,
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                )
-            }
         }
     }
 }

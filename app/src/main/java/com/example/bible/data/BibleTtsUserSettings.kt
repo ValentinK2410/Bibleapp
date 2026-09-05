@@ -1,12 +1,17 @@
 package com.example.bible.data
 
 import android.content.Context
+import android.content.Intent
+import android.content.pm.PackageManager
 import android.os.Build
 import android.os.Handler
 import android.os.Looper
 import android.speech.tts.TextToSpeech
 import android.speech.tts.Voice
 import java.util.Locale
+
+/** Пакет Google Text-to-Speech — нейросетевые голоса, как в Google Ассистенте. */
+const val GOOGLE_TTS_PACKAGE = "com.google.android.tts"
 
 /**
  * Пользовательские настройки системного TTS: скорость, тон, движок, приоритет «красивого» голоса.
@@ -47,13 +52,22 @@ object BibleTtsVoiceHelper {
         }?.ifEmpty { null } ?: tts.voices?.toList() ?: return
         if (all.isEmpty()) return
         val chosen = if (preferHigh) {
-            all.maxByOrNull { v ->
-                v.quality * 1_000 + (if (v.isNetworkConnectionRequired) 0 else 1)
-            } ?: return
+            all.maxByOrNull { voiceScore(it) } ?: return
         } else {
             all.minByOrNull { it.name } ?: return
         }
         tts.setVoice(chosen)
+    }
+
+    private fun voiceScore(v: Voice): Int {
+        var score = v.quality * 1_000
+        val name = v.name.lowercase(Locale.ROOT)
+        if (name.contains("network")) score += 800
+        if (name.contains("neural") || name.contains("wavenet")) score += 600
+        if (name.contains("local")) score += 300
+        if (name.contains("ru-ru") || name.contains("rus")) score += 200
+        if (!v.isNetworkConnectionRequired) score += 50
+        return score
     }
 }
 
@@ -90,6 +104,27 @@ fun applyTtsVoiceForTranslation(tts: TextToSpeech, translation: TranslationId, u
     }
     tts.setSpeechRate(userRate)
     tts.setPitch((basePitch * userPitch).coerceIn(0.2f, 2.0f))
+}
+
+/** Голос для ответов GigaChat / DeepSeek: русский, лучший доступный (часто Google TTS). */
+fun applyAiChatVoice(tts: TextToSpeech, user: TtsUserSettings) {
+    tts.setLanguage(Locale.forLanguageTag("ru"))
+    BibleTtsVoiceHelper.applyBestVoiceForCurrentLanguage(tts, preferHigh = true)
+    tts.setSpeechRate(user.speechRate.coerceIn(0.35f, 2.2f))
+    tts.setPitch(user.pitch.coerceIn(0.5f, 1.4f))
+}
+
+fun resolveTtsEnginePackage(context: Context, user: TtsUserSettings): String {
+    val configured = user.enginePackage.trim()
+    if (configured.isNotEmpty()) return configured
+    return if (isTtsEngineInstalled(context, GOOGLE_TTS_PACKAGE)) GOOGLE_TTS_PACKAGE else ""
+}
+
+fun isTtsEngineInstalled(context: Context, packageName: String): Boolean {
+    if (packageName.isBlank()) return false
+    val pm = context.packageManager
+    val intent = Intent(TextToSpeech.Engine.INTENT_ACTION_TTS_SERVICE).setPackage(packageName)
+    return pm.queryIntentServices(intent, PackageManager.MATCH_DEFAULT_ONLY).isNotEmpty()
 }
 
 /**
@@ -142,7 +177,7 @@ object BibleTtsSampleSpeak {
             }
             last = null
             val user = BibleTtsController.settings.value
-            val pkg = user.enginePackage.trim()
+            val pkg = resolveTtsEnginePackage(app, user)
             var engine: TextToSpeech? = null
             val init = TextToSpeech.OnInitListener { status ->
                 if (status != TextToSpeech.SUCCESS) return@OnInitListener

@@ -1054,6 +1054,8 @@
     <string name="gigachat_ask_chats_title">Чаты GigaChat</string>
     <string name="gigachat_ask_hint">Напишите вопрос или нажмите микрофон. Переписка остаётся в базе на телефоне, отдельно от чатов DeepSeek. Голос пишется в приложении и уходит в GigaChat-3-Ultra — не во встроенный ассистент телефона. Ответ можно озвучить.</string>
     <string name="gigachat_voice_too_short">Запись слишком короткая. Нажмите микрофон, скажите вопрос и нажмите стоп.</string>
+    <string name="gigachat_speak_answers">Озвучивать ответы</string>
+    <string name="gigachat_speak_answers_hint">Системный голос из настроек приложения (обычно Google TTS). Скорость и тон — в главных настройках → Озвучка текста.</string>
     <string name="gigachat_voice_record_error">Не удалось начать запись. Проверьте микрофон.</string>
     <string name="gigachat_ask_listening">Запись для GigaChat… нажмите стоп</string>
     <string name="gigachat_ask_clear">Новый диалог</string>
