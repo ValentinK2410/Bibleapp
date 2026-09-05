@@ -14,6 +14,33 @@
 
 **Что нового и что исправлено:** [CHANGELOG.md](CHANGELOG.md)
 
+## Как выглядит
+
+Книги и стих дня · главы · читалка
+
+<p>
+<img src="docs/screenshots/01-books.jpg" width="240" alt="Выбор книг и стих дня">
+<img src="docs/screenshots/02-chapters.jpg" width="240" alt="Главы Бытия">
+<img src="docs/screenshots/03-reader.jpg" width="240" alt="Читалка">
+</p>
+
+Медиа · видео · плейлисты
+
+<p>
+<img src="docs/screenshots/04-media.jpg" width="240" alt="Каталог медиа">
+<img src="docs/screenshots/05-videos.jpg" width="240" alt="Видеотека">
+<img src="docs/screenshots/06-playlists.jpg" width="240" alt="Плейлисты">
+</p>
+
+Аудио · детям · настройки · ИИ
+
+<p>
+<img src="docs/screenshots/07-audios.jpg" width="240" alt="Аудиотека">
+<img src="docs/screenshots/08-kids.jpg" width="240" alt="Раздел Детям">
+<img src="docs/screenshots/09-settings.jpg" width="240" alt="Настройки">
+<img src="docs/screenshots/10-ai.jpg" width="240" alt="Раздел ИИ">
+</p>
+
 ---
 
 ## Что уже реализовано
