@@ -284,11 +284,20 @@ object VideoExtractor {
         return last?.optString("url")?.takeIf { it.startsWith("http") }
     }
 
+    /**
+     * Останавливает работающий процесс yt-dlp по его [processId] — так делаются пауза и отмена.
+     * Недокачанный файл остаётся на диске, повторный запуск продолжит его с того же места.
+     */
+    fun cancelProcess(processId: String): Boolean =
+        runCatching { YoutubeDL.getInstance().destroyProcessById(processId) }.getOrDefault(false)
+
     suspend fun download(
         url: String,
         audioOnly: Boolean = false,
         videoQuality: Int = 720,
         skipIfFileExists: Boolean = true,
+        /** Метка процесса: по ней [cancelProcess] ставит эту загрузку на паузу. */
+        processId: String? = null,
         onProgress: (Float, Long) -> Unit = { _, _ -> },
     ): File = withContext(Dispatchers.IO) {
         val dir = File(
@@ -311,6 +320,8 @@ object VideoExtractor {
         }
         request.addOption("--socket-timeout", "30")
         request.addOption("--retries", "3")
+        // Докачиваем прерванный файл вместо повторного скачивания с нуля — нужно для паузы.
+        request.addOption("--continue")
 
         if (audioOnly) {
             request.addOption("-x")
@@ -327,7 +338,7 @@ object VideoExtractor {
 
         Log.d(TAG, "Executing yt-dlp for: $url audioOnly=$audioOnly q=$videoQuality")
         val response = try {
-            YoutubeDL.getInstance().execute(request, null) { progress, etaInSeconds, line ->
+            YoutubeDL.getInstance().execute(request, processId) { progress, etaInSeconds, line ->
                 try {
                     onProgress(progress, etaInSeconds)
                 } catch (t: Throwable) {

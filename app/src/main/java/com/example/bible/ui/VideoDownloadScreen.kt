@@ -75,6 +75,7 @@ import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.TextButton
@@ -94,6 +95,7 @@ import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -117,7 +119,10 @@ import com.example.bible.data.LegalAudioTrack
 import com.example.bible.data.LocalDeviceAudioScan
 import com.example.bible.data.MediaCatalogPaths
 import com.example.bible.data.MediaDownloadDedup
+import com.example.bible.data.MediaDownloadItem
+import com.example.bible.data.MediaDownloadItemStatus
 import com.example.bible.data.MediaDownloadQueue
+import com.example.bible.data.MediaDownloadState
 import com.example.bible.data.MediaDownloadTask
 import com.example.bible.data.PlaylistInspection
 import com.example.bible.data.VideoExtractor
@@ -392,18 +397,32 @@ private fun MediaDownloadScreen(
 
     // Загрузка живёт в фоновом сервисе, поэтому состояние берём из общей очереди, а не из composition.
     val queue by MediaDownloadQueue.state.collectAsStateWithLifecycle()
+    var queueSheetOpen by remember { mutableStateOf(false) }
+    /** Сколько файлов качаем одновременно: слот освобождается — берётся следующая ссылка. */
+    var parallelDownloads by rememberSaveable {
+        mutableIntStateOf(MediaDownloadState.DEFAULT_PARALLEL)
+    }
+    val allPaused = queue.active.isEmpty() && queue.queued == 0 && queue.paused > 0
     val status = when {
-        queue.running -> DownloadStatus.DOWNLOADING
+        queue.hasWork -> DownloadStatus.DOWNLOADING
         queue.error != null -> DownloadStatus.ERROR
         queue.finishedMessage != null -> DownloadStatus.DONE
         else -> localStatus
     }
+    val queueStatusText = when {
+        allPaused -> stringResource(R.string.media_download_all_paused)
+        queue.active.isNotEmpty() -> queue.active.joinToString(" · ") { item ->
+            item.label.take(40) + if (item.progress >= 0f) " ${item.progress.toInt()}%" else ""
+        }
+        queue.hasWork -> stringResource(R.string.media_download_preparing)
+        else -> ""
+    }
     val statusText = when {
-        queue.running -> queue.statusText
+        queue.hasWork -> queueStatusText
         queue.finishedMessage != null -> queue.finishedMessage.orEmpty()
         else -> localStatusText
     }
-    val progress = if (queue.running) queue.progress else localProgress
+    val progress = if (queue.hasWork) queue.overallProgress else localProgress
 
     LaunchedEffect(queue.failures) {
         if (queue.failures.isNotEmpty()) {
@@ -529,6 +548,7 @@ private fun MediaDownloadScreen(
         localStatusText = ""
         localProgress = -1f
         MediaDownloadQueue.clearResult()
+        val queueWasBusy = queue.hasWork
 
         val importAsAudio = importTarget == MediaDownloadImportTarget.Audio
         val tasks =
@@ -556,8 +576,17 @@ private fun MediaDownloadScreen(
                 )
             }
         askNotificationPermission()
-        MediaDownloadService.enqueue(context, tasks)
-        Toast.makeText(context, R.string.media_download_started, Toast.LENGTH_LONG).show()
+        MediaDownloadService.enqueue(context, tasks, parallelDownloads)
+        val toastText = if (queueWasBusy) {
+            context.getString(R.string.media_download_queued, tasks.size)
+        } else {
+            context.getString(R.string.media_download_started)
+        }
+        Toast.makeText(context, toastText, Toast.LENGTH_LONG).show()
+        // Ссылку освобождаем сразу: очередь уже приняла задачу, можно вставлять следующую.
+        url = ""
+        playlistInspection = null
+        selectedIds = emptySet()
     }
 
     Scaffold(
@@ -607,7 +636,7 @@ private fun MediaDownloadScreen(
                         .navigationBarsPadding()
                         .padding(horizontal = 16.dp, vertical = 12.dp),
                 ) {
-                    AnimatedVisibility(visible = status == DownloadStatus.DOWNLOADING) {
+                    AnimatedVisibility(visible = queue.hasWork) {
                         Column(modifier = Modifier.padding(bottom = 10.dp)) {
                             if (progress >= 0f) {
                                 LinearProgressIndicator(
@@ -633,15 +662,6 @@ private fun MediaDownloadScreen(
                                 maxLines = 2,
                                 overflow = TextOverflow.Ellipsis,
                             )
-                            if (queue.currentTitle.isNotBlank()) {
-                                Text(
-                                    queue.currentTitle,
-                                    style = MaterialTheme.typography.labelSmall,
-                                    color = MaterialTheme.colorScheme.onSurface,
-                                    maxLines = 2,
-                                    overflow = TextOverflow.Ellipsis,
-                                )
-                            }
                             if (queue.total > 1) {
                                 Text(
                                     stringResource(
@@ -672,6 +692,55 @@ private fun MediaDownloadScreen(
                                         color = MaterialTheme.colorScheme.tertiary,
                                         maxLines = 1,
                                         overflow = TextOverflow.Ellipsis,
+                                    )
+                                }
+                            }
+                            Row(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(top = 4.dp),
+                                verticalAlignment = Alignment.CenterVertically,
+                            ) {
+                                TextButton(onClick = { queueSheetOpen = true }) {
+                                    Icon(
+                                        Icons.AutoMirrored.Filled.PlaylistPlay,
+                                        contentDescription = null,
+                                        modifier = Modifier.size(18.dp),
+                                    )
+                                    Spacer(Modifier.width(6.dp))
+                                    Text(
+                                        stringResource(
+                                            R.string.media_download_queue_button,
+                                            queue.remaining,
+                                        ),
+                                    )
+                                }
+                                Spacer(Modifier.weight(1f))
+                                IconButton(
+                                    onClick = {
+                                        if (allPaused) {
+                                            MediaDownloadService.resumeAll(context)
+                                        } else {
+                                            MediaDownloadService.pauseAll(context)
+                                        }
+                                    },
+                                ) {
+                                    Icon(
+                                        if (allPaused) Icons.Default.PlayArrow else Icons.Default.Pause,
+                                        contentDescription = stringResource(
+                                            if (allPaused) {
+                                                R.string.media_download_resume_all
+                                            } else {
+                                                R.string.media_download_pause_all
+                                            },
+                                        ),
+                                    )
+                                }
+                                IconButton(onClick = { MediaDownloadService.cancel(context) }) {
+                                    Icon(
+                                        Icons.Default.Close,
+                                        contentDescription = stringResource(R.string.media_download_cancel),
+                                        tint = MaterialTheme.colorScheme.error,
                                     )
                                 }
                             }
@@ -708,26 +777,23 @@ private fun MediaDownloadScreen(
                             .fillMaxWidth()
                             .height(52.dp),
                         shape = RoundedCornerShape(16.dp),
+                        // Очередь пополняется на ходу: кнопка доступна и во время загрузки.
                         enabled = (ytdlpReady || FonkiExtractor.isFonkiUrl(url.trim())) &&
-                            status != DownloadStatus.DOWNLOADING &&
                             !playlistBusy &&
                             !(playlistInspection != null && selectedIds.isEmpty()),
                     ) {
-                        if (status == DownloadStatus.DOWNLOADING) {
-                            CircularProgressIndicator(
-                                modifier = Modifier.size(20.dp),
-                                strokeWidth = 2.dp,
-                                color = MaterialTheme.colorScheme.onPrimary,
-                            )
-                        } else {
-                            Icon(Icons.Default.Download, contentDescription = null)
-                        }
+                        Icon(
+                            if (queue.hasWork) Icons.AutoMirrored.Filled.PlaylistPlay else Icons.Default.Download,
+                            contentDescription = null,
+                        )
                         Spacer(Modifier.width(10.dp))
                         Text(
-                            if (playlistInspection != null) {
-                                "Скачать выбранное (${selectedIds.size})"
-                            } else {
-                                "Скачать"
+                            when {
+                                playlistInspection != null && queue.hasWork ->
+                                    "В очередь (${selectedIds.size})"
+                                playlistInspection != null -> "Скачать выбранное (${selectedIds.size})"
+                                queue.hasWork -> "Добавить в очередь"
+                                else -> "Скачать"
                             },
                             style = MaterialTheme.typography.titleSmall,
                         )
@@ -939,6 +1005,30 @@ private fun MediaDownloadScreen(
                                 }
                             }
 
+                            Column {
+                                Text(
+                                    stringResource(R.string.media_download_parallel),
+                                    style = MaterialTheme.typography.labelMedium,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                )
+                                Spacer(Modifier.height(6.dp))
+                                Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                                    (1..MediaDownloadState.MAX_PARALLEL).forEach { count ->
+                                        FilterChip(
+                                            selected = parallelDownloads == count,
+                                            onClick = { parallelDownloads = count },
+                                            shape = RoundedCornerShape(12.dp),
+                                            label = {
+                                                Text(
+                                                    if (count == 1) "по одному" else "$count файла",
+                                                    fontSize = 13.sp,
+                                                )
+                                            },
+                                        )
+                                    }
+                                }
+                            }
+
                             Row(
                                 modifier = Modifier
                                     .fillMaxWidth()
@@ -1145,6 +1235,173 @@ private fun MediaDownloadScreen(
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
+        }
+    }
+
+    if (queueSheetOpen) {
+        MediaDownloadQueueSheet(
+            state = queue,
+            onPause = { MediaDownloadService.pauseItem(context, it) },
+            onResume = { MediaDownloadService.resumeItem(context, it) },
+            onRemove = { MediaDownloadService.cancelItem(context, it) },
+            onClearFinished = { MediaDownloadQueue.clearFinished() },
+            onDismiss = { queueSheetOpen = false },
+        )
+    }
+}
+
+/**
+ * Очередь загрузок целиком: видно, что качается сейчас, что ждёт очереди и что уже готово.
+ * Каждую строку можно поставить на паузу, продолжить или убрать.
+ */
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun MediaDownloadQueueSheet(
+    state: MediaDownloadState,
+    onPause: (String) -> Unit,
+    onResume: (String) -> Unit,
+    onRemove: (String) -> Unit,
+    onClearFinished: () -> Unit,
+    onDismiss: () -> Unit,
+) {
+    ModalBottomSheet(onDismissRequest = onDismiss) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 16.dp)
+                .padding(bottom = 16.dp),
+        ) {
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Text(
+                    stringResource(R.string.media_download_queue_title),
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.Bold,
+                )
+                Spacer(Modifier.weight(1f))
+                if (state.items.any { it.status.terminal }) {
+                    TextButton(onClick = onClearFinished) {
+                        Text(stringResource(R.string.media_download_clear_finished))
+                    }
+                }
+            }
+            Text(
+                stringResource(
+                    R.string.media_download_counters,
+                    state.downloaded,
+                    state.skipped,
+                    state.remaining,
+                ),
+                style = MaterialTheme.typography.labelMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+            Spacer(Modifier.height(8.dp))
+            LazyColumn(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .heightIn(max = 420.dp),
+                verticalArrangement = Arrangement.spacedBy(2.dp),
+            ) {
+                items(state.items, key = { it.id }) { item ->
+                    MediaDownloadQueueRow(
+                        item = item,
+                        onPause = { onPause(item.id) },
+                        onResume = { onResume(item.id) },
+                        onRemove = { onRemove(item.id) },
+                    )
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun MediaDownloadQueueRow(
+    item: MediaDownloadItem,
+    onPause: () -> Unit,
+    onResume: () -> Unit,
+    onRemove: () -> Unit,
+) {
+    val statusLabel = when (item.status) {
+        MediaDownloadItemStatus.RUNNING ->
+            if (item.progress >= 0f) "${item.progress.toInt()}%" else stringResource(R.string.media_download_preparing)
+        MediaDownloadItemStatus.QUEUED -> stringResource(R.string.media_download_item_waiting)
+        MediaDownloadItemStatus.PAUSED -> stringResource(R.string.media_download_item_paused)
+        MediaDownloadItemStatus.DONE -> stringResource(R.string.media_download_saved)
+        MediaDownloadItemStatus.SKIPPED -> stringResource(R.string.media_download_skip_existing)
+        MediaDownloadItemStatus.FAILED -> item.message.ifBlank { "Ошибка" }
+    }
+    val statusColor = when (item.status) {
+        MediaDownloadItemStatus.DONE -> MaterialTheme.colorScheme.tertiary
+        MediaDownloadItemStatus.FAILED -> MaterialTheme.colorScheme.error
+        MediaDownloadItemStatus.RUNNING -> MaterialTheme.colorScheme.primary
+        else -> MaterialTheme.colorScheme.onSurfaceVariant
+    }
+    Column(modifier = Modifier.padding(vertical = 6.dp)) {
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            Column(Modifier.weight(1f)) {
+                Text(
+                    item.label,
+                    style = MaterialTheme.typography.bodyMedium,
+                    maxLines = 2,
+                    overflow = TextOverflow.Ellipsis,
+                )
+                Text(
+                    statusLabel,
+                    style = MaterialTheme.typography.labelSmall,
+                    color = statusColor,
+                    maxLines = 2,
+                    overflow = TextOverflow.Ellipsis,
+                )
+            }
+            when (item.status) {
+                MediaDownloadItemStatus.RUNNING, MediaDownloadItemStatus.QUEUED -> {
+                    IconButton(onClick = onPause) {
+                        Icon(
+                            Icons.Default.Pause,
+                            contentDescription = stringResource(R.string.media_download_item_pause),
+                        )
+                    }
+                }
+
+                MediaDownloadItemStatus.PAUSED -> {
+                    IconButton(onClick = onResume) {
+                        Icon(
+                            Icons.Default.PlayArrow,
+                            contentDescription = stringResource(R.string.media_download_item_resume),
+                        )
+                    }
+                }
+
+                else -> Unit
+            }
+            if (!item.status.terminal) {
+                IconButton(onClick = onRemove) {
+                    Icon(
+                        Icons.Default.Close,
+                        contentDescription = stringResource(R.string.media_download_item_remove),
+                        tint = MaterialTheme.colorScheme.error,
+                    )
+                }
+            }
+        }
+        if (item.status == MediaDownloadItemStatus.RUNNING || item.status == MediaDownloadItemStatus.PAUSED) {
+            val fraction = (item.progress / 100f).coerceIn(0f, 1f)
+            if (item.progress >= 0f) {
+                LinearProgressIndicator(
+                    progress = { fraction },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(4.dp)
+                        .clip(RoundedCornerShape(2.dp)),
+                )
+            } else if (item.status == MediaDownloadItemStatus.RUNNING) {
+                LinearProgressIndicator(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(4.dp)
+                        .clip(RoundedCornerShape(2.dp)),
+                )
+            }
         }
     }
 }
