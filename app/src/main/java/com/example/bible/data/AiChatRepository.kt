@@ -17,12 +17,15 @@ data class AiChatSummary(
  * Чаты «Вопрос ИИ» хранятся в [StudyDatabase].
  * В API уходит только короткий хвост диалога, а не весь архив.
  */
-class AiChatRepository(context: Context) {
+class AiChatRepository(
+    context: Context,
+    private val provider: String = PROVIDER_DEEPSEEK,
+) {
 
     private val dao = StudyDatabase.getInstance(context.applicationContext).aiChatDao()
 
     suspend fun listSummaries(): List<AiChatSummary> = withContext(Dispatchers.IO) {
-        dao.listChats().map { AiChatSummary(it.id, it.title, it.updatedAtMs) }
+        dao.listChats(provider).map { AiChatSummary(it.id, it.title, it.updatedAtMs) }
     }
 
     suspend fun listMessages(chatId: Long): List<AiChatMessageEntity> = withContext(Dispatchers.IO) {
@@ -40,6 +43,7 @@ class AiChatRepository(context: Context) {
                 title = titleFromQuestion(firstQuestion),
                 createdAtMs = now,
                 updatedAtMs = now,
+                provider = provider,
             ),
         )
     }
@@ -67,6 +71,9 @@ class AiChatRepository(context: Context) {
     }
 
     companion object {
+        const val PROVIDER_DEEPSEEK = "deepseek"
+        const val PROVIDER_GIGACHAT = "gigachat"
+
         const val SYSTEM_PROMPT =
             "Ты помощник в приложении для чтения Библии. Отвечай по-русски ясно и по существу. " +
                 "Если вопрос о Писании — не выдумывай цитаты. На другие темы тоже помогай. " +

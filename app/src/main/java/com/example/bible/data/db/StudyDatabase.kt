@@ -16,7 +16,7 @@ import androidx.room.RoomDatabase
         AiChatMessageEntity::class,
         MicroblogPostEntity::class,
     ],
-    version = 5,
+    version = 6,
     exportSchema = true,
 )
 abstract class StudyDatabase : RoomDatabase() {
@@ -43,6 +43,7 @@ abstract class StudyDatabase : RoomDatabase() {
                         StudyDbMigrations.MIGRATION_2_3,
                         StudyDbMigrations.MIGRATION_3_4,
                         StudyDbMigrations.MIGRATION_4_5,
+                        StudyDbMigrations.MIGRATION_5_6,
                     )
                     .fallbackToDestructiveMigration()
                     .build()

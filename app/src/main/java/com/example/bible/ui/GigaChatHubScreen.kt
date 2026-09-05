@@ -16,7 +16,9 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Chat
+import androidx.compose.material.icons.filled.ImageSearch
 import androidx.compose.material.icons.filled.Key
+import androidx.compose.material.icons.filled.TextSnippet
 import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilledTonalButton
@@ -37,6 +39,8 @@ import com.example.bible.R
 fun GigaChatHubScreen(
     onBack: () -> Unit,
     onOpenAsk: () -> Unit,
+    onOpenIdentifyPhoto: () -> Unit,
+    onOpenTranscribePhoto: () -> Unit,
     onOpenSettings: () -> Unit,
 ) {
     Scaffold(
@@ -73,6 +77,18 @@ fun GigaChatHubScreen(
                 title = stringResource(R.string.gigachat_hub_ask),
                 description = stringResource(R.string.gigachat_hub_ask_desc),
                 onClick = onOpenAsk,
+            )
+            GigaChatHubButton(
+                icon = { Icon(Icons.Filled.ImageSearch, contentDescription = null, modifier = Modifier.size(28.dp)) },
+                title = stringResource(R.string.ai_hub_identify),
+                description = stringResource(R.string.ai_hub_identify_desc),
+                onClick = onOpenIdentifyPhoto,
+            )
+            GigaChatHubButton(
+                icon = { Icon(Icons.Filled.TextSnippet, contentDescription = null, modifier = Modifier.size(28.dp)) },
+                title = stringResource(R.string.ai_hub_transcribe),
+                description = stringResource(R.string.ai_hub_transcribe_desc),
+                onClick = onOpenTranscribePhoto,
             )
             GigaChatHubButton(
                 icon = { Icon(Icons.Filled.Key, contentDescription = null, modifier = Modifier.size(28.dp)) },

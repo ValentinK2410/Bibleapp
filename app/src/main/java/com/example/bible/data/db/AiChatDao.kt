@@ -13,8 +13,8 @@ interface AiChatDao {
     @Insert
     fun insertMessage(message: AiChatMessageEntity): Long
 
-    @Query("SELECT * FROM ai_chats ORDER BY updatedAtMs DESC")
-    fun listChats(): List<AiChatEntity>
+    @Query("SELECT * FROM ai_chats WHERE provider = :provider ORDER BY updatedAtMs DESC")
+    fun listChats(provider: String): List<AiChatEntity>
 
     @Query("SELECT * FROM ai_chats WHERE id = :id LIMIT 1")
     fun getChat(id: Long): AiChatEntity?

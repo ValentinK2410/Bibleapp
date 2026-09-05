@@ -361,7 +361,7 @@ fun DeepSeekAskScreen(
 }
 
 @Composable
-private fun DeepSeekAskChatList(
+internal fun DeepSeekAskChatList(
     chats: List<AiChatSummary>,
     dateFormat: SimpleDateFormat,
     onNewChat: () -> Unit,
@@ -604,7 +604,7 @@ private fun DeepSeekAskConversation(
     }
 }
 
-private fun copyAskChat(context: Context, text: String) {
+internal fun copyAskChat(context: Context, text: String) {
     val cm = context.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
     cm.setPrimaryClip(ClipData.newPlainText("ai_chat", text))
 }

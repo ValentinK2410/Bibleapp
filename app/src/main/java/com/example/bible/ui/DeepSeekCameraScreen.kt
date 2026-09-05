@@ -77,6 +77,11 @@ import kotlinx.coroutines.withContext
 import java.io.File
 import kotlin.coroutines.resume
 
+enum class VisionAiEngine {
+    DEEPSEEK,
+    GIGACHAT,
+}
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun DeepSeekCameraScreen(
@@ -84,10 +89,29 @@ fun DeepSeekCameraScreen(
     onBack: () -> Unit,
     onOpenSettings: () -> Unit,
     mode: DeepSeekVisionMode = DeepSeekVisionMode.TRANSCRIBE,
+    engine: VisionAiEngine = VisionAiEngine.DEEPSEEK,
 ) {
     val context = LocalContext.current
-    val vision by viewModel.deepSeekVision.collectAsStateWithLifecycle()
-    val hasKey by viewModel.deepSeekApiKey.collectAsStateWithLifecycle()
+    val deepSeekVision by viewModel.deepSeekVision.collectAsStateWithLifecycle()
+    val gigaChatVision by viewModel.gigaChatVision.collectAsStateWithLifecycle()
+    val vision = if (engine == VisionAiEngine.GIGACHAT) gigaChatVision else deepSeekVision
+    val deepSeekKey by viewModel.deepSeekApiKey.collectAsStateWithLifecycle()
+    val gigaChatKey by viewModel.gigaChatAuthKey.collectAsStateWithLifecycle()
+    val hasKey = if (engine == VisionAiEngine.GIGACHAT) gigaChatKey else deepSeekKey
+    val analyzeJpeg: (ByteArray) -> Unit = { bytes ->
+        if (engine == VisionAiEngine.GIGACHAT) {
+            viewModel.analyzeGigaChatJpeg(bytes, mode)
+        } else {
+            viewModel.analyzeCameraJpeg(bytes, mode)
+        }
+    }
+    val clearVision: () -> Unit = {
+        if (engine == VisionAiEngine.GIGACHAT) {
+            viewModel.clearGigaChatVision()
+        } else {
+            viewModel.clearDeepSeekVision()
+        }
+    }
     val scope = rememberCoroutineScope()
     var hasPermission by remember {
         mutableStateOf(
@@ -122,13 +146,13 @@ fun DeepSeekCameraScreen(
                 ).show()
             } else {
                 capturedJpeg = bytes
-                viewModel.analyzeCameraJpeg(bytes, mode)
+                analyzeJpeg(bytes)
             }
         }
     }
 
-    DisposableEffect(Unit) {
-        onDispose { viewModel.clearDeepSeekVision() }
+    DisposableEffect(engine) {
+        onDispose { clearVision() }
     }
 
     val previewBitmap = remember(capturedJpeg) {
@@ -190,10 +214,26 @@ fun DeepSeekCameraScreen(
             when {
                 hasKey.isBlank() || vision.needsKey -> {
                     Column(Modifier.padding(16.dp)) {
-                        Text(stringResource(R.string.deepseek_needs_key))
+                        Text(
+                            stringResource(
+                                if (engine == VisionAiEngine.GIGACHAT) {
+                                    R.string.gigachat_needs_key
+                                } else {
+                                    R.string.deepseek_needs_key
+                                },
+                            ),
+                        )
                         Spacer(Modifier.height(12.dp))
                         Button(onClick = onOpenSettings) {
-                            Text(stringResource(R.string.deepseek_open_settings))
+                            Text(
+                                stringResource(
+                                    if (engine == VisionAiEngine.GIGACHAT) {
+                                        R.string.gigachat_open_settings
+                                    } else {
+                                        R.string.deepseek_open_settings
+                                    },
+                                ),
+                            )
                         }
                     }
                 }
@@ -269,7 +309,7 @@ fun DeepSeekCameraScreen(
                                             ).show()
                                         } else {
                                             capturedJpeg = jpeg
-                                            viewModel.analyzeCameraJpeg(jpeg, mode)
+                                            analyzeJpeg(jpeg)
                                         }
                                     }
                                 },
@@ -306,14 +346,14 @@ fun DeepSeekCameraScreen(
                                 OutlinedButton(
                                     onClick = {
                                         capturedJpeg = null
-                                        viewModel.clearDeepSeekVision()
+                                        clearVision()
                                     },
                                 ) {
                                     Text(stringResource(R.string.deepseek_camera_retake))
                                 }
                                 TextButton(
                                     onClick = {
-                                        capturedJpeg?.let { viewModel.analyzeCameraJpeg(it, mode) }
+                                        capturedJpeg?.let { analyzeJpeg(it) }
                                     },
                                     enabled = !vision.loading,
                                 ) {

@@ -1486,6 +1486,8 @@ private fun BibleNavHost(
             GigaChatHubScreen(
                 onBack = { navController.navigateUp() },
                 onOpenAsk = { navController.navigate("gigachat_ask") },
+                onOpenIdentifyPhoto = { navController.navigate("gigachat_photo_identify") },
+                onOpenTranscribePhoto = { navController.navigate("gigachat_photo_transcribe") },
                 onOpenSettings = { navController.navigate("gigachat_settings") },
             )
         }
@@ -1500,6 +1502,25 @@ private fun BibleNavHost(
                 viewModel = viewModel,
                 onBack = { navController.navigateUp() },
                 onOpenSettings = { navController.navigate("gigachat_settings") },
+                onOpenMicroblogPost = { id -> navController.navigate("media_microblog_edit/$id") },
+            )
+        }
+        composable("gigachat_photo_identify") {
+            DeepSeekCameraScreen(
+                viewModel = viewModel,
+                onBack = { navController.navigateUp() },
+                onOpenSettings = { navController.navigate("gigachat_settings") },
+                mode = DeepSeekVisionMode.IDENTIFY,
+                engine = VisionAiEngine.GIGACHAT,
+            )
+        }
+        composable("gigachat_photo_transcribe") {
+            DeepSeekCameraScreen(
+                viewModel = viewModel,
+                onBack = { navController.navigateUp() },
+                onOpenSettings = { navController.navigate("gigachat_settings") },
+                mode = DeepSeekVisionMode.TRANSCRIBE,
+                engine = VisionAiEngine.GIGACHAT,
             )
         }
         composable("deepseek_camera") {

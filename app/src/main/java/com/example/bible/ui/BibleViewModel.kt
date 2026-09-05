@@ -175,6 +175,10 @@ data class GigaChatAskUiState(
     val messages: List<DeepSeekMessage> = emptyList(),
     val error: String? = null,
     val needsKey: Boolean = false,
+    val pane: DeepSeekAskPane = DeepSeekAskPane.LIST,
+    val chats: List<AiChatSummary> = emptyList(),
+    val currentChatId: Long? = null,
+    val chatTitle: String = "",
 )
 
 data class DeepSeekNoteAssistUiState(
@@ -1246,6 +1250,7 @@ class BibleViewModel(
     val deepSeekAsk: StateFlow<DeepSeekAskUiState> = _deepSeekAsk.asStateFlow()
     private var deepSeekAskJob: Job? = null
     private val aiChats = AiChatRepository(appContext)
+    private val gigaChats = AiChatRepository(appContext, AiChatRepository.PROVIDER_GIGACHAT)
 
     fun leaveDeepSeekAsk() {
         deepSeekAskJob?.cancel()
@@ -1516,7 +1521,10 @@ class BibleViewModel(
     val gigaChatAsk: StateFlow<GigaChatAskUiState> = _gigaChatAsk.asStateFlow()
 
     private var gigaChatJob: Job? = null
-    private val gigaChatHistory = mutableListOf<DeepSeekMessage>()
+
+    private val _gigaChatVision = MutableStateFlow(DeepSeekVisionUiState())
+    val gigaChatVision: StateFlow<DeepSeekVisionUiState> = _gigaChatVision.asStateFlow()
+    private var gigaChatVisionJob: Job? = null
 
     fun setGigaChatAuthKey(key: String) {
         viewModelScope.launch {
@@ -1538,10 +1546,172 @@ class BibleViewModel(
         }
     }
 
-    fun clearGigaChatAsk() {
+    fun leaveGigaChatAsk() {
         gigaChatJob?.cancel()
-        gigaChatHistory.clear()
-        _gigaChatAsk.value = GigaChatAskUiState()
+    }
+
+    fun openGigaChatAsk() {
+        viewModelScope.launch {
+            val chats = gigaChats.listSummaries()
+            _gigaChatAsk.value = _gigaChatAsk.value.copy(
+                loading = false,
+                error = null,
+                pane = DeepSeekAskPane.LIST,
+                chats = chats,
+                currentChatId = null,
+                chatTitle = "",
+                messages = emptyList(),
+            )
+        }
+    }
+
+    fun startNewGigaChatAsk() {
+        gigaChatJob?.cancel()
+        _gigaChatAsk.value = _gigaChatAsk.value.copy(
+            pane = DeepSeekAskPane.CHAT,
+            currentChatId = null,
+            chatTitle = "",
+            messages = emptyList(),
+            loading = false,
+            error = null,
+        )
+    }
+
+    fun openGigaChatAskChat(chatId: Long) {
+        viewModelScope.launch {
+            gigaChatJob?.cancel()
+            val stored = gigaChats.listMessages(chatId)
+            val title = gigaChats.getSummary(chatId)?.title.orEmpty()
+            _gigaChatAsk.value = _gigaChatAsk.value.copy(
+                pane = DeepSeekAskPane.CHAT,
+                currentChatId = chatId,
+                chatTitle = title,
+                messages = stored.map { DeepSeekMessage(it.role, it.content) },
+                loading = false,
+                error = null,
+            )
+        }
+    }
+
+    fun showGigaChatAskList() {
+        gigaChatJob?.cancel()
+        viewModelScope.launch {
+            _gigaChatAsk.value = _gigaChatAsk.value.copy(
+                pane = DeepSeekAskPane.LIST,
+                currentChatId = null,
+                chatTitle = "",
+                messages = emptyList(),
+                loading = false,
+                error = null,
+                chats = gigaChats.listSummaries(),
+            )
+        }
+    }
+
+    fun deleteGigaChatAskChat(chatId: Long) {
+        viewModelScope.launch {
+            gigaChats.deleteChat(chatId)
+            val chats = gigaChats.listSummaries()
+            val cur = _gigaChatAsk.value
+            if (cur.currentChatId == chatId) {
+                _gigaChatAsk.value = cur.copy(
+                    chats = chats,
+                    currentChatId = null,
+                    chatTitle = "",
+                    messages = emptyList(),
+                    pane = DeepSeekAskPane.LIST,
+                    loading = false,
+                )
+            } else {
+                _gigaChatAsk.value = cur.copy(chats = chats)
+            }
+        }
+    }
+
+    fun gigaChatAskPlainText(): String {
+        val s = _gigaChatAsk.value
+        return AiChatShare.plainText(s.chatTitle, s.messages)
+    }
+
+    fun publishGigaChatAskToMicroblog(onResult: (Result<String>) -> Unit) {
+        val s = _gigaChatAsk.value
+        if (s.messages.none { it.role == "user" || it.role == "assistant" }) {
+            onResult(Result.failure(IllegalStateException("Сначала напишите сообщение в чате")))
+            return
+        }
+        viewModelScope.launch {
+            val post = AiChatShare.toMicroblogPost(s.chatTitle, s.messages)
+            microblogRepo.save(post)
+            _microblogPosts.value = microblogRepo.listPosts()
+            onResult(Result.success(post.id))
+        }
+    }
+
+    fun clearGigaChatVision() {
+        gigaChatVisionJob?.cancel()
+        _gigaChatVision.value = DeepSeekVisionUiState()
+    }
+
+    fun analyzeGigaChatJpeg(
+        jpegBytes: ByteArray,
+        mode: DeepSeekVisionMode = DeepSeekVisionMode.TRANSCRIBE,
+    ) {
+        gigaChatVisionJob?.cancel()
+        gigaChatVisionJob = viewModelScope.launch {
+            val key = preferences.gigaChatAuthKey.first()
+            val scope = preferences.gigaChatScope.first()
+            if (key.isBlank()) {
+                _gigaChatVision.value = DeepSeekVisionUiState(needsKey = true)
+                return@launch
+            }
+            if (jpegBytes.isEmpty()) {
+                _gigaChatVision.value = DeepSeekVisionUiState(error = "Не удалось получить изображение")
+                return@launch
+            }
+            _gigaChatVision.value = DeepSeekVisionUiState(loading = true)
+            val prompt = when (mode) {
+                DeepSeekVisionMode.TRANSCRIBE ->
+                    "Расшифруй фото. Если есть текст (книга, страница, надпись, экран) — " +
+                        "выпиши его целиком, сохраняя абзацы и переносы. Если текста мало — опиши, что видно, " +
+                        "и приведи все надписи. Отвечай по-русски. Не выдумывай невидимый текст."
+                DeepSeekVisionMode.IDENTIFY ->
+                    "Определи, что изображено на фото. Опиши объекты, сцену, людей, предметы и обстановку. " +
+                        "Если есть текст — кратко приведи его. Отвечай по-русски, конкретно. Не выдумывай детали, которых нет."
+            }
+            val packed = DeepSeekClient.jpegForVision(jpegBytes)
+            val uploaded = GigaChatClient.uploadFile(
+                authKey = key,
+                bytes = packed,
+                fileName = "photo.jpg",
+                mime = "image/jpeg",
+                scope = scope,
+            )
+            val fileId = uploaded.getOrElse { e ->
+                if (e is CancellationException) throw e
+                _gigaChatVision.value = DeepSeekVisionUiState(
+                    error = e.message?.ifBlank { null } ?: "Не удалось отправить фото в GigaChat",
+                )
+                return@launch
+            }
+            val result = GigaChatClient.chat(
+                authKey = key,
+                messages = listOf(DeepSeekMessage("user", prompt)),
+                scope = scope,
+                attachmentIds = listOf(fileId),
+            )
+            GigaChatClient.deleteFile(key, fileId, scope)
+            result.fold(
+                onSuccess = { text ->
+                    _gigaChatVision.value = DeepSeekVisionUiState(answer = text)
+                },
+                onFailure = { e ->
+                    if (e is CancellationException) throw e
+                    _gigaChatVision.value = DeepSeekVisionUiState(
+                        error = e.message?.ifBlank { null } ?: "Не удалось разобрать изображение",
+                    )
+                },
+            )
+        }
     }
 
     fun askGigaChatVoice(audioPath: String) {
@@ -1553,23 +1723,36 @@ class BibleViewModel(
             val scope = preferences.gigaChatScope.first()
             if (key.isBlank()) {
                 file.delete()
-                _gigaChatAsk.value = GigaChatAskUiState(
-                    needsKey = true,
-                    messages = gigaChatHistory.toList(),
-                )
+                _gigaChatAsk.value = _gigaChatAsk.value.copy(needsKey = true, loading = false)
                 return@launch
             }
             val shown = "Голосовой вопрос"
-            gigaChatHistory += DeepSeekMessage("user", shown)
-            _gigaChatAsk.value = GigaChatAskUiState(
+            val createdNew = _gigaChatAsk.value.currentChatId == null
+            val chatId = _gigaChatAsk.value.currentChatId ?: gigaChats.createChat(shown)
+            _gigaChatAsk.value = _gigaChatAsk.value.copy(
                 loading = true,
-                messages = gigaChatHistory.toList(),
+                error = null,
+                needsKey = false,
+                pane = DeepSeekAskPane.CHAT,
+                currentChatId = chatId,
+                chatTitle = _gigaChatAsk.value.chatTitle.ifBlank { AiChatRepository.titleFromQuestion(shown) },
+            )
+            val userMsgId = gigaChats.addMessage(chatId, "user", shown)
+            val stored = gigaChats.listMessages(chatId)
+            _gigaChatAsk.value = _gigaChatAsk.value.copy(
+                messages = stored.map { DeepSeekMessage(it.role, it.content) },
             )
             val bytes = runCatching { file.readBytes() }.getOrElse {
                 file.delete()
-                _gigaChatAsk.value = GigaChatAskUiState(
-                    messages = gigaChatHistory.toList(),
+                if (createdNew) gigaChats.deleteChat(chatId)
+                else gigaChats.deleteMessage(userMsgId)
+                _gigaChatAsk.value = _gigaChatAsk.value.copy(
+                    loading = false,
+                    currentChatId = if (createdNew) null else chatId,
                     error = "Не удалось прочитать запись",
+                    messages = if (createdNew) emptyList() else gigaChats.listMessages(chatId)
+                        .map { DeepSeekMessage(it.role, it.content) },
+                    chats = gigaChats.listSummaries(),
                 )
                 return@launch
             }
@@ -1583,9 +1766,15 @@ class BibleViewModel(
             )
             val fileId = uploaded.getOrElse { e ->
                 if (e is CancellationException) throw e
-                _gigaChatAsk.value = GigaChatAskUiState(
-                    messages = gigaChatHistory.toList(),
+                if (createdNew) gigaChats.deleteChat(chatId)
+                else gigaChats.deleteMessage(userMsgId)
+                _gigaChatAsk.value = _gigaChatAsk.value.copy(
+                    loading = false,
+                    currentChatId = if (createdNew) null else chatId,
                     error = e.message?.ifBlank { null } ?: "Не удалось отправить голос в GigaChat",
+                    messages = if (createdNew) emptyList() else gigaChats.listMessages(chatId)
+                        .map { DeepSeekMessage(it.role, it.content) },
+                    chats = gigaChats.listSummaries(),
                 )
                 return@launch
             }
@@ -1594,8 +1783,9 @@ class BibleViewModel(
                 "Это голосовой вопрос пользователя. Расшифруй запись и ответь сам как ассистент GigaChat. " +
                     "Не отсылайте к системному ассистенту телефона. Отвечай по-русски по существу.",
             )
+            val history = stored.dropLast(1)
             val apiMessages = listOf(DeepSeekMessage("system", AiChatRepository.SYSTEM_PROMPT)) +
-                gigaChatHistory.dropLast(1).takeLast(10) +
+                AiChatRepository.apiMessages(history).filter { it.role != "system" } +
                 prompt
             val result = GigaChatClient.chat(
                 authKey = key,
@@ -1606,15 +1796,36 @@ class BibleViewModel(
             GigaChatClient.deleteFile(key, fileId, scope)
             result.fold(
                 onSuccess = { text ->
-                    gigaChatHistory += DeepSeekMessage("assistant", text)
-                    _gigaChatAsk.value = GigaChatAskUiState(messages = gigaChatHistory.toList())
+                    gigaChats.addMessage(chatId, "assistant", text)
+                    val after = gigaChats.listMessages(chatId)
+                    _gigaChatAsk.value = _gigaChatAsk.value.copy(
+                        loading = false,
+                        error = null,
+                        messages = after.map { DeepSeekMessage(it.role, it.content) },
+                        chats = gigaChats.listSummaries(),
+                    )
                 },
                 onFailure = { e ->
                     if (e is CancellationException) throw e
-                    _gigaChatAsk.value = GigaChatAskUiState(
-                        messages = gigaChatHistory.toList(),
-                        error = e.message?.ifBlank { null } ?: "Не удалось обратиться к GigaChat",
-                    )
+                    if (createdNew) {
+                        gigaChats.deleteChat(chatId)
+                        _gigaChatAsk.value = _gigaChatAsk.value.copy(
+                            loading = false,
+                            currentChatId = null,
+                            chatTitle = "",
+                            messages = emptyList(),
+                            error = e.message?.ifBlank { null } ?: "Не удалось обратиться к GigaChat",
+                            chats = gigaChats.listSummaries(),
+                        )
+                    } else {
+                        gigaChats.deleteMessage(userMsgId)
+                        val after = gigaChats.listMessages(chatId)
+                        _gigaChatAsk.value = _gigaChatAsk.value.copy(
+                            loading = false,
+                            error = e.message?.ifBlank { null } ?: "Не удалось обратиться к GigaChat",
+                            messages = after.map { DeepSeekMessage(it.role, it.content) },
+                        )
+                    }
                 },
             )
         }
@@ -1628,39 +1839,62 @@ class BibleViewModel(
             val key = preferences.gigaChatAuthKey.first()
             val scope = preferences.gigaChatScope.first()
             if (key.isBlank()) {
-                _gigaChatAsk.value = GigaChatAskUiState(
-                    needsKey = true,
-                    messages = gigaChatHistory.toList(),
-                )
+                _gigaChatAsk.value = _gigaChatAsk.value.copy(needsKey = true, loading = false)
                 return@launch
             }
-            val last = gigaChatHistory.lastOrNull()
-            val retrySame = last?.role == "user" && last.content == q && _gigaChatAsk.value.error != null
-            if (!retrySame) {
-                gigaChatHistory += DeepSeekMessage("user", q)
-            }
-            _gigaChatAsk.value = GigaChatAskUiState(
+            val createdNew = _gigaChatAsk.value.currentChatId == null
+            val chatId = _gigaChatAsk.value.currentChatId ?: gigaChats.createChat(q)
+            var userMsgId = 0L
+            _gigaChatAsk.value = _gigaChatAsk.value.copy(
                 loading = true,
-                messages = gigaChatHistory.toList(),
+                error = null,
+                needsKey = false,
+                pane = DeepSeekAskPane.CHAT,
+                currentChatId = chatId,
+                chatTitle = _gigaChatAsk.value.chatTitle.ifBlank { AiChatRepository.titleFromQuestion(q) },
             )
-            val apiMessages = listOf(DeepSeekMessage("system", AiChatRepository.SYSTEM_PROMPT)) +
-                gigaChatHistory.takeLast(12)
+            userMsgId = gigaChats.addMessage(chatId, "user", q)
+            val stored = gigaChats.listMessages(chatId)
+            _gigaChatAsk.value = _gigaChatAsk.value.copy(
+                messages = stored.map { DeepSeekMessage(it.role, it.content) },
+            )
             val result = GigaChatClient.chat(
                 authKey = key,
-                messages = apiMessages,
+                messages = AiChatRepository.apiMessages(stored),
                 scope = scope,
             )
             result.fold(
                 onSuccess = { text ->
-                    gigaChatHistory += DeepSeekMessage("assistant", text)
-                    _gigaChatAsk.value = GigaChatAskUiState(messages = gigaChatHistory.toList())
+                    gigaChats.addMessage(chatId, "assistant", text)
+                    val after = gigaChats.listMessages(chatId)
+                    _gigaChatAsk.value = _gigaChatAsk.value.copy(
+                        loading = false,
+                        error = null,
+                        messages = after.map { DeepSeekMessage(it.role, it.content) },
+                        chats = gigaChats.listSummaries(),
+                    )
                 },
                 onFailure = { e ->
                     if (e is CancellationException) throw e
-                    _gigaChatAsk.value = GigaChatAskUiState(
-                        messages = gigaChatHistory.toList(),
-                        error = e.message?.ifBlank { null } ?: "Не удалось обратиться к GigaChat",
-                    )
+                    if (createdNew) {
+                        gigaChats.deleteChat(chatId)
+                        _gigaChatAsk.value = _gigaChatAsk.value.copy(
+                            loading = false,
+                            currentChatId = null,
+                            chatTitle = "",
+                            messages = emptyList(),
+                            error = e.message?.ifBlank { null } ?: "Не удалось обратиться к GigaChat",
+                            chats = gigaChats.listSummaries(),
+                        )
+                    } else {
+                        if (userMsgId != 0L) gigaChats.deleteMessage(userMsgId)
+                        val after = gigaChats.listMessages(chatId)
+                        _gigaChatAsk.value = _gigaChatAsk.value.copy(
+                            loading = false,
+                            error = e.message?.ifBlank { null } ?: "Не удалось обратиться к GigaChat",
+                            messages = after.map { DeepSeekMessage(it.role, it.content) },
+                        )
+                    }
                 },
             )
         }

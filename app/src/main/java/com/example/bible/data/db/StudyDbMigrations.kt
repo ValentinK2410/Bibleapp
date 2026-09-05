@@ -110,4 +110,15 @@ object StudyDbMigrations {
             db.execSQL("ALTER TABLE `microblog_posts` ADD COLUMN `title` TEXT NOT NULL DEFAULT ''")
         }
     }
+
+    val MIGRATION_5_6 = object : Migration(5, 6) {
+        override fun migrate(db: SupportSQLiteDatabase) {
+            db.execSQL(
+                "ALTER TABLE `ai_chats` ADD COLUMN `provider` TEXT NOT NULL DEFAULT 'deepseek'",
+            )
+            db.execSQL(
+                "CREATE INDEX IF NOT EXISTS `index_ai_chats_provider` ON `ai_chats` (`provider`)",
+            )
+        }
+    }
 }
