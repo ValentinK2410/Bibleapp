@@ -25,6 +25,7 @@ import com.example.bible.data.AudioPlaybackState
 import com.example.bible.data.CommentaryRepository
 import com.example.bible.data.DeepSeekClient
 import com.example.bible.data.DeepSeekMessage
+import com.example.bible.data.GigaChatClient
 import com.example.bible.data.MicroblogPost
 import com.example.bible.data.MicroblogRepository
 import com.example.bible.data.AiChatRepository
@@ -167,6 +168,13 @@ data class DeepSeekAskUiState(
     val chats: List<AiChatSummary> = emptyList(),
     val currentChatId: Long? = null,
     val chatTitle: String = "",
+)
+
+data class GigaChatAskUiState(
+    val loading: Boolean = false,
+    val messages: List<DeepSeekMessage> = emptyList(),
+    val error: String? = null,
+    val needsKey: Boolean = false,
 )
 
 data class DeepSeekNoteAssistUiState(
@@ -1483,6 +1491,123 @@ class BibleViewModel(
                     _deepSeekNoteAssist.value = DeepSeekNoteAssistUiState(
                         kind = kind,
                         error = e.message?.ifBlank { null } ?: "Не удалось обработать текст",
+                    )
+                },
+            )
+        }
+    }
+
+    val gigaChatAuthKey: StateFlow<String> = preferences.gigaChatAuthKey.stateIn(
+        viewModelScope,
+        SharingStarted.WhileSubscribed(5000),
+        "",
+    )
+
+    val gigaChatScope: StateFlow<String> = preferences.gigaChatScope.stateIn(
+        viewModelScope,
+        SharingStarted.WhileSubscribed(5000),
+        GigaChatClient.SCOPE_PERS,
+    )
+
+    private val _gigaChatKeyTest = MutableStateFlow(DeepSeekKeyTestUiState())
+    val gigaChatKeyTest: StateFlow<DeepSeekKeyTestUiState> = _gigaChatKeyTest.asStateFlow()
+
+    private val _gigaChatAsk = MutableStateFlow(GigaChatAskUiState())
+    val gigaChatAsk: StateFlow<GigaChatAskUiState> = _gigaChatAsk.asStateFlow()
+
+    private var gigaChatJob: Job? = null
+    private val gigaChatHistory = mutableListOf<DeepSeekMessage>()
+
+    fun setGigaChatAuthKey(key: String) {
+        viewModelScope.launch {
+            preferences.setGigaChatAuthKey(key)
+            _gigaChatKeyTest.value = DeepSeekKeyTestUiState()
+            if (key.isBlank() && _gigaChatAsk.value.needsKey) {
+                _gigaChatAsk.value = _gigaChatAsk.value.copy(needsKey = true)
+            } else if (key.isNotBlank()) {
+                _gigaChatAsk.value = _gigaChatAsk.value.copy(needsKey = false)
+            }
+        }
+    }
+
+    fun setGigaChatScope(scope: String) {
+        viewModelScope.launch {
+            preferences.setGigaChatScope(scope)
+        }
+    }
+
+    fun clearGigaChatAsk() {
+        gigaChatJob?.cancel()
+        gigaChatHistory.clear()
+        _gigaChatAsk.value = GigaChatAskUiState()
+    }
+
+    fun askGigaChatQuestion(question: String) {
+        val q = question.trim()
+        if (q.isEmpty()) return
+        gigaChatJob?.cancel()
+        gigaChatJob = viewModelScope.launch {
+            val key = preferences.gigaChatAuthKey.first()
+            val scope = preferences.gigaChatScope.first()
+            if (key.isBlank()) {
+                _gigaChatAsk.value = GigaChatAskUiState(
+                    needsKey = true,
+                    messages = gigaChatHistory.toList(),
+                )
+                return@launch
+            }
+            val last = gigaChatHistory.lastOrNull()
+            val retrySame = last?.role == "user" && last.content == q && _gigaChatAsk.value.error != null
+            if (!retrySame) {
+                gigaChatHistory += DeepSeekMessage("user", q)
+            }
+            _gigaChatAsk.value = GigaChatAskUiState(
+                loading = true,
+                messages = gigaChatHistory.toList(),
+            )
+            val apiMessages = listOf(DeepSeekMessage("system", AiChatRepository.SYSTEM_PROMPT)) +
+                gigaChatHistory.takeLast(12)
+            val result = GigaChatClient.chat(
+                authKey = key,
+                messages = apiMessages,
+                scope = scope,
+            )
+            result.fold(
+                onSuccess = { text ->
+                    gigaChatHistory += DeepSeekMessage("assistant", text)
+                    _gigaChatAsk.value = GigaChatAskUiState(messages = gigaChatHistory.toList())
+                },
+                onFailure = { e ->
+                    if (e is CancellationException) throw e
+                    _gigaChatAsk.value = GigaChatAskUiState(
+                        messages = gigaChatHistory.toList(),
+                        error = e.message?.ifBlank { null } ?: "Не удалось обратиться к GigaChat",
+                    )
+                },
+            )
+        }
+    }
+
+    fun testGigaChatKey(keyOverride: String? = null) {
+        viewModelScope.launch {
+            val key = keyOverride?.trim().orEmpty().ifBlank { preferences.gigaChatAuthKey.first() }
+            val scope = preferences.gigaChatScope.first()
+            if (key.isBlank()) {
+                _gigaChatKeyTest.value = DeepSeekKeyTestUiState(message = "Введите ключ авторизации")
+                return@launch
+            }
+            preferences.setGigaChatAuthKey(key)
+            _gigaChatKeyTest.value = DeepSeekKeyTestUiState(loading = true)
+            val result = GigaChatClient.testKey(key, scope)
+            result.fold(
+                onSuccess = { msg ->
+                    _gigaChatKeyTest.value = DeepSeekKeyTestUiState(ok = true, message = msg)
+                    _gigaChatAsk.value = _gigaChatAsk.value.copy(needsKey = false)
+                },
+                onFailure = { e ->
+                    if (e is CancellationException) throw e
+                    _gigaChatKeyTest.value = DeepSeekKeyTestUiState(
+                        message = e.message?.ifBlank { null } ?: "Проверка не удалась",
                     )
                 },
             )

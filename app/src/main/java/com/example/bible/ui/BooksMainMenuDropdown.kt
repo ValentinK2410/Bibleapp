@@ -16,6 +16,7 @@ import androidx.compose.material.icons.filled.Headphones
 import androidx.compose.material.icons.filled.History
 import androidx.compose.material.icons.filled.Map
 import androidx.compose.material.icons.filled.PermMedia
+import androidx.compose.material.icons.filled.AutoAwesome
 import androidx.compose.material.icons.filled.Psychology
 import androidx.compose.material.icons.filled.Public
 import androidx.compose.material.icons.filled.Schedule
@@ -78,6 +79,11 @@ fun BooksMainMenuOrderedItems(
                 text = { Text(stringResource(R.string.ai_hub_title)) },
                 onClick = { closeMenu(); navController.navigate("ai") },
                 leadingIcon = { Icon(Icons.Filled.Psychology, contentDescription = null, tint = primary) },
+            )
+            BooksMainMenuOrder.GIGACHAT -> DropdownMenuItem(
+                text = { Text(stringResource(R.string.gigachat_hub_title)) },
+                onClick = { closeMenu(); navController.navigate("gigachat") },
+                leadingIcon = { Icon(Icons.Filled.AutoAwesome, contentDescription = null, tint = primary) },
             )
             BooksMainMenuOrder.CONTACTS -> DropdownMenuItem(
                 text = { Text(stringResource(R.string.contacts_title)) },

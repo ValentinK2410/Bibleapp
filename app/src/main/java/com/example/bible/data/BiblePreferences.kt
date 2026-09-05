@@ -117,6 +117,10 @@ private object Keys {
     val QURAN_ARABIC_WORD_BY_WORD_TTS = booleanPreferencesKey("quran_arabic_word_by_word_tts")
     /** Пользовательский API-ключ DeepSeek (chat completions). */
     val DEEPSEEK_API_KEY = stringPreferencesKey("deepseek_api_key")
+    /** Authorization Key GigaChat из Studio (не access token). */
+    val GIGACHAT_AUTH_KEY = stringPreferencesKey("gigachat_auth_key")
+    /** Scope GigaChat: PERS / B2B / CORP. */
+    val GIGACHAT_SCOPE = stringPreferencesKey("gigachat_scope")
     /** Пауза между циклами повтора воспроизведения на карточке аята (мс). */
     val QURAN_AYAH_REPEAT_PAUSE_MS = longPreferencesKey("quran_ayah_repeat_pause_ms")
     /** Пауза между повторами TTS на карточках интервального повторения языков (мс). */
@@ -676,6 +680,30 @@ class BiblePreferences(
             if (trimmed.isEmpty()) prefs.remove(Keys.DEEPSEEK_API_KEY)
             else prefs[Keys.DEEPSEEK_API_KEY] = trimmed
         }
+    }
+
+    val gigaChatAuthKey: Flow<String> = appContext.bibleDataStore.data.map { prefs ->
+        prefs[Keys.GIGACHAT_AUTH_KEY]?.trim().orEmpty()
+    }
+
+    suspend fun setGigaChatAuthKey(key: String) {
+        val trimmed = GigaChatClient.normalizeAuthKey(key)
+        appContext.bibleDataStore.edit { prefs ->
+            if (trimmed.isEmpty()) prefs.remove(Keys.GIGACHAT_AUTH_KEY)
+            else prefs[Keys.GIGACHAT_AUTH_KEY] = trimmed
+        }
+    }
+
+    val gigaChatScope: Flow<String> = appContext.bibleDataStore.data.map { prefs ->
+        prefs[Keys.GIGACHAT_SCOPE]?.trim().orEmpty().ifBlank { GigaChatClient.SCOPE_PERS }
+    }
+
+    suspend fun setGigaChatScope(scope: String) {
+        val normalized = when (scope) {
+            GigaChatClient.SCOPE_B2B, GigaChatClient.SCOPE_CORP -> scope
+            else -> GigaChatClient.SCOPE_PERS
+        }
+        appContext.bibleDataStore.edit { it[Keys.GIGACHAT_SCOPE] = normalized }
     }
 
     suspend fun setTranslation(id: TranslationId) {

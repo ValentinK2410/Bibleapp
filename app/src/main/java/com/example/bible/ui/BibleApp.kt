@@ -1482,6 +1482,26 @@ private fun BibleNavHost(
                 mode = DeepSeekVisionMode.TRANSCRIBE,
             )
         }
+        composable("gigachat") {
+            GigaChatHubScreen(
+                onBack = { navController.navigateUp() },
+                onOpenAsk = { navController.navigate("gigachat_ask") },
+                onOpenSettings = { navController.navigate("gigachat_settings") },
+            )
+        }
+        composable("gigachat_settings") {
+            GigaChatSettingsScreen(
+                viewModel = viewModel,
+                onBack = { navController.navigateUp() },
+            )
+        }
+        composable("gigachat_ask") {
+            GigaChatAskScreen(
+                viewModel = viewModel,
+                onBack = { navController.navigateUp() },
+                onOpenSettings = { navController.navigate("gigachat_settings") },
+            )
+        }
         composable("deepseek_camera") {
             DeepSeekCameraScreen(
                 viewModel = viewModel,
