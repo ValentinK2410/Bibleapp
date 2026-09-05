@@ -25,7 +25,7 @@ object AiChatShare {
                 if (i > 0) append('\n')
                 append(if (m.role == "user") "Вы" else "ИИ")
                 append('\n')
-                append(m.content.trim())
+                append(GigaChatImages.stripForApi(m.content))
                 append('\n')
             }
         }.trim()
@@ -62,7 +62,7 @@ object AiChatShare {
                 }
             }
             body.append('\n')
-            val content = m.content.trim()
+            val content = GigaChatImages.stripForApi(m.content)
             if (content.isNotEmpty()) {
                 add(content) { _, _ ->
                     if (isUser) copy(fontSize = 16, colorArgb = UserBodyColor)

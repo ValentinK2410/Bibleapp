@@ -22,6 +22,9 @@ interface AiChatDao {
     @Query("SELECT * FROM ai_chat_messages WHERE chatId = :chatId ORDER BY createdAtMs ASC, id ASC")
     fun listMessages(chatId: Long): List<AiChatMessageEntity>
 
+    @Query("UPDATE ai_chat_messages SET content = :content WHERE id = :id")
+    fun updateMessage(id: Long, content: String)
+
     @Query("UPDATE ai_chats SET title = :title, updatedAtMs = :updatedAtMs WHERE id = :id")
     fun updateChat(id: Long, title: String, updatedAtMs: Long)
 

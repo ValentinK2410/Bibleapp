@@ -6,7 +6,7 @@ package com.example.bible.data
 object AiChatVoiceText {
 
     fun forSpeech(raw: String): String {
-        var t = raw.trim()
+        var t = GigaChatImages.stripForSpeech(raw)
         if (t.isEmpty()) return ""
         t = t.replace(Regex("```[\\s\\S]*?```"), " ")
         t = t.replace(Regex("`([^`]+)`"), "$1")

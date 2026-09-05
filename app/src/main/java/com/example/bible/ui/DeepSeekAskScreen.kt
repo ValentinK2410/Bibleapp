@@ -70,11 +70,13 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.bible.R
 import com.example.bible.data.AiChatSummary
 import com.example.bible.data.AiChatVoiceText
+import com.example.bible.data.GigaChatImages
 import com.example.bible.data.TranslationId
 import android.content.ClipData
 import android.content.ClipboardManager
 import android.content.Context
 import android.widget.Toast
+import java.io.File
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
@@ -88,6 +90,7 @@ fun DeepSeekAskScreen(
     onOpenMicroblogPost: (String) -> Unit = {},
 ) {
     val context = LocalContext.current
+    val imagesDir = remember { GigaChatImages.dir(context) }
     val state by viewModel.deepSeekAsk.collectAsStateWithLifecycle()
     var draft by remember { mutableStateOf("") }
     var speakAnswers by rememberSaveable { mutableStateOf(false) }
@@ -295,6 +298,20 @@ fun DeepSeekAskScreen(
                     onDraftChange = { draft = it },
                     listening = speech.listening,
                     speakAnswers = speakAnswers,
+                    imagesDir = imagesDir,
+                    onSaveImage = { file ->
+                        viewModel.saveGigaChatImageToGallery(file) { result ->
+                            Toast.makeText(
+                                context,
+                                if (result.isSuccess) {
+                                    R.string.gigachat_image_saved
+                                } else {
+                                    R.string.gigachat_image_save_failed
+                                },
+                                Toast.LENGTH_SHORT,
+                            ).show()
+                        }
+                    },
                     onToggleSpeakAnswers = {
                         speakAnswers = !speakAnswers
                         if (!speakAnswers) tts.stop()
@@ -433,6 +450,8 @@ private fun DeepSeekAskConversation(
     onDraftChange: (String) -> Unit,
     listening: Boolean,
     speakAnswers: Boolean,
+    imagesDir: File,
+    onSaveImage: (File) -> Unit,
     onToggleSpeakAnswers: () -> Unit,
     onSpeakMessage: (String) -> Unit,
     onMicClick: () -> Unit,
@@ -460,10 +479,10 @@ private fun DeepSeekAskConversation(
             state.messages.forEach { msg ->
                 val isUser = msg.role == "user"
                 if (isUser) {
-                    Text(
-                        stringResource(R.string.ai_ask_you, msg.content),
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    AiChatUserRichMessage(
+                        content = msg.content,
+                        imagesDir = imagesDir,
+                        onSaveImage = onSaveImage,
                     )
                 } else {
                     Row(

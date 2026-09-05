@@ -11,6 +11,7 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -22,6 +23,7 @@ import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.filled.Send
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.ContentCopy
+import androidx.compose.material.icons.filled.Download
 import androidx.compose.material.icons.filled.Forum
 import androidx.compose.material.icons.filled.Mic
 import androidx.compose.material.icons.filled.MoreVert
@@ -54,15 +56,20 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import coil.compose.AsyncImage
 import com.example.bible.R
 import com.example.bible.data.AiChatSummary
 import com.example.bible.data.AiChatVoiceText
+import com.example.bible.data.GigaChatContentPart
+import com.example.bible.data.GigaChatImages
 import com.example.bible.data.TranslationId
+import java.io.File
 import java.text.SimpleDateFormat
 import java.util.Locale
 
@@ -99,6 +106,13 @@ fun GigaChatAskScreen(
             }
         },
     )
+    val imagesDir = remember { GigaChatImages.dir(context) }
+    LaunchedEffect(state.messages) {
+        val lastUser = state.messages.lastOrNull { it.role == "user" }?.content?.trim().orEmpty()
+        if (lastUser.isNotBlank() && lastUser != "Голосовой вопрос") {
+            lastQuestion = lastUser
+        }
+    }
     LaunchedEffect(state.error) {
         if (state.error != null && draft.isBlank() && lastQuestion.isNotBlank() && lastQuestion != "Голосовой вопрос") {
             draft = lastQuestion
@@ -276,12 +290,26 @@ fun GigaChatAskScreen(
                     onDraftChange = { draft = it },
                     listening = speech.listening,
                     speakAnswers = speakAnswers,
+                    imagesDir = imagesDir,
                     onToggleSpeakAnswers = {
                         speakAnswers = !speakAnswers
                         if (!speakAnswers) tts.stop()
                     },
                     onSpeakMessage = { text ->
                         tts.speak(AiChatVoiceText.forSpeech(text))
+                    },
+                    onSaveImage = { file ->
+                        viewModel.saveGigaChatImageToGallery(file) { result ->
+                            Toast.makeText(
+                                context,
+                                if (result.isSuccess) {
+                                    R.string.gigachat_image_saved
+                                } else {
+                                    R.string.gigachat_image_save_failed
+                                },
+                                Toast.LENGTH_SHORT,
+                            ).show()
+                        }
                     },
                     onMicClick = {
                         tts.stop()
@@ -345,8 +373,10 @@ private fun GigaChatAskConversation(
     onDraftChange: (String) -> Unit,
     listening: Boolean,
     speakAnswers: Boolean,
+    imagesDir: File,
     onToggleSpeakAnswers: () -> Unit,
     onSpeakMessage: (String) -> Unit,
+    onSaveImage: (File) -> Unit,
     onMicClick: () -> Unit,
     onSend: () -> Unit,
     onRetry: () -> Unit,
@@ -368,31 +398,19 @@ private fun GigaChatAskConversation(
             }
             state.messages.forEach { msg ->
                 if (msg.role == "user") {
-                    Text(
-                        stringResource(R.string.ai_ask_you, msg.content),
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    AiChatUserRichMessage(
+                        content = msg.content,
+                        imagesDir = imagesDir,
+                        onSaveImage = onSaveImage,
                     )
                 } else {
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        verticalAlignment = Alignment.Top,
-                    ) {
-                        Text(
-                            msg.content,
-                            style = MaterialTheme.typography.bodyLarge,
-                            modifier = Modifier.weight(1f),
-                        )
-                        IconButton(
-                            onClick = { onSpeakMessage(msg.content) },
-                            enabled = !state.loading,
-                        ) {
-                            Icon(
-                                Icons.Filled.VolumeUp,
-                                contentDescription = stringResource(R.string.ai_ask_speak_cd),
-                            )
-                        }
-                    }
+                    GigaChatAssistantMessage(
+                        content = msg.content,
+                        imagesDir = imagesDir,
+                        enabled = !state.loading,
+                        onSpeakMessage = onSpeakMessage,
+                        onSaveImage = onSaveImage,
+                    )
                 }
             }
             if (state.loading) {
@@ -473,6 +491,116 @@ private fun GigaChatAskConversation(
                     contentDescription = stringResource(R.string.deepseek_send),
                 )
             }
+        }
+    }
+}
+
+@Composable
+internal fun AiChatUserRichMessage(
+    content: String,
+    imagesDir: File,
+    onSaveImage: ((File) -> Unit)? = null,
+) {
+    val parts = remember(content, imagesDir) { GigaChatImages.parts(content, imagesDir) }
+    val text = parts.filterIsInstance<GigaChatContentPart.Text>().joinToString(" ") { it.value }
+    Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+        if (text.isNotBlank()) {
+            Text(
+                stringResource(R.string.ai_ask_you, text),
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+        } else {
+            Text(
+                stringResource(R.string.ai_ask_you, stringResource(R.string.ai_identify_title)),
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+        }
+        parts.forEach { part ->
+            if (part is GigaChatContentPart.Image) {
+                Box(Modifier.fillMaxWidth()) {
+                    AsyncImage(
+                        model = part.file,
+                        contentDescription = stringResource(R.string.gigachat_image_cd),
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .heightIn(max = 280.dp),
+                        contentScale = ContentScale.Fit,
+                    )
+                    if (onSaveImage != null) {
+                        IconButton(
+                            onClick = { onSaveImage(part.file) },
+                            modifier = Modifier.align(Alignment.BottomEnd),
+                        ) {
+                            Icon(
+                                Icons.Filled.Download,
+                                contentDescription = stringResource(R.string.gigachat_image_save_cd),
+                            )
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun GigaChatAssistantMessage(
+    content: String,
+    imagesDir: File,
+    enabled: Boolean,
+    onSpeakMessage: (String) -> Unit,
+    onSaveImage: (File) -> Unit,
+) {
+    val parts = remember(content, imagesDir) { GigaChatImages.parts(content, imagesDir) }
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        verticalAlignment = Alignment.Top,
+    ) {
+        Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+            parts.forEach { part ->
+                when (part) {
+                    is GigaChatContentPart.Text -> Text(
+                        part.value,
+                        style = MaterialTheme.typography.bodyLarge,
+                    )
+                    is GigaChatContentPart.Image -> Box(Modifier.fillMaxWidth()) {
+                        AsyncImage(
+                            model = part.file,
+                            contentDescription = stringResource(R.string.gigachat_image_cd),
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .heightIn(max = 420.dp),
+                            contentScale = ContentScale.Fit,
+                        )
+                        IconButton(
+                            onClick = { onSaveImage(part.file) },
+                            enabled = enabled,
+                            modifier = Modifier.align(Alignment.BottomEnd),
+                        ) {
+                            Icon(
+                                Icons.Filled.Download,
+                                contentDescription = stringResource(R.string.gigachat_image_save_cd),
+                            )
+                        }
+                    }
+                    GigaChatContentPart.MissingImage -> Text(
+                        stringResource(R.string.gigachat_image_missing),
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                }
+            }
+        }
+        IconButton(
+            onClick = { onSpeakMessage(content) },
+            enabled = enabled,
+        ) {
+            Icon(
+                Icons.Filled.VolumeUp,
+                contentDescription = stringResource(R.string.ai_ask_speak_cd),
+            )
         }
     }
 }

@@ -386,11 +386,21 @@ fun DeepSeekCameraScreen(
                                     vision.error!!,
                                     color = MaterialTheme.colorScheme.error,
                                 )
-                                vision.answer.isNotBlank() -> SelectionContainer {
-                                    Text(
-                                        vision.answer,
-                                        style = MaterialTheme.typography.bodyMedium,
-                                    )
+                                vision.answer.isNotBlank() -> {
+                                    if (mode == DeepSeekVisionMode.IDENTIFY) {
+                                        Text(
+                                            stringResource(R.string.ai_identify_saved_chat),
+                                            style = MaterialTheme.typography.bodySmall,
+                                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                        )
+                                        Spacer(Modifier.height(8.dp))
+                                    }
+                                    SelectionContainer {
+                                        Text(
+                                            vision.answer,
+                                            style = MaterialTheme.typography.bodyMedium,
+                                        )
+                                    }
                                 }
                             }
                         }

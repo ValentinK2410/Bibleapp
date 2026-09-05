@@ -86,7 +86,7 @@ object GigaChatClient {
         val body = JSONObject().apply {
             put("model", model)
             put("stream", false)
-            if (attachmentIds.isNotEmpty()) put("function_call", "auto")
+            put("function_call", "auto")
             put(
                 "messages",
                 JSONArray().apply {
@@ -159,6 +159,44 @@ object GigaChatClient {
                 lastError = IllegalStateException(errorMessage(code, raw))
             }
             Result.failure(lastError ?: IOException("Не удалось загрузить запись в GigaChat"))
+        } catch (e: Exception) {
+            Result.failure(IllegalStateException(networkErrorMessage(e), e))
+        }
+    }
+
+    suspend fun downloadFile(
+        authKey: String,
+        fileId: String,
+        scope: String = SCOPE_PERS,
+    ): Result<ByteArray> = kotlinx.coroutines.withContext(kotlinx.coroutines.Dispatchers.IO) {
+        val key = normalizeAuthKey(authKey)
+        val id = fileId.trim()
+        if (key.isEmpty()) {
+            return@withContext Result.failure(IllegalStateException("Нет ключа авторизации GigaChat"))
+        }
+        if (id.isEmpty()) {
+            return@withContext Result.failure(IllegalArgumentException("Нет идентификатора файла"))
+        }
+        try {
+            var token = accessToken(key, scope)
+            var lastError: Exception? = null
+            for (base in fileUrls) {
+                val url = "$base/$id/content"
+                var (code, bytes) = getBinary(url, token, 60_000)
+                if (code == 401) {
+                    invalidateToken()
+                    token = accessToken(key, scope)
+                    val retry = getBinary(url, token, 60_000)
+                    code = retry.first
+                    bytes = retry.second
+                }
+                if (code in 200..299 && bytes.isNotEmpty()) {
+                    return@withContext Result.success(bytes)
+                }
+                val err = bytes.toString(StandardCharsets.UTF_8)
+                lastError = IllegalStateException(errorMessage(code, err))
+            }
+            Result.failure(lastError ?: IOException("Не удалось скачать файл GigaChat"))
         } catch (e: Exception) {
             Result.failure(IllegalStateException(networkErrorMessage(e), e))
         }
@@ -265,6 +303,28 @@ object GigaChatClient {
             }
         }
         throw lastError ?: IOException("Не удалось получить токен GigaChat")
+    }
+
+    private fun getBinary(
+        url: String,
+        accessToken: String,
+        timeoutMs: Int,
+    ): Pair<Int, ByteArray> = withRetry {
+        openConn(url).apply {
+            requestMethod = "GET"
+            instanceFollowRedirects = true
+            setRequestProperty("Authorization", "Bearer $accessToken")
+            setRequestProperty("Accept", "application/jpg")
+            setRequestProperty("User-Agent", USER_AGENT)
+            setRequestProperty("Connection", "close")
+            connectTimeout = 20_000
+            readTimeout = timeoutMs
+        }.useConn { conn ->
+            val code = conn.responseCode
+            val stream = if (code in 200..299) conn.inputStream else conn.errorStream
+            val bytes = stream?.use { it.readBytes() } ?: ByteArray(0)
+            code to bytes
+        }
     }
 
     private fun postJson(

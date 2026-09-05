@@ -22,7 +22,8 @@ class AiChatRepository(
     private val provider: String = PROVIDER_DEEPSEEK,
 ) {
 
-    private val dao = StudyDatabase.getInstance(context.applicationContext).aiChatDao()
+    private val appContext = context.applicationContext
+    private val dao = StudyDatabase.getInstance(appContext).aiChatDao()
 
     suspend fun listSummaries(): List<AiChatSummary> = withContext(Dispatchers.IO) {
         dao.listChats(provider).map { AiChatSummary(it.id, it.title, it.updatedAtMs) }
@@ -62,12 +63,29 @@ class AiChatRepository(
         id
     }
 
+    suspend fun updateMessage(id: Long, content: String) = withContext(Dispatchers.IO) {
+        dao.updateMessage(id, content)
+    }
+
+    suspend fun renameChat(id: Long, title: String) = withContext(Dispatchers.IO) {
+        dao.updateChat(id, title, System.currentTimeMillis())
+    }
+
     suspend fun deleteMessage(id: Long) = withContext(Dispatchers.IO) {
         dao.deleteMessage(id)
     }
 
     suspend fun deleteChat(id: Long) = withContext(Dispatchers.IO) {
+        val messages = dao.listMessages(id)
         dao.deleteChat(id)
+        if (provider == PROVIDER_GIGACHAT) {
+            val dir = GigaChatImages.dir(appContext)
+            messages.forEach { msg ->
+                GigaChatImages.referencedFiles(msg.content, dir).forEach { file ->
+                    runCatching { file.delete() }
+                }
+            }
+        }
     }
 
     companion object {
@@ -95,7 +113,7 @@ class AiChatRepository(
             var chars = 0
             for (item in turns.asReversed()) {
                 if (picked.size >= MAX_API_MESSAGES) break
-                val text = item.content.take(MAX_ONE_MESSAGE_CHARS)
+                val text = GigaChatImages.stripForApi(item.content).take(MAX_ONE_MESSAGE_CHARS)
                 if (picked.isNotEmpty() && chars + text.length > MAX_API_CHARS) break
                 picked.addFirst(DeepSeekMessage(item.role, text))
                 chars += text.length

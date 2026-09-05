@@ -1003,6 +1003,7 @@
     <string name="ai_ask_publish_microblog">В микроблог</string>
     <string name="ai_ask_published_microblog">Беседа оформлена как пост в Медиа → Микроблог</string>
     <string name="ai_ask_publish_empty">Сначала напишите сообщение в чате</string>
+    <string name="ai_identify_saved_chat">Запрос сохранён в чатах на телефоне — вместе с фото и ответом.</string>
     <string name="ai_identify_title">Что на фото</string>
     <string name="ai_identify_hint">Наведите камеру или выберите снимок из галереи — ИИ опишет, что видно.</string>
     <string name="ai_identify_capture">Снять и определить</string>
@@ -1058,6 +1059,11 @@
     <string name="gigachat_ask_clear">Новый диалог</string>
     <string name="gigachat_needs_key">Сначала добавьте Authorization Key GigaChat в настройках.</string>
     <string name="gigachat_open_settings">Открыть настройки</string>
+    <string name="gigachat_image_cd">Изображение GigaChat</string>
+    <string name="gigachat_image_save_cd">Скачать изображение</string>
+    <string name="gigachat_image_saved">Изображение сохранено в галерею</string>
+    <string name="gigachat_image_save_failed">Не удалось сохранить изображение</string>
+    <string name="gigachat_image_missing">Изображение ещё не загрузилось. Откройте чат снова.</string>
     <string name="deepseek_camera_title">Камера DeepSeek</string>
     <string name="deepseek_camera_settings_sub">Превью камеры и расшифровка кадра</string>
     <string name="deepseek_camera_hint">Наведите камеру на текст или объект и нажмите «Снять и расшифровать».</string>
