@@ -365,7 +365,12 @@ fun VideoLibraryScreen(
                     modifier = Modifier
                         .fillMaxSize()
                         .weight(1f),
-                    contentPadding = PaddingValues(start = 8.dp, end = 8.dp, top = 4.dp, bottom = 12.dp),
+                    contentPadding = PaddingValues(
+                        start = 8.dp,
+                        end = 8.dp,
+                        top = 4.dp,
+                        bottom = MediaLibraryFabListBottomPadding,
+                    ),
                     verticalArrangement = Arrangement.spacedBy(4.dp),
                 ) {
                     items(filteredSorted, key = { it.id }) { vid ->

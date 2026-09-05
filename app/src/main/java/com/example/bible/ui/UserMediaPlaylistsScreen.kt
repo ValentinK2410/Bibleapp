@@ -321,7 +321,12 @@ fun UserMediaPlaylistsListScreen(
                 modifier = Modifier
                     .padding(padding)
                     .fillMaxSize(),
-                contentPadding = PaddingValues(12.dp),
+                contentPadding = PaddingValues(
+                    start = 12.dp,
+                    end = 12.dp,
+                    top = 12.dp,
+                    bottom = MediaLibraryFabListBottomPadding,
+                ),
                 verticalArrangement = Arrangement.spacedBy(10.dp),
             ) {
                 items(playlists, key = { it.id }) { pl ->
@@ -811,7 +816,12 @@ fun UserMediaPlaylistDetailScreen(
                     .weight(1f)
                     .fillMaxWidth(),
                 state = lazyListState,
-                contentPadding = PaddingValues(start = 12.dp, end = 12.dp, top = 4.dp, bottom = 12.dp),
+                contentPadding = PaddingValues(
+                    start = 12.dp,
+                    end = 12.dp,
+                    top = 4.dp,
+                    bottom = MediaLibraryFabListBottomPadding,
+                ),
                 verticalArrangement = Arrangement.spacedBy(4.dp),
             ) {
                 items(draftIds, key = { it }) { mediaId ->
