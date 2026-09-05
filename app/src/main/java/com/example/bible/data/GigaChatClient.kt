@@ -37,6 +37,10 @@ object GigaChatClient {
         "https://api.giga.chat/v1/chat/completions",
         "https://gigachat.devices.sberbank.ru/api/v1/chat/completions",
     )
+    private val fileUrls = listOf(
+        "https://api.giga.chat/v1/files",
+        "https://gigachat.devices.sberbank.ru/api/v1/files",
+    )
     private val oauthUrls = listOf(
         "https://api.giga.chat/api/v2/oauth",
         "https://ngw.devices.sberbank.ru:9443/api/v2/oauth",
@@ -70,6 +74,7 @@ object GigaChatClient {
         scope: String = SCOPE_PERS,
         model: String = DEFAULT_MODEL,
         timeoutMs: Int = 90_000,
+        attachmentIds: List<String> = emptyList(),
     ): Result<String> = kotlinx.coroutines.withContext(kotlinx.coroutines.Dispatchers.IO) {
         val key = normalizeAuthKey(authKey)
         if (key.isEmpty()) {
@@ -81,15 +86,18 @@ object GigaChatClient {
         val body = JSONObject().apply {
             put("model", model)
             put("stream", false)
+            if (attachmentIds.isNotEmpty()) put("function_call", "auto")
             put(
                 "messages",
                 JSONArray().apply {
-                    messages.forEach { m ->
-                        put(
-                            JSONObject()
-                                .put("role", m.role)
-                                .put("content", m.content),
-                        )
+                    messages.forEachIndexed { index, m ->
+                        val item = JSONObject()
+                            .put("role", m.role)
+                            .put("content", m.content)
+                        if (attachmentIds.isNotEmpty() && index == messages.lastIndex && m.role == "user") {
+                            item.put("attachments", JSONArray(attachmentIds))
+                        }
+                        put(item)
                     }
                 },
             )
@@ -115,6 +123,64 @@ object GigaChatClient {
         scope = scope,
         timeoutMs = 40_000,
     ).map { "Ключ работает. $DEFAULT_MODEL отвечает." }
+
+    suspend fun uploadFile(
+        authKey: String,
+        bytes: ByteArray,
+        fileName: String,
+        mime: String,
+        scope: String = SCOPE_PERS,
+    ): Result<String> = kotlinx.coroutines.withContext(kotlinx.coroutines.Dispatchers.IO) {
+        val key = normalizeAuthKey(authKey)
+        if (key.isEmpty()) {
+            return@withContext Result.failure(IllegalStateException("Нет ключа авторизации GigaChat"))
+        }
+        if (bytes.isEmpty()) {
+            return@withContext Result.failure(IllegalArgumentException("Пустая запись"))
+        }
+        try {
+            var token = accessToken(key, scope)
+            var lastError: Exception? = null
+            for (url in fileUrls) {
+                var (code, raw) = postMultipart(url, token, bytes, fileName, mime, 60_000)
+                if (code == 401) {
+                    invalidateToken()
+                    token = accessToken(key, scope)
+                    val retry = postMultipart(url, token, bytes, fileName, mime, 60_000)
+                    code = retry.first
+                    raw = retry.second
+                }
+                if (code in 200..299) {
+                    val id = JSONObject(raw).optString("id").trim()
+                    if (id.isNotEmpty()) return@withContext Result.success(id)
+                    lastError = IllegalStateException("GigaChat не вернул id файла")
+                    continue
+                }
+                lastError = IllegalStateException(errorMessage(code, raw))
+            }
+            Result.failure(lastError ?: IOException("Не удалось загрузить запись в GigaChat"))
+        } catch (e: Exception) {
+            Result.failure(IllegalStateException(networkErrorMessage(e), e))
+        }
+    }
+
+    suspend fun deleteFile(
+        authKey: String,
+        fileId: String,
+        scope: String = SCOPE_PERS,
+    ) = kotlinx.coroutines.withContext(kotlinx.coroutines.Dispatchers.IO) {
+        val key = normalizeAuthKey(authKey)
+        val id = fileId.trim()
+        if (key.isEmpty() || id.isEmpty()) return@withContext
+        try {
+            val token = accessToken(key, scope)
+            for (base in fileUrls) {
+                val (code, _) = postJson("$base/$id/delete", token, "{}", 20_000)
+                if (code in 200..299 || code == 404) return@withContext
+            }
+        } catch (_: Exception) {
+        }
+    }
 
     fun normalizeAuthKey(raw: String): String =
         raw.trim().removePrefix("Basic ").trim()
@@ -220,6 +286,50 @@ object GigaChatClient {
         }.useConn { conn ->
             conn.outputStream.use { it.write(body.toByteArray(StandardCharsets.UTF_8)) }
             readResponse(conn)
+        }
+    }
+
+    private fun postMultipart(
+        url: String,
+        accessToken: String,
+        fileBytes: ByteArray,
+        fileName: String,
+        mime: String,
+        timeoutMs: Int,
+    ): Pair<Int, String> {
+        val boundary = "----BibleGiga${UUID.randomUUID().toString().replace("-", "")}"
+        val crlf = "\r\n"
+        val head = buildString {
+            append("--").append(boundary).append(crlf)
+            append("Content-Disposition: form-data; name=\"purpose\"").append(crlf).append(crlf)
+            append("general").append(crlf)
+            append("--").append(boundary).append(crlf)
+            append("Content-Disposition: form-data; name=\"file\"; filename=\"")
+            append(fileName)
+            append("\"").append(crlf)
+            append("Content-Type: ").append(mime).append(crlf).append(crlf)
+        }.toByteArray(StandardCharsets.UTF_8)
+        val tail = "$crlf--$boundary--$crlf".toByteArray(StandardCharsets.UTF_8)
+        return withRetry {
+            openConn(url).apply {
+                requestMethod = "POST"
+                setRequestProperty("Authorization", "Bearer $accessToken")
+                setRequestProperty("Content-Type", "multipart/form-data; boundary=$boundary")
+                setRequestProperty("Accept", "application/json")
+                setRequestProperty("User-Agent", USER_AGENT)
+                setRequestProperty("Connection", "close")
+                connectTimeout = 20_000
+                readTimeout = timeoutMs
+                doOutput = true
+                setFixedLengthStreamingMode(head.size + fileBytes.size + tail.size)
+            }.useConn { conn ->
+                conn.outputStream.use { out ->
+                    out.write(head)
+                    out.write(fileBytes)
+                    out.write(tail)
+                }
+                readResponse(conn)
+            }
         }
     }
 

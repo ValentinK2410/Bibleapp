@@ -1032,7 +1032,7 @@
     <string name="gigachat_hub_title">GigaChat</string>
     <string name="gigachat_hub_hint">Модель GigaChat-3-Ultra (Freemium для физлиц). Вопросы текстом или голосом, ответ можно озвучить. Ключ — из Sber Studio.</string>
     <string name="gigachat_hub_ask">Задать вопрос</string>
-    <string name="gigachat_hub_ask_desc">Диалог с GigaChat-3-Ultra: текст, голос, озвучка ответа</string>
+    <string name="gigachat_hub_ask_desc">Диалог с GigaChat-3-Ultra: текст или голос в приложение, отвечает GigaChat</string>
     <string name="gigachat_hub_settings">Настройки GigaChat</string>
     <string name="gigachat_hub_settings_desc">Authorization Key из Studio и проверка доступа</string>
     <string name="gigachat_settings_title">Настройки GigaChat</string>
@@ -1050,7 +1050,10 @@
     <string name="gigachat_settings_saved">Ключ сохранён</string>
     <string name="gigachat_settings_empty">Ключ не задан</string>
     <string name="gigachat_ask_title">Вопрос GigaChat</string>
-    <string name="gigachat_ask_hint">Напишите вопрос или нажмите микрофон. Отвечает GigaChat-3-Ultra. Можно уточнять в том же диалоге.</string>
+    <string name="gigachat_ask_hint">Напишите вопрос или нажмите микрофон. Голос пишется в приложении и уходит в GigaChat-3-Ultra — не во встроенный ассистент телефона. Ответ можно озвучить.</string>
+    <string name="gigachat_voice_too_short">Запись слишком короткая. Нажмите микрофон, скажите вопрос и нажмите стоп.</string>
+    <string name="gigachat_voice_record_error">Не удалось начать запись. Проверьте микрофон.</string>
+    <string name="gigachat_ask_listening">Запись для GigaChat… нажмите стоп</string>
     <string name="gigachat_ask_clear">Новый диалог</string>
     <string name="gigachat_needs_key">Сначала добавьте Authorization Key GigaChat в настройках.</string>
     <string name="gigachat_open_settings">Открыть настройки</string>

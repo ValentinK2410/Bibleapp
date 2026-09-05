@@ -1544,6 +1544,82 @@ class BibleViewModel(
         _gigaChatAsk.value = GigaChatAskUiState()
     }
 
+    fun askGigaChatVoice(audioPath: String) {
+        val file = java.io.File(audioPath)
+        if (!file.exists() || file.length() < 1) return
+        gigaChatJob?.cancel()
+        gigaChatJob = viewModelScope.launch {
+            val key = preferences.gigaChatAuthKey.first()
+            val scope = preferences.gigaChatScope.first()
+            if (key.isBlank()) {
+                file.delete()
+                _gigaChatAsk.value = GigaChatAskUiState(
+                    needsKey = true,
+                    messages = gigaChatHistory.toList(),
+                )
+                return@launch
+            }
+            val shown = "Голосовой вопрос"
+            gigaChatHistory += DeepSeekMessage("user", shown)
+            _gigaChatAsk.value = GigaChatAskUiState(
+                loading = true,
+                messages = gigaChatHistory.toList(),
+            )
+            val bytes = runCatching { file.readBytes() }.getOrElse {
+                file.delete()
+                _gigaChatAsk.value = GigaChatAskUiState(
+                    messages = gigaChatHistory.toList(),
+                    error = "Не удалось прочитать запись",
+                )
+                return@launch
+            }
+            file.delete()
+            val uploaded = GigaChatClient.uploadFile(
+                authKey = key,
+                bytes = bytes,
+                fileName = "voice.m4a",
+                mime = "audio/x-m4a",
+                scope = scope,
+            )
+            val fileId = uploaded.getOrElse { e ->
+                if (e is CancellationException) throw e
+                _gigaChatAsk.value = GigaChatAskUiState(
+                    messages = gigaChatHistory.toList(),
+                    error = e.message?.ifBlank { null } ?: "Не удалось отправить голос в GigaChat",
+                )
+                return@launch
+            }
+            val prompt = DeepSeekMessage(
+                "user",
+                "Это голосовой вопрос пользователя. Расшифруй запись и ответь сам как ассистент GigaChat. " +
+                    "Не отсылайте к системному ассистенту телефона. Отвечай по-русски по существу.",
+            )
+            val apiMessages = listOf(DeepSeekMessage("system", AiChatRepository.SYSTEM_PROMPT)) +
+                gigaChatHistory.dropLast(1).takeLast(10) +
+                prompt
+            val result = GigaChatClient.chat(
+                authKey = key,
+                messages = apiMessages,
+                scope = scope,
+                attachmentIds = listOf(fileId),
+            )
+            GigaChatClient.deleteFile(key, fileId, scope)
+            result.fold(
+                onSuccess = { text ->
+                    gigaChatHistory += DeepSeekMessage("assistant", text)
+                    _gigaChatAsk.value = GigaChatAskUiState(messages = gigaChatHistory.toList())
+                },
+                onFailure = { e ->
+                    if (e is CancellationException) throw e
+                    _gigaChatAsk.value = GigaChatAskUiState(
+                        messages = gigaChatHistory.toList(),
+                        error = e.message?.ifBlank { null } ?: "Не удалось обратиться к GigaChat",
+                    )
+                },
+            )
+        }
+    }
+
     fun askGigaChatQuestion(question: String) {
         val q = question.trim()
         if (q.isEmpty()) return

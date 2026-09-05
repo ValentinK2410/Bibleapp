@@ -63,24 +63,19 @@ fun GigaChatAskScreen(
     val context = LocalContext.current
     val state by viewModel.gigaChatAsk.collectAsStateWithLifecycle()
     var draft by remember { mutableStateOf("") }
-    var speakAnswers by rememberSaveable { mutableStateOf(false) }
+    var speakAnswers by rememberSaveable { mutableStateOf(true) }
     var replyWasLoading by remember { mutableStateOf(false) }
     var lastQuestion by remember { mutableStateOf("") }
     val tts = rememberStudyTextToSpeech(TranslationId.SYNODAL)
-    val speech = rememberAiSpeechToText(
-        onPartial = { draft = it },
-        onFinal = { text ->
-            draft = text
-            when {
-                text.isBlank() -> Unit
-                state.loading ->
-                    Toast.makeText(context, R.string.ai_ask_wait_reply, Toast.LENGTH_SHORT).show()
-                else -> {
-                    tts.stop()
-                    lastQuestion = text
-                    viewModel.askGigaChatQuestion(text)
-                    draft = ""
-                }
+    val speech = rememberGigaChatVoiceRecorder(
+        onRecorded = { file ->
+            if (state.loading) {
+                file.delete()
+                Toast.makeText(context, R.string.ai_ask_wait_reply, Toast.LENGTH_SHORT).show()
+            } else {
+                tts.stop()
+                lastQuestion = "Голосовой вопрос"
+                viewModel.askGigaChatVoice(file.absolutePath)
             }
         },
     )
@@ -250,7 +245,7 @@ fun GigaChatAskScreen(
                         label = {
                             Text(
                                 stringResource(
-                                    if (speech.listening) R.string.ai_ask_listening else R.string.ai_ask_field,
+                                    if (speech.listening) R.string.gigachat_ask_listening else R.string.ai_ask_field,
                                 ),
                             )
                         },
