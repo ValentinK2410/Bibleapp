@@ -26,16 +26,12 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.CameraAlt
-import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.automirrored.filled.PlaylistPlay
-import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.TravelExplore
 import androidx.compose.material.icons.filled.VideoLibrary
 import androidx.compose.material.icons.filled.Videocam
@@ -49,7 +45,6 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
@@ -59,10 +54,10 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -72,8 +67,10 @@ import androidx.core.content.FileProvider
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.bible.data.BibleUserVideo
 import com.example.bible.data.MediaCatalogPaths
+import com.example.bible.data.MediaLibrarySort
 import com.example.bible.data.UserMediaKind
 import com.example.bible.data.UserMediaPlaylistKind
+import com.example.bible.data.sortedByMediaLibrary
 import java.io.File
 import java.text.SimpleDateFormat
 import java.util.Date
@@ -87,65 +84,6 @@ private fun BibleUserVideo.matchesMediaSearch(query: String): Boolean {
     val titleLc = title.lowercase()
     return tokens.all { token ->
         titleLc.contains(token) || tags.any { it.lowercase().contains(token) }
-    }
-}
-
-/**
- * Компактная строка поиска: занимает вдвое меньше места, чем обычное поле Material,
- * — список видео важнее, чем рамка вокруг запроса.
- */
-@Composable
-private fun CompactSearchField(
-    query: String,
-    onQueryChange: (String) -> Unit,
-    modifier: Modifier = Modifier,
-) {
-    Surface(
-        modifier = modifier.height(40.dp),
-        shape = RoundedCornerShape(20.dp),
-        color = MaterialTheme.colorScheme.surfaceContainerHighest,
-    ) {
-        Row(
-            modifier = Modifier.padding(start = 12.dp, end = 4.dp),
-            verticalAlignment = Alignment.CenterVertically,
-        ) {
-            Icon(
-                Icons.Filled.Search,
-                contentDescription = null,
-                modifier = Modifier.size(18.dp),
-                tint = MaterialTheme.colorScheme.onSurfaceVariant,
-            )
-            Spacer(Modifier.width(8.dp))
-            Box(Modifier.weight(1f)) {
-                if (query.isEmpty()) {
-                    Text(
-                        "Поиск по названию или меткам",
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        maxLines = 1,
-                    )
-                }
-                BasicTextField(
-                    value = query,
-                    onValueChange = onQueryChange,
-                    singleLine = true,
-                    textStyle = MaterialTheme.typography.bodyMedium.copy(
-                        color = MaterialTheme.colorScheme.onSurface,
-                    ),
-                    cursorBrush = SolidColor(MaterialTheme.colorScheme.primary),
-                    modifier = Modifier.fillMaxWidth(),
-                )
-            }
-            if (query.isNotEmpty()) {
-                IconButton(onClick = { onQueryChange("") }, modifier = Modifier.size(32.dp)) {
-                    Icon(
-                        Icons.Filled.Close,
-                        contentDescription = "Очистить",
-                        modifier = Modifier.size(16.dp),
-                    )
-                }
-            }
-        }
     }
 }
 
@@ -184,6 +122,8 @@ fun VideoLibraryScreen(
     var draftTags by remember { mutableStateOf("") }
 
     var librarySearchQuery by remember { mutableStateOf("") }
+    var librarySort by rememberSaveable { mutableStateOf(MediaLibrarySort.NEWEST.name) }
+    val videoSort = MediaLibrarySort.fromName(librarySort)
     /** Очередь воспроизведения видеобиблиотеки: только записи с существующим файлом, порядок как в списке. */
     var libraryVideoTracksAndStartIndex by remember { mutableStateOf<Pair<List<Pair<BibleUserVideo, File>>, Int>?>(null) }
     var playlistTargetVideo by remember { mutableStateOf<BibleUserVideo?>(null) }
@@ -320,13 +260,25 @@ fun VideoLibraryScreen(
     ) { padding ->
         // Видео, разложенные по плейлистам, не засоряют общий список — но находятся поиском.
         val searching = librarySearchQuery.isNotBlank()
-        val filteredSorted = remember(videoItems, librarySearchQuery, playlistVideoIds, showPlaylistVideos) {
+        val filteredSorted = remember(
+            videoItems,
+            librarySearchQuery,
+            playlistVideoIds,
+            showPlaylistVideos,
+            videoSort,
+            playbackProgress,
+        ) {
             videoItems
                 .filter { it.matchesMediaSearch(librarySearchQuery) }
                 .filter {
                     searching || showPlaylistVideos || it.id !in playlistVideoIds
                 }
-                .sortedByDescending { it.addedAt }
+                .sortedByMediaLibrary(
+                    sort = videoSort,
+                    title = { it.title },
+                    addedAt = { it.addedAt },
+                    lastPlayedAt = { playbackProgress[it.id]?.updatedAt ?: 0L },
+                )
         }
         val hiddenByPlaylists = remember(videoItems, playlistVideoIds) {
             videoItems.count { it.id in playlistVideoIds }
@@ -342,12 +294,13 @@ fun VideoLibraryScreen(
                 .padding(padding)
                 .fillMaxSize(),
         ) {
-            CompactSearchField(
+            MediaLibrarySearchRow(
                 query = librarySearchQuery,
                 onQueryChange = { librarySearchQuery = it },
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 12.dp, vertical = 6.dp),
+                sort = videoSort,
+                onSortChange = { librarySort = it.name },
+                kind = UserMediaKind.VIDEO,
+                modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp),
             )
             if (hiddenByPlaylists > 0 && !searching) {
                 Row(

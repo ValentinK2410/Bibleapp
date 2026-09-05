@@ -75,6 +75,7 @@ import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -98,7 +99,9 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.bible.data.BibleUserAudio
 import com.example.bible.data.BibleUserVideo
 import com.example.bible.data.MediaCatalogPaths
+import com.example.bible.data.MediaLibrarySort
 import com.example.bible.data.UserMediaKind
+import com.example.bible.data.sortedByMediaLibrary
 import com.example.bible.data.UserMediaPlaybackProgress
 import com.example.bible.data.completedLabelRu
 import com.example.bible.data.UserMediaPlaylist
@@ -1493,22 +1496,38 @@ fun PickLibraryMediaForPlaylistSheet(
     val audios by viewModel.bibleUserAudios.collectAsStateWithLifecycle()
     val playbackProgress by viewModel.userMediaPlaybackProgress.collectAsStateWithLifecycle()
     var searchQuery by remember { mutableStateOf("") }
+    var searchSort by rememberSaveable { mutableStateOf(MediaLibrarySort.NEWEST.name) }
+    val mediaSort = MediaLibrarySort.fromName(searchSort)
+    val mediaKind = when (kind) {
+        UserMediaPlaylistKind.VIDEO -> UserMediaKind.VIDEO
+        UserMediaPlaylistKind.AUDIO -> UserMediaKind.AUDIO
+    }
     var previewAudio by remember { mutableStateOf<Pair<BibleUserAudio, File>?>(null) }
     var previewVideo by remember { mutableStateOf<Pair<List<Pair<BibleUserVideo, File>>, Int>?>(null) }
 
-    val availableVideos = remember(videos, existingItemIds, searchQuery) {
+    val availableVideos = remember(videos, existingItemIds, searchQuery, mediaSort, playbackProgress) {
         videos
             .filter { MediaCatalogPaths.isLikelyVideoFileName(it.fileName) }
             .filter { it.id !in existingItemIds }
             .filter { it.matchesMediaSearch(searchQuery) }
-            .sortedByDescending { it.addedAt }
+            .sortedByMediaLibrary(
+                sort = mediaSort,
+                title = { it.title },
+                addedAt = { it.addedAt },
+                lastPlayedAt = { playbackProgress[it.id]?.updatedAt ?: 0L },
+            )
     }
-    val availableAudios = remember(audios, existingItemIds, searchQuery) {
+    val availableAudios = remember(audios, existingItemIds, searchQuery, mediaSort, playbackProgress) {
         audios
             .filter { MediaCatalogPaths.isLikelyAudioFileName(it.fileName) }
             .filter { it.id !in existingItemIds }
             .filter { it.matchesMediaSearch(searchQuery) }
-            .sortedByDescending { it.addedAt }
+            .sortedByMediaLibrary(
+                sort = mediaSort,
+                title = { it.title },
+                addedAt = { it.addedAt },
+                lastPlayedAt = { playbackProgress[it.id]?.updatedAt ?: 0L },
+            )
     }
 
     val kindLabel =
@@ -1591,12 +1610,12 @@ fun PickLibraryMediaForPlaylistSheet(
                 style = MaterialTheme.typography.titleMedium,
             )
             Spacer(Modifier.height(12.dp))
-            OutlinedTextField(
-                value = searchQuery,
-                onValueChange = { searchQuery = it },
-                label = { Text("Поиск") },
-                singleLine = true,
-                modifier = Modifier.fillMaxWidth(),
+            MediaLibrarySearchRow(
+                query = searchQuery,
+                onQueryChange = { searchQuery = it },
+                sort = mediaSort,
+                onSortChange = { searchSort = it.name },
+                kind = mediaKind,
             )
             Spacer(Modifier.height(8.dp))
             Text(

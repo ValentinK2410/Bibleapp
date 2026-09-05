@@ -50,6 +50,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -61,8 +62,10 @@ import androidx.core.content.FileProvider
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.bible.data.BibleUserAudio
 import com.example.bible.data.MediaCatalogPaths
+import com.example.bible.data.MediaLibrarySort
 import com.example.bible.data.UserMediaKind
 import com.example.bible.data.UserMediaPlaylistKind
+import com.example.bible.data.sortedByMediaLibrary
 import java.io.File
 import java.text.SimpleDateFormat
 import java.util.Date
@@ -106,6 +109,8 @@ fun AudioLibraryScreen(
     var draftTags by remember { mutableStateOf("") }
 
     var librarySearchQuery by remember { mutableStateOf("") }
+    var librarySort by rememberSaveable { mutableStateOf(MediaLibrarySort.NEWEST.name) }
+    val audioSort = MediaLibrarySort.fromName(librarySort)
     var playlistTargetAudio by remember { mutableStateOf<BibleUserAudio?>(null) }
     /** Очередь встроенного плеера: только файлы на диске, порядок как в списке. */
     var libraryAudioTracksAndStart by remember { mutableStateOf<Pair<List<Pair<BibleUserAudio, File>>, Int>?>(null) }
@@ -211,10 +216,15 @@ fun AudioLibraryScreen(
             }
         },
     ) { padding ->
-        val filteredSorted = remember(audioItems, librarySearchQuery) {
+        val filteredSorted = remember(audioItems, librarySearchQuery, audioSort, playbackProgress) {
             audioItems
                 .filter { it.matchesMediaSearch(librarySearchQuery) }
-                .sortedByDescending { it.addedAt }
+                .sortedByMediaLibrary(
+                    sort = audioSort,
+                    title = { it.title },
+                    addedAt = { it.addedAt },
+                    lastPlayedAt = { playbackProgress[it.id]?.updatedAt ?: 0L },
+                )
         }
         val playableFiltered = remember(filteredSorted) {
             filteredSorted.mapNotNull { a ->
@@ -227,17 +237,13 @@ fun AudioLibraryScreen(
                 .padding(padding)
                 .fillMaxSize(),
         ) {
-            OutlinedTextField(
-                value = librarySearchQuery,
-                onValueChange = { librarySearchQuery = it },
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 12.dp, vertical = 8.dp),
-                placeholder = { Text("Поиск по названию или меткам") },
-                leadingIcon = {
-                    Icon(Icons.Filled.MusicNote, contentDescription = null)
-                },
-                singleLine = true,
+            MediaLibrarySearchRow(
+                query = librarySearchQuery,
+                onQueryChange = { librarySearchQuery = it },
+                sort = audioSort,
+                onSortChange = { librarySort = it.name },
+                kind = UserMediaKind.AUDIO,
+                modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp),
             )
             Text(
                 "▶ — в приложении · ⋮ — плейлист, другое приложение, поделиться, удалить · A− / A+ размер названий.",
