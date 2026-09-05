@@ -60,6 +60,7 @@ import com.example.bible.data.SemanticHighlightSession
 import com.example.bible.data.SemanticScope
 import com.example.bible.data.TextHighlight
 import com.example.bible.data.MediaCatalogPaths
+import com.example.bible.data.PlaylistCoverStore
 import com.example.bible.data.UserMediaPlaylist
 import com.example.bible.data.UserMediaPlaylistKind
 import com.example.bible.data.UserMediaKind
@@ -2105,8 +2106,67 @@ class BibleViewModel(
         }
     }
 
+    fun updateUserMediaPlaylistLook(playlistId: String, lookId: String) {
+        viewModelScope.launch {
+            val pl = userMediaPlaylists.value.firstOrNull { it.id == playlistId } ?: return@launch
+            preferences.saveUserMediaPlaylist(pl.copy(lookId = lookId))
+        }
+    }
+
+    fun updateUserMediaPlaylistSubtitle(playlistId: String, subtitle: String) {
+        viewModelScope.launch {
+            val pl = userMediaPlaylists.value.firstOrNull { it.id == playlistId } ?: return@launch
+            preferences.saveUserMediaPlaylist(pl.copy(subtitle = subtitle.trim()))
+        }
+    }
+
+    fun setUserMediaPlaylistCoverFromUri(playlistId: String, uri: Uri, onDone: (String) -> Unit) {
+        viewModelScope.launch {
+            val pl = userMediaPlaylists.value.firstOrNull { it.id == playlistId } ?: return@launch
+            val result = PlaylistCoverStore.importFromUri(appContext, playlistId, uri)
+            result.fold(
+                onSuccess = { name ->
+                    if (pl.coverFileName.isNotBlank() && pl.coverFileName != name) {
+                        PlaylistCoverStore.delete(appContext, pl.coverFileName)
+                    }
+                    preferences.saveUserMediaPlaylist(pl.copy(coverFileName = name))
+                    onDone("Обложка сохранена")
+                },
+                onFailure = { onDone(it.message ?: "Не удалось сохранить обложку") },
+            )
+        }
+    }
+
+    fun setUserMediaPlaylistCoverFromVideo(playlistId: String, videoFileName: String, onDone: (String) -> Unit) {
+        viewModelScope.launch {
+            val pl = userMediaPlaylists.value.firstOrNull { it.id == playlistId } ?: return@launch
+            val file = MediaCatalogPaths.videoFile(appContext, videoFileName)
+            val result = PlaylistCoverStore.importFromVideo(appContext, playlistId, file)
+            result.fold(
+                onSuccess = { name ->
+                    if (pl.coverFileName.isNotBlank() && pl.coverFileName != name) {
+                        PlaylistCoverStore.delete(appContext, pl.coverFileName)
+                    }
+                    preferences.saveUserMediaPlaylist(pl.copy(coverFileName = name))
+                    onDone("Кадр стал обложкой")
+                },
+                onFailure = { onDone(it.message ?: "Не удалось взять кадр") },
+            )
+        }
+    }
+
+    fun clearUserMediaPlaylistCover(playlistId: String) {
+        viewModelScope.launch {
+            val pl = userMediaPlaylists.value.firstOrNull { it.id == playlistId } ?: return@launch
+            PlaylistCoverStore.delete(appContext, pl.coverFileName)
+            preferences.saveUserMediaPlaylist(pl.copy(coverFileName = ""))
+        }
+    }
+
     fun deleteUserMediaPlaylist(playlistId: String) {
         viewModelScope.launch {
+            val pl = userMediaPlaylists.value.firstOrNull { it.id == playlistId }
+            PlaylistCoverStore.delete(appContext, pl?.coverFileName)
             preferences.deleteUserMediaPlaylist(playlistId)
         }
     }

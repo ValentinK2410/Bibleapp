@@ -36,6 +36,7 @@ import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.DragHandle
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.MoreVert
+import androidx.compose.material.icons.filled.Palette
 import androidx.compose.material.icons.filled.MusicNote
 import androidx.compose.material.icons.outlined.CheckCircle
 import androidx.compose.material.icons.automirrored.filled.OpenInNew
@@ -217,6 +218,7 @@ fun UserMediaPlaylistsListScreen(
     var renameDraft by remember { mutableStateOf("") }
     var deleteTarget by remember { mutableStateOf<UserMediaPlaylist?>(null) }
     var shareTarget by remember { mutableStateOf<UserMediaPlaylist?>(null) }
+    var styleTarget by remember { mutableStateOf<UserMediaPlaylist?>(null) }
     var busyMessage by remember { mutableStateOf<String?>(null) }
 
     val importPlaylistLauncher = rememberLauncherForActivityResult(
@@ -323,31 +325,20 @@ fun UserMediaPlaylistsListScreen(
                 verticalArrangement = Arrangement.spacedBy(10.dp),
             ) {
                 items(playlists, key = { it.id }) { pl ->
-                    ElevatedCard(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .clickable { onOpenPlaylist(pl.id) },
-                    ) {
-                        Row(
-                            Modifier
-                                .fillMaxWidth()
-                                .padding(horizontal = 12.dp, vertical = 10.dp),
-                            verticalAlignment = Alignment.CenterVertically,
-                        ) {
-                            Column(Modifier.weight(1f)) {
-                                Text(
-                                    pl.name,
-                                    style = MaterialTheme.typography.titleMedium,
-                                    fontWeight = FontWeight.SemiBold,
-                                    maxLines = 2,
-                                    overflow = TextOverflow.Ellipsis,
-                                )
-                                Text(
-                                    "${pl.itemIds.size} файлов",
-                                    style = MaterialTheme.typography.labelMedium,
-                                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                                )
+                    val fallbackVideo = remember(pl.itemIds, videos) {
+                        pl.itemIds.firstNotNullOfOrNull { id ->
+                            videos.firstOrNull { it.id == id }?.let { v ->
+                                MediaCatalogPaths.videoFile(context, v.fileName)
+                                    .takeIf { it.exists() }
                             }
+                        }
+                    }
+                    PlaylistLookCard(
+                        playlist = pl,
+                        fileCount = pl.itemIds.size,
+                        fallbackVideo = fallbackVideo,
+                        onClick = { onOpenPlaylist(pl.id) },
+                        trailing = {
                             Box {
                                 IconButton(
                                     onClick = {
@@ -355,12 +346,26 @@ fun UserMediaPlaylistsListScreen(
                                             if (menuPlaylistId == pl.id) null else pl.id
                                     },
                                 ) {
-                                    Icon(Icons.Filled.MoreVert, "Меню")
+                                    Icon(
+                                        Icons.Filled.MoreVert,
+                                        "Меню",
+                                        tint = Color.White,
+                                    )
                                 }
                                 DropdownMenu(
                                     expanded = menuPlaylistId == pl.id,
                                     onDismissRequest = { menuPlaylistId = null },
                                 ) {
+                                    DropdownMenuItem(
+                                        text = { Text("Оформить") },
+                                        onClick = {
+                                            menuPlaylistId = null
+                                            styleTarget = pl
+                                        },
+                                        leadingIcon = {
+                                            Icon(Icons.Filled.Palette, null)
+                                        },
+                                    )
                                     DropdownMenuItem(
                                         text = { Text("Поделиться") },
                                         onClick = {
@@ -394,8 +399,8 @@ fun UserMediaPlaylistsListScreen(
                                     )
                                 }
                             }
-                        }
-                    }
+                        },
+                    )
                 }
             }
         }
@@ -431,6 +436,27 @@ fun UserMediaPlaylistsListScreen(
                     Text("Отмена")
                 }
             },
+        )
+    }
+
+    styleTarget?.let { pl ->
+        PlaylistAppearanceSheet(
+            playlist = playlists.firstOrNull { it.id == pl.id } ?: pl,
+            videos = videos,
+            onLook = { viewModel.updateUserMediaPlaylistLook(pl.id, it) },
+            onSubtitle = { viewModel.updateUserMediaPlaylistSubtitle(pl.id, it) },
+            onCoverFromUri = { uri ->
+                viewModel.setUserMediaPlaylistCoverFromUri(pl.id, uri) { msg ->
+                    Toast.makeText(context, msg, Toast.LENGTH_SHORT).show()
+                }
+            },
+            onCoverFromVideo = { fileName ->
+                viewModel.setUserMediaPlaylistCoverFromVideo(pl.id, fileName) { msg ->
+                    Toast.makeText(context, msg, Toast.LENGTH_SHORT).show()
+                }
+            },
+            onClearCover = { viewModel.clearUserMediaPlaylistCover(pl.id) },
+            onDismiss = { styleTarget = null },
         )
     }
 
@@ -556,6 +582,7 @@ fun UserMediaPlaylistDetailScreen(
     var renameOpen by remember { mutableStateOf(false) }
     var renameDraft by remember { mutableStateOf("") }
     var showPickMediaSheet by remember { mutableStateOf(false) }
+    var showAppearanceSheet by remember { mutableStateOf(false) }
     var showShareDialog by remember { mutableStateOf(false) }
     var busyMessage by remember { mutableStateOf<String?>(null) }
 
@@ -628,6 +655,9 @@ fun UserMediaPlaylistDetailScreen(
                         enabled = playlist.itemIds.isNotEmpty(),
                     ) {
                         Icon(Icons.Filled.Share, contentDescription = "Поделиться плейлистом")
+                    }
+                    IconButton(onClick = { showAppearanceSheet = true }) {
+                        Icon(Icons.Filled.Palette, contentDescription = "Оформить плейлист")
                     }
                     IconButton(onClick = { showPickMediaSheet = true }) {
                         Icon(Icons.Filled.Add, contentDescription = "Добавить в плейлист")
@@ -702,6 +732,29 @@ fun UserMediaPlaylistDetailScreen(
                 .padding(padding)
                 .fillMaxSize(),
         ) {
+            val heroFallback = remember(playlist.itemIds, videos) {
+                playlist.itemIds.firstNotNullOfOrNull { id ->
+                    videoById[id]?.let { v ->
+                        MediaCatalogPaths.videoFile(context, v.fileName).takeIf { it.exists() }
+                    }
+                }
+            }
+            PlaylistCoverArt(
+                playlist = playlist,
+                fallbackVideo = heroFallback,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 12.dp, vertical = 8.dp)
+                    .height(168.dp),
+            )
+            if (playlist.subtitle.isNotBlank()) {
+                Text(
+                    playlist.subtitle,
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    modifier = Modifier.padding(horizontal = 16.dp, vertical = 2.dp),
+                )
+            }
             Text(
                 hintText,
                 style = MaterialTheme.typography.bodySmall,
@@ -1097,6 +1150,27 @@ fun UserMediaPlaylistDetailScreen(
                     Text("Отмена")
                 }
             },
+        )
+    }
+
+    if (showAppearanceSheet) {
+        PlaylistAppearanceSheet(
+            playlist = playlist,
+            videos = videos,
+            onLook = { viewModel.updateUserMediaPlaylistLook(playlistId, it) },
+            onSubtitle = { viewModel.updateUserMediaPlaylistSubtitle(playlistId, it) },
+            onCoverFromUri = { uri ->
+                viewModel.setUserMediaPlaylistCoverFromUri(playlistId, uri) { msg ->
+                    Toast.makeText(context, msg, Toast.LENGTH_SHORT).show()
+                }
+            },
+            onCoverFromVideo = { fileName ->
+                viewModel.setUserMediaPlaylistCoverFromVideo(playlistId, fileName) { msg ->
+                    Toast.makeText(context, msg, Toast.LENGTH_SHORT).show()
+                }
+            },
+            onClearCover = { viewModel.clearUserMediaPlaylistCover(playlistId) },
+            onDismiss = { showAppearanceSheet = false },
         )
     }
 

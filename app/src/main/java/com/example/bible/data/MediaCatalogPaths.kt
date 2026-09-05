@@ -13,11 +13,16 @@ object MediaCatalogPaths {
     const val VIDEOS = "media_catalog/videos"
     const val AUDIOS = "media_catalog/audios"
     const val MICROBLOG = "media_catalog/microblog"
+    const val PLAYLIST_COVERS = "media_catalog/playlist_covers"
 
     fun picturesDir(context: Context): File = File(context.filesDir, PICTURES).apply { mkdirs() }
     fun videosDir(context: Context): File = File(context.filesDir, VIDEOS).apply { mkdirs() }
     fun audiosDir(context: Context): File = File(context.filesDir, AUDIOS).apply { mkdirs() }
     fun microblogDir(context: Context): File = File(context.filesDir, MICROBLOG).apply { mkdirs() }
+    fun playlistCoversDir(context: Context): File = File(context.filesDir, PLAYLIST_COVERS).apply { mkdirs() }
+
+    fun playlistCoverFile(context: Context, fileName: String): File =
+        File(playlistCoversDir(context), fileName)
 
     fun pictureFile(context: Context, fileName: String): File = File(picturesDir(context), fileName)
     fun videoFile(context: Context, fileName: String): File = File(videosDir(context), fileName)
