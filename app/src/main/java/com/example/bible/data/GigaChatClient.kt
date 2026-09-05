@@ -230,7 +230,7 @@ object GigaChatClient {
         timeoutMs: Int,
     ): Pair<Int, String> {
         var current = url
-        repeat(4) {
+        for (i in 0 until 4) {
             val (code, raw, location) = withRetry {
                 openConn(current).apply {
                     requestMethod = "POST"
