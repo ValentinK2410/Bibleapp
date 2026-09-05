@@ -1668,9 +1668,11 @@ class BibleViewModel(
         val key = preferences.gigaChatAuthKey.first()
         val scope = preferences.gigaChatScope.first()
         val dir = GigaChatImages.dir(appContext)
-        return GigaChatImages.materialize(raw, dir = dir) { fileId ->
-            GigaChatClient.downloadFile(key, fileId, scope).getOrNull()
-        }
+        return GigaChatImages.materialize(
+            content = raw,
+            download = { fileId -> GigaChatClient.downloadFile(key, fileId, scope).getOrNull() },
+            dir = dir,
+        )
     }
 
     private suspend fun rememberIdentifyPhotoRequest(
@@ -1685,10 +1687,22 @@ class BibleViewModel(
         repo.addMessage(chatId, "assistant", answer)
     }
 
+    fun refreshGigaChatImagesInCurrentChat() {
+        val chatId = _gigaChatAsk.value.currentChatId ?: return
+        viewModelScope.launch {
+            localizeStoredGigaChatImages(chatId)
+            val stored = gigaChats.listMessages(chatId)
+            if (_gigaChatAsk.value.currentChatId != chatId) return@launch
+            _gigaChatAsk.value = _gigaChatAsk.value.copy(
+                messages = stored.map { DeepSeekMessage(it.role, it.content) },
+            )
+        }
+    }
+
     private suspend fun localizeStoredGigaChatImages(chatId: Long) {
         val stored = gigaChats.listMessages(chatId)
         for (msg in stored) {
-            if (msg.role != "assistant" || !GigaChatImages.hasRemoteIds(msg.content)) continue
+            if (!GigaChatImages.hasRemoteIds(msg.content)) continue
             val localized = localizeGigaChatReply(msg.content)
             if (localized != msg.content) gigaChats.updateMessage(msg.id, localized)
         }

@@ -13,21 +13,42 @@ import java.io.File
 object GigaChatImages {
 
     const val FILE_PREFIX = "gigachat-file:"
-    private val imgTag = Regex(
-        """<img\s+[^>]*\bsrc\s*=\s*["']([^"']+)["'][^>]*/?>""",
+
+    private val srcInImg = Regex(
+        """<img\b[^>]*?\bsrc\s*=\s*["']?\s*([^"'\s>]+)["']?""",
         setOf(RegexOption.IGNORE_CASE, RegexOption.DOT_MATCHES_ALL),
     )
-    private val uuid = Regex(
+    private val anyImg = Regex(
+        """<img\b[^>]*>""",
+        setOf(RegexOption.IGNORE_CASE, RegexOption.DOT_MATCHES_ALL),
+    )
+    private val uuidToken = Regex(
+        """[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}""",
+    )
+    private val uuidExact = Regex(
         """^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$""",
     )
 
     fun dir(context: Context): File =
         File(context.applicationContext.filesDir, "gigachat_images").apply { mkdirs() }
 
+    fun normalize(raw: String): String =
+        raw.replace("\\\"", "\"")
+            .replace("&lt;", "<")
+            .replace("&gt;", ">")
+            .replace("&quot;", "\"")
+            .replace("&#34;", "\"")
+            .replace("&#39;", "'")
+            .replace("&amp;", "&")
+
     fun hasRemoteIds(content: String): Boolean = remoteIds(content).isNotEmpty()
 
-    fun remoteIds(content: String): List<String> =
-        imgTag.findAll(content).map { it.groupValues[1].trim() }.filter { uuid.matches(it) }.distinct()
+    fun remoteIds(content: String): List<String> {
+        val n = normalize(content)
+        val fromSrc = srcInImg.findAll(n).map { it.groupValues[1].trim() }.filter { uuidExact.matches(it) }
+        val fromTag = anyImg.findAll(n).flatMap { tag -> uuidToken.findAll(tag.value).map { it.value } }
+        return (fromSrc + fromTag).distinct().toList()
+    }
 
     fun localFileName(src: String): String? {
         val value = src.trim()
@@ -41,7 +62,7 @@ object GigaChatImages {
         val name = localFileName(src) ?: return null
         if (name.isEmpty() || name.contains('/') || name.contains('\\')) return null
         val file = File(dir, name)
-        return file.takeIf { it.isFile }
+        return file.takeIf { it.isFile && it.length() > 0L }
     }
 
     suspend fun materialize(
@@ -49,8 +70,8 @@ object GigaChatImages {
         download: suspend (fileId: String) -> ByteArray?,
         dir: File,
     ): String {
-        var result = content
-        for (id in remoteIds(content)) {
+        var result = normalize(content)
+        for (id in remoteIds(result)) {
             val bytes = download(id) ?: continue
             if (bytes.isEmpty()) continue
             val name = "${id}.jpg"
@@ -62,36 +83,56 @@ object GigaChatImages {
     }
 
     fun parts(content: String, dir: File): List<GigaChatContentPart> {
+        val n = normalize(content)
         val out = mutableListOf<GigaChatContentPart>()
         var last = 0
-        for (match in imgTag.findAll(content)) {
-            val before = content.substring(last, match.range.first).trim()
+        val tags = anyImg.findAll(n).toList()
+        for (match in tags) {
+            val before = n.substring(last, match.range.first).trim()
             if (before.isNotEmpty()) out += GigaChatContentPart.Text(before)
-            val src = match.groupValues[1].trim()
-            val file = fileFor(dir, src)
-            if (file != null) {
-                out += GigaChatContentPart.Image(file)
-            } else if (uuid.matches(src)) {
-                out += GigaChatContentPart.MissingImage
+            val src = srcInImg.find(match.value)?.groupValues?.get(1)?.trim().orEmpty()
+            val local = fileFor(dir, src)
+            val remote = src.takeIf { uuidExact.matches(it) }
+                ?: uuidToken.find(match.value)?.value
+            when {
+                local != null -> out += GigaChatContentPart.Image(local)
+                remote != null -> {
+                    val cached = File(dir, "$remote.jpg").takeIf { it.isFile && it.length() > 0L }
+                    out += if (cached != null) {
+                        GigaChatContentPart.Image(cached)
+                    } else {
+                        GigaChatContentPart.MissingImage
+                    }
+                }
             }
             last = match.range.last + 1
         }
-        val tail = content.substring(last).trim()
-        if (tail.isNotEmpty()) out += GigaChatContentPart.Text(tail)
-        if (out.isEmpty() && content.isNotBlank()) out += GigaChatContentPart.Text(content.trim())
+        val tail = n.substring(last).trim()
+        if (tail.isNotEmpty() && !tail.contains("<img", ignoreCase = true)) {
+            out += GigaChatContentPart.Text(tail)
+        }
+        if (out.isEmpty() && n.isNotBlank() && !n.contains("<img", ignoreCase = true)) {
+            out += GigaChatContentPart.Text(n.trim())
+        }
+        if (out.none { it is GigaChatContentPart.Image || it is GigaChatContentPart.MissingImage }) {
+            for (id in remoteIds(n)) {
+                val cached = File(dir, "$id.jpg").takeIf { it.isFile && it.length() > 0L }
+                out += if (cached != null) GigaChatContentPart.Image(cached) else GigaChatContentPart.MissingImage
+            }
+        }
         return out
     }
 
     fun stripForApi(content: String): String {
-        val text = imgTag.replace(content, " ").replace(Regex("\\s+"), " ").trim()
+        val text = anyImg.replace(normalize(content), " ").replace(Regex("\\s+"), " ").trim()
         return text.ifBlank { "[изображение]" }
     }
 
     fun stripForSpeech(content: String): String =
-        imgTag.replace(content, " ").replace(Regex("\\s+"), " ").trim()
+        anyImg.replace(normalize(content), " ")
 
     fun referencedFiles(content: String, dir: File): List<File> =
-        imgTag.findAll(content).mapNotNull { fileFor(dir, it.groupValues[1].trim()) }.toList()
+        parts(content, dir).mapNotNull { (it as? GigaChatContentPart.Image)?.file }
 
     fun saveJpeg(dir: File, bytes: ByteArray): String? {
         if (bytes.isEmpty()) return null

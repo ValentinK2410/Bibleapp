@@ -180,23 +180,32 @@ object GigaChatClient {
         try {
             var token = accessToken(key, scope)
             var lastError: Exception? = null
+            val accepts = listOf("application/jpg", "application/jpeg", "image/jpeg", "image/png", "*/*")
+            val methods = listOf("GET", "POST")
             for (base in fileUrls) {
                 val url = "$base/$id/content"
-                var (code, bytes) = getBinary(url, token, 60_000)
-                if (code == 401) {
-                    invalidateToken()
-                    token = accessToken(key, scope)
-                    val retry = getBinary(url, token, 60_000)
-                    code = retry.first
-                    bytes = retry.second
+                for (method in methods) {
+                    for (accept in accepts) {
+                        var (code, bytes) = getBinary(url, token, 60_000, accept, method)
+                        if (code == 401) {
+                            invalidateToken()
+                            token = accessToken(key, scope)
+                            val retry = getBinary(url, token, 60_000, accept, method)
+                            code = retry.first
+                            bytes = retry.second
+                        }
+                        if (code in 200..299 && looksLikeImage(bytes)) {
+                            return@withContext Result.success(bytes)
+                        }
+                        if (bytes.isNotEmpty() && code !in 200..299) {
+                            lastError = IllegalStateException(
+                                errorMessage(code, bytes.toString(StandardCharsets.UTF_8)),
+                            )
+                        }
+                    }
                 }
-                if (code in 200..299 && bytes.isNotEmpty()) {
-                    return@withContext Result.success(bytes)
-                }
-                val err = bytes.toString(StandardCharsets.UTF_8)
-                lastError = IllegalStateException(errorMessage(code, err))
             }
-            Result.failure(lastError ?: IOException("Не удалось скачать файл GigaChat"))
+            Result.failure(lastError ?: IOException("Не удалось скачать изображение GigaChat"))
         } catch (e: Exception) {
             Result.failure(IllegalStateException(networkErrorMessage(e), e))
         }
@@ -259,7 +268,8 @@ object GigaChatClient {
                     .optJSONArray("choices")
                     ?.optJSONObject(0)
                     ?.optJSONObject("message")
-                return message?.optString("content").orEmpty().trim()
+                val content = GigaChatImages.normalize(message?.optString("content").orEmpty()).trim()
+                return content
             }
             lastError = IllegalStateException(errorMessage(code, raw))
         }
@@ -305,21 +315,40 @@ object GigaChatClient {
         throw lastError ?: IOException("Не удалось получить токен GigaChat")
     }
 
+    private fun looksLikeImage(bytes: ByteArray): Boolean {
+        if (bytes.size < 8) return false
+        val jpeg = bytes[0] == 0xFF.toByte() && bytes[1] == 0xD8.toByte()
+        val png = bytes[0] == 0x89.toByte() && bytes[1] == 'P'.code.toByte()
+        val gif = bytes[0] == 'G'.code.toByte() && bytes[1] == 'I'.code.toByte()
+        val webp = bytes.size > 12 && bytes[0] == 'R'.code.toByte() && bytes[8] == 'W'.code.toByte()
+        val jsonOrHtml = bytes[0] == '{'.code.toByte() || bytes[0] == '<'.code.toByte()
+        return jpeg || png || gif || webp || (!jsonOrHtml && bytes.size > 256)
+    }
+
     private fun getBinary(
         url: String,
         accessToken: String,
         timeoutMs: Int,
+        accept: String = "application/jpg",
+        method: String = "GET",
     ): Pair<Int, ByteArray> = withRetry {
         openConn(url).apply {
-            requestMethod = "GET"
+            requestMethod = method
             instanceFollowRedirects = true
             setRequestProperty("Authorization", "Bearer $accessToken")
-            setRequestProperty("Accept", "application/jpg")
+            setRequestProperty("Accept", accept)
             setRequestProperty("User-Agent", USER_AGENT)
             setRequestProperty("Connection", "close")
             connectTimeout = 20_000
             readTimeout = timeoutMs
+            if (method == "POST") {
+                setRequestProperty("Content-Type", "application/json")
+                doOutput = true
+            }
         }.useConn { conn ->
+            if (method == "POST") {
+                conn.outputStream.use { it.write("{}".toByteArray(StandardCharsets.UTF_8)) }
+            }
             val code = conn.responseCode
             val stream = if (code in 200..299) conn.inputStream else conn.errorStream
             val bytes = stream?.use { it.readBytes() } ?: ByteArray(0)

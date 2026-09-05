@@ -132,6 +132,11 @@ fun GigaChatAskScreen(
     LaunchedEffect(Unit) {
         viewModel.openGigaChatAsk()
     }
+    LaunchedEffect(state.currentChatId, state.loading, state.pane) {
+        if (state.pane == DeepSeekAskPane.CHAT && !state.loading && state.currentChatId != null) {
+            viewModel.refreshGigaChatImagesInCurrentChat()
+        }
+    }
     DisposableEffect(Unit) {
         onDispose {
             tts.stop()
