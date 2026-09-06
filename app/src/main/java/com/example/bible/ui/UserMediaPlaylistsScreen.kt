@@ -1,14 +1,11 @@
 package com.example.bible.ui
 
 import android.content.Intent
-import android.graphics.Bitmap
-import android.media.MediaMetadataRetriever
 import android.net.Uri
 import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.animation.core.animateDpAsState
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -45,7 +42,6 @@ import androidx.compose.material.icons.filled.Pause
 import androidx.compose.material.icons.filled.Remove
 import androidx.compose.material.icons.filled.Download
 import androidx.compose.material.icons.filled.Share
-import androidx.compose.material.icons.filled.Videocam
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
@@ -84,9 +80,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.graphics.vector.ImageVector
-import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalHapticFeedback
@@ -144,49 +138,6 @@ private fun BibleUserAudio.matchesMediaSearch(query: String): Boolean {
     val titleLc = title.lowercase()
     return tokens.all { token ->
         titleLc.contains(token) || tags.any { it.lowercase().contains(token) }
-    }
-}
-
-@Composable
-private fun PlaylistVideoThumb(file: File, modifier: Modifier = Modifier) {
-    var bmp by remember(file.absolutePath) { mutableStateOf<Bitmap?>(null) }
-    LaunchedEffect(file.absolutePath) {
-        bmp = withContext(Dispatchers.IO) {
-            val r = MediaMetadataRetriever()
-            try {
-                r.setDataSource(file.absolutePath)
-                r.getFrameAtTime(0, MediaMetadataRetriever.OPTION_CLOSEST_SYNC)
-            } catch (_: Exception) {
-                null
-            } finally {
-                try {
-                    r.release()
-                } catch (_: Exception) {
-                }
-            }
-        }
-    }
-    Box(
-        modifier = modifier
-            .fillMaxSize()
-            .background(MaterialTheme.colorScheme.surfaceVariant),
-        contentAlignment = Alignment.Center,
-    ) {
-        if (bmp != null) {
-            Image(
-                bitmap = bmp!!.asImageBitmap(),
-                contentDescription = null,
-                modifier = Modifier.fillMaxSize(),
-                contentScale = ContentScale.Crop,
-            )
-        } else {
-            Icon(
-                Icons.Filled.Videocam,
-                contentDescription = null,
-                modifier = Modifier.size(32.dp),
-                tint = MaterialTheme.colorScheme.onSurfaceVariant,
-            )
-        }
     }
 }
 
@@ -1451,7 +1402,7 @@ private fun VideoPlaylistEntry(
                 .clip(RoundedCornerShape(8.dp))
                 .clickable(onClick = onPlay),
         ) {
-            PlaylistVideoThumb(videoFile, Modifier.fillMaxSize())
+            VideoFileThumbnail(videoFile, Modifier.fillMaxSize())
             MediaProgressThumbOverlay(
                 progress = progress,
                 modifier = Modifier.align(Alignment.BottomCenter),
@@ -1772,7 +1723,7 @@ fun PickLibraryMediaForPlaylistSheet(
                                         onCheckedChange = { toggleSelected(video.id) },
                                     )
                                     Box(Modifier.size(48.dp)) {
-                                        PlaylistVideoThumb(file, Modifier.fillMaxSize())
+                                        VideoFileThumbnail(file, Modifier.fillMaxSize())
                                     }
                                     Column(
                                         Modifier
