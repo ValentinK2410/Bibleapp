@@ -526,11 +526,6 @@ private fun LoadingScreen() {
     }
 }
 
-/** Короткий заголовок главы в шапке читалки: «Гал 1:2», как аббревиатуры в сетке книг. */
-private fun readerChapterTitle(bookId: String, chapterNum: Int, verse: Int = 1): String {
-    val abbr = BibleCanon.byId(bookId)?.abbrRu ?: bookId
-    return "$abbr $chapterNum:${verse.coerceAtLeast(1)}"
-}
 
 /** Второй перевод в режиме сравнения при открытии из читалки. */
 private fun defaultDualCompanionTranslation(primary: TranslationId): TranslationId =
@@ -1078,6 +1073,10 @@ private fun BibleNavHost(
                 },
                 viewModel = viewModel,
                 onOpenDeepSeekSettings = { navController.navigate("ai_settings") },
+                navController = navController,
+                booksMainMenuOrder = booksMainMenuOrder,
+                narratorId = narratorId,
+                isDarkTheme = isDark,
             )
         }
         composable("azbuka") {
@@ -4949,7 +4948,7 @@ internal fun MultiDictionarySheet(
 }
 
 @Composable
-private fun TextSizeSettingsDialog(
+internal fun TextSizeSettingsDialog(
     viewModel: BibleViewModel,
     onDismiss: () -> Unit,
 ) {
@@ -5231,6 +5230,7 @@ private fun ReaderContent(
     var clearSelectionSignal by remember { mutableIntStateOf(0) }
     var verseActionsTarget by remember { mutableStateOf<VerseActionTarget?>(null) }
     var deepSeekTarget by remember { mutableStateOf<VerseActionTarget?>(null) }
+    val multiSelect = rememberVerseMultiSelectState()
     var attachmentPreview by remember { mutableStateOf<VerseAttachment?>(null) }
     val readerContext = LocalContext.current
     val attachmentStore = remember { VerseAttachmentStore.get(readerContext) }
@@ -5243,6 +5243,11 @@ private fun ReaderContent(
     LaunchedEffect(dictionaryLookup?.word) {
         if (dictionaryLookup != null) onLexiconLookupOpened()
     }
+
+    LaunchedEffect(bookId, chapter, translation) {
+        multiSelect.clear()
+    }
+    val chapterVerseTexts = remember(verses) { verses.associate { it.number to it.text } }
 
     val lexiconById = remember(userLexiconRules, presetLexiconRules) {
         (userLexiconRules + presetLexiconRules).associateBy { it.id }
@@ -5345,7 +5350,8 @@ private fun ReaderContent(
         }
     }
 
-    val bottomPad = if (selectionInfo != null) 88.dp else 16.dp
+    val multiSelectPad = if (multiSelect.isActive && multiSelect.count > 0) 56.dp else 0.dp
+    val bottomPad = (if (selectionInfo != null) 88.dp else 16.dp) + multiSelectPad
     val mediaBarVisible = when (audioPlaybackState) {
         AudioPlaybackState.PLAYING,
         AudioPlaybackState.PAUSED,
@@ -5497,6 +5503,12 @@ private fun ReaderContent(
                         )
                     }
                     if (verse.interlinearWords != null && interlinearTts != null) {
+                        val interlinearAttachments = remember(verseRef, attachmentIndexTick) {
+                            attachmentStore.listFor(verseRef)
+                        }
+                        val interlinearFirstImage = remember(interlinearAttachments) {
+                            interlinearAttachments.firstOrNull { it.kind() == AttachmentKind.Image }
+                        }
                         InterlinearVerseContent(
                             words = verse.interlinearWords,
                             verseNumber = verse.number,
@@ -5505,16 +5517,18 @@ private fun ReaderContent(
                             interlinearChapterWordOffset = interlinearChapterWordStarts.getOrElse(verseIdx) { 0 },
                             verseRef = verseRef,
                             onVerseNumberClick = {
-                                verseActionsTarget = VerseActionTarget(
-                                    ref = verseRef,
-                                    verseText = verse.text,
-                                    bookName = bookName,
-                                )
+                                verseNumberClick(verse.number, multiSelect) {
+                                    verseActionsTarget = VerseActionTarget(
+                                        ref = verseRef,
+                                        verseText = verse.text,
+                                        bookName = bookName,
+                                    )
+                                }
                             },
                             onVerseNumberLongPress = {
-                                val first = attachmentStore.listFor(verseRef)
-                                    .firstOrNull { it.kind() == AttachmentKind.Image }
-                                if (first != null) attachmentPreview = first
+                                verseNumberLongClick(verse.number, multiSelect) {
+                                    interlinearFirstImage?.let { attachmentPreview = it }
+                                }
                             },
                             onAttachmentImageClick = { attachmentPreview = it },
                             onNavigateToVerse = onNavigateToVerse,
@@ -5551,16 +5565,21 @@ private fun ReaderContent(
                                     fontWeight = if (isTimemarkHighlight) FontWeight.ExtraBold else FontWeight.Bold,
                                     modifier = Modifier
                                         .padding(top = 1.dp, end = 1.dp)
+                                        .verseNumberSelectionHighlight(multiSelect.isSelected(verse.number))
                                         .combinedClickable(
                                             onClick = {
-                                                verseActionsTarget = VerseActionTarget(
-                                                    ref = verseRef,
-                                                    verseText = verse.text,
-                                                    bookName = bookName,
-                                                )
+                                                verseNumberClick(verse.number, multiSelect) {
+                                                    verseActionsTarget = VerseActionTarget(
+                                                        ref = verseRef,
+                                                        verseText = verse.text,
+                                                        bookName = bookName,
+                                                    )
+                                                }
                                             },
                                             onLongClick = {
-                                                firstImageAtt?.let { attachmentPreview = it }
+                                                verseNumberLongClick(verse.number, multiSelect) {
+                                                    firstImageAtt?.let { attachmentPreview = it }
+                                                }
                                             },
                                         ),
                                 )
@@ -5668,6 +5687,25 @@ private fun ReaderContent(
                 modifier = Modifier.align(Alignment.BottomCenter),
             )
         }
+        if (multiSelect.isActive && multiSelect.count > 0) {
+            VerseMultiSelectBottomBar(
+                selectedCount = multiSelect.count,
+                onCopy = {
+                    copyVersesToClipboard(
+                        context = readerContext,
+                        bookName = bookName,
+                        chapter = chapter,
+                        verseNumbers = multiSelect.selectedVerses ?: emptySet(),
+                        verseTextsByNumber = chapterVerseTexts,
+                    )
+                    multiSelect.clear()
+                },
+                onCancel = { multiSelect.clear() },
+                modifier = Modifier
+                    .align(Alignment.BottomCenter)
+                    .padding(bottom = bottomObstruction),
+            )
+        }
         Column(
             modifier = Modifier.align(Alignment.BottomCenter),
             horizontalAlignment = Alignment.CenterHorizontally,
@@ -5727,9 +5765,10 @@ private fun ReaderContent(
                 { t: VerseActionTarget -> fn(t.ref, t.bookName, t.verseText) }
             },
             onOpenExistingVerseNote = onOpenExistingVerseNote,
+            onEnterMultiVerseSelect = { multiSelect.start(it) },
             translation = translation,
             chapterVerseCount = verses.size,
-            chapterVerseTexts = verses.associate { it.number to it.text },
+            chapterVerseTexts = chapterVerseTexts,
         )
         deepSeekTarget?.let { t ->
             DeepSeekVerseDialog(

@@ -46,7 +46,22 @@ import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilledTonalButton
+import androidx.compose.material.icons.filled.Headphones
+import androidx.compose.material.icons.filled.Pause
+import androidx.compose.material.icons.filled.Search
+import androidx.compose.material.icons.filled.Settings
+import androidx.compose.material.icons.automirrored.filled.MenuBook
 import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.ScrollableTabRow
+import androidx.compose.material3.Tab
+import androidx.compose.material3.TabRowDefaults
+import androidx.compose.material3.TabRowDefaults.tabIndicatorOffset
+import androidx.compose.foundation.layout.heightIn
+import androidx.compose.ui.platform.LocalConfiguration
+import androidx.navigation.NavHostController
+import com.example.bible.data.BibleAudioNarrators
+import com.example.bible.data.BooksMainMenuOrder
+import com.example.bible.data.narratorForReading
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.ListItem
@@ -120,6 +135,8 @@ import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.map
 import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.windowInsetsTopHeight
+import com.example.bible.data.TimemarkStore
 import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.statusBars
 import kotlin.math.roundToInt
@@ -184,6 +201,263 @@ data class ScrollSyncState(
     val version: Long = 0L,
 )
 
+internal data class DualReaderChrome(
+    val navController: NavHostController?,
+    val booksMainMenuOrder: List<String>,
+    val narratorId: String,
+    val isDarkTheme: Boolean,
+)
+
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class)
+@Composable
+private fun DualPaneChapterHeader(
+    paneIndex: Int,
+    state: PaneState,
+    bookId: String,
+    chapterNum: Int,
+    totalChapters: Int,
+    visibleVerse: Int,
+    onStateChange: (PaneState) -> Unit,
+    syncMode: Boolean,
+    onSyncToggle: () -> Unit,
+    onExit: (() -> Unit)?,
+    onClosePane: (() -> Unit)?,
+    onLongPress: () -> Unit,
+    onOpenQuickNav: () -> Unit,
+    translationTabColors: Map<String, Int>,
+    readerChrome: DualReaderChrome,
+    readingAudioNarrator: com.example.bible.data.AudioNarrator,
+    hasChapterTimemarks: Boolean,
+    onAdjustFontScale: (Float) -> Unit,
+    onShowTextSizeDialog: () -> Unit,
+    onShowNarratorPicker: () -> Unit,
+    onShowStudyTools: (Int) -> Unit,
+) {
+    val context = LocalContext.current
+    var showMoreMenu by remember { mutableStateOf(false) }
+    val bibleAudioState by com.example.bible.data.BibleAudioPlayer.state.collectAsState()
+    val chapterIndex = chapterNum - 1
+    val hasPrev = chapterIndex > 0
+    val hasNext = chapterIndex < totalChapters - 1
+    val chapterShortTitle = readerChapterTitle(bookId, chapterNum, visibleVerse)
+    val translations = TranslationId.entries
+    val selectedTabIndex = translations.indexOf(state.translation).coerceAtLeast(0)
+    val selectedTabArgb = translationTabColors[translations[selectedTabIndex].code]
+    val tabIndicatorColor = selectedTabArgb?.let { Color(it) } ?: MaterialTheme.colorScheme.primary
+
+    Column(
+        Modifier
+            .fillMaxWidth()
+            .pointerInput(Unit) {
+                detectTapGestures(onLongPress = { onLongPress() })
+            },
+    ) {
+        ReaderChapterTopBar(
+            includeStatusBar = paneIndex == 0,
+            restoreLightStatusBarIcons = !readerChrome.isDarkTheme,
+            navigationIcon = {
+                if (onExit != null) {
+                    ReaderTopIconButton(onClick = onExit) {
+                        Icon(
+                            Icons.AutoMirrored.Filled.ArrowBack,
+                            contentDescription = stringResource(R.string.back),
+                            modifier = Modifier.size(ReaderTopBarIconSize),
+                        )
+                    }
+                }
+            },
+            centerContent = {
+                ReaderChapterNavTitle(
+                    title = chapterShortTitle,
+                    onTitleClick = onOpenQuickNav,
+                    onPrevChapter = if (hasPrev) {
+                        { onStateChange(state.copy(chapter = chapterNum - 1)) }
+                    } else {
+                        null
+                    },
+                    onNextChapter = if (hasNext) {
+                        { onStateChange(state.copy(chapter = chapterNum + 1)) }
+                    } else {
+                        null
+                    },
+                    prevContentDescription = stringResource(R.string.prev_chapter),
+                    nextContentDescription = stringResource(R.string.next_chapter),
+                )
+            },
+            actions = {
+                ReaderTopIconButton(onClick = {
+                    readerChrome.navController?.navigate("search")
+                }) {
+                    Icon(
+                        Icons.Default.Search,
+                        contentDescription = stringResource(R.string.search_title),
+                        modifier = Modifier.size(ReaderTopBarIconSize),
+                    )
+                }
+                ReaderTopIconButton(
+                    onClick = {
+                        com.example.bible.data.BibleAudioPlayer.stopForNavigation()
+                        playReaderChapterAudio(
+                            context,
+                            readingAudioNarrator,
+                            bookId,
+                            chapterNum,
+                            visibleVerse.coerceAtLeast(1),
+                            state.translation,
+                        )
+                    },
+                    showTimemarkBadge = hasChapterTimemarks,
+                ) {
+                    val isThisChapterAudio = bibleAudioState.isPlaying &&
+                        bibleAudioState.bookId == bookId &&
+                        bibleAudioState.chapter == chapterNum &&
+                        bibleAudioState.narratorId == readingAudioNarrator.id
+                    Icon(
+                        imageVector = if (isThisChapterAudio) Icons.Default.Pause else Icons.Default.Headphones,
+                        contentDescription = if (hasChapterTimemarks) {
+                            stringResource(R.string.timemark_listen_with_cues_cd)
+                        } else {
+                            "Слушать"
+                        },
+                        tint = when {
+                            isThisChapterAudio -> ReaderTopBarColors.Accent
+                            hasChapterTimemarks -> ReaderTopBarColors.Accent
+                            else -> ReaderTopBarColors.ContentMuted
+                        },
+                        modifier = Modifier.size(ReaderTopBarIconSize),
+                    )
+                }
+                ReaderTopIconButton(onClick = { onShowStudyTools(visibleVerse.coerceAtLeast(1)) }) {
+                    Icon(
+                        Icons.AutoMirrored.Filled.MenuBook,
+                        contentDescription = "Изучение",
+                        tint = ReaderTopBarColors.Accent,
+                        modifier = Modifier.size(ReaderTopBarIconSize),
+                    )
+                }
+                if (onClosePane != null) {
+                    IconButton(onClick = onClosePane, modifier = Modifier.size(ReaderTopBarIconButtonSize)) {
+                        Icon(
+                            Icons.Default.Close,
+                            contentDescription = stringResource(R.string.dual_close_pane),
+                            modifier = Modifier.size(ReaderTopBarIconSize),
+                            tint = ReaderTopBarColors.ContentMuted,
+                        )
+                    }
+                }
+                Box {
+                    ReaderTopIconButton(onClick = { showMoreMenu = true }) {
+                        Icon(
+                            Icons.Default.MoreVert,
+                            contentDescription = "Ещё",
+                            modifier = Modifier.size(ReaderTopBarIconSize),
+                        )
+                    }
+                    val readerMenuMaxH = (LocalConfiguration.current.screenHeightDp * 0.58f).dp
+                    DropdownMenu(
+                        expanded = showMoreMenu,
+                        onDismissRequest = { showMoreMenu = false },
+                        modifier = Modifier.heightIn(max = readerMenuMaxH),
+                    ) {
+                        DropdownMenuItem(
+                            text = {
+                                Text(
+                                    if (syncMode) {
+                                        "${stringResource(R.string.dual_sync)} ✓"
+                                    } else {
+                                        stringResource(R.string.dual_sync)
+                                    },
+                                )
+                            },
+                            onClick = {
+                                showMoreMenu = false
+                                onSyncToggle()
+                            },
+                        )
+                        DropdownMenuItem(
+                            text = { Text(stringResource(R.string.main_settings_title)) },
+                            onClick = {
+                                showMoreMenu = false
+                                readerChrome.navController?.navigate("main_settings")
+                            },
+                            leadingIcon = {
+                                Icon(Icons.Default.Settings, contentDescription = null)
+                            },
+                        )
+                        HorizontalDivider()
+                        readerChrome.navController?.let { nav ->
+                            BooksMainMenuOrderedItems(
+                                menuOrder = readerChrome.booksMainMenuOrder,
+                                translation = state.translation,
+                                narratorId = readerChrome.narratorId,
+                                closeMenu = { showMoreMenu = false },
+                                navController = nav,
+                                onShowTextSizeDialog = {
+                                    showMoreMenu = false
+                                    onShowTextSizeDialog()
+                                },
+                                onShowBookNarratorPicker = {
+                                    showMoreMenu = false
+                                    onShowNarratorPicker()
+                                },
+                                timemarkBookId = bookId,
+                                timemarkChapter = chapterNum,
+                                timemarkNarratorId = readingAudioNarrator.id,
+                            )
+                        }
+                        HorizontalDivider()
+                        translations.forEach { tid ->
+                            DropdownMenuItem(
+                                text = { Text(tid.labelRu) },
+                                onClick = {
+                                    showMoreMenu = false
+                                    onStateChange(state.copy(translation = tid))
+                                },
+                                trailingIcon = {
+                                    if (tid == state.translation) {
+                                        Icon(Icons.Default.Check, contentDescription = null, modifier = Modifier.size(16.dp))
+                                    }
+                                },
+                            )
+                        }
+                    }
+                }
+            },
+        )
+        ScrollableTabRow(
+            modifier = Modifier.height(36.dp),
+            selectedTabIndex = selectedTabIndex,
+            containerColor = MaterialTheme.colorScheme.surface,
+            contentColor = tabIndicatorColor,
+            edgePadding = 8.dp,
+            indicator = { tabPositions ->
+                if (selectedTabIndex in tabPositions.indices) {
+                    TabRowDefaults.SecondaryIndicator(
+                        Modifier.tabIndicatorOffset(tabPositions[selectedTabIndex]),
+                        color = tabIndicatorColor,
+                    )
+                }
+            },
+        ) {
+            translations.forEachIndexed { index, tid ->
+                val selected = selectedTabIndex == index
+                Tab(
+                    modifier = Modifier.height(36.dp),
+                    selected = selected,
+                    onClick = { onStateChange(state.copy(translation = tid)) },
+                    text = {
+                        TranslationTabLabel(
+                            translation = tid,
+                            selected = selected,
+                            highlightArgb = translationTabColors[tid.code],
+                        )
+                    },
+                )
+            }
+        }
+    }
+}
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun DualBibleScreen(
@@ -221,6 +495,10 @@ fun DualBibleScreen(
     viewModel: BibleViewModel? = null,
     onOpenDeepSeekSettings: () -> Unit = {},
     translationTabColors: Map<String, Int> = emptyMap(),
+    navController: NavHostController? = null,
+    booksMainMenuOrder: List<String> = BooksMainMenuOrder.allIds,
+    narratorId: String = "bondarenko",
+    isDarkTheme: Boolean = false,
 ) {
     var panes by remember(initialPanes) {
         mutableStateOf(
@@ -261,14 +539,21 @@ fun DualBibleScreen(
         )
     }
 
-    val statusBarPadding = WindowInsets.statusBars.asPaddingValues().calculateTopPadding()
+    val dualChrome = remember(navController, booksMainMenuOrder, narratorId, isDarkTheme) {
+        DualReaderChrome(
+            navController = navController,
+            booksMainMenuOrder = booksMainMenuOrder,
+            narratorId = narratorId,
+            isDarkTheme = isDarkTheme,
+        )
+    }
     Box(
         modifier = Modifier
             .fillMaxSize()
             .background(MaterialTheme.colorScheme.background)
             .onSizeChanged { totalHeightPx = it.height },
     ) {
-        Column(Modifier.fillMaxSize().padding(top = statusBarPadding)) {
+        Column(Modifier.fillMaxSize()) {
             // Pane 1
             Box(
                 modifier = Modifier
@@ -317,6 +602,7 @@ fun DualBibleScreen(
                     viewModel = viewModel,
                     onOpenDeepSeekSettings = onOpenDeepSeekSettings,
                     translationTabColors = translationTabColors,
+                    readerChrome = dualChrome,
                 )
             }
 
@@ -376,6 +662,7 @@ fun DualBibleScreen(
                     viewModel = viewModel,
                     onOpenDeepSeekSettings = onOpenDeepSeekSettings,
                     translationTabColors = translationTabColors,
+                    readerChrome = dualChrome,
                 )
             }
         }
@@ -573,6 +860,7 @@ private fun PaneTopBar(
     onTitleClick: (() -> Unit)? = null,
     showSyncControl: Boolean = true,
     showInternalBack: Boolean = false,
+    includeStatusBar: Boolean = false,
 ) {
     var menuOpen by remember { mutableStateOf(false) }
     var showAlphabet by remember { mutableStateOf(false) }
@@ -592,19 +880,23 @@ private fun PaneTopBar(
         }
     }
 
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .height(44.dp)
-            .background(MaterialTheme.colorScheme.surfaceContainer)
-            .pointerInput(Unit) {
-                detectTapGestures(
-                    onLongPress = { onLongPress() },
-                )
-            }
-            .padding(horizontal = 4.dp),
-        verticalAlignment = Alignment.CenterVertically,
-    ) {
+    Column(Modifier.fillMaxWidth()) {
+        if (includeStatusBar) {
+            Spacer(Modifier.windowInsetsTopHeight(WindowInsets.statusBars))
+        }
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(44.dp)
+                .background(MaterialTheme.colorScheme.surfaceContainer)
+                .pointerInput(Unit) {
+                    detectTapGestures(
+                        onLongPress = { onLongPress() },
+                    )
+                }
+                .padding(horizontal = 4.dp),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
         if (onExit != null) {
             IconButton(onClick = onExit, modifier = Modifier.size(36.dp)) {
                 Icon(
@@ -775,6 +1067,7 @@ private fun PaneTopBar(
                 }
             }
         }
+    }
     }
 
     if (showAlphabet) {
@@ -962,34 +1255,46 @@ internal fun BiblePaneColumn(
     viewModel: BibleViewModel? = null,
     onOpenDeepSeekSettings: () -> Unit = {},
     translationTabColors: Map<String, Int> = emptyMap(),
+    readerChrome: DualReaderChrome? = null,
 ) {
+    val paneContext = LocalContext.current
+    var showQuickNav by remember { mutableStateOf(false) }
+    var showStudyTools by remember { mutableStateOf(false) }
+    var studyVerse by remember { mutableIntStateOf(1) }
+    var showTextSizeDialog by remember { mutableStateOf(false) }
+    var showNarratorPicker by remember { mutableStateOf(false) }
+    var readerVisibleVerse by remember(state.bookId, state.chapter) { mutableIntStateOf(1) }
+
     Column(modifier.fillMaxSize()) {
-        PaneTopBar(
-            state = state,
-            paneIndex = paneIndex,
-            library = library,
-            syncMode = syncMode,
-            onSyncToggle = onSyncToggle,
-            onTranslationChange = { tid ->
-                onStateChange(state.copy(translation = tid, bookId = null, chapter = null))
-            },
-            onBack = {
-                when {
-                    state.chapter != null -> onStateChange(state.copy(chapter = null))
-                    state.bookId != null -> onStateChange(state.copy(bookId = null, chapter = null))
-                    else -> {}
-                }
-            },
-            onExit = onExit,
-            onClosePane = onClosePane,
-            onAdjustFontScale = onAdjustReaderFontScale,
-            readerFontScale = readerFontScale,
-            onLongPress = onLongPressTopBar,
-            onTitleClick = onOpenQuickNav,
-            showSyncControl = showSyncControl,
-            showInternalBack = showInternalBack,
-        )
-        HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant, thickness = 0.5.dp)
+        if (state.chapter == null) {
+            PaneTopBar(
+                state = state,
+                paneIndex = paneIndex,
+                library = library,
+                syncMode = syncMode,
+                onSyncToggle = onSyncToggle,
+                onTranslationChange = { tid ->
+                    onStateChange(state.copy(translation = tid, bookId = null, chapter = null))
+                },
+                onBack = {
+                    when {
+                        state.chapter != null -> onStateChange(state.copy(chapter = null))
+                        state.bookId != null -> onStateChange(state.copy(bookId = null, chapter = null))
+                        else -> {}
+                    }
+                },
+                onExit = onExit,
+                onClosePane = onClosePane,
+                onAdjustFontScale = onAdjustReaderFontScale,
+                readerFontScale = readerFontScale,
+                onLongPress = onLongPressTopBar,
+                onTitleClick = onOpenQuickNav ?: { showQuickNav = true },
+                showSyncControl = showSyncControl,
+                showInternalBack = showInternalBack,
+                includeStatusBar = onExit != null && paneIndex == 0,
+            )
+            HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant, thickness = 0.5.dp)
+        }
 
         when {
             state.bookId == null -> {
@@ -1089,6 +1394,74 @@ internal fun BiblePaneColumn(
                 }
 
                 val effectiveVerses = localChapter?.verses ?: onlineVerses
+                val totalChapters = when (bookShell) {
+                    is BibleBookShellState.Ready -> bookShell.book.chapters.size
+                    is BibleBookShellState.Fallback -> bookShell.book.chapters.size
+                    else -> canonReader.chapters
+                }
+                val chrome = readerChrome
+                val readingAudioNarrator = remember(state.translation, chrome?.narratorId, bid) {
+                    narratorForReading(state.translation, bid, chrome?.narratorId ?: "bondarenko")
+                }
+                val hasChapterTimemarks = remember(state.translation, bid, chapterNum, paneContext) {
+                    TimemarkStore.hasTimemarksForChapter(
+                        paneContext,
+                        state.translation.code,
+                        bid,
+                        chapterNum,
+                    )
+                }
+
+                Column(Modifier.weight(1f).fillMaxSize()) {
+                    if (chrome != null) {
+                        DualPaneChapterHeader(
+                            paneIndex = paneIndex,
+                            state = state,
+                            bookId = bid,
+                            chapterNum = chapterNum,
+                            totalChapters = totalChapters,
+                            visibleVerse = readerVisibleVerse,
+                            onStateChange = onStateChange,
+                            syncMode = syncMode,
+                            onSyncToggle = onSyncToggle,
+                            onExit = onExit,
+                            onClosePane = onClosePane,
+                            onLongPress = onLongPressTopBar,
+                            onOpenQuickNav = { showQuickNav = true },
+                            translationTabColors = translationTabColors,
+                            readerChrome = chrome,
+                            readingAudioNarrator = readingAudioNarrator,
+                            hasChapterTimemarks = hasChapterTimemarks,
+                            onAdjustFontScale = onAdjustReaderFontScale,
+                            onShowTextSizeDialog = { showTextSizeDialog = true },
+                            onShowNarratorPicker = { showNarratorPicker = true },
+                            onShowStudyTools = { verse ->
+                                studyVerse = verse
+                                showStudyTools = true
+                            },
+                        )
+                    } else {
+                        PaneTopBar(
+                            state = state,
+                            paneIndex = paneIndex,
+                            library = library,
+                            syncMode = syncMode,
+                            onSyncToggle = onSyncToggle,
+                            onTranslationChange = { tid ->
+                                onStateChange(state.copy(translation = tid))
+                            },
+                            onBack = { onStateChange(state.copy(chapter = null)) },
+                            onExit = onExit,
+                            onClosePane = onClosePane,
+                            onAdjustFontScale = onAdjustReaderFontScale,
+                            readerFontScale = readerFontScale,
+                            onLongPress = onLongPressTopBar,
+                            onTitleClick = onOpenQuickNav ?: { showQuickNav = true },
+                            showSyncControl = showSyncControl,
+                            showInternalBack = showInternalBack,
+                        )
+                        HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant, thickness = 0.5.dp)
+                    }
 
                 when {
                     effectiveVerses != null && effectiveVerses.isNotEmpty() -> {
@@ -1174,8 +1547,60 @@ internal fun BiblePaneColumn(
                         }
                     }
                 }
+                }
             }
         }
+    }
+    if (showQuickNav) {
+        QuickNavigatorSheet(
+            library = library,
+            translation = state.translation,
+            currentBookId = state.bookId.orEmpty(),
+            onNavigate = { bookId, chapter ->
+                onStateChange(state.copy(bookId = bookId, chapter = chapter))
+                showQuickNav = false
+            },
+            onDismiss = { showQuickNav = false },
+        )
+    }
+    val vm = viewModel
+    if (showStudyTools && vm != null && state.bookId != null && state.chapter != null) {
+        val bid = state.bookId!!
+        val chapterNum = state.chapter!!
+        val bookShell = rememberBookShell(library, state.translation, bid)
+        val bookName = when (bookShell) {
+            is BibleBookShellState.Ready -> bookShell.book.name
+            is BibleBookShellState.Fallback -> bookShell.book.name
+            else -> BibleCanon.displayName(BibleCanon.byId(bid)!!, state.translation)
+        }
+        val chapterLoad = rememberLoadedChapter(library, state.translation, bid, chapterNum)
+        val totalVerses = when (chapterLoad) {
+            is BibleChapterLoadState.Ready -> chapterLoad.chapter.verses.size
+            else -> 0
+        }
+        StudyToolsSheet(
+            translation = state.translation,
+            bookId = bid,
+            bookName = bookName,
+            chapter = chapterNum,
+            verse = studyVerse,
+            viewModel = vm,
+            onDismiss = { showStudyTools = false },
+            totalVerses = totalVerses,
+        )
+    }
+    if (showTextSizeDialog && vm != null) {
+        TextSizeSettingsDialog(
+            viewModel = vm,
+            onDismiss = { showTextSizeDialog = false },
+        )
+    }
+    if (showNarratorPicker && vm != null) {
+        NarratorPickerDialog(
+            currentId = readerChrome?.narratorId ?: "bondarenko",
+            onSelect = { vm.setAudioNarrator(it) },
+            onDismiss = { showNarratorPicker = false },
+        )
     }
 }
 
@@ -1322,6 +1747,7 @@ private fun ReaderPane(
     var clearSelectionSignal by remember { mutableIntStateOf(0) }
     var verseActionsTarget by remember { mutableStateOf<VerseActionTarget?>(null) }
     var deepSeekTarget by remember { mutableStateOf<VerseActionTarget?>(null) }
+    val multiSelect = rememberVerseMultiSelectState()
     var attachmentPreview by remember { mutableStateOf<VerseAttachment?>(null) }
     val paneContext = LocalContext.current
     val attachmentStore = remember { VerseAttachmentStore.get(paneContext) }
@@ -1330,6 +1756,11 @@ private fun ReaderPane(
     var dictionaryLookup by remember { mutableStateOf<LexiconDictionarySheetState?>(null) }
     var dictionarySeeAlso by remember { mutableStateOf<List<String>>(emptyList()) }
     val speak = rememberVerseTextToSpeech(translation)
+
+    LaunchedEffect(bookId, chapterNum, translation) {
+        multiSelect.clear()
+    }
+    val chapterVerseTexts = remember(verses) { verses.associate { it.number to it.text } }
 
     val lexiconById = remember(userLexiconRules, presetLexiconRules) {
         (userLexiconRules + presetLexiconRules).associateBy { it.id }
@@ -1444,7 +1875,8 @@ private fun ReaderPane(
                 }
         }
 
-        val bottomPad = if (selectionInfo != null) 88.dp else 0.dp
+        val multiSelectPad = if (multiSelect.isActive && multiSelect.count > 0) 56.dp else 0.dp
+        val bottomPad = (if (selectionInfo != null) 88.dp else 0.dp) + multiSelectPad
         val interlinearChapterWordStarts = remember(displayVerses) {
             var acc = 0
             buildList {
@@ -1578,6 +2010,12 @@ private fun ReaderPane(
                             )
                         }
                         if (verse.interlinearWords != null && interlinearTts != null) {
+                            val interlinearAttachments = remember(verseRef, attachmentIndexTick) {
+                                attachmentStore.listFor(verseRef)
+                            }
+                            val interlinearFirstImage = remember(interlinearAttachments) {
+                                interlinearAttachments.firstOrNull { it.kind() == AttachmentKind.Image }
+                            }
                             InterlinearVerseContent(
                                 words = verse.interlinearWords,
                                 verseNumber = verse.number,
@@ -1586,16 +2024,18 @@ private fun ReaderPane(
                                 interlinearChapterWordOffset = interlinearChapterWordStarts.getOrElse(verseIdx) { 0 },
                                 verseRef = verseRef,
                                 onVerseNumberClick = {
-                                    verseActionsTarget = VerseActionTarget(
-                                        ref = verseRef,
-                                        verseText = verse.text,
-                                        bookName = bookName,
-                                    )
+                                    verseNumberClick(verse.number, multiSelect) {
+                                        verseActionsTarget = VerseActionTarget(
+                                            ref = verseRef,
+                                            verseText = verse.text,
+                                            bookName = bookName,
+                                        )
+                                    }
                                 },
                                 onVerseNumberLongPress = {
-                                    val first = attachmentStore.listFor(verseRef)
-                                        .firstOrNull { it.kind() == AttachmentKind.Image }
-                                    if (first != null) attachmentPreview = first
+                                    verseNumberLongClick(verse.number, multiSelect) {
+                                        interlinearFirstImage?.let { attachmentPreview = it }
+                                    }
                                 },
                                 onAttachmentImageClick = { attachmentPreview = it },
                                 verseNumberColor = MaterialTheme.colorScheme.primary,
@@ -1633,16 +2073,21 @@ private fun ReaderPane(
                                         fontWeight = FontWeight.Bold,
                                         modifier = Modifier
                                             .padding(end = 3.dp, top = 2.dp)
+                                            .verseNumberSelectionHighlight(multiSelect.isSelected(verse.number))
                                             .combinedClickable(
                                                 onClick = {
-                                                    verseActionsTarget = VerseActionTarget(
-                                                        ref = verseRef,
-                                                        verseText = verse.text,
-                                                        bookName = bookName,
-                                                    )
+                                                    verseNumberClick(verse.number, multiSelect) {
+                                                        verseActionsTarget = VerseActionTarget(
+                                                            ref = verseRef,
+                                                            verseText = verse.text,
+                                                            bookName = bookName,
+                                                        )
+                                                    }
                                                 },
                                                 onLongClick = {
-                                                    firstImageAtt?.let { attachmentPreview = it }
+                                                    verseNumberLongClick(verse.number, multiSelect) {
+                                                        firstImageAtt?.let { attachmentPreview = it }
+                                                    }
                                                 },
                                             ),
                                     )
@@ -1753,6 +2198,23 @@ private fun ReaderPane(
                     modifier = Modifier.align(Alignment.BottomCenter),
                 )
             }
+            if (multiSelect.isActive && multiSelect.count > 0) {
+                VerseMultiSelectBottomBar(
+                    selectedCount = multiSelect.count,
+                    onCopy = {
+                        copyVersesToClipboard(
+                            context = paneContext,
+                            bookName = bookName,
+                            chapter = chapterNum,
+                            verseNumbers = multiSelect.selectedVerses ?: emptySet(),
+                            verseTextsByNumber = chapterVerseTexts,
+                        )
+                        multiSelect.clear()
+                    },
+                    onCancel = { multiSelect.clear() },
+                    modifier = Modifier.align(Alignment.BottomCenter),
+                )
+            }
         }
         wordMediaDialog?.let { (sel, existing) ->
             WordMediaAttachmentDialog(
@@ -1814,9 +2276,10 @@ private fun ReaderPane(
                 { t: VerseActionTarget -> fn(t.ref, t.bookName, t.verseText) }
             },
             onOpenExistingVerseNote = onOpenVerseNote,
+            onEnterMultiVerseSelect = { multiSelect.start(it) },
             translation = translation,
             chapterVerseCount = verses.size,
-            chapterVerseTexts = verses.associate { it.number to it.text },
+            chapterVerseTexts = chapterVerseTexts,
         )
         val dsVm = viewModel
         if (dsVm != null) {

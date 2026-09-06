@@ -22,6 +22,7 @@ import androidx.compose.material.icons.filled.Book
 import androidx.compose.material.icons.filled.AttachFile
 import androidx.compose.material.icons.filled.Bookmark
 import androidx.compose.material.icons.filled.BookmarkBorder
+import androidx.compose.material.icons.filled.Checklist
 import androidx.compose.material.icons.filled.ContentCopy
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Headphones
@@ -60,10 +61,18 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.bible.R
-import com.example.bible.data.BibleTtsController
+import com.example.bible.data.AiChatNeuralSpeechPlayer
+import com.example.bible.data.AiChatTtsController
+import com.example.bible.data.AiChatTtsEngine
+import com.example.bible.data.AiChatTtsSettings
+import com.example.bible.data.AiChatTtsVoiceOption
 import com.example.bible.data.applyAiChatVoice
 import com.example.bible.data.applyTtsVoiceForTranslation
+import com.example.bible.data.BibleTtsController
+import com.example.bible.data.listAiChatRussianVoices
 import com.example.bible.data.resolveTtsEnginePackage
+import com.example.bible.data.SaluteSpeechClient
+import com.example.bible.data.speakAiChatChunk
 import com.example.bible.data.BibleUserAudio
 import com.example.bible.data.BibleUserImage
 import com.example.bible.data.BibleUserVideo
@@ -88,6 +97,8 @@ data class VerseActionTarget(
     val bookName: String,
 )
 
+private enum class VerseRangeDialogMode { COPY_TEXT, COPY_AUDIO }
+
 /** Озвучка стиха и комментариев: воспроизведение и остановка. */
 data class BibleVoiceTts(
     val speak: (String) -> Unit,
@@ -99,6 +110,128 @@ data class BibleComparisonVoiceTts(
     val speak: (List<VerseComparison>) -> Unit,
     val stop: () -> Unit,
 )
+
+/** Озвучка ответов ИИ с выбором голоса и интонации. */
+data class AiChatSpeechHandle(
+    val speak: (String) -> Unit,
+    val stop: () -> Unit,
+    val preview: (String) -> Unit,
+    val neuralVoices: List<AiChatTtsVoiceOption>,
+    val systemVoices: List<AiChatTtsVoiceOption>,
+) {
+    /** @deprecated используйте [neuralVoices] или [systemVoices] по движку */
+    val voices: List<AiChatTtsVoiceOption> get() = systemVoices
+}
+
+/**
+ * Озвучка ответов ИИ (GigaChat, DeepSeek).
+ * По умолчанию — нейросеть SaluteSpeech (естественный голос); запасной вариант — системный TTS.
+ */
+@Composable
+fun rememberAiChatTextToSpeech(
+    saluteAuthKey: String = "",
+    gigaChatAuthKey: String = "",
+    saluteScope: String = SaluteSpeechClient.SCOPE_PERS,
+): AiChatSpeechHandle {
+    val context = LocalContext.current
+    var tts by remember { mutableStateOf<TextToSpeech?>(null) }
+    var systemVoices by remember { mutableStateOf(emptyList<AiChatTtsVoiceOption>()) }
+    val ttsUser by BibleTtsController.settings.collectAsStateWithLifecycle()
+    val aiTts by AiChatTtsController.settings.collectAsStateWithLifecycle()
+    val app = context.applicationContext
+    val engineKey = remember(ttsUser.enginePackage) {
+        resolveTtsEnginePackage(app, ttsUser)
+    }
+
+    fun speakSystem(text: String) {
+        tts?.let { engine ->
+            val trimmed = text.trim()
+            if (trimmed.isEmpty()) return
+            val volume = aiTts.intonation.modifiers().volume
+            val chunks = splitTtsChunks(trimmed)
+            chunks.forEachIndexed { index, chunk ->
+                val queueMode = if (index == 0) TextToSpeech.QUEUE_FLUSH else TextToSpeech.QUEUE_ADD
+                val utteranceId = "ai_chat_${System.nanoTime()}_$index"
+                speakAiChatChunk(engine, chunk, queueMode, utteranceId, volume)
+            }
+        }
+    }
+
+    fun applyVoice(engine: TextToSpeech) {
+        applyAiChatVoice(engine, ttsUser, aiTts.copy(engine = AiChatTtsEngine.SYSTEM))
+        systemVoices = listAiChatRussianVoices(engine)
+    }
+
+    val neuralPlayer = remember(saluteAuthKey, gigaChatAuthKey, saluteScope) {
+        AiChatNeuralSpeechPlayer(
+            appContext = app,
+            authKeyProvider = {
+                SaluteSpeechClient.resolveAuthKey(saluteAuthKey, gigaChatAuthKey)
+            },
+            scopeProvider = { saluteScope },
+            settingsProvider = { AiChatTtsController.settings.value },
+            systemFallback = { text -> speakSystem(text) },
+            systemStop = { tts?.stop() },
+        )
+    }
+
+    DisposableEffect(engineKey) {
+        var engine: TextToSpeech? = null
+        val init = TextToSpeech.OnInitListener { status ->
+            if (status == TextToSpeech.SUCCESS) {
+                engine?.let { e ->
+                    applyVoice(e)
+                    tts = e
+                }
+            }
+        }
+        engine = if (engineKey.isNotEmpty()) {
+            TextToSpeech(app, init, engineKey)
+        } else {
+            TextToSpeech(app, init)
+        }
+        onDispose {
+            runCatching {
+                engine?.stop()
+                engine?.shutdown()
+            }
+            tts = null
+            systemVoices = emptyList()
+        }
+    }
+
+    DisposableEffect(neuralPlayer) {
+        onDispose { neuralPlayer.release() }
+    }
+
+    LaunchedEffect(ttsUser, aiTts, tts) {
+        val e = tts ?: return@LaunchedEffect
+        applyVoice(e)
+    }
+
+    fun dispatchSpeak(text: String) {
+        val trimmed = text.trim()
+        if (trimmed.isEmpty()) return
+        when (AiChatTtsController.settings.value.engine) {
+            AiChatTtsEngine.NEURAL -> neuralPlayer.speak(trimmed)
+            AiChatTtsEngine.SYSTEM -> speakSystem(trimmed)
+        }
+    }
+
+    return AiChatSpeechHandle(
+        speak = ::dispatchSpeak,
+        stop = {
+            neuralPlayer.stop()
+            tts?.stop()
+        },
+        preview = { sample ->
+            val text = sample.trim().ifBlank { "Здравствуйте! Это проверка голоса." }
+            dispatchSpeak(text)
+        },
+        neuralVoices = SaluteSpeechClient.neuralVoices,
+        systemVoices = systemVoices,
+    )
+}
 
 @Composable
 fun rememberVerseTextToSpeech(translation: TranslationId): BibleVoiceTts {
@@ -198,68 +331,6 @@ fun rememberStudyTextToSpeech(translation: TranslationId): BibleVoiceTts {
                     chunks.forEachIndexed { index, chunk ->
                         val queueMode = if (index == 0) TextToSpeech.QUEUE_FLUSH else TextToSpeech.QUEUE_ADD
                         val utteranceId = "study_${System.nanoTime()}_$index"
-                        engine.speak(chunk, queueMode, null, utteranceId)
-                    }
-                }
-            },
-            stop = { tts?.stop() },
-        )
-    }
-}
-
-/**
- * Озвучка ответов ИИ (GigaChat, DeepSeek): те же скорость и тон, что в настройках приложения,
- * движок Google TTS по умолчанию (если установлен), иначе системный.
- */
-@Composable
-fun rememberAiChatTextToSpeech(): BibleVoiceTts {
-    val context = LocalContext.current
-    var tts by remember { mutableStateOf<TextToSpeech?>(null) }
-    val ttsUser by BibleTtsController.settings.collectAsStateWithLifecycle()
-    val app = context.applicationContext
-    val engineKey = remember(ttsUser.enginePackage) {
-        resolveTtsEnginePackage(app, ttsUser)
-    }
-
-    DisposableEffect(engineKey) {
-        var engine: TextToSpeech? = null
-        val init = TextToSpeech.OnInitListener { status ->
-            if (status == TextToSpeech.SUCCESS) {
-                engine?.let { e ->
-                    applyAiChatVoice(e, BibleTtsController.settings.value)
-                    tts = e
-                }
-            }
-        }
-        engine = if (engineKey.isNotEmpty()) {
-            TextToSpeech(app, init, engineKey)
-        } else {
-            TextToSpeech(app, init)
-        }
-        onDispose {
-            runCatching {
-                engine?.stop()
-                engine?.shutdown()
-            }
-            tts = null
-        }
-    }
-
-    LaunchedEffect(ttsUser, tts) {
-        val e = tts ?: return@LaunchedEffect
-        applyAiChatVoice(e, ttsUser)
-    }
-
-    return remember {
-        BibleVoiceTts(
-            speak = { text: String ->
-                tts?.let { engine ->
-                    val trimmed = text.trim()
-                    if (trimmed.isEmpty()) return@let
-                    val chunks = splitTtsChunks(trimmed)
-                    chunks.forEachIndexed { index, chunk ->
-                        val queueMode = if (index == 0) TextToSpeech.QUEUE_FLUSH else TextToSpeech.QUEUE_ADD
-                        val utteranceId = "ai_chat_${System.nanoTime()}_$index"
                         engine.speak(chunk, queueMode, null, utteranceId)
                     }
                 }
@@ -392,6 +463,8 @@ fun VerseActionsBottomSheet(
     onCreateNoteForVerse: ((VerseActionTarget) -> Unit)? = null,
     /** Открыть существующую заметку по id. */
     onOpenExistingVerseNote: ((String) -> Unit)? = null,
+    /** Режим выбора нескольких стихов по номерам (начать с текущего). */
+    onEnterMultiVerseSelect: ((Int) -> Unit)? = null,
     /** Песочница иврита: весь стих (подстрочник Винокурова, ВЗ). */
     onOpenInterlinearHebrewSandboxWholeVerse: ((VerseRef) -> Unit)? = null,
     translation: TranslationId = TranslationId.SYNODAL,
@@ -400,7 +473,7 @@ fun VerseActionsBottomSheet(
 ) {
     val context = LocalContext.current
     var previewAttachment by remember { mutableStateOf<VerseAttachment?>(null) }
-    var showAudioRangeDialog by remember { mutableStateOf(false) }
+    var verseRangeDialogMode by remember { mutableStateOf<VerseRangeDialogMode?>(null) }
     var audioRangeEndDraft by remember(target?.ref?.verse) {
         mutableStateOf((target?.ref?.verse ?: 1).toString())
     }
@@ -438,10 +511,52 @@ fun VerseActionsBottomSheet(
         Toast.makeText(context, R.string.verse_audio_link_copied, Toast.LENGTH_SHORT).show()
     }
 
-    if (showAudioRangeDialog) {
+    fun verseTextsIncludingTarget(): Map<Int, String> {
+        val texts = chapterVerseTexts.toMutableMap()
+        if (target.verseText.isNotBlank()) {
+            texts.putIfAbsent(target.ref.verse, target.verseText)
+        }
+        return texts
+    }
+
+    fun copyTextVerses(verseNumbers: Set<Int>) {
+        if (verseNumbers.isEmpty()) return
+        copyVersesToClipboard(
+            context = context,
+            bookName = target.bookName,
+            chapter = target.ref.chapter,
+            verseNumbers = verseNumbers,
+            verseTextsByNumber = verseTextsIncludingTarget(),
+        )
+    }
+
+    fun resolveRangeSpec(raw: String): Pair<String, Set<Int>> {
+        val start = target.ref.verse
+        val maxV = chapterVerseCount.coerceAtLeast(start)
+        val spec = when {
+            raw.contains(',') || raw.contains('*') || raw.contains('-') ||
+                raw.contains('–') || raw.contains('—') -> raw
+            else -> {
+                val end = raw.toIntOrNull() ?: start
+                "$start-${end.coerceIn(start, maxV)}"
+            }
+        }
+        val verses = VerseShareText.verseNumbersFromRangeSpec(start, raw, maxV)
+        return spec to verses
+    }
+
+    if (verseRangeDialogMode != null) {
+        val isAudio = verseRangeDialogMode == VerseRangeDialogMode.COPY_AUDIO
         AlertDialog(
-            onDismissRequest = { showAudioRangeDialog = false },
-            title = { Text(stringResource(R.string.verse_copy_audio_link_range_title)) },
+            onDismissRequest = { verseRangeDialogMode = null },
+            title = {
+                Text(
+                    stringResource(
+                        if (isAudio) R.string.verse_copy_audio_link_range_title
+                        else R.string.verse_copy_range_title,
+                    ),
+                )
+            },
             text = {
                 Column {
                     Text(
@@ -464,25 +579,20 @@ fun VerseActionsBottomSheet(
             confirmButton = {
                 TextButton(
                     onClick = {
-                        val start = target.ref.verse
-                        val maxV = chapterVerseCount.coerceAtLeast(start)
                         val raw = audioRangeEndDraft.trim()
-                        val spec = when {
-                            raw.contains(',') || raw.contains('*') || raw.contains('-') -> raw
-                            else -> {
-                                val end = raw.toIntOrNull() ?: start
-                                val clampedEnd = end.coerceIn(start, maxV)
-                                "$start-$clampedEnd"
+                        if (isAudio) {
+                            val (spec, verses) = resolveRangeSpec(raw)
+                            val mode = when {
+                                spec.contains('*') || spec.contains(',') -> ScriptureAudioPlayMode.SEGMENTS
+                                spec.contains('-') -> ScriptureAudioPlayMode.RANGE
+                                else -> ScriptureAudioPlayMode.VERSE
                             }
+                            copyAudioLink(mode, verses, segmentSpec = spec)
+                        } else {
+                            val (_, verses) = resolveRangeSpec(raw)
+                            copyTextVerses(verses)
                         }
-                        val mode = when {
-                            spec.contains('*') || spec.contains(',') -> ScriptureAudioPlayMode.SEGMENTS
-                            spec.contains('-') -> ScriptureAudioPlayMode.RANGE
-                            else -> ScriptureAudioPlayMode.VERSE
-                        }
-                        val verses = NoteScriptureLinks.expandSegmentSpecToVerses(spec, maxV)
-                        copyAudioLink(mode, verses, segmentSpec = spec)
-                        showAudioRangeDialog = false
+                        verseRangeDialogMode = null
                         onDismiss()
                     },
                 ) {
@@ -490,7 +600,7 @@ fun VerseActionsBottomSheet(
                 }
             },
             dismissButton = {
-                TextButton(onClick = { showAudioRangeDialog = false }) {
+                TextButton(onClick = { verseRangeDialogMode = null }) {
                     Text(stringResource(R.string.timemark_close))
                 }
             },
@@ -553,13 +663,14 @@ fun VerseActionsBottomSheet(
         )
     }
 
-    val shareText = stringResource(
-        R.string.verse_share_format,
-        target.bookName,
-        target.ref.chapter,
-        target.ref.verse,
-        target.verseText,
-    )
+    val shareText = remember(target, chapterVerseTexts) {
+        VerseShareText.format(
+            bookName = target.bookName,
+            chapter = target.ref.chapter,
+            verseNumbers = setOf(target.ref.verse),
+            verseTextsByNumber = verseTextsIncludingTarget(),
+        )
+    }
     val notesAtVerse = remember(target.ref, userNotes) {
         userNotes
             .filter { it.matchesVerseLocation(target.ref) }
@@ -706,12 +817,51 @@ fun VerseActionsBottomSheet(
                 modifier = Modifier
                     .fillMaxWidth()
                     .clickable {
-                        val cm = context.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
-                        cm.setPrimaryClip(ClipData.newPlainText("verse", shareText))
-                        Toast.makeText(context, R.string.verse_copied, Toast.LENGTH_SHORT).show()
+                        copyTextVerses(setOf(target.ref.verse))
                         onDismiss()
                     },
             )
+            if (onEnterMultiVerseSelect != null) {
+                ListItem(
+                    headlineContent = { Text(stringResource(R.string.verse_action_select_multiple)) },
+                    leadingContent = {
+                        Icon(Icons.Default.Checklist, contentDescription = null)
+                    },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clickable {
+                            onEnterMultiVerseSelect(target.ref.verse)
+                            onDismiss()
+                        },
+                )
+            }
+            if (chapterVerseCount > target.ref.verse) {
+                ListItem(
+                    headlineContent = { Text(stringResource(R.string.verse_copy_range)) },
+                    leadingContent = {
+                        Icon(Icons.Default.ContentCopy, contentDescription = null)
+                    },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clickable {
+                            audioRangeEndDraft = (target.ref.verse + 1).coerceAtMost(chapterVerseCount).toString()
+                            verseRangeDialogMode = VerseRangeDialogMode.COPY_TEXT
+                        },
+                )
+                ListItem(
+                    headlineContent = { Text(stringResource(R.string.verse_copy_to_end)) },
+                    leadingContent = {
+                        Icon(Icons.Default.ContentCopy, contentDescription = null)
+                    },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clickable {
+                            val end = chapterVerseCount.coerceAtLeast(target.ref.verse)
+                            copyTextVerses((target.ref.verse..end).toSet())
+                            onDismiss()
+                        },
+                )
+            }
             ListItem(
                 headlineContent = { Text(stringResource(R.string.verse_copy_audio_link_verse)) },
                 leadingContent = {
@@ -737,7 +887,7 @@ fun VerseActionsBottomSheet(
                         .fillMaxWidth()
                         .clickable {
                             audioRangeEndDraft = (target.ref.verse + 1).coerceAtMost(chapterVerseCount).toString()
-                            showAudioRangeDialog = true
+                            verseRangeDialogMode = VerseRangeDialogMode.COPY_AUDIO
                         },
                 )
                 ListItem(
