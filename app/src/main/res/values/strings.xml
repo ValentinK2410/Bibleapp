@@ -1757,4 +1757,17 @@
     <string name="kids_edit_new_album_emoji">Эмодзи превью (необязательно)</string>
     <string name="kids_edit_card_style_hint">Стиль карточки: Pictures, Musician, …</string>
     <string name="kids_edit_tile_style_hint">Плитки: square или wide</string>
+    <string name="about_app_title">О программе</string>
+    <string name="about_app_version_line">Версия %1$s (сборка %2$d)</string>
+    <string name="about_app_check_update">Проверить обновление</string>
+    <string name="about_app_download">Скачать APK</string>
+    <string name="about_app_open_releases">Страница релизов на GitHub</string>
+    <string name="about_app_up_to_date">У вас установлена последняя версия</string>
+    <string name="about_app_check_failed">Не удалось проверить обновление</string>
+    <string name="about_app_update_available">Доступна версия %1$s</string>
+    <string name="about_app_whats_new_title">Что нового</string>
+    <string name="about_app_release_version">Версия %1$s</string>
+    <string name="about_app_fixes_title">Исправления</string>
+    <string name="main_settings_about_app">О программе</string>
+    <string name="main_settings_about_app_hint">Версия, обновления и список изменений</string>
 </resources>

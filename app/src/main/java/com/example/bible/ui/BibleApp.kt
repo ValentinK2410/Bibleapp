@@ -1426,6 +1426,7 @@ private fun BibleNavHost(
                 onOpenOfflineDownload = { navController.navigate("offline_download") },
                 onOpenNetworkRegion = { navController.navigate("network_region") },
                 onOpenMenuOrder = { navController.navigate("books_menu_order") },
+                onOpenAboutApp = { navController.navigate("about_app") },
                 ttsUserSettings = ttsUserSettings,
                 onTtsSpeechRateChange = { viewModel.setTtsSpeechRate(it) },
                 onTtsPitchChange = { viewModel.setTtsPitch(it) },
@@ -1441,6 +1442,9 @@ private fun BibleNavHost(
                     }
                 },
             )
+        }
+        composable("about_app") {
+            AboutAppScreen(onBack = { navController.navigateUp() })
         }
         composable("ai") {
             AiHubScreen(
