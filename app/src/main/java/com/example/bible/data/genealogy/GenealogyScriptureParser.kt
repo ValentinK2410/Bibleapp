@@ -21,7 +21,14 @@ object GenealogyScriptureParser {
         for (b in BibleCanon.allBooks) {
             add(b.abbrRu, b.id)
             add(b.nameRu, b.id)
+            synNumberedBookAlias(b.nameRu)?.let { add(it, b.id) }
+            spacedNumberedAbbr(b.abbrRu)?.let { add(it, b.id) }
         }
+        // Синодальный перевод: «Евангелие от …» (канон — «От …»)
+        add("Евангелие от Матфея", "matthew")
+        add("Евангелие от Марка", "mark")
+        add("Евангелие от Луки", "luke")
+        add("Евангелие от Иоанна", "john")
         // Частые сокращения в подстрочных ссылках
         add("Мф", "matthew")
         add("Мк", "mark")
@@ -66,6 +73,18 @@ object GenealogyScriptureParser {
     private fun isContinuationSegment(s: String): Boolean {
         val t = s.trim().replace('–', '-')
         return t.matches(Regex("^\\d+.*")) || t.matches(Regex("^\\d+\\s*-\\s*\\d+.*"))
+    }
+
+    /** «1-е Иоанна» → «1 Иоанна» (названия в переводе SYN при копировании стихов). */
+    private fun synNumberedBookAlias(nameRu: String): String? {
+        val m = Regex("""^(\d+)-[а-яА-ЯёЁ]\s+(.+)$""").matchEntire(nameRu.trim()) ?: return null
+        return "${m.groupValues[1]} ${m.groupValues[2]}"
+    }
+
+    /** «1Ин» → «1 Ин» (пробел после цифры в сокращениях). */
+    private fun spacedNumberedAbbr(abbrRu: String): String? {
+        val m = Regex("""^(\d+)([А-Яа-яЁё].+)$""").matchEntire(abbrRu.trim()) ?: return null
+        return "${m.groupValues[1]} ${m.groupValues[2]}"
     }
 
     fun matchBook(segment: String): BookMatch? {
