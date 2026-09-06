@@ -12,6 +12,10 @@ import com.example.bible.data.BiblePreferences
 import com.example.bible.data.BibleSearchHistoryEntry
 import com.example.bible.data.bibleSearchHistoryDedupKey
 import com.example.bible.data.BibleRepository
+import com.example.bible.data.AiChatTtsController
+import com.example.bible.data.AiChatTtsEngine
+import com.example.bible.data.AiChatTtsIntonation
+import com.example.bible.data.AiChatTtsSettings
 import com.example.bible.data.BibleTtsController
 import com.example.bible.data.TtsUserSettings
 import com.example.bible.data.ExportBundleOptions
@@ -25,14 +29,16 @@ import com.example.bible.data.AudioPlaybackState
 import com.example.bible.data.CommentaryRepository
 import com.example.bible.data.DeepSeekClient
 import com.example.bible.data.DeepSeekMessage
+import com.example.bible.data.GigaChatAskModeHints
 import com.example.bible.data.GigaChatClient
 import com.example.bible.data.GigaChatImages
+import com.example.bible.data.SaluteSpeechClient
 import com.example.bible.data.MicroblogPost
 import com.example.bible.data.MicroblogRepository
 import com.example.bible.data.AiChatRepository
 import com.example.bible.data.AiChatShare
 import com.example.bible.data.AiChatSummary
-import com.example.bible.data.DeepSeekPassageFormatter
+import com.example.bible.data.BiblePassagePrompts
 import com.example.bible.data.DeepSeekPassageScope
 import com.example.bible.data.HistoryEntry
 import com.example.bible.data.QuranReadingHistoryEntry
@@ -176,6 +182,8 @@ data class GigaChatAskUiState(
     val messages: List<DeepSeekMessage> = emptyList(),
     val error: String? = null,
     val needsKey: Boolean = false,
+    val style: DeepSeekAskStyle = DeepSeekAskStyle.DEEP,
+    val webSearch: Boolean = false,
     val pane: DeepSeekAskPane = DeepSeekAskPane.LIST,
     val chats: List<AiChatSummary> = emptyList(),
     val currentChatId: Long? = null,
@@ -679,6 +687,113 @@ class BibleViewModel(
         viewModelScope.launch { preferences.setTtsPreferHighQuality(prefer) }
     }
 
+    val aiChatTtsSettings: StateFlow<AiChatTtsSettings> = combine(
+        preferences.aiChatTtsVoice,
+        preferences.aiChatTtsIntonation,
+        preferences.aiChatTtsEngine,
+    ) { voice, intonationKey, engineKey ->
+        val engine = AiChatTtsEngine.fromKey(engineKey)
+        AiChatTtsSettings(
+            engine = engine,
+            voiceName = when {
+                voice.isNotBlank() -> voice
+                engine == AiChatTtsEngine.NEURAL -> SaluteSpeechClient.DEFAULT_VOICE
+                else -> ""
+            },
+            intonation = AiChatTtsIntonation.fromKey(intonationKey),
+        )
+    }.stateIn(
+        viewModelScope,
+        SharingStarted.WhileSubscribed(5000),
+        AiChatTtsSettings.Default,
+    )
+
+    val saluteSpeechAuthKey: StateFlow<String> = preferences.saluteSpeechAuthKey.stateIn(
+        viewModelScope,
+        SharingStarted.WhileSubscribed(5000),
+        "",
+    )
+
+    val saluteSpeechScope: StateFlow<String> = preferences.saluteSpeechScope.stateIn(
+        viewModelScope,
+        SharingStarted.WhileSubscribed(5000),
+        SaluteSpeechClient.SCOPE_PERS,
+    )
+
+    private val _saluteSpeechKeyTest = MutableStateFlow(DeepSeekKeyTestUiState())
+    val saluteSpeechKeyTest: StateFlow<DeepSeekKeyTestUiState> = _saluteSpeechKeyTest.asStateFlow()
+
+    fun setAiChatTtsVoice(name: String) {
+        viewModelScope.launch { preferences.setAiChatTtsVoice(name) }
+    }
+
+    fun setAiChatTtsIntonation(intonation: AiChatTtsIntonation) {
+        viewModelScope.launch { preferences.setAiChatTtsIntonation(intonation) }
+    }
+
+    fun setAiChatTtsEngine(engine: AiChatTtsEngine) {
+        viewModelScope.launch {
+            preferences.setAiChatTtsEngine(engine)
+            val voice = preferences.aiChatTtsVoice.first()
+            when (engine) {
+                AiChatTtsEngine.NEURAL -> {
+                    if (voice.isBlank() || !voice.contains("_24000")) {
+                        preferences.setAiChatTtsVoice(SaluteSpeechClient.DEFAULT_VOICE)
+                    }
+                }
+                AiChatTtsEngine.SYSTEM -> {
+                    if (voice.contains("_24000")) {
+                        preferences.setAiChatTtsVoice("")
+                    }
+                }
+            }
+        }
+    }
+
+    fun setSaluteSpeechAuthKey(raw: String) {
+        viewModelScope.launch {
+            preferences.setSaluteSpeechAuthKey(raw)
+            SaluteSpeechClient.clearTokenCache()
+            _saluteSpeechKeyTest.value = DeepSeekKeyTestUiState()
+        }
+    }
+
+    fun setSaluteSpeechScope(scope: String) {
+        viewModelScope.launch {
+            preferences.setSaluteSpeechScope(scope)
+            SaluteSpeechClient.clearTokenCache()
+        }
+    }
+
+    fun testSaluteSpeechKey(keyOverride: String? = null) {
+        viewModelScope.launch {
+            val key = keyOverride?.trim().orEmpty().ifBlank {
+                SaluteSpeechClient.resolveAuthKey(
+                    preferences.saluteSpeechAuthKey.first(),
+                    preferences.gigaChatAuthKey.first(),
+                )
+            }
+            if (key.isBlank()) {
+                _saluteSpeechKeyTest.value = DeepSeekKeyTestUiState(
+                    message = "Введите ключ SaluteSpeech (или ключ GigaChat из того же Studio)",
+                )
+                return@launch
+            }
+            _saluteSpeechKeyTest.value = DeepSeekKeyTestUiState(loading = true)
+            val scope = preferences.saluteSpeechScope.first()
+            SaluteSpeechClient.testKey(key, scope).fold(
+                onSuccess = { msg ->
+                    _saluteSpeechKeyTest.value = DeepSeekKeyTestUiState(ok = true, message = msg)
+                },
+                onFailure = { e ->
+                    _saluteSpeechKeyTest.value = DeepSeekKeyTestUiState(
+                        message = e.message ?: "Ключ SaluteSpeech не работает",
+                    )
+                },
+            )
+        }
+    }
+
     private val _searchQuery = MutableStateFlow("")
     val searchQuery: StateFlow<String> = _searchQuery.asStateFlow()
 
@@ -781,6 +896,9 @@ class BibleViewModel(
     init {
         viewModelScope.launch {
             ttsUserSettings.collect { BibleTtsController.setSettings(it) }
+        }
+        viewModelScope.launch {
+            aiChatTtsSettings.collect { AiChatTtsController.setSettings(it) }
         }
         loadInternal(clear = false, forceLoading = false)
     }
@@ -1105,59 +1223,52 @@ class BibleViewModel(
         rangeStart: Int,
         rangeEnd: Int,
         fallbackChapterTexts: Map<Int, String>,
-    ): String? {
-        val chapterVerses = repository.loadChapter(translation, bookId, chapter)?.verses
-            ?: DeepSeekPassageFormatter.fromMap(
-                fallbackChapterTexts,
-                1,
-                fallbackChapterTexts.keys.maxOrNull() ?: verse,
-            )
-        return when (scope) {
-            DeepSeekPassageScope.VERSE -> {
-                val text = chapterVerses.firstOrNull { it.number == verse }?.text?.ifBlank { null }
-                    ?: verseText
-                "Объясни стих $bookName $chapter:$verse.\nТекст: «$text»\n" +
-                    "Кратко: смысл, ближайший контекст, как применить."
-            }
-            DeepSeekPassageScope.RANGE -> {
-                val a = minOf(rangeStart, rangeEnd).coerceAtLeast(1)
-                val b = maxOf(rangeStart, rangeEnd)
-                val picked = chapterVerses.filter { it.number in a..b }
-                    .ifEmpty { DeepSeekPassageFormatter.fromMap(fallbackChapterTexts, a, b) }
-                if (picked.isEmpty()) return null
-                "Порассуждай над отрывком $bookName $chapter:$a–$b как над цельным пассажем.\n" +
-                    "Тема, ход мысли, связь стихов, как применить.\n\n" +
-                    DeepSeekPassageFormatter.versesBlock(picked)
-            }
-            DeepSeekPassageScope.CHAPTER -> {
-                val verses = chapterVerses.ifEmpty {
-                    DeepSeekPassageFormatter.fromMap(
-                        fallbackChapterTexts,
-                        1,
-                        fallbackChapterTexts.keys.maxOrNull() ?: 1,
-                    )
-                }
-                if (verses.isEmpty()) return null
-                "Порассуждай над главой $bookName $chapter целиком.\n" +
-                    "Структура, главная мысль, ключевые стихи, как глава встраивается в книгу.\n\n" +
-                    DeepSeekPassageFormatter.chapterBlock(chapter, verses)
-            }
-            DeepSeekPassageScope.BOOK -> {
-                val book = repository.loadBook(translation, bookId)
-                if (book == null || book.chapters.none { it.verses.isNotEmpty() }) return null
-                val (body, truncated) = DeepSeekPassageFormatter.bookBlock(book)
-                if (body.isBlank()) return null
-                val note = if (truncated) {
-                    "Текст книги сокращён: опирайся на то, что есть, и не достраивай пропущенные главы как цитаты.\n\n"
-                } else {
-                    ""
-                }
-                "Порассуждай над книгой «$bookName» целиком.\n" +
-                    "Замысел, структура по главам, главные темы, кому адресована, чем важна для чтения.\n\n" +
-                    note + body
-            }
-        }
-    }
+    ): String? = BiblePassagePrompts.build(
+        style = BiblePassagePrompts.Style.EXPLAIN,
+        translation = translation,
+        bookId = bookId,
+        bookName = bookName,
+        chapter = chapter,
+        verse = verse,
+        verseText = verseText,
+        scope = scope,
+        rangeStart = rangeStart,
+        rangeEnd = rangeEnd,
+        fallbackChapterTexts = fallbackChapterTexts,
+        loadChapter = { tr, id, ch ->
+            repository.loadChapter(tr, id, ch)?.verses
+        },
+        loadBook = { tr, id -> repository.loadBook(tr, id) },
+    )
+
+    private fun buildGigaChatReflectPrompt(
+        translation: TranslationId,
+        bookId: String,
+        bookName: String,
+        chapter: Int,
+        verse: Int,
+        verseText: String,
+        scope: DeepSeekPassageScope,
+        rangeStart: Int,
+        rangeEnd: Int,
+        fallbackChapterTexts: Map<Int, String>,
+    ): String? = BiblePassagePrompts.build(
+        style = BiblePassagePrompts.Style.REFLECT,
+        translation = translation,
+        bookId = bookId,
+        bookName = bookName,
+        chapter = chapter,
+        verse = verse,
+        verseText = verseText,
+        scope = scope,
+        rangeStart = rangeStart,
+        rangeEnd = rangeEnd,
+        fallbackChapterTexts = fallbackChapterTexts,
+        loadChapter = { tr, id, ch ->
+            repository.loadChapter(tr, id, ch)?.verses
+        },
+        loadBook = { tr, id -> repository.loadBook(tr, id) },
+    )
 
     fun askDeepSeekFollowUp(question: String) {
         val q = question.trim()
@@ -1517,6 +1628,11 @@ class BibleViewModel(
         GigaChatClient.SCOPE_PERS,
     )
 
+    private val _gigaChatPassage = MutableStateFlow(DeepSeekChatUiState())
+    val gigaChatPassage: StateFlow<DeepSeekChatUiState> = _gigaChatPassage.asStateFlow()
+    private var gigaChatPassageJob: Job? = null
+    private val gigaChatPassageHistory = mutableListOf<DeepSeekMessage>()
+
     private val _gigaChatKeyTest = MutableStateFlow(DeepSeekKeyTestUiState())
     val gigaChatKeyTest: StateFlow<DeepSeekKeyTestUiState> = _gigaChatKeyTest.asStateFlow()
 
@@ -1546,6 +1662,125 @@ class BibleViewModel(
         viewModelScope.launch {
             GigaChatClient.clearTokenCache()
             preferences.setGigaChatScope(scope)
+        }
+    }
+
+    fun clearGigaChatPassage() {
+        gigaChatPassageJob?.cancel()
+        gigaChatPassageHistory.clear()
+        _gigaChatPassage.value = DeepSeekChatUiState()
+    }
+
+    fun askGigaChatAboutPassage(
+        translation: TranslationId,
+        bookId: String,
+        bookName: String,
+        chapter: Int,
+        verse: Int,
+        verseText: String,
+        scope: DeepSeekPassageScope,
+        rangeStart: Int = verse,
+        rangeEnd: Int = verse,
+        fallbackChapterTexts: Map<Int, String> = emptyMap(),
+    ) {
+        gigaChatPassageJob?.cancel()
+        gigaChatPassageHistory.clear()
+        gigaChatPassageJob = viewModelScope.launch {
+            val key = preferences.gigaChatAuthKey.first()
+            val gigaScope = preferences.gigaChatScope.first()
+            if (key.isBlank()) {
+                _gigaChatPassage.value = DeepSeekChatUiState(needsKey = true)
+                return@launch
+            }
+            _gigaChatPassage.value = DeepSeekChatUiState(loading = true)
+            val built = withContext(Dispatchers.IO) {
+                buildGigaChatReflectPrompt(
+                    translation = translation,
+                    bookId = bookId,
+                    bookName = bookName,
+                    chapter = chapter,
+                    verse = verse,
+                    verseText = verseText,
+                    scope = scope,
+                    rangeStart = rangeStart,
+                    rangeEnd = rangeEnd,
+                    fallbackChapterTexts = fallbackChapterTexts,
+                )
+            }
+            if (built == null) {
+                _gigaChatPassage.value = DeepSeekChatUiState(
+                    error = "Не удалось загрузить текст для этого объёма. Попробуйте стих, диапазон или главу.",
+                )
+                return@launch
+            }
+            gigaChatPassageHistory += DeepSeekMessage(
+                "system",
+                "Ты духовный собеседник и помощник по изучению Библии. Помогай пользователю размышлять " +
+                    "над текстом Писания: не спеши с готовыми выводами, подчёркивай главную мысль, " +
+                    "исторический и духовный контекст, личное применение. Отвечай по-русски, тепло и по существу. " +
+                    "Опирайся только на приведённый текст; не выдумывай цитаты и факты.",
+            )
+            gigaChatPassageHistory += DeepSeekMessage("user", built)
+            val result = GigaChatClient.chat(
+                authKey = key,
+                messages = gigaChatPassageHistory.toList(),
+                scope = gigaScope,
+                timeoutMs = gigaChatTimeoutMs(),
+            )
+            result.fold(
+                onSuccess = { text ->
+                    val localized = localizeGigaChatReply(text)
+                    gigaChatPassageHistory += DeepSeekMessage("assistant", localized)
+                    _gigaChatPassage.value = DeepSeekChatUiState(answer = localized)
+                },
+                onFailure = { e ->
+                    if (e is CancellationException) throw e
+                    _gigaChatPassage.value = DeepSeekChatUiState(
+                        error = e.message?.ifBlank { null } ?: "Не удалось обратиться к GigaChat",
+                    )
+                },
+            )
+        }
+    }
+
+    fun askGigaChatPassageFollowUp(question: String) {
+        val q = question.trim()
+        if (q.isEmpty()) return
+        gigaChatPassageJob?.cancel()
+        gigaChatPassageJob = viewModelScope.launch {
+            val key = preferences.gigaChatAuthKey.first()
+            val gigaScope = preferences.gigaChatScope.first()
+            if (key.isBlank()) {
+                _gigaChatPassage.value = _gigaChatPassage.value.copy(needsKey = true, loading = false)
+                return@launch
+            }
+            val prev = _gigaChatPassage.value.answer
+            _gigaChatPassage.value = _gigaChatPassage.value.copy(loading = true, error = null, needsKey = false)
+            gigaChatPassageHistory += DeepSeekMessage("user", q)
+            val result = GigaChatClient.chat(
+                authKey = key,
+                messages = gigaChatPassageHistory.toList(),
+                scope = gigaScope,
+                timeoutMs = gigaChatTimeoutMs(),
+            )
+            result.fold(
+                onSuccess = { text ->
+                    val localized = localizeGigaChatReply(text)
+                    gigaChatPassageHistory += DeepSeekMessage("assistant", localized)
+                    val combined = if (prev.isBlank()) localized else "$prev\n\n—\n\n$localized"
+                    _gigaChatPassage.value = DeepSeekChatUiState(answer = combined)
+                },
+                onFailure = { e ->
+                    if (e is CancellationException) throw e
+                    if (gigaChatPassageHistory.lastOrNull()?.role == "user") {
+                        gigaChatPassageHistory.removeAt(gigaChatPassageHistory.lastIndex)
+                    }
+                    _gigaChatPassage.value = _gigaChatPassage.value.copy(
+                        loading = false,
+                        error = e.message?.ifBlank { null } ?: "Не удалось обратиться к GigaChat",
+                    )
+                },
+            )
         }
     }
 
@@ -1635,6 +1870,33 @@ class BibleViewModel(
     fun gigaChatAskPlainText(): String {
         val s = _gigaChatAsk.value
         return AiChatShare.plainText(s.chatTitle, s.messages)
+    }
+
+    fun setGigaChatAskStyle(style: DeepSeekAskStyle) {
+        _gigaChatAsk.value = _gigaChatAsk.value.copy(style = style)
+    }
+
+    fun setGigaChatAskWebSearch(enabled: Boolean) {
+        _gigaChatAsk.value = _gigaChatAsk.value.copy(webSearch = enabled)
+    }
+
+    private fun gigaChatApiMessages(stored: List<com.example.bible.data.db.AiChatMessageEntity>): List<DeepSeekMessage> {
+        val s = _gigaChatAsk.value
+        val hints = GigaChatAskModeHints.build(
+            quick = s.style == DeepSeekAskStyle.QUICK,
+            deep = s.style == DeepSeekAskStyle.DEEP,
+            webSearch = s.webSearch,
+        )
+        return AiChatRepository.apiMessages(stored, hints)
+    }
+
+    private fun gigaChatTimeoutMs(): Int {
+        val s = _gigaChatAsk.value
+        return GigaChatAskModeHints.timeoutMs(
+            quick = s.style == DeepSeekAskStyle.QUICK,
+            deep = s.style == DeepSeekAskStyle.DEEP,
+            webSearch = s.webSearch,
+        )
     }
 
     fun publishGigaChatAskToMicroblog(onResult: (Result<String>) -> Unit) {
@@ -1885,8 +2147,9 @@ class BibleViewModel(
                 GigaChatClient.deleteFile(key, fileId, scope)
                 GigaChatClient.chat(
                     authKey = key,
-                    messages = AiChatRepository.apiMessages(stored),
+                    messages = gigaChatApiMessages(stored),
                     scope = scope,
+                    timeoutMs = gigaChatTimeoutMs(),
                 )
             } else {
                 val prompt = DeepSeekMessage(
@@ -1894,15 +2157,13 @@ class BibleViewModel(
                     "Это голосовой вопрос пользователя. Расшифруй запись и ответь сам как ассистент GigaChat. " +
                         "Не отсылайте к системному ассистенту телефона. Отвечай по-русски по существу.",
                 )
-                val history = stored.dropLast(1)
-                val apiMessages = listOf(DeepSeekMessage("system", AiChatRepository.SYSTEM_PROMPT)) +
-                    AiChatRepository.apiMessages(history).filter { it.role != "system" } +
-                    prompt
+                val apiMessages = gigaChatApiMessages(stored.dropLast(1)) + prompt
                 val answer = GigaChatClient.chat(
                     authKey = key,
                     messages = apiMessages,
                     scope = scope,
                     attachmentIds = listOf(fileId),
+                    timeoutMs = gigaChatTimeoutMs(),
                 )
                 GigaChatClient.deleteFile(key, fileId, scope)
                 answer
@@ -1974,8 +2235,9 @@ class BibleViewModel(
             )
             val result = GigaChatClient.chat(
                 authKey = key,
-                messages = AiChatRepository.apiMessages(stored),
+                messages = gigaChatApiMessages(stored),
                 scope = scope,
+                timeoutMs = gigaChatTimeoutMs(),
             )
             result.fold(
                 onSuccess = { text ->

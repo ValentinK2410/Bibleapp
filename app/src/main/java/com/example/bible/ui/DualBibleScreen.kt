@@ -520,6 +520,7 @@ fun DualBibleScreen(
     onOpenVerseNote: ((String) -> Unit)? = null,
     viewModel: BibleViewModel? = null,
     onOpenDeepSeekSettings: () -> Unit = {},
+    onOpenGigaChatSettings: () -> Unit = onOpenDeepSeekSettings,
     translationTabColors: Map<String, Int> = emptyMap(),
     navController: NavHostController? = null,
     booksMainMenuOrder: List<String> = BooksMainMenuOrder.allIds,
@@ -627,6 +628,7 @@ fun DualBibleScreen(
                     onOpenVerseNote = onOpenVerseNote,
                     viewModel = viewModel,
                     onOpenDeepSeekSettings = onOpenDeepSeekSettings,
+                    onOpenGigaChatSettings = onOpenGigaChatSettings,
                     translationTabColors = translationTabColors,
                     readerChrome = dualChrome,
                 )
@@ -687,6 +689,7 @@ fun DualBibleScreen(
                     onOpenVerseNote = onOpenVerseNote,
                     viewModel = viewModel,
                     onOpenDeepSeekSettings = onOpenDeepSeekSettings,
+                    onOpenGigaChatSettings = onOpenGigaChatSettings,
                     translationTabColors = translationTabColors,
                     readerChrome = dualChrome,
                 )
@@ -1201,6 +1204,9 @@ fun NoteEditorBiblePane(
             onOpenDeepSeekSettings = {
                 navController?.navigate("ai_settings")
             },
+            onOpenGigaChatSettings = {
+                navController?.navigate("gigachat_settings")
+            },
             onPlayChapterFromVerse = { playReq ->
                 val bid = paneState.bookId ?: return@BiblePaneColumn
                 val ch = paneState.chapter ?: return@BiblePaneColumn
@@ -1297,6 +1303,7 @@ internal fun BiblePaneColumn(
     onPlayChapterFromVerse: ((ScriptureAudioPlayRequest) -> Unit)? = null,
     viewModel: BibleViewModel? = null,
     onOpenDeepSeekSettings: () -> Unit = {},
+    onOpenGigaChatSettings: () -> Unit = onOpenDeepSeekSettings,
     translationTabColors: Map<String, Int> = emptyMap(),
     readerChrome: DualReaderChrome? = null,
 ) {
@@ -1559,6 +1566,7 @@ internal fun BiblePaneColumn(
                             onPlayChapterFromVerse = onPlayChapterFromVerse,
                             viewModel = viewModel,
                             onOpenDeepSeekSettings = onOpenDeepSeekSettings,
+                    onOpenGigaChatSettings = onOpenGigaChatSettings,
                         )
                     }
                     !isOnlinePane && chapterLoad is BibleChapterLoadState.Loading -> {
@@ -1790,6 +1798,7 @@ private fun ReaderPane(
     onPlayChapterFromVerse: ((ScriptureAudioPlayRequest) -> Unit)? = null,
     viewModel: BibleViewModel? = null,
     onOpenDeepSeekSettings: () -> Unit = {},
+    onOpenGigaChatSettings: () -> Unit = onOpenDeepSeekSettings,
 ) {
     val verseNumbersWithNotes = remember(userNotes, bookId, chapterNum) {
         userNotes.verseNumbersWithNotesInChapter(bookId, chapterNum)
@@ -1803,6 +1812,9 @@ private fun ReaderPane(
     var clearSelectionSignal by remember { mutableIntStateOf(0) }
     var verseActionsTarget by remember { mutableStateOf<VerseActionTarget?>(null) }
     var deepSeekTarget by remember { mutableStateOf<VerseActionTarget?>(null) }
+    var gigaChatTarget by remember { mutableStateOf<VerseActionTarget?>(null) }
+    var gigaChatInitialScope by remember { mutableStateOf<com.example.bible.data.DeepSeekPassageScope?>(null) }
+    var gigaChatInitialRange by remember { mutableStateOf<Pair<Int, Int>?>(null) }
     val multiSelect = rememberVerseMultiSelectState()
     var attachmentPreview by remember { mutableStateOf<VerseAttachment?>(null) }
     val paneContext = LocalContext.current
@@ -2267,6 +2279,22 @@ private fun ReaderPane(
                         )
                         multiSelect.clear()
                     },
+                    onReflectGigaChat = viewModel?.let {
+                        {
+                            val selected = multiSelect.selectedVerses ?: return@let
+                            if (selected.isEmpty()) return@let
+                            val first = selected.min()
+                            val verse = verses.firstOrNull { it.number == first }
+                            gigaChatTarget = VerseActionTarget(
+                                ref = VerseRef(translation, bookId, chapterNum, first),
+                                verseText = verse?.text.orEmpty(),
+                                bookName = bookName,
+                            )
+                            gigaChatInitialScope = com.example.bible.data.DeepSeekPassageScope.RANGE
+                            gigaChatInitialRange = selected.min() to selected.max()
+                            multiSelect.clear()
+                        }
+                    },
                     onCancel = { multiSelect.clear() },
                     modifier = Modifier.align(Alignment.BottomCenter),
                 )
@@ -2317,6 +2345,13 @@ private fun ReaderPane(
                 onVerseCommentary(ref)
             },
             onAskDeepSeek = viewModel?.let { { t: VerseActionTarget -> deepSeekTarget = t } },
+            onAskGigaChat = viewModel?.let {
+                { t: VerseActionTarget ->
+                    gigaChatInitialScope = null
+                    gigaChatInitialRange = null
+                    gigaChatTarget = t
+                }
+            },
             onPauseMainAudioForAttachment = onPauseMainAudioForAttachment,
             mediaLibraryImages = mediaLibraryImages,
             mediaLibraryVideos = mediaLibraryVideos,
@@ -2350,6 +2385,28 @@ private fun ReaderPane(
                     },
                     chapterVerseCount = verses.size,
                     chapterVerseTexts = verses.associate { it.number to it.text },
+                )
+            }
+            gigaChatTarget?.let { t ->
+                GigaChatVerseDialog(
+                    viewModel = dsVm,
+                    target = t,
+                    onDismiss = {
+                        gigaChatTarget = null
+                        gigaChatInitialScope = null
+                        gigaChatInitialRange = null
+                    },
+                    onOpenSettings = {
+                        gigaChatTarget = null
+                        gigaChatInitialScope = null
+                        gigaChatInitialRange = null
+                        onOpenGigaChatSettings()
+                    },
+                    chapterVerseCount = verses.size,
+                    chapterVerseTexts = verses.associate { it.number to it.text },
+                    initialScope = gigaChatInitialScope ?: com.example.bible.data.DeepSeekPassageScope.VERSE,
+                    initialRangeStart = gigaChatInitialRange?.first,
+                    initialRangeEnd = gigaChatInitialRange?.second,
                 )
             }
         }

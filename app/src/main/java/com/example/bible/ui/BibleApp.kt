@@ -2914,6 +2914,7 @@ private fun BibleNavHost(
                                         },
                                         viewModel = viewModel,
                                         onOpenDeepSeekSettings = { navController.navigate("ai_settings") },
+                                        onOpenGigaChatSettings = { navController.navigate("gigachat_settings") },
                                     )
                                     }
                                 }
@@ -5229,6 +5230,7 @@ private fun ReaderContent(
     onPlayTimemarkVerseAudio: ((VerseRef) -> Unit)? = null,
     viewModel: BibleViewModel,
     onOpenDeepSeekSettings: () -> Unit,
+    onOpenGigaChatSettings: () -> Unit = onOpenDeepSeekSettings,
 ) {
     val highlightsForReader = remember(textHighlights, translation, bookId, chapter) {
         textHighlights.filter {
@@ -5239,6 +5241,9 @@ private fun ReaderContent(
     var clearSelectionSignal by remember { mutableIntStateOf(0) }
     var verseActionsTarget by remember { mutableStateOf<VerseActionTarget?>(null) }
     var deepSeekTarget by remember { mutableStateOf<VerseActionTarget?>(null) }
+    var gigaChatTarget by remember { mutableStateOf<VerseActionTarget?>(null) }
+    var gigaChatInitialScope by remember { mutableStateOf<com.example.bible.data.DeepSeekPassageScope?>(null) }
+    var gigaChatInitialRange by remember { mutableStateOf<Pair<Int, Int>?>(null) }
     val multiSelect = rememberVerseMultiSelectState()
     var attachmentPreview by remember { mutableStateOf<VerseAttachment?>(null) }
     val readerContext = LocalContext.current
@@ -5709,6 +5714,20 @@ private fun ReaderContent(
                     )
                     multiSelect.clear()
                 },
+                onReflectGigaChat = {
+                    val selected = multiSelect.selectedVerses ?: return@VerseMultiSelectBottomBar
+                    if (selected.isEmpty()) return@VerseMultiSelectBottomBar
+                    val first = selected.min()
+                    val verse = verses.firstOrNull { it.number == first }
+                    gigaChatTarget = VerseActionTarget(
+                        ref = VerseRef(translation, bookId, chapter, first),
+                        verseText = verse?.text.orEmpty(),
+                        bookName = bookName,
+                    )
+                    gigaChatInitialScope = com.example.bible.data.DeepSeekPassageScope.RANGE
+                    gigaChatInitialRange = selected.min() to selected.max()
+                    multiSelect.clear()
+                },
                 onCancel = { multiSelect.clear() },
                 modifier = Modifier
                     .align(Alignment.BottomCenter)
@@ -5757,6 +5776,11 @@ private fun ReaderContent(
                 onVerseCommentary(ref)
             },
             onAskDeepSeek = { deepSeekTarget = it },
+            onAskGigaChat = {
+                gigaChatInitialScope = null
+                gigaChatInitialRange = null
+                gigaChatTarget = it
+            },
             onNavigateToVerse = onNavigateToVerse,
             onOpenInterlinearHebrewSandboxWholeVerse = onOpenInterlinearHebrewSandboxWholeVerse,
             onDictionaryWord = { word ->
@@ -5790,6 +5814,28 @@ private fun ReaderContent(
                 },
                 chapterVerseCount = verses.size,
                 chapterVerseTexts = verses.associate { it.number to it.text },
+            )
+        }
+        gigaChatTarget?.let { t ->
+            GigaChatVerseDialog(
+                viewModel = viewModel,
+                target = t,
+                onDismiss = {
+                    gigaChatTarget = null
+                    gigaChatInitialScope = null
+                    gigaChatInitialRange = null
+                },
+                onOpenSettings = {
+                    gigaChatTarget = null
+                    gigaChatInitialScope = null
+                    gigaChatInitialRange = null
+                    onOpenGigaChatSettings()
+                },
+                chapterVerseCount = verses.size,
+                chapterVerseTexts = verses.associate { it.number to it.text },
+                initialScope = gigaChatInitialScope ?: com.example.bible.data.DeepSeekPassageScope.VERSE,
+                initialRangeStart = gigaChatInitialRange?.first,
+                initialRangeEnd = gigaChatInitialRange?.second,
             )
         }
         wordMediaDialog?.let { (sel, existing) ->

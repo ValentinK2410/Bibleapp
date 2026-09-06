@@ -98,6 +98,7 @@ fun VerseMultiSelectBottomBar(
     selectedCount: Int,
     onCopy: () -> Unit,
     onCancel: () -> Unit,
+    onReflectGigaChat: (() -> Unit)? = null,
     modifier: Modifier = Modifier,
 ) {
     Surface(
@@ -119,6 +120,11 @@ fun VerseMultiSelectBottomBar(
             )
             TextButton(onClick = onCancel) {
                 Text(stringResource(R.string.verse_multi_select_cancel))
+            }
+            if (onReflectGigaChat != null) {
+                TextButton(onClick = onReflectGigaChat) {
+                    Text(stringResource(R.string.verse_multi_select_gigachat))
+                }
             }
             TextButton(onClick = onCopy) {
                 Text(stringResource(R.string.verse_multi_select_copy, selectedCount))

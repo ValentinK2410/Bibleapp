@@ -540,6 +540,7 @@
     <string name="verse_multi_select_count">Выбрано: %1$d</string>
     <string name="verse_multi_select_copy">Копировать (%1$d)</string>
     <string name="verse_multi_select_cancel">Отмена</string>
+    <string name="verse_multi_select_gigachat">GigaChat</string>
     <string name="verse_audio_link_copied">Ссылка на озвучку скопирована</string>
     <string name="verse_copy_audio_link_verse">Скопировать ссылку на озвучку (стих)</string>
     <string name="verse_copy_audio_link_range">Скопировать ссылку на озвучку (диапазон)</string>
@@ -552,6 +553,7 @@
     <string name="verse_action_share">Поделиться</string>
     <string name="verse_action_commentary">Комментарий</string>
     <string name="verse_action_deepseek">Спросить DeepSeek</string>
+    <string name="verse_action_gigachat_reflect">GigaChat: размышление над текстом</string>
     <string name="verse_action_note">Заметка к стиху</string>
     <string name="verse_note_open">Открыть заметку</string>
     <string name="verse_note_more">Ещё заметок: %d</string>
@@ -1037,6 +1039,13 @@
     <string name="deepseek_follow_up">Уточняющий вопрос</string>
     <string name="deepseek_open_settings">Открыть настройки</string>
     <string name="deepseek_send">Отправить</string>
+
+    <string name="gigachat_verse_title">GigaChat · %1$s %2$d:%3$d</string>
+    <string name="gigachat_range_title">GigaChat · %1$s %2$d:%3$d–%4$d</string>
+    <string name="gigachat_chapter_title">GigaChat · %1$s %2$d, глава</string>
+    <string name="gigachat_book_title">GigaChat · %1$s, книга</string>
+    <string name="gigachat_verse_reflect">Размышлять</string>
+    <string name="gigachat_verse_follow_up">Ваш вопрос или мысль</string>
     <string name="gigachat_hub_title">GigaChat</string>
     <string name="gigachat_hub_hint">Модель GigaChat-3-Ultra (Freemium для физлиц). Вопросы, фото и чаты на телефоне — как в разделе DeepSeek. Ключ — из Sber Studio.</string>
     <string name="gigachat_hub_ask">Задать вопрос</string>

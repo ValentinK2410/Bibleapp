@@ -20,6 +20,7 @@ import androidx.compose.material.icons.automirrored.filled.Comment
 import androidx.compose.material.icons.automirrored.filled.VolumeUp
 import androidx.compose.material.icons.filled.Book
 import androidx.compose.material.icons.filled.AttachFile
+import androidx.compose.material.icons.filled.AutoStories
 import androidx.compose.material.icons.filled.Bookmark
 import androidx.compose.material.icons.filled.BookmarkBorder
 import androidx.compose.material.icons.filled.Checklist
@@ -450,6 +451,7 @@ fun VerseActionsBottomSheet(
     onPlayTimemarkVerseAudio: ((VerseRef) -> Unit)? = null,
     onOpenCommentary: (VerseRef) -> Unit,
     onAskDeepSeek: ((VerseActionTarget) -> Unit)? = null,
+    onAskGigaChat: ((VerseActionTarget) -> Unit)? = null,
     onNavigateToVerse: ((String, Int, Int) -> Unit)? = null,
     onDictionaryWord: ((String) -> Unit)? = null,
     onPauseMainAudioForAttachment: () -> Unit = {},
@@ -945,6 +947,21 @@ fun VerseActionsBottomSheet(
                         .clickable {
                             val t = target
                             onAskDeepSeek(t)
+                            onDismiss()
+                        },
+                )
+            }
+            if (onAskGigaChat != null) {
+                ListItem(
+                    headlineContent = { Text(stringResource(R.string.verse_action_gigachat_reflect)) },
+                    leadingContent = {
+                        Icon(Icons.Filled.AutoStories, contentDescription = null)
+                    },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clickable {
+                            val t = target
+                            onAskGigaChat(t)
                             onDismiss()
                         },
                 )
