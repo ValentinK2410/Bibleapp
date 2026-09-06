@@ -3470,6 +3470,11 @@ private fun BibleNavHost(
                         },
                         navigationRequest = navigationRequest,
                         onNavigationConsumed = onNavigationConsumed,
+                        navController = navController,
+                        booksMainMenuOrder = booksMainMenuOrder,
+                        translationTabColors = translationTabColors,
+                        isDarkTheme = isDark,
+                        viewModel = viewModel,
                     )
                 },
             )

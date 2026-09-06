@@ -36,6 +36,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.MoreVert
@@ -221,6 +222,7 @@ private fun DualPaneChapterHeader(
     syncMode: Boolean,
     onSyncToggle: () -> Unit,
     onExit: (() -> Unit)?,
+    onInternalBack: (() -> Unit)? = null,
     onClosePane: (() -> Unit)?,
     onLongPress: () -> Unit,
     onOpenQuickNav: () -> Unit,
@@ -232,6 +234,8 @@ private fun DualPaneChapterHeader(
     onShowTextSizeDialog: () -> Unit,
     onShowNarratorPicker: () -> Unit,
     onShowStudyTools: (Int) -> Unit,
+    includeStatusBar: Boolean = paneIndex == 0,
+    showSyncInMenu: Boolean = true,
 ) {
     val context = LocalContext.current
     var showMoreMenu by remember { mutableStateOf(false) }
@@ -253,11 +257,18 @@ private fun DualPaneChapterHeader(
             },
     ) {
         ReaderChapterTopBar(
-            includeStatusBar = paneIndex == 0,
+            includeStatusBar = includeStatusBar,
             restoreLightStatusBarIcons = !readerChrome.isDarkTheme,
             navigationIcon = {
-                if (onExit != null) {
-                    ReaderTopIconButton(onClick = onExit) {
+                when {
+                    onExit != null -> ReaderTopIconButton(onClick = onExit) {
+                        Icon(
+                            Icons.AutoMirrored.Filled.ArrowBack,
+                            contentDescription = stringResource(R.string.back),
+                            modifier = Modifier.size(ReaderTopBarIconSize),
+                        )
+                    }
+                    onInternalBack != null -> ReaderTopIconButton(onClick = onInternalBack) {
                         Icon(
                             Icons.AutoMirrored.Filled.ArrowBack,
                             contentDescription = stringResource(R.string.back),
@@ -293,6 +304,19 @@ private fun DualPaneChapterHeader(
                         contentDescription = stringResource(R.string.search_title),
                         modifier = Modifier.size(ReaderTopBarIconSize),
                     )
+                }
+                if (onClosePane == null) {
+                    ReaderTopIconButton(onClick = {
+                        com.example.bible.data.BibleAudioPlayer.stopForNavigation()
+                        readerChrome.navController?.navigate("dual?bookId=$bookId&chapter=$chapterNum")
+                    }) {
+                        Icon(
+                            Icons.Default.Add,
+                            contentDescription = stringResource(R.string.menu_dual_bible),
+                            modifier = Modifier.size(ReaderTopBarIconSize),
+                            tint = ReaderTopBarColors.Accent,
+                        )
+                    }
                 }
                 ReaderTopIconButton(
                     onClick = {
@@ -359,21 +383,23 @@ private fun DualPaneChapterHeader(
                         onDismissRequest = { showMoreMenu = false },
                         modifier = Modifier.heightIn(max = readerMenuMaxH),
                     ) {
-                        DropdownMenuItem(
-                            text = {
-                                Text(
-                                    if (syncMode) {
-                                        "${stringResource(R.string.dual_sync)} ✓"
-                                    } else {
-                                        stringResource(R.string.dual_sync)
-                                    },
-                                )
-                            },
-                            onClick = {
-                                showMoreMenu = false
-                                onSyncToggle()
-                            },
-                        )
+                        if (showSyncInMenu) {
+                            DropdownMenuItem(
+                                text = {
+                                    Text(
+                                        if (syncMode) {
+                                            "${stringResource(R.string.dual_sync)} ✓"
+                                        } else {
+                                            stringResource(R.string.dual_sync)
+                                        },
+                                    )
+                                },
+                                onClick = {
+                                    showMoreMenu = false
+                                    onSyncToggle()
+                                },
+                            )
+                        }
                         DropdownMenuItem(
                             text = { Text(stringResource(R.string.main_settings_title)) },
                             onClick = {
@@ -1090,6 +1116,11 @@ fun NoteEditorBiblePane(
     onPlayAudio: ((VerseRef, () -> Unit) -> Unit)? = null,
     navigationRequest: NoteBibleNavigation? = null,
     onNavigationConsumed: () -> Unit = {},
+    navController: NavHostController? = null,
+    booksMainMenuOrder: List<String> = BooksMainMenuOrder.allIds,
+    translationTabColors: Map<String, Int> = emptyMap(),
+    isDarkTheme: Boolean = false,
+    viewModel: BibleViewModel? = null,
 ) {
     var paneState by remember(initialTranslation, initialBookId, initialChapter) {
         mutableStateOf(
@@ -1103,6 +1134,14 @@ fun NoteEditorBiblePane(
     var scrollToVerseRequest by remember { mutableStateOf<VerseScrollRequest?>(null) }
     var showQuickNav by remember { mutableStateOf(false) }
     val dualContext = androidx.compose.ui.platform.LocalContext.current
+    val noteChrome = remember(navController, booksMainMenuOrder, narratorId, isDarkTheme) {
+        DualReaderChrome(
+            navController = navController,
+            booksMainMenuOrder = booksMainMenuOrder,
+            narratorId = narratorId,
+            isDarkTheme = isDarkTheme,
+        )
+    }
     LaunchedEffect(navigationRequest?.nonce) {
         val req = navigationRequest ?: return@LaunchedEffect
         val targetTranslation = req.translationCode?.let { TranslationId.fromCode(it) } ?: paneState.translation
@@ -1126,12 +1165,6 @@ fun NoteEditorBiblePane(
         onNavigationConsumed()
     }
     Column(modifier.fillMaxSize()) {
-        Text(
-            stringResource(R.string.note_editor_bible_nav_hint),
-            style = MaterialTheme.typography.labelSmall,
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
-            modifier = Modifier.padding(horizontal = 12.dp, vertical = 4.dp),
-        )
         BibleAudioMiniBar()
         HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
         BiblePaneColumn(
@@ -1149,7 +1182,9 @@ fun NoteEditorBiblePane(
             textHighlights = emptyList(),
             onAddTextHighlight = {},
             onRemoveTextHighlights = { _, _, _ -> },
-            onVerseCommentary = {},
+            onVerseCommentary = { ref ->
+                navController?.navigate("commentary/${ref.bookId}/${ref.chapter}/${ref.verse}")
+            },
             onPlayAudio = onPlayAudio,
             readerFontScale = readerFontScale,
             onAdjustReaderFontScale = onAdjustReaderFontScale,
@@ -1158,7 +1193,14 @@ fun NoteEditorBiblePane(
             onOpenQuickNav = { showQuickNav = true },
             showSyncControl = false,
             showInternalBack = true,
+            includeReaderStatusBar = false,
             scrollToVerseRequest = scrollToVerseRequest,
+            translationTabColors = translationTabColors,
+            readerChrome = noteChrome,
+            viewModel = viewModel,
+            onOpenDeepSeekSettings = {
+                navController?.navigate("ai_settings")
+            },
             onPlayChapterFromVerse = { playReq ->
                 val bid = paneState.bookId ?: return@BiblePaneColumn
                 val ch = paneState.chapter ?: return@BiblePaneColumn
@@ -1250,6 +1292,7 @@ internal fun BiblePaneColumn(
     onOpenQuickNav: (() -> Unit)? = null,
     showSyncControl: Boolean = true,
     showInternalBack: Boolean = false,
+    includeReaderStatusBar: Boolean? = null,
     scrollToVerseRequest: VerseScrollRequest? = null,
     onPlayChapterFromVerse: ((ScriptureAudioPlayRequest) -> Unit)? = null,
     viewModel: BibleViewModel? = null,
@@ -1414,6 +1457,16 @@ internal fun BiblePaneColumn(
 
                 Column(Modifier.weight(1f).fillMaxSize()) {
                     if (chrome != null) {
+                        val internalBack = if (showInternalBack && onExit == null) {
+                            {
+                                when {
+                                    state.chapter != null -> onStateChange(state.copy(chapter = null))
+                                    state.bookId != null -> onStateChange(state.copy(bookId = null, chapter = null))
+                                }
+                            }
+                        } else {
+                            null
+                        }
                         DualPaneChapterHeader(
                             paneIndex = paneIndex,
                             state = state,
@@ -1425,6 +1478,7 @@ internal fun BiblePaneColumn(
                             syncMode = syncMode,
                             onSyncToggle = onSyncToggle,
                             onExit = onExit,
+                            onInternalBack = internalBack,
                             onClosePane = onClosePane,
                             onLongPress = onLongPressTopBar,
                             onOpenQuickNav = { showQuickNav = true },
@@ -1439,6 +1493,8 @@ internal fun BiblePaneColumn(
                                 studyVerse = verse
                                 showStudyTools = true
                             },
+                            includeStatusBar = includeReaderStatusBar ?: (onExit != null && paneIndex == 0),
+                            showSyncInMenu = showSyncControl,
                         )
                     } else {
                         PaneTopBar(
