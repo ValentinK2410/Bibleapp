@@ -26,10 +26,22 @@ data class WhatsNewRelease(
     val fixes: List<String>,
 )
 
+data class RemoteVersionCheckResult(
+    val version: RemoteAppVersion,
+    /** true — данные с сервера; false — встроенная копия из assets. */
+    val fromNetwork: Boolean,
+    val networkError: String? = null,
+)
+
 object AppUpdateCatalog {
 
-    const val VERSION_URL =
-        "https://raw.githubusercontent.com/ValentinK2410/Bibleapp/master/docs/app-version.json"
+    private const val BUNDLED_VERSION_ASSET = "app_version_remote.json"
+
+    val VERSION_URLS = listOf(
+        "https://raw.githubusercontent.com/ValentinK2410/Bibleapp/master/docs/app-version.json",
+        "https://github.com/ValentinK2410/Bibleapp/raw/master/docs/app-version.json",
+        "https://cdn.jsdelivr.net/gh/ValentinK2410/Bibleapp@master/docs/app-version.json",
+    )
     const val DEFAULT_APK_URL =
         "https://github.com/ValentinK2410/Bibleapp/releases/latest/download/Bible.apk"
     const val RELEASES_PAGE = "https://github.com/ValentinK2410/Bibleapp/releases/latest"
@@ -45,11 +57,41 @@ object AppUpdateCatalog {
         )
     }
 
+    fun loadBundledRemote(context: Context): RemoteAppVersion {
+        val raw = context.assets.open(BUNDLED_VERSION_ASSET).bufferedReader().use { it.readText() }
+        return parseRemote(raw)
+    }
+
+    /** Сначала сеть (несколько зеркал), при неудаче — встроенная копия. */
+    fun checkRemote(context: Context): RemoteVersionCheckResult {
+        val networkResult = runCatching { fetchRemote() }
+        if (networkResult.isSuccess) {
+            return RemoteVersionCheckResult(networkResult.getOrThrow(), fromNetwork = true)
+        }
+        val err = networkResult.exceptionOrNull()?.message
+        return RemoteVersionCheckResult(
+            version = loadBundledRemote(context),
+            fromNetwork = false,
+            networkError = networkErrorMessage(err),
+        )
+    }
+
     fun fetchRemote(): RemoteAppVersion {
-        val conn = URL(VERSION_URL).openConnection() as HttpURLConnection
+        var lastError: Exception? = null
+        for (url in VERSION_URLS) {
+            runCatching { fetchFromUrl(url) }
+                .onSuccess { return it }
+                .onFailure { lastError = it as? Exception ?: Exception(it) }
+        }
+        throw lastError ?: RuntimeException("Не удалось проверить обновление")
+    }
+
+    private fun fetchFromUrl(url: String): RemoteAppVersion {
+        val conn = URL(url).openConnection() as HttpURLConnection
         try {
             conn.connectTimeout = 12_000
             conn.readTimeout = 12_000
+            conn.instanceFollowRedirects = true
             conn.requestMethod = "GET"
             conn.setRequestProperty("Accept", "application/json")
             conn.setRequestProperty("User-Agent", "Bibleapp")
@@ -59,11 +101,28 @@ object AppUpdateCatalog {
                 ?.readText()
                 .orEmpty()
             if (code !in 200..299) {
-                throw RuntimeException("Не удалось проверить обновление ($code)")
+                throw RuntimeException("HTTP $code")
             }
             return parseRemote(body)
         } finally {
             conn.disconnect()
+        }
+    }
+
+    fun networkErrorMessage(raw: String?): String {
+        val msg = raw.orEmpty()
+        return when {
+            "No address associated with hostname" in msg ||
+                "Unable to resolve host" in msg ||
+                "DNS" in msg.uppercase() ||
+                "Network is unreachable" in msg ||
+                "Connection refused" in msg ||
+                "ETIMEDOUT" in msg ||
+                "timeout" in msg.lowercase() ->
+                "Нет доступа к серверу обновлений. Проверьте интернет или VPN."
+            "HTTP 403" in msg || "HTTP 404" in msg ->
+                "Сервер обновлений временно недоступен. Попробуйте позже."
+            else -> msg.ifBlank { "Не удалось проверить обновление" }
         }
     }
 

@@ -88,23 +88,31 @@ fun AboutAppScreen(onBack: () -> Unit) {
 
     var checking by remember { mutableStateOf(false) }
     var remote by remember { mutableStateOf<RemoteAppVersion?>(null) }
-    var checkError by remember { mutableStateOf<String?>(null) }
+    var offlineNotice by remember { mutableStateOf<String?>(null) }
 
     fun checkUpdate(manual: Boolean) {
         if (checking) return
         scope.launch {
             checking = true
-            checkError = null
+            offlineNotice = null
             try {
-                val r = withContext(Dispatchers.IO) { AppUpdateCatalog.fetchRemote() }
-                remote = r
-                if (manual && r.versionCode <= local.versionCode) {
-                    Toast.makeText(context, R.string.about_app_up_to_date, Toast.LENGTH_SHORT).show()
+                val result = withContext(Dispatchers.IO) { AppUpdateCatalog.checkRemote(context) }
+                remote = result.version
+                offlineNotice = result.networkError?.let { err ->
+                    context.getString(R.string.about_app_offline_notice, err)
+                }
+                if (manual) {
+                    when {
+                        result.fromNetwork && result.version.versionCode <= local.versionCode ->
+                            Toast.makeText(context, R.string.about_app_up_to_date, Toast.LENGTH_SHORT).show()
+                        !result.fromNetwork ->
+                            Toast.makeText(context, result.networkError, Toast.LENGTH_LONG).show()
+                    }
                 }
             } catch (e: Exception) {
-                checkError = e.message ?: context.getString(R.string.about_app_check_failed)
+                offlineNotice = AppUpdateCatalog.networkErrorMessage(e.message)
                 if (manual) {
-                    Toast.makeText(context, checkError, Toast.LENGTH_LONG).show()
+                    Toast.makeText(context, offlineNotice, Toast.LENGTH_LONG).show()
                 }
             } finally {
                 checking = false
@@ -252,10 +260,10 @@ fun AboutAppScreen(onBack: () -> Unit) {
                 )
             }
 
-            checkError?.let { err ->
+            offlineNotice?.let { notice ->
                 Text(
-                    err,
-                    color = MaterialTheme.colorScheme.error,
+                    notice,
+                    color = MaterialTheme.colorScheme.tertiary,
                     style = MaterialTheme.typography.bodySmall,
                 )
             }

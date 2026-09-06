@@ -1763,7 +1763,7 @@
     <string name="about_app_download">Скачать APK</string>
     <string name="about_app_open_releases">Страница релизов на GitHub</string>
     <string name="about_app_up_to_date">У вас установлена последняя версия</string>
-    <string name="about_app_check_failed">Не удалось проверить обновление</string>
+    <string name="about_app_offline_notice">%1$s Показана встроенная информация об обновлении.</string>
     <string name="about_app_update_available">Доступна версия %1$s</string>
     <string name="about_app_whats_new_title">Что нового</string>
     <string name="about_app_release_version">Версия %1$s</string>
