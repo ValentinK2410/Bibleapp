@@ -2,12 +2,17 @@ package com.example.bible.data
 
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
+import android.graphics.ImageFormat
+import android.graphics.PixelFormat
+import android.media.Image
 import android.media.MediaMetadataRetriever
+import android.media.MediaPlayer
 import android.media.ThumbnailUtils
 import android.os.Build
 import android.os.CancellationSignal
 import android.provider.MediaStore
 import android.util.Size
+import android.media.ImageReader
 import java.io.File
 import java.io.FileInputStream
 import java.io.FileOutputStream
@@ -47,6 +52,14 @@ object VideoThumbnailLoader {
         } finally {
             loadSemaphore.release()
         }
+    }
+
+    /** Пробует несколько файлов — для обложки плейлиста, если первый ролик без декодируемого кадра. */
+    fun loadFirstAvailable(files: List<File>, limit: Int = 6): Bitmap? {
+        for (file in files.take(limit)) {
+            load(file)?.let { return it }
+        }
+        return null
     }
 
     private fun loadUnlocked(file: File): Bitmap? {
@@ -118,11 +131,14 @@ object VideoThumbnailLoader {
         }
 
         if (bestScore >= 8) return best
+        consider(extractViaMediaPlayer(file))
+        if (bestScore >= 1) return best
         return extractLastResort(file) ?: best
     }
 
     /** Любой декодируемый кадр — лучше серого прямоугольника. */
     private fun extractLastResort(file: File): Bitmap? {
+        extractViaMediaPlayer(file)?.let { return it }
         extractViaThumbnailUtils(file)?.let { return it }
         return withRetriever(file) { retriever ->
             val durationMs = retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_DURATION)
@@ -204,6 +220,65 @@ object VideoThumbnailLoader {
         }
     } catch (_: Exception) {
         null
+    }
+
+    /** Когда MediaMetadataRetriever не умеет кодек, но MediaPlayer воспроизводит файл. */
+    private fun extractViaMediaPlayer(file: File): Bitmap? {
+        var player: MediaPlayer? = null
+        var reader: ImageReader? = null
+        return try {
+            reader = ImageReader.newInstance(320, 180, PixelFormat.RGBA_8888, 2)
+            player = MediaPlayer().apply {
+                setSurface(reader.surface)
+                setDataSource(file.absolutePath)
+                prepare()
+                val durationMs = duration.coerceAtLeast(0)
+                val seekMs = when {
+                    durationMs > 15_000 -> 10_000
+                    durationMs > 5_000 -> 4_000
+                    durationMs > 1_000 -> durationMs / 2
+                    else -> 0
+                }
+                seekTo(seekMs.toLong(), MediaPlayer.SEEK_CLOSEST)
+                start()
+                Thread.sleep(450)
+                pause()
+            }
+            val image = reader.acquireLatestImage() ?: reader.acquireNextImage()
+            image?.use { copyImageToBitmap(it) }
+        } catch (_: Exception) {
+            null
+        } finally {
+            runCatching { player?.release() }
+            runCatching { reader?.close() }
+        }
+    }
+
+    private fun copyImageToBitmap(image: Image): Bitmap? {
+        if (image.format != PixelFormat.RGBA_8888 && image.format != ImageFormat.FLEX_RGBA_8888) {
+            return null
+        }
+        val plane = image.planes.firstOrNull() ?: return null
+        val buffer = plane.buffer.duplicate()
+        buffer.rewind()
+        val pixelStride = plane.pixelStride
+        val rowStride = plane.rowStride
+        val width = image.width
+        val height = image.height
+        val rowPadding = rowStride - pixelStride * width
+        val bitmap = Bitmap.createBitmap(
+            width + rowPadding / pixelStride.coerceAtLeast(1),
+            height,
+            Bitmap.Config.ARGB_8888,
+        )
+        bitmap.copyPixelsFromBuffer(buffer)
+        return if (rowPadding == 0) {
+            bitmap
+        } else {
+            Bitmap.createBitmap(bitmap, 0, 0, width, height).also {
+                if (it !== bitmap) bitmap.recycle()
+            }
+        }
     }
 
     private fun Bitmap.ensureSoftware(): Bitmap {

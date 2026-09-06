@@ -68,7 +68,8 @@ fun PlaylistLook.brush(): Brush = Brush.linearGradient(
 @Composable
 fun PlaylistCoverArt(
     playlist: UserMediaPlaylist,
-    fallbackVideo: File?,
+    fallbackVideo: File? = null,
+    fallbackVideos: List<File> = fallbackVideo?.let { listOf(it) }.orEmpty(),
     modifier: Modifier = Modifier,
 ) {
     val context = LocalContext.current
@@ -87,8 +88,11 @@ fun PlaylistCoverArt(
                     contentScale = ContentScale.Crop,
                 )
             }
-            fallbackVideo != null && fallbackVideo.exists() -> {
-                VideoFileThumbnail(file = fallbackVideo, modifier = Modifier.fillMaxSize())
+            fallbackVideos.isNotEmpty() -> {
+                PlaylistVideoCoverThumbnail(
+                    files = fallbackVideos,
+                    modifier = Modifier.fillMaxSize(),
+                )
             }
             else -> {
                 Box(
@@ -128,7 +132,8 @@ fun PlaylistCoverArt(
 fun PlaylistLookCard(
     playlist: UserMediaPlaylist,
     fileCount: Int,
-    fallbackVideo: File?,
+    fallbackVideo: File? = null,
+    fallbackVideos: List<File> = fallbackVideo?.let { listOf(it) }.orEmpty(),
     onClick: () -> Unit,
     trailing: @Composable () -> Unit,
 ) {
@@ -141,7 +146,7 @@ fun PlaylistLookCard(
     ) {
         PlaylistCoverArt(
             playlist = playlist,
-            fallbackVideo = fallbackVideo,
+            fallbackVideos = fallbackVideos,
             modifier = Modifier.fillMaxSize(),
         )
         Row(

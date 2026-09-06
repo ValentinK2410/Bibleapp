@@ -38,12 +38,35 @@ fun VideoFileThumbnail(
     LaunchedEffect(file.absolutePath, file.lastModified(), file.length()) {
         var frame = withContext(Dispatchers.IO) { VideoThumbnailLoader.load(file) }
         if (frame == null && file.exists() && file.length() > 64) {
-            // После очереди MMR иногда помогает повтор через паузу.
             delay(350)
             frame = withContext(Dispatchers.IO) { VideoThumbnailLoader.load(file) }
         }
         bmp = frame
     }
+    VideoThumbnailBitmapBox(bmp = bmp, modifier = modifier)
+}
+
+/** Обложка плейлиста: перебирает ролики, пока не найдёт декодируемый кадр. */
+@Composable
+fun PlaylistVideoCoverThumbnail(
+    files: List<File>,
+    modifier: Modifier = Modifier,
+) {
+    val keys = remember(files) {
+        files.joinToString("|") { "${it.absolutePath}:${it.lastModified()}:${it.length()}" }
+    }
+    var bmp by remember(keys) { mutableStateOf<Bitmap?>(null) }
+    LaunchedEffect(keys) {
+        bmp = withContext(Dispatchers.IO) { VideoThumbnailLoader.loadFirstAvailable(files) }
+    }
+    VideoThumbnailBitmapBox(bmp = bmp, modifier = modifier)
+}
+
+@Composable
+private fun VideoThumbnailBitmapBox(
+    bmp: Bitmap?,
+    modifier: Modifier = Modifier,
+) {
     Box(
         modifier = modifier.background(MaterialTheme.colorScheme.surfaceVariant),
         contentAlignment = Alignment.Center,

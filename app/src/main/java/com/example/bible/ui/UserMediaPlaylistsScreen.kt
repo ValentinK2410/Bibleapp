@@ -281,18 +281,18 @@ fun UserMediaPlaylistsListScreen(
                 verticalArrangement = Arrangement.spacedBy(10.dp),
             ) {
                 items(playlists, key = { it.id }) { pl ->
-                    val fallbackVideo = remember(pl.itemIds, videos) {
-                        pl.itemIds.firstNotNullOfOrNull { id ->
+                    val fallbackVideos = remember(pl.itemIds, videos) {
+                        pl.itemIds.mapNotNull { id ->
                             videos.firstOrNull { it.id == id }?.let { v ->
                                 MediaCatalogPaths.videoFile(context, v.fileName)
-                                    .takeIf { it.exists() }
+                                    .takeIf { it.isFile && it.length() > 64 }
                             }
-                        }
+                        }.take(8)
                     }
                     PlaylistLookCard(
                         playlist = pl,
                         fileCount = pl.itemIds.size,
-                        fallbackVideo = fallbackVideo,
+                        fallbackVideos = fallbackVideos,
                         onClick = { onOpenPlaylist(pl.id) },
                         trailing = {
                             Box {
@@ -688,16 +688,17 @@ fun UserMediaPlaylistDetailScreen(
                 .padding(padding)
                 .fillMaxSize(),
         ) {
-            val heroFallback = remember(playlist.itemIds, videos) {
-                playlist.itemIds.firstNotNullOfOrNull { id ->
+            val heroFallbackVideos = remember(playlist.itemIds, videos) {
+                playlist.itemIds.mapNotNull { id ->
                     videoById[id]?.let { v ->
-                        MediaCatalogPaths.videoFile(context, v.fileName).takeIf { it.exists() }
+                        MediaCatalogPaths.videoFile(context, v.fileName)
+                            .takeIf { it.isFile && it.length() > 64 }
                     }
-                }
+                }.take(8)
             }
             PlaylistCoverArt(
                 playlist = playlist,
-                fallbackVideo = heroFallback,
+                fallbackVideos = heroFallbackVideos,
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(horizontal = 12.dp, vertical = 8.dp)
