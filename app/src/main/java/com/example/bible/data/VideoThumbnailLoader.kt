@@ -9,11 +9,16 @@ import android.os.CancellationSignal
 import android.provider.MediaStore
 import android.util.Size
 import java.io.File
+import java.io.FileInputStream
 import java.io.FileOutputStream
+import java.util.concurrent.Semaphore
 
 /** Кадр-превью видео: не берёт чёрный интро с 0:00, кэширует JPEG рядом с файлом. */
 object VideoThumbnailLoader {
     private const val MAX_MEMORY = 48
+    /** MediaMetadataRetriever на части устройств «сыпется», если открыть много файлов сразу (плейлист). */
+    private val loadSemaphore = Semaphore(2)
+
     private val memory = object : LinkedHashMap<String, Bitmap>(MAX_MEMORY, 0.75f, true) {
         override fun removeEldestEntry(eldest: MutableMap.MutableEntry<String, Bitmap>?): Boolean =
             size > MAX_MEMORY
@@ -21,6 +26,7 @@ object VideoThumbnailLoader {
 
     /** Микросекунды: после чёрного интро у лекций кадр часто ближе к 5–20 с. */
     private val probeTimesUs = longArrayOf(
+        500_000L,
         1_000_000L,
         2_000_000L,
         3_000_000L,
@@ -28,21 +34,34 @@ object VideoThumbnailLoader {
         8_000_000L,
         12_000_000L,
         20_000_000L,
-        500_000L,
+        30_000_000L,
+        45_000_000L,
+        60_000_000L,
     )
 
     fun load(file: File): Bitmap? {
         if (!file.exists() || file.length() < 64) return null
+        loadSemaphore.acquire()
+        try {
+            return loadUnlocked(file)
+        } finally {
+            loadSemaphore.release()
+        }
+    }
+
+    private fun loadUnlocked(file: File): Bitmap? {
         val key = "${file.absolutePath}:${file.lastModified()}:${file.length()}"
         synchronized(memory) {
             memory[key]?.let { return it }
         }
         val cacheFile = cacheFileFor(file)
         if (cacheFile.exists() && cacheFile.lastModified() >= file.lastModified() && cacheFile.length() > 64) {
-            BitmapFactory.decodeFile(cacheFile.absolutePath)?.ensureSoftware()?.takeIf { !it.isMostlyBlack() }?.let { cached ->
+            val cached = BitmapFactory.decodeFile(cacheFile.absolutePath)?.ensureSoftware()
+            if (cached != null && !cached.isMostlyBlack()) {
                 putMemory(key, cached)
                 return cached
             }
+            cacheFile.delete()
         }
         val extracted = extractUsableFrame(file)?.ensureSoftware() ?: return null
         putMemory(key, extracted)
@@ -78,9 +97,7 @@ object VideoThumbnailLoader {
 
         consider(extractViaThumbnailUtils(file))
 
-        val retriever = MediaMetadataRetriever()
-        try {
-            retriever.setDataSource(file.absolutePath)
+        withRetriever(file) { retriever ->
             retriever.embeddedPicture?.let { bytes ->
                 consider(BitmapFactory.decodeByteArray(bytes, 0, bytes.size))
             }
@@ -91,17 +108,61 @@ object VideoThumbnailLoader {
                 addAll(probeTimesUs.toList())
                 if (durationMs > 6_000L) add((durationMs / 4L) * 1000L)
                 if (durationMs > 2_000L) add((durationMs / 2L) * 1000L)
+                if (durationMs > 120_000L) add(90_000_000L)
+                if (durationMs > 180_000L) add(120_000_000L)
             }.distinct().filter { durationMs <= 0L || it <= durationMs * 1000L }
             for (timeUs in times) {
                 consider(frameAt(retriever, timeUs))
                 if (bestScore >= 40) break
             }
+        }
+
+        if (bestScore >= 8) return best
+        return extractLastResort(file) ?: best
+    }
+
+    /** Любой декодируемый кадр — лучше серого прямоугольника. */
+    private fun extractLastResort(file: File): Bitmap? {
+        extractViaThumbnailUtils(file)?.let { return it }
+        return withRetriever(file) { retriever ->
+            val durationMs = retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_DURATION)
+                ?.toLongOrNull()
+                ?: 0L
+            val timesUs = listOf(
+                3_000_000L,
+                10_000_000L,
+                30_000_000L,
+                60_000_000L,
+                0L,
+            ).filter { durationMs <= 0L || it <= durationMs * 1000L }
+            for (timeUs in timesUs) {
+                frameAtSync(retriever, timeUs)?.let { return@withRetriever it }
+                frameAtUnscaled(retriever, timeUs)?.let { return@withRetriever it }
+            }
+            null
+        }
+    }
+
+    private inline fun <T> withRetriever(file: File, block: (MediaMetadataRetriever) -> T): T? {
+        val retriever = openRetriever(file) ?: return null
+        return try {
+            block(retriever)
         } catch (_: Exception) {
-            consider(extractViaThumbnailUtils(file))
+            null
         } finally {
             runCatching { retriever.release() }
         }
-        return best?.takeIf { bestScore >= 16 }
+    }
+
+    private fun openRetriever(file: File): MediaMetadataRetriever? {
+        runCatching {
+            MediaMetadataRetriever().apply { setDataSource(file.absolutePath) }
+        }.getOrNull()?.let { return it }
+        return runCatching {
+            MediaMetadataRetriever().apply {
+                FileInputStream(file).use { fis -> setDataSource(fis.fd) }
+            }
+        }.getOrNull()
     }
 
     private fun frameAt(retriever: MediaMetadataRetriever, timeUs: Long): Bitmap? = try {
@@ -115,6 +176,18 @@ object VideoThumbnailLoader {
         } else {
             retriever.getFrameAtTime(timeUs, MediaMetadataRetriever.OPTION_CLOSEST)
         }
+    } catch (_: Exception) {
+        frameAtUnscaled(retriever, timeUs)
+    }
+
+    private fun frameAtSync(retriever: MediaMetadataRetriever, timeUs: Long): Bitmap? = try {
+        retriever.getFrameAtTime(timeUs, MediaMetadataRetriever.OPTION_CLOSEST_SYNC)
+    } catch (_: Exception) {
+        null
+    }
+
+    private fun frameAtUnscaled(retriever: MediaMetadataRetriever, timeUs: Long): Bitmap? = try {
+        retriever.getFrameAtTime(timeUs, MediaMetadataRetriever.OPTION_CLOSEST)
     } catch (_: Exception) {
         null
     }
@@ -173,5 +246,5 @@ object VideoThumbnailLoader {
         }
     }
 
-    private fun Bitmap.isMostlyBlack(): Boolean = averageLuminance() < 16
+    private fun Bitmap.isMostlyBlack(): Boolean = averageLuminance() < 8
 }
