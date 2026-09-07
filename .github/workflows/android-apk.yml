@@ -16,6 +16,8 @@ jobs:
       - name: Free disk space
         run: |
           sudo rm -rf /usr/share/dotnet /opt/ghc /usr/local/lib/android/sdk/ndk || true
+          sudo rm -rf "$ANDROID_HOME"/system-images "$ANDROID_HOME"/emulator || true
+          sudo apt-get clean || true
           df -h
 
       - name: Checkout
@@ -46,6 +48,7 @@ jobs:
       - name: Build release APK
         env:
           CI: "true"
+          GRADLE_OPTS: "-Xmx6g -Dorg.gradle.daemon=false"
         run: ./gradlew :app:assembleRelease --no-daemon --stacktrace
 
       - name: Prepare downloadable APK
