@@ -58,13 +58,13 @@
 
 | План чтения | Родословная | Карты |
 |:---:|:---:|:---:|
-| *(скоро)* | *(скоро)* | *(скоро)* |
+| ![План чтения](docs/screenshots/17-reading-plan.jpg) | ![Родословная](docs/screenshots/18-genealogy.jpg) | ![Карты](docs/screenshots/19-maps.jpg) |
 
 ### Другие тексты
 
 | Другие книги | Коран |
 |:---:|:---:|
-| *(скоро)* | *(скоро)* |
+| ![Другие книги](docs/screenshots/20-other-books.jpg) | ![Коран](docs/screenshots/21-quran.jpg) |
 
 ---
 

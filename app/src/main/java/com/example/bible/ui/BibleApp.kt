@@ -3,6 +3,8 @@ package com.example.bible.ui
 import android.Manifest
 import android.content.Intent
 import android.content.pm.PackageManager
+import android.util.Log
+import com.example.bible.BuildConfig
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
@@ -591,7 +593,15 @@ private fun BibleNavHost(
             navController.navigate(route) {
                 launchSingleTop = true
             }
+            if (BuildConfig.DEBUG) {
+                Log.i("BibleScreenshot", "route_navigated:$route")
+            }
             onStartRouteConsumed()
+        }
+    }
+    LaunchedEffect(Unit) {
+        if (BuildConfig.DEBUG) {
+            Log.i("BibleScreenshot", "bible_ready")
         }
     }
     val translation by viewModel.selectedTranslation.collectAsStateWithLifecycle()

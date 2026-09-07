@@ -7,6 +7,9 @@ OUT="$ROOT/docs/screenshots"
 ADB="${ADB:-$HOME/Library/Android/sdk/platform-tools/adb}"
 PKG="com.example.bible.sqlite"
 ACTIVITY="com.example.bible.sqlite/com.example.bible.MainActivity"
+LOG_TAG="BibleScreenshot"
+WAIT_READY_SEC="${WAIT_READY_SEC:-120}"
+WAIT_ROUTE_SEC="${WAIT_ROUTE_SEC:-8}"
 
 if ! "$ADB" get-state >/dev/null 2>&1; then
   echo "Устройство не найдено. Подключите телефон с USB-отладкой." >&2
@@ -15,14 +18,36 @@ fi
 
 mkdir -p "$OUT"
 
+wait_for_log() {
+  local pattern="$1"
+  local timeout="$2"
+  local start
+  start=$(date +%s)
+  while true; do
+    if "$ADB" logcat -d -s "${LOG_TAG}:I" 2>/dev/null | grep -q "$pattern"; then
+      return 0
+    fi
+    if (( $(date +%s) - start >= timeout )); then
+      echo "Таймаут ожидания: $pattern" >&2
+      return 1
+    fi
+    sleep 1
+  done
+}
+
 capture() {
   local route="$1"
   local file="$2"
   echo "→ $file ($route)"
+  "$ADB" logcat -c >/dev/null 2>&1 || true
   "$ADB" shell am force-stop "$PKG" >/dev/null 2>&1 || true
   sleep 1
   "$ADB" shell am start -n "$ACTIVITY" -e start_route "$route" >/dev/null
-  sleep 3
+  wait_for_log "bible_ready" "$WAIT_READY_SEC"
+  if [[ "$route" != "books" ]]; then
+    wait_for_log "route_navigated:$route" "$WAIT_ROUTE_SEC" || sleep "$WAIT_ROUTE_SEC"
+  fi
+  sleep 2
   "$ADB" exec-out screencap -p > "$OUT/$file"
 }
 
