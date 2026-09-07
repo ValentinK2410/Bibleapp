@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
 # Снимки экранов для README на GitHub. Нужен подключённый телефон и установленный debug APK.
+# Важно: запускать только последовательно (не параллельно — adb и force-stop конфликтуют).
 set -euo pipefail
 
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
@@ -74,5 +75,18 @@ capture "genealogy" "18-genealogy.png"
 capture "maps" "19-maps.png"
 capture "other_books" "20-other-books.png"
 capture "quran/1" "21-quran.png"
+capture "dual?bookId=genesis&chapter=1" "22-dual-compare.png"
+capture "history" "23-history.png"
+capture "language_study" "24-language-study.png"
+capture "strongs" "25-strongs.png"
+capture "media_microblog" "26-microblog.png"
+capture "media_musician" "27-musician.png"
+capture "my_travels" "28-travels.png"
+capture "app_contacts" "29-contacts.png"
+capture "backup" "30-backup.png"
+capture "kids_games" "31-kids-games.png"
+capture "timemark_editor?bookId=genesis&chapter=1&translationCode=SYN&narratorId=bondarenko" "32-timemark.png"
+capture "offline_download" "33-offline-study.png"
+capture "interlinear_hebrew_sandbox/genesis/1/1/0" "34-interlinear-sandbox.png"
 
 echo "Готово: $OUT"
