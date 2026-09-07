@@ -16,12 +16,23 @@ android {
     namespace = "com.example.bible"
     compileSdk = 36
 
+    signingConfigs {
+        // Отдельный конфиг (не debug): иначе release помечается testOnly и не ставится с файла.
+        create("release") {
+            val keystore = File(System.getProperty("user.home"), ".android/debug.keystore")
+            storeFile = keystore
+            storePassword = "android"
+            keyAlias = "androiddebugkey"
+            keyPassword = "android"
+        }
+    }
+
     defaultConfig {
         applicationId = "com.example.bible.sqlite"
         minSdk = 30
         targetSdk = 36
-        versionCode = 1
-        versionName = "1.0"
+        versionCode = 3
+        versionName = "1.3"
 
         val mapkitKey = localProperties.getProperty("MAPKIT_API_KEY", "")
         buildConfigField("String", "MAPKIT_API_KEY", "\"${mapkitKey.replace("\"", "\\\"")}\"")
@@ -36,14 +47,15 @@ android {
     buildTypes {
         release {
             isMinifyEnabled = false
+            isDebuggable = false
+            signingConfig = signingConfigs.getByName("release")
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
             )
-            // GitHub Actions: подписанный APK, который можно сразу установить.
-            if (System.getenv("CI") == "true") {
-                signingConfig = signingConfigs.getByName("debug")
-            }
+        }
+        debug {
+            isDebuggable = true
         }
     }
     compileOptions {

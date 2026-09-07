@@ -252,6 +252,8 @@ private fun HoistedMimicFaceOverlay(
 fun BibleApp(
     repository: BibleRepository,
     preferences: BiblePreferences,
+    startRoute: String? = null,
+    onStartRouteConsumed: () -> Unit = {},
 ) {
     val context = LocalContext.current
     val viewModel: BibleViewModel = viewModel(
@@ -447,6 +449,8 @@ fun BibleApp(
                     onToggleMimicControl = { viewModel.toggleMimicControl() },
                     onToggleMimicVelocityVector = { viewModel.toggleMimicVelocityVectorVisible() },
                     preferences = preferences,
+                    startRoute = startRoute,
+                    onStartRouteConsumed = onStartRouteConsumed,
                 )
             }
             if (mimicControlOn && mimicCamGranted && state is BibleLoadState.Ready && mimicFaceOverlayOn) {
@@ -579,7 +583,18 @@ private fun BibleNavHost(
     onToggleMimicControl: () -> Unit,
     onToggleMimicVelocityVector: () -> Unit,
     preferences: BiblePreferences,
+    startRoute: String? = null,
+    onStartRouteConsumed: () -> Unit = {},
 ) {
+    LaunchedEffect(startRoute) {
+        val route = startRoute?.trim().orEmpty()
+        if (route.isNotEmpty()) {
+            navController.navigate(route) {
+                launchSingleTop = true
+            }
+            onStartRouteConsumed()
+        }
+    }
     val translation by viewModel.selectedTranslation.collectAsStateWithLifecycle()
     val translationTabColors by viewModel.translationTabColors.collectAsStateWithLifecycle()
     val bookmarkKeys by viewModel.bookmarkKeys.collectAsStateWithLifecycle()

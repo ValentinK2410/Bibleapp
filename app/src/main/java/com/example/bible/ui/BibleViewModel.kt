@@ -2923,29 +2923,30 @@ class BibleViewModel(
 
     fun updateUserMediaPlaylistLook(playlistId: String, lookId: String) {
         viewModelScope.launch {
-            val pl = userMediaPlaylists.value.firstOrNull { it.id == playlistId } ?: return@launch
-            preferences.saveUserMediaPlaylist(pl.copy(lookId = lookId))
+            preferences.patchUserMediaPlaylist(playlistId) { it.copy(lookId = lookId) }
         }
     }
 
     fun updateUserMediaPlaylistSubtitle(playlistId: String, subtitle: String) {
         viewModelScope.launch {
-            val pl = userMediaPlaylists.value.firstOrNull { it.id == playlistId } ?: return@launch
-            preferences.saveUserMediaPlaylist(pl.copy(subtitle = subtitle.trim()))
+            preferences.patchUserMediaPlaylist(playlistId) { it.copy(subtitle = subtitle.trim()) }
         }
     }
 
     fun setUserMediaPlaylistCoverFromUri(playlistId: String, uri: Uri, onDone: (String) -> Unit) {
         viewModelScope.launch {
-            val pl = userMediaPlaylists.value.firstOrNull { it.id == playlistId } ?: return@launch
             val result = PlaylistCoverStore.importFromUri(appContext, playlistId, uri)
             result.fold(
                 onSuccess = { name ->
-                    if (pl.coverFileName.isNotBlank() && pl.coverFileName != name) {
-                        PlaylistCoverStore.delete(appContext, pl.coverFileName)
+                    val oldCover = userMediaPlaylists.value
+                        .firstOrNull { it.id == playlistId }
+                        ?.coverFileName
+                        .orEmpty()
+                    if (oldCover.isNotBlank() && oldCover != name) {
+                        PlaylistCoverStore.delete(appContext, oldCover)
                     }
-                    preferences.saveUserMediaPlaylist(pl.copy(coverFileName = name))
-                    onDone("Обложка сохранена")
+                    val ok = preferences.patchUserMediaPlaylist(playlistId) { it.copy(coverFileName = name) }
+                    onDone(if (ok) "Обложка сохранена" else "Плейлист не найден")
                 },
                 onFailure = { onDone(it.message ?: "Не удалось сохранить обложку") },
             )
@@ -2954,16 +2955,19 @@ class BibleViewModel(
 
     fun setUserMediaPlaylistCoverFromVideo(playlistId: String, videoFileName: String, onDone: (String) -> Unit) {
         viewModelScope.launch {
-            val pl = userMediaPlaylists.value.firstOrNull { it.id == playlistId } ?: return@launch
             val file = MediaCatalogPaths.videoFile(appContext, videoFileName)
             val result = PlaylistCoverStore.importFromVideo(appContext, playlistId, file)
             result.fold(
                 onSuccess = { name ->
-                    if (pl.coverFileName.isNotBlank() && pl.coverFileName != name) {
-                        PlaylistCoverStore.delete(appContext, pl.coverFileName)
+                    val oldCover = userMediaPlaylists.value
+                        .firstOrNull { it.id == playlistId }
+                        ?.coverFileName
+                        .orEmpty()
+                    if (oldCover.isNotBlank() && oldCover != name) {
+                        PlaylistCoverStore.delete(appContext, oldCover)
                     }
-                    preferences.saveUserMediaPlaylist(pl.copy(coverFileName = name))
-                    onDone("Кадр стал обложкой")
+                    val ok = preferences.patchUserMediaPlaylist(playlistId) { it.copy(coverFileName = name) }
+                    onDone(if (ok) "Кадр стал обложкой" else "Плейлист не найден")
                 },
                 onFailure = { onDone(it.message ?: "Не удалось взять кадр") },
             )
@@ -2972,9 +2976,11 @@ class BibleViewModel(
 
     fun clearUserMediaPlaylistCover(playlistId: String) {
         viewModelScope.launch {
-            val pl = userMediaPlaylists.value.firstOrNull { it.id == playlistId } ?: return@launch
-            PlaylistCoverStore.delete(appContext, pl.coverFileName)
-            preferences.saveUserMediaPlaylist(pl.copy(coverFileName = ""))
+            val oldCover = userMediaPlaylists.value
+                .firstOrNull { it.id == playlistId }
+                ?.coverFileName
+            PlaylistCoverStore.delete(appContext, oldCover)
+            preferences.patchUserMediaPlaylist(playlistId) { it.copy(coverFileName = "") }
         }
     }
 

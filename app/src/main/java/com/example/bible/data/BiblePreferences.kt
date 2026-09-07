@@ -135,6 +135,15 @@ private object Keys {
     val TTS_ENGINE_PACKAGE = stringPreferencesKey("tts_engine_package")
     /** Подбирать максимальное качество голоса для языка, если движок отдаёт несколько. */
     val TTS_PREFER_HQ = booleanPreferencesKey("tts_prefer_hq_voice")
+    /** Имя голоса TTS для ответов ИИ; пусто — авто. */
+    val AI_CHAT_TTS_VOICE = stringPreferencesKey("ai_chat_tts_voice")
+    /** Интонация озвучки ответов ИИ: calm, normal, joyful, bold, whisper. */
+    val AI_CHAT_TTS_INTONATION = stringPreferencesKey("ai_chat_tts_intonation")
+    /** Движок озвучки ИИ: neural (SaluteSpeech) или system (TTS телефона). */
+    val AI_CHAT_TTS_ENGINE = stringPreferencesKey("ai_chat_tts_engine")
+    /** Ключ SaluteSpeech (Authorization Key из Studio); пусто — пробуем ключ GigaChat. */
+    val SALUTE_SPEECH_AUTH_KEY = stringPreferencesKey("salute_speech_auth_key")
+    val SALUTE_SPEECH_SCOPE = stringPreferencesKey("salute_speech_scope")
     /** Последнее место чтения Библии или редактора заметки для возобновления после выхода из приложения. */
     val LAST_SESSION_RESUME_JSON = stringPreferencesKey("last_session_resume_json")
 }
@@ -546,6 +555,51 @@ class BiblePreferences(
 
     suspend fun setTtsPreferHighQuality(prefer: Boolean) {
         appContext.bibleDataStore.edit { it[Keys.TTS_PREFER_HQ] = prefer }
+    }
+
+    val aiChatTtsVoice: Flow<String> = appContext.bibleDataStore.data.map { prefs ->
+        prefs[Keys.AI_CHAT_TTS_VOICE] ?: ""
+    }
+
+    val aiChatTtsIntonation: Flow<String> = appContext.bibleDataStore.data.map { prefs ->
+        prefs[Keys.AI_CHAT_TTS_INTONATION] ?: AiChatTtsIntonation.NORMAL.key
+    }
+
+    val aiChatTtsEngine: Flow<String> = appContext.bibleDataStore.data.map { prefs ->
+        prefs[Keys.AI_CHAT_TTS_ENGINE] ?: AiChatTtsEngine.NEURAL.key
+    }
+
+    val saluteSpeechAuthKey: Flow<String> = appContext.bibleDataStore.data.map { prefs ->
+        prefs[Keys.SALUTE_SPEECH_AUTH_KEY]?.trim().orEmpty()
+    }
+
+    val saluteSpeechScope: Flow<String> = appContext.bibleDataStore.data.map { prefs ->
+        prefs[Keys.SALUTE_SPEECH_SCOPE]?.trim().orEmpty().ifBlank { SaluteSpeechClient.SCOPE_PERS }
+    }
+
+    suspend fun setAiChatTtsVoice(name: String) {
+        appContext.bibleDataStore.edit { it[Keys.AI_CHAT_TTS_VOICE] = name.trim() }
+    }
+
+    suspend fun setAiChatTtsIntonation(intonation: AiChatTtsIntonation) {
+        appContext.bibleDataStore.edit { it[Keys.AI_CHAT_TTS_INTONATION] = intonation.key }
+    }
+
+    suspend fun setAiChatTtsEngine(engine: AiChatTtsEngine) {
+        appContext.bibleDataStore.edit { it[Keys.AI_CHAT_TTS_ENGINE] = engine.key }
+    }
+
+    suspend fun setSaluteSpeechAuthKey(raw: String) {
+        val trimmed = raw.trim()
+        appContext.bibleDataStore.edit {
+            if (trimmed.isEmpty()) it.remove(Keys.SALUTE_SPEECH_AUTH_KEY)
+            else it[Keys.SALUTE_SPEECH_AUTH_KEY] = trimmed
+        }
+    }
+
+    suspend fun setSaluteSpeechScope(scope: String) {
+        val normalized = scope.trim().ifBlank { SaluteSpeechClient.SCOPE_PERS }
+        appContext.bibleDataStore.edit { it[Keys.SALUTE_SPEECH_SCOPE] = normalized }
     }
 
     val textHighlights: Flow<List<TextHighlight>> = appContext.bibleDataStore.data.map { prefs ->
@@ -1241,6 +1295,23 @@ class BiblePreferences(
             if (ix >= 0) cur[ix] = stamped else cur.add(0, stamped)
             prefs[Keys.USER_MEDIA_PLAYLISTS_JSON] = UserMediaPlaylist.toJsonArray(cur)
         }
+    }
+
+    /** Атомарное обновление полей плейлиста без перезаписи свежих изменений из устаревшего снимка. */
+    suspend fun patchUserMediaPlaylist(
+        playlistId: String,
+        transform: (UserMediaPlaylist) -> UserMediaPlaylist,
+    ): Boolean {
+        var updated = false
+        appContext.bibleDataStore.edit { prefs ->
+            val cur = UserMediaPlaylist.parseList(prefs[Keys.USER_MEDIA_PLAYLISTS_JSON].orEmpty()).toMutableList()
+            val ix = cur.indexOfFirst { it.id == playlistId }
+            if (ix < 0) return@edit
+            cur[ix] = transform(cur[ix]).copy(updatedAt = System.currentTimeMillis())
+            prefs[Keys.USER_MEDIA_PLAYLISTS_JSON] = UserMediaPlaylist.toJsonArray(cur)
+            updated = true
+        }
+        return updated
     }
 
     suspend fun deleteUserMediaPlaylist(id: String) {

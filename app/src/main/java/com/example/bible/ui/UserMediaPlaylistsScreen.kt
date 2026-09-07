@@ -260,18 +260,9 @@ fun UserMediaPlaylistsListScreen(
                 verticalArrangement = Arrangement.spacedBy(10.dp),
             ) {
                 items(playlists, key = { it.id }) { pl ->
-                    val fallbackVideos = remember(pl.itemIds, videos) {
-                        pl.itemIds.mapNotNull { id ->
-                            videos.firstOrNull { it.id == id }?.let { v ->
-                                MediaCatalogPaths.videoFile(context, v.fileName)
-                                    .takeIf { it.isFile && it.length() > 64 }
-                            }
-                        }.take(8)
-                    }
                     PlaylistLookCard(
                         playlist = pl,
                         fileCount = pl.itemIds.size,
-                        fallbackVideos = fallbackVideos,
                         onClick = { onOpenPlaylist(pl.id) },
                         trailing = {
                             Box {
@@ -379,7 +370,7 @@ fun UserMediaPlaylistsListScreen(
             playlist = playlists.firstOrNull { it.id == pl.id } ?: pl,
             videos = videos,
             onLook = { viewModel.updateUserMediaPlaylistLook(pl.id, it) },
-            onSubtitle = { viewModel.updateUserMediaPlaylistSubtitle(pl.id, it) },
+            onSubtitleCommit = { viewModel.updateUserMediaPlaylistSubtitle(pl.id, it) },
             onCoverFromUri = { uri ->
                 viewModel.setUserMediaPlaylistCoverFromUri(pl.id, uri) { msg ->
                     Toast.makeText(context, msg, Toast.LENGTH_SHORT).show()
@@ -667,17 +658,8 @@ fun UserMediaPlaylistDetailScreen(
                 .padding(padding)
                 .fillMaxSize(),
         ) {
-            val heroFallbackVideos = remember(playlist.itemIds, videos) {
-                playlist.itemIds.mapNotNull { id ->
-                    videoById[id]?.let { v ->
-                        MediaCatalogPaths.videoFile(context, v.fileName)
-                            .takeIf { it.isFile && it.length() > 64 }
-                    }
-                }.take(8)
-            }
             PlaylistCoverArt(
                 playlist = playlist,
-                fallbackVideos = heroFallbackVideos,
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(horizontal = 12.dp, vertical = 8.dp)
@@ -1099,7 +1081,7 @@ fun UserMediaPlaylistDetailScreen(
             playlist = playlist,
             videos = videos,
             onLook = { viewModel.updateUserMediaPlaylistLook(playlistId, it) },
-            onSubtitle = { viewModel.updateUserMediaPlaylistSubtitle(playlistId, it) },
+            onSubtitleCommit = { viewModel.updateUserMediaPlaylistSubtitle(playlistId, it) },
             onCoverFromUri = { uri ->
                 viewModel.setUserMediaPlaylistCoverFromUri(playlistId, uri) { msg ->
                     Toast.makeText(context, msg, Toast.LENGTH_SHORT).show()

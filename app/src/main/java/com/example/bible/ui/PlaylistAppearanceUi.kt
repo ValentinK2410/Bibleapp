@@ -68,30 +68,25 @@ fun PlaylistLook.brush(): Brush = Brush.linearGradient(
 @Composable
 fun PlaylistCoverArt(
     playlist: UserMediaPlaylist,
-    fallbackVideo: File? = null,
-    fallbackVideos: List<File> = fallbackVideo?.let { listOf(it) }.orEmpty(),
     modifier: Modifier = Modifier,
 ) {
     val context = LocalContext.current
-    val cover = remember(playlist.coverFileName, playlist.id) {
+    val coverFile = remember(playlist.coverFileName, playlist.id) {
         playlist.coverFileName.takeIf { it.isNotBlank() }
             ?.let { MediaCatalogPaths.playlistCoverFile(context, it) }
             ?.takeIf { it.exists() && it.length() > 0L }
     }
+    val coverModel = remember(coverFile?.absolutePath, coverFile?.lastModified(), playlist.coverFileName) {
+        coverFile
+    }
     Box(modifier.clip(RoundedCornerShape(18.dp))) {
         when {
-            cover != null -> {
+            coverModel != null -> {
                 AsyncImage(
-                    model = cover,
+                    model = coverModel,
                     contentDescription = null,
                     modifier = Modifier.fillMaxSize(),
                     contentScale = ContentScale.Crop,
-                )
-            }
-            fallbackVideos.isNotEmpty() -> {
-                PlaylistVideoCoverThumbnail(
-                    files = fallbackVideos,
-                    modifier = Modifier.fillMaxSize(),
                 )
             }
             else -> {
@@ -132,8 +127,6 @@ fun PlaylistCoverArt(
 fun PlaylistLookCard(
     playlist: UserMediaPlaylist,
     fileCount: Int,
-    fallbackVideo: File? = null,
-    fallbackVideos: List<File> = fallbackVideo?.let { listOf(it) }.orEmpty(),
     onClick: () -> Unit,
     trailing: @Composable () -> Unit,
 ) {
@@ -146,7 +139,6 @@ fun PlaylistLookCard(
     ) {
         PlaylistCoverArt(
             playlist = playlist,
-            fallbackVideos = fallbackVideos,
             modifier = Modifier.fillMaxSize(),
         )
         Row(
@@ -190,7 +182,7 @@ fun PlaylistAppearanceSheet(
     playlist: UserMediaPlaylist,
     videos: List<BibleUserVideo>,
     onLook: (String) -> Unit,
-    onSubtitle: (String) -> Unit,
+    onSubtitleCommit: (String) -> Unit,
     onCoverFromUri: (android.net.Uri) -> Unit,
     onCoverFromVideo: (String) -> Unit,
     onClearCover: () -> Unit,
@@ -215,9 +207,13 @@ fun PlaylistAppearanceSheet(
             }
         }
     }
-    val fallback = videoFiles.firstOrNull()?.second
 
-    ModalBottomSheet(onDismissRequest = onDismiss) {
+    fun finish() {
+        onSubtitleCommit(subtitleDraft)
+        onDismiss()
+    }
+
+    ModalBottomSheet(onDismissRequest = { finish() }) {
         Column(
             modifier = Modifier
                 .fillMaxWidth()
@@ -233,7 +229,6 @@ fun PlaylistAppearanceSheet(
             Spacer(Modifier.height(12.dp))
             PlaylistCoverArt(
                 playlist = playlist,
-                fallbackVideo = fallback,
                 modifier = Modifier
                     .fillMaxWidth()
                     .aspectRatio(16f / 9f),
@@ -241,10 +236,7 @@ fun PlaylistAppearanceSheet(
             Spacer(Modifier.height(14.dp))
             OutlinedTextField(
                 value = subtitleDraft,
-                onValueChange = {
-                    subtitleDraft = it
-                    onSubtitle(it)
-                },
+                onValueChange = { subtitleDraft = it },
                 label = { Text("Подзаголовок") },
                 placeholder = { Text("Например: лекции 2026") },
                 singleLine = true,
@@ -301,10 +293,10 @@ fun PlaylistAppearanceSheet(
                     tint = MaterialTheme.colorScheme.primary,
                 )
                 Spacer(Modifier.width(8.dp))
-                Text("Превью", style = MaterialTheme.typography.titleSmall)
+                Text("Обложка", style = MaterialTheme.typography.titleSmall)
             }
             Text(
-                "Своя картинка или кадр из видео. Если превью нет — видна выбранная тема.",
+                "Своя картинка или кадр из видео. Без обложки видна выбранная тема.",
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                 modifier = Modifier.padding(top = 4.dp, bottom = 8.dp),
@@ -363,7 +355,7 @@ fun PlaylistAppearanceSheet(
                     }
                 }
             }
-            TextButton(onClick = onDismiss, modifier = Modifier.align(Alignment.End)) {
+            TextButton(onClick = { finish() }, modifier = Modifier.align(Alignment.End)) {
                 Text("Готово")
             }
         }

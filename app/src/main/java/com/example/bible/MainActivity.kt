@@ -5,6 +5,7 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.compose.runtime.mutableStateOf
 import com.example.bible.data.BiblePreferences
 import com.example.bible.data.BibleRepository
 import com.example.bible.ui.BibleApp
@@ -12,14 +13,22 @@ import com.example.bible.ui.SharedMediaImportQueue
 import com.example.bible.ui.extractShareIntentUri
 
 class MainActivity : ComponentActivity() {
+    private val pendingStartRoute = mutableStateOf<String?>(null)
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         extractShareIntentUri(intent)?.let { SharedMediaImportQueue.offer(it) }
+        pendingStartRoute.value = intent.getStringExtra(EXTRA_START_ROUTE)
         val repository = BibleRepository(applicationContext)
         val preferences = BiblePreferences(applicationContext)
         setContent {
-            BibleApp(repository = repository, preferences = preferences)
+            BibleApp(
+                repository = repository,
+                preferences = preferences,
+                startRoute = pendingStartRoute.value,
+                onStartRouteConsumed = { pendingStartRoute.value = null },
+            )
         }
     }
 
@@ -27,5 +36,10 @@ class MainActivity : ComponentActivity() {
         super.onNewIntent(intent)
         setIntent(intent)
         extractShareIntentUri(intent)?.let { SharedMediaImportQueue.offer(it) }
+        pendingStartRoute.value = intent.getStringExtra(EXTRA_START_ROUTE)
+    }
+
+    companion object {
+        const val EXTRA_START_ROUTE = "start_route"
     }
 }

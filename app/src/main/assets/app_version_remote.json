@@ -1,6 +1,6 @@
 {
-  "versionCode": 2,
-  "versionName": "1.1",
+  "versionCode": 3,
+  "versionName": "1.3",
   "apkUrl": "https://github.com/ValentinK2410/Bibleapp/releases/latest/download/Bible.apk",
-  "notes": "Очередь загрузок с паузой, плеер как в YouTube, сортировка медиа и раздел «О программе»"
+  "notes": "Импорт плейлистов и медиа из мессенджера, GigaChat над стихами, исправлены обложка и тема плейлиста"
 }
