@@ -24,47 +24,47 @@
 
 | Книги и стих дня | Главы | Читалка |
 |:---:|:---:|:---:|
-| ![Книги](docs/screenshots/01-books.jpg) | ![Главы](docs/screenshots/02-chapters.jpg) | ![Читалка](docs/screenshots/03-reader.jpg) |
+| ![Книги](docs/screenshots/01-books.png) | ![Главы](docs/screenshots/02-chapters.png) | ![Читалка](docs/screenshots/03-reader.png) |
 
 ### Медиа
 
 | Каталог | Видео | Плейлисты |
 |:---:|:---:|:---:|
-| ![Медиа](docs/screenshots/04-media.jpg) | ![Видео](docs/screenshots/05-videos.jpg) | ![Плейлисты](docs/screenshots/06-playlists.jpg) |
+| ![Медиа](docs/screenshots/04-media.png) | ![Видео](docs/screenshots/05-videos.png) | ![Плейлисты](docs/screenshots/06-playlists.png) |
 
 | Аудио | Песнопение |
 |:---:|:---:|
-| ![Аудио](docs/screenshots/07-audios.jpg) | ![Песнопение](docs/screenshots/08-songs.jpg) |
+| ![Аудио](docs/screenshots/07-audios.png) | ![Песнопение](docs/screenshots/08-songs.png) |
 
 ### Детям и настройки
 
 | Детям | Настройки | О программе |
 |:---:|:---:|:---:|
-| ![Детям](docs/screenshots/09-kids.jpg) | ![Настройки](docs/screenshots/10-settings.jpg) | ![О программе](docs/screenshots/11-about.jpg) |
+| ![Детям](docs/screenshots/09-kids.png) | ![Настройки](docs/screenshots/10-settings.png) | ![О программе](docs/screenshots/11-about.png) |
 
 ### ИИ
 
 | DeepSeek | GigaChat |
 |:---:|:---:|
-| ![DeepSeek](docs/screenshots/12-ai-deepseek.jpg) | ![GigaChat](docs/screenshots/13-gigachat.jpg) |
+| ![DeepSeek](docs/screenshots/12-ai-deepseek.png) | ![GigaChat](docs/screenshots/13-gigachat.png) |
 
 ### Заметки и поиск
 
 | Заметки | Закладки | Поиск |
 |:---:|:---:|:---:|
-| ![Заметки](docs/screenshots/14-notes.jpg) | ![Закладки](docs/screenshots/15-bookmarks.jpg) | ![Поиск](docs/screenshots/16-search.jpg) |
+| ![Заметки](docs/screenshots/14-notes.png) | ![Закладки](docs/screenshots/15-bookmarks.png) | ![Поиск](docs/screenshots/16-search.png) |
 
 ### Изучение и карты
 
 | План чтения | Родословная | Карты |
 |:---:|:---:|:---:|
-| ![План чтения](docs/screenshots/17-reading-plan.jpg) | ![Родословная](docs/screenshots/18-genealogy.jpg) | ![Карты](docs/screenshots/19-maps.jpg) |
+| ![План чтения](docs/screenshots/17-reading-plan.png) | ![Родословная](docs/screenshots/18-genealogy.png) | ![Карты](docs/screenshots/19-maps.png) |
 
 ### Другие тексты
 
 | Другие книги | Коран |
 |:---:|:---:|
-| ![Другие книги](docs/screenshots/20-other-books.jpg) | ![Коран](docs/screenshots/21-quran.jpg) |
+| ![Другие книги](docs/screenshots/20-other-books.png) | ![Коран](docs/screenshots/21-quran.png) |
 
 ---
 
