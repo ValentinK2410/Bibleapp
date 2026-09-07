@@ -231,7 +231,6 @@ import androidx.compose.ui.window.Dialog
 import androidx.core.content.ContextCompat
 import com.example.bible.data.BibleAudioNarrators
 import com.example.bible.data.BibleAudioPlayer
-import com.example.bible.data.chapterCountForDownloadEntireBible
 import com.example.bible.data.TimemarkProject
 import com.example.bible.data.TimemarkStore
 import com.example.bible.data.timemarkPlaybackStartMs
@@ -657,8 +656,7 @@ private fun BibleNavHost(
             var showTextSizeDialog by remember { mutableStateOf(false) }
             var bookLayoutMode by remember { mutableStateOf(BookLayoutMode.GRID) }
             var showBookNarratorPicker by remember { mutableStateOf(false) }
-            var fullBibleDlConfirm by remember { mutableStateOf(false) }
-            var fullBibleProgress by remember { mutableStateOf<Triple<Int, Int, String>?>(null) }
+            var showBibleAudioDownloadSheet by remember { mutableStateOf(false) }
             var previewBook by remember { mutableStateOf<CanonBookEntry?>(null) }
             val bookPickerLongPressTts by viewModel.bookPickerLongPressTts.collectAsStateWithLifecycle()
             val bookNameTts = rememberVerseTextToSpeech(TranslationId.SYNODAL)
@@ -734,7 +732,7 @@ private fun BibleNavHost(
                                         tint = MaterialTheme.colorScheme.primary,
                                     )
                                 }
-                                IconButton(onClick = { fullBibleDlConfirm = true }) {
+                                IconButton(onClick = { showBibleAudioDownloadSheet = true }) {
                                     Icon(
                                         Icons.Filled.CloudDownload,
                                         contentDescription = stringResource(R.string.download_full_bible_audio),
@@ -863,70 +861,10 @@ private fun BibleNavHost(
                     onDismiss = { showBookNarratorPicker = false },
                 )
             }
-            if (fullBibleDlConfirm) {
-                val fullBibleNarrator = com.example.bible.data.narratorForTranslation(translation, narratorId)
-                AlertDialog(
-                    onDismissRequest = { fullBibleDlConfirm = false },
-                    title = {
-                        Text(
-                            when (fullBibleNarrator.id) {
-                                "hebrew-ot" -> stringResource(R.string.download_ot_hebrew_audio_title)
-                                "greek-nt" -> stringResource(R.string.download_nt_greek_audio_title)
-                                else -> stringResource(R.string.download_full_bible_audio)
-                            },
-                        )
-                    },
-                    text = {
-                        Text(
-                            when (fullBibleNarrator.id) {
-                                "hebrew-ot" -> stringResource(R.string.download_ot_hebrew_audio_confirm)
-                                "greek-nt" -> stringResource(R.string.download_nt_greek_audio_confirm)
-                                else -> stringResource(
-                                    R.string.download_full_bible_audio_confirm,
-                                    fullBibleNarrator.name,
-                                )
-                            },
-                        )
-                    },
-                    confirmButton = {
-                        TextButton(
-                            onClick = {
-                                fullBibleDlConfirm = false
-                                scope.launch {
-                                    try {
-                                        val totalCh = chapterCountForDownloadEntireBible(fullBibleNarrator)
-                                        fullBibleProgress = Triple(0, totalCh, "")
-                                        BibleAudioPlayer.downloadEntireBible(
-                                            booksScreenContext.applicationContext,
-                                            fullBibleNarrator,
-                                        ) { d, t, l ->
-                                            fullBibleProgress = Triple(d, t, l)
-                                        }
-                                        Toast.makeText(
-                                            booksScreenContext,
-                                            "Озвучка сохранена на устройстве",
-                                            Toast.LENGTH_LONG,
-                                        ).show()
-                                    } catch (e: Exception) {
-                                        Toast.makeText(
-                                            booksScreenContext,
-                                            e.message ?: "Ошибка загрузки",
-                                            Toast.LENGTH_LONG,
-                                        ).show()
-                                    } finally {
-                                        fullBibleProgress = null
-                                    }
-                                }
-                            },
-                        ) {
-                            Text("Начать")
-                        }
-                    },
-                    dismissButton = {
-                        TextButton(onClick = { fullBibleDlConfirm = false }) {
-                            Text("Отмена")
-                        }
-                    },
+            if (showBibleAudioDownloadSheet) {
+                BibleAudioDownloadPickerSheet(
+                    initialSelectedId = com.example.bible.data.narratorForTranslation(translation, narratorId).id,
+                    onDismiss = { showBibleAudioDownloadSheet = false },
                 )
             }
             if (showTextSizeDialog) {
@@ -934,49 +872,6 @@ private fun BibleNavHost(
                     viewModel = viewModel,
                     onDismiss = { showTextSizeDialog = false },
                 )
-            }
-            fullBibleProgress?.let { prog ->
-                val dlTitleNarrator = com.example.bible.data.narratorForTranslation(translation, narratorId)
-                Dialog(onDismissRequest = {}) {
-                    Card(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(16.dp),
-                        shape = androidx.compose.foundation.shape.RoundedCornerShape(16.dp),
-                    ) {
-                        Column(Modifier.padding(20.dp)) {
-                            Text(
-                                when (dlTitleNarrator.id) {
-                                    "hebrew-ot" -> stringResource(R.string.download_ot_hebrew_audio_title)
-                                    "greek-nt" -> stringResource(R.string.download_nt_greek_audio_title)
-                                    else -> stringResource(R.string.download_full_bible_audio)
-                                },
-                                style = MaterialTheme.typography.titleMedium,
-                                fontWeight = FontWeight.Bold,
-                            )
-                            Spacer(Modifier.height(12.dp))
-                            val (done, total, label) = prog
-                            LinearProgressIndicator(
-                                progress = {
-                                    if (total > 0) done.toFloat() / total else 0f
-                                },
-                                modifier = Modifier.fillMaxWidth(),
-                            )
-                            Spacer(Modifier.height(8.dp))
-                            Text(
-                                stringResource(R.string.download_full_bible_progress, done, total),
-                                style = MaterialTheme.typography.bodyMedium,
-                            )
-                            if (label.isNotBlank()) {
-                                Text(
-                                    label,
-                                    style = MaterialTheme.typography.bodySmall,
-                                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                                )
-                            }
-                        }
-                    }
-                }
             }
         }
         composable(

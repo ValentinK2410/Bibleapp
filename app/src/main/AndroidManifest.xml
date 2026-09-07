@@ -155,6 +155,10 @@
             android:exported="false"
             android:foregroundServiceType="mediaPlayback" />
         <service
+            android:name=".service.BibleAudioDownloadService"
+            android:exported="false"
+            android:foregroundServiceType="dataSync" />
+        <service
             android:name=".service.MediaDownloadService"
             android:exported="false"
             android:foregroundServiceType="dataSync" />
