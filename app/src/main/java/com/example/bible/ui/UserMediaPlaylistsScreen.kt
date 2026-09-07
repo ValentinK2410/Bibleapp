@@ -172,33 +172,7 @@ fun UserMediaPlaylistsListScreen(
     var styleTarget by remember { mutableStateOf<UserMediaPlaylist?>(null) }
     var busyMessage by remember { mutableStateOf<String?>(null) }
 
-    val importPlaylistLauncher = rememberLauncherForActivityResult(
-        contract = ActivityResultContracts.OpenDocument(),
-    ) { uri ->
-        if (uri == null) return@rememberLauncherForActivityResult
-        scope.launch {
-            val ext = playlistImportExtension(context, uri)
-            val tmp = File(context.cacheDir, "pl_import_${System.currentTimeMillis()}$ext")
-            try {
-                context.contentResolver.openInputStream(uri)?.use { input ->
-                    FileOutputStream(tmp).use { output -> input.copyTo(output) }
-                } ?: run {
-                    Toast.makeText(context, "Не удалось открыть файл", Toast.LENGTH_SHORT).show()
-                    return@launch
-                }
-                busyMessage = "Импорт плейлиста…"
-                viewModel.importUserMediaPlaylistFromFile(tmp) { msg ->
-                    busyMessage = null
-                    Toast.makeText(context, msg, Toast.LENGTH_LONG).show()
-                    tmp.delete()
-                }
-            } catch (e: Exception) {
-                busyMessage = null
-                tmp.delete()
-                Toast.makeText(context, e.message ?: "Ошибка импорта", Toast.LENGTH_SHORT).show()
-            }
-        }
-    }
+    val importHandlers = rememberReceivedMediaImportHandlers(viewModel)
 
     val kindTitle =
         when (kind) {
@@ -225,19 +199,14 @@ fun UserMediaPlaylistsListScreen(
                     }
                 },
                 actions = {
-                    IconButton(
-                        onClick = {
-                            importPlaylistLauncher.launch(
-                                arrayOf(
-                                    "application/zip",
-                                    "application/json",
-                                    "text/plain",
-                                    "application/octet-stream",
-                                ),
-                            )
-                        },
-                    ) {
-                        Icon(Icons.Filled.Download, contentDescription = "Импорт плейлиста")
+                    TextButton(onClick = importHandlers.launchImportPlaylist) {
+                        Icon(
+                            Icons.Filled.Download,
+                            contentDescription = null,
+                            modifier = Modifier.size(18.dp),
+                        )
+                        Spacer(Modifier.width(4.dp))
+                        Text("Импорт")
                     }
                 },
             )
@@ -260,12 +229,22 @@ fun UserMediaPlaylistsListScreen(
                     .fillMaxSize(),
                 contentAlignment = Alignment.Center,
             ) {
-                Text(
-                    "Нет плейлистов.\nНажмите +, задайте название — затем добавляйте файлы из списка медиа.\nИмпорт — кнопка загрузки вверху: JSON со ссылками или ZIP с файлами.",
-                    style = MaterialTheme.typography.bodyLarge,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                Column(
+                    horizontalAlignment = Alignment.CenterHorizontally,
                     modifier = Modifier.padding(24.dp),
-                )
+                ) {
+                    Text(
+                        "Нет плейлистов.\nСоздайте новый кнопкой + или импортируйте полученный ZIP/JSON.",
+                        style = MaterialTheme.typography.bodyLarge,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                    Spacer(Modifier.height(16.dp))
+                    Button(onClick = importHandlers.launchImportPlaylist) {
+                        Icon(Icons.Filled.Download, contentDescription = null)
+                        Spacer(Modifier.width(8.dp))
+                        Text("Импорт полученного плейлиста")
+                    }
+                }
             }
         } else {
             LazyColumn(
@@ -2031,20 +2010,6 @@ private fun PlaylistBusyDialog(message: String?) {
         },
         confirmButton = {},
     )
-}
-
-private fun playlistImportExtension(context: android.content.Context, uri: Uri): String {
-    val name = uri.lastPathSegment.orEmpty().substringAfterLast('/')
-    when {
-        name.endsWith(".json", ignoreCase = true) -> return ".json"
-        name.endsWith(".zip", ignoreCase = true) -> return ".zip"
-    }
-    val mime = context.contentResolver.getType(uri).orEmpty()
-    return when {
-        mime.contains("json", ignoreCase = true) -> ".json"
-        mime.contains("zip", ignoreCase = true) -> ".zip"
-        else -> ".bin"
-    }
 }
 
 private fun shareUserMediaPlaylist(

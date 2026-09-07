@@ -28,6 +28,7 @@ import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.filled.PlaylistPlay
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.Download
 import androidx.compose.material.icons.filled.Mic
 import androidx.compose.material.icons.filled.MusicNote
 import androidx.compose.material.icons.filled.TravelExplore
@@ -123,6 +124,8 @@ fun AudioLibraryScreen(
         viewModel.syncLegacyAudioDownloadsFromPublicFolder()
     }
 
+    val importHandlers = rememberReceivedMediaImportHandlers(viewModel)
+
     val pickLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.OpenMultipleDocuments(),
     ) { uris: List<Uri> ->
@@ -190,6 +193,9 @@ fun AudioLibraryScreen(
                     }
                 },
                 actions = {
+                    IconButton(onClick = importHandlers.launchImportPlaylist) {
+                        Icon(Icons.Filled.Download, contentDescription = "Импорт полученного")
+                    }
                     IconButton(onClick = onOpenPlaylists) {
                         Icon(Icons.AutoMirrored.Filled.PlaylistPlay, contentDescription = "Плейлисты")
                     }
@@ -469,6 +475,12 @@ fun AudioLibraryScreen(
                         Text("Поиск в интернете", modifier = Modifier.padding(start = 16.dp))
                     }
                 }
+                ReceivedMediaImportSheetRows(
+                    handlers = importHandlers,
+                    includePlaylist = true,
+                    includeAudio = true,
+                    onItemClick = { showAddSheet = false },
+                )
             }
         }
     }

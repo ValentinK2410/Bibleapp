@@ -3400,6 +3400,36 @@ class BibleViewModel(
         }
     }
 
+    /** Импорт видеофайла, полученного из мессенджера или «Поделиться». */
+    fun importReceivedVideoFromUri(uri: Uri, onDone: (String?) -> Unit) {
+        viewModelScope.launch {
+            val title = withContext(Dispatchers.IO) {
+                KidsUserMediaStorage.displayName(appContext, uri)
+                    ?.substringBeforeLast('.')
+                    ?.trim()
+                    .orEmpty()
+                    .ifBlank { "Без названия" }
+            }
+            val result = withContext(Dispatchers.IO) {
+                bibleVideoLibrary.importFromUri(uri)
+            }
+            result.fold(
+                onSuccess = { fileName ->
+                    preferences.saveBibleVideo(
+                        BibleUserVideo(
+                            title = title,
+                            tags = emptyList(),
+                            fileName = fileName,
+                            source = "received",
+                        ),
+                    )
+                    onDone(null)
+                },
+                onFailure = { e -> onDone(e.message ?: "Ошибка импорта") },
+            )
+        }
+    }
+
     fun importBibleVideoFromRemoteUrl(
         fullUrl: String,
         title: String,

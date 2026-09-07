@@ -32,6 +32,7 @@ import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.CameraAlt
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.automirrored.filled.PlaylistPlay
+import androidx.compose.material.icons.filled.Download
 import androidx.compose.material.icons.filled.TravelExplore
 import androidx.compose.material.icons.filled.VideoLibrary
 import androidx.compose.material.icons.filled.Videocam
@@ -134,6 +135,8 @@ fun VideoLibraryScreen(
         viewModel.syncLegacyDownloadsFromPublicFolder()
     }
 
+    val importHandlers = rememberReceivedMediaImportHandlers(viewModel)
+
     val pickLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.PickVisualMedia(),
     ) { uri: Uri? ->
@@ -228,6 +231,9 @@ fun VideoLibraryScreen(
                     }
                 },
                 actions = {
+                    IconButton(onClick = importHandlers.launchImportPlaylist) {
+                        Icon(Icons.Filled.Download, contentDescription = "Импорт полученного")
+                    }
                     IconButton(onClick = onOpenPlaylists) {
                         Icon(Icons.AutoMirrored.Filled.PlaylistPlay, contentDescription = "Плейлисты")
                     }
@@ -550,6 +556,12 @@ fun VideoLibraryScreen(
                         Text("Поиск в интернете", modifier = Modifier.padding(start = 16.dp))
                     }
                 }
+                ReceivedMediaImportSheetRows(
+                    handlers = importHandlers,
+                    includePlaylist = true,
+                    includeVideo = true,
+                    onItemClick = { showAddSheet = false },
+                )
             }
         }
     }

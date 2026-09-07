@@ -270,6 +270,7 @@ fun BibleApp(
     BibleTheme(darkTheme = isDark, appThemePreset = appThemePreset) {
         val navController = rememberNavController()
         val state by viewModel.state.collectAsStateWithLifecycle()
+        SharedMediaImportEffect(viewModel)
         var mimicCursor by remember { mutableStateOf<Offset?>(null) }
         var mimicPointerPressed by remember { mutableStateOf(false) }
         var mimicFallbackVelocityVector by remember { mutableStateOf<Pair<Offset, Offset>?>(null) }
