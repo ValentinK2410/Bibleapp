@@ -38,6 +38,8 @@ import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.KeyboardActions
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
@@ -89,8 +91,8 @@ import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Surface
-import androidx.compose.material3.ScrollableTabRow
 import androidx.compose.material3.Tab
+import androidx.compose.material3.TabRow
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.rememberModalBottomSheetState
@@ -98,7 +100,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.snapshotFlow
 import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateListOf
@@ -113,10 +114,12 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalClipboardManager
 import androidx.compose.ui.platform.LocalConfiguration
+import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
@@ -129,7 +132,6 @@ import com.example.bible.data.AudioPlayerHolder
 import com.example.bible.data.FonkiExtractor
 import com.example.bible.data.FonkiSong
 import com.example.bible.data.SongCatalogHit
-import com.example.bible.data.SongCatalogSource
 import com.example.bible.data.SongItem
 import com.example.bible.data.SongLyricCue
 import com.example.bible.data.SongLinkBundle
@@ -145,15 +147,6 @@ import java.io.File
 import java.io.FileOutputStream
 
 private const val TAG = "SongCollection"
-
-private class SongCatalogBrowseState {
-    val hits = mutableStateListOf<SongCatalogHit>()
-    var nextPage by mutableIntStateOf(1)
-    var hasMore by mutableStateOf(true)
-    var loading by mutableStateOf(false)
-    var error by mutableStateOf("")
-    var initialized by mutableStateOf(false)
-}
 
 @Composable
 private fun pesnopenieListHorizontalPadding(): Dp {
@@ -1319,9 +1312,8 @@ private fun AddSongSheet(
     var searchLoading by remember { mutableStateOf(false) }
     var searchError by remember { mutableStateOf("") }
     var searchAttempted by remember { mutableStateOf(false) }
-    val fonkiCatalog = remember { SongCatalogBrowseState() }
-    val holyChordsCatalog = remember { SongCatalogBrowseState() }
     val sheetScroll = rememberScrollState()
+    val keyboard = LocalSoftwareKeyboardController.current
 
     fun openCatalogHit(hit: SongCatalogHit) {
         val url = hit.pageUrl
@@ -1356,6 +1348,33 @@ private fun AddSongSheet(
         }
     }
 
+    fun runWebSearch() {
+        val q = searchWebQuery.trim()
+        if (q.length < 2) {
+            Toast.makeText(context, R.string.song_search_short, Toast.LENGTH_SHORT).show()
+            return
+        }
+        keyboard?.hide()
+        searchAttempted = true
+        searchLoading = true
+        searchError = ""
+        searchResults = emptyList()
+        scope.launch(Dispatchers.IO) {
+            try {
+                val hits = FonkiExtractor.searchSongCatalog(q)
+                withContext(Dispatchers.Main) {
+                    searchResults = hits
+                    searchLoading = false
+                }
+            } catch (e: Exception) {
+                withContext(Dispatchers.Main) {
+                    searchError = e.message ?: "Ошибка"
+                    searchLoading = false
+                }
+            }
+        }
+    }
+
     ModalBottomSheet(
         onDismissRequest = onDismiss,
         sheetState = sheetState,
@@ -1373,7 +1392,7 @@ private fun AddSongSheet(
                 modifier = Modifier.padding(bottom = 16.dp),
             )
 
-            ScrollableTabRow(selectedTabIndex = tabIndex, edgePadding = 8.dp) {
+            TabRow(selectedTabIndex = tabIndex) {
                 Tab(selected = tabIndex == 0, onClick = { tabIndex = 0 }) {
                     Row(
                         modifier = Modifier.padding(12.dp),
@@ -1404,26 +1423,6 @@ private fun AddSongSheet(
                         Text(stringResource(R.string.song_add_tab_search))
                     }
                 }
-                Tab(selected = tabIndex == 3, onClick = { tabIndex = 3 }) {
-                    Row(
-                        modifier = Modifier.padding(12.dp),
-                        verticalAlignment = Alignment.CenterVertically,
-                    ) {
-                        Icon(Icons.Default.MusicNote, null, Modifier.size(18.dp))
-                        Spacer(Modifier.width(6.dp))
-                        Text(stringResource(R.string.song_add_tab_fonki))
-                    }
-                }
-                Tab(selected = tabIndex == 4, onClick = { tabIndex = 4 }) {
-                    Row(
-                        modifier = Modifier.padding(12.dp),
-                        verticalAlignment = Alignment.CenterVertically,
-                    ) {
-                        Icon(Icons.Default.MusicNote, null, Modifier.size(18.dp))
-                        Spacer(Modifier.width(6.dp))
-                        Text(stringResource(R.string.song_add_tab_holychords))
-                    }
-                }
             }
 
             Spacer(Modifier.height(16.dp))
@@ -1431,7 +1430,7 @@ private fun AddSongSheet(
             Column(
                 modifier = Modifier
                     .animateContentSize()
-                    .then(if (tabIndex !in 2..4) Modifier.verticalScroll(sheetScroll) else Modifier),
+                    .then(if (tabIndex != 2) Modifier.verticalScroll(sheetScroll) else Modifier),
             ) {
                 when (tabIndex) {
                 0 -> {
@@ -1993,34 +1992,12 @@ private fun AddSongSheet(
                             label = { Text(stringResource(R.string.song_search_hint)) },
                             minLines = 2,
                             shape = RoundedCornerShape(12.dp),
+                            keyboardOptions = KeyboardOptions(imeAction = ImeAction.Search),
+                            keyboardActions = KeyboardActions(onSearch = { runWebSearch() }),
                         )
                         Spacer(Modifier.height(8.dp))
                         Button(
-                            onClick = {
-                                val q = searchWebQuery.trim()
-                                if (q.length < 2) {
-                                    Toast.makeText(context, R.string.song_search_short, Toast.LENGTH_SHORT).show()
-                                    return@Button
-                                }
-                                searchAttempted = true
-                                searchLoading = true
-                                searchError = ""
-                                searchResults = emptyList()
-                                scope.launch(Dispatchers.IO) {
-                                    try {
-                                        val hits = FonkiExtractor.searchSongCatalog(q)
-                                        withContext(Dispatchers.Main) {
-                                            searchResults = hits
-                                            searchLoading = false
-                                        }
-                                    } catch (e: Exception) {
-                                        withContext(Dispatchers.Main) {
-                                            searchError = e.message ?: "Ошибка"
-                                            searchLoading = false
-                                        }
-                                    }
-                                }
-                            },
+                            onClick = { runWebSearch() },
                             enabled = !searchLoading,
                             modifier = Modifier.fillMaxWidth(),
                             shape = RoundedCornerShape(12.dp),
@@ -2082,20 +2059,6 @@ private fun AddSongSheet(
                         }
                     }
                 }
-                3 -> {
-                    SongCatalogBrowsePane(
-                        source = SongCatalogSource.Fonki,
-                        state = fonkiCatalog,
-                        onPick = { openCatalogHit(it) },
-                    )
-                }
-                4 -> {
-                    SongCatalogBrowsePane(
-                        source = SongCatalogSource.HolyChords,
-                        state = holyChordsCatalog,
-                        onPick = { openCatalogHit(it) },
-                    )
-                }
                 }
             }
         }
@@ -2140,6 +2103,16 @@ private fun SongCatalogHitCard(
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                     )
                 }
+                if (hit.snippet.isNotBlank()) {
+                    Text(
+                        hit.snippet,
+                        style = MaterialTheme.typography.bodySmall,
+                        fontStyle = FontStyle.Italic,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        maxLines = 2,
+                        overflow = TextOverflow.Ellipsis,
+                    )
+                }
                 Text(
                     hit.sourceLabel,
                     style = MaterialTheme.typography.labelSmall,
@@ -2152,166 +2125,6 @@ private fun SongCatalogHitCard(
                 tint = MaterialTheme.colorScheme.outline,
                 modifier = Modifier.size(20.dp),
             )
-        }
-    }
-}
-
-@Composable
-private fun SongCatalogBrowsePane(
-    source: SongCatalogSource,
-    state: SongCatalogBrowseState,
-    onPick: (SongCatalogHit) -> Unit,
-) {
-    val scope = rememberCoroutineScope()
-    val listState = rememberLazyListState()
-    var filter by remember { mutableStateOf("") }
-
-    fun loadMore() {
-        if (state.loading || !state.hasMore) return
-        state.error = ""
-        state.loading = true
-        scope.launch(Dispatchers.IO) {
-            try {
-                val page = FonkiExtractor.browseSongCatalog(source, state.nextPage)
-                withContext(Dispatchers.Main) {
-                    val seen = state.hits.mapTo(mutableSetOf()) { it.pageUrl }
-                    page.hits.filter { it.pageUrl !in seen }.forEach { state.hits.add(it) }
-                    state.nextPage = page.page + 1
-                    state.hasMore = page.hasMore
-                    state.loading = false
-                    state.initialized = true
-                }
-            } catch (e: Exception) {
-                withContext(Dispatchers.Main) {
-                    state.error = e.message ?: "Ошибка"
-                    state.loading = false
-                    state.initialized = true
-                }
-            }
-        }
-    }
-
-    LaunchedEffect(source) {
-        if (!state.initialized && !state.loading) {
-            loadMore()
-        }
-    }
-
-    val filterBlank = filter.isBlank()
-    val canAutoLoad = filterBlank && state.hasMore && !state.loading && state.initialized && state.error.isEmpty()
-    LaunchedEffect(listState, state.hits.size, canAutoLoad) {
-        snapshotFlow {
-            val last = listState.layoutInfo.visibleItemsInfo.lastOrNull()?.index ?: return@snapshotFlow false
-            val total = listState.layoutInfo.totalItemsCount
-            last >= total - 4
-        }.collect { nearEnd ->
-            if (nearEnd && canAutoLoad) {
-                loadMore()
-            }
-        }
-    }
-
-    val query = filter.trim()
-    val shown = remember(query, state.hits.size) {
-        if (query.isEmpty()) {
-            state.hits.toList()
-        } else {
-            val lower = query.lowercase()
-            state.hits.filter {
-                lower in it.title.lowercase() || lower in it.artist.lowercase()
-            }
-        }
-    }
-
-    Column(Modifier.fillMaxWidth()) {
-        OutlinedTextField(
-            value = filter,
-            onValueChange = { filter = it },
-            modifier = Modifier.fillMaxWidth(),
-            label = { Text(stringResource(R.string.song_catalog_filter_hint)) },
-            singleLine = true,
-            shape = RoundedCornerShape(12.dp),
-        )
-        Spacer(Modifier.height(8.dp))
-        Text(
-            stringResource(R.string.song_catalog_shown, shown.size),
-            style = MaterialTheme.typography.bodySmall,
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
-        )
-        AnimatedVisibility(visible = state.loading && state.hits.isEmpty()) {
-            Column {
-                Spacer(Modifier.height(8.dp))
-                LinearProgressIndicator(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(4.dp)
-                        .clip(RoundedCornerShape(2.dp)),
-                )
-                Spacer(Modifier.height(4.dp))
-                Text(
-                    stringResource(R.string.song_catalog_loading, source.label),
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.primary,
-                )
-            }
-        }
-        if (state.error.isNotEmpty()) {
-            Spacer(Modifier.height(6.dp))
-            Text(
-                state.error,
-                color = MaterialTheme.colorScheme.error,
-                style = MaterialTheme.typography.bodySmall,
-            )
-        }
-        if (state.initialized && !state.loading && state.hits.isEmpty() && state.error.isEmpty()) {
-            Spacer(Modifier.height(8.dp))
-            Text(
-                stringResource(R.string.song_catalog_empty),
-                style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-            )
-        }
-        Spacer(Modifier.height(8.dp))
-        LazyColumn(
-            state = listState,
-            modifier = Modifier
-                .fillMaxWidth()
-                .heightIn(max = 480.dp),
-        ) {
-            items(shown, key = { it.pageUrl }) { hit ->
-                SongCatalogHitCard(
-                    hit = hit,
-                    onClick = { onPick(hit) },
-                )
-            }
-            item(key = "catalog_footer") {
-                if (state.loading && state.hits.isNotEmpty()) {
-                    LinearProgressIndicator(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(vertical = 8.dp)
-                            .height(4.dp)
-                            .clip(RoundedCornerShape(2.dp)),
-                    )
-                } else if (state.hasMore || state.error.isNotEmpty()) {
-                    OutlinedButton(
-                        onClick = { loadMore() },
-                        enabled = !state.loading,
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(vertical = 8.dp),
-                        shape = RoundedCornerShape(12.dp),
-                    ) {
-                        Text(
-                            if (state.error.isNotEmpty() && state.hits.isEmpty()) {
-                                stringResource(R.string.song_catalog_retry)
-                            } else {
-                                stringResource(R.string.song_catalog_load_more)
-                            },
-                        )
-                    }
-                }
-            }
         }
     }
 }

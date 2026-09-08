@@ -3,11 +3,14 @@ package com.example.bible.data
 import android.content.Context
 import android.os.Environment
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.delay
+import kotlinx.coroutines.async
+import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.withContext
+import org.json.JSONObject
 import java.io.File
 import java.net.HttpURLConnection
 import java.net.URL
+import java.net.URLEncoder
 
 data class AudioTrack(
     val url: String,
@@ -23,12 +26,13 @@ data class FonkiSong(
     val audioUrl: String get() = tracks.firstOrNull()?.url ?: ""
 }
 
-/** Результат поиска по каталогам holychords.pro и fonki.pro (раздел «Музыка» на сайтах). */
+/** Результат поиска по каталогам holychords.pro и fonki.pro. */
 data class SongCatalogHit(
     val title: String,
     val artist: String,
     val pageUrl: String,
     val sourceLabel: String,
+    val snippet: String = "",
 )
 
 enum class SongCatalogSource(val baseUrl: String, val label: String) {
@@ -36,15 +40,13 @@ enum class SongCatalogSource(val baseUrl: String, val label: String) {
     Fonki("https://fonki.pro", "Fonki"),
 }
 
-data class SongCatalogPage(
-    val hits: List<SongCatalogHit>,
-    val page: Int,
-    val hasMore: Boolean,
+private data class RankedSongHit(
+    val hit: SongCatalogHit,
+    val score: Int,
+    val views: Int,
 )
 
 object FonkiExtractor {
-
-    private const val CATALOG_PAGE_SIZE = 50
 
     fun isFonkiUrl(url: String): Boolean {
         val lower = url.lowercase()
@@ -61,84 +63,133 @@ object FonkiExtractor {
     }
 
     /**
-     * Поиск по публичным спискам [site]/musics (несколько страниц), фильтр по названию и исполнителю.
-     * Полноценного API у сайтов нет — подбираются совпадения по открытым каталогам.
+     * Поиск через API сайтов `/search?name=` — по названию, исполнителю и тексту песни.
      */
     suspend fun searchSongCatalog(
         query: String,
-        maxPagesPerSite: Int = 12,
-        maxResults: Int = 40,
-        sources: List<SongCatalogSource> = SongCatalogSource.entries,
+        maxResults: Int = 60,
     ): List<SongCatalogHit> = withContext(Dispatchers.IO) {
         val q = query.trim()
         if (q.length < 2) return@withContext emptyList()
-        val qLower = q.lowercase()
-        val words = qLower.split(Regex("\\s+")).filter { it.isNotBlank() }
 
-        fun matches(artist: String, title: String): Boolean {
-            val hay = "$artist $title".lowercase()
-            if (qLower in hay) return true
-            if (words.isEmpty()) return false
-            return words.all { it in hay }
-        }
-
-        val seen = mutableSetOf<String>()
-        val out = mutableListOf<SongCatalogHit>()
-
-        for (source in sources) {
-            if (out.size >= maxResults) break
-            for (page in 1..maxPagesPerSite) {
-                if (out.size >= maxResults) break
-                delay(45)
-                val html = try {
-                    fetchHtml("${source.baseUrl}/musics?page=$page")
-                } catch (_: Exception) {
-                    break
-                }
-                for (hit in parseMusicItems(html, source)) {
-                    if (out.size >= maxResults) break
-                    if (!matches(hit.artist, hit.title)) continue
-                    if (!seen.add(hit.pageUrl)) continue
-                    out.add(hit)
-                }
+        coroutineScope {
+            val holyChords = async {
+                runCatching { searchSiteJson(SongCatalogSource.HolyChords, q) }
             }
+            val fonki = async {
+                runCatching { searchSiteJson(SongCatalogSource.Fonki, q) }
+            }
+            val hcRes = holyChords.await()
+            val fonkiRes = fonki.await()
+            if (hcRes.isFailure && fonkiRes.isFailure) {
+                throw hcRes.exceptionOrNull()
+                    ?: fonkiRes.exceptionOrNull()
+                    ?: RuntimeException("Ошибка поиска")
+            }
+            (hcRes.getOrDefault(emptyList()) + fonkiRes.getOrDefault(emptyList()))
+                .distinctBy { it.hit.pageUrl }
+                .sortedWith(
+                    compareByDescending<RankedSongHit> { it.score }
+                        .thenByDescending { it.views },
+                )
+                .map { it.hit }
+                .take(maxResults)
         }
-        out
     }
 
-    /** Одна страница открытого каталога `/musics` выбранного сайта. */
-    suspend fun browseSongCatalog(
-        source: SongCatalogSource,
-        page: Int,
-    ): SongCatalogPage = withContext(Dispatchers.IO) {
-        val html = fetchHtml("${source.baseUrl}/musics?page=$page")
-        val hits = parseMusicItems(html, source)
-        SongCatalogPage(
-            hits = hits,
-            page = page,
-            hasMore = hits.size >= CATALOG_PAGE_SIZE,
-        )
-    }
-
-    private fun parseMusicItems(html: String, source: SongCatalogSource): List<SongCatalogHit> {
-        val out = mutableListOf<SongCatalogHit>()
-        val seen = mutableSetOf<String>()
-        val chunks = html.split("""class="music_item media""")
-        for (chunk in chunks.drop(1)) {
-            val block = chunk.take(12_000)
-            val id = Regex("""data-audio-id="(\d+)"""").find(block)?.groupValues?.get(1) ?: continue
-            val artist = Regex("""data-artist-name="([^"]*)"""").find(block)?.groupValues?.get(1)?.trim().orEmpty()
-            val title = Regex("""data-audio-name="([^"]*)"""").find(block)?.groupValues?.get(1)?.trim().orEmpty()
+    private fun searchSiteJson(source: SongCatalogSource, query: String): List<RankedSongHit> {
+        val encoded = URLEncoder.encode(query, Charsets.UTF_8.name()).replace("+", "%20")
+        val json = fetchJson("${source.baseUrl}/search?name=$encoded")
+        val data = JSONObject(json).optJSONObject("musics")?.optJSONArray("data")
+            ?: return emptyList()
+        val out = mutableListOf<RankedSongHit>()
+        for (i in 0 until data.length()) {
+            val item = data.optJSONObject(i) ?: continue
+            val id = item.optLong("id")
+            if (id <= 0L) continue
+            val title = jsonText(item, "name")
             if (title.isBlank()) continue
-            val url = if (source == SongCatalogSource.Fonki) {
+            val artistObj = item.optJSONObject("artist")
+            val artist = listOf(
+                jsonText(artistObj, "isp_name"),
+                jsonText(artistObj, "name"),
+            ).firstOrNull { it.isNotBlank() }.orEmpty()
+            val text = jsonText(item, "text")
+            val pageUrl = if (source == SongCatalogSource.Fonki) {
                 "https://fonki.pro/minus/$id"
             } else {
                 "https://holychords.pro/$id"
             }
-            if (!seen.add(url)) continue
-            out.add(SongCatalogHit(title = title, artist = artist, pageUrl = url, sourceLabel = source.label))
+            out.add(
+                RankedSongHit(
+                    hit = SongCatalogHit(
+                        title = title,
+                        artist = artist,
+                        pageUrl = pageUrl,
+                        sourceLabel = source.label,
+                        snippet = lyricSnippet(text, query, title),
+                    ),
+                    score = matchScore(query, title, artist, text),
+                    views = item.optInt("views"),
+                ),
+            )
         }
         return out
+    }
+
+    private fun matchScore(query: String, title: String, artist: String, text: String): Int {
+        val q = query.lowercase()
+        val t = title.lowercase()
+        val a = artist.lowercase()
+        val lyrics = stripChordMarkup(text).lowercase()
+        val words = q.split(Regex("\\s+")).filter { it.length >= 2 }
+        var score = 0
+        when {
+            t == q -> score += 1000
+            t.startsWith(q) -> score += 850
+            q in t -> score += 700
+        }
+        if (q in a) score += 120
+        if (words.isNotEmpty() && words.all { it in t }) score += 200
+        else if (words.isNotEmpty() && words.all { it in "$t $a" }) score += 80
+        if (q in lyrics) score += 150
+        else if (words.isNotEmpty() && words.all { it in lyrics }) score += 90
+        return score
+    }
+
+    private fun lyricSnippet(text: String, query: String, title: String): String {
+        if (query.lowercase() in title.lowercase()) return ""
+        val plain = stripChordMarkup(text).replace(Regex("\\s+"), " ").trim()
+        if (plain.isEmpty()) return ""
+        val hay = plain.lowercase()
+        val q = query.lowercase()
+        var idx = hay.indexOf(q)
+        if (idx < 0) {
+            val word = q.split(Regex("\\s+")).filter { it.length >= 3 }.maxByOrNull { it.length }
+                ?: return ""
+            idx = hay.indexOf(word)
+            if (idx < 0) return ""
+        }
+        val start = (idx - 36).coerceAtLeast(0)
+        val end = (idx + query.length + 44).coerceAtMost(plain.length)
+        return buildString {
+            if (start > 0) append("…")
+            append(plain.substring(start, end).trim())
+            if (end < plain.length) append("…")
+        }
+    }
+
+    private fun stripChordMarkup(raw: String): String {
+        if (raw.isBlank()) return ""
+        return raw.lineSequence()
+            .filter { line ->
+                val trimmed = line.trim()
+                trimmed.isNotEmpty() &&
+                    !Regex("""^[A-G][#bmM0-9/susaddim\s]*$""").matches(trimmed)
+            }
+            .joinToString(" ")
+            .replace(Regex("""\[[^\]]+]"""), " ")
+            .replace(Regex("<[^>]+>"), " ")
     }
 
     private fun extractFonki(html: String): FonkiSong {
@@ -399,6 +450,11 @@ object FonkiExtractor {
             .trim()
     }
 
+    private fun jsonText(obj: JSONObject?, key: String): String {
+        if (obj == null || obj.isNull(key)) return ""
+        return obj.optString(key).trim().takeIf { it.isNotEmpty() && it != "null" }.orEmpty()
+    }
+
     private fun fetchHtml(url: String): String {
         val conn = URL(url).openConnection() as HttpURLConnection
         conn.setRequestProperty("User-Agent", "Mozilla/5.0")
@@ -411,5 +467,25 @@ object FonkiExtractor {
         }
 
         return conn.inputStream.bufferedReader(Charsets.UTF_8).readText()
+    }
+
+    private fun fetchJson(url: String): String {
+        val conn = URL(url).openConnection() as HttpURLConnection
+        conn.setRequestProperty("User-Agent", "Mozilla/5.0")
+        conn.setRequestProperty("Accept", "application/json")
+        conn.setRequestProperty("X-Requested-With", "XMLHttpRequest")
+        conn.connectTimeout = 15_000
+        conn.readTimeout = 20_000
+        conn.connect()
+
+        if (conn.responseCode !in 200..299) {
+            throw RuntimeException("HTTP ${conn.responseCode}")
+        }
+
+        val body = conn.inputStream.bufferedReader(Charsets.UTF_8).readText().trim()
+        if (!body.startsWith("{") && !body.startsWith("[")) {
+            throw RuntimeException("Сайт не вернул результаты поиска")
+        }
+        return body
     }
 }
