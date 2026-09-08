@@ -6,6 +6,7 @@ import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
@@ -28,13 +29,20 @@ import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.AudioFile
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Link
+import androidx.compose.material.icons.filled.Pause
 import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material.icons.filled.PlaylistAdd
+import androidx.compose.material.icons.filled.Repeat
+import androidx.compose.material.icons.filled.RepeatOne
+import androidx.compose.material.icons.filled.Stop
+import androidx.compose.material.icons.filled.TextDecrease
+import androidx.compose.material.icons.filled.TextIncrease
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.FilterChip
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -42,12 +50,15 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.produceState
+import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -62,6 +73,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.bible.data.AudioPlayerHolder
 import com.example.bible.data.FonkiExtractor
+import com.example.bible.data.PlayerState
 import com.example.bible.data.PesnVozrozhdeniyaCatalog
 import com.example.bible.data.PvHymn
 import com.example.bible.data.PvHymnOverlay
@@ -274,10 +286,20 @@ fun PesnVozrozhdeniyaHymnScreen(
     val catalog = rememberPvCatalog(overlays)
     val hymns = catalog.hymns
     val hymn = hymns.firstOrNull { it.id == hymnId }
-    val fontSize by viewModel.songFontSize.collectAsState()
+    val persistedFontSize by viewModel.songFontSize.collectAsState()
+    var lyricsFontSize by remember { mutableFloatStateOf(persistedFontSize) }
+    LaunchedEffect(persistedFontSize) { lyricsFontSize = persistedFontSize }
+    val playerState by AudioPlayerHolder.state.collectAsState()
+    var activeAudioPath by remember { mutableStateOf<String?>(null) }
     var linkUrl by remember { mutableStateOf("") }
     var linkLoading by remember { mutableStateOf(false) }
     var showAddToList by remember { mutableStateOf(false) }
+    LaunchedEffect(hymn?.id, hymn?.audioPaths, playerState.audioPath) {
+        val path = playerState.audioPath
+        if (path.isNotBlank() && hymn?.audioPaths?.contains(path) == true) {
+            activeAudioPath = path
+        }
+    }
 
     val audioPicker = rememberLauncherForActivityResult(
         ActivityResultContracts.GetContent(),
@@ -315,11 +337,44 @@ fun PesnVozrozhdeniyaHymnScreen(
                         }
                     },
                     actions = {
+                        IconButton(
+                            onClick = {
+                                lyricsFontSize = (lyricsFontSize - 2f).coerceAtLeast(3f)
+                                viewModel.setSongFontSize(lyricsFontSize)
+                            },
+                            enabled = hymn != null,
+                        ) {
+                            Icon(Icons.Default.TextDecrease, contentDescription = "Уменьшить текст")
+                        }
+                        IconButton(
+                            onClick = {
+                                lyricsFontSize = (lyricsFontSize + 2f).coerceAtMost(150f)
+                                viewModel.setSongFontSize(lyricsFontSize)
+                            },
+                            enabled = hymn != null,
+                        ) {
+                            Icon(Icons.Default.TextIncrease, contentDescription = "Увеличить текст")
+                        }
                         IconButton(onClick = { showAddToList = true }, enabled = hymn != null) {
                             Icon(Icons.Default.PlaylistAdd, contentDescription = "В список")
                         }
                     },
                 )
+            },
+            bottomBar = {
+                val path = activeAudioPath
+                if (hymn != null && path != null && File(path).exists()) {
+                    Surface(tonalElevation = 3.dp, shadowElevation = 8.dp) {
+                        Column(Modifier.fillMaxWidth()) {
+                            PvPhonogramModesRow(playerState = playerState)
+                            SongPlayerBar(
+                                audioPath = path,
+                                title = "${hymn.number}. ${hymn.title}",
+                                modifier = Modifier.fillMaxWidth(),
+                            )
+                        }
+                    }
+                }
             },
         ) { padding ->
             if (catalog.loading) {
@@ -339,11 +394,16 @@ fun PesnVozrozhdeniyaHymnScreen(
             ) {
                 Text(
                     hymn.lyrics.ifBlank { "Текст пока не добавлен." },
-                    fontSize = fontSize.sp,
-                    lineHeight = (fontSize * 1.35f).sp,
+                    fontSize = lyricsFontSize.sp,
+                    lineHeight = (lyricsFontSize * 1.35f).sp,
                 )
                 Spacer(Modifier.height(20.dp))
                 Text("Фонограмма", style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.Bold)
+                Text(
+                    "Прослушивание: пауза, стоп, повтор и скорость. Текст — кнопками А− / А+ в шапке.",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
                 Spacer(Modifier.height(8.dp))
                 if (hymn.audioPaths.isEmpty()) {
                     Text(
@@ -354,6 +414,7 @@ fun PesnVozrozhdeniyaHymnScreen(
                 } else {
                     hymn.audioPaths.forEachIndexed { idx, path ->
                         val exists = File(path).exists()
+                        val isThis = playerState.audioPath == path
                         Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth()) {
                             Text(
                                 hymn.audioLabels.getOrNull(idx)?.ifBlank { null } ?: File(path).name,
@@ -362,13 +423,34 @@ fun PesnVozrozhdeniyaHymnScreen(
                                 overflow = TextOverflow.Ellipsis,
                             )
                             IconButton(
-                                onClick = { if (exists) AudioPlayerHolder.play(path, hymn.title) },
+                                onClick = {
+                                    if (!exists) return@IconButton
+                                    if (isThis) {
+                                        AudioPlayerHolder.togglePlay()
+                                    } else {
+                                        AudioPlayerHolder.play(path, "${hymn.number}. ${hymn.title}")
+                                    }
+                                    activeAudioPath = path
+                                },
                                 enabled = exists,
                             ) {
-                                Icon(Icons.Default.PlayArrow, contentDescription = "Играть")
+                                Icon(
+                                    if (isThis && playerState.isPlaying) Icons.Default.Pause else Icons.Default.PlayArrow,
+                                    contentDescription = if (isThis && playerState.isPlaying) "Пауза" else "Играть",
+                                )
+                            }
+                            IconButton(
+                                onClick = { AudioPlayerHolder.stop() },
+                                enabled = isThis && (playerState.isPlaying || playerState.positionMs > 0),
+                            ) {
+                                Icon(Icons.Default.Stop, contentDescription = "Стоп")
                             }
                             IconButton(
                                 onClick = {
+                                    if (activeAudioPath == path) {
+                                        AudioPlayerHolder.stop()
+                                        activeAudioPath = null
+                                    }
                                     val paths = hymn.audioPaths.toMutableList().also { it.removeAt(idx) }
                                     val labels = hymn.audioLabels.toMutableList().let { l ->
                                         if (idx < l.size) l.apply { removeAt(idx) } else l
@@ -501,6 +583,64 @@ fun PesnVozrozhdeniyaHymnScreen(
                 TextButton(onClick = { showAddToList = false }) { Text("Закрыть") }
             },
         )
+    }
+}
+
+private val PvSpeedPresets = listOf(0.5f, 0.75f, 1.0f, 1.25f, 1.5f, 2.0f)
+
+@Composable
+private fun PvPhonogramModesRow(playerState: PlayerState) {
+    Column(
+        Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 12.dp, vertical = 8.dp),
+    ) {
+        Text(
+            "Режим и скорость",
+            style = MaterialTheme.typography.labelMedium,
+            fontWeight = FontWeight.Bold,
+        )
+        Spacer(Modifier.height(6.dp))
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .horizontalScroll(rememberScrollState()),
+            horizontalArrangement = Arrangement.spacedBy(8.dp),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            FilterChip(
+                selected = !playerState.looping,
+                onClick = { AudioPlayerHolder.setLooping(false) },
+                label = { Text("Один раз") },
+                leadingIcon = { Icon(Icons.Default.RepeatOne, null, Modifier.size(16.dp)) },
+            )
+            FilterChip(
+                selected = playerState.looping,
+                onClick = { AudioPlayerHolder.setLooping(true) },
+                label = { Text("По кругу") },
+                leadingIcon = { Icon(Icons.Default.Repeat, null, Modifier.size(16.dp)) },
+            )
+        }
+        Spacer(Modifier.height(4.dp))
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .horizontalScroll(rememberScrollState()),
+            horizontalArrangement = Arrangement.spacedBy(8.dp),
+        ) {
+            PvSpeedPresets.forEach { speed ->
+                val selected = kotlin.math.abs(playerState.speed - speed) < 0.04f
+                FilterChip(
+                    selected = selected,
+                    onClick = { AudioPlayerHolder.setSpeed(speed) },
+                    label = {
+                        Text(
+                            if (speed == speed.toInt().toFloat()) "${speed.toInt()}×" else "${speed}×",
+                        )
+                    },
+                )
+            }
+        }
     }
 }
 

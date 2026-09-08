@@ -17,6 +17,7 @@ data class PlayerState(
     val durationMs: Int = 0,
     val speed: Float = 1.0f,
     val pitch: Float = 0f,
+    val looping: Boolean = false,
 )
 
 object AudioPlayerHolder {
@@ -46,6 +47,8 @@ object AudioPlayerHolder {
             mp.setOnCompletionListener {
                 _state.value = _state.value.copy(isPlaying = false, positionMs = 0)
             }
+            val keepLoop = _state.value.looping
+            mp.isLooping = keepLoop
             mp.start()
             player = mp
             currentPath = audioPath
@@ -57,6 +60,7 @@ object AudioPlayerHolder {
                 durationMs = mp.duration,
                 speed = 1.0f,
                 pitch = 0f,
+                looping = keepLoop,
             )
         } catch (e: Exception) {
             Log.e(TAG, "play failed: $audioPath", e)
@@ -94,6 +98,15 @@ object AudioPlayerHolder {
     fun setPitch(pitch: Float) {
         _state.value = _state.value.copy(pitch = pitch)
         applyParams()
+    }
+
+    fun setLooping(loop: Boolean) {
+        try {
+            player?.isLooping = loop
+        } catch (e: Exception) {
+            Log.w(TAG, "setLooping failed", e)
+        }
+        _state.value = _state.value.copy(looping = loop)
     }
 
     fun stop() {
