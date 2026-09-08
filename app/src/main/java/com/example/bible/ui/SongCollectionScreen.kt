@@ -22,14 +22,19 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.WindowInsetsSides
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
+import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.statusBars
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.lazy.LazyColumn
@@ -66,6 +71,7 @@ import androidx.compose.material.icons.filled.VideoFile
 import androidx.compose.material.icons.automirrored.filled.Label
 import androidx.compose.material.icons.automirrored.filled.PlaylistPlay
 import androidx.compose.material.icons.filled.MenuBook
+import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material.icons.filled.Videocam
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.AssistChip
@@ -81,6 +87,7 @@ import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.FloatingActionButton
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.InputChip
@@ -413,7 +420,6 @@ fun SongCollectionScreen(
     var sharePickKind by remember { mutableStateOf(SharePickKind.ZIP) }
     val shareSelectedIds = remember { mutableStateListOf<String>() }
     var showShareMenu by remember { mutableStateOf(false) }
-    var showImportMenu by remember { mutableStateOf(false) }
     val clipboard = LocalClipboardManager.current
     val playerState by AudioPlayerHolder.state.collectAsState()
     var searchQuery by remember { mutableStateOf("") }
@@ -523,82 +529,56 @@ fun SongCollectionScreen(
     PesnopenieMaterialTheme(useDark = pesnopenieNight) {
         Scaffold(
             topBar = {
-                CenterAlignedTopAppBar(
-                    title = { Text("Песнопение", style = MaterialTheme.typography.titleLarge) },
-                    navigationIcon = {
-                        IconButton(onClick = onBack) {
-                            Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Назад")
-                        }
-                    },
-                    actions = {
-                        if (selectedSong == null) {
-                            IconButton(onClick = onOpenLists) {
+                Surface(color = MaterialTheme.colorScheme.surface) {
+                    Column(
+                        Modifier.windowInsetsPadding(
+                            WindowInsets.statusBars.only(WindowInsetsSides.Top),
+                        ),
+                    ) {
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(end = 4.dp),
+                            verticalAlignment = Alignment.CenterVertically,
+                        ) {
+                            IconButton(onClick = onBack) {
+                                Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Назад")
+                            }
+                            Text(
+                                "Песнопение",
+                                modifier = Modifier.weight(1f),
+                                style = MaterialTheme.typography.headlineSmall,
+                                fontWeight = FontWeight.SemiBold,
+                                maxLines = 1,
+                                overflow = TextOverflow.Ellipsis,
+                            )
+                            IconButton(onClick = { pesnopenieNight = !pesnopenieNight }) {
                                 Icon(
-                                    Icons.AutoMirrored.Filled.PlaylistPlay,
-                                    contentDescription = "Списки песен",
+                                    imageVector = if (pesnopenieNight) Icons.Filled.LightMode else Icons.Filled.DarkMode,
+                                    contentDescription = stringResource(
+                                        if (pesnopenieNight) {
+                                            R.string.song_section_theme_day_cd
+                                        } else {
+                                            R.string.song_section_theme_night_cd
+                                        },
+                                    ),
                                 )
                             }
-                            IconButton(onClick = onOpenPesnVozrozhdeniya) {
-                                Icon(
-                                    Icons.Default.MenuBook,
-                                    contentDescription = "Песнь возрождения",
-                                )
-                            }
-                            if (sharePickMode) {
-                                TextButton(
-                                    onClick = {
-                                        sharePickMode = false
-                                        shareSelectedIds.clear()
-                                    },
-                                ) {
-                                    Text(stringResource(R.string.song_share_pick_cancel))
-                                }
-                                TextButton(
-                                    enabled = shareSelectedIds.isNotEmpty(),
-                                    onClick = {
-                                        val picked = songs.filter { it.id in shareSelectedIds }
-                                        when (sharePickKind) {
-                                            SharePickKind.ZIP -> shareSongsPackage(
-                                                context,
-                                                scope,
-                                                picked,
-                                                songHighlightLineWhilePlaying,
-                                            )
-                                            SharePickKind.LINKS -> shareSongLinksPackage(
-                                                context,
-                                                scope,
-                                                picked,
-                                            )
-                                        }
-                                        sharePickMode = false
-                                        shareSelectedIds.clear()
-                                    },
-                                ) {
-                                    Text(
-                                        stringResource(
-                                            R.string.song_share_pick_send,
-                                            shareSelectedIds.size,
-                                        ),
-                                    )
-                                }
-                            } else {
-                                val shareableCount = remember(songs) {
-                                    SongSharePackage.shareableSongs(songs).size
-                                }
-                                val linkableCount = remember(songs) {
-                                    SongLinkBundle.linkableSongs(songs).size
-                                }
-                                if (shareableCount > 0 || linkableCount > 0) {
+                            if (selectedSong == null && !sharePickMode) {
+                                Box {
                                     IconButton(onClick = { showShareMenu = true }) {
-                                        Icon(
-                                            Icons.Filled.Share,
-                                            contentDescription = stringResource(R.string.song_share_menu_cd),
-                                        )
+                                        Icon(Icons.Filled.MoreVert, contentDescription = "Ещё")
                                     }
                                     DropdownMenu(
                                         expanded = showShareMenu,
                                         onDismissRequest = { showShareMenu = false },
                                     ) {
+                                        val shareableCount = remember(songs) {
+                                            SongSharePackage.shareableSongs(songs).size
+                                        }
+                                        val linkableCount = remember(songs) {
+                                            SongLinkBundle.linkableSongs(songs).size
+                                        }
                                         if (shareableCount > 0) {
                                             DropdownMenuItem(
                                                 text = {
@@ -656,82 +636,151 @@ fun SongCollectionScreen(
                                                 },
                                             )
                                         }
+                                        DropdownMenuItem(
+                                            text = { Text(stringResource(R.string.song_links_import_zip)) },
+                                            onClick = {
+                                                showShareMenu = false
+                                                importSongZipLauncher.launch(
+                                                    arrayOf(
+                                                        "application/zip",
+                                                        "application/x-zip-compressed",
+                                                        "application/octet-stream",
+                                                    ),
+                                                )
+                                            },
+                                            leadingIcon = {
+                                                Icon(Icons.Filled.Download, contentDescription = null)
+                                            },
+                                        )
+                                        DropdownMenuItem(
+                                            text = { Text(stringResource(R.string.song_links_import_file)) },
+                                            onClick = {
+                                                showShareMenu = false
+                                                importSongLinksLauncher.launch(
+                                                    arrayOf("application/json", "text/plain", "application/octet-stream"),
+                                                )
+                                            },
+                                            leadingIcon = {
+                                                Icon(Icons.Filled.AudioFile, contentDescription = null)
+                                            },
+                                        )
+                                        DropdownMenuItem(
+                                            text = { Text(stringResource(R.string.song_links_import_clipboard)) },
+                                            onClick = {
+                                                showShareMenu = false
+                                                val text = clipboard.getText()?.text?.trim().orEmpty()
+                                                if (text.isBlank()) {
+                                                    Toast.makeText(
+                                                        context,
+                                                        R.string.song_links_import_clipboard_empty,
+                                                        Toast.LENGTH_SHORT,
+                                                    ).show()
+                                                } else {
+                                                    importSongLinksFromText(context, scope, viewModel, text)
+                                                }
+                                            },
+                                            leadingIcon = {
+                                                Icon(Icons.Filled.ContentPaste, contentDescription = null)
+                                            },
+                                        )
                                     }
                                 }
-                                IconButton(onClick = { showImportMenu = true }) {
-                                    Icon(
-                                        Icons.Filled.Download,
-                                        contentDescription = stringResource(R.string.song_links_import_menu_cd),
-                                    )
-                                }
-                                DropdownMenu(
-                                    expanded = showImportMenu,
-                                    onDismissRequest = { showImportMenu = false },
+                            }
+                        }
+                        if (selectedSong == null) {
+                            if (sharePickMode) {
+                                Row(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .padding(horizontal = 8.dp, vertical = 4.dp),
+                                    verticalAlignment = Alignment.CenterVertically,
+                                    horizontalArrangement = Arrangement.End,
                                 ) {
-                                    DropdownMenuItem(
-                                        text = { Text(stringResource(R.string.song_links_import_zip)) },
+                                    TextButton(
                                         onClick = {
-                                            showImportMenu = false
-                                            importSongZipLauncher.launch(
-                                                arrayOf(
-                                                    "application/zip",
-                                                    "application/x-zip-compressed",
-                                                    "application/octet-stream",
-                                                ),
-                                            )
+                                            sharePickMode = false
+                                            shareSelectedIds.clear()
                                         },
-                                        leadingIcon = {
-                                            Icon(Icons.Filled.Download, contentDescription = null)
-                                        },
-                                    )
-                                    DropdownMenuItem(
-                                        text = { Text(stringResource(R.string.song_links_import_file)) },
+                                    ) {
+                                        Text(stringResource(R.string.song_share_pick_cancel))
+                                    }
+                                    TextButton(
+                                        enabled = shareSelectedIds.isNotEmpty(),
                                         onClick = {
-                                            showImportMenu = false
-                                            importSongLinksLauncher.launch(
-                                                arrayOf("application/json", "text/plain", "application/octet-stream"),
-                                            )
-                                        },
-                                        leadingIcon = {
-                                            Icon(Icons.Filled.AudioFile, contentDescription = null)
-                                        },
-                                    )
-                                    DropdownMenuItem(
-                                        text = { Text(stringResource(R.string.song_links_import_clipboard)) },
-                                        onClick = {
-                                            showImportMenu = false
-                                            val text = clipboard.getText()?.text?.trim().orEmpty()
-                                            if (text.isBlank()) {
-                                                Toast.makeText(
+                                            val picked = songs.filter { it.id in shareSelectedIds }
+                                            when (sharePickKind) {
+                                                SharePickKind.ZIP -> shareSongsPackage(
                                                     context,
-                                                    R.string.song_links_import_clipboard_empty,
-                                                    Toast.LENGTH_SHORT,
-                                                ).show()
-                                            } else {
-                                                importSongLinksFromText(context, scope, viewModel, text)
+                                                    scope,
+                                                    picked,
+                                                    songHighlightLineWhilePlaying,
+                                                )
+                                                SharePickKind.LINKS -> shareSongLinksPackage(
+                                                    context,
+                                                    scope,
+                                                    picked,
+                                                )
                                             }
+                                            sharePickMode = false
+                                            shareSelectedIds.clear()
+                                        },
+                                    ) {
+                                        Text(
+                                            stringResource(
+                                                R.string.song_share_pick_send,
+                                                shareSelectedIds.size,
+                                            ),
+                                        )
+                                    }
+                                }
+                            } else {
+                                Row(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .padding(start = 16.dp, end = 12.dp, bottom = 10.dp),
+                                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                                ) {
+                                    AssistChip(
+                                        onClick = onOpenLists,
+                                        label = { Text("Списки") },
+                                        leadingIcon = {
+                                            Icon(
+                                                Icons.AutoMirrored.Filled.PlaylistPlay,
+                                                contentDescription = null,
+                                                modifier = Modifier.size(18.dp),
+                                            )
+                                        },
+                                        colors = AssistChipDefaults.assistChipColors(
+                                            leadingIconContentColor = MaterialTheme.colorScheme.primary,
+                                        ),
+                                    )
+                                    AssistChip(
+                                        onClick = onOpenPesnVozrozhdeniya,
+                                        modifier = Modifier.weight(1f, fill = false),
+                                        label = {
+                                            Text(
+                                                "Песнь возрождения",
+                                                maxLines = 1,
+                                                overflow = TextOverflow.Ellipsis,
+                                            )
                                         },
                                         leadingIcon = {
-                                            Icon(Icons.Filled.ContentPaste, contentDescription = null)
+                                            Icon(
+                                                Icons.Default.MenuBook,
+                                                contentDescription = null,
+                                                modifier = Modifier.size(18.dp),
+                                            )
                                         },
+                                        colors = AssistChipDefaults.assistChipColors(
+                                            leadingIconContentColor = MaterialTheme.colorScheme.primary,
+                                        ),
                                     )
                                 }
                             }
                         }
-                        IconButton(onClick = { pesnopenieNight = !pesnopenieNight }) {
-                            Icon(
-                                imageVector = if (pesnopenieNight) Icons.Filled.LightMode else Icons.Filled.DarkMode,
-                                contentDescription = stringResource(
-                                    if (pesnopenieNight) {
-                                        R.string.song_section_theme_day_cd
-                                    } else {
-                                        R.string.song_section_theme_night_cd
-                                    },
-                                ),
-                            )
-                        }
-                    },
-                )
+                        HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
+                    }
+                }
             },
             floatingActionButton = {
                 if (!sharePickMode && selectedSong == null) {
