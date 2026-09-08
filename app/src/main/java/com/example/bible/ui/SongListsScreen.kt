@@ -66,7 +66,6 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.example.bible.data.AudioPlayerHolder
-import com.example.bible.data.PesnVozrozhdeniyaCatalog
 import com.example.bible.data.PlaylistLook
 import com.example.bible.data.PvHymn
 import com.example.bible.data.SongItem
@@ -400,8 +399,7 @@ fun UserSongPlaylistDetailScreen(
     val songs by viewModel.userSongs.collectAsState()
     val overlays by viewModel.pvHymnOverlays.collectAsState()
     val playlist = playlists.firstOrNull { it.id == playlistId }
-    val builtIn = remember { PesnVozrozhdeniyaCatalog.builtIn(context) }
-    val pvHymns = remember(builtIn, overlays) { PesnVozrozhdeniyaCatalog.merge(builtIn, overlays) }
+    val pvHymns = rememberPvCatalog(overlays).hymns
     var showPick by remember { mutableStateOf(false) }
     var sortMenu by remember { mutableStateOf(false) }
     var styleOpen by remember { mutableStateOf(false) }

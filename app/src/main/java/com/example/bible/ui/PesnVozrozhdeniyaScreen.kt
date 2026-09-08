@@ -33,6 +33,7 @@ import androidx.compose.material.icons.filled.PlaylistAdd
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.CenterAlignedTopAppBar
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
@@ -46,6 +47,7 @@ import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.produceState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -63,12 +65,29 @@ import com.example.bible.data.FonkiExtractor
 import com.example.bible.data.PesnVozrozhdeniyaCatalog
 import com.example.bible.data.PvHymn
 import com.example.bible.data.PvHymnOverlay
-import com.example.bible.data.UserSongPlaylist
 import com.example.bible.ui.theme.PesnopenieMaterialTheme
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.io.File
+
+internal data class PvCatalogUi(
+    val hymns: List<PvHymn> = emptyList(),
+    val loading: Boolean = true,
+)
+
+@Composable
+internal fun rememberPvCatalog(overlays: List<PvHymnOverlay>): PvCatalogUi {
+    val context = LocalContext.current
+    val builtIn by produceState<List<PvHymn>?>(initialValue = null, context) {
+        value = withContext(Dispatchers.IO) { PesnVozrozhdeniyaCatalog.builtIn(context) }
+    }
+    val hymns = remember(builtIn, overlays) {
+        val src = builtIn ?: return@remember emptyList()
+        PesnVozrozhdeniyaCatalog.merge(src, overlays)
+    }
+    return PvCatalogUi(hymns = hymns, loading = builtIn == null)
+}
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -77,10 +96,9 @@ fun PesnVozrozhdeniyaListScreen(
     onBack: () -> Unit,
     onOpenHymn: (String) -> Unit,
 ) {
-    val context = LocalContext.current
     val overlays by viewModel.pvHymnOverlays.collectAsState()
-    val builtIn = remember { PesnVozrozhdeniyaCatalog.builtIn(context) }
-    val hymns = remember(builtIn, overlays) { PesnVozrozhdeniyaCatalog.merge(builtIn, overlays) }
+    val catalog = rememberPvCatalog(overlays)
+    val hymns = catalog.hymns
     var query by remember { mutableStateOf("") }
     var showAdd by remember { mutableStateOf(false) }
     val q = query.trim().lowercase()
@@ -129,11 +147,22 @@ fun PesnVozrozhdeniyaListScreen(
                     shape = RoundedCornerShape(12.dp),
                 )
                 Text(
-                    "Гимнов: ${shown.size} из ${hymns.size}. Можно открыть псалом и добавить свою фонограмму.",
+                    if (catalog.loading) {
+                        "Загрузка сборника…"
+                    } else {
+                        "Гимнов: ${shown.size} из ${hymns.size}. Можно открыть псалом и добавить свою фонограмму."
+                    },
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                     modifier = Modifier.padding(horizontal = 16.dp, vertical = 4.dp),
                 )
+                if (catalog.loading) {
+                    CircularProgressIndicator(
+                        modifier = Modifier
+                            .padding(32.dp)
+                            .align(Alignment.CenterHorizontally),
+                    )
+                }
                 LazyColumn(
                     modifier = Modifier.fillMaxSize(),
                     contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp),
@@ -242,8 +271,8 @@ fun PesnVozrozhdeniyaHymnScreen(
     val clipboard = LocalClipboardManager.current
     val overlays by viewModel.pvHymnOverlays.collectAsState()
     val playlists by viewModel.userSongPlaylists.collectAsState()
-    val builtIn = remember { PesnVozrozhdeniyaCatalog.builtIn(context) }
-    val hymns = remember(builtIn, overlays) { PesnVozrozhdeniyaCatalog.merge(builtIn, overlays) }
+    val catalog = rememberPvCatalog(overlays)
+    val hymns = catalog.hymns
     val hymn = hymns.firstOrNull { it.id == hymnId }
     val fontSize by viewModel.songFontSize.collectAsState()
     var linkUrl by remember { mutableStateOf("") }
@@ -293,6 +322,10 @@ fun PesnVozrozhdeniyaHymnScreen(
                 )
             },
         ) { padding ->
+            if (catalog.loading) {
+                CircularProgressIndicator(modifier = Modifier.padding(padding).padding(32.dp))
+                return@Scaffold
+            }
             if (hymn == null) {
                 Text("Гимн не найден", modifier = Modifier.padding(padding).padding(16.dp))
                 return@Scaffold

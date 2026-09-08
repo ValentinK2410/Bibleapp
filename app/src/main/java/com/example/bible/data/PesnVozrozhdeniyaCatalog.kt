@@ -3,8 +3,6 @@ package com.example.bible.data
 import android.content.Context
 import org.json.JSONArray
 import org.json.JSONObject
-import java.io.BufferedReader
-import java.io.InputStreamReader
 import java.util.UUID
 import java.util.zip.GZIPInputStream
 
@@ -102,7 +100,8 @@ data class PvHymnOverlay(
 }
 
 object PesnVozrozhdeniyaCatalog {
-    private const val ASSET = "songs/pesn_vozrozhdeniya_3300.json.gz"
+    private const val ASSET_JSON = "songs/pesn_vozrozhdeniya_3300.json"
+    private const val ASSET_GZ = "songs/pesn_vozrozhdeniya_3300.json.gz"
 
     @Volatile
     private var cached: List<PvHymn>? = null
@@ -150,12 +149,18 @@ object PesnVozrozhdeniyaCatalog {
     fun newUserId(): String = "pvuser:${UUID.randomUUID()}"
 
     private fun loadFromAssets(context: Context): List<PvHymn> {
+        for (name in listOf(ASSET_JSON, ASSET_GZ)) {
+            val loaded = readAsset(context, name)
+            if (loaded.isNotEmpty()) return loaded
+        }
+        return emptyList()
+    }
+
+    private fun readAsset(context: Context, name: String): List<PvHymn> {
         return try {
-            val json = context.assets.open(ASSET).use { raw ->
-                GZIPInputStream(raw).use { gz ->
-                    BufferedReader(InputStreamReader(gz, Charsets.UTF_8)).readText()
-                }
-            }
+            val bytes = context.assets.open(name).use { it.readBytes() }
+            if (bytes.isEmpty()) return emptyList()
+            val json = decodeToJson(bytes)
             val arr = JSONArray(json)
             (0 until arr.length()).map { i ->
                 val o = arr.getJSONObject(i)
@@ -171,5 +176,16 @@ object PesnVozrozhdeniyaCatalog {
         } catch (_: Exception) {
             emptyList()
         }
+    }
+
+    /** aapt2 распаковывает .gz в assets — читаем и gzip, и обычный JSON. */
+    private fun decodeToJson(bytes: ByteArray): String {
+        val gzip = bytes.size >= 2 && bytes[0] == 0x1f.toByte() && bytes[1] == 0x8b.toByte()
+        val raw = if (gzip) {
+            GZIPInputStream(bytes.inputStream()).use { it.readBytes() }
+        } else {
+            bytes
+        }
+        return String(raw, Charsets.UTF_8)
     }
 }
