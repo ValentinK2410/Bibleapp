@@ -64,6 +64,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.produceState
 import androidx.compose.runtime.mutableFloatStateOf
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -82,6 +83,7 @@ import com.example.bible.data.PlayerState
 import com.example.bible.data.PesnVozrozhdeniyaCatalog
 import com.example.bible.data.PvHymn
 import com.example.bible.data.PvHymnOverlay
+import com.example.bible.data.SongChordMarkup
 import com.example.bible.data.SongSharePackage
 import com.example.bible.ui.theme.PesnopenieMaterialTheme
 import kotlinx.coroutines.Dispatchers
@@ -295,6 +297,8 @@ fun PesnVozrozhdeniyaHymnScreen(
     val persistedFontSize by viewModel.songFontSize.collectAsState()
     var lyricsFontSize by remember { mutableFloatStateOf(persistedFontSize) }
     LaunchedEffect(persistedFontSize) { lyricsFontSize = persistedFontSize }
+    val showChords by viewModel.songShowChords.collectAsState()
+    var transpose by remember(hymnId) { mutableIntStateOf(0) }
     val playerState by AudioPlayerHolder.state.collectAsState()
     var activeAudioPath by remember { mutableStateOf<String?>(null) }
     var linkUrl by remember { mutableStateOf("") }
@@ -417,13 +421,10 @@ fun PesnVozrozhdeniyaHymnScreen(
                         singleLine = true,
                     )
                     Spacer(Modifier.height(8.dp))
-                    OutlinedTextField(
+                    ChordLyricEditor(
                         value = draftLyrics,
                         onValueChange = { draftLyrics = it },
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .heightIn(min = 220.dp),
-                        label = { Text("Текст гимна") },
+                        minHeight = 220.dp,
                     )
                     Spacer(Modifier.height(8.dp))
                     Row(
@@ -489,10 +490,19 @@ fun PesnVozrozhdeniyaHymnScreen(
                         }
                     }
                     Spacer(Modifier.height(4.dp))
-                    Text(
-                        hymn.lyrics.ifBlank { "Текст пока не добавлен." },
-                        fontSize = lyricsFontSize.sp,
-                        lineHeight = (lyricsFontSize * 1.35f).sp,
+                    SongChordToolbar(
+                        hasChords = SongChordMarkup.hasChords(hymn.lyrics),
+                        showChords = showChords,
+                        onShowChordsChange = { viewModel.setSongShowChords(it) },
+                        transpose = transpose,
+                        onTranspose = { transpose = it },
+                    )
+                    Spacer(Modifier.height(8.dp))
+                    ChordLyricsView(
+                        lyrics = hymn.lyrics.ifBlank { "Текст пока не добавлен." },
+                        fontSizeSp = lyricsFontSize,
+                        showChords = showChords,
+                        transpose = transpose,
                     )
                 }
                 Spacer(Modifier.height(20.dp))
@@ -625,7 +635,11 @@ fun PesnVozrozhdeniyaHymnScreen(
                                             audioPaths = hymn.audioPaths + file.absolutePath,
                                             audioLabels = hymn.audioLabels + track.label,
                                             audioSourceUrls = hymn.audioSourceUrls + track.url,
-                                            lyrics = hymn.lyrics.ifBlank { extracted.lyrics },
+                                            lyrics = when {
+                                                SongChordMarkup.hasChords(extracted.lyrics) &&
+                                                    !SongChordMarkup.hasChords(hymn.lyrics) -> extracted.lyrics
+                                                else -> hymn.lyrics.ifBlank { extracted.lyrics }
+                                            },
                                         ),
                                     )
                                     Toast.makeText(context, "Дорожка добавлена", Toast.LENGTH_SHORT).show()

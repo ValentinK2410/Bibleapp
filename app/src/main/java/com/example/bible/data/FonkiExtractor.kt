@@ -327,20 +327,7 @@ object FonkiExtractor {
             """<pre\s+id="music_text"[^>]*>(.*?)</pre>""",
             RegexOption.DOT_MATCHES_ALL,
         ).find(html)?.groupValues?.get(1) ?: return ""
-
-        val lines = preTag.lines()
-        val filtered = lines.filter { line ->
-            val trimmed = line.trim()
-            !Regex("""^\s*[A-G][#bmM]?\s""").containsMatchIn(trimmed) &&
-                !Regex("""^[A-G][#bm/\d\s]*$""").matches(trimmed)
-        }
-
-        return filtered.joinToString("\n")
-            .replace(Regex("<[^>]+>"), "")
-            .replace(Regex("&[a-z]+;"), " ")
-            .replace(Regex(" {2,}"), " ")
-            .replace(Regex("\n{3,}"), "\n\n")
-            .trim()
+        return SongChordMarkup.fromHtmlFragment(preTag)
     }
 
     /**
@@ -440,14 +427,7 @@ object FonkiExtractor {
             RegexOption.DOT_MATCHES_ALL,
         ).find(html)?.groupValues?.get(1) ?: ""
 
-        return raw
-            .replace(Regex("<br\\s*/?>"), "\n")
-            .replace(Regex("<[^>]+>"), "")
-            .replace(Regex("&[a-z]+;"), " ")
-            .replace(Regex("\\t+"), "")
-            .replace(Regex(" {2,}"), " ")
-            .replace(Regex("\n{3,}"), "\n\n")
-            .trim()
+        return SongChordMarkup.fromHtmlFragment(raw)
     }
 
     private fun jsonText(obj: JSONObject?, key: String): String {

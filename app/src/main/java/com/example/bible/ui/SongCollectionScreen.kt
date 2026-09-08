@@ -147,6 +147,7 @@ import com.example.bible.data.SongLinkBundle
 import com.example.bible.data.SongShareImportError
 import com.example.bible.data.SongShareImportOutcome
 import com.example.bible.data.SongSharePackage
+import com.example.bible.data.SongChordMarkup
 import com.example.bible.data.currentLineIndexForSong
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
@@ -409,6 +410,7 @@ fun SongCollectionScreen(
     val songs by viewModel.userSongs.collectAsState()
     val allTags by viewModel.songTags.collectAsState()
     val songHighlightLineWhilePlaying by viewModel.songHighlightLineWhilePlaying.collectAsState()
+    val songShowChords by viewModel.songShowChords.collectAsState()
 
     var showAddSheet by remember { mutableStateOf(false) }
     var selectedSong by remember { mutableStateOf<SongItem?>(null) }
@@ -960,6 +962,8 @@ fun SongCollectionScreen(
                 onSongFontSizeChange = { viewModel.setSongFontSize(it) },
                 highlightLineWhilePlaying = songHighlightLineWhilePlaying,
                 onHighlightLineChange = { viewModel.setSongHighlightLineWhilePlaying(it) },
+                showChords = songShowChords,
+                onShowChordsChange = { viewModel.setSongShowChords(it) },
                 onSharePortableSong = {
                     val s = selectedSong ?: return@SongViewScreen
                     shareSongsPackage(context, scope, listOf(s), songHighlightLineWhilePlaying)
@@ -1524,14 +1528,10 @@ private fun AddSongSheet(
                         shape = RoundedCornerShape(12.dp),
                     )
                     Spacer(Modifier.height(8.dp))
-                    OutlinedTextField(
+                    ChordLyricEditor(
                         value = lyrics,
                         onValueChange = { lyrics = it },
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .height(200.dp),
-                        label = { Text("Текст песни") },
-                        shape = RoundedCornerShape(12.dp),
+                        minHeight = 200.dp,
                     )
                     Spacer(Modifier.height(12.dp))
 
@@ -2497,6 +2497,8 @@ private fun SongViewScreen(
     onSongFontSizeChange: (Float) -> Unit = {},
     highlightLineWhilePlaying: Boolean = true,
     onHighlightLineChange: (Boolean) -> Unit = {},
+    showChords: Boolean = true,
+    onShowChordsChange: (Boolean) -> Unit = {},
     onSharePortableSong: () -> Unit = {},
 ) {
     var isEditing by remember { mutableStateOf(false) }
@@ -2510,7 +2512,9 @@ private fun SongViewScreen(
     val editAudioPaths = remember(song.id) { mutableStateListOf<String>() }
     val editAudioLabels = remember(song.id) { mutableStateListOf<String>() }
     var lyricsFontSize by remember { mutableFloatStateOf(songFontSize) }
+    var transpose by remember(song.id) { mutableIntStateOf(0) }
     val context = LocalContext.current
+    val hasLyricChords = remember(song.lyrics) { SongChordMarkup.hasChords(song.lyrics) }
 
     fun initEditAudioFromSong() {
         editAudioPaths.clear()
@@ -2799,14 +2803,10 @@ private fun SongViewScreen(
                         shape = RoundedCornerShape(8.dp),
                     )
                     Spacer(Modifier.height(8.dp))
-                    OutlinedTextField(
+                    ChordLyricEditor(
                         value = editLyrics,
                         onValueChange = { editLyrics = it },
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .height(400.dp),
-                        label = { Text("Текст") },
-                        shape = RoundedCornerShape(8.dp),
+                        minHeight = 400.dp,
                     )
                     Spacer(Modifier.height(12.dp))
                     Text(
@@ -2898,6 +2898,16 @@ private fun SongViewScreen(
                         )
                     }
                 } else if (song.lyrics.isNotBlank()) {
+                    if (!isEditing) {
+                        SongChordToolbar(
+                            hasChords = hasLyricChords,
+                            showChords = showChords,
+                            onShowChordsChange = onShowChordsChange,
+                            transpose = transpose,
+                            onTranspose = { transpose = it },
+                        )
+                        Spacer(Modifier.height(8.dp))
+                    }
                     if (useKaraoke) {
                         val syncPath = activeAudioPath!!
                         val ps by AudioPlayerHolder.state.collectAsState()
@@ -2954,11 +2964,11 @@ private fun SongViewScreen(
                             }
                         }
                     } else {
-                        Text(
-                            song.lyrics,
-                            fontSize = lyricsFontSize.sp,
-                            lineHeight = (lyricsFontSize * if (isLandscape) 1.38f else 1.5f).sp,
-                            color = MaterialTheme.colorScheme.onSurface,
+                        ChordLyricsView(
+                            lyrics = song.lyrics,
+                            fontSizeSp = lyricsFontSize,
+                            showChords = showChords,
+                            transpose = transpose,
                         )
                     }
                 } else if (!hasVideo) {

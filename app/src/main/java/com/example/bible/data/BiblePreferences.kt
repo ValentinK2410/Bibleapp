@@ -36,6 +36,7 @@ private object Keys {
     val SONG_FONT_SIZE = floatPreferencesKey("song_font_size")
     /** Подсветка текущей строки текста при воспроизведении аудио (если есть таймкоды). */
     val SONG_HIGHLIGHT_LINE_WHILE_PLAYING = booleanPreferencesKey("song_highlight_line_while_playing")
+    val SONG_SHOW_CHORDS = booleanPreferencesKey("song_show_chords")
     /** Масштаб текста названий в списке видео (Медиа → Видео). */
     val VIDEO_LIBRARY_TITLE_SCALE = floatPreferencesKey("video_library_title_scale")
     val DARK_MODE = booleanPreferencesKey("dark_mode")
@@ -786,6 +787,14 @@ class BiblePreferences(
 
     suspend fun setSongHighlightLineWhilePlaying(enabled: Boolean) {
         appContext.bibleDataStore.edit { it[Keys.SONG_HIGHLIGHT_LINE_WHILE_PLAYING] = enabled }
+    }
+
+    val songShowChords: Flow<Boolean> = appContext.bibleDataStore.data.map { prefs ->
+        prefs[Keys.SONG_SHOW_CHORDS] ?: true
+    }
+
+    suspend fun setSongShowChords(enabled: Boolean) {
+        appContext.bibleDataStore.edit { it[Keys.SONG_SHOW_CHORDS] = enabled }
     }
 
     val videoLibraryTitleScale: Flow<Float> = appContext.bibleDataStore.data.map { prefs ->
