@@ -49,6 +49,24 @@ class SongChordMarkupTest {
     }
 
     @Test
+    fun chordOnlyBracketLineStaysAboveLyrics() {
+        val lyrics = """
+            |[Am].          [A].                [E]
+            |Косари на лугу размахалися
+        """.trimMargin()
+        val lines = SongChordMarkup.displayLines(lyrics, showChords = true, transposeSemitones = 0)
+        assertEquals(2, lines.size)
+        assertTrue(lines[0].isChord)
+        assertFalse(lines[1].isChord)
+        assertEquals("Косари на лугу размахалися", lines[1].text)
+        assertTrue(lines[0].text.startsWith("Am"))
+        assertFalse(lines.any { it.text.trim() == "." || it.text.contains("..") && it.text.none { ch -> ch.isLetter() } && !it.isChord })
+        val amAt = lyrics.lines()[0].indexOf("[Am]")
+        val displayedAm = lines[0].text.indexOf("Am")
+        assertEquals(amAt, displayedAm)
+    }
+
+    @Test
     fun keepsSpacesFromHtml() {
         val html = "           G                       A\nПрекрасная любовь"
         val text = SongChordMarkup.fromHtmlFragment(html)

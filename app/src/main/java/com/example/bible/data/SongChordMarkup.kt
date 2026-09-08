@@ -24,7 +24,7 @@ object SongChordMarkup {
     }
 
     fun isChordLine(line: String): Boolean {
-        val t = line.trim()
+        val t = line.replace("[", "").replace("]", "").trim()
         if (t.isEmpty()) return false
         val leftover = CHORD_TOKEN.replace(t, "")
             .replace(Regex("""[\s|/.\-]+"""), "")
@@ -34,8 +34,8 @@ object SongChordMarkup {
     fun stripChords(text: String): String {
         if (text.isBlank()) return text
         return text.lineSequence()
-            .map { CHORD_PRO.replace(it, "") }
             .filterNot { isChordLine(it) }
+            .map { CHORD_PRO.replace(it, "") }
             .joinToString("\n")
             .replace(Regex("\n{3,}"), "\n\n")
             .trim()
@@ -99,15 +99,33 @@ object SongChordMarkup {
         }
         val out = ArrayList<DisplayLine>()
         for (raw in src.split("\n")) {
-            if ('[' in raw && CHORD_PRO.containsMatchIn(raw)) {
-                val (chords, lyrics) = expandChordPro(raw)
-                if (chords.isNotBlank()) out.add(DisplayLine(chords, isChord = true))
-                out.add(DisplayLine(lyrics, isChord = false))
-            } else {
-                out.add(DisplayLine(raw, isChord = isChordLine(raw)))
+            when {
+                isChordLine(raw) -> out.add(DisplayLine(unwrapChordMarkers(raw), isChord = true))
+                isInlineChordPro(raw) -> {
+                    val (chords, lyrics) = expandChordPro(raw)
+                    if (chords.isNotBlank()) out.add(DisplayLine(chords, isChord = true))
+                    out.add(DisplayLine(lyrics, isChord = false))
+                }
+                else -> out.add(DisplayLine(raw, isChord = false))
             }
         }
         return out
+    }
+
+    /** Строка только из аккордов: `[Am]    [E]` — не разворачивать как ChordPro. */
+    private fun isInlineChordPro(line: String): Boolean {
+        if (!CHORD_PRO.containsMatchIn(line)) return false
+        if (isChordLine(line)) return false
+        val without = CHORD_PRO.replace(line, "")
+        return without.any { it.isLetter() }
+    }
+
+    /** `[Am]` → `Am  `, чтобы колонки пробелов совпали с тем, как расставляли в редакторе. */
+    private fun unwrapChordMarkers(line: String): String {
+        if ('[' !in line) return line
+        return CHORD_PRO.replace(line) { match ->
+            match.groupValues[1].padEnd(match.value.length)
+        }
     }
 
     private fun expandChordPro(line: String): Pair<String, String> {

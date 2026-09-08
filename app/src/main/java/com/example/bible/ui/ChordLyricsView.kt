@@ -53,15 +53,20 @@ fun ChordLyricsView(
     val lines = remember(lyrics, showChords, transpose) {
         SongChordMarkup.displayLines(lyrics, showChords, transpose)
     }
-    val chordSize = (fontSizeSp * 0.82f).coerceAtLeast(11f)
-    Column(modifier) {
+    Column(
+        modifier.then(
+            if (showChords) Modifier.horizontalScroll(rememberScrollState()) else Modifier,
+        ),
+    ) {
         lines.forEach { line ->
             Text(
                 text = line.text.ifBlank { " " },
-                fontSize = if (line.isChord) chordSize.sp else fontSizeSp.sp,
-                lineHeight = ((if (line.isChord) chordSize else fontSizeSp) * 1.25f).sp,
+                fontSize = fontSizeSp.sp,
+                lineHeight = (fontSizeSp * 1.28f).sp,
                 fontWeight = if (line.isChord) FontWeight.Bold else FontWeight.Normal,
                 fontFamily = if (showChords) FontFamily.Monospace else FontFamily.Default,
+                softWrap = !showChords,
+                maxLines = if (showChords) 1 else Int.MAX_VALUE,
                 color = if (line.isChord) {
                     MaterialTheme.colorScheme.primary
                 } else {
@@ -131,7 +136,7 @@ fun ChordLyricEditor(
     }
     Column(modifier) {
         Text(
-            "Аккорды: строка над словами (как на HolyChords) или в тексте — [Am]перед слогом.",
+            "Аккорды — отдельной строкой над словами. Шрифт как при просмотре: пробелы совпадут.",
             style = MaterialTheme.typography.bodySmall,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
         )
@@ -171,7 +176,8 @@ fun ChordLyricEditor(
                 .fillMaxWidth()
                 .height(minHeight),
             label = { Text(label) },
-            keyboardOptions = KeyboardOptions(capitalization = KeyboardCapitalization.Sentences),
+            textStyle = MaterialTheme.typography.bodyMedium.copy(fontFamily = FontFamily.Monospace),
+            keyboardOptions = KeyboardOptions(capitalization = KeyboardCapitalization.None),
         )
     }
 }
