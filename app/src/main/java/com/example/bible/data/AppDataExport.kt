@@ -54,6 +54,8 @@ private val USER_DATA_KEYS = setOf(
     "user_notes_json",
     "user_songs_json",
     "user_song_tags",
+    "user_song_playlists_json",
+    "pv_hymn_overlays_json",
     "bookmark_tags_json",
     "user_bible_images_json",
     "user_bible_videos_json",

@@ -64,6 +64,8 @@ import androidx.compose.material.icons.filled.TextDecrease
 import androidx.compose.material.icons.filled.TextIncrease
 import androidx.compose.material.icons.filled.VideoFile
 import androidx.compose.material.icons.automirrored.filled.Label
+import androidx.compose.material.icons.automirrored.filled.PlaylistPlay
+import androidx.compose.material.icons.filled.MenuBook
 import androidx.compose.material.icons.filled.Videocam
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.AssistChip
@@ -391,6 +393,9 @@ private fun shareAppPlayStoreInvite(context: android.content.Context) {
 fun SongCollectionScreen(
     viewModel: BibleViewModel,
     onBack: () -> Unit,
+    onOpenLists: () -> Unit = {},
+    onOpenPesnVozrozhdeniya: () -> Unit = {},
+    initialSongId: String? = null,
 ) {
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
@@ -414,6 +419,12 @@ fun SongCollectionScreen(
     var searchQuery by remember { mutableStateOf("") }
     var activeTagFilter by remember { mutableStateOf<String?>(null) }
     var pesnopenieNight by rememberSaveable { mutableStateOf(false) }
+
+    LaunchedEffect(initialSongId, songs) {
+        if (!initialSongId.isNullOrBlank() && selectedSong == null) {
+            selectedSong = songs.firstOrNull { it.id == initialSongId }
+        }
+    }
 
     val sortedTags = remember(allTags) { allTags.sorted() }
 
@@ -521,6 +532,18 @@ fun SongCollectionScreen(
                     },
                     actions = {
                         if (selectedSong == null) {
+                            IconButton(onClick = onOpenLists) {
+                                Icon(
+                                    Icons.AutoMirrored.Filled.PlaylistPlay,
+                                    contentDescription = "Списки песен",
+                                )
+                            }
+                            IconButton(onClick = onOpenPesnVozrozhdeniya) {
+                                Icon(
+                                    Icons.Default.MenuBook,
+                                    contentDescription = "Песнь возрождения",
+                                )
+                            }
                             if (sharePickMode) {
                                 TextButton(
                                     onClick = {
@@ -731,6 +754,45 @@ fun SongCollectionScreen(
             Column(
                 modifier = Modifier.fillMaxSize(),
             ) {
+                if (selectedSong == null && !sharePickMode) {
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = listH, vertical = 4.dp),
+                        horizontalArrangement = Arrangement.spacedBy(8.dp),
+                    ) {
+                        ElevatedCard(
+                            onClick = onOpenLists,
+                            modifier = Modifier.weight(1f),
+                        ) {
+                            Column(Modifier.padding(12.dp)) {
+                                Icon(Icons.AutoMirrored.Filled.PlaylistPlay, null, tint = MaterialTheme.colorScheme.primary)
+                                Spacer(Modifier.height(4.dp))
+                                Text("Списки", fontWeight = FontWeight.Bold)
+                                Text(
+                                    "Временные и постоянные",
+                                    style = MaterialTheme.typography.labelSmall,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                )
+                            }
+                        }
+                        ElevatedCard(
+                            onClick = onOpenPesnVozrozhdeniya,
+                            modifier = Modifier.weight(1f),
+                        ) {
+                            Column(Modifier.padding(12.dp)) {
+                                Icon(Icons.Default.MenuBook, null, tint = MaterialTheme.colorScheme.primary)
+                                Spacer(Modifier.height(4.dp))
+                                Text("Песнь возрождения", fontWeight = FontWeight.Bold, maxLines = 1, overflow = TextOverflow.Ellipsis)
+                                Text(
+                                    "3300 гимнов",
+                                    style = MaterialTheme.typography.labelSmall,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                )
+                            }
+                        }
+                    }
+                }
                 OutlinedTextField(
                     value = searchQuery,
                     onValueChange = { searchQuery = it },

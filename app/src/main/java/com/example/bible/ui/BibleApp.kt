@@ -1295,6 +1295,60 @@ private fun BibleNavHost(
             SongCollectionScreen(
                 viewModel = viewModel,
                 onBack = { navController.navigateUp() },
+                onOpenLists = { navController.navigate("song_lists") },
+                onOpenPesnVozrozhdeniya = { navController.navigate("songs_pv") },
+            )
+        }
+        composable("song_lists") {
+            UserSongPlaylistsListScreen(
+                viewModel = viewModel,
+                onBack = { navController.navigateUp() },
+                onOpenPlaylist = { id -> navController.navigate("song_list/$id") },
+            )
+        }
+        composable(
+            "song_list/{playlistId}",
+            arguments = listOf(navArgument("playlistId") { type = NavType.StringType }),
+        ) { entry ->
+            val plId = entry.arguments?.getString("playlistId") ?: return@composable
+            UserSongPlaylistDetailScreen(
+                playlistId = plId,
+                viewModel = viewModel,
+                onBack = { navController.navigateUp() },
+                onOpenSong = { song -> navController.navigate("songs_open/${song.id}") },
+                onOpenPvHymn = { id -> navController.navigate("songs_pv_hymn/${android.net.Uri.encode(id)}") },
+            )
+        }
+        composable(
+            "songs_open/{songId}",
+            arguments = listOf(navArgument("songId") { type = NavType.StringType }),
+        ) { entry ->
+            val songId = entry.arguments?.getString("songId")
+            SongCollectionScreen(
+                viewModel = viewModel,
+                onBack = { navController.navigateUp() },
+                onOpenLists = { navController.navigate("song_lists") },
+                onOpenPesnVozrozhdeniya = { navController.navigate("songs_pv") },
+                initialSongId = songId,
+            )
+        }
+        composable("songs_pv") {
+            PesnVozrozhdeniyaListScreen(
+                viewModel = viewModel,
+                onBack = { navController.navigateUp() },
+                onOpenHymn = { id -> navController.navigate("songs_pv_hymn/${android.net.Uri.encode(id)}") },
+            )
+        }
+        composable(
+            "songs_pv_hymn/{hymnId}",
+            arguments = listOf(navArgument("hymnId") { type = NavType.StringType }),
+        ) { entry ->
+            val hymnId = android.net.Uri.decode(entry.arguments?.getString("hymnId").orEmpty())
+            if (hymnId.isBlank()) return@composable
+            PesnVozrozhdeniyaHymnScreen(
+                hymnId = hymnId,
+                viewModel = viewModel,
+                onBack = { navController.navigateUp() },
             )
         }
         composable("video_download") {

@@ -47,6 +47,8 @@ private object Keys {
     val NOTES_CUSTOM_KINDS_JSON = stringPreferencesKey("note_custom_kinds_json")
     val SONGS_JSON = stringPreferencesKey("user_songs_json")
     val SONG_TAGS = stringSetPreferencesKey("user_song_tags")
+    val USER_SONG_PLAYLISTS_JSON = stringPreferencesKey("user_song_playlists_json")
+    val PV_HYMN_OVERLAYS_JSON = stringPreferencesKey("pv_hymn_overlays_json")
     val AUDIO_NARRATOR = stringPreferencesKey("audio_narrator_id")
     val READING_PLAN_COMPLETED = stringSetPreferencesKey("reading_plan_completed_dates")
     val READING_PLAN_REMINDER_HOUR = intPreferencesKey("reading_plan_reminder_h")
@@ -1205,6 +1207,63 @@ class BiblePreferences(
         appContext.bibleDataStore.edit { prefs ->
             val cur = prefs[Keys.SONG_TAGS] ?: emptySet()
             prefs[Keys.SONG_TAGS] = cur - tag
+        }
+    }
+
+    val userSongPlaylists: Flow<List<UserSongPlaylist>> = appContext.bibleDataStore.data.map { prefs ->
+        UserSongPlaylist.parseList(prefs[Keys.USER_SONG_PLAYLISTS_JSON].orEmpty())
+    }
+
+    suspend fun saveUserSongPlaylist(playlist: UserSongPlaylist) {
+        appContext.bibleDataStore.edit { prefs ->
+            val cur = UserSongPlaylist.parseList(prefs[Keys.USER_SONG_PLAYLISTS_JSON].orEmpty()).toMutableList()
+            val ix = cur.indexOfFirst { it.id == playlist.id }
+            val stamped = playlist.copy(updatedAt = System.currentTimeMillis())
+            if (ix >= 0) cur[ix] = stamped else cur.add(0, stamped)
+            prefs[Keys.USER_SONG_PLAYLISTS_JSON] = UserSongPlaylist.toJsonArray(cur)
+        }
+    }
+
+    suspend fun patchUserSongPlaylist(
+        playlistId: String,
+        transform: (UserSongPlaylist) -> UserSongPlaylist,
+    ): Boolean {
+        var updated = false
+        appContext.bibleDataStore.edit { prefs ->
+            val cur = UserSongPlaylist.parseList(prefs[Keys.USER_SONG_PLAYLISTS_JSON].orEmpty()).toMutableList()
+            val ix = cur.indexOfFirst { it.id == playlistId }
+            if (ix < 0) return@edit
+            cur[ix] = transform(cur[ix]).copy(updatedAt = System.currentTimeMillis())
+            prefs[Keys.USER_SONG_PLAYLISTS_JSON] = UserSongPlaylist.toJsonArray(cur)
+            updated = true
+        }
+        return updated
+    }
+
+    suspend fun deleteUserSongPlaylist(id: String) {
+        appContext.bibleDataStore.edit { prefs ->
+            val cur = UserSongPlaylist.parseList(prefs[Keys.USER_SONG_PLAYLISTS_JSON].orEmpty())
+            prefs[Keys.USER_SONG_PLAYLISTS_JSON] = UserSongPlaylist.toJsonArray(cur.filter { it.id != id })
+        }
+    }
+
+    val pvHymnOverlays: Flow<List<PvHymnOverlay>> = appContext.bibleDataStore.data.map { prefs ->
+        PvHymnOverlay.parseList(prefs[Keys.PV_HYMN_OVERLAYS_JSON].orEmpty())
+    }
+
+    suspend fun savePvHymnOverlay(overlay: PvHymnOverlay) {
+        appContext.bibleDataStore.edit { prefs ->
+            val cur = PvHymnOverlay.parseList(prefs[Keys.PV_HYMN_OVERLAYS_JSON].orEmpty()).toMutableList()
+            val ix = cur.indexOfFirst { it.id == overlay.id }
+            if (ix >= 0) cur[ix] = overlay else cur.add(overlay)
+            prefs[Keys.PV_HYMN_OVERLAYS_JSON] = PvHymnOverlay.toJsonArray(cur)
+        }
+    }
+
+    suspend fun deletePvHymnOverlay(id: String) {
+        appContext.bibleDataStore.edit { prefs ->
+            val cur = PvHymnOverlay.parseList(prefs[Keys.PV_HYMN_OVERLAYS_JSON].orEmpty())
+            prefs[Keys.PV_HYMN_OVERLAYS_JSON] = PvHymnOverlay.toJsonArray(cur.filter { it.id != id })
         }
     }
 

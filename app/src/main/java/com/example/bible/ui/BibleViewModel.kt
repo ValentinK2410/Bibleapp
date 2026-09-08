@@ -69,6 +69,9 @@ import com.example.bible.data.SemanticScope
 import com.example.bible.data.TextHighlight
 import com.example.bible.data.MediaCatalogPaths
 import com.example.bible.data.PlaylistCoverStore
+import com.example.bible.data.PlaylistLook
+import com.example.bible.data.PvHymnOverlay
+import com.example.bible.data.SongListSort
 import com.example.bible.data.UserMediaPlaylist
 import com.example.bible.data.UserMediaPlaylistKind
 import com.example.bible.data.UserMediaKind
@@ -76,6 +79,7 @@ import com.example.bible.data.UserMediaPlaybackProgress
 import com.example.bible.data.UserMediaPlaylistShareError
 import com.example.bible.data.UserMediaPlaylistShareOutcome
 import com.example.bible.data.UserMediaPlaylistSharePackage
+import com.example.bible.data.UserSongPlaylist
 import com.example.bible.data.WordSpanMediaAttachment
 import com.example.bible.data.LexiconTone
 import com.example.bible.data.PresetSemanticLexicon
@@ -2749,6 +2753,104 @@ class BibleViewModel(
 
     fun removeSongTag(tag: String) {
         viewModelScope.launch { preferences.removeSongTag(tag) }
+    }
+
+    val userSongPlaylists: StateFlow<List<UserSongPlaylist>> = preferences.userSongPlaylists.stateIn(
+        viewModelScope,
+        SharingStarted.WhileSubscribed(5000),
+        emptyList(),
+    )
+
+    fun createUserSongPlaylist(
+        name: String,
+        temporary: Boolean,
+        initialRefs: List<String> = emptyList(),
+        lookId: String = PlaylistLook.INK.id,
+    ) {
+        val n = name.trim()
+        if (n.isEmpty()) return
+        viewModelScope.launch {
+            preferences.saveUserSongPlaylist(
+                UserSongPlaylist(
+                    name = n,
+                    temporary = temporary,
+                    songRefs = initialRefs,
+                    lookId = lookId,
+                ),
+            )
+        }
+    }
+
+    fun renameUserSongPlaylist(playlistId: String, newName: String) {
+        val n = newName.trim()
+        if (n.isEmpty()) return
+        viewModelScope.launch {
+            preferences.patchUserSongPlaylist(playlistId) { it.copy(name = n) }
+        }
+    }
+
+    fun setUserSongPlaylistTemporary(playlistId: String, temporary: Boolean) {
+        viewModelScope.launch {
+            preferences.patchUserSongPlaylist(playlistId) { it.copy(temporary = temporary) }
+        }
+    }
+
+    fun updateUserSongPlaylistLook(playlistId: String, lookId: String) {
+        viewModelScope.launch {
+            preferences.patchUserSongPlaylist(playlistId) { it.copy(lookId = lookId) }
+        }
+    }
+
+    fun updateUserSongPlaylistSubtitle(playlistId: String, subtitle: String) {
+        viewModelScope.launch {
+            preferences.patchUserSongPlaylist(playlistId) { it.copy(subtitle = subtitle.trim()) }
+        }
+    }
+
+    fun updateUserSongPlaylistSort(playlistId: String, sort: SongListSort) {
+        viewModelScope.launch {
+            preferences.patchUserSongPlaylist(playlistId) { it.copy(sort = sort) }
+        }
+    }
+
+    fun addSongsToUserSongPlaylist(playlistId: String, refs: List<String>) {
+        if (refs.isEmpty()) return
+        viewModelScope.launch {
+            preferences.patchUserSongPlaylist(playlistId) { pl ->
+                val toAdd = refs.filter { it !in pl.songRefs }
+                if (toAdd.isEmpty()) pl else pl.copy(songRefs = pl.songRefs + toAdd)
+            }
+        }
+    }
+
+    fun removeSongFromUserSongPlaylist(playlistId: String, ref: String) {
+        viewModelScope.launch {
+            preferences.patchUserSongPlaylist(playlistId) { it.copy(songRefs = it.songRefs.filter { r -> r != ref }) }
+        }
+    }
+
+    fun setUserSongPlaylistOrder(playlistId: String, orderedRefs: List<String>) {
+        viewModelScope.launch {
+            preferences.patchUserSongPlaylist(playlistId) { it.copy(songRefs = orderedRefs, sort = SongListSort.MANUAL) }
+        }
+    }
+
+    fun deleteUserSongPlaylist(id: String) {
+        viewModelScope.launch { preferences.deleteUserSongPlaylist(id) }
+    }
+
+    val pvHymnOverlays: StateFlow<List<PvHymnOverlay>> = preferences.pvHymnOverlays.stateIn(
+        viewModelScope,
+        SharingStarted.WhileSubscribed(5000),
+        emptyList(),
+    )
+
+    fun savePvHymnOverlay(overlay: PvHymnOverlay) {
+        viewModelScope.launch { preferences.savePvHymnOverlay(overlay) }
+    }
+
+    fun deletePvHymnOverlay(id: String) {
+        viewModelScope.launch { preferences.deletePvHymnOverlay(id) }
     }
 
     private val bibleImageLibrary = BibleImageLibrary(appContext)
