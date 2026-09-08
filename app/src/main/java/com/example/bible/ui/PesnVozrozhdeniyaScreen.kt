@@ -17,6 +17,7 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -30,6 +31,7 @@ import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.AudioFile
 import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Link
 import androidx.compose.material.icons.filled.Pause
 import androidx.compose.material.icons.filled.PlayArrow
@@ -299,6 +301,12 @@ fun PesnVozrozhdeniyaHymnScreen(
     var linkLoading by remember { mutableStateOf(false) }
     var showAddToList by remember { mutableStateOf(false) }
     var showShare by remember { mutableStateOf(false) }
+    var editing by remember { mutableStateOf(false) }
+    var draftTitle by remember { mutableStateOf("") }
+    var draftLyrics by remember { mutableStateOf("") }
+    LaunchedEffect(hymnId) {
+        editing = false
+    }
     LaunchedEffect(hymn?.id, hymn?.audioPaths, playerState.audioPath) {
         val path = playerState.audioPath
         if (path.isNotBlank() && hymn?.audioPaths?.contains(path) == true) {
@@ -400,11 +408,93 @@ fun PesnVozrozhdeniyaHymnScreen(
                     .verticalScroll(rememberScrollState())
                     .padding(16.dp),
             ) {
-                Text(
-                    hymn.lyrics.ifBlank { "Текст пока не добавлен." },
-                    fontSize = lyricsFontSize.sp,
-                    lineHeight = (lyricsFontSize * 1.35f).sp,
-                )
+                if (editing) {
+                    OutlinedTextField(
+                        value = draftTitle,
+                        onValueChange = { draftTitle = it },
+                        modifier = Modifier.fillMaxWidth(),
+                        label = { Text("Название") },
+                        singleLine = true,
+                    )
+                    Spacer(Modifier.height(8.dp))
+                    OutlinedTextField(
+                        value = draftLyrics,
+                        onValueChange = { draftLyrics = it },
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .heightIn(min = 220.dp),
+                        label = { Text("Текст гимна") },
+                    )
+                    Spacer(Modifier.height(8.dp))
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.spacedBy(8.dp),
+                    ) {
+                        Button(
+                            onClick = {
+                                val title = draftTitle.trim()
+                                if (title.isEmpty()) {
+                                    Toast.makeText(context, "Введите название", Toast.LENGTH_SHORT).show()
+                                    return@Button
+                                }
+                                viewModel.savePvHymnOverlay(
+                                    overlayFrom(hymn).copy(
+                                        title = title,
+                                        lyrics = draftLyrics.trim(),
+                                    ),
+                                )
+                                editing = false
+                                Toast.makeText(context, "Сохранено", Toast.LENGTH_SHORT).show()
+                            },
+                            modifier = Modifier.weight(1f),
+                        ) { Text("Сохранить") }
+                        OutlinedButton(
+                            onClick = { editing = false },
+                            modifier = Modifier.weight(1f),
+                        ) { Text("Отмена") }
+                    }
+                    if (hymn.builtIn) {
+                        TextButton(
+                            onClick = {
+                                val original = PesnVozrozhdeniyaCatalog.builtIn(context)
+                                    .firstOrNull { it.id == hymn.id }
+                                if (original != null) {
+                                    draftTitle = original.title
+                                    draftLyrics = original.lyrics
+                                }
+                            },
+                        ) { Text("Вернуть исходный текст") }
+                    }
+                } else {
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        verticalAlignment = Alignment.CenterVertically,
+                    ) {
+                        Text(
+                            "Текст",
+                            style = MaterialTheme.typography.titleSmall,
+                            fontWeight = FontWeight.Bold,
+                            modifier = Modifier.weight(1f),
+                        )
+                        TextButton(
+                            onClick = {
+                                draftTitle = hymn.title
+                                draftLyrics = hymn.lyrics
+                                editing = true
+                            },
+                        ) {
+                            Icon(Icons.Default.Edit, contentDescription = null, modifier = Modifier.size(18.dp))
+                            Spacer(Modifier.width(6.dp))
+                            Text("Изменить")
+                        }
+                    }
+                    Spacer(Modifier.height(4.dp))
+                    Text(
+                        hymn.lyrics.ifBlank { "Текст пока не добавлен." },
+                        fontSize = lyricsFontSize.sp,
+                        lineHeight = (lyricsFontSize * 1.35f).sp,
+                    )
+                }
                 Spacer(Modifier.height(20.dp))
                 Text("Фонограмма", style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.Bold)
                 Text(
