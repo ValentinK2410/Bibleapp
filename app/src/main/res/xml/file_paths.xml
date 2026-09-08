@@ -22,6 +22,9 @@
         name="audio_library"
         path="audio_library/" />
     <files-path
+        name="songs_audio"
+        path="songs_audio/" />
+    <files-path
         name="travel_marker_photos"
         path="travel_marker_photos/" />
     <files-path

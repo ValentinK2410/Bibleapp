@@ -1,8 +1,10 @@
 package com.example.bible.ui
 
+import android.content.Intent
 import android.media.MediaMetadataRetriever
 import android.net.Uri
 import android.widget.Toast
+import androidx.core.content.FileProvider
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.clickable
@@ -34,6 +36,7 @@ import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material.icons.filled.PlaylistAdd
 import androidx.compose.material.icons.filled.Repeat
 import androidx.compose.material.icons.filled.RepeatOne
+import androidx.compose.material.icons.filled.Share
 import androidx.compose.material.icons.filled.Stop
 import androidx.compose.material.icons.filled.TextDecrease
 import androidx.compose.material.icons.filled.TextIncrease
@@ -77,6 +80,7 @@ import com.example.bible.data.PlayerState
 import com.example.bible.data.PesnVozrozhdeniyaCatalog
 import com.example.bible.data.PvHymn
 import com.example.bible.data.PvHymnOverlay
+import com.example.bible.data.SongSharePackage
 import com.example.bible.ui.theme.PesnopenieMaterialTheme
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -294,6 +298,7 @@ fun PesnVozrozhdeniyaHymnScreen(
     var linkUrl by remember { mutableStateOf("") }
     var linkLoading by remember { mutableStateOf(false) }
     var showAddToList by remember { mutableStateOf(false) }
+    var showShare by remember { mutableStateOf(false) }
     LaunchedEffect(hymn?.id, hymn?.audioPaths, playerState.audioPath) {
         val path = playerState.audioPath
         if (path.isNotBlank() && hymn?.audioPaths?.contains(path) == true) {
@@ -354,6 +359,9 @@ fun PesnVozrozhdeniyaHymnScreen(
                             enabled = hymn != null,
                         ) {
                             Icon(Icons.Default.TextIncrease, contentDescription = "Увеличить текст")
+                        }
+                        IconButton(onClick = { showShare = true }, enabled = hymn != null) {
+                            Icon(Icons.Default.Share, contentDescription = "Поделиться")
                         }
                         IconButton(onClick = { showAddToList = true }, enabled = hymn != null) {
                             Icon(Icons.Default.PlaylistAdd, contentDescription = "В список")
@@ -558,6 +566,55 @@ fun PesnVozrozhdeniyaHymnScreen(
         }
     }
 
+    if (showShare && hymn != null) {
+        val hasLyrics = hymn.lyrics.isNotBlank()
+        val audioFiles = hymn.audioPaths.map { File(it) }.filter { it.isFile }
+        AlertDialog(
+            onDismissRequest = { showShare = false },
+            title = { Text("Поделиться") },
+            text = {
+                Column {
+                    TextButton(
+                        onClick = {
+                            sharePvHymnText(context, hymn)
+                            showShare = false
+                        },
+                        enabled = hasLyrics || hymn.title.isNotBlank(),
+                    ) { Text("Текст гимна") }
+                    TextButton(
+                        onClick = {
+                            sharePvHymnPackage(context, scope, hymn)
+                            showShare = false
+                        },
+                        enabled = hasLyrics && audioFiles.isNotEmpty(),
+                    ) { Text("Текст и фонограмма") }
+                    TextButton(
+                        onClick = {
+                            sharePvHymnAudio(context, hymn, audioFiles)
+                            showShare = false
+                        },
+                        enabled = audioFiles.isNotEmpty(),
+                    ) { Text(if (audioFiles.size > 1) "Только фонограммы" else "Только фонограмма") }
+                    if (!hasLyrics && audioFiles.isEmpty()) {
+                        Text(
+                            "Нечего отправить: нет текста и аудио.",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        )
+                    } else if (audioFiles.isEmpty()) {
+                        Text(
+                            "Фонограмму можно прикрепить ниже — тогда её тоже можно будет отправить.",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        )
+                    }
+                }
+            },
+            confirmButton = {
+                TextButton(onClick = { showShare = false }) { Text("Закрыть") }
+            },
+        )
+    }
     if (showAddToList && hymn != null) {
         AlertDialog(
             onDismissRequest = { showAddToList = false },
@@ -643,6 +700,106 @@ private fun PvPhonogramModesRow(playerState: PlayerState) {
         }
     }
 }
+
+private fun sharePvHymnText(context: android.content.Context, hymn: PvHymn) {
+    val body = buildString {
+        append("Песнь возрождения")
+        if (hymn.number > 0) append(" №${hymn.number}")
+        append('\n')
+        if (hymn.title.isNotBlank()) {
+            append(hymn.title)
+            append("\n\n")
+        }
+        append(hymn.lyrics.trim())
+    }.trim()
+    if (body.isBlank()) {
+        Toast.makeText(context, "Нет текста для отправки", Toast.LENGTH_SHORT).show()
+        return
+    }
+    try {
+        val send = Intent(Intent.ACTION_SEND).apply {
+            type = "text/plain"
+            putExtra(Intent.EXTRA_SUBJECT, hymnShareSubject(hymn))
+            putExtra(Intent.EXTRA_TEXT, body)
+        }
+        context.startActivity(Intent.createChooser(send, "Отправить гимн"))
+    } catch (_: Exception) {
+        Toast.makeText(context, "Не удалось открыть отправку", Toast.LENGTH_SHORT).show()
+    }
+}
+
+private fun sharePvHymnPackage(
+    context: android.content.Context,
+    scope: kotlinx.coroutines.CoroutineScope,
+    hymn: PvHymn,
+) {
+    scope.launch {
+        if (!SongSharePackage.canShareSong(hymn.toSongItem())) {
+            Toast.makeText(context, "Нужны текст и сохранённый аудиофайл", Toast.LENGTH_SHORT).show()
+            return@launch
+        }
+        try {
+            val zip = withContext(Dispatchers.IO) {
+                SongSharePackage.exportSongsToZip(context, listOf(hymn.toSongItem()), false)
+            }
+            val shareUri = FileProvider.getUriForFile(
+                context,
+                "${context.packageName}.provider",
+                zip,
+            )
+            val send = Intent(Intent.ACTION_SEND).apply {
+                type = "application/zip"
+                putExtra(Intent.EXTRA_STREAM, shareUri)
+                putExtra(Intent.EXTRA_SUBJECT, hymnShareSubject(hymn))
+                addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+            }
+            context.startActivity(Intent.createChooser(send, "Отправить гимн с фонограммой"))
+        } catch (_: Exception) {
+            Toast.makeText(context, "Не удалось собрать архив", Toast.LENGTH_SHORT).show()
+        }
+    }
+}
+
+private fun sharePvHymnAudio(
+    context: android.content.Context,
+    hymn: PvHymn,
+    files: List<File>,
+) {
+    if (files.isEmpty()) {
+        Toast.makeText(context, "Нет файла фонограммы", Toast.LENGTH_SHORT).show()
+        return
+    }
+    try {
+        val authority = "${context.packageName}.provider"
+        if (files.size == 1) {
+            val uri = FileProvider.getUriForFile(context, authority, files[0])
+            val send = Intent(Intent.ACTION_SEND).apply {
+                type = "audio/*"
+                putExtra(Intent.EXTRA_STREAM, uri)
+                putExtra(Intent.EXTRA_SUBJECT, hymnShareSubject(hymn))
+                addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+            }
+            context.startActivity(Intent.createChooser(send, "Отправить фонограмму"))
+        } else {
+            val uris = arrayListOf<Uri>().apply {
+                files.forEach { add(FileProvider.getUriForFile(context, authority, it)) }
+            }
+            val send = Intent(Intent.ACTION_SEND_MULTIPLE).apply {
+                type = "audio/*"
+                putParcelableArrayListExtra(Intent.EXTRA_STREAM, uris)
+                putExtra(Intent.EXTRA_SUBJECT, hymnShareSubject(hymn))
+                addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+            }
+            context.startActivity(Intent.createChooser(send, "Отправить фонограммы"))
+        }
+    } catch (_: Exception) {
+        Toast.makeText(context, "Не удалось открыть отправку", Toast.LENGTH_SHORT).show()
+    }
+}
+
+private fun hymnShareSubject(hymn: PvHymn): String =
+    if (hymn.number > 0) "Песнь возрождения №${hymn.number}. ${hymn.title}"
+    else hymn.title.ifBlank { "Песнь возрождения" }
 
 private fun overlayFrom(hymn: PvHymn): PvHymnOverlay = PvHymnOverlay(
     id = hymn.id,
