@@ -1,5 +1,6 @@
 package com.example.bible.ui
 
+import android.text.Html
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -46,6 +47,7 @@ import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.CenterAlignedTopAppBar
+import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -463,8 +465,16 @@ fun UserSongPlaylistDetailScreen(
     PesnopenieMaterialTheme(useDark = false) {
         Scaffold(
             topBar = {
-                CenterAlignedTopAppBar(
-                    title = { Text(playlist.name, maxLines = 1, overflow = TextOverflow.Ellipsis) },
+                TopAppBar(
+                    title = {
+                        Text(
+                            playlist.name,
+                            maxLines = 2,
+                            overflow = TextOverflow.Ellipsis,
+                            style = MaterialTheme.typography.titleMedium,
+                            fontWeight = FontWeight.SemiBold,
+                        )
+                    },
                     navigationIcon = {
                         IconButton(onClick = onBack) {
                             Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Назад")
@@ -686,19 +696,31 @@ private fun SongListRow(
                 modifier = handleModifier,
             )
         }
-        Column(Modifier.weight(1f).padding(horizontal = 8.dp)) {
-            Text(title, fontWeight = FontWeight.SemiBold, maxLines = 2, overflow = TextOverflow.Ellipsis)
+        Column(Modifier.weight(1f).padding(horizontal = 6.dp)) {
+            Text(
+                decodeHtmlText(title),
+                style = MaterialTheme.typography.bodyMedium,
+                fontWeight = FontWeight.Medium,
+                maxLines = 3,
+                overflow = TextOverflow.Ellipsis,
+            )
             if (subtitle.isNotBlank()) {
-                Text(subtitle, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                Text(
+                    decodeHtmlText(subtitle),
+                    style = MaterialTheme.typography.labelSmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
+                )
             }
         }
         if (hasAudio) {
-            IconButton(onClick = onPlay) {
-                Icon(Icons.Default.PlayArrow, contentDescription = "Играть")
+            IconButton(onClick = onPlay, modifier = Modifier.size(36.dp)) {
+                Icon(Icons.Default.PlayArrow, contentDescription = "Играть", modifier = Modifier.size(20.dp))
             }
         }
-        IconButton(onClick = onRemove) {
-            Icon(Icons.Default.Delete, contentDescription = "Убрать")
+        IconButton(onClick = onRemove, modifier = Modifier.size(36.dp)) {
+            Icon(Icons.Default.Delete, contentDescription = "Убрать", modifier = Modifier.size(20.dp))
         }
     }
 }
@@ -819,4 +841,9 @@ private fun PickSongsForListSheet(
             }
         }
     }
+}
+
+private fun decodeHtmlText(raw: String): String {
+    if (raw.isEmpty() || '&' !in raw) return raw
+    return Html.fromHtml(raw, Html.FROM_HTML_MODE_LEGACY).toString()
 }
