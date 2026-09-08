@@ -67,6 +67,19 @@ class SongChordMarkupTest {
     }
 
     @Test
+    fun uniqueChordsKeepOrderAndTranspose() {
+        val lyrics = """
+            |[Am].          [A].                [E]
+            |Косари на лугу
+            |G     D/F#
+            |вторая строка
+        """.trimMargin()
+        assertEquals(listOf("Am", "A", "E", "G", "D/F#"), SongChordMarkup.uniqueChordNames(lyrics))
+        val up = SongChordMarkup.uniqueChordNames(lyrics, 2)
+        assertEquals(listOf("Hm", "H", "F#", "A", "E/G#"), up)
+    }
+
+    @Test
     fun keepsSpacesFromHtml() {
         val html = "           G                       A\nПрекрасная любовь"
         val text = SongChordMarkup.fromHtmlFragment(html)

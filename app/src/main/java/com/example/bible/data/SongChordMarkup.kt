@@ -15,7 +15,7 @@ object SongChordMarkup {
     private val CHORD_PRO = Regex("""\[([^]]+)]""")
 
     /** Немецкая/церковная последовательность, как на HolyChords. */
-    private val NOTES = listOf("C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "B", "H")
+    val NOTES = listOf("C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "B", "H")
 
     fun hasChords(text: String): Boolean {
         if (text.isBlank()) return false
@@ -112,6 +112,27 @@ object SongChordMarkup {
         return out
     }
 
+    /** Уникальные аккорды песни в порядке появления, уже с транспонированием. */
+    fun uniqueChordNames(text: String, transposeSemitones: Int = 0): List<String> {
+        if (text.isBlank()) return emptyList()
+        val src = if (transposeSemitones == 0) text else transpose(text, transposeSemitones)
+        val found = linkedSetOf<String>()
+        CHORD_PRO.findAll(src).forEach { match ->
+            val inner = match.groupValues[1].trim()
+            if (CHORD_TOKEN.matchEntire(inner) != null) found.add(inner)
+        }
+        src.lineSequence().forEach { line ->
+            if (!isChordLine(line)) return@forEach
+            val clean = line.replace("[", "").replace("]", "")
+            CHORD_TOKEN.findAll(clean).forEach { found.add(it.value) }
+        }
+        return found.toList()
+    }
+
+    fun pitchClass(root: String): Int? = noteIndex(root)
+
+    fun noteName(pitchClass: Int): String = NOTES[Math.floorMod(pitchClass, 12)]
+
     /** Строка только из аккордов: `[Am]    [E]` — не разворачивать как ChordPro. */
     private fun isInlineChordPro(line: String): Boolean {
         if (!CHORD_PRO.containsMatchIn(line)) return false
@@ -190,7 +211,7 @@ object SongChordMarkup {
         return NOTES[(idx + n) % 12] + suffix
     }
 
-    private fun noteIndex(root: String): Int? = when (root) {
+    fun noteIndex(root: String): Int? = when (root) {
         "C" -> 0
         "C#", "Db" -> 1
         "D" -> 2

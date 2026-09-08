@@ -496,6 +496,7 @@ fun PesnVozrozhdeniyaHymnScreen(
                         onShowChordsChange = { viewModel.setSongShowChords(it) },
                         transpose = transpose,
                         onTranspose = { transpose = it },
+                        lyrics = hymn.lyrics,
                     )
                     Spacer(Modifier.height(8.dp))
                     ChordLyricsView(

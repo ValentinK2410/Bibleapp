@@ -85,37 +85,44 @@ fun SongChordToolbar(
     transpose: Int,
     onTranspose: (Int) -> Unit,
     modifier: Modifier = Modifier,
+    lyrics: String = "",
 ) {
-    Row(
-        modifier = modifier.fillMaxWidth(),
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.spacedBy(4.dp),
-    ) {
-        FilterChip(
-            selected = showChords,
-            onClick = { onShowChordsChange(!showChords) },
-            label = { Text(if (hasChords) "Аккорды" else "Аккорды (нет)") },
-            enabled = hasChords || showChords,
-        )
-        if (showChords && hasChords) {
-            IconButton(onClick = { onTranspose(transpose - 1) }) {
-                Icon(Icons.Default.Remove, contentDescription = "Тоном ниже")
-            }
-            Text(
-                if (transpose == 0) "тон" else {
-                    val sign = if (transpose > 0) "+" else ""
-                    "$sign$transpose"
-                },
-                style = MaterialTheme.typography.labelMedium,
-                fontWeight = FontWeight.Bold,
-                color = MaterialTheme.colorScheme.primary,
+    Column(modifier.fillMaxWidth()) {
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(4.dp),
+        ) {
+            FilterChip(
+                selected = showChords,
+                onClick = { onShowChordsChange(!showChords) },
+                label = { Text(if (hasChords) "Аккорды" else "Аккорды (нет)") },
+                enabled = hasChords || showChords,
             )
-            IconButton(onClick = { onTranspose(transpose + 1) }) {
-                Icon(Icons.Default.Add, contentDescription = "Тоном выше")
+            if (showChords && hasChords) {
+                IconButton(onClick = { onTranspose(transpose - 1) }) {
+                    Icon(Icons.Default.Remove, contentDescription = "Тоном ниже")
+                }
+                Text(
+                    if (transpose == 0) "тон" else {
+                        val sign = if (transpose > 0) "+" else ""
+                        "$sign$transpose"
+                    },
+                    style = MaterialTheme.typography.labelMedium,
+                    fontWeight = FontWeight.Bold,
+                    color = MaterialTheme.colorScheme.primary,
+                )
+                IconButton(onClick = { onTranspose(transpose + 1) }) {
+                    Icon(Icons.Default.Add, contentDescription = "Тоном выше")
+                }
+                if (transpose != 0) {
+                    TextButton(onClick = { onTranspose(0) }) { Text("Сброс") }
+                }
             }
-            if (transpose != 0) {
-                TextButton(onClick = { onTranspose(0) }) { Text("Сброс") }
-            }
+        }
+        if (showChords && hasChords && lyrics.isNotBlank()) {
+            Spacer(Modifier.height(8.dp))
+            InstrumentFingeringGuide(lyrics = lyrics, transpose = transpose)
         }
     }
 }
