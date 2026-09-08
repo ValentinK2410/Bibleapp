@@ -135,12 +135,34 @@ object SongChordMarkup {
 
     data class ChordSpan(val name: String, val start: Int, val endExclusive: Int)
 
+    sealed class ChordLinePart {
+        data class Chord(val name: String, val start: Int) : ChordLinePart()
+        data class Gap(val text: String) : ChordLinePart()
+    }
+
     /** Позиции аккордов в уже развёрнутой строке просмотра (`Am    E`). */
     fun chordSpans(line: String): List<ChordSpan> {
         if (line.isBlank()) return emptyList()
         return CHORD_TOKEN.findAll(line).map { match ->
             ChordSpan(match.value, match.range.first, match.range.last + 1)
         }.toList()
+    }
+
+    /** Аккорды и исходные пробелы между ними, чтобы не склеивать `Am    E`. */
+    fun chordLineParts(line: String): List<ChordLinePart> {
+        val spans = chordSpans(line)
+        if (spans.isEmpty()) {
+            return if (line.isEmpty()) emptyList() else listOf(ChordLinePart.Gap(line))
+        }
+        val out = ArrayList<ChordLinePart>(spans.size * 2)
+        var i = 0
+        for (span in spans) {
+            if (span.start > i) out.add(ChordLinePart.Gap(line.substring(i, span.start)))
+            out.add(ChordLinePart.Chord(span.name, span.start))
+            i = span.endExclusive
+        }
+        if (i < line.length) out.add(ChordLinePart.Gap(line.substring(i)))
+        return out
     }
 
     /** Строка только из аккордов: `[Am]    [E]` — не разворачивать как ChordPro. */

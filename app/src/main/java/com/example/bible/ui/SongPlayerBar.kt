@@ -80,11 +80,11 @@ fun SongPlayerBar(
 
     val displayPos = if (isSeeking) seekPos else ps.positionMs
 
-    val padH = if (slim) 6.dp else if (compact) 8.dp else 12.dp
-    val padV = if (slim) 2.dp else if (compact) 4.dp else 8.dp
-    val playBtn = if (slim) 32.dp else if (compact) 36.dp else 40.dp
-    val iconInBtn = if (slim) 20.dp else if (compact) 22.dp else 24.dp
-    val sliderH = if (slim) 16.dp else if (compact) 20.dp else 24.dp
+    val padH = if (slim) 8.dp else if (compact) 8.dp else 12.dp
+    val padV = if (slim) 6.dp else if (compact) 4.dp else 8.dp
+    val playBtn = if (slim) 48.dp else if (compact) 36.dp else 40.dp
+    val iconInBtn = if (slim) 28.dp else if (compact) 22.dp else 24.dp
+    val sliderH = if (slim) 28.dp else if (compact) 20.dp else 24.dp
 
     Surface(
         modifier = modifier
@@ -159,12 +159,12 @@ fun SongPlayerBar(
                 if (onRequestHide != null) {
                     IconButton(
                         onClick = onRequestHide,
-                        modifier = Modifier.size(if (slim) 28.dp else 32.dp),
+                        modifier = Modifier.size(if (slim) 48.dp else 32.dp),
                     ) {
                         Icon(
                             Icons.Default.ExpandMore,
                             contentDescription = "Скрыть плеер",
-                            modifier = Modifier.size(18.dp),
+                            modifier = Modifier.size(if (slim) 28.dp else 18.dp),
                         )
                     }
                 } else {

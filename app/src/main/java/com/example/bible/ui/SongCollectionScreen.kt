@@ -2573,7 +2573,7 @@ private fun SongViewScreen(
     val playerOverlayVisible = hasPlayerBar && (!isLandscape || showPlayer)
     val bottomInsetPlayer = when {
         !playerOverlayVisible -> 0.dp
-        isLandscape -> 40.dp + audioPanelH
+        isLandscape -> 56.dp + audioPanelH
         else -> 104.dp + audioPanelH
     }
     val contentPadV = if (isLandscape) 0.dp else 8.dp
@@ -3168,12 +3168,13 @@ private fun SongLandscapeReadingBar(
             modifier = Modifier
                 .fillMaxWidth()
                 .windowInsetsPadding(WindowInsets.statusBars)
-                .height(48.dp)
-                .padding(horizontal = 2.dp),
+                .height(56.dp)
+                .padding(horizontal = 4.dp),
             verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(2.dp),
         ) {
-            IconButton(onClick = onBack, modifier = Modifier.size(36.dp)) {
-                Icon(Icons.AutoMirrored.Filled.ArrowBack, "Назад", Modifier.size(20.dp))
+            IconButton(onClick = onBack, modifier = Modifier.size(48.dp)) {
+                Icon(Icons.AutoMirrored.Filled.ArrowBack, "Назад", Modifier.size(28.dp))
             }
             Text(
                 text = buildString {
@@ -3183,58 +3184,58 @@ private fun SongLandscapeReadingBar(
                         append(artist)
                     }
                 },
-                style = MaterialTheme.typography.labelLarge,
+                style = MaterialTheme.typography.titleSmall,
                 fontWeight = FontWeight.Bold,
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis,
                 modifier = Modifier
                     .weight(1f)
-                    .padding(end = 4.dp),
+                    .padding(end = 6.dp),
             )
             if (hasChords) {
                 FilterChip(
                     selected = showChords,
                     onClick = { onShowChordsChange(!showChords) },
-                    label = { Text("Акк.", style = MaterialTheme.typography.labelSmall) },
-                    modifier = Modifier.height(32.dp),
+                    label = { Text("Акк.", style = MaterialTheme.typography.labelLarge) },
+                    modifier = Modifier.height(44.dp),
                 )
                 if (showChords) {
-                    IconButton(onClick = { onTranspose(transpose - 1) }, modifier = Modifier.size(32.dp)) {
-                        Icon(Icons.Default.Remove, "Тоном ниже", Modifier.size(18.dp))
+                    IconButton(onClick = { onTranspose(transpose - 1) }, modifier = Modifier.size(48.dp)) {
+                        Icon(Icons.Default.Remove, "Тоном ниже", Modifier.size(28.dp))
                     }
                     Text(
                         if (transpose == 0) "0" else {
                             val sign = if (transpose > 0) "+" else ""
                             "$sign$transpose"
                         },
-                        style = MaterialTheme.typography.labelSmall,
+                        style = MaterialTheme.typography.titleSmall,
                         fontWeight = FontWeight.Bold,
                         color = MaterialTheme.colorScheme.primary,
                     )
-                    IconButton(onClick = { onTranspose(transpose + 1) }, modifier = Modifier.size(32.dp)) {
-                        Icon(Icons.Default.Add, "Тоном выше", Modifier.size(18.dp))
+                    IconButton(onClick = { onTranspose(transpose + 1) }, modifier = Modifier.size(48.dp)) {
+                        Icon(Icons.Default.Add, "Тоном выше", Modifier.size(28.dp))
                     }
                 }
             }
             if (hasAudio) {
-                IconButton(onClick = onPlayPause, modifier = Modifier.size(36.dp)) {
+                IconButton(onClick = onPlayPause, modifier = Modifier.size(48.dp)) {
                     Icon(
                         if (isPlaying) Icons.Default.Pause else Icons.Default.PlayArrow,
                         if (isPlaying) "Пауза" else "Играть",
-                        Modifier.size(22.dp),
+                        Modifier.size(30.dp),
                         tint = MaterialTheme.colorScheme.primary,
                     )
                 }
             }
-            IconButton(onClick = onFontDown, modifier = Modifier.size(32.dp)) {
-                Icon(Icons.Default.TextDecrease, "Уменьшить текст", Modifier.size(18.dp))
+            IconButton(onClick = onFontDown, modifier = Modifier.size(48.dp)) {
+                Icon(Icons.Default.TextDecrease, "Уменьшить текст", Modifier.size(26.dp))
             }
-            IconButton(onClick = onFontUp, modifier = Modifier.size(32.dp)) {
-                Icon(Icons.Default.TextIncrease, "Увеличить текст", Modifier.size(18.dp))
+            IconButton(onClick = onFontUp, modifier = Modifier.size(48.dp)) {
+                Icon(Icons.Default.TextIncrease, "Увеличить текст", Modifier.size(26.dp))
             }
             Box {
-                IconButton(onClick = { menuOpen = true }, modifier = Modifier.size(36.dp)) {
-                    Icon(Icons.Default.MoreVert, "Ещё", Modifier.size(20.dp))
+                IconButton(onClick = { menuOpen = true }, modifier = Modifier.size(48.dp)) {
+                    Icon(Icons.Default.MoreVert, "Ещё", Modifier.size(28.dp))
                 }
                 DropdownMenu(expanded = menuOpen, onDismissRequest = { menuOpen = false }) {
                     if (hasAudio) {

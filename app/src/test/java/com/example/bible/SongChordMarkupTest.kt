@@ -67,6 +67,16 @@ class SongChordMarkupTest {
     }
 
     @Test
+    fun chordLinePartsKeepGapsBetweenChords() {
+        val parts = SongChordMarkup.chordLineParts("Am          A                E")
+        val names = parts.filterIsInstance<SongChordMarkup.ChordLinePart.Chord>().map { it.name }
+        val gaps = parts.filterIsInstance<SongChordMarkup.ChordLinePart.Gap>().map { it.text }
+        assertEquals(listOf("Am", "A", "E"), names)
+        assertTrue(gaps.any { it.length >= 8 })
+        assertEquals(3, names.size)
+    }
+
+    @Test
     fun chordSpansFindTokensInDisplayLine() {
         val spans = SongChordMarkup.chordSpans("Am          A                E")
         assertEquals(listOf("Am", "A", "E"), spans.map { it.name })

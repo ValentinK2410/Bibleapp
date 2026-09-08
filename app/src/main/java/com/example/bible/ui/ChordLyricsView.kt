@@ -126,10 +126,10 @@ private fun ClickableChordLine(
     selected: SelectedLyricChord?,
     onToggle: (lineIndex: Int, start: Int) -> Unit,
 ) {
-    val spans = remember(text) { SongChordMarkup.chordSpans(text) }
+    val parts = remember(text) { SongChordMarkup.chordLineParts(text) }
     val chordColor = MaterialTheme.colorScheme.primary
     val selectedBg = MaterialTheme.colorScheme.primaryContainer
-    if (spans.isEmpty()) {
+    if (parts.none { it is SongChordMarkup.ChordLinePart.Chord }) {
         Text(
             text = text.ifBlank { " " },
             fontSize = fontSizeSp.sp,
@@ -142,25 +142,39 @@ private fun ClickableChordLine(
     }
     FlowRow(
         modifier = Modifier.fillMaxWidth(),
-        horizontalArrangement = Arrangement.spacedBy(4.dp),
-        verticalArrangement = Arrangement.spacedBy(2.dp),
+        horizontalArrangement = Arrangement.Start,
+        verticalArrangement = Arrangement.Center,
     ) {
-        spans.forEach { span ->
-            val isSel = selected?.lineIndex == lineIndex && selected.start == span.start
-            Text(
-                text = span.name,
-                fontSize = fontSizeSp.sp,
-                fontWeight = FontWeight.Bold,
-                fontFamily = FontFamily.Monospace,
-                color = chordColor,
-                textDecoration = if (isSel) TextDecoration.Underline else TextDecoration.None,
-                modifier = Modifier
-                    .defaultMinSize(minHeight = 40.dp)
-                    .clip(RoundedCornerShape(8.dp))
-                    .background(if (isSel) selectedBg else Color.Transparent)
-                    .clickable { onToggle(lineIndex, span.start) }
-                    .padding(horizontal = 8.dp, vertical = 6.dp),
-            )
+        parts.forEach { part ->
+            when (part) {
+                is SongChordMarkup.ChordLinePart.Gap -> {
+                    Text(
+                        text = part.text,
+                        fontSize = fontSizeSp.sp,
+                        fontFamily = FontFamily.Monospace,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        softWrap = false,
+                        maxLines = 1,
+                    )
+                }
+                is SongChordMarkup.ChordLinePart.Chord -> {
+                    val isSel = selected?.lineIndex == lineIndex && selected.start == part.start
+                    Text(
+                        text = part.name,
+                        fontSize = fontSizeSp.sp,
+                        fontWeight = FontWeight.Bold,
+                        fontFamily = FontFamily.Monospace,
+                        color = chordColor,
+                        textDecoration = if (isSel) TextDecoration.Underline else TextDecoration.None,
+                        modifier = Modifier
+                            .defaultMinSize(minHeight = 40.dp)
+                            .clip(RoundedCornerShape(8.dp))
+                            .background(if (isSel) selectedBg else Color.Transparent)
+                            .clickable { onToggle(lineIndex, part.start) }
+                            .padding(horizontal = 4.dp, vertical = 6.dp),
+                    )
+                }
+            }
         }
     }
 }
