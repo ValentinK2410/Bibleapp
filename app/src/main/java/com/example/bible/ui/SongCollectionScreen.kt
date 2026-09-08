@@ -754,45 +754,6 @@ fun SongCollectionScreen(
             Column(
                 modifier = Modifier.fillMaxSize(),
             ) {
-                if (selectedSong == null && !sharePickMode) {
-                    Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(horizontal = listH, vertical = 4.dp),
-                        horizontalArrangement = Arrangement.spacedBy(8.dp),
-                    ) {
-                        ElevatedCard(
-                            onClick = onOpenLists,
-                            modifier = Modifier.weight(1f),
-                        ) {
-                            Column(Modifier.padding(12.dp)) {
-                                Icon(Icons.AutoMirrored.Filled.PlaylistPlay, null, tint = MaterialTheme.colorScheme.primary)
-                                Spacer(Modifier.height(4.dp))
-                                Text("Списки", fontWeight = FontWeight.Bold)
-                                Text(
-                                    "Временные и постоянные",
-                                    style = MaterialTheme.typography.labelSmall,
-                                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                                )
-                            }
-                        }
-                        ElevatedCard(
-                            onClick = onOpenPesnVozrozhdeniya,
-                            modifier = Modifier.weight(1f),
-                        ) {
-                            Column(Modifier.padding(12.dp)) {
-                                Icon(Icons.Default.MenuBook, null, tint = MaterialTheme.colorScheme.primary)
-                                Spacer(Modifier.height(4.dp))
-                                Text("Песнь возрождения", fontWeight = FontWeight.Bold, maxLines = 1, overflow = TextOverflow.Ellipsis)
-                                Text(
-                                    "3300 гимнов",
-                                    style = MaterialTheme.typography.labelSmall,
-                                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                                )
-                            }
-                        }
-                    }
-                }
                 OutlinedTextField(
                     value = searchQuery,
                     onValueChange = { searchQuery = it },
