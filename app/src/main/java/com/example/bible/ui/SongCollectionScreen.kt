@@ -411,6 +411,7 @@ fun SongCollectionScreen(
     val allTags by viewModel.songTags.collectAsState()
     val songHighlightLineWhilePlaying by viewModel.songHighlightLineWhilePlaying.collectAsState()
     val songShowChords by viewModel.songShowChords.collectAsState()
+    val songShowAudioTracks by viewModel.songShowAudioTracks.collectAsState()
 
     var showAddSheet by remember { mutableStateOf(false) }
     var selectedSong by remember { mutableStateOf<SongItem?>(null) }
@@ -964,6 +965,8 @@ fun SongCollectionScreen(
                 onHighlightLineChange = { viewModel.setSongHighlightLineWhilePlaying(it) },
                 showChords = songShowChords,
                 onShowChordsChange = { viewModel.setSongShowChords(it) },
+                showAudioTracks = songShowAudioTracks,
+                onShowAudioTracksChange = { viewModel.setSongShowAudioTracks(it) },
                 onSharePortableSong = {
                     val s = selectedSong ?: return@SongViewScreen
                     shareSongsPackage(context, scope, listOf(s), songHighlightLineWhilePlaying)
@@ -2499,6 +2502,8 @@ private fun SongViewScreen(
     onHighlightLineChange: (Boolean) -> Unit = {},
     showChords: Boolean = true,
     onShowChordsChange: (Boolean) -> Unit = {},
+    showAudioTracks: Boolean = false,
+    onShowAudioTracksChange: (Boolean) -> Unit = {},
     onSharePortableSong: () -> Unit = {},
 ) {
     var isEditing by remember { mutableStateOf(false) }
@@ -2555,21 +2560,23 @@ private fun SongViewScreen(
             !isEditing
     val contentScroll = rememberScrollState()
     val isLandscape = LocalConfiguration.current.orientation == Configuration.ORIENTATION_LANDSCAPE
-    val multiTrackInset = if (existingAudioPaths.size > 1) {
-        48.dp + 40.dp * existingAudioPaths.size + 8.dp
+    val showTrackPicker = hasPlayerBar && existingAudioPaths.size > 1 && showAudioTracks
+    val audioPanelH = if (showTrackPicker) {
+        28.dp + 40.dp * existingAudioPaths.size + 12.dp
     } else {
         0.dp
     }
     val bottomInsetPlayer = when {
         !hasPlayerBar -> 0.dp
-        isLandscape -> 72.dp + multiTrackInset
-        else -> 120.dp + multiTrackInset
+        isLandscape -> 56.dp + audioPanelH
+        else -> 104.dp + audioPanelH
     }
     val contentPadV = if (isLandscape) 4.dp else 8.dp
 
     Box(modifier = Modifier.fillMaxSize()) {
         Scaffold(
             topBar = {
+                Column {
                 CenterAlignedTopAppBar(
                     title = {
                         if (isLandscape) {
@@ -2741,15 +2748,33 @@ private fun SongViewScreen(
                         }
                     },
                 )
+                if (!isEditing && (hasLyricChords || existingAudioPaths.size > 1)) {
+                    SongChordToolbar(
+                        hasChords = hasLyricChords,
+                        showChords = showChords,
+                        onShowChordsChange = onShowChordsChange,
+                        transpose = transpose,
+                        onTranspose = { transpose = it },
+                        showAudioTracks = if (existingAudioPaths.size > 1) showAudioTracks else null,
+                        onShowAudioTracksChange = if (existingAudioPaths.size > 1) {
+                            onShowAudioTracksChange
+                        } else {
+                            null
+                        },
+                        modifier = Modifier.padding(horizontal = 8.dp, vertical = 2.dp),
+                    )
+                }
+                }
             },
         ) { padding ->
             val textH = pesnopenieSongTextHorizontalPadding()
+            val lyricsFillScreen = !isEditing && song.lyrics.isNotBlank()
             Column(
                 modifier = Modifier
                     .fillMaxSize()
                     .padding(padding)
                     .padding(bottom = bottomInsetPlayer)
-                    .then(if (useKaraoke) Modifier else Modifier.verticalScroll(contentScroll))
+                    .then(if (lyricsFillScreen) Modifier else Modifier.verticalScroll(contentScroll))
                     .padding(horizontal = textH, vertical = contentPadV),
             ) {
                 if (hasVideo && !isEditing) {
@@ -2898,16 +2923,6 @@ private fun SongViewScreen(
                         )
                     }
                 } else if (song.lyrics.isNotBlank()) {
-                    if (!isEditing) {
-                        SongChordToolbar(
-                            hasChords = hasLyricChords,
-                            showChords = showChords,
-                            onShowChordsChange = onShowChordsChange,
-                            transpose = transpose,
-                            onTranspose = { transpose = it },
-                        )
-                        Spacer(Modifier.height(8.dp))
-                    }
                     if (useKaraoke) {
                         val syncPath = activeAudioPath!!
                         val ps by AudioPlayerHolder.state.collectAsState()
@@ -2969,6 +2984,10 @@ private fun SongViewScreen(
                             fontSizeSp = lyricsFontSize,
                             showChords = showChords,
                             transpose = transpose,
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .weight(1f)
+                                .verticalScroll(contentScroll),
                         )
                     }
                 } else if (!hasVideo) {
@@ -3002,7 +3021,7 @@ private fun SongViewScreen(
             Column(
                 Modifier.align(Alignment.BottomCenter),
             ) {
-                if (existingAudioPaths.size > 1) {
+                if (showTrackPicker) {
                     Surface(
                         tonalElevation = 3.dp,
                         shadowElevation = 0.dp,

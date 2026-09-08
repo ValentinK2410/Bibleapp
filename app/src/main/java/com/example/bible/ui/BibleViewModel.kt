@@ -537,6 +537,16 @@ class BibleViewModel(
         viewModelScope.launch { preferences.setSongShowChords(enabled) }
     }
 
+    val songShowAudioTracks: StateFlow<Boolean> = preferences.songShowAudioTracks.stateIn(
+        viewModelScope,
+        SharingStarted.WhileSubscribed(5000),
+        false,
+    )
+
+    fun setSongShowAudioTracks(enabled: Boolean) {
+        viewModelScope.launch { preferences.setSongShowAudioTracks(enabled) }
+    }
+
     val bookPickerLongPressTts: StateFlow<Boolean> = preferences.bookPickerLongPressTts.stateIn(
         viewModelScope,
         SharingStarted.WhileSubscribed(5000),

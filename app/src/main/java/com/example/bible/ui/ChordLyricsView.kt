@@ -1,20 +1,22 @@
 package com.example.bible.ui
 
-import androidx.compose.foundation.gestures.detectTapGestures
+import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
+import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.defaultMinSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.input.pointer.pointerInput
-import androidx.compose.ui.text.SpanStyle
-import androidx.compose.ui.text.TextLayoutResult
-import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
@@ -35,6 +37,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
@@ -47,6 +50,7 @@ import com.example.bible.data.SongChordMarkup
 
 private val InsertChords = listOf("C", "Dm", "Em", "F", "G", "Am", "D", "A", "E", "Hm", "H")
 
+@OptIn(ExperimentalLayoutApi::class)
 @Composable
 fun ChordLyricsView(
     lyrics: String,
@@ -65,46 +69,42 @@ fun ChordLyricsView(
         if (!line.isChord) return@let null
         SongChordMarkup.chordSpans(line.text).firstOrNull { it.start == sel.start }?.name
     }
-    val lineScroll = rememberScrollState()
 
-    Column(modifier) {
+    Column(modifier.fillMaxWidth()) {
         if (showChords && selectedName == null && lines.any { it.isChord }) {
             Text(
-                "Нажмите аккорд в тексте — схема появится, ещё раз — скроется.",
+                "Нажмите аккорд — схема появится, ещё раз — скроется.",
                 style = MaterialTheme.typography.labelSmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
             Spacer(Modifier.height(6.dp))
         }
         lines.forEachIndexed { index, line ->
-            val lineModifier = if (showChords) Modifier.horizontalScroll(lineScroll) else Modifier
-            Column(lineModifier) {
-                if (showChords && line.isChord) {
-                    ClickableChordLine(
-                        text = line.text,
-                        fontSizeSp = fontSizeSp,
-                        lineIndex = index,
-                        selected = selected,
-                        onToggle = { lineIndex, start ->
-                            selected = if (selected?.lineIndex == lineIndex && selected?.start == start) {
-                                null
-                            } else {
-                                SelectedLyricChord(lineIndex, start)
-                            }
-                        },
-                    )
-                } else {
-                    Text(
-                        text = line.text.ifBlank { " " },
-                        fontSize = fontSizeSp.sp,
-                        lineHeight = (fontSizeSp * 1.28f).sp,
-                        fontWeight = FontWeight.Normal,
-                        fontFamily = if (showChords) FontFamily.Monospace else FontFamily.Default,
-                        softWrap = !showChords,
-                        maxLines = if (showChords) 1 else Int.MAX_VALUE,
-                        color = MaterialTheme.colorScheme.onSurface,
-                    )
-                }
+            if (showChords && line.isChord) {
+                ClickableChordLine(
+                    text = line.text,
+                    fontSizeSp = fontSizeSp,
+                    lineIndex = index,
+                    selected = selected,
+                    onToggle = { lineIndex, start ->
+                        selected = if (selected?.lineIndex == lineIndex && selected?.start == start) {
+                            null
+                        } else {
+                            SelectedLyricChord(lineIndex, start)
+                        }
+                    },
+                )
+            } else {
+                Text(
+                    text = line.text.ifBlank { " " },
+                    fontSize = fontSizeSp.sp,
+                    lineHeight = (fontSizeSp * 1.38f).sp,
+                    fontWeight = FontWeight.Normal,
+                    fontFamily = FontFamily.Default,
+                    softWrap = true,
+                    color = MaterialTheme.colorScheme.onSurface,
+                    modifier = Modifier.fillMaxWidth(),
+                )
             }
             if (showChords && selected?.lineIndex == index && selectedName != null) {
                 Spacer(Modifier.height(6.dp))
@@ -117,6 +117,7 @@ fun ChordLyricsView(
 
 private data class SelectedLyricChord(val lineIndex: Int, val start: Int)
 
+@OptIn(ExperimentalLayoutApi::class)
 @Composable
 private fun ClickableChordLine(
     text: String,
@@ -128,46 +129,40 @@ private fun ClickableChordLine(
     val spans = remember(text) { SongChordMarkup.chordSpans(text) }
     val chordColor = MaterialTheme.colorScheme.primary
     val selectedBg = MaterialTheme.colorScheme.primaryContainer
-    val annotated = remember(text, spans, selected, lineIndex, chordColor, selectedBg) {
-        buildAnnotatedString {
-            append(text.ifBlank { " " })
-            spans.forEach { span ->
-                val isSel = selected?.lineIndex == lineIndex && selected.start == span.start
-                val end = span.endExclusive.coerceAtMost(length)
-                if (span.start in 0 until end) {
-                    addStyle(
-                        SpanStyle(
-                            fontWeight = FontWeight.Bold,
-                            color = chordColor,
-                            background = if (isSel) selectedBg else Color.Unspecified,
-                            textDecoration = if (isSel) TextDecoration.Underline else TextDecoration.None,
-                        ),
-                        span.start,
-                        end,
-                    )
-                }
-            }
+    if (spans.isEmpty()) {
+        Text(
+            text = text.ifBlank { " " },
+            fontSize = fontSizeSp.sp,
+            color = chordColor,
+            fontWeight = FontWeight.Bold,
+            softWrap = true,
+            modifier = Modifier.fillMaxWidth(),
+        )
+        return
+    }
+    FlowRow(
+        modifier = Modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.spacedBy(4.dp),
+        verticalArrangement = Arrangement.spacedBy(2.dp),
+    ) {
+        spans.forEach { span ->
+            val isSel = selected?.lineIndex == lineIndex && selected.start == span.start
+            Text(
+                text = span.name,
+                fontSize = fontSizeSp.sp,
+                fontWeight = FontWeight.Bold,
+                fontFamily = FontFamily.Monospace,
+                color = chordColor,
+                textDecoration = if (isSel) TextDecoration.Underline else TextDecoration.None,
+                modifier = Modifier
+                    .defaultMinSize(minHeight = 40.dp)
+                    .clip(RoundedCornerShape(8.dp))
+                    .background(if (isSel) selectedBg else Color.Transparent)
+                    .clickable { onToggle(lineIndex, span.start) }
+                    .padding(horizontal = 8.dp, vertical = 6.dp),
+            )
         }
     }
-    var layout by remember { mutableStateOf<TextLayoutResult?>(null) }
-    Text(
-        text = annotated,
-        fontSize = fontSizeSp.sp,
-        lineHeight = (fontSizeSp * 1.28f).sp,
-        fontWeight = FontWeight.Bold,
-        fontFamily = FontFamily.Monospace,
-        softWrap = false,
-        maxLines = 1,
-        color = chordColor,
-        onTextLayout = { layout = it },
-        modifier = Modifier.pointerInput(lineIndex, spans) {
-            detectTapGestures { pos ->
-                val offset = layout?.getOffsetForPosition(pos) ?: return@detectTapGestures
-                val hit = spans.firstOrNull { offset >= it.start && offset < it.endExclusive }
-                if (hit != null) onToggle(lineIndex, hit.start)
-            }
-        },
-    )
 }
 
 @Composable
@@ -178,9 +173,13 @@ fun SongChordToolbar(
     transpose: Int,
     onTranspose: (Int) -> Unit,
     modifier: Modifier = Modifier,
+    showAudioTracks: Boolean? = null,
+    onShowAudioTracksChange: ((Boolean) -> Unit)? = null,
 ) {
     Row(
-        modifier = modifier.fillMaxWidth(),
+        modifier = modifier
+            .fillMaxWidth()
+            .horizontalScroll(rememberScrollState()),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(4.dp),
     ) {
@@ -209,6 +208,13 @@ fun SongChordToolbar(
             if (transpose != 0) {
                 TextButton(onClick = { onTranspose(0) }) { Text("Сброс") }
             }
+        }
+        if (showAudioTracks != null && onShowAudioTracksChange != null) {
+            FilterChip(
+                selected = showAudioTracks,
+                onClick = { onShowAudioTracksChange(!showAudioTracks) },
+                label = { Text("Озвучка") },
+            )
         }
     }
 }
