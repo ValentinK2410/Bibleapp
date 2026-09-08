@@ -62,6 +62,8 @@ import androidx.compose.material.icons.filled.Link
 import androidx.compose.material.icons.filled.LightMode
 import androidx.compose.material.icons.filled.MusicNote
 import androidx.compose.material.icons.filled.SmartToy
+import androidx.compose.material.icons.filled.Pause
+import androidx.compose.material.icons.filled.Remove
 import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.Share
@@ -2560,22 +2562,70 @@ private fun SongViewScreen(
             !isEditing
     val contentScroll = rememberScrollState()
     val isLandscape = LocalConfiguration.current.orientation == Configuration.ORIENTATION_LANDSCAPE
+    var showPlayer by rememberSaveable(song.id) { mutableStateOf(!isLandscape) }
+    val playerNow by AudioPlayerHolder.state.collectAsState()
     val showTrackPicker = hasPlayerBar && existingAudioPaths.size > 1 && showAudioTracks
     val audioPanelH = if (showTrackPicker) {
         28.dp + 40.dp * existingAudioPaths.size + 12.dp
     } else {
         0.dp
     }
+    val playerOverlayVisible = hasPlayerBar && (!isLandscape || showPlayer)
     val bottomInsetPlayer = when {
-        !hasPlayerBar -> 0.dp
-        isLandscape -> 56.dp + audioPanelH
+        !playerOverlayVisible -> 0.dp
+        isLandscape -> 40.dp + audioPanelH
         else -> 104.dp + audioPanelH
     }
-    val contentPadV = if (isLandscape) 4.dp else 8.dp
+    val contentPadV = if (isLandscape) 0.dp else 8.dp
 
     Box(modifier = Modifier.fillMaxSize()) {
         Scaffold(
             topBar = {
+                if (isLandscape && !isEditing) {
+                    SongLandscapeReadingBar(
+                        title = song.title,
+                        artist = song.artist,
+                        hasChords = hasLyricChords,
+                        showChords = showChords,
+                        onShowChordsChange = onShowChordsChange,
+                        transpose = transpose,
+                        onTranspose = { transpose = it },
+                        hasAudio = hasAudio,
+                        isPlaying = playerNow.isPlaying &&
+                            (activeAudioPath == null || playerNow.audioPath == activeAudioPath),
+                        onPlayPause = {
+                            val path = activeAudioPath ?: return@SongLandscapeReadingBar
+                            if (playerNow.audioPath != path) {
+                                AudioPlayerHolder.play(path, song.title)
+                            } else {
+                                AudioPlayerHolder.togglePlay()
+                            }
+                        },
+                        showPlayer = showPlayer,
+                        onShowPlayerChange = { showPlayer = it },
+                        hasMultipleTracks = existingAudioPaths.size > 1,
+                        showAudioTracks = showAudioTracks,
+                        onShowAudioTracksChange = onShowAudioTracksChange,
+                        onFontDown = {
+                            lyricsFontSize = (lyricsFontSize - 2f).coerceAtLeast(3f)
+                            onSongFontSizeChange(lyricsFontSize)
+                        },
+                        onFontUp = {
+                            lyricsFontSize = (lyricsFontSize + 2f).coerceAtMost(150f)
+                            onSongFontSizeChange(lyricsFontSize)
+                        },
+                        onShare = if (SongSharePackage.canShareSong(song)) onSharePortableSong else null,
+                        onShareApp = { shareAppPlayStoreInvite(context) },
+                        onEdit = {
+                            initEditAudioFromSong()
+                            isEditing = true
+                        },
+                        onBack = onBack,
+                        hasLyricSync = song.hasLyricSync() && hasAudio && !hasVideo,
+                        highlightLine = highlightLineWhilePlaying,
+                        onHighlightLineChange = onHighlightLineChange,
+                    )
+                } else {
                 Column {
                 CenterAlignedTopAppBar(
                     title = {
@@ -2765,6 +2815,7 @@ private fun SongViewScreen(
                     )
                 }
                 }
+                }
             },
         ) { padding ->
             val textH = pesnopenieSongTextHorizontalPadding()
@@ -2777,7 +2828,7 @@ private fun SongViewScreen(
                     .then(if (lyricsFillScreen) Modifier else Modifier.verticalScroll(contentScroll))
                     .padding(horizontal = textH, vertical = contentPadV),
             ) {
-                if (hasVideo && !isEditing) {
+                if (hasVideo && !isEditing && !isLandscape) {
                     ElevatedCard(
                         modifier = Modifier.fillMaxWidth(),
                         shape = RoundedCornerShape(12.dp),
@@ -3004,20 +3055,22 @@ private fun SongViewScreen(
                     }
                 }
 
-                if (song.sourceUrl != null && !isEditing) {
-                    Spacer(Modifier.height(if (isLandscape) 6.dp else 16.dp))
+                if (song.sourceUrl != null && !isEditing && !isLandscape) {
+                    Spacer(Modifier.height(16.dp))
                     Text(
                         "Источник: ${song.sourceUrl}",
-                        style = if (isLandscape) MaterialTheme.typography.labelSmall else MaterialTheme.typography.bodySmall,
+                        style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.outline,
                     )
                 }
 
-                Spacer(Modifier.height(if (isLandscape) 8.dp else 32.dp))
+                if (!isLandscape) {
+                    Spacer(Modifier.height(32.dp))
+                }
             }
         }
 
-        if (hasPlayerBar) {
+        if (playerOverlayVisible) {
             Column(
                 Modifier.align(Alignment.BottomCenter),
             ) {
@@ -3070,7 +3123,172 @@ private fun SongViewScreen(
                     title = song.title,
                     modifier = Modifier.fillMaxWidth(),
                     compact = isLandscape,
+                    slim = isLandscape,
+                    onRequestHide = if (isLandscape) {
+                        { showPlayer = false }
+                    } else {
+                        null
+                    },
                 )
+            }
+        }
+    }
+}
+
+@Composable
+private fun SongLandscapeReadingBar(
+    title: String,
+    artist: String,
+    hasChords: Boolean,
+    showChords: Boolean,
+    onShowChordsChange: (Boolean) -> Unit,
+    transpose: Int,
+    onTranspose: (Int) -> Unit,
+    hasAudio: Boolean,
+    isPlaying: Boolean,
+    onPlayPause: () -> Unit,
+    showPlayer: Boolean,
+    onShowPlayerChange: (Boolean) -> Unit,
+    hasMultipleTracks: Boolean,
+    showAudioTracks: Boolean,
+    onShowAudioTracksChange: (Boolean) -> Unit,
+    onFontDown: () -> Unit,
+    onFontUp: () -> Unit,
+    onShare: (() -> Unit)?,
+    onShareApp: () -> Unit,
+    onEdit: () -> Unit,
+    onBack: () -> Unit,
+    hasLyricSync: Boolean,
+    highlightLine: Boolean,
+    onHighlightLineChange: (Boolean) -> Unit,
+) {
+    var menuOpen by remember { mutableStateOf(false) }
+    Surface(tonalElevation = 1.dp, shadowElevation = 1.dp) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .windowInsetsPadding(WindowInsets.statusBars)
+                .height(48.dp)
+                .padding(horizontal = 2.dp),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            IconButton(onClick = onBack, modifier = Modifier.size(36.dp)) {
+                Icon(Icons.AutoMirrored.Filled.ArrowBack, "Назад", Modifier.size(20.dp))
+            }
+            Text(
+                text = buildString {
+                    append(title)
+                    if (artist.isNotBlank()) {
+                        append(" · ")
+                        append(artist)
+                    }
+                },
+                style = MaterialTheme.typography.labelLarge,
+                fontWeight = FontWeight.Bold,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
+                modifier = Modifier
+                    .weight(1f)
+                    .padding(end = 4.dp),
+            )
+            if (hasChords) {
+                FilterChip(
+                    selected = showChords,
+                    onClick = { onShowChordsChange(!showChords) },
+                    label = { Text("Акк.", style = MaterialTheme.typography.labelSmall) },
+                    modifier = Modifier.height(32.dp),
+                )
+                if (showChords) {
+                    IconButton(onClick = { onTranspose(transpose - 1) }, modifier = Modifier.size(32.dp)) {
+                        Icon(Icons.Default.Remove, "Тоном ниже", Modifier.size(18.dp))
+                    }
+                    Text(
+                        if (transpose == 0) "0" else {
+                            val sign = if (transpose > 0) "+" else ""
+                            "$sign$transpose"
+                        },
+                        style = MaterialTheme.typography.labelSmall,
+                        fontWeight = FontWeight.Bold,
+                        color = MaterialTheme.colorScheme.primary,
+                    )
+                    IconButton(onClick = { onTranspose(transpose + 1) }, modifier = Modifier.size(32.dp)) {
+                        Icon(Icons.Default.Add, "Тоном выше", Modifier.size(18.dp))
+                    }
+                }
+            }
+            if (hasAudio) {
+                IconButton(onClick = onPlayPause, modifier = Modifier.size(36.dp)) {
+                    Icon(
+                        if (isPlaying) Icons.Default.Pause else Icons.Default.PlayArrow,
+                        if (isPlaying) "Пауза" else "Играть",
+                        Modifier.size(22.dp),
+                        tint = MaterialTheme.colorScheme.primary,
+                    )
+                }
+            }
+            IconButton(onClick = onFontDown, modifier = Modifier.size(32.dp)) {
+                Icon(Icons.Default.TextDecrease, "Уменьшить текст", Modifier.size(18.dp))
+            }
+            IconButton(onClick = onFontUp, modifier = Modifier.size(32.dp)) {
+                Icon(Icons.Default.TextIncrease, "Увеличить текст", Modifier.size(18.dp))
+            }
+            Box {
+                IconButton(onClick = { menuOpen = true }, modifier = Modifier.size(36.dp)) {
+                    Icon(Icons.Default.MoreVert, "Ещё", Modifier.size(20.dp))
+                }
+                DropdownMenu(expanded = menuOpen, onDismissRequest = { menuOpen = false }) {
+                    if (hasAudio) {
+                        DropdownMenuItem(
+                            text = { Text(if (showPlayer) "Скрыть плеер" else "Показать плеер") },
+                            onClick = {
+                                onShowPlayerChange(!showPlayer)
+                                menuOpen = false
+                            },
+                        )
+                    }
+                    if (hasMultipleTracks) {
+                        DropdownMenuItem(
+                            text = { Text(if (showAudioTracks) "Скрыть озвучку" else "Озвучка") },
+                            onClick = {
+                                onShowAudioTracksChange(!showAudioTracks)
+                                if (!showAudioTracks) onShowPlayerChange(true)
+                                menuOpen = false
+                            },
+                        )
+                    }
+                    if (hasLyricSync) {
+                        DropdownMenuItem(
+                            text = { Text(if (highlightLine) "Выключить подсветку строк" else "Подсветка строк") },
+                            onClick = {
+                                onHighlightLineChange(!highlightLine)
+                                menuOpen = false
+                            },
+                        )
+                    }
+                    if (onShare != null) {
+                        DropdownMenuItem(
+                            text = { Text("Поделиться песней") },
+                            onClick = {
+                                onShare()
+                                menuOpen = false
+                            },
+                        )
+                    }
+                    DropdownMenuItem(
+                        text = { Text("Ссылка на приложение") },
+                        onClick = {
+                            onShareApp()
+                            menuOpen = false
+                        },
+                    )
+                    DropdownMenuItem(
+                        text = { Text("Изменить") },
+                        onClick = {
+                            onEdit()
+                            menuOpen = false
+                        },
+                    )
+                }
             }
         }
     }

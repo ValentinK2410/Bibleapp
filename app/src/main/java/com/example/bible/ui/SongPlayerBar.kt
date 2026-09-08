@@ -51,6 +51,9 @@ fun SongPlayerBar(
     modifier: Modifier = Modifier,
     /** Компактный режим (например альбом): без дублирования заголовка, меньше отступы. */
     compact: Boolean = false,
+    /** Ещё ниже полоска: play + ползунок, без лишней высоты. */
+    slim: Boolean = false,
+    onRequestHide: (() -> Unit)? = null,
 ) {
     val ps by AudioPlayerHolder.state.collectAsState()
     var expanded by remember { mutableStateOf(false) }
@@ -77,19 +80,19 @@ fun SongPlayerBar(
 
     val displayPos = if (isSeeking) seekPos else ps.positionMs
 
-    val padH = if (compact) 8.dp else 12.dp
-    val padV = if (compact) 4.dp else 8.dp
-    val playBtn = if (compact) 36.dp else 40.dp
-    val iconInBtn = if (compact) 22.dp else 24.dp
-    val sliderH = if (compact) 20.dp else 24.dp
+    val padH = if (slim) 6.dp else if (compact) 8.dp else 12.dp
+    val padV = if (slim) 2.dp else if (compact) 4.dp else 8.dp
+    val playBtn = if (slim) 32.dp else if (compact) 36.dp else 40.dp
+    val iconInBtn = if (slim) 20.dp else if (compact) 22.dp else 24.dp
+    val sliderH = if (slim) 16.dp else if (compact) 20.dp else 24.dp
 
     Surface(
         modifier = modifier
             .fillMaxWidth()
             .animateContentSize(),
-        shape = RoundedCornerShape(topStart = if (compact) 12.dp else 16.dp, topEnd = if (compact) 12.dp else 16.dp),
-        shadowElevation = if (compact) 4.dp else 8.dp,
-        tonalElevation = if (compact) 2.dp else 3.dp,
+        shape = RoundedCornerShape(topStart = if (compact || slim) 10.dp else 16.dp, topEnd = if (compact || slim) 10.dp else 16.dp),
+        shadowElevation = if (slim) 2.dp else if (compact) 4.dp else 8.dp,
+        tonalElevation = if (slim) 1.dp else if (compact) 2.dp else 3.dp,
     ) {
         Column(
             modifier = Modifier
@@ -153,15 +156,28 @@ fun SongPlayerBar(
 
                 Spacer(Modifier.width(4.dp))
 
-                IconButton(
-                    onClick = { expanded = !expanded },
-                    modifier = Modifier.size(if (compact) 28.dp else 32.dp),
-                ) {
-                    Icon(
-                        if (expanded) Icons.Default.ExpandMore else Icons.Default.ExpandLess,
-                        contentDescription = "Настройки",
-                        modifier = Modifier.size(if (compact) 18.dp else 20.dp),
-                    )
+                if (onRequestHide != null) {
+                    IconButton(
+                        onClick = onRequestHide,
+                        modifier = Modifier.size(if (slim) 28.dp else 32.dp),
+                    ) {
+                        Icon(
+                            Icons.Default.ExpandMore,
+                            contentDescription = "Скрыть плеер",
+                            modifier = Modifier.size(18.dp),
+                        )
+                    }
+                } else {
+                    IconButton(
+                        onClick = { expanded = !expanded },
+                        modifier = Modifier.size(if (compact) 28.dp else 32.dp),
+                    ) {
+                        Icon(
+                            if (expanded) Icons.Default.ExpandMore else Icons.Default.ExpandLess,
+                            contentDescription = "Настройки",
+                            modifier = Modifier.size(if (compact) 18.dp else 20.dp),
+                        )
+                    }
                 }
             }
 
