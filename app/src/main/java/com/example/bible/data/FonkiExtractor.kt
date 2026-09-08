@@ -31,7 +31,20 @@ data class SongCatalogHit(
     val sourceLabel: String,
 )
 
+enum class SongCatalogSource(val baseUrl: String, val label: String) {
+    HolyChords("https://holychords.pro", "HolyChords"),
+    Fonki("https://fonki.pro", "Fonki"),
+}
+
+data class SongCatalogPage(
+    val hits: List<SongCatalogHit>,
+    val page: Int,
+    val hasMore: Boolean,
+)
+
 object FonkiExtractor {
+
+    private const val CATALOG_PAGE_SIZE = 50
 
     fun isFonkiUrl(url: String): Boolean {
         val lower = url.lowercase()
@@ -55,6 +68,7 @@ object FonkiExtractor {
         query: String,
         maxPagesPerSite: Int = 12,
         maxResults: Int = 40,
+        sources: List<SongCatalogSource> = SongCatalogSource.entries,
     ): List<SongCatalogHit> = withContext(Dispatchers.IO) {
         val q = query.trim()
         if (q.length < 2) return@withContext emptyList()
@@ -70,41 +84,61 @@ object FonkiExtractor {
 
         val seen = mutableSetOf<String>()
         val out = mutableListOf<SongCatalogHit>()
-        val sites = listOf(
-            "https://holychords.pro" to "HolyChords",
-            "https://fonki.pro" to "Fonki",
-        )
 
-        for ((base, label) in sites) {
+        for (source in sources) {
             if (out.size >= maxResults) break
             for (page in 1..maxPagesPerSite) {
                 if (out.size >= maxResults) break
                 delay(45)
                 val html = try {
-                    fetchHtml("$base/musics?page=$page")
+                    fetchHtml("${source.baseUrl}/musics?page=$page")
                 } catch (_: Exception) {
                     break
                 }
-                val chunks = html.split("""class="music_item media""")
-                for (chunk in chunks.drop(1)) {
+                for (hit in parseMusicItems(html, source)) {
                     if (out.size >= maxResults) break
-                    val block = chunk.take(12_000)
-                    val id = Regex("""data-audio-id="(\d+)"""").find(block)?.groupValues?.get(1) ?: continue
-                    val artist = Regex("""data-artist-name="([^"]*)"""").find(block)?.groupValues?.get(1)?.trim().orEmpty()
-                    val title = Regex("""data-audio-name="([^"]*)"""").find(block)?.groupValues?.get(1)?.trim().orEmpty()
-                    if (title.isBlank()) continue
-                    if (!matches(artist, title)) continue
-                    val url = if ("fonki.pro" in base) {
-                        "https://fonki.pro/minus/$id"
-                    } else {
-                        "https://holychords.pro/$id"
-                    }
-                    if (!seen.add(url)) continue
-                    out.add(SongCatalogHit(title = title, artist = artist, pageUrl = url, sourceLabel = label))
+                    if (!matches(hit.artist, hit.title)) continue
+                    if (!seen.add(hit.pageUrl)) continue
+                    out.add(hit)
                 }
             }
         }
         out
+    }
+
+    /** Одна страница открытого каталога `/musics` выбранного сайта. */
+    suspend fun browseSongCatalog(
+        source: SongCatalogSource,
+        page: Int,
+    ): SongCatalogPage = withContext(Dispatchers.IO) {
+        val html = fetchHtml("${source.baseUrl}/musics?page=$page")
+        val hits = parseMusicItems(html, source)
+        SongCatalogPage(
+            hits = hits,
+            page = page,
+            hasMore = hits.size >= CATALOG_PAGE_SIZE,
+        )
+    }
+
+    private fun parseMusicItems(html: String, source: SongCatalogSource): List<SongCatalogHit> {
+        val out = mutableListOf<SongCatalogHit>()
+        val seen = mutableSetOf<String>()
+        val chunks = html.split("""class="music_item media""")
+        for (chunk in chunks.drop(1)) {
+            val block = chunk.take(12_000)
+            val id = Regex("""data-audio-id="(\d+)"""").find(block)?.groupValues?.get(1) ?: continue
+            val artist = Regex("""data-artist-name="([^"]*)"""").find(block)?.groupValues?.get(1)?.trim().orEmpty()
+            val title = Regex("""data-audio-name="([^"]*)"""").find(block)?.groupValues?.get(1)?.trim().orEmpty()
+            if (title.isBlank()) continue
+            val url = if (source == SongCatalogSource.Fonki) {
+                "https://fonki.pro/minus/$id"
+            } else {
+                "https://holychords.pro/$id"
+            }
+            if (!seen.add(url)) continue
+            out.add(SongCatalogHit(title = title, artist = artist, pageUrl = url, sourceLabel = source.label))
+        }
+        return out
     }
 
     private fun extractFonki(html: String): FonkiSong {

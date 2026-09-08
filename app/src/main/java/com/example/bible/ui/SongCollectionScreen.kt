@@ -72,6 +72,8 @@ import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ElevatedCard
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.FloatingActionButton
@@ -87,8 +89,8 @@ import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Surface
+import androidx.compose.material3.ScrollableTabRow
 import androidx.compose.material3.Tab
-import androidx.compose.material3.TabRow
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.rememberModalBottomSheetState
@@ -96,6 +98,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.snapshotFlow
 import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateListOf
@@ -126,8 +129,10 @@ import com.example.bible.data.AudioPlayerHolder
 import com.example.bible.data.FonkiExtractor
 import com.example.bible.data.FonkiSong
 import com.example.bible.data.SongCatalogHit
+import com.example.bible.data.SongCatalogSource
 import com.example.bible.data.SongItem
 import com.example.bible.data.SongLyricCue
+import com.example.bible.data.SongLinkBundle
 import com.example.bible.data.SongShareImportError
 import com.example.bible.data.SongShareImportOutcome
 import com.example.bible.data.SongSharePackage
@@ -140,6 +145,15 @@ import java.io.File
 import java.io.FileOutputStream
 
 private const val TAG = "SongCollection"
+
+private class SongCatalogBrowseState {
+    val hits = mutableStateListOf<SongCatalogHit>()
+    var nextPage by mutableIntStateOf(1)
+    var hasMore by mutableStateOf(true)
+    var loading by mutableStateOf(false)
+    var error by mutableStateOf("")
+    var initialized by mutableStateOf(false)
+}
 
 @Composable
 private fun pesnopenieListHorizontalPadding(): Dp {
@@ -179,6 +193,177 @@ private fun playFile(context: android.content.Context, path: String, mimeType: S
     } catch (e: Exception) {
         Log.e(TAG, "playFile failed: $path", e)
         Toast.makeText(context, "Не удалось воспроизвести", Toast.LENGTH_SHORT).show()
+    }
+}
+
+private fun playSongAudio(context: android.content.Context, song: SongItem, path: String) {
+    if (!File(path).exists()) {
+        Toast.makeText(context, "Аудиофайл не найден", Toast.LENGTH_SHORT).show()
+        return
+    }
+    AudioPlayerHolder.play(path, song.title)
+}
+
+private suspend fun copyAudioUriToSongsDir(
+    context: android.content.Context,
+    uri: Uri,
+): Pair<String, String>? {
+    return try {
+        val dir = File(context.filesDir, "songs_audio").apply { mkdirs() }
+        val ext = context.contentResolver.getType(uri)
+            ?.substringAfterLast('/')?.take(4) ?: "mp3"
+        val dest = File(dir, "aud_${System.currentTimeMillis()}.$ext")
+        context.contentResolver.openInputStream(uri)?.use { inp ->
+            dest.outputStream().use { out -> inp.copyTo(out) }
+        } ?: return null
+        val label = queryUriDisplayName(context, uri)
+            ?: run {
+                val mmr = MediaMetadataRetriever()
+                try {
+                    mmr.setDataSource(dest.absolutePath)
+                    mmr.extractMetadata(MediaMetadataRetriever.METADATA_KEY_TITLE)
+                } finally {
+                    mmr.release()
+                }
+            }?.takeIf { it.isNotBlank() }
+            ?: dest.nameWithoutExtension
+        dest.absolutePath to label
+    } catch (e: Exception) {
+        Log.e(TAG, "copyAudioUriToSongsDir", e)
+        null
+    }
+}
+
+private fun queryUriDisplayName(context: android.content.Context, uri: Uri): String? {
+    context.contentResolver.query(uri, null, null, null, null)?.use { cursor ->
+        val nameIdx = cursor.getColumnIndex(android.provider.OpenableColumns.DISPLAY_NAME)
+        if (nameIdx >= 0 && cursor.moveToFirst()) {
+            return cursor.getString(nameIdx)?.substringBeforeLast('.')?.takeIf { it.isNotBlank() }
+        }
+    }
+    return null
+}
+
+private enum class SharePickKind { ZIP, LINKS }
+
+private fun shareSongLinksPackage(
+    context: android.content.Context,
+    scope: kotlinx.coroutines.CoroutineScope,
+    songs: List<SongItem>,
+) {
+    scope.launch {
+        val linkable = SongLinkBundle.linkableSongs(songs)
+        if (linkable.isEmpty()) {
+            Toast.makeText(context, R.string.song_links_share_cannot, Toast.LENGTH_SHORT).show()
+            return@launch
+        }
+        try {
+            val jsonFile = withContext(Dispatchers.IO) {
+                SongLinkBundle.exportToJsonFile(context, linkable)
+            }
+            val jsonText = withContext(Dispatchers.IO) { jsonFile.readText() }
+            val shareUri = FileProvider.getUriForFile(
+                context,
+                "${context.packageName}.provider",
+                jsonFile,
+            )
+            val send = Intent(Intent.ACTION_SEND).apply {
+                type = "application/json"
+                putExtra(Intent.EXTRA_STREAM, shareUri)
+                putExtra(Intent.EXTRA_TEXT, jsonText)
+                addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+            }
+            context.startActivity(
+                Intent.createChooser(send, context.getString(R.string.song_links_share_chooser_title)),
+            )
+        } catch (e: Exception) {
+            Log.e(TAG, "share song links", e)
+            Toast.makeText(context, R.string.song_links_share_failed, Toast.LENGTH_SHORT).show()
+        }
+    }
+}
+
+private fun importSongLinksFromText(
+    context: android.content.Context,
+    scope: kotlinx.coroutines.CoroutineScope,
+    viewModel: BibleViewModel,
+    text: String,
+) {
+    scope.launch {
+        when (val outcome = SongLinkBundle.parseJson(text)) {
+            is SongLinkBundle.ImportOutcome.WrongFormat -> {
+                Toast.makeText(context, R.string.song_links_import_wrong_format, Toast.LENGTH_LONG).show()
+            }
+            is SongLinkBundle.ImportOutcome.Empty -> {
+                Toast.makeText(context, R.string.song_links_import_empty, Toast.LENGTH_SHORT).show()
+            }
+            is SongLinkBundle.ImportOutcome.Err -> {
+                Toast.makeText(context, R.string.song_links_import_failed, Toast.LENGTH_SHORT).show()
+            }
+            is SongLinkBundle.ImportOutcome.Ok -> {
+                Toast.makeText(context, R.string.song_links_import_loading, Toast.LENGTH_SHORT).show()
+                var ok = 0
+                var failed = 0
+                for (entry in outcome.entries) {
+                    try {
+                        val song = withContext(Dispatchers.IO) {
+                            SongLinkBundle.materializeEntry(context, entry)
+                        }
+                        song.tags.forEach { viewModel.addSongTag(it) }
+                        viewModel.saveSong(song)
+                        ok++
+                    } catch (e: Exception) {
+                        Log.e(TAG, "import song links entry: ${entry.title}", e)
+                        failed++
+                    }
+                }
+                val msg = when {
+                    failed == 0 -> context.getString(R.string.song_links_import_ok, ok)
+                    ok == 0 -> context.getString(R.string.song_links_import_failed)
+                    else -> context.getString(R.string.song_links_import_partial, ok, outcome.entries.size, failed)
+                }
+                Toast.makeText(context, msg, Toast.LENGTH_LONG).show()
+            }
+        }
+    }
+}
+
+private fun shareSongsPackage(
+    context: android.content.Context,
+    scope: kotlinx.coroutines.CoroutineScope,
+    songs: List<SongItem>,
+    highlightLineWhilePlaying: Boolean,
+) {
+    scope.launch {
+        val shareable = SongSharePackage.shareableSongs(songs)
+        if (shareable.isEmpty()) {
+            Toast.makeText(context, R.string.song_share_cannot, Toast.LENGTH_SHORT).show()
+            return@launch
+        }
+        try {
+            val zip = withContext(Dispatchers.IO) {
+                SongSharePackage.exportSongsToZip(context, shareable, highlightLineWhilePlaying)
+            }
+            val shareUri = FileProvider.getUriForFile(
+                context,
+                "${context.packageName}.provider",
+                zip,
+            )
+            val send = Intent(Intent.ACTION_SEND).apply {
+                type = "application/zip"
+                putExtra(Intent.EXTRA_STREAM, shareUri)
+                addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+            }
+            val title = if (shareable.size == 1) {
+                context.getString(R.string.song_share_chooser_title)
+            } else {
+                context.getString(R.string.song_share_multi_chooser_title, shareable.size)
+            }
+            context.startActivity(Intent.createChooser(send, title))
+        } catch (e: Exception) {
+            Log.e(TAG, "share songs package", e)
+            Toast.makeText(context, R.string.song_share_failed, Toast.LENGTH_SHORT).show()
+        }
     }
 }
 
@@ -225,6 +410,14 @@ fun SongCollectionScreen(
     var deleteTarget by remember { mutableStateOf<SongItem?>(null) }
     /** Список: выбор файла для воспроизведения из карточки, если дорожек несколько. */
     var audioPickList by remember { mutableStateOf<List<String>?>(null) }
+    var audioPickSong by remember { mutableStateOf<SongItem?>(null) }
+    var sharePickMode by remember { mutableStateOf(false) }
+    var sharePickKind by remember { mutableStateOf(SharePickKind.ZIP) }
+    val shareSelectedIds = remember { mutableStateListOf<String>() }
+    var showShareMenu by remember { mutableStateOf(false) }
+    var showImportMenu by remember { mutableStateOf(false) }
+    val clipboard = LocalClipboardManager.current
+    val playerState by AudioPlayerHolder.state.collectAsState()
     var searchQuery by remember { mutableStateOf("") }
     var activeTagFilter by remember { mutableStateOf<String?>(null) }
     var pesnopenieNight by rememberSaveable { mutableStateOf(false) }
@@ -261,13 +454,19 @@ fun SongCollectionScreen(
                         Toast.makeText(context, msgRes, Toast.LENGTH_LONG).show()
                     }
                     is SongShareImportOutcome.Ok -> {
-                        val result = outcome.result
-                        result.highlightLineWhilePlayingHint?.let { hint ->
-                            viewModel.setSongHighlightLineWhilePlaying(hint)
+                        outcome.results.forEach { result ->
+                            result.highlightLineWhilePlayingHint?.let { hint ->
+                                viewModel.setSongHighlightLineWhilePlaying(hint)
+                            }
+                            result.song.tags.forEach { viewModel.addSongTag(it) }
+                            viewModel.saveSong(result.song)
                         }
-                        result.song.tags.forEach { viewModel.addSongTag(it) }
-                        viewModel.saveSong(result.song)
-                        Toast.makeText(context, R.string.song_import_ok, Toast.LENGTH_SHORT).show()
+                        val msg = if (outcome.results.size == 1) {
+                            context.getString(R.string.song_import_ok)
+                        } else {
+                            context.getString(R.string.song_import_multi_ok, outcome.results.size)
+                        }
+                        Toast.makeText(context, msg, Toast.LENGTH_SHORT).show()
                     }
                 }
             } catch (e: Exception) {
@@ -275,6 +474,28 @@ fun SongCollectionScreen(
                 Toast.makeText(context, R.string.song_import_failed, Toast.LENGTH_SHORT).show()
             } finally {
                 runCatching { tmp.delete() }
+            }
+        }
+    }
+
+    val importSongLinksLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.OpenDocument(),
+    ) { uri ->
+        if (uri == null) return@rememberLauncherForActivityResult
+        scope.launch {
+            try {
+                val text = withContext(Dispatchers.IO) {
+                    context.contentResolver.openInputStream(uri)?.use { ins ->
+                        ins.readBytes().toString(Charsets.UTF_8)
+                    }
+                } ?: run {
+                    Toast.makeText(context, R.string.song_links_import_failed, Toast.LENGTH_SHORT).show()
+                    return@launch
+                }
+                importSongLinksFromText(context, scope, viewModel, text)
+            } catch (e: Exception) {
+                Log.e(TAG, "import song links file", e)
+                Toast.makeText(context, R.string.song_links_import_failed, Toast.LENGTH_SHORT).show()
             }
         }
     }
@@ -307,21 +528,178 @@ fun SongCollectionScreen(
                     },
                     actions = {
                         if (selectedSong == null) {
-                            IconButton(
-                                onClick = {
-                                    importSongZipLauncher.launch(
-                                        arrayOf(
-                                            "application/zip",
-                                            "application/x-zip-compressed",
-                                            "application/octet-stream",
+                            if (sharePickMode) {
+                                TextButton(
+                                    onClick = {
+                                        sharePickMode = false
+                                        shareSelectedIds.clear()
+                                    },
+                                ) {
+                                    Text(stringResource(R.string.song_share_pick_cancel))
+                                }
+                                TextButton(
+                                    enabled = shareSelectedIds.isNotEmpty(),
+                                    onClick = {
+                                        val picked = songs.filter { it.id in shareSelectedIds }
+                                        when (sharePickKind) {
+                                            SharePickKind.ZIP -> shareSongsPackage(
+                                                context,
+                                                scope,
+                                                picked,
+                                                songHighlightLineWhilePlaying,
+                                            )
+                                            SharePickKind.LINKS -> shareSongLinksPackage(
+                                                context,
+                                                scope,
+                                                picked,
+                                            )
+                                        }
+                                        sharePickMode = false
+                                        shareSelectedIds.clear()
+                                    },
+                                ) {
+                                    Text(
+                                        stringResource(
+                                            R.string.song_share_pick_send,
+                                            shareSelectedIds.size,
                                         ),
                                     )
-                                },
-                            ) {
-                                Icon(
-                                    Icons.Filled.Download,
-                                    contentDescription = stringResource(R.string.song_import_package_cd),
-                                )
+                                }
+                            } else {
+                                val shareableCount = remember(songs) {
+                                    SongSharePackage.shareableSongs(songs).size
+                                }
+                                val linkableCount = remember(songs) {
+                                    SongLinkBundle.linkableSongs(songs).size
+                                }
+                                if (shareableCount > 0 || linkableCount > 0) {
+                                    IconButton(onClick = { showShareMenu = true }) {
+                                        Icon(
+                                            Icons.Filled.Share,
+                                            contentDescription = stringResource(R.string.song_share_menu_cd),
+                                        )
+                                    }
+                                    DropdownMenu(
+                                        expanded = showShareMenu,
+                                        onDismissRequest = { showShareMenu = false },
+                                    ) {
+                                        if (shareableCount > 0) {
+                                            DropdownMenuItem(
+                                                text = {
+                                                    Text(stringResource(R.string.song_share_all_action, shareableCount))
+                                                },
+                                                onClick = {
+                                                    showShareMenu = false
+                                                    shareSongsPackage(
+                                                        context,
+                                                        scope,
+                                                        songs,
+                                                        songHighlightLineWhilePlaying,
+                                                    )
+                                                },
+                                                leadingIcon = {
+                                                    Icon(Icons.Filled.Share, contentDescription = null)
+                                                },
+                                            )
+                                            DropdownMenuItem(
+                                                text = { Text(stringResource(R.string.song_share_pick_action)) },
+                                                onClick = {
+                                                    showShareMenu = false
+                                                    sharePickKind = SharePickKind.ZIP
+                                                    sharePickMode = true
+                                                    shareSelectedIds.clear()
+                                                },
+                                                leadingIcon = {
+                                                    Icon(Icons.Filled.Check, contentDescription = null)
+                                                },
+                                            )
+                                        }
+                                        if (linkableCount > 0) {
+                                            DropdownMenuItem(
+                                                text = {
+                                                    Text(stringResource(R.string.song_links_share_all_action, linkableCount))
+                                                },
+                                                onClick = {
+                                                    showShareMenu = false
+                                                    shareSongLinksPackage(context, scope, songs)
+                                                },
+                                                leadingIcon = {
+                                                    Icon(Icons.Filled.Link, contentDescription = null)
+                                                },
+                                            )
+                                            DropdownMenuItem(
+                                                text = { Text(stringResource(R.string.song_links_share_pick_action)) },
+                                                onClick = {
+                                                    showShareMenu = false
+                                                    sharePickKind = SharePickKind.LINKS
+                                                    sharePickMode = true
+                                                    shareSelectedIds.clear()
+                                                },
+                                                leadingIcon = {
+                                                    Icon(Icons.Filled.Link, contentDescription = null)
+                                                },
+                                            )
+                                        }
+                                    }
+                                }
+                                IconButton(onClick = { showImportMenu = true }) {
+                                    Icon(
+                                        Icons.Filled.Download,
+                                        contentDescription = stringResource(R.string.song_links_import_menu_cd),
+                                    )
+                                }
+                                DropdownMenu(
+                                    expanded = showImportMenu,
+                                    onDismissRequest = { showImportMenu = false },
+                                ) {
+                                    DropdownMenuItem(
+                                        text = { Text(stringResource(R.string.song_links_import_zip)) },
+                                        onClick = {
+                                            showImportMenu = false
+                                            importSongZipLauncher.launch(
+                                                arrayOf(
+                                                    "application/zip",
+                                                    "application/x-zip-compressed",
+                                                    "application/octet-stream",
+                                                ),
+                                            )
+                                        },
+                                        leadingIcon = {
+                                            Icon(Icons.Filled.Download, contentDescription = null)
+                                        },
+                                    )
+                                    DropdownMenuItem(
+                                        text = { Text(stringResource(R.string.song_links_import_file)) },
+                                        onClick = {
+                                            showImportMenu = false
+                                            importSongLinksLauncher.launch(
+                                                arrayOf("application/json", "text/plain", "application/octet-stream"),
+                                            )
+                                        },
+                                        leadingIcon = {
+                                            Icon(Icons.Filled.AudioFile, contentDescription = null)
+                                        },
+                                    )
+                                    DropdownMenuItem(
+                                        text = { Text(stringResource(R.string.song_links_import_clipboard)) },
+                                        onClick = {
+                                            showImportMenu = false
+                                            val text = clipboard.getText()?.text?.trim().orEmpty()
+                                            if (text.isBlank()) {
+                                                Toast.makeText(
+                                                    context,
+                                                    R.string.song_links_import_clipboard_empty,
+                                                    Toast.LENGTH_SHORT,
+                                                ).show()
+                                            } else {
+                                                importSongLinksFromText(context, scope, viewModel, text)
+                                            }
+                                        },
+                                        leadingIcon = {
+                                            Icon(Icons.Filled.ContentPaste, contentDescription = null)
+                                        },
+                                    )
+                                }
                             }
                         }
                         IconButton(onClick = { pesnopenieNight = !pesnopenieNight }) {
@@ -340,19 +718,25 @@ fun SongCollectionScreen(
                 )
             },
             floatingActionButton = {
-                FloatingActionButton(
-                    onClick = { showAddSheet = true },
-                    containerColor = MaterialTheme.colorScheme.primary,
-                ) {
-                    Icon(Icons.Default.Add, contentDescription = "Добавить песню")
+                if (!sharePickMode && selectedSong == null) {
+                    FloatingActionButton(
+                        onClick = { showAddSheet = true },
+                        containerColor = MaterialTheme.colorScheme.primary,
+                    ) {
+                        Icon(Icons.Default.Add, contentDescription = "Добавить песню")
+                    }
                 }
             },
         ) { padding ->
             val listH = pesnopenieListHorizontalPadding()
-            Column(
+            val listPlayerVisible = selectedSong == null && playerState.audioPath.isNotBlank()
+            Box(
                 modifier = Modifier
                     .fillMaxSize()
                     .padding(padding),
+            ) {
+            Column(
+                modifier = Modifier.fillMaxSize(),
             ) {
                 OutlinedTextField(
                     value = searchQuery,
@@ -434,25 +818,53 @@ fun SongCollectionScreen(
                     verticalArrangement = Arrangement.spacedBy(6.dp),
                 ) {
                     items(filteredSongs, key = { it.id }) { song ->
+                        val canShare = when (sharePickKind) {
+                            SharePickKind.ZIP -> SongSharePackage.canShareSong(song)
+                            SharePickKind.LINKS -> SongLinkBundle.canExportLinks(song)
+                        }
                         SongCard(
                             song = song,
-                            onClick = { selectedSong = song },
+                            onClick = {
+                                if (sharePickMode && canShare) {
+                                    if (song.id in shareSelectedIds) {
+                                        shareSelectedIds.remove(song.id)
+                                    } else {
+                                        shareSelectedIds.add(song.id)
+                                    }
+                                } else {
+                                    selectedSong = song
+                                }
+                            },
                             onDelete = { deleteTarget = song },
                             onPlayAudio = { s ->
                                 val paths = s.audioPaths.filter { File(it).exists() }
                                 when (paths.size) {
                                     0 -> Toast.makeText(context, "Аудиофайл не найден", Toast.LENGTH_SHORT).show()
-                                    1 -> playFile(context, paths[0], "audio/*")
-                                    else -> audioPickList = paths
+                                    1 -> playSongAudio(context, s, paths[0])
+                                    else -> {
+                                        audioPickSong = s
+                                        audioPickList = paths
+                                    }
                                 }
                             },
                             onPlayVideo = { path -> playFile(context, path, "video/*") },
+                            sharePickMode = sharePickMode,
+                            shareSelected = song.id in shareSelectedIds,
+                            shareSelectable = canShare,
                         )
                     }
-                    item { Spacer(Modifier.height(80.dp)) }
+                    item { Spacer(Modifier.height(if (listPlayerVisible) 140.dp else 80.dp)) }
                 }
             }
-        }
+            }
+            if (listPlayerVisible) {
+                SongPlayerBar(
+                    audioPath = playerState.audioPath,
+                    title = playerState.title,
+                    modifier = Modifier.align(Alignment.BottomCenter),
+                )
+            }
+            }
         }
 
         if (showAddSheet) {
@@ -484,41 +896,8 @@ fun SongCollectionScreen(
                 highlightLineWhilePlaying = songHighlightLineWhilePlaying,
                 onHighlightLineChange = { viewModel.setSongHighlightLineWhilePlaying(it) },
                 onSharePortableSong = {
-                    scope.launch {
-                        val s = selectedSong ?: return@launch
-                        if (!SongSharePackage.canShareSong(s)) {
-                            Toast.makeText(context, R.string.song_share_cannot, Toast.LENGTH_SHORT).show()
-                            return@launch
-                        }
-                        try {
-                            val zip = withContext(Dispatchers.IO) {
-                                SongSharePackage.exportToZip(
-                                    context,
-                                    s,
-                                    songHighlightLineWhilePlaying,
-                                )
-                            }
-                            val shareUri = FileProvider.getUriForFile(
-                                context,
-                                "${context.packageName}.provider",
-                                zip,
-                            )
-                            val send = Intent(Intent.ACTION_SEND).apply {
-                                type = "application/zip"
-                                putExtra(Intent.EXTRA_STREAM, shareUri)
-                                addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
-                            }
-                            context.startActivity(
-                                Intent.createChooser(
-                                    send,
-                                    context.getString(R.string.song_share_chooser_title),
-                                ),
-                            )
-                        } catch (e: Exception) {
-                            Log.e(TAG, "share song package", e)
-                            Toast.makeText(context, R.string.song_share_failed, Toast.LENGTH_SHORT).show()
-                        }
-                    }
+                    val s = selectedSong ?: return@SongViewScreen
+                    shareSongsPackage(context, scope, listOf(s), songHighlightLineWhilePlaying)
                 },
             )
         }
@@ -581,24 +960,36 @@ fun SongCollectionScreen(
                 },
             )
         }
-    }
 
     audioPickList?.let { paths ->
+        val pickSong = audioPickSong
         AlertDialog(
-            onDismissRequest = { audioPickList = null },
+            onDismissRequest = {
+                audioPickList = null
+                audioPickSong = null
+            },
             title = { Text("Какой файл воспроизвести?") },
             text = {
                 Column {
-                    paths.forEach { path ->
+                    paths.forEachIndexed { idx, path ->
                         TextButton(
                             onClick = {
-                                playFile(context, path, "audio/*")
+                                if (pickSong != null) {
+                                    playSongAudio(context, pickSong, path)
+                                } else {
+                                    playFile(context, path, "audio/*")
+                                }
                                 audioPickList = null
+                                audioPickSong = null
                             },
                             modifier = Modifier.fillMaxWidth(),
                         ) {
                             Text(
-                                File(path).name,
+                                pickSong?.let { s ->
+                                    val pathIdx = s.audioPaths.indexOf(path)
+                                    if (pathIdx >= 0) s.displayAudioLabel(pathIdx) else ""
+                                }?.takeIf { it.isNotBlank() }
+                                    ?: File(path).name,
                                 style = MaterialTheme.typography.bodyMedium,
                                 maxLines = 2,
                             )
@@ -607,11 +998,15 @@ fun SongCollectionScreen(
                 }
             },
             confirmButton = {
-                TextButton(onClick = { audioPickList = null }) {
+                TextButton(onClick = {
+                    audioPickList = null
+                    audioPickSong = null
+                }) {
                     Text("Отмена")
                 }
             },
         )
+    }
     }
 }
 
@@ -623,9 +1018,12 @@ private fun SongCard(
     onDelete: () -> Unit,
     onPlayAudio: (SongItem) -> Unit,
     onPlayVideo: (String) -> Unit,
+    sharePickMode: Boolean = false,
+    shareSelected: Boolean = false,
+    shareSelectable: Boolean = false,
 ) {
-    val hasAudio = song.audioPaths.isNotEmpty()
-    val hasVideo = song.videoPath != null
+    val hasAudio = song.audioPaths.any { File(it).exists() }
+    val hasVideo = song.videoPath?.let { File(it).exists() } == true
     val hasText = song.lyrics.isNotBlank()
     val hasLyricSync = song.hasLyricSync()
 
@@ -643,6 +1041,21 @@ private fun SongCard(
                 modifier = Modifier.padding(horizontal = 12.dp, vertical = 8.dp),
                 verticalAlignment = Alignment.CenterVertically,
             ) {
+                if (sharePickMode) {
+                    Icon(
+                        if (shareSelected) Icons.Default.Check else Icons.Default.Share,
+                        contentDescription = null,
+                        modifier = Modifier
+                            .size(22.dp)
+                            .padding(end = 6.dp),
+                        tint = if (shareSelectable) {
+                            if (shareSelected) MaterialTheme.colorScheme.primary
+                            else MaterialTheme.colorScheme.onSurfaceVariant
+                        } else {
+                            MaterialTheme.colorScheme.outline.copy(alpha = 0.4f)
+                        },
+                    )
+                }
                 val leadIcon = when {
                     hasVideo && hasAudio -> Icons.Default.VideoFile
                     hasVideo -> Icons.Default.Videocam
@@ -716,7 +1129,7 @@ private fun SongCard(
                     }
                 }
                 Spacer(Modifier.width(4.dp))
-                if (hasAudio) {
+                if (hasAudio && !sharePickMode) {
                     IconButton(
                         onClick = { onPlayAudio(song) },
                         modifier = Modifier.size(34.dp),
@@ -729,7 +1142,7 @@ private fun SongCard(
                         )
                     }
                 }
-                if (hasVideo) {
+                if (hasVideo && !sharePickMode && song.videoPath != null) {
                     IconButton(
                         onClick = { onPlayVideo(song.videoPath!!) },
                         modifier = Modifier.size(34.dp),
@@ -742,7 +1155,7 @@ private fun SongCard(
                         )
                     }
                 }
-                IconButton(onClick = onDelete, modifier = Modifier.size(32.dp)) {
+                IconButton(onClick = onDelete, modifier = Modifier.size(32.dp), enabled = !sharePickMode) {
                     Icon(
                         Icons.Default.Delete,
                         contentDescription = "Удалить",
@@ -898,13 +1311,50 @@ private fun AddSongSheet(
     var downloadingTrack by remember { mutableIntStateOf(-1) }
     var downloadProgress by remember { mutableFloatStateOf(-1f) }
     val downloadedPaths = remember { mutableStateListOf<String>() }
+    val downloadedSourceUrls = remember { mutableStateListOf<String>() }
+    val downloadedLabels = remember { mutableStateListOf<String>() }
 
     var searchWebQuery by remember { mutableStateOf("") }
     var searchResults by remember { mutableStateOf<List<SongCatalogHit>>(emptyList()) }
     var searchLoading by remember { mutableStateOf(false) }
     var searchError by remember { mutableStateOf("") }
     var searchAttempted by remember { mutableStateOf(false) }
+    val fonkiCatalog = remember { SongCatalogBrowseState() }
+    val holyChordsCatalog = remember { SongCatalogBrowseState() }
     val sheetScroll = rememberScrollState()
+
+    fun openCatalogHit(hit: SongCatalogHit) {
+        val url = hit.pageUrl
+        isLoading = true
+        loadError = ""
+        val mainHandler = Handler(Looper.getMainLooper())
+        scope.launch(Dispatchers.IO) {
+            try {
+                val song = FonkiExtractor.extract(url)
+                mainHandler.post {
+                    loadedSong = song
+                    linkUrl = url
+                    tabIndex = 1
+                    isLoading = false
+                    Toast.makeText(
+                        context,
+                        context.getString(R.string.song_search_opened_link),
+                        Toast.LENGTH_LONG,
+                    ).show()
+                }
+            } catch (e: Throwable) {
+                Log.e(TAG, "Search pick extract failed", e)
+                mainHandler.post {
+                    isLoading = false
+                    Toast.makeText(
+                        context,
+                        e.message ?: "Ошибка",
+                        Toast.LENGTH_LONG,
+                    ).show()
+                }
+            }
+        }
+    }
 
     ModalBottomSheet(
         onDismissRequest = onDismiss,
@@ -923,7 +1373,7 @@ private fun AddSongSheet(
                 modifier = Modifier.padding(bottom = 16.dp),
             )
 
-            TabRow(selectedTabIndex = tabIndex) {
+            ScrollableTabRow(selectedTabIndex = tabIndex, edgePadding = 8.dp) {
                 Tab(selected = tabIndex == 0, onClick = { tabIndex = 0 }) {
                     Row(
                         modifier = Modifier.padding(12.dp),
@@ -954,6 +1404,26 @@ private fun AddSongSheet(
                         Text(stringResource(R.string.song_add_tab_search))
                     }
                 }
+                Tab(selected = tabIndex == 3, onClick = { tabIndex = 3 }) {
+                    Row(
+                        modifier = Modifier.padding(12.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                    ) {
+                        Icon(Icons.Default.MusicNote, null, Modifier.size(18.dp))
+                        Spacer(Modifier.width(6.dp))
+                        Text(stringResource(R.string.song_add_tab_fonki))
+                    }
+                }
+                Tab(selected = tabIndex == 4, onClick = { tabIndex = 4 }) {
+                    Row(
+                        modifier = Modifier.padding(12.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                    ) {
+                        Icon(Icons.Default.MusicNote, null, Modifier.size(18.dp))
+                        Spacer(Modifier.width(6.dp))
+                        Text(stringResource(R.string.song_add_tab_holychords))
+                    }
+                }
             }
 
             Spacer(Modifier.height(16.dp))
@@ -961,7 +1431,7 @@ private fun AddSongSheet(
             Column(
                 modifier = Modifier
                     .animateContentSize()
-                    .then(if (tabIndex != 2) Modifier.verticalScroll(sheetScroll) else Modifier),
+                    .then(if (tabIndex !in 2..4) Modifier.verticalScroll(sheetScroll) else Modifier),
             ) {
                 when (tabIndex) {
                 0 -> {
@@ -1372,6 +1842,8 @@ private fun AddSongSheet(
                                                             mainHandler.post {
                                                                 downloadingTrack = -1
                                                                 downloadedPaths.add(file.absolutePath)
+                                                                downloadedSourceUrls.add(track.url)
+                                                                downloadedLabels.add(track.label)
                                                                 Toast.makeText(context, "Скачано: ${file.name}", Toast.LENGTH_SHORT).show()
                                                             }
                                                         } catch (e: Throwable) {
@@ -1478,7 +1950,9 @@ private fun AddSongSheet(
                                         title = song.title,
                                         artist = song.artist,
                                         lyrics = song.lyrics,
-                                        audioPaths = downloadedPaths.distinct().toList(),
+                                        audioPaths = downloadedPaths.toList(),
+                                        audioLabels = downloadedLabels.toList(),
+                                        audioSourceUrls = downloadedSourceUrls.toList(),
                                         sourceUrl = linkUrl.trim(),
                                         tags = selectedTags.toList(),
                                     ),
@@ -1497,6 +1971,8 @@ private fun AddSongSheet(
                             onClick = {
                                 loadedSong = null
                                 downloadedPaths.clear()
+                                downloadedSourceUrls.clear()
+                                downloadedLabels.clear()
                                 downloadingTrack = -1
                             },
                             modifier = Modifier.fillMaxWidth(),
@@ -1598,90 +2074,528 @@ private fun AddSongSheet(
                                 .heightIn(max = 420.dp),
                         ) {
                             items(searchResults, key = { it.pageUrl }) { hit ->
-                                ElevatedCard(
-                                    modifier = Modifier
-                                        .fillMaxWidth()
-                                        .padding(vertical = 4.dp)
-                                        .clickable {
-                                            val url = hit.pageUrl
-                                            isLoading = true
-                                            loadError = ""
-                                            val mainHandler = Handler(Looper.getMainLooper())
-                                            scope.launch(Dispatchers.IO) {
-                                                try {
-                                                    val song = FonkiExtractor.extract(url)
-                                                    mainHandler.post {
-                                                        loadedSong = song
-                                                        linkUrl = url
-                                                        tabIndex = 1
-                                                        isLoading = false
-                                                        Toast.makeText(
-                                                            context,
-                                                            context.getString(R.string.song_search_opened_link),
-                                                            Toast.LENGTH_LONG,
-                                                        ).show()
-                                                    }
-                                                } catch (e: Throwable) {
-                                                    Log.e(TAG, "Search pick extract failed", e)
-                                                    mainHandler.post {
-                                                        isLoading = false
-                                                        Toast.makeText(
-                                                            context,
-                                                            e.message ?: "Ошибка",
-                                                            Toast.LENGTH_LONG,
-                                                        ).show()
-                                                    }
-                                                }
-                                            }
-                                        },
-                                    shape = RoundedCornerShape(10.dp),
-                                ) {
-                                    Row(
-                                        modifier = Modifier
-                                            .fillMaxWidth()
-                                            .padding(12.dp),
-                                        verticalAlignment = Alignment.CenterVertically,
-                                    ) {
-                                        Icon(
-                                            Icons.Default.MusicNote,
-                                            contentDescription = null,
-                                            tint = MaterialTheme.colorScheme.primary,
-                                            modifier = Modifier.size(22.dp),
-                                        )
-                                        Spacer(Modifier.width(10.dp))
-                                        Column(modifier = Modifier.weight(1f)) {
-                                            Text(
-                                                hit.title,
-                                                fontWeight = FontWeight.Bold,
-                                                style = MaterialTheme.typography.bodyMedium,
-                                            )
-                                            if (hit.artist.isNotBlank()) {
-                                                Text(
-                                                    hit.artist,
-                                                    style = MaterialTheme.typography.bodySmall,
-                                                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                                                )
-                                            }
-                                            Text(
-                                                hit.sourceLabel,
-                                                style = MaterialTheme.typography.labelSmall,
-                                                color = MaterialTheme.colorScheme.primary,
-                                            )
-                                        }
-                                        Icon(
-                                            Icons.Default.Link,
-                                            contentDescription = null,
-                                            tint = MaterialTheme.colorScheme.outline,
-                                            modifier = Modifier.size(20.dp),
-                                        )
-                                    }
-                                }
+                                SongCatalogHitCard(
+                                    hit = hit,
+                                    onClick = { openCatalogHit(hit) },
+                                )
                             }
                         }
                     }
                 }
+                3 -> {
+                    SongCatalogBrowsePane(
+                        source = SongCatalogSource.Fonki,
+                        state = fonkiCatalog,
+                        onPick = { openCatalogHit(it) },
+                    )
+                }
+                4 -> {
+                    SongCatalogBrowsePane(
+                        source = SongCatalogSource.HolyChords,
+                        state = holyChordsCatalog,
+                        onPick = { openCatalogHit(it) },
+                    )
+                }
                 }
             }
+        }
+    }
+}
+
+@Composable
+private fun SongCatalogHitCard(
+    hit: SongCatalogHit,
+    onClick: () -> Unit,
+) {
+    ElevatedCard(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(vertical = 4.dp)
+            .clickable(onClick = onClick),
+        shape = RoundedCornerShape(10.dp),
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(12.dp),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            Icon(
+                Icons.Default.MusicNote,
+                contentDescription = null,
+                tint = MaterialTheme.colorScheme.primary,
+                modifier = Modifier.size(22.dp),
+            )
+            Spacer(Modifier.width(10.dp))
+            Column(modifier = Modifier.weight(1f)) {
+                Text(
+                    hit.title,
+                    fontWeight = FontWeight.Bold,
+                    style = MaterialTheme.typography.bodyMedium,
+                )
+                if (hit.artist.isNotBlank()) {
+                    Text(
+                        hit.artist,
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                }
+                Text(
+                    hit.sourceLabel,
+                    style = MaterialTheme.typography.labelSmall,
+                    color = MaterialTheme.colorScheme.primary,
+                )
+            }
+            Icon(
+                Icons.Default.Link,
+                contentDescription = null,
+                tint = MaterialTheme.colorScheme.outline,
+                modifier = Modifier.size(20.dp),
+            )
+        }
+    }
+}
+
+@Composable
+private fun SongCatalogBrowsePane(
+    source: SongCatalogSource,
+    state: SongCatalogBrowseState,
+    onPick: (SongCatalogHit) -> Unit,
+) {
+    val scope = rememberCoroutineScope()
+    val listState = rememberLazyListState()
+    var filter by remember { mutableStateOf("") }
+
+    fun loadMore() {
+        if (state.loading || !state.hasMore) return
+        state.error = ""
+        state.loading = true
+        scope.launch(Dispatchers.IO) {
+            try {
+                val page = FonkiExtractor.browseSongCatalog(source, state.nextPage)
+                withContext(Dispatchers.Main) {
+                    val seen = state.hits.mapTo(mutableSetOf()) { it.pageUrl }
+                    page.hits.filter { it.pageUrl !in seen }.forEach { state.hits.add(it) }
+                    state.nextPage = page.page + 1
+                    state.hasMore = page.hasMore
+                    state.loading = false
+                    state.initialized = true
+                }
+            } catch (e: Exception) {
+                withContext(Dispatchers.Main) {
+                    state.error = e.message ?: "Ошибка"
+                    state.loading = false
+                    state.initialized = true
+                }
+            }
+        }
+    }
+
+    LaunchedEffect(source) {
+        if (!state.initialized && !state.loading) {
+            loadMore()
+        }
+    }
+
+    val filterBlank = filter.isBlank()
+    val canAutoLoad = filterBlank && state.hasMore && !state.loading && state.initialized && state.error.isEmpty()
+    LaunchedEffect(listState, state.hits.size, canAutoLoad) {
+        snapshotFlow {
+            val last = listState.layoutInfo.visibleItemsInfo.lastOrNull()?.index ?: return@snapshotFlow false
+            val total = listState.layoutInfo.totalItemsCount
+            last >= total - 4
+        }.collect { nearEnd ->
+            if (nearEnd && canAutoLoad) {
+                loadMore()
+            }
+        }
+    }
+
+    val query = filter.trim()
+    val shown = remember(query, state.hits.size) {
+        if (query.isEmpty()) {
+            state.hits.toList()
+        } else {
+            val lower = query.lowercase()
+            state.hits.filter {
+                lower in it.title.lowercase() || lower in it.artist.lowercase()
+            }
+        }
+    }
+
+    Column(Modifier.fillMaxWidth()) {
+        OutlinedTextField(
+            value = filter,
+            onValueChange = { filter = it },
+            modifier = Modifier.fillMaxWidth(),
+            label = { Text(stringResource(R.string.song_catalog_filter_hint)) },
+            singleLine = true,
+            shape = RoundedCornerShape(12.dp),
+        )
+        Spacer(Modifier.height(8.dp))
+        Text(
+            stringResource(R.string.song_catalog_shown, shown.size),
+            style = MaterialTheme.typography.bodySmall,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+        )
+        AnimatedVisibility(visible = state.loading && state.hits.isEmpty()) {
+            Column {
+                Spacer(Modifier.height(8.dp))
+                LinearProgressIndicator(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(4.dp)
+                        .clip(RoundedCornerShape(2.dp)),
+                )
+                Spacer(Modifier.height(4.dp))
+                Text(
+                    stringResource(R.string.song_catalog_loading, source.label),
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.primary,
+                )
+            }
+        }
+        if (state.error.isNotEmpty()) {
+            Spacer(Modifier.height(6.dp))
+            Text(
+                state.error,
+                color = MaterialTheme.colorScheme.error,
+                style = MaterialTheme.typography.bodySmall,
+            )
+        }
+        if (state.initialized && !state.loading && state.hits.isEmpty() && state.error.isEmpty()) {
+            Spacer(Modifier.height(8.dp))
+            Text(
+                stringResource(R.string.song_catalog_empty),
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+        }
+        Spacer(Modifier.height(8.dp))
+        LazyColumn(
+            state = listState,
+            modifier = Modifier
+                .fillMaxWidth()
+                .heightIn(max = 480.dp),
+        ) {
+            items(shown, key = { it.pageUrl }) { hit ->
+                SongCatalogHitCard(
+                    hit = hit,
+                    onClick = { onPick(hit) },
+                )
+            }
+            item(key = "catalog_footer") {
+                if (state.loading && state.hits.isNotEmpty()) {
+                    LinearProgressIndicator(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(vertical = 8.dp)
+                            .height(4.dp)
+                            .clip(RoundedCornerShape(2.dp)),
+                    )
+                } else if (state.hasMore || state.error.isNotEmpty()) {
+                    OutlinedButton(
+                        onClick = { loadMore() },
+                        enabled = !state.loading,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(vertical = 8.dp),
+                        shape = RoundedCornerShape(12.dp),
+                    ) {
+                        Text(
+                            if (state.error.isNotEmpty() && state.hits.isEmpty()) {
+                                stringResource(R.string.song_catalog_retry)
+                            } else {
+                                stringResource(R.string.song_catalog_load_more)
+                            },
+                        )
+                    }
+                }
+            }
+        }
+    }
+}
+
+@OptIn(ExperimentalLayoutApi::class)
+@Composable
+private fun SongEditAudioSection(
+    songTitle: String,
+    songArtist: String,
+    linkUrl: String,
+    onLinkUrlChange: (String) -> Unit,
+    audioPaths: MutableList<String>,
+    audioLabels: MutableList<String>,
+) {
+    val context = LocalContext.current
+    val clipboard = LocalClipboardManager.current
+    val scope = rememberCoroutineScope()
+    var replaceIndex by remember { mutableStateOf<Int?>(null) }
+    var loadedSong by remember { mutableStateOf<FonkiSong?>(null) }
+    var linkLoading by remember { mutableStateOf(false) }
+    var linkError by remember { mutableStateOf("") }
+    var downloadingTrack by remember { mutableIntStateOf(-1) }
+
+    val audioPickerLauncher = rememberLauncherForActivityResult(
+        ActivityResultContracts.GetContent(),
+    ) { uri: Uri? ->
+        if (uri == null) {
+            replaceIndex = null
+            return@rememberLauncherForActivityResult
+        }
+        scope.launch(Dispatchers.IO) {
+            val copied = copyAudioUriToSongsDir(context, uri)
+            withContext(Dispatchers.Main) {
+                if (copied == null) {
+                    Toast.makeText(context, R.string.song_edit_audio_pick_failed, Toast.LENGTH_SHORT).show()
+                } else {
+                    val (path, label) = copied
+                    val idx = replaceIndex
+                    if (idx != null && idx in audioPaths.indices) {
+                        audioPaths[idx] = path
+                        if (idx in audioLabels.indices) {
+                            audioLabels[idx] = label
+                        } else {
+                            while (audioLabels.size < idx) audioLabels.add("")
+                            audioLabels.add(label)
+                        }
+                    } else {
+                        audioPaths.add(path)
+                        audioLabels.add(label)
+                    }
+                }
+                replaceIndex = null
+            }
+        }
+    }
+
+    Text(
+        stringResource(R.string.song_edit_audio_title),
+        style = MaterialTheme.typography.labelMedium,
+        color = MaterialTheme.colorScheme.onSurfaceVariant,
+    )
+    Spacer(Modifier.height(6.dp))
+
+    if (audioPaths.isEmpty()) {
+        Text(
+            stringResource(R.string.song_edit_audio_empty),
+            style = MaterialTheme.typography.bodySmall,
+            color = MaterialTheme.colorScheme.outline,
+        )
+        Spacer(Modifier.height(8.dp))
+    } else {
+        audioPaths.forEachIndexed { idx, path ->
+            val label = audioLabels.getOrNull(idx)?.takeIf { it.isNotBlank() }
+                ?: File(path).nameWithoutExtension.ifBlank { File(path).name }
+            ElevatedCard(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(vertical = 3.dp),
+                shape = RoundedCornerShape(10.dp),
+            ) {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 12.dp, vertical = 8.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
+                    Icon(
+                        Icons.Default.MusicNote,
+                        contentDescription = null,
+                        tint = MaterialTheme.colorScheme.primary,
+                        modifier = Modifier.size(20.dp),
+                    )
+                    Spacer(Modifier.width(8.dp))
+                    Text(
+                        label,
+                        style = MaterialTheme.typography.bodyMedium,
+                        modifier = Modifier.weight(1f),
+                        maxLines = 2,
+                        overflow = TextOverflow.Ellipsis,
+                    )
+                    TextButton(
+                        onClick = {
+                            replaceIndex = idx
+                            audioPickerLauncher.launch("audio/*")
+                        },
+                    ) {
+                        Text(stringResource(R.string.song_edit_audio_replace))
+                    }
+                    IconButton(
+                        onClick = {
+                            if (idx in audioPaths.indices) audioPaths.removeAt(idx)
+                            if (idx in audioLabels.indices) audioLabels.removeAt(idx)
+                        },
+                        modifier = Modifier.size(36.dp),
+                    ) {
+                        Icon(
+                            Icons.Default.Delete,
+                            stringResource(R.string.song_edit_audio_remove),
+                            tint = MaterialTheme.colorScheme.error,
+                        )
+                    }
+                }
+            }
+        }
+        Spacer(Modifier.height(8.dp))
+    }
+
+    OutlinedButton(
+        onClick = {
+            replaceIndex = null
+            audioPickerLauncher.launch("audio/*")
+        },
+        modifier = Modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(12.dp),
+    ) {
+        Icon(Icons.Default.AudioFile, null, Modifier.size(18.dp))
+        Spacer(Modifier.width(8.dp))
+        Text(stringResource(R.string.song_edit_audio_add_device))
+    }
+
+    Spacer(Modifier.height(12.dp))
+    OutlinedTextField(
+        value = linkUrl,
+        onValueChange = {
+            onLinkUrlChange(it)
+            linkError = ""
+            loadedSong = null
+        },
+        modifier = Modifier.fillMaxWidth(),
+        placeholder = { Text(stringResource(R.string.song_edit_audio_link_hint)) },
+        singleLine = true,
+        trailingIcon = {
+            IconButton(onClick = {
+                val text = clipboard.getText()?.text ?: ""
+                if (text.isNotBlank()) onLinkUrlChange(text)
+            }) {
+                Icon(Icons.Default.ContentPaste, "Вставить")
+            }
+        },
+        isError = linkError.isNotEmpty(),
+        supportingText = if (linkError.isNotEmpty()) {
+            { Text(linkError, color = MaterialTheme.colorScheme.error) }
+        } else null,
+        shape = RoundedCornerShape(12.dp),
+    )
+    Spacer(Modifier.height(8.dp))
+
+    if (loadedSong == null) {
+        Button(
+            onClick = {
+                val trimmed = linkUrl.trim()
+                if (trimmed.isBlank()) return@Button
+                if (!FonkiExtractor.isFonkiUrl(trimmed)) {
+                    linkError = "Поддерживаются: fonki.pro, holychords.pro"
+                    return@Button
+                }
+                linkLoading = true
+                linkError = ""
+                scope.launch(Dispatchers.IO) {
+                    try {
+                        val extracted = FonkiExtractor.extract(trimmed)
+                        withContext(Dispatchers.Main) {
+                            loadedSong = extracted
+                            linkLoading = false
+                        }
+                    } catch (e: Throwable) {
+                        Log.e(TAG, "Song edit extract failed", e)
+                        withContext(Dispatchers.Main) {
+                            linkLoading = false
+                            linkError = e.message ?: "Ошибка загрузки"
+                        }
+                    }
+                }
+            },
+            modifier = Modifier.fillMaxWidth(),
+            shape = RoundedCornerShape(12.dp),
+            enabled = linkUrl.isNotBlank() && !linkLoading,
+        ) {
+            if (linkLoading) {
+                CircularProgressIndicator(
+                    modifier = Modifier.size(20.dp),
+                    strokeWidth = 2.dp,
+                    color = MaterialTheme.colorScheme.onPrimary,
+                )
+            } else {
+                Icon(Icons.Default.Link, null)
+            }
+            Spacer(Modifier.width(8.dp))
+            Text(stringResource(R.string.song_edit_audio_load_link))
+        }
+    }
+
+    val fonkiTracks = loadedSong?.tracks.orEmpty()
+    if (fonkiTracks.isNotEmpty()) {
+        Spacer(Modifier.height(8.dp))
+        fonkiTracks.forEachIndexed { idx, track ->
+        ElevatedCard(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(vertical = 3.dp),
+            shape = RoundedCornerShape(10.dp),
+        ) {
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 12.dp, vertical = 8.dp),
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                Text(
+                    track.label,
+                    style = MaterialTheme.typography.bodyMedium,
+                    modifier = Modifier.weight(1f),
+                )
+                IconButton(
+                    onClick = { playFile(context, track.url, "audio/*") },
+                    modifier = Modifier.size(36.dp),
+                ) {
+                    Icon(Icons.Default.PlayArrow, "Прослушать", tint = MaterialTheme.colorScheme.primary)
+                }
+                if (downloadingTrack == idx) {
+                    CircularProgressIndicator(modifier = Modifier.size(24.dp), strokeWidth = 2.dp)
+                } else {
+                    IconButton(
+                        onClick = {
+                            downloadingTrack = idx
+                            scope.launch(Dispatchers.IO) {
+                                try {
+                                    val file = FonkiExtractor.downloadAudio(
+                                        context = context,
+                                        url = track.url,
+                                        songTitle = songTitle.ifBlank { loadedSong?.title ?: "song" },
+                                        songArtist = songArtist.ifBlank { loadedSong?.artist ?: "" },
+                                        trackLabel = track.label,
+                                    )
+                                    withContext(Dispatchers.Main) {
+                                        downloadingTrack = -1
+                                        audioPaths.add(file.absolutePath)
+                                        audioLabels.add(track.label)
+                                        Toast.makeText(
+                                            context,
+                                            "Добавлено: ${track.label}",
+                                            Toast.LENGTH_SHORT,
+                                        ).show()
+                                    }
+                                } catch (e: Throwable) {
+                                    Log.e(TAG, "Song edit track download failed", e)
+                                    withContext(Dispatchers.Main) {
+                                        downloadingTrack = -1
+                                        Toast.makeText(
+                                            context,
+                                            "Ошибка: ${e.message}",
+                                            Toast.LENGTH_SHORT,
+                                        ).show()
+                                    }
+                                }
+                            }
+                        },
+                        modifier = Modifier.size(36.dp),
+                    ) {
+                        Icon(Icons.Default.Download, stringResource(R.string.song_edit_audio_add_track))
+                    }
+                }
+            }
+        }
         }
     }
 }
@@ -1707,8 +2621,23 @@ private fun SongViewScreen(
     var editLyricCues by remember(song.id) { mutableStateOf(song.lyricCues) }
     val editTags = remember(song) { mutableStateListOf<String>().apply { addAll(song.tags) } }
     var editNewTag by remember { mutableStateOf("") }
+    var editLinkUrl by remember(song.id) { mutableStateOf(song.sourceUrl ?: "") }
+    val editAudioPaths = remember(song.id) { mutableStateListOf<String>() }
+    val editAudioLabels = remember(song.id) { mutableStateListOf<String>() }
     var lyricsFontSize by remember { mutableFloatStateOf(songFontSize) }
     val context = LocalContext.current
+
+    fun initEditAudioFromSong() {
+        editAudioPaths.clear()
+        editAudioLabels.clear()
+        song.audioPaths.forEachIndexed { idx, path ->
+            if (File(path).exists()) {
+                editAudioPaths.add(path)
+                editAudioLabels.add(song.displayAudioLabel(idx))
+            }
+        }
+        editLinkUrl = song.sourceUrl ?: ""
+    }
 
     LaunchedEffect(song.lyricCues) {
         editLyricCues = song.lyricCues
@@ -1901,10 +2830,14 @@ private fun SongViewScreen(
                                             lyrics = editLyrics.trim(),
                                             tags = editTags.toList(),
                                             lyricCues = editLyricCues,
+                                            audioPaths = editAudioPaths.toList(),
+                                            audioLabels = editAudioLabels.take(editAudioPaths.size),
+                                            sourceUrl = editLinkUrl.trim().takeIf { it.isNotBlank() },
                                         ),
                                     )
                                     isEditing = false
                                 } else {
+                                    initEditAudioFromSong()
                                     isEditing = true
                                 }
                             },
@@ -2060,11 +2993,21 @@ private fun SongViewScreen(
                             Icon(Icons.Default.Add, null, Modifier.size(18.dp))
                         }
                     }
-                    if (song.audioPaths.any { File(it).exists() } && editLyrics.isNotBlank()) {
+                    Spacer(Modifier.height(12.dp))
+                    SongEditAudioSection(
+                        songTitle = editTitle,
+                        songArtist = editArtist,
+                        linkUrl = editLinkUrl,
+                        onLinkUrlChange = { editLinkUrl = it },
+                        audioPaths = editAudioPaths,
+                        audioLabels = editAudioLabels,
+                    )
+                    val timingAudioPath = editAudioPaths.firstOrNull { File(it).exists() }
+                    if (timingAudioPath != null && editLyrics.isNotBlank()) {
                         Spacer(Modifier.height(12.dp))
                         SongLyricTimingEditor(
                             lyrics = editLyrics,
-                            audioPath = song.audioPaths.first { File(it).exists() },
+                            audioPath = timingAudioPath,
                             cues = editLyricCues,
                             onCuesChange = { editLyricCues = it },
                         )
@@ -2182,7 +3125,12 @@ private fun SongViewScreen(
                                 verticalArrangement = Arrangement.spacedBy(6.dp),
                             ) {
                                 existingAudioPaths.forEachIndexed { idx, path ->
-                                    val name = File(path).name
+                                    val pathIdx = song.audioPaths.indexOf(path)
+                                    val name = if (pathIdx >= 0) {
+                                        song.displayAudioLabel(pathIdx).ifBlank { File(path).name }
+                                    } else {
+                                        File(path).name
+                                    }
                                     FilterChip(
                                         selected = idx == selectedAudioIndex,
                                         onClick = { selectedAudioIndex = idx },

@@ -858,6 +858,8 @@
     <string name="song_add_tab_manual">Вручную</string>
     <string name="song_add_tab_link">По ссылке</string>
     <string name="song_add_tab_search">Поиск в сети</string>
+    <string name="song_add_tab_fonki">Fonki</string>
+    <string name="song_add_tab_holychords">HolyChords</string>
     <string name="song_search_hint">Название песни или слова из текста</string>
     <string name="song_search_button">Найти</string>
     <string name="song_search_loading">Ищем в каталогах HolyChords и Fonki…</string>
@@ -865,6 +867,12 @@
     <string name="song_search_short">Введите не менее 2 символов</string>
     <string name="song_search_footer">Просматриваются открытые списки песен на сайтах; редкие произведения можно добавить по прямой ссылке.</string>
     <string name="song_search_opened_link">Открыта вкладка «По ссылке» — скачайте текст и треки</string>
+    <string name="song_catalog_filter_hint">Фильтр по названию или исполнителю</string>
+    <string name="song_catalog_loading">Загружаем каталог %1$s…</string>
+    <string name="song_catalog_load_more">Ещё песни</string>
+    <string name="song_catalog_shown">Показано: %1$d</string>
+    <string name="song_catalog_empty">Не удалось загрузить список. Проверьте интернет и нажмите «Ещё песни».</string>
+    <string name="song_catalog_retry">Повторить</string>
     <string name="song_share_package_cd">Поделиться пакетом (текст и аудио)</string>
     <string name="song_share_chooser_title">Отправить песню</string>
     <string name="song_share_multi_chooser_title">Отправить %1$d песен</string>
