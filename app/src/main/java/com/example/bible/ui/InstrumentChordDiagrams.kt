@@ -1,7 +1,6 @@
 package com.example.bible.ui
 
 import androidx.compose.foundation.Canvas
-import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -11,7 +10,6 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.MaterialTheme
@@ -20,7 +18,6 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -36,7 +33,6 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.bible.data.InstrumentChordShapes
 import com.example.bible.data.InstrumentChordShapes.Instrument
-import com.example.bible.data.SongChordMarkup
 
 private val GuitarStringLabels = listOf("e", "H", "G", "D", "A", "E")
 private val WhitePitchClasses = listOf(0, 2, 4, 5, 7, 9, 11, 12)
@@ -44,48 +40,36 @@ private val BlackOnWhiteIndex = listOf(0, 1, 3, 4, 5)
 
 @Composable
 fun InstrumentFingeringGuide(
-    lyrics: String,
-    transpose: Int,
+    chordName: String,
     modifier: Modifier = Modifier,
+    instrument: Instrument? = null,
+    onInstrumentChange: ((Instrument) -> Unit)? = null,
 ) {
-    val chords = remember(lyrics, transpose) {
-        SongChordMarkup.uniqueChordNames(lyrics, transpose)
-    }
-    if (chords.isEmpty()) return
-    var instrument by rememberSaveable { mutableStateOf(Instrument.GUITAR.name) }
-    val selected = runCatching { Instrument.valueOf(instrument) }.getOrDefault(Instrument.GUITAR)
+    var localInstrument by rememberSaveable { mutableStateOf(Instrument.GUITAR.name) }
+    val selected = instrument ?: runCatching {
+        Instrument.valueOf(localInstrument)
+    }.getOrDefault(Instrument.GUITAR)
+    val setInstrument = onInstrumentChange ?: { next -> localInstrument = next.name }
 
     Column(modifier.fillMaxWidth()) {
-        Text(
-            "Куда жать",
-            style = MaterialTheme.typography.labelMedium,
-            fontWeight = FontWeight.Bold,
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
-        )
-        Spacer(Modifier.height(4.dp))
-        Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.spacedBy(6.dp),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
             FilterChip(
                 selected = selected == Instrument.GUITAR,
-                onClick = { instrument = Instrument.GUITAR.name },
+                onClick = { setInstrument(Instrument.GUITAR) },
                 label = { Text("Гитара") },
             )
             FilterChip(
                 selected = selected == Instrument.PIANO,
-                onClick = { instrument = Instrument.PIANO.name },
+                onClick = { setInstrument(Instrument.PIANO) },
                 label = { Text("Пианино") },
             )
         }
         Spacer(Modifier.height(8.dp))
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .horizontalScroll(rememberScrollState()),
-            horizontalArrangement = Arrangement.spacedBy(8.dp),
-        ) {
-            chords.forEach { name ->
-                ChordFingeringCard(name = name, instrument = selected)
-            }
-        }
+        ChordFingeringCard(name = chordName, instrument = selected)
     }
 }
 

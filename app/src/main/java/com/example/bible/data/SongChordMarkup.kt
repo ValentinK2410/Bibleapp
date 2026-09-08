@@ -133,6 +133,16 @@ object SongChordMarkup {
 
     fun noteName(pitchClass: Int): String = NOTES[Math.floorMod(pitchClass, 12)]
 
+    data class ChordSpan(val name: String, val start: Int, val endExclusive: Int)
+
+    /** Позиции аккордов в уже развёрнутой строке просмотра (`Am    E`). */
+    fun chordSpans(line: String): List<ChordSpan> {
+        if (line.isBlank()) return emptyList()
+        return CHORD_TOKEN.findAll(line).map { match ->
+            ChordSpan(match.value, match.range.first, match.range.last + 1)
+        }.toList()
+    }
+
     /** Строка только из аккордов: `[Am]    [E]` — не разворачивать как ChordPro. */
     private fun isInlineChordPro(line: String): Boolean {
         if (!CHORD_PRO.containsMatchIn(line)) return false

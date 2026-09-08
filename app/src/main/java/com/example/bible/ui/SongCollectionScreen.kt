@@ -2905,7 +2905,6 @@ private fun SongViewScreen(
                             onShowChordsChange = onShowChordsChange,
                             transpose = transpose,
                             onTranspose = { transpose = it },
-                            lyrics = song.lyrics,
                         )
                         Spacer(Modifier.height(8.dp))
                     }

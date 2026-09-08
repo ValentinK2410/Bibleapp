@@ -67,6 +67,14 @@ class SongChordMarkupTest {
     }
 
     @Test
+    fun chordSpansFindTokensInDisplayLine() {
+        val spans = SongChordMarkup.chordSpans("Am          A                E")
+        assertEquals(listOf("Am", "A", "E"), spans.map { it.name })
+        assertEquals(0, spans[0].start)
+        assertEquals(2, spans[0].endExclusive)
+    }
+
+    @Test
     fun uniqueChordsKeepOrderAndTranspose() {
         val lyrics = """
             |[Am].          [A].                [E]

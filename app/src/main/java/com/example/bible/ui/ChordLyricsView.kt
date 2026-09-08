@@ -1,5 +1,6 @@
 package com.example.bible.ui
 
+import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -7,10 +8,14 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.text.SpanStyle
+import androidx.compose.ui.text.TextLayoutResult
+import androidx.compose.ui.text.buildAnnotatedString
+import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Remove
@@ -53,28 +58,116 @@ fun ChordLyricsView(
     val lines = remember(lyrics, showChords, transpose) {
         SongChordMarkup.displayLines(lyrics, showChords, transpose)
     }
-    Column(
-        modifier.then(
-            if (showChords) Modifier.horizontalScroll(rememberScrollState()) else Modifier,
-        ),
-    ) {
-        lines.forEach { line ->
+    var selected by remember { mutableStateOf<SelectedLyricChord?>(null) }
+    LaunchedEffect(lyrics, transpose) { selected = null }
+    val selectedName = selected?.let { sel ->
+        val line = lines.getOrNull(sel.lineIndex) ?: return@let null
+        if (!line.isChord) return@let null
+        SongChordMarkup.chordSpans(line.text).firstOrNull { it.start == sel.start }?.name
+    }
+    val lineScroll = rememberScrollState()
+
+    Column(modifier) {
+        if (showChords && selectedName == null && lines.any { it.isChord }) {
             Text(
-                text = line.text.ifBlank { " " },
-                fontSize = fontSizeSp.sp,
-                lineHeight = (fontSizeSp * 1.28f).sp,
-                fontWeight = if (line.isChord) FontWeight.Bold else FontWeight.Normal,
-                fontFamily = if (showChords) FontFamily.Monospace else FontFamily.Default,
-                softWrap = !showChords,
-                maxLines = if (showChords) 1 else Int.MAX_VALUE,
-                color = if (line.isChord) {
-                    MaterialTheme.colorScheme.primary
-                } else {
-                    MaterialTheme.colorScheme.onSurface
-                },
+                "Нажмите аккорд в тексте — схема появится, ещё раз — скроется.",
+                style = MaterialTheme.typography.labelSmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
+            Spacer(Modifier.height(6.dp))
+        }
+        lines.forEachIndexed { index, line ->
+            val lineModifier = if (showChords) Modifier.horizontalScroll(lineScroll) else Modifier
+            Column(lineModifier) {
+                if (showChords && line.isChord) {
+                    ClickableChordLine(
+                        text = line.text,
+                        fontSizeSp = fontSizeSp,
+                        lineIndex = index,
+                        selected = selected,
+                        onToggle = { lineIndex, start ->
+                            selected = if (selected?.lineIndex == lineIndex && selected?.start == start) {
+                                null
+                            } else {
+                                SelectedLyricChord(lineIndex, start)
+                            }
+                        },
+                    )
+                } else {
+                    Text(
+                        text = line.text.ifBlank { " " },
+                        fontSize = fontSizeSp.sp,
+                        lineHeight = (fontSizeSp * 1.28f).sp,
+                        fontWeight = FontWeight.Normal,
+                        fontFamily = if (showChords) FontFamily.Monospace else FontFamily.Default,
+                        softWrap = !showChords,
+                        maxLines = if (showChords) 1 else Int.MAX_VALUE,
+                        color = MaterialTheme.colorScheme.onSurface,
+                    )
+                }
+            }
+            if (showChords && selected?.lineIndex == index && selectedName != null) {
+                Spacer(Modifier.height(6.dp))
+                InstrumentFingeringGuide(chordName = selectedName)
+                Spacer(Modifier.height(8.dp))
+            }
         }
     }
+}
+
+private data class SelectedLyricChord(val lineIndex: Int, val start: Int)
+
+@Composable
+private fun ClickableChordLine(
+    text: String,
+    fontSizeSp: Float,
+    lineIndex: Int,
+    selected: SelectedLyricChord?,
+    onToggle: (lineIndex: Int, start: Int) -> Unit,
+) {
+    val spans = remember(text) { SongChordMarkup.chordSpans(text) }
+    val chordColor = MaterialTheme.colorScheme.primary
+    val selectedBg = MaterialTheme.colorScheme.primaryContainer
+    val annotated = remember(text, spans, selected, lineIndex, chordColor, selectedBg) {
+        buildAnnotatedString {
+            append(text.ifBlank { " " })
+            spans.forEach { span ->
+                val isSel = selected?.lineIndex == lineIndex && selected.start == span.start
+                val end = span.endExclusive.coerceAtMost(length)
+                if (span.start in 0 until end) {
+                    addStyle(
+                        SpanStyle(
+                            fontWeight = FontWeight.Bold,
+                            color = chordColor,
+                            background = if (isSel) selectedBg else Color.Unspecified,
+                            textDecoration = if (isSel) TextDecoration.Underline else TextDecoration.None,
+                        ),
+                        span.start,
+                        end,
+                    )
+                }
+            }
+        }
+    }
+    var layout by remember { mutableStateOf<TextLayoutResult?>(null) }
+    Text(
+        text = annotated,
+        fontSize = fontSizeSp.sp,
+        lineHeight = (fontSizeSp * 1.28f).sp,
+        fontWeight = FontWeight.Bold,
+        fontFamily = FontFamily.Monospace,
+        softWrap = false,
+        maxLines = 1,
+        color = chordColor,
+        onTextLayout = { layout = it },
+        modifier = Modifier.pointerInput(lineIndex, spans) {
+            detectTapGestures { pos ->
+                val offset = layout?.getOffsetForPosition(pos) ?: return@detectTapGestures
+                val hit = spans.firstOrNull { offset >= it.start && offset < it.endExclusive }
+                if (hit != null) onToggle(lineIndex, hit.start)
+            }
+        },
+    )
 }
 
 @Composable
@@ -85,44 +178,37 @@ fun SongChordToolbar(
     transpose: Int,
     onTranspose: (Int) -> Unit,
     modifier: Modifier = Modifier,
-    lyrics: String = "",
 ) {
-    Column(modifier.fillMaxWidth()) {
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(4.dp),
-        ) {
-            FilterChip(
-                selected = showChords,
-                onClick = { onShowChordsChange(!showChords) },
-                label = { Text(if (hasChords) "Аккорды" else "Аккорды (нет)") },
-                enabled = hasChords || showChords,
-            )
-            if (showChords && hasChords) {
-                IconButton(onClick = { onTranspose(transpose - 1) }) {
-                    Icon(Icons.Default.Remove, contentDescription = "Тоном ниже")
-                }
-                Text(
-                    if (transpose == 0) "тон" else {
-                        val sign = if (transpose > 0) "+" else ""
-                        "$sign$transpose"
-                    },
-                    style = MaterialTheme.typography.labelMedium,
-                    fontWeight = FontWeight.Bold,
-                    color = MaterialTheme.colorScheme.primary,
-                )
-                IconButton(onClick = { onTranspose(transpose + 1) }) {
-                    Icon(Icons.Default.Add, contentDescription = "Тоном выше")
-                }
-                if (transpose != 0) {
-                    TextButton(onClick = { onTranspose(0) }) { Text("Сброс") }
-                }
+    Row(
+        modifier = modifier.fillMaxWidth(),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(4.dp),
+    ) {
+        FilterChip(
+            selected = showChords,
+            onClick = { onShowChordsChange(!showChords) },
+            label = { Text(if (hasChords) "Аккорды" else "Аккорды (нет)") },
+            enabled = hasChords || showChords,
+        )
+        if (showChords && hasChords) {
+            IconButton(onClick = { onTranspose(transpose - 1) }) {
+                Icon(Icons.Default.Remove, contentDescription = "Тоном ниже")
             }
-        }
-        if (showChords && hasChords && lyrics.isNotBlank()) {
-            Spacer(Modifier.height(8.dp))
-            InstrumentFingeringGuide(lyrics = lyrics, transpose = transpose)
+            Text(
+                if (transpose == 0) "тон" else {
+                    val sign = if (transpose > 0) "+" else ""
+                    "$sign$transpose"
+                },
+                style = MaterialTheme.typography.labelMedium,
+                fontWeight = FontWeight.Bold,
+                color = MaterialTheme.colorScheme.primary,
+            )
+            IconButton(onClick = { onTranspose(transpose + 1) }) {
+                Icon(Icons.Default.Add, contentDescription = "Тоном выше")
+            }
+            if (transpose != 0) {
+                TextButton(onClick = { onTranspose(0) }) { Text("Сброс") }
+            }
         }
     }
 }
