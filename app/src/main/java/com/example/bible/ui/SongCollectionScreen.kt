@@ -2614,6 +2614,9 @@ private fun SongViewScreen(
     val isLandscape = LocalConfiguration.current.orientation == Configuration.ORIENTATION_LANDSCAPE
     var showPlayer by rememberSaveable(song.id) { mutableStateOf(!isLandscape) }
     var selectedChord by remember(song.id) { mutableStateOf<String?>(null) }
+    LaunchedEffect(showChords) {
+        if (!showChords) selectedChord = null
+    }
     val playerNow by AudioPlayerHolder.state.collectAsState()
     val showTrackPicker = hasPlayerBar && existingAudioPaths.size > 1 && showAudioTracks
     val audioPanelH = if (showTrackPicker) {
@@ -2624,10 +2627,12 @@ private fun SongViewScreen(
     val playerOverlayVisible = hasPlayerBar && (!isLandscape || showPlayer)
     val useLandscapeChordSplit =
         isLandscape && !isEditing && showChords && hasLyricChords && song.lyrics.isNotBlank()
-    val chordDockH = if (!isEditing && selectedChord != null && !useLandscapeChordSplit) 176.dp else 0.dp
+    val compactPlayer = isLandscape || !showChords
+    val chordDockH =
+        if (!isEditing && showChords && selectedChord != null && !useLandscapeChordSplit) 176.dp else 0.dp
     val bottomInsetPlayer = when {
         !playerOverlayVisible -> 0.dp
-        isLandscape -> 56.dp + audioPanelH
+        compactPlayer -> 56.dp + audioPanelH
         else -> 104.dp + audioPanelH
     } + chordDockH
     val contentPadV = if (isLandscape) 0.dp else 8.dp
@@ -3138,16 +3143,16 @@ private fun SongViewScreen(
                 }
 
                 if (!isLandscape) {
-                    Spacer(Modifier.height(32.dp))
+                    Spacer(Modifier.height(if (showChords) 32.dp else 8.dp))
                 }
             }
         }
 
-        if ((!useLandscapeChordSplit && selectedChord != null) || playerOverlayVisible) {
+        if ((!useLandscapeChordSplit && showChords && selectedChord != null) || playerOverlayVisible) {
             Column(
                 Modifier.align(Alignment.BottomCenter),
             ) {
-                if (!useLandscapeChordSplit && selectedChord != null) {
+                if (!useLandscapeChordSplit && showChords && selectedChord != null) {
                     Surface(
                         tonalElevation = 4.dp,
                         shadowElevation = 6.dp,
@@ -3208,8 +3213,8 @@ private fun SongViewScreen(
                     audioPath = activeAudioPath!!,
                     title = song.title,
                     modifier = Modifier.fillMaxWidth(),
-                    compact = isLandscape,
-                    slim = isLandscape,
+                    compact = compactPlayer,
+                    slim = compactPlayer,
                     onRequestHide = if (isLandscape) {
                         { showPlayer = false }
                     } else {

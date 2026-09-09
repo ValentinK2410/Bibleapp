@@ -304,6 +304,9 @@ fun PesnVozrozhdeniyaHymnScreen(
     val isLandscape = LocalConfiguration.current.orientation == Configuration.ORIENTATION_LANDSCAPE
     var transpose by remember(hymnId) { mutableIntStateOf(0) }
     var selectedChord by remember { mutableStateOf<String?>(null) }
+    LaunchedEffect(showChords) {
+        if (!showChords) selectedChord = null
+    }
     val playerState by AudioPlayerHolder.state.collectAsState()
     var activeAudioPath by remember { mutableStateOf<String?>(null) }
     var linkUrl by remember { mutableStateOf("") }
@@ -394,7 +397,7 @@ fun PesnVozrozhdeniyaHymnScreen(
                         hymn != null &&
                         SongChordMarkup.hasChords(hymn.lyrics)
                 Column(Modifier.fillMaxWidth()) {
-                    if (selectedChord != null && !editing && !useLandscapeChordSplit) {
+                    if (showChords && selectedChord != null && !editing && !useLandscapeChordSplit) {
                         Surface(
                             tonalElevation = 4.dp,
                             shadowElevation = 6.dp,
@@ -410,11 +413,15 @@ fun PesnVozrozhdeniyaHymnScreen(
                     if (hymn != null && path != null && File(path).exists()) {
                         Surface(tonalElevation = 3.dp, shadowElevation = 8.dp) {
                             Column(Modifier.fillMaxWidth()) {
-                                PvPhonogramModesRow(playerState = playerState)
+                                if (showChords) {
+                                    PvPhonogramModesRow(playerState = playerState)
+                                }
                                 SongPlayerBar(
                                     audioPath = path,
                                     title = "${hymn.number}. ${hymn.title}",
                                     modifier = Modifier.fillMaxWidth(),
+                                    compact = !showChords || isLandscape,
+                                    slim = !showChords || isLandscape,
                                 )
                             }
                         }
