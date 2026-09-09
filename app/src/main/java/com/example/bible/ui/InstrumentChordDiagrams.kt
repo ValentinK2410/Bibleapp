@@ -44,6 +44,7 @@ fun InstrumentFingeringGuide(
     modifier: Modifier = Modifier,
     instrument: Instrument? = null,
     onInstrumentChange: ((Instrument) -> Unit)? = null,
+    docked: Boolean = false,
 ) {
     var localInstrument by rememberSaveable { mutableStateOf(Instrument.GUITAR.name) }
     val selected = instrument ?: runCatching {
@@ -51,12 +52,8 @@ fun InstrumentFingeringGuide(
     }.getOrDefault(Instrument.GUITAR)
     val setInstrument = onInstrumentChange ?: { next -> localInstrument = next.name }
 
-    Column(modifier.fillMaxWidth()) {
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.spacedBy(6.dp),
-            verticalAlignment = Alignment.CenterVertically,
-        ) {
+    val chips = @Composable {
+        Row(horizontalArrangement = Arrangement.spacedBy(6.dp), verticalAlignment = Alignment.CenterVertically) {
             FilterChip(
                 selected = selected == Instrument.GUITAR,
                 onClick = { setInstrument(Instrument.GUITAR) },
@@ -68,8 +65,33 @@ fun InstrumentFingeringGuide(
                 label = { Text("Пианино") },
             )
         }
-        Spacer(Modifier.height(8.dp))
-        ChordFingeringCard(name = chordName, instrument = selected)
+    }
+    if (docked) {
+        Row(
+            modifier = modifier
+                .fillMaxWidth()
+                .padding(horizontal = 12.dp, vertical = 8.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(12.dp),
+        ) {
+            Column(horizontalAlignment = Alignment.Start) {
+                chips()
+                Spacer(Modifier.height(4.dp))
+                Text(
+                    chordName,
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.Bold,
+                    color = MaterialTheme.colorScheme.primary,
+                )
+            }
+            ChordFingeringCard(name = chordName, instrument = selected)
+        }
+    } else {
+        Column(modifier.fillMaxWidth()) {
+            chips()
+            Spacer(Modifier.height(8.dp))
+            ChordFingeringCard(name = chordName, instrument = selected)
+        }
     }
 }
 

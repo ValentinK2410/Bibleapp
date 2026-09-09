@@ -2608,6 +2608,7 @@ private fun SongViewScreen(
     val contentScroll = rememberScrollState()
     val isLandscape = LocalConfiguration.current.orientation == Configuration.ORIENTATION_LANDSCAPE
     var showPlayer by rememberSaveable(song.id) { mutableStateOf(!isLandscape) }
+    var selectedChord by remember(song.id) { mutableStateOf<String?>(null) }
     val playerNow by AudioPlayerHolder.state.collectAsState()
     val showTrackPicker = hasPlayerBar && existingAudioPaths.size > 1 && showAudioTracks
     val audioPanelH = if (showTrackPicker) {
@@ -2616,11 +2617,12 @@ private fun SongViewScreen(
         0.dp
     }
     val playerOverlayVisible = hasPlayerBar && (!isLandscape || showPlayer)
+    val chordDockH = if (!isEditing && selectedChord != null) 176.dp else 0.dp
     val bottomInsetPlayer = when {
         !playerOverlayVisible -> 0.dp
         isLandscape -> 56.dp + audioPanelH
         else -> 104.dp + audioPanelH
-    }
+    } + chordDockH
     val contentPadV = if (isLandscape) 0.dp else 8.dp
 
     Box(modifier = Modifier.fillMaxSize()) {
@@ -3080,6 +3082,7 @@ private fun SongViewScreen(
                             fontSizeSp = lyricsFontSize,
                             showChords = showChords,
                             transpose = transpose,
+                            onSelectedChordChange = { selectedChord = it },
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .weight(1f)
@@ -3100,7 +3103,7 @@ private fun SongViewScreen(
                     }
                 }
 
-                if (song.sourceUrl != null && !isEditing && !isLandscape) {
+                if (song.sourceUrl != null && !isEditing && !isLandscape && selectedChord == null) {
                     Spacer(Modifier.height(16.dp))
                     Text(
                         "Источник: ${song.sourceUrl}",
@@ -3115,10 +3118,23 @@ private fun SongViewScreen(
             }
         }
 
-        if (playerOverlayVisible) {
+        if (selectedChord != null || playerOverlayVisible) {
             Column(
                 Modifier.align(Alignment.BottomCenter),
             ) {
+                if (selectedChord != null) {
+                    Surface(
+                        tonalElevation = 4.dp,
+                        shadowElevation = 6.dp,
+                        color = MaterialTheme.colorScheme.surfaceContainerHigh,
+                    ) {
+                        InstrumentFingeringGuide(
+                            chordName = selectedChord!!,
+                            docked = true,
+                        )
+                    }
+                }
+                if (playerOverlayVisible) {
                 if (showTrackPicker) {
                     Surface(
                         tonalElevation = 3.dp,
@@ -3175,6 +3191,7 @@ private fun SongViewScreen(
                         null
                     },
                 )
+                }
             }
         }
     }

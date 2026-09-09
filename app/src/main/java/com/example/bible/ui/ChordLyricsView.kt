@@ -58,6 +58,7 @@ fun ChordLyricsView(
     showChords: Boolean,
     transpose: Int,
     modifier: Modifier = Modifier,
+    onSelectedChordChange: (String?) -> Unit = {},
 ) {
     val lines = remember(lyrics, showChords, transpose) {
         SongChordMarkup.displayLines(lyrics, showChords, transpose)
@@ -69,11 +70,14 @@ fun ChordLyricsView(
         if (!line.isChord) return@let null
         SongChordMarkup.chordSpans(line.text).firstOrNull { it.start == sel.start }?.name
     }
+    LaunchedEffect(selectedName, showChords) {
+        onSelectedChordChange(if (showChords) selectedName else null)
+    }
 
     Column(modifier.fillMaxWidth()) {
         if (showChords && selectedName == null && lines.any { it.isChord }) {
             Text(
-                "Нажмите аккорд — схема появится, ещё раз — скроется.",
+                "Нажмите аккорд — схема внизу, ещё раз — скроется.",
                 style = MaterialTheme.typography.labelSmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
@@ -105,11 +109,6 @@ fun ChordLyricsView(
                     color = MaterialTheme.colorScheme.onSurface,
                     modifier = Modifier.fillMaxWidth(),
                 )
-            }
-            if (showChords && selected?.lineIndex == index && selectedName != null) {
-                Spacer(Modifier.height(6.dp))
-                InstrumentFingeringGuide(chordName = selectedName)
-                Spacer(Modifier.height(8.dp))
             }
         }
     }

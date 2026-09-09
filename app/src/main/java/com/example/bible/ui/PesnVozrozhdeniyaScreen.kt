@@ -299,6 +299,7 @@ fun PesnVozrozhdeniyaHymnScreen(
     LaunchedEffect(persistedFontSize) { lyricsFontSize = persistedFontSize }
     val showChords by viewModel.songShowChords.collectAsState()
     var transpose by remember(hymnId) { mutableIntStateOf(0) }
+    var selectedChord by remember { mutableStateOf<String?>(null) }
     val playerState by AudioPlayerHolder.state.collectAsState()
     var activeAudioPath by remember { mutableStateOf<String?>(null) }
     var linkUrl by remember { mutableStateOf("") }
@@ -382,16 +383,30 @@ fun PesnVozrozhdeniyaHymnScreen(
                 )
             },
             bottomBar = {
-                val path = activeAudioPath
-                if (hymn != null && path != null && File(path).exists()) {
-                    Surface(tonalElevation = 3.dp, shadowElevation = 8.dp) {
-                        Column(Modifier.fillMaxWidth()) {
-                            PvPhonogramModesRow(playerState = playerState)
-                            SongPlayerBar(
-                                audioPath = path,
-                                title = "${hymn.number}. ${hymn.title}",
-                                modifier = Modifier.fillMaxWidth(),
+                Column(Modifier.fillMaxWidth()) {
+                    if (selectedChord != null && !editing) {
+                        Surface(
+                            tonalElevation = 4.dp,
+                            shadowElevation = 6.dp,
+                            color = MaterialTheme.colorScheme.surfaceContainerHigh,
+                        ) {
+                            InstrumentFingeringGuide(
+                                chordName = selectedChord!!,
+                                docked = true,
                             )
+                        }
+                    }
+                    val path = activeAudioPath
+                    if (hymn != null && path != null && File(path).exists()) {
+                        Surface(tonalElevation = 3.dp, shadowElevation = 8.dp) {
+                            Column(Modifier.fillMaxWidth()) {
+                                PvPhonogramModesRow(playerState = playerState)
+                                SongPlayerBar(
+                                    audioPath = path,
+                                    title = "${hymn.number}. ${hymn.title}",
+                                    modifier = Modifier.fillMaxWidth(),
+                                )
+                            }
                         }
                     }
                 }
@@ -503,6 +518,7 @@ fun PesnVozrozhdeniyaHymnScreen(
                         fontSizeSp = lyricsFontSize,
                         showChords = showChords,
                         transpose = transpose,
+                        onSelectedChordChange = { selectedChord = it },
                     )
                 }
                 Spacer(Modifier.height(20.dp))
