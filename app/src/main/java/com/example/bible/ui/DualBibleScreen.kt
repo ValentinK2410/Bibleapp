@@ -7,6 +7,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.gestures.detectDragGestures
+import androidx.compose.foundation.gestures.detectHorizontalDragGestures
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.gestures.detectVerticalDragGestures
 import androidx.compose.foundation.layout.Arrangement
@@ -15,6 +16,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -751,6 +753,156 @@ internal fun VerticalSplitHandle(
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                 modifier = Modifier.padding(top = 2.dp),
             )
+        }
+    }
+}
+
+@Composable
+internal fun HorizontalSplitHandle(
+    modifier: Modifier = Modifier,
+    onDragDeltaPx: (Float) -> Unit,
+    onDragEnd: () -> Unit = {},
+    onLongPress: () -> Unit,
+) {
+    Box(
+        modifier
+            .fillMaxHeight()
+            .width(20.dp)
+            .background(MaterialTheme.colorScheme.surfaceContainerHigh)
+            .pointerInput(Unit) {
+                detectHorizontalDragGestures(
+                    onDragEnd = { onDragEnd() },
+                    onHorizontalDrag = { change, dragAmount ->
+                        change.consume()
+                        onDragDeltaPx(dragAmount)
+                    },
+                )
+            }
+            .pointerInput(Unit) {
+                detectTapGestures(onLongPress = { onLongPress() })
+            },
+        contentAlignment = Alignment.Center,
+    ) {
+        Box(
+            Modifier
+                .width(3.dp)
+                .fillMaxHeight()
+                .background(MaterialTheme.colorScheme.primary),
+        )
+        Box(
+            Modifier
+                .width(4.dp)
+                .height(48.dp)
+                .background(MaterialTheme.colorScheme.primary, RoundedCornerShape(2.dp)),
+        )
+    }
+}
+
+@Composable
+internal fun HorizontalResizeOverlay(
+    fraction: Float,
+    totalWidthPx: Int,
+    onFractionChange: (Float) -> Unit,
+    onApply: () -> Unit,
+    onReset: () -> Unit,
+    onDismiss: () -> Unit,
+) {
+    val density = LocalDensity.current
+    var heightPx by remember { mutableIntStateOf(1) }
+    val currentFraction by rememberUpdatedState(fraction)
+    val currentWidth by rememberUpdatedState(totalWidthPx)
+
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .onSizeChanged { heightPx = it.height }
+            .background(Color.Black.copy(alpha = 0.5f)),
+    ) {
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .pointerInput(Unit) {
+                    detectTapGestures { onDismiss() }
+                },
+        )
+
+        val lineXPx = (fraction * totalWidthPx).roundToInt()
+        Box(
+            modifier = Modifier
+                .fillMaxHeight()
+                .width(3.dp)
+                .offset { IntOffset(lineXPx - with(density) { 1.dp.roundToPx() }, 0) }
+                .background(MaterialTheme.colorScheme.tertiary),
+        )
+
+        val handleSizeDp = 56.dp
+        val handleSizePx = with(density) { handleSizeDp.roundToPx() }
+        Box(
+            modifier = Modifier
+                .size(handleSizeDp)
+                .offset {
+                    IntOffset(
+                        lineXPx - handleSizePx / 2,
+                        (heightPx - handleSizePx) / 2,
+                    )
+                }
+                .shadow(12.dp, CircleShape)
+                .background(MaterialTheme.colorScheme.tertiary, CircleShape)
+                .pointerInput(Unit) {
+                    detectDragGestures { change, dragAmount ->
+                        change.consume()
+                        val w = currentWidth
+                        if (w > 0) {
+                            onFractionChange(currentFraction + dragAmount.x / w)
+                        }
+                    }
+                },
+            contentAlignment = Alignment.Center,
+        ) {
+            Row(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
+                Box(Modifier.size(3.dp, 24.dp).background(Color.White))
+                Box(Modifier.size(3.dp, 24.dp).background(Color.White))
+                Box(Modifier.size(3.dp, 24.dp).background(Color.White))
+            }
+        }
+
+        val statusBarTop = WindowInsets.statusBars.asPaddingValues().calculateTopPadding()
+        Text(
+            text = "${(fraction * 100).roundToInt()}%  /  ${((1f - fraction) * 100).roundToInt()}%",
+            color = Color.White,
+            fontSize = 14.sp,
+            fontWeight = FontWeight.Bold,
+            modifier = Modifier
+                .align(Alignment.TopCenter)
+                .padding(top = statusBarTop + 8.dp)
+                .background(Color(0xAA000000), shape = CircleShape)
+                .padding(horizontal = 16.dp, vertical = 6.dp),
+        )
+
+        Row(
+            modifier = Modifier
+                .align(Alignment.TopEnd)
+                .padding(top = statusBarTop + 8.dp, end = 8.dp),
+            horizontalArrangement = Arrangement.spacedBy(8.dp),
+        ) {
+            IconButton(
+                onClick = onReset,
+                modifier = Modifier
+                    .size(44.dp)
+                    .shadow(4.dp, CircleShape)
+                    .background(MaterialTheme.colorScheme.surfaceContainerHighest, CircleShape),
+            ) {
+                Icon(Icons.Default.Refresh, contentDescription = null, tint = Color.White, modifier = Modifier.size(22.dp))
+            }
+            IconButton(
+                onClick = onApply,
+                modifier = Modifier
+                    .size(44.dp)
+                    .shadow(4.dp, CircleShape)
+                    .background(MaterialTheme.colorScheme.tertiary, CircleShape),
+            ) {
+                Icon(Icons.Default.Check, contentDescription = null, tint = Color.White, modifier = Modifier.size(22.dp))
+            }
         }
     }
 }

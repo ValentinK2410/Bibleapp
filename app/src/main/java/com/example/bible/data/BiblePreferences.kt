@@ -38,6 +38,8 @@ private object Keys {
     val SONG_HIGHLIGHT_LINE_WHILE_PLAYING = booleanPreferencesKey("song_highlight_line_while_playing")
     val SONG_SHOW_CHORDS = booleanPreferencesKey("song_show_chords")
     val SONG_SHOW_AUDIO_TRACKS = booleanPreferencesKey("song_show_audio_tracks")
+    /** Доля ширины текста песни в альбоме (слева); справа схемы аккордов. */
+    val SONG_LANDSCAPE_SPLIT = floatPreferencesKey("song_landscape_split")
     /** Масштаб текста названий в списке видео (Медиа → Видео). */
     val VIDEO_LIBRARY_TITLE_SCALE = floatPreferencesKey("video_library_title_scale")
     val DARK_MODE = booleanPreferencesKey("dark_mode")
@@ -804,6 +806,15 @@ class BiblePreferences(
 
     suspend fun setSongShowAudioTracks(enabled: Boolean) {
         appContext.bibleDataStore.edit { it[Keys.SONG_SHOW_AUDIO_TRACKS] = enabled }
+    }
+
+    val songLandscapeSplit: Flow<Float> = appContext.bibleDataStore.data.map { prefs ->
+        (prefs[Keys.SONG_LANDSCAPE_SPLIT] ?: 0.58f).coerceIn(0.28f, 0.78f)
+    }
+
+    suspend fun setSongLandscapeSplit(fraction: Float) {
+        val clamped = fraction.coerceIn(0.28f, 0.78f)
+        appContext.bibleDataStore.edit { it[Keys.SONG_LANDSCAPE_SPLIT] = clamped }
     }
 
     val videoLibraryTitleScale: Flow<Float> = appContext.bibleDataStore.data.map { prefs ->

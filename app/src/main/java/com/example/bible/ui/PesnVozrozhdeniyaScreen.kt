@@ -1,6 +1,7 @@
 package com.example.bible.ui
 
 import android.content.Intent
+import android.content.res.Configuration
 import android.media.MediaMetadataRetriever
 import android.net.Uri
 import android.widget.Toast
@@ -72,6 +73,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalClipboardManager
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
@@ -298,6 +300,8 @@ fun PesnVozrozhdeniyaHymnScreen(
     var lyricsFontSize by remember { mutableFloatStateOf(persistedFontSize) }
     LaunchedEffect(persistedFontSize) { lyricsFontSize = persistedFontSize }
     val showChords by viewModel.songShowChords.collectAsState()
+    val landscapeSplit by viewModel.songLandscapeSplit.collectAsState()
+    val isLandscape = LocalConfiguration.current.orientation == Configuration.ORIENTATION_LANDSCAPE
     var transpose by remember(hymnId) { mutableIntStateOf(0) }
     var selectedChord by remember { mutableStateOf<String?>(null) }
     val playerState by AudioPlayerHolder.state.collectAsState()
@@ -383,8 +387,14 @@ fun PesnVozrozhdeniyaHymnScreen(
                 )
             },
             bottomBar = {
+                val useLandscapeChordSplit =
+                    isLandscape &&
+                        !editing &&
+                        showChords &&
+                        hymn != null &&
+                        SongChordMarkup.hasChords(hymn.lyrics)
                 Column(Modifier.fillMaxWidth()) {
-                    if (selectedChord != null && !editing) {
+                    if (selectedChord != null && !editing && !useLandscapeChordSplit) {
                         Surface(
                             tonalElevation = 4.dp,
                             shadowElevation = 6.dp,
@@ -418,6 +428,68 @@ fun PesnVozrozhdeniyaHymnScreen(
             }
             if (hymn == null) {
                 Text("Гимн не найден", modifier = Modifier.padding(padding).padding(16.dp))
+                return@Scaffold
+            }
+            val useLandscapeChordSplit =
+                isLandscape && !editing && showChords && SongChordMarkup.hasChords(hymn.lyrics)
+            if (useLandscapeChordSplit) {
+                Column(
+                    Modifier
+                        .fillMaxSize()
+                        .padding(padding)
+                        .padding(horizontal = 12.dp, vertical = 6.dp),
+                ) {
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        verticalAlignment = Alignment.CenterVertically,
+                    ) {
+                        Text(
+                            "Текст",
+                            style = MaterialTheme.typography.titleSmall,
+                            fontWeight = FontWeight.Bold,
+                            modifier = Modifier.weight(1f),
+                        )
+                        TextButton(
+                            onClick = {
+                                draftTitle = hymn.title
+                                draftLyrics = hymn.lyrics
+                                editing = true
+                            },
+                        ) {
+                            Icon(Icons.Default.Edit, contentDescription = null, modifier = Modifier.size(18.dp))
+                            Spacer(Modifier.width(6.dp))
+                            Text("Изменить")
+                        }
+                    }
+                    SongChordToolbar(
+                        hasChords = true,
+                        showChords = showChords,
+                        onShowChordsChange = { viewModel.setSongShowChords(it) },
+                        transpose = transpose,
+                        onTranspose = { transpose = it },
+                    )
+                    Spacer(Modifier.height(4.dp))
+                    SongLandscapeSplitLayout(
+                        splitFraction = landscapeSplit,
+                        onSplitFractionChange = { viewModel.setSongLandscapeSplit(it) },
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .weight(1f),
+                        left = {
+                            ChordLyricsView(
+                                lyrics = hymn.lyrics.ifBlank { "Текст пока не добавлен." },
+                                fontSizeSp = lyricsFontSize,
+                                showChords = showChords,
+                                transpose = transpose,
+                                onSelectedChordChange = { selectedChord = it },
+                                modifier = Modifier
+                                    .fillMaxSize()
+                                    .verticalScroll(rememberScrollState()),
+                            )
+                        },
+                        right = { SongLandscapeChordPane(selectedChord = selectedChord) },
+                    )
+                }
                 return@Scaffold
             }
             Column(

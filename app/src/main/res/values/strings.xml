@@ -891,6 +891,7 @@
     <string name="song_share_app_only_chooser">Отправить приглашение</string>
     <string name="song_share_app_only_body">Установите приложение «%1$s», чтобы открывать общие песни и архивы:\n%2$s</string>
     <string name="song_share_app_only_failed">Не удалось открыть отправку</string>
+    <string name="song_landscape_chord_hint">Нажмите аккорд в тексте — схема появится здесь</string>
     <string name="song_edit_audio_title">Озвучка</string>
     <string name="song_edit_audio_add_device">Добавить с устройства</string>
     <string name="song_edit_audio_replace">Заменить</string>

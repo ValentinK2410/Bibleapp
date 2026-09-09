@@ -951,6 +951,7 @@ fun SongCollectionScreen(
         }
 
         val persistedSongFontSize by viewModel.songFontSize.collectAsState()
+        val songLandscapeSplit by viewModel.songLandscapeSplit.collectAsState()
         if (selectedSong != null) {
             SongViewScreen(
                 song = selectedSong!!,
@@ -969,6 +970,8 @@ fun SongCollectionScreen(
                 onShowChordsChange = { viewModel.setSongShowChords(it) },
                 showAudioTracks = songShowAudioTracks,
                 onShowAudioTracksChange = { viewModel.setSongShowAudioTracks(it) },
+                landscapeSplit = songLandscapeSplit,
+                onLandscapeSplitChange = { viewModel.setSongLandscapeSplit(it) },
                 onSharePortableSong = {
                     val s = selectedSong ?: return@SongViewScreen
                     shareSongsPackage(context, scope, listOf(s), songHighlightLineWhilePlaying)
@@ -2551,6 +2554,8 @@ private fun SongViewScreen(
     onShowChordsChange: (Boolean) -> Unit = {},
     showAudioTracks: Boolean = false,
     onShowAudioTracksChange: (Boolean) -> Unit = {},
+    landscapeSplit: Float = SongLandscapeSplitDefault,
+    onLandscapeSplitChange: (Float) -> Unit = {},
     onSharePortableSong: () -> Unit = {},
 ) {
     var isEditing by remember { mutableStateOf(false) }
@@ -2617,7 +2622,9 @@ private fun SongViewScreen(
         0.dp
     }
     val playerOverlayVisible = hasPlayerBar && (!isLandscape || showPlayer)
-    val chordDockH = if (!isEditing && selectedChord != null) 176.dp else 0.dp
+    val useLandscapeChordSplit =
+        isLandscape && !isEditing && showChords && hasLyricChords && song.lyrics.isNotBlank()
+    val chordDockH = if (!isEditing && selectedChord != null && !useLandscapeChordSplit) 176.dp else 0.dp
     val bottomInsetPlayer = when {
         !playerOverlayVisible -> 0.dp
         isLandscape -> 56.dp + audioPanelH
@@ -3021,72 +3028,90 @@ private fun SongViewScreen(
                         )
                     }
                 } else if (song.lyrics.isNotBlank()) {
-                    if (useKaraoke) {
-                        val syncPath = activeAudioPath!!
-                        val ps by AudioPlayerHolder.state.collectAsState()
-                        val lineLines = remember(song.lyrics) { song.lyrics.split("\n") }
-                        val activeLine = remember(ps.positionMs, ps.audioPath, song.lyricCues, syncPath) {
-                            if (syncPath == ps.audioPath) {
-                                currentLineIndexForSong(ps.positionMs, song.lyricCues)
-                            } else {
-                                null
+                    val lyricsPane = @Composable { lyricsMod: Modifier ->
+                        if (useKaraoke) {
+                            val syncPath = activeAudioPath!!
+                            val ps by AudioPlayerHolder.state.collectAsState()
+                            val lineLines = remember(song.lyrics) { song.lyrics.split("\n") }
+                            val activeLine = remember(ps.positionMs, ps.audioPath, song.lyricCues, syncPath) {
+                                if (syncPath == ps.audioPath) {
+                                    currentLineIndexForSong(ps.positionMs, song.lyricCues)
+                                } else {
+                                    null
+                                }
                             }
-                        }
-                        val listState = rememberLazyListState()
-                        LaunchedEffect(activeLine) {
-                            val idx = activeLine ?: return@LaunchedEffect
-                            if (idx in lineLines.indices) {
-                                listState.scrollToItem(idx)
+                            val listState = rememberLazyListState()
+                            LaunchedEffect(activeLine) {
+                                val idx = activeLine ?: return@LaunchedEffect
+                                if (idx in lineLines.indices) {
+                                    listState.scrollToItem(idx)
+                                }
                             }
-                        }
-                        LaunchedEffect(ps.isPlaying, ps.audioPath, syncPath) {
-                            while (ps.isPlaying && ps.audioPath == syncPath) {
-                                AudioPlayerHolder.updatePosition()
-                                delay(200)
+                            LaunchedEffect(ps.isPlaying, ps.audioPath, syncPath) {
+                                while (ps.isPlaying && ps.audioPath == syncPath) {
+                                    AudioPlayerHolder.updatePosition()
+                                    delay(200)
+                                }
                             }
+                            LazyColumn(
+                                state = listState,
+                                modifier = lyricsMod,
+                                verticalArrangement = Arrangement.spacedBy(4.dp),
+                            ) {
+                                itemsIndexed(lineLines, key = { i, _ -> i }) { idx, line ->
+                                    val hl = activeLine == idx
+                                    Text(
+                                        text = line.ifBlank { " " },
+                                        fontSize = lyricsFontSize.sp,
+                                        lineHeight = (lyricsFontSize * if (isLandscape) 1.38f else 1.5f).sp,
+                                        color = MaterialTheme.colorScheme.onSurface,
+                                        modifier = Modifier
+                                            .fillMaxWidth()
+                                            .then(
+                                                if (hl) {
+                                                    Modifier
+                                                        .background(
+                                                            MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.42f),
+                                                            RoundedCornerShape(8.dp),
+                                                        )
+                                                        .padding(horizontal = 8.dp, vertical = 6.dp)
+                                                } else {
+                                                    Modifier.padding(vertical = 2.dp)
+                                                },
+                                            ),
+                                    )
+                                }
+                            }
+                        } else {
+                            ChordLyricsView(
+                                lyrics = song.lyrics,
+                                fontSizeSp = lyricsFontSize,
+                                showChords = showChords,
+                                transpose = transpose,
+                                onSelectedChordChange = { selectedChord = it },
+                                modifier = lyricsMod,
+                            )
                         }
-                        LazyColumn(
-                            state = listState,
+                    }
+                    val lyricsMod = Modifier.then(
+                        if (useKaraoke) Modifier else Modifier.verticalScroll(contentScroll),
+                    )
+                    if (useLandscapeChordSplit) {
+                        SongLandscapeSplitLayout(
+                            splitFraction = landscapeSplit,
+                            onSplitFractionChange = onLandscapeSplitChange,
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .weight(1f),
-                            verticalArrangement = Arrangement.spacedBy(4.dp),
-                        ) {
-                            itemsIndexed(lineLines, key = { i, _ -> i }) { idx, line ->
-                                val hl = activeLine == idx
-                                Text(
-                                    text = line.ifBlank { " " },
-                                    fontSize = lyricsFontSize.sp,
-                                    lineHeight = (lyricsFontSize * if (isLandscape) 1.38f else 1.5f).sp,
-                                    color = MaterialTheme.colorScheme.onSurface,
-                                    modifier = Modifier
-                                        .fillMaxWidth()
-                                        .then(
-                                            if (hl) {
-                                                Modifier
-                                                    .background(
-                                                        MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.42f),
-                                                        RoundedCornerShape(8.dp),
-                                                    )
-                                                    .padding(horizontal = 8.dp, vertical = 6.dp)
-                                            } else {
-                                                Modifier.padding(vertical = 2.dp)
-                                            },
-                                        ),
-                                )
-                            }
-                        }
+                            left = { lyricsPane(Modifier.fillMaxSize().then(lyricsMod)) },
+                            right = { SongLandscapeChordPane(selectedChord = selectedChord) },
+                        )
                     } else {
-                        ChordLyricsView(
-                            lyrics = song.lyrics,
-                            fontSizeSp = lyricsFontSize,
-                            showChords = showChords,
-                            transpose = transpose,
-                            onSelectedChordChange = { selectedChord = it },
-                            modifier = Modifier
+                        lyricsPane(
+                            Modifier
                                 .fillMaxWidth()
                                 .weight(1f)
-                                .verticalScroll(contentScroll),
+                                .then(lyricsMod),
                         )
                     }
                 } else if (!hasVideo) {
@@ -3118,11 +3143,11 @@ private fun SongViewScreen(
             }
         }
 
-        if (selectedChord != null || playerOverlayVisible) {
+        if ((!useLandscapeChordSplit && selectedChord != null) || playerOverlayVisible) {
             Column(
                 Modifier.align(Alignment.BottomCenter),
             ) {
-                if (selectedChord != null) {
+                if (!useLandscapeChordSplit && selectedChord != null) {
                     Surface(
                         tonalElevation = 4.dp,
                         shadowElevation = 6.dp,

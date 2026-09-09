@@ -547,6 +547,16 @@ class BibleViewModel(
         viewModelScope.launch { preferences.setSongShowAudioTracks(enabled) }
     }
 
+    val songLandscapeSplit: StateFlow<Float> = preferences.songLandscapeSplit.stateIn(
+        viewModelScope,
+        SharingStarted.WhileSubscribed(5000),
+        0.58f,
+    )
+
+    fun setSongLandscapeSplit(fraction: Float) {
+        viewModelScope.launch { preferences.setSongLandscapeSplit(fraction) }
+    }
+
     val bookPickerLongPressTts: StateFlow<Boolean> = preferences.bookPickerLongPressTts.stateIn(
         viewModelScope,
         SharingStarted.WhileSubscribed(5000),
