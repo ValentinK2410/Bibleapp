@@ -60,6 +60,31 @@ object SongChordMarkup {
         return s.replace(Regex("\n{3,}"), "\n\n").trimEnd().trimStart('\n')
     }
 
+    /** HTML из буфера HolyChords: сначала `<pre id="music_text">`, иначе весь фрагмент. */
+    fun fromHolyChordsClipboardHtml(html: String): String {
+        if (html.isBlank()) return ""
+        val pre = Regex(
+            """<pre[^>]*id\s*=\s*["']music_text["'][^>]*>(.*?)</pre>""",
+            setOf(RegexOption.IGNORE_CASE, RegexOption.DOT_MATCHES_ALL),
+        ).find(html)?.groupValues?.get(1)
+        return fromHtmlFragment(pre ?: html)
+    }
+
+    /** Берём вариант, где есть аккорды; при двух с аккордами — более полный. */
+    fun preferChordLyrics(primary: String, fallback: String): String {
+        val a = primary
+        val b = fallback
+        val aCh = hasChords(a)
+        val bCh = hasChords(b)
+        return when {
+            aCh && bCh -> if (a.length >= b.length) a else b
+            aCh -> a
+            bCh -> b
+            a.isNotBlank() -> a
+            else -> b
+        }
+    }
+
     fun transpose(text: String, semitones: Int): String {
         if (text.isBlank() || semitones == 0) return text
         val n = Math.floorMod(semitones, 12)

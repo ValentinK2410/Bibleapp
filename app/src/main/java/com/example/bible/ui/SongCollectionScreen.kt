@@ -1404,8 +1404,9 @@ private fun AddSongSheet(
         scope.launch(Dispatchers.IO) {
             try {
                 val song = FonkiExtractor.extract(url)
+                val lyrics = SongChordMarkup.preferChordLyrics(song.lyrics, hit.lyrics)
                 mainHandler.post {
-                    loadedSong = song
+                    loadedSong = song.copy(lyrics = lyrics)
                     linkUrl = url
                     tabIndex = 1
                     isLoading = false
@@ -1538,6 +1539,50 @@ private fun AddSongSheet(
                         onValueChange = { lyrics = it },
                         minHeight = 200.dp,
                     )
+                    TextButton(
+                        onClick = {
+                            val pasted = FonkiExtractor.lyricsFromDeviceClipboard(context).trim()
+                            if (pasted.isBlank()) {
+                                Toast.makeText(context, "Буфер пуст", Toast.LENGTH_SHORT).show()
+                                return@TextButton
+                            }
+                            val firstLine = pasted.lineSequence().firstOrNull().orEmpty().trim()
+                            if (FonkiExtractor.isFonkiUrl(firstLine)) {
+                                isLoading = true
+                                scope.launch(Dispatchers.IO) {
+                                    try {
+                                        val song = FonkiExtractor.extract(firstLine)
+                                        withContext(Dispatchers.Main) {
+                                            title = song.title.ifBlank { title }
+                                            artist = song.artist.ifBlank { artist }
+                                            lyrics = SongChordMarkup.preferChordLyrics(song.lyrics, lyrics)
+                                            isLoading = false
+                                            Toast.makeText(
+                                                context,
+                                                if (SongChordMarkup.hasChords(lyrics)) {
+                                                    "Текст и аккорды загружены"
+                                                } else {
+                                                    "Текст загружен"
+                                                },
+                                                Toast.LENGTH_SHORT,
+                                            ).show()
+                                        }
+                                    } catch (e: Throwable) {
+                                        withContext(Dispatchers.Main) {
+                                            isLoading = false
+                                            Toast.makeText(context, e.message ?: "Ошибка", Toast.LENGTH_LONG).show()
+                                        }
+                                    }
+                                }
+                            } else {
+                                lyrics = pasted
+                            }
+                        },
+                    ) {
+                        Icon(Icons.Default.ContentPaste, contentDescription = null, modifier = Modifier.size(18.dp))
+                        Spacer(Modifier.width(6.dp))
+                        Text("Вставить текст с аккордами")
+                    }
                     Spacer(Modifier.height(12.dp))
 
                     Row(

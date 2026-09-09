@@ -33,6 +33,8 @@ data class SongCatalogHit(
     val pageUrl: String,
     val sourceLabel: String,
     val snippet: String = "",
+    /** Полный текст с сайта, часто уже с аккордами над словами. */
+    val lyrics: String = "",
 )
 
 enum class SongCatalogSource(val baseUrl: String, val label: String) {
@@ -58,8 +60,14 @@ object FonkiExtractor {
         val html = fetchHtml(cleanUrl)
         val isHolyChords = "holychords.pro" in pageUrl.lowercase()
 
-        if (isHolyChords) extractHolyChords(html, cleanUrl)
+        val pageSong = if (isHolyChords) extractHolyChords(html, cleanUrl)
         else extractFonki(html)
+        if (SongChordMarkup.hasChords(pageSong.lyrics)) return@withContext pageSong
+        val fromApi = runCatching {
+            lyricsFromCatalogApi(cleanUrl, pageSong.title, isHolyChords)
+        }.getOrNull().orEmpty()
+        val lyrics = SongChordMarkup.preferChordLyrics(pageSong.lyrics, fromApi)
+        if (lyrics == pageSong.lyrics) pageSong else pageSong.copy(lyrics = lyrics)
     }
 
     /**
@@ -115,6 +123,7 @@ object FonkiExtractor {
                 jsonText(artistObj, "name"),
             ).firstOrNull { it.isNotBlank() }.orEmpty()
             val text = jsonText(item, "text")
+            val lyrics = SongChordMarkup.fromHtmlFragment(text).ifBlank { text }
             val pageUrl = if (source == SongCatalogSource.Fonki) {
                 "https://fonki.pro/minus/$id"
             } else {
@@ -128,6 +137,7 @@ object FonkiExtractor {
                         pageUrl = pageUrl,
                         sourceLabel = source.label,
                         snippet = lyricSnippet(text, query, title),
+                        lyrics = lyrics,
                     ),
                     score = matchScore(query, title, artist, text),
                     views = item.optInt("views"),
@@ -320,6 +330,31 @@ object FonkiExtractor {
             lyrics = lyrics,
             tracks = tracks,
         )
+    }
+
+    private fun lyricsFromCatalogApi(pageUrl: String, title: String, holyChords: Boolean): String {
+        val source = if (holyChords) SongCatalogSource.HolyChords else SongCatalogSource.Fonki
+        val id = Regex("""/(?:minus/)?(\d+)(?:/|$|\?)""").find(pageUrl)?.groupValues?.get(1)
+        val q = title.trim().ifBlank { return "" }
+        val hits = searchSiteJson(source, q)
+        val match = hits.firstOrNull { hit ->
+            id != null && hit.hit.pageUrl.contains("/$id")
+        } ?: hits.firstOrNull { it.hit.title.equals(title, ignoreCase = true) }
+        return match?.hit?.lyrics.orEmpty()
+    }
+
+    /** Текст из буфера: HTML HolyChords/`<pre>` или обычная строка, пробелы не схлопываем. */
+    fun lyricsFromDeviceClipboard(context: Context): String {
+        val cm = context.getSystemService(Context.CLIPBOARD_SERVICE) as android.content.ClipboardManager
+        val clip = cm.primaryClip ?: return ""
+        if (clip.itemCount == 0) return ""
+        val item = clip.getItemAt(0)
+        val html = item.htmlText
+        if (!html.isNullOrBlank()) {
+            val parsed = SongChordMarkup.fromHolyChordsClipboardHtml(html)
+            if (parsed.isNotBlank()) return parsed
+        }
+        return item.coerceToText(context).toString()
     }
 
     private fun extractHolyChordsLyrics(html: String): String {

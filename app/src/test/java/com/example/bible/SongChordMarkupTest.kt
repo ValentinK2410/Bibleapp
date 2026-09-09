@@ -98,6 +98,28 @@ class SongChordMarkupTest {
     }
 
     @Test
+    fun holyChordsClipboardKeepsChordRows() {
+        val html = """
+            <pre id="music_text" class="D">1 куплет:
+                        Gm                                                    Cm
+            Косари на лугу
+            </pre>
+        """.trimIndent()
+        val text = SongChordMarkup.fromHolyChordsClipboardHtml(html)
+        assertTrue(SongChordMarkup.hasChords(text))
+        assertTrue(text.contains("Gm"))
+        assertTrue(text.contains("Косари"))
+    }
+
+    @Test
+    fun preferLyricsWithChords() {
+        val plain = "Косари на лугу"
+        val withChords = "Am          E\nКосари на лугу"
+        assertEquals(withChords, SongChordMarkup.preferChordLyrics(plain, withChords))
+        assertEquals(withChords, SongChordMarkup.preferChordLyrics(withChords, plain))
+    }
+
+    @Test
     fun keepsSpacesFromHtml() {
         val html = "           G                       A\nПрекрасная любовь"
         val text = SongChordMarkup.fromHtmlFragment(html)
