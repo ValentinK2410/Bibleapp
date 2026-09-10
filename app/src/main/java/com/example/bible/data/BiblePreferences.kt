@@ -40,6 +40,8 @@ private object Keys {
     val SONG_SHOW_AUDIO_TRACKS = booleanPreferencesKey("song_show_audio_tracks")
     /** Доля ширины текста песни в альбоме (слева); справа схемы аккордов. */
     val SONG_LANDSCAPE_SPLIT = floatPreferencesKey("song_landscape_split")
+    val VIDEO_THOUGHTS_SPLIT_LANDSCAPE = floatPreferencesKey("video_thoughts_split_landscape")
+    val VIDEO_THOUGHTS_SPLIT_PORTRAIT = floatPreferencesKey("video_thoughts_split_portrait")
     /** Масштаб текста названий в списке видео (Медиа → Видео). */
     val VIDEO_LIBRARY_TITLE_SCALE = floatPreferencesKey("video_library_title_scale")
     val DARK_MODE = booleanPreferencesKey("dark_mode")
@@ -817,6 +819,26 @@ class BiblePreferences(
     suspend fun setSongLandscapeSplit(fraction: Float) {
         val clamped = fraction.coerceIn(0.28f, 0.78f)
         appContext.bibleDataStore.edit { it[Keys.SONG_LANDSCAPE_SPLIT] = clamped }
+    }
+
+    val videoThoughtsSplitLandscape: Flow<Float> = appContext.bibleDataStore.data.map { prefs ->
+        (prefs[Keys.VIDEO_THOUGHTS_SPLIT_LANDSCAPE] ?: 0.62f).coerceIn(0.28f, 0.78f)
+    }
+
+    suspend fun setVideoThoughtsSplitLandscape(fraction: Float) {
+        appContext.bibleDataStore.edit {
+            it[Keys.VIDEO_THOUGHTS_SPLIT_LANDSCAPE] = fraction.coerceIn(0.28f, 0.78f)
+        }
+    }
+
+    val videoThoughtsSplitPortrait: Flow<Float> = appContext.bibleDataStore.data.map { prefs ->
+        (prefs[Keys.VIDEO_THOUGHTS_SPLIT_PORTRAIT] ?: 0.55f).coerceIn(0.28f, 0.78f)
+    }
+
+    suspend fun setVideoThoughtsSplitPortrait(fraction: Float) {
+        appContext.bibleDataStore.edit {
+            it[Keys.VIDEO_THOUGHTS_SPLIT_PORTRAIT] = fraction.coerceIn(0.28f, 0.78f)
+        }
     }
 
     val videoLibraryTitleScale: Flow<Float> = appContext.bibleDataStore.data.map { prefs ->

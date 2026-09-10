@@ -558,6 +558,25 @@ class BibleViewModel(
         viewModelScope.launch { preferences.setSongLandscapeSplit(fraction) }
     }
 
+    val videoThoughtsSplitLandscape: StateFlow<Float> = preferences.videoThoughtsSplitLandscape.stateIn(
+        viewModelScope,
+        SharingStarted.WhileSubscribed(5000),
+        0.62f,
+    )
+
+    val videoThoughtsSplitPortrait: StateFlow<Float> = preferences.videoThoughtsSplitPortrait.stateIn(
+        viewModelScope,
+        SharingStarted.WhileSubscribed(5000),
+        0.55f,
+    )
+
+    fun setVideoThoughtsSplit(landscape: Boolean, fraction: Float) {
+        viewModelScope.launch {
+            if (landscape) preferences.setVideoThoughtsSplitLandscape(fraction)
+            else preferences.setVideoThoughtsSplitPortrait(fraction)
+        }
+    }
+
     val bookPickerLongPressTts: StateFlow<Boolean> = preferences.bookPickerLongPressTts.stateIn(
         viewModelScope,
         SharingStarted.WhileSubscribed(5000),

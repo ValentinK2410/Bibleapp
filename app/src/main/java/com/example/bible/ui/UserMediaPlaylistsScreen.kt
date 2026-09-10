@@ -495,6 +495,8 @@ fun UserMediaPlaylistDetailScreen(
     val audios by viewModel.bibleUserAudios.collectAsStateWithLifecycle()
     val playbackProgress by viewModel.userMediaPlaybackProgress.collectAsStateWithLifecycle()
     val videoThoughts by viewModel.userVideoThoughts.collectAsStateWithLifecycle()
+    val thoughtsSplitLandscape by viewModel.videoThoughtsSplitLandscape.collectAsStateWithLifecycle()
+    val thoughtsSplitPortrait by viewModel.videoThoughtsSplitPortrait.collectAsStateWithLifecycle()
     val titleScale by viewModel.videoLibraryTitleScale.collectAsStateWithLifecycle()
 
     val playlist = remember(playlists, playlistId) {
@@ -985,6 +987,11 @@ fun UserMediaPlaylistDetailScreen(
             thoughtsByVideoId = videoThoughts,
             onSaveThought = { videoId, thought -> viewModel.saveVideoThought(videoId, thought) },
             onDeleteThought = { videoId, thoughtId -> viewModel.deleteVideoThought(videoId, thoughtId) },
+            thoughtsSplitLandscape = thoughtsSplitLandscape,
+            thoughtsSplitPortrait = thoughtsSplitPortrait,
+            onThoughtsSplitChange = { landscape, fraction ->
+                viewModel.setVideoThoughtsSplit(landscape, fraction)
+            },
             onDismiss = { videoPlayerPayload = null },
             onOpenInOtherApp = { file ->
                 try {
@@ -1497,6 +1504,8 @@ fun PickLibraryMediaForPlaylistSheet(
     val audios by viewModel.bibleUserAudios.collectAsStateWithLifecycle()
     val playbackProgress by viewModel.userMediaPlaybackProgress.collectAsStateWithLifecycle()
     val videoThoughts by viewModel.userVideoThoughts.collectAsStateWithLifecycle()
+    val thoughtsSplitLandscape by viewModel.videoThoughtsSplitLandscape.collectAsStateWithLifecycle()
+    val thoughtsSplitPortrait by viewModel.videoThoughtsSplitPortrait.collectAsStateWithLifecycle()
     var searchQuery by remember { mutableStateOf("") }
     var searchSort by rememberSaveable { mutableStateOf(MediaLibrarySort.NEWEST.name) }
     val mediaSort = MediaLibrarySort.fromName(searchSort)
@@ -1830,6 +1839,11 @@ fun PickLibraryMediaForPlaylistSheet(
             thoughtsByVideoId = videoThoughts,
             onSaveThought = { videoId, thought -> viewModel.saveVideoThought(videoId, thought) },
             onDeleteThought = { videoId, thoughtId -> viewModel.deleteVideoThought(videoId, thoughtId) },
+            thoughtsSplitLandscape = thoughtsSplitLandscape,
+            thoughtsSplitPortrait = thoughtsSplitPortrait,
+            onThoughtsSplitChange = { landscape, fraction ->
+                viewModel.setVideoThoughtsSplit(landscape, fraction)
+            },
             onDismiss = { previewVideo = null },
             onOpenInOtherApp = { file ->
                 try {

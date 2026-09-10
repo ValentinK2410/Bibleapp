@@ -100,6 +100,8 @@ fun VideoLibraryScreen(
     val videos by viewModel.bibleUserVideos.collectAsStateWithLifecycle()
     val playbackProgress by viewModel.userMediaPlaybackProgress.collectAsStateWithLifecycle()
     val videoThoughts by viewModel.userVideoThoughts.collectAsStateWithLifecycle()
+    val thoughtsSplitLandscape by viewModel.videoThoughtsSplitLandscape.collectAsStateWithLifecycle()
+    val thoughtsSplitPortrait by viewModel.videoThoughtsSplitPortrait.collectAsStateWithLifecycle()
     val titleScale by viewModel.videoLibraryTitleScale.collectAsStateWithLifecycle()
     val videoItems = remember(videos) {
         videos.filter { MediaCatalogPaths.isLikelyVideoFileName(it.fileName) }
@@ -467,6 +469,11 @@ fun VideoLibraryScreen(
             thoughtsByVideoId = videoThoughts,
             onSaveThought = { videoId, thought -> viewModel.saveVideoThought(videoId, thought) },
             onDeleteThought = { videoId, thoughtId -> viewModel.deleteVideoThought(videoId, thoughtId) },
+            thoughtsSplitLandscape = thoughtsSplitLandscape,
+            thoughtsSplitPortrait = thoughtsSplitPortrait,
+            onThoughtsSplitChange = { landscape, fraction ->
+                viewModel.setVideoThoughtsSplit(landscape, fraction)
+            },
             onDismiss = { libraryVideoTracksAndStartIndex = null },
             onOpenInOtherApp = { file ->
                 try {
