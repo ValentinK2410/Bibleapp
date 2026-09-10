@@ -99,6 +99,7 @@ fun VideoLibraryScreen(
     val context = LocalContext.current
     val videos by viewModel.bibleUserVideos.collectAsStateWithLifecycle()
     val playbackProgress by viewModel.userMediaPlaybackProgress.collectAsStateWithLifecycle()
+    val videoThoughts by viewModel.userVideoThoughts.collectAsStateWithLifecycle()
     val titleScale by viewModel.videoLibraryTitleScale.collectAsStateWithLifecycle()
     val videoItems = remember(videos) {
         videos.filter { MediaCatalogPaths.isLikelyVideoFileName(it.fileName) }
@@ -463,6 +464,9 @@ fun VideoLibraryScreen(
             onMarkFullyWatched = { mediaId, dur ->
                 viewModel.markMediaFullyWatched(mediaId, UserMediaKind.VIDEO, dur)
             },
+            thoughtsByVideoId = videoThoughts,
+            onSaveThought = { videoId, thought -> viewModel.saveVideoThought(videoId, thought) },
+            onDeleteThought = { videoId, thoughtId -> viewModel.deleteVideoThought(videoId, thoughtId) },
             onDismiss = { libraryVideoTracksAndStartIndex = null },
             onOpenInOtherApp = { file ->
                 try {

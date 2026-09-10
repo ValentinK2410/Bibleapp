@@ -60,6 +60,8 @@ private object Keys {
     val BOOKMARK_TAGS_JSON = stringPreferencesKey("bookmark_tags_json")
     val USER_BIBLE_IMAGES_JSON = stringPreferencesKey("user_bible_images_json")
     val USER_BIBLE_VIDEOS_JSON = stringPreferencesKey("user_bible_videos_json")
+    /** Мысли к моментам видео: videoId → массив {id, ms, t, at}. */
+    val USER_BIBLE_VIDEO_THOUGHTS_JSON = stringPreferencesKey("user_bible_video_thoughts_json")
     val USER_BIBLE_AUDIOS_JSON = stringPreferencesKey("user_bible_audios_json")
     /** JSON-массив пользовательских плейлистов видео/аудио (см. [UserMediaPlaylist]). */
     val USER_MEDIA_PLAYLISTS_JSON = stringPreferencesKey("user_media_playlists_json")
@@ -1339,6 +1341,45 @@ class BiblePreferences(
                 kind = UserMediaPlaylistKind.VIDEO,
             )
             stripMediaPlaybackProgress(prefs, id)
+            stripVideoThoughts(prefs, id)
+        }
+    }
+
+    val userVideoThoughts: Flow<Map<String, List<VideoThought>>> = appContext.bibleDataStore.data.map { prefs ->
+        VideoThought.parseMap(prefs[Keys.USER_BIBLE_VIDEO_THOUGHTS_JSON].orEmpty())
+    }
+
+    suspend fun saveVideoThought(videoId: String, thought: VideoThought) {
+        val text = thought.text.trim()
+        if (videoId.isBlank() || text.isBlank()) return
+        appContext.bibleDataStore.edit { prefs ->
+            val map = VideoThought.parseMap(prefs[Keys.USER_BIBLE_VIDEO_THOUGHTS_JSON].orEmpty())
+                .mapValues { it.value.toMutableList() }
+                .toMutableMap()
+            val list = map.getOrPut(videoId) { mutableListOf() }
+            list.removeAll { it.id == thought.id }
+            list.add(thought.copy(text = text))
+            map[videoId] = list
+            prefs[Keys.USER_BIBLE_VIDEO_THOUGHTS_JSON] = VideoThought.toJsonMap(map)
+        }
+    }
+
+    suspend fun deleteVideoThought(videoId: String, thoughtId: String) {
+        appContext.bibleDataStore.edit { prefs ->
+            val map = VideoThought.parseMap(prefs[Keys.USER_BIBLE_VIDEO_THOUGHTS_JSON].orEmpty())
+                .mapValues { it.value.toMutableList() }
+                .toMutableMap()
+            val list = map[videoId] ?: return@edit
+            list.removeAll { it.id == thoughtId }
+            if (list.isEmpty()) map.remove(videoId) else map[videoId] = list
+            prefs[Keys.USER_BIBLE_VIDEO_THOUGHTS_JSON] = VideoThought.toJsonMap(map)
+        }
+    }
+
+    private fun stripVideoThoughts(prefs: MutablePreferences, videoId: String) {
+        val map = VideoThought.parseMap(prefs[Keys.USER_BIBLE_VIDEO_THOUGHTS_JSON].orEmpty()).toMutableMap()
+        if (map.remove(videoId) != null) {
+            prefs[Keys.USER_BIBLE_VIDEO_THOUGHTS_JSON] = VideoThought.toJsonMap(map)
         }
     }
 

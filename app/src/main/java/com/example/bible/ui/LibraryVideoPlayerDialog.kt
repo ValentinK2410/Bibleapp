@@ -19,6 +19,7 @@ import android.widget.Toast
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.detectDragGestures
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.horizontalScroll
@@ -33,6 +34,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -48,8 +50,10 @@ import androidx.compose.material.icons.automirrored.filled.OpenInNew
 import androidx.compose.material.icons.automirrored.filled.PlaylistPlay
 import androidx.compose.material.icons.automirrored.filled.VolumeUp
 import androidx.compose.material.icons.filled.BrightnessHigh
+import androidx.compose.material.icons.automirrored.filled.StickyNote2
 import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.FastRewind
 import androidx.compose.material.icons.filled.Forward10
 import androidx.compose.material.icons.filled.Fullscreen
@@ -61,11 +65,13 @@ import androidx.compose.material.icons.filled.Replay10
 import androidx.compose.material.icons.filled.SkipNext
 import androidx.compose.material.icons.filled.SkipPrevious
 import androidx.compose.material.icons.filled.Speed
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Slider
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -98,6 +104,7 @@ import androidx.core.view.WindowCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.WindowInsetsControllerCompat
 import com.example.bible.data.BibleUserVideo
+import com.example.bible.data.VideoThought
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
@@ -215,6 +222,9 @@ fun LibraryVideoPlayerDialog(
     initialSeekByMediaId: Map<String, Long> = emptyMap(),
     onPlaybackProgress: (mediaId: String, positionMs: Long, durationMs: Long) -> Unit = { _, _, _ -> },
     onMarkFullyWatched: (mediaId: String, durationMs: Long) -> Unit = { _, _ -> },
+    thoughtsByVideoId: Map<String, List<VideoThought>> = emptyMap(),
+    onSaveThought: (videoId: String, thought: VideoThought) -> Unit = { _, _ -> },
+    onDeleteThought: (videoId: String, thoughtId: String) -> Unit = { _, _ -> },
 ) {
     val context = LocalContext.current
     /** Колбэки MediaPlayer живут дольше compose-scope — отдельная область, не rememberCoroutineScope. */
@@ -257,6 +267,10 @@ fun LibraryVideoPlayerDialog(
     var controlsPoke by remember { mutableIntStateOf(0) }
     /** Панель настроек (скорость, реверс, очередь) поверх видео. */
     var settingsOpen by remember { mutableStateOf(false) }
+    var thoughtsPanelOpen by remember { mutableStateOf(false) }
+    var thoughtComposeOpen by remember { mutableStateOf(false) }
+    var thoughtDraft by remember { mutableStateOf("") }
+    var thoughtAtMs by remember { mutableIntStateOf(0) }
     /** Полноэкранный режим с поворотом в альбомную ориентацию. */
     var fullscreen by remember { mutableStateOf(false) }
     /** Подсказка «−10 с» / «+10 с» после двойного тапа. */
@@ -692,11 +706,15 @@ fun LibraryVideoPlayerDialog(
         }
 
         // Панель прячется сама, как в YouTube: во время игры — через несколько секунд бездействия.
-        LaunchedEffect(controlsVisible, isPlaying, controlsPoke, settingsOpen) {
-            if (controlsVisible && isPlaying && !settingsOpen) {
+        LaunchedEffect(controlsVisible, isPlaying, controlsPoke, settingsOpen, thoughtsPanelOpen, thoughtComposeOpen) {
+            if (controlsVisible && isPlaying && !settingsOpen && !thoughtsPanelOpen && !thoughtComposeOpen) {
                 delay(3_500)
                 controlsVisible = false
             }
+        }
+
+        LaunchedEffect(isPlaying) {
+            if (!isPlaying) thoughtsPanelOpen = true
         }
 
         LaunchedEffect(seekFeedbackSec) {
@@ -717,6 +735,22 @@ fun LibraryVideoPlayerDialog(
             controlsVisible = true
             controlsPoke++
         }
+
+        fun openThoughtComposer() {
+            try {
+                if (player.isPlaying) player.pause()
+            } catch (_: Exception) {
+            }
+            isPlaying = false
+            thoughtAtMs = positionMs
+            thoughtDraft = ""
+            thoughtComposeOpen = true
+            thoughtsPanelOpen = true
+            pokeControls()
+        }
+
+        val currentVideoId = tracks.getOrNull(currentIx)?.first?.id
+        val currentThoughts = currentVideoId?.let { thoughtsByVideoId[it].orEmpty() }.orEmpty()
 
         Box(
             Modifier
@@ -1154,6 +1188,21 @@ fun LibraryVideoPlayerDialog(
                                 .then(if (fullscreen) Modifier.navigationBarsPadding() else Modifier)
                                 .padding(start = 12.dp, end = 6.dp, top = 6.dp, bottom = 4.dp),
                         ) {
+                            if (thoughtsPanelOpen && !isPlaying) {
+                                VideoThoughtsPausedPanel(
+                                    thoughts = currentThoughts,
+                                    currentMs = positionMs,
+                                    onWrite = { openThoughtComposer() },
+                                    onSeek = { ms ->
+                                        applySeekTo(ms)
+                                        pokeControls()
+                                    },
+                                    onDelete = { thoughtId ->
+                                        val vid = currentVideoId ?: return@VideoThoughtsPausedPanel
+                                        onDeleteThought(vid, thoughtId)
+                                    },
+                                )
+                            }
                             val playedFraction =
                                 (positionMs.toFloat() / durationMs.toFloat()).coerceIn(0f, 1f)
                             Slider(
@@ -1194,6 +1243,30 @@ fun LibraryVideoPlayerDialog(
                                                 .clip(RoundedCornerShape(2.dp))
                                                 .background(PLAYER_ACCENT),
                                         )
+                                        currentThoughts.forEach { thought ->
+                                            val markFrac = if (durationMs > 0) {
+                                                (thought.positionMs.toFloat() / durationMs).coerceIn(0f, 1f)
+                                            } else {
+                                                0f
+                                            }
+                                            Box(
+                                                Modifier
+                                                    .fillMaxWidth(markFrac)
+                                                    .align(Alignment.CenterStart),
+                                            ) {
+                                                Box(
+                                                    Modifier
+                                                        .align(Alignment.CenterEnd)
+                                                        .size(7.dp)
+                                                        .clip(CircleShape)
+                                                        .background(Color.White)
+                                                        .clickable {
+                                                            applySeekTo(thought.positionMs)
+                                                            pokeControls()
+                                                        },
+                                                )
+                                            }
+                                        }
                                     }
                                 },
                             )
@@ -1207,6 +1280,33 @@ fun LibraryVideoPlayerDialog(
                                     style = MaterialTheme.typography.labelMedium,
                                     color = Color.White,
                                 )
+                                IconButton(
+                                    onClick = {
+                                        if (isPlaying) {
+                                            try {
+                                                if (player.isPlaying) player.pause()
+                                            } catch (_: Exception) {
+                                            }
+                                            isPlaying = false
+                                            thoughtsPanelOpen = true
+                                            pokeControls()
+                                        } else {
+                                            openThoughtComposer()
+                                        }
+                                    },
+                                    modifier = Modifier.size(36.dp),
+                                ) {
+                                    Icon(
+                                        Icons.AutoMirrored.Filled.StickyNote2,
+                                        contentDescription = "Записать мысль",
+                                        tint = if (currentThoughts.isNotEmpty() || !isPlaying) {
+                                            PLAYER_ACCENT
+                                        } else {
+                                            Color.White
+                                        },
+                                        modifier = Modifier.size(20.dp),
+                                    )
+                                }
                                 Spacer(Modifier.weight(1f))
                                 TextButton(
                                     onClick = {
@@ -1309,6 +1409,49 @@ fun LibraryVideoPlayerDialog(
                     onClose = {
                         settingsOpen = false
                         pokeControls()
+                    },
+                )
+            }
+
+            if (thoughtComposeOpen) {
+                AlertDialog(
+                    onDismissRequest = { thoughtComposeOpen = false },
+                    title = {
+                        Text("Мысль на ${formatVideoTimelineMs(thoughtAtMs)}")
+                    },
+                    text = {
+                        OutlinedTextField(
+                            value = thoughtDraft,
+                            onValueChange = { thoughtDraft = it },
+                            modifier = Modifier.fillMaxWidth(),
+                            minLines = 3,
+                            maxLines = 8,
+                            placeholder = { Text("Что заметили в этом месте?") },
+                        )
+                    },
+                    confirmButton = {
+                        TextButton(
+                            onClick = {
+                                val vid = currentVideoId ?: return@TextButton
+                                val text = thoughtDraft.trim()
+                                if (text.isBlank()) return@TextButton
+                                onSaveThought(
+                                    vid,
+                                    VideoThought(positionMs = thoughtAtMs, text = text),
+                                )
+                                thoughtDraft = ""
+                                thoughtComposeOpen = false
+                                Toast.makeText(context, "Мысль сохранена", Toast.LENGTH_SHORT).show()
+                            },
+                            enabled = thoughtDraft.isNotBlank() && currentVideoId != null,
+                        ) {
+                            Text("Сохранить")
+                        }
+                    },
+                    dismissButton = {
+                        TextButton(onClick = { thoughtComposeOpen = false }) {
+                            Text("Отмена")
+                        }
                     },
                 )
             }
@@ -1448,6 +1591,87 @@ private fun VideoPlayerSettingsPanel(
                             )
                         },
                     )
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun VideoThoughtsPausedPanel(
+    thoughts: List<VideoThought>,
+    currentMs: Int,
+    onWrite: () -> Unit,
+    onSeek: (Int) -> Unit,
+    onDelete: (String) -> Unit,
+) {
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(bottom = 6.dp),
+        verticalArrangement = Arrangement.spacedBy(4.dp),
+    ) {
+        TextButton(
+            onClick = onWrite,
+            contentPadding = PaddingValues(horizontal = 8.dp, vertical = 2.dp),
+        ) {
+            Icon(
+                Icons.AutoMirrored.Filled.StickyNote2,
+                contentDescription = null,
+                tint = Color.White,
+                modifier = Modifier.size(18.dp),
+            )
+            Spacer(Modifier.width(6.dp))
+            Text(
+                "Записать мысль на ${formatVideoTimelineMs(currentMs)}",
+                color = Color.White,
+                style = MaterialTheme.typography.labelLarge,
+            )
+        }
+        if (thoughts.isNotEmpty()) {
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .heightIn(max = 140.dp)
+                    .verticalScroll(rememberScrollState()),
+                verticalArrangement = Arrangement.spacedBy(2.dp),
+            ) {
+                thoughts.forEach { thought ->
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .clip(RoundedCornerShape(8.dp))
+                            .background(Color.White.copy(alpha = 0.10f))
+                            .clickable { onSeek(thought.positionMs) }
+                            .padding(horizontal = 8.dp, vertical = 6.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                    ) {
+                        Text(
+                            formatVideoTimelineMs(thought.positionMs),
+                            color = PLAYER_ACCENT,
+                            style = MaterialTheme.typography.labelMedium,
+                            modifier = Modifier.width(44.dp),
+                        )
+                        Text(
+                            thought.text,
+                            color = Color.White,
+                            style = MaterialTheme.typography.bodySmall,
+                            maxLines = 2,
+                            overflow = TextOverflow.Ellipsis,
+                            modifier = Modifier.weight(1f),
+                        )
+                        IconButton(
+                            onClick = { onDelete(thought.id) },
+                            modifier = Modifier.size(32.dp),
+                        ) {
+                            Icon(
+                                Icons.Filled.Delete,
+                                contentDescription = "Удалить мысль",
+                                tint = Color.White.copy(alpha = 0.7f),
+                                modifier = Modifier.size(18.dp),
+                            )
+                        }
+                    }
                 }
             }
         }

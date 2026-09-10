@@ -48,6 +48,7 @@ import com.example.bible.data.BibleImageLibrary
 import com.example.bible.data.BibleUserImage
 import com.example.bible.data.BibleUserAudio
 import com.example.bible.data.BibleUserVideo
+import com.example.bible.data.VideoThought
 import com.example.bible.data.BibleAudioLibrary
 import com.example.bible.data.BibleVideoLibrary
 import com.example.bible.data.WebImageSearch
@@ -3016,6 +3017,20 @@ class BibleViewModel(
         SharingStarted.WhileSubscribed(5000),
         emptyList(),
     )
+
+    val userVideoThoughts: StateFlow<Map<String, List<VideoThought>>> = preferences.userVideoThoughts.stateIn(
+        viewModelScope,
+        SharingStarted.WhileSubscribed(5000),
+        emptyMap(),
+    )
+
+    fun saveVideoThought(videoId: String, thought: VideoThought) {
+        viewModelScope.launch { preferences.saveVideoThought(videoId, thought) }
+    }
+
+    fun deleteVideoThought(videoId: String, thoughtId: String) {
+        viewModelScope.launch { preferences.deleteVideoThought(videoId, thoughtId) }
+    }
 
     val bibleUserAudios: StateFlow<List<BibleUserAudio>> = preferences.userBibleAudios.stateIn(
         viewModelScope,

@@ -59,6 +59,7 @@ private val USER_DATA_KEYS = setOf(
     "bookmark_tags_json",
     "user_bible_images_json",
     "user_bible_videos_json",
+    "user_bible_video_thoughts_json",
     "user_bible_audios_json",
     "user_semantic_lexicon_json",
     "lexicon_preset_enabled",

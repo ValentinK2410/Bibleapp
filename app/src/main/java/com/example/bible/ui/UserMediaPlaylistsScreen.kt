@@ -494,6 +494,7 @@ fun UserMediaPlaylistDetailScreen(
     val videos by viewModel.bibleUserVideos.collectAsStateWithLifecycle()
     val audios by viewModel.bibleUserAudios.collectAsStateWithLifecycle()
     val playbackProgress by viewModel.userMediaPlaybackProgress.collectAsStateWithLifecycle()
+    val videoThoughts by viewModel.userVideoThoughts.collectAsStateWithLifecycle()
     val titleScale by viewModel.videoLibraryTitleScale.collectAsStateWithLifecycle()
 
     val playlist = remember(playlists, playlistId) {
@@ -981,6 +982,9 @@ fun UserMediaPlaylistDetailScreen(
             onMarkFullyWatched = { mediaId, dur ->
                 viewModel.markMediaFullyWatched(mediaId, UserMediaKind.VIDEO, dur)
             },
+            thoughtsByVideoId = videoThoughts,
+            onSaveThought = { videoId, thought -> viewModel.saveVideoThought(videoId, thought) },
+            onDeleteThought = { videoId, thoughtId -> viewModel.deleteVideoThought(videoId, thoughtId) },
             onDismiss = { videoPlayerPayload = null },
             onOpenInOtherApp = { file ->
                 try {
@@ -1492,6 +1496,7 @@ fun PickLibraryMediaForPlaylistSheet(
     val videos by viewModel.bibleUserVideos.collectAsStateWithLifecycle()
     val audios by viewModel.bibleUserAudios.collectAsStateWithLifecycle()
     val playbackProgress by viewModel.userMediaPlaybackProgress.collectAsStateWithLifecycle()
+    val videoThoughts by viewModel.userVideoThoughts.collectAsStateWithLifecycle()
     var searchQuery by remember { mutableStateOf("") }
     var searchSort by rememberSaveable { mutableStateOf(MediaLibrarySort.NEWEST.name) }
     val mediaSort = MediaLibrarySort.fromName(searchSort)
@@ -1822,6 +1827,9 @@ fun PickLibraryMediaForPlaylistSheet(
             onMarkFullyWatched = { mediaId, dur ->
                 viewModel.markMediaFullyWatched(mediaId, UserMediaKind.VIDEO, dur)
             },
+            thoughtsByVideoId = videoThoughts,
+            onSaveThought = { videoId, thought -> viewModel.saveVideoThought(videoId, thought) },
+            onDeleteThought = { videoId, thoughtId -> viewModel.deleteVideoThought(videoId, thoughtId) },
             onDismiss = { previewVideo = null },
             onOpenInOtherApp = { file ->
                 try {
