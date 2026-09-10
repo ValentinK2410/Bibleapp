@@ -1,0 +1,291 @@
+{
+"id": 6,
+"name": "ध्यानयोग",
+"transliteration": "Дхьяна-йога",
+"translation": "Йога медитации",
+"total_verses": 47,
+"verses": [
+{
+"id": 1,
+"sanskrit": "श्री भगवानुवाच\n\nअनाश्रितः कर्मफलं कार्यं कर्म करोति यः।\n\nस संन्यासी च योगी च न निरग्निर्न चाक्रियः",
+"transliteration": "śhrī bhagavān uvācha\nanāśhritaḥ karma-phalaṁ kāryaṁ karma karoti yaḥ\nsa sannyāsī cha yogī cha na niragnir na chākriyaḥ",
+"translationEn": "Lord Shri Krishna said: He who acts out of duty, without considering the consequences, is truly spiritual and a true ascetic; not he who merely observes rituals or shuns all action."
+},
+{
+"id": 2,
+"sanskrit": "यं संन्यासमिति प्राहुर्योगं तं विद्धि पाण्डव।\n\nन ह्यसंन्यस्तसङ्कल्पो योगी भवति कश्चन",
+"transliteration": "yaṁ sannyāsam iti prāhur yogaṁ taṁ viddhi pāṇḍava\nna hyasannyasta-saṅkalpo yogī bhavati kaśhchana",
+"translationEn": "O Arjuna, renunciation is indeed what is known as right action. No one can become spiritually enlightened who has not renounced all desires."
+},
+{
+"id": 3,
+"sanskrit": "आरुरुक्षोर्मुनेर्योगं कर्म कारणमुच्यते।\n\nयोगारूढस्य तस्यैव शमः कारणमुच्यते",
+"transliteration": "ārurukṣhor muner yogaṁ karma kāraṇam uchyate\nyogārūḍhasya tasyaiva śhamaḥ kāraṇam uchyate",
+"translationEn": "For the sage who seeks the heights of spiritual meditation, practice is the only method, and when they have attained it, they must maintain themselves there through continual self-control."
+},
+{
+"id": 4,
+"sanskrit": "यदा हि नेन्द्रियार्थेषु न कर्मस्वनुषज्जते।\n\nसर्वसङ्कल्पसंन्यासी योगारूढस्तदोच्यते",
+"transliteration": "yadā hi nendriyārtheṣhu na karmasv-anuṣhajjate\nsarva-saṅkalpa-sannyāsī yogārūḍhas tadochyate",
+"translationEn": "When a man renounces even the thought of initiating action, and is not interested in sense objects or any results that may flow from his acts, then he truly understands spirituality."
+},
+{
+"id": 5,
+"sanskrit": "उद्धरेदात्मनाऽऽत्मानं नात्मानमवसादयेत्।\n\nआत्मैव ह्यात्मनो बन्धुरात्मैव रिपुरात्मनः",
+"transliteration": "uddhared ātmanātmānaṁ nātmānam avasādayet\nātmaiva hyātmano bandhur ātmaiva ripur ātmanaḥ",
+"translationEn": "Let him seek liberation with the help of his Highest Self, and never disgrace his own Self. For that Self is his only friend; yet it can also be his enemy."
+},
+{
+"id": 6,
+"sanskrit": "बन्धुरात्माऽऽत्मनस्तस्य येनात्मैवात्मना जितः।\n\nअनात्मनस्तु शत्रुत्वे वर्तेतात्मैव शत्रुवत्",
+"transliteration": "bandhur ātmātmanas tasya yenātmaivātmanā jitaḥ\nanātmanas tu śhatrutve vartetātmaiva śhatru-vat",
+"translationEn": "To one who has conquered their lower nature with its help, the Self is a friend; but to one who has not done so, it is an enemy."
+},
+{
+"id": 7,
+"sanskrit": "जितात्मनः प्रशान्तस्य परमात्मा समाहितः।\n\nशीतोष्णसुखदुःखेषु तथा मानापमानयोः",
+"transliteration": "jitātmanaḥ praśhāntasya paramātmā samāhitaḥ\nśhītoṣhṇa-sukha-duḥkheṣhu tathā mānāpamānayoḥ",
+"translationEn": "The Self of one who is self-controlled and has attained peace is equally unmoved by heat or cold, pleasure or pain, honor or dishonor."
+},
+{
+"id": 8,
+"sanskrit": "ज्ञानविज्ञानतृप्तात्मा कूटस्थो विजितेन्द्रियः।\n\nयुक्त इत्युच्यते योगी समलोष्टाश्मकाञ्चनः",
+"transliteration": "jñāna-vijñāna-tṛiptātmā kūṭa-stho vijitendriyaḥ\nyukta ityuchyate yogī sama-loṣhṭāśhma-kāñchanaḥ",
+"translationEn": "He who desires nothing but wisdom and spiritual insight, who has conquered his senses, and who looks upon a lump of earth, a stone, and fine gold with the same eye, is a real saint."
+},
+{
+"id": 9,
+"sanskrit": "सुहृन्मित्रार्युदासीनमध्यस्थद्वेष्यबन्धुषु।\n\nसाधुष्वपि च पापेषु समबुद्धिर्विशिष्यते",
+"transliteration": "suhṛin-mitrāryudāsīna-madhyastha-dveṣhya-bandhuṣhu\nsādhuṣhvapi cha pāpeṣhu sama-buddhir viśhiṣhyate",
+"translationEn": "He looks impartially on all—lovers, friends, or foes; indifferent, hostile, alien, or relative; virtuous or sinful."
+},
+{
+"id": 10,
+"sanskrit": "योगी युञ्जीत सततमात्मानं रहसि स्थितः।\n\nएकाकी यतचित्तात्मा निराशीरपरिग्रहः",
+"transliteration": "yogī yuñjīta satatam ātmānaṁ rahasi sthitaḥ\nekākī yata-chittātmā nirāśhīr aparigrahaḥ",
+"translationEn": "Let the student of spirituality try unceasingly to concentrate his mind; let him live in seclusion, absolutely alone, with his mind and personality controlled, free from desire and without possessions."
+},
+{
+"id": 11,
+"sanskrit": "शुचौ देशे प्रतिष्ठाप्य स्थिरमासनमात्मनः।\n\nनात्युच्छ्रितं नातिनीचं चैलाजिनकुशोत्तरम्",
+"transliteration": "śhuchau deśhe pratiṣhṭhāpya sthiram āsanam ātmanaḥ\nnātyuchchhritaṁ nāti-nīchaṁ chailājina-kuśhottaram",
+"translationEn": "Having chosen a holy place, let him sit in a firm posture on a seat that is neither too high nor too low, and cover it with a grass mat, a deer skin, and a cloth."
+},
+{
+"id": 12,
+"sanskrit": "तत्रैकाग्रं मनः कृत्वा यतचित्तेन्द्रियक्रियः।\n\nउपविश्यासने युञ्ज्याद्योगमात्मविशुद्धये",
+"transliteration": "tatraikāgraṁ manaḥ kṛitvā yata-chittendriya-kriyaḥ\nupaviśhyāsane yuñjyād yogam ātma-viśhuddhaye",
+"translationEn": "Seated thus, with his mind concentrated, his functions controlled, and his senses governed, let him practice meditation for the purification of his lower nature."
+},
+{
+"id": 13,
+"sanskrit": "समं कायशिरोग्रीवं धारयन्नचलं स्थिरः।\n\nसंप्रेक्ष्य नासिकाग्रं स्वं दिशश्चानवलोकयन्",
+"transliteration": "samaṁ kāya-śhiro-grīvaṁ dhārayann achalaṁ sthiraḥ\nsamprekṣhya nāsikāgraṁ svaṁ diśhaśh chānavalokayan",
+"translationEn": "Let him hold his body, head, and neck erect, motionless and steady; let him look fixedly at the tip of his nose, turning neither to the right nor to the left."
+},
+{
+"id": 14,
+"sanskrit": "प्रशान्तात्मा विगतभीर्ब्रह्मचारिव्रते स्थितः।\n\nमनः संयम्य मच्चित्तो युक्त आसीत मत्परः",
+"transliteration": "praśhāntātmā vigata-bhīr brahmachāri-vrate sthitaḥ\nmanaḥ sanyamya mach-chitto yukta āsīta mat-paraḥ",
+"translationEn": "With peace in his heart and no fear, observing the vow of celibacy, with his mind controlled and fixed on Me, let the student lose himself in contemplation of Me."
+},
+{
+"id": 15,
+"sanskrit": "युञ्जन्नेवं सदाऽऽत्मानं योगी नियतमानसः।\n\nशान्तिं निर्वाणपरमां मत्संस्थामधिगच्छति",
+"transliteration": "yuñjann evaṁ sadātmānaṁ yogī niyata-mānasaḥ\nśhantiṁ nirvāṇa-paramāṁ mat-sansthām adhigachchhati",
+"translationEn": "Thus, keeping his mind always in communion with Me and subduing his thoughts, he shall attain that Peace which is Mine and will lead him to liberation at last."
+},
+{
+"id": 16,
+"sanskrit": "नात्यश्नतस्तु योगोऽस्ति न चैकान्तमनश्नतः।\n\nन चातिस्वप्नशीलस्य जाग्रतो नैव चार्जुन",
+"transliteration": "nātyaśhnatastu yogo ’sti na chaikāntam anaśhnataḥ\nna chāti-svapna-śhīlasya jāgrato naiva chārjuna",
+"translationEn": "Meditation is not for him who eats too much, nor for him who eats not at all; not for him who is overly addicted to sleep, nor for him who is always awake."
+},
+{
+"id": 17,
+"sanskrit": "युक्ताहारविहारस्य युक्तचेष्टस्य कर्मसु।\n\nयुक्तस्वप्नावबोधस्य योगो भवति दुःखहा",
+"transliteration": "yuktāhāra-vihārasya yukta-cheṣhṭasya karmasu\nyukta-svapnāvabodhasya yogo bhavati duḥkha-hā",
+"translationEn": "But for him who regulates his food and recreation, who is balanced in action, in sleep, and in waking, it shall dispel all unhappiness."
+},
+{
+"id": 18,
+"sanskrit": "यदा विनियतं चित्तमात्मन्येवावतिष्ठते।\n\nनिःस्पृहः सर्वकामेभ्यो युक्त इत्युच्यते तदा",
+"transliteration": "yadā viniyataṁ chittam ātmanyevāvatiṣhṭhate\nniḥspṛihaḥ sarva-kāmebhyo yukta ityuchyate tadā",
+"translationEn": "When the mind is completely controlled, centered in the Self, and free from all earthly desires, then the man is truly spiritual."
+},
+{
+"id": 19,
+"sanskrit": "यथा दीपो निवातस्थो नेङ्गते सोपमा स्मृता।\n\nयोगिनो यतचित्तस्य युञ्जतो योगमात्मनः",
+"transliteration": "yathā dīpo nivāta-stho neṅgate sopamā smṛitā\nyogino yata-chittasya yuñjato yogam ātmanaḥ",
+"translationEn": "The wise man who has conquered his mind and is absorbed in the Self is like a lamp that does not flicker, as it stands sheltered from every wind."
+},
+{
+"id": 20,
+"sanskrit": "यत्रोपरमते चित्तं निरुद्धं योगसेवया।\n\nयत्र चैवात्मनाऽऽत्मानं पश्यन्नात्मनि तुष्यति",
+"transliteration": "yatroparamate chittaṁ niruddhaṁ yoga-sevayā\nyatra chaivātmanātmānaṁ paśhyann ātmani tuṣhyati",
+"translationEn": "There, where the whole of nature is seen in the light of the Self, where the person abides within their Self and is satisfied there, their functions restrained by their union with the Divine, the mind finds rest."
+},
+{
+"id": 21,
+"sanskrit": "सुखमात्यन्तिकं यत्तद्बुद्धिग्राह्यमतीन्द्रियम्।\n\nवेत्ति यत्र न चैवायं स्थितश्चलति तत्त्वतः",
+"transliteration": "sukham ātyantikaṁ yat tad buddhi-grāhyam atīndriyam\nvetti yatra na chaivāyaṁ sthitaśh chalati tattvataḥ",
+"translationEn": "When he enjoys the bliss that surpasses the senses and can only be grasped by the pure intellect, when he comes to rest within his highest self, he will never again stray from reality."
+},
+{
+"id": 22,
+"sanskrit": "यं लब्ध्वा चापरं लाभं मन्यते नाधिकं ततः।\n\nयस्मिन्स्थितो न दुःखेन गुरुणापि विचाल्यते",
+"transliteration": "yaṁ labdhvā chāparaṁ lābhaṁ manyate nādhikaṁ tataḥ\nyasmin sthito na duḥkhena guruṇāpi vichālyate",
+"translationEn": "Finding That, he will realize that there is no possession so precious. And once established there, no calamity can disturb him."
+},
+{
+"id": 23,
+"sanskrit": "तं विद्याद् दुःखसंयोगवियोगं योगसंज्ञितम्।\n\nस निश्चयेन योक्तव्यो योगोऽनिर्विण्णचेतसा",
+"transliteration": "taṁ vidyād duḥkha-sanyoga-viyogaṁ yogasaṅjñitam\nsa niśhchayena yoktavyo yogo ’nirviṇṇa-chetasā",
+"translationEn": "This inner severance from the affliction of misery is spirituality. It should be practiced with determination and with a heart that refuses to be depressed."
+},
+{
+"id": 24,
+"sanskrit": "सङ्कल्पप्रभवान्कामांस्त्यक्त्वा सर्वानशेषतः।\n\nमनसैवेन्द्रियग्रामं विनियम्य समन्ततः",
+"transliteration": "saṅkalpa-prabhavān kāmāns tyaktvā sarvān aśheṣhataḥ\nmanasaivendriya-grāmaṁ viniyamya samantataḥ",
+"translationEn": "Renouncing every desire that can be imagined, controlling the senses at every point through the power of the mind;"
+},
+{
+"id": 25,
+"sanskrit": "शनैः शनैरुपरमेद् बुद्ध्या धृतिगृहीतया।\n\nआत्मसंस्थं मनः कृत्वा न किञ्चिदपि चिन्तयेत्",
+"transliteration": "śhanaiḥ śhanair uparamed buddhyā dhṛiti-gṛihītayā\nātma-sansthaṁ manaḥ kṛitvā na kiñchid api chintayet",
+"translationEn": "Little by little, with the help of his reason controlled by fortitude, let him attain peace; and, fixing his mind on the Self, let him not think of anything else."
+},
+{
+"id": 26,
+"sanskrit": "यतो यतो निश्चरति मनश्चञ्चलमस्थिरम्।\n\nततस्ततो नियम्यैतदात्मन्येव वशं नयेत्",
+"transliteration": "yato yato niśhcharati manaśh chañchalam asthiram\ntatas tato niyamyaitad ātmanyeva vaśhaṁ nayet",
+"translationEn": "When the volatile and wavering mind wanders, let him restrain it and bring it back to its allegiance to the Self."
+},
+{
+"id": 27,
+"sanskrit": "प्रशान्तमनसं ह्येनं योगिनं सुखमुत्तमम्।\n\nउपैति शान्तरजसं ब्रह्मभूतमकल्मषम्",
+"transliteration": "praśhānta-manasaṁ hyenaṁ yoginaṁ sukham uttamam\nupaiti śhānta-rajasaṁ brahma-bhūtam akalmaṣham",
+"translationEn": "Supreme bliss is the lot of the sage whose mind attains peace, whose passions subside, who is without sin, and who becomes one with the Absolute."
+},
+{
+"id": 28,
+"sanskrit": "युञ्जन्नेवं सदाऽऽत्मानं योगी विगतकल्मषः।\n\nसुखेन ब्रह्मसंस्पर्शमत्यन्तं सुखमश्नुते",
+"transliteration": "yuñjann evaṁ sadātmānaṁ yogī vigata-kalmaṣhaḥ\nsukhena brahma-sansparśham atyantaṁ sukham aśhnute",
+"translationEn": "Thus, free from sin, abiding always in the Eternal, the saint enjoys, without effort, the bliss that flows from the realization of the Infinite."
+},
+{
+"id": 29,
+"sanskrit": "सर्वभूतस्थमात्मानं सर्वभूतानि चात्मनि।\n\nईक्षते योगयुक्तात्मा सर्वत्र समदर्शनः",
+"transliteration": "sarva-bhūta-stham ātmānaṁ sarva-bhūtāni chātmani\nīkṣhate yoga-yuktātmā sarvatra sama-darśhanaḥ",
+"translationEn": "He who experiences the unity of life sees his own Self in all beings, and all beings in his own Self, and looks upon everything with an impartial eye."
+},
+{
+"id": 30,
+"sanskrit": "यो मां पश्यति सर्वत्र सर्वं च मयि पश्यति।\n\nतस्याहं न प्रणश्यामि स च मे न प्रणश्यति",
+"transliteration": "yo māṁ paśhyati sarvatra sarvaṁ cha mayi paśhyati\ntasyāhaṁ na praṇaśhyāmi sa cha me na praṇaśhyati",
+"translationEn": "He who sees Me in everything and everything in Me, I shall never forsake him, nor shall he lose Me."
+},
+{
+"id": 31,
+"sanskrit": "सर्वभूतस्थितं यो मां भजत्येकत्वमास्थितः।\n\nसर्वथा वर्तमानोऽपि स योगी मयि वर्तते",
+"transliteration": "sarva-bhūta-sthitaṁ yo māṁ bhajatyekatvam āsthitaḥ\nsarvathā vartamāno ’pi sa yogī mayi vartate",
+"translationEn": "The sage who realizes the unity of life and who worships Me in all beings, lives in Me, no matter what their lot may be."
+},
+{
+"id": 32,
+"sanskrit": "आत्मौपम्येन सर्वत्र समं पश्यति योऽर्जुन।\n\nसुखं वा यदि वा दुःखं सः योगी परमो मतः",
+"transliteration": "ātmaupamyena sarvatra samaṁ paśhyati yo ’rjuna\nsukhaṁ vā yadi vā duḥkhaṁ sa yogī paramo mataḥ",
+"translationEn": "O Arjuna! He is the perfect saint who, having been taught by the likeness within himself, sees the same Self everywhere, regardless of whether the outer form be pleasurable or painful."
+},
+{
+"id": 33,
+"sanskrit": "अर्जुन उवाच\n\nयोऽयं योगस्त्वया प्रोक्तः साम्येन मधुसूदन।\n\nएतस्याहं न पश्यामि चञ्चलत्वात् स्थितिं स्थिराम्",
+"transliteration": "arjuna uvācha\nyo ’yaṁ yogas tvayā proktaḥ sāmyena madhusūdana\netasyāhaṁ na paśhyāmi chañchalatvāt sthitiṁ sthirām",
+"translationEn": "Arjuna said: I do not see how I can attain this state of equanimity which You have revealed, owing to the restlessness of my mind."
+},
+{
+"id": 34,
+"sanskrit": "चञ्चलं हि मनः कृष्ण प्रमाथि बलवद्दृढम्।\n\nतस्याहं निग्रहं मन्ये वायोरिव सुदुष्करम्",
+"transliteration": "chañchalaṁ hi manaḥ kṛiṣhṇa pramāthi balavad dṛiḍham\ntasyāhaṁ nigrahaṁ manye vāyor iva su-duṣhkaram",
+"translationEn": "My Lord! Verily, the mind is fickle and turbulent, obstinate, and strong; indeed, it is extremely difficult to control, like the wind."
+},
+{
+"id": 35,
+"sanskrit": "श्री भगवानुवाच\n\nअसंशयं महाबाहो मनो दुर्निग्रहं चलं।\n\nअभ्यासेन तु कौन्तेय वैराग्येण च गृह्यते",
+"transliteration": "śhrī bhagavān uvācha\nasanśhayaṁ mahā-bāho mano durnigrahaṁ chalam\nabhyāsena tu kaunteya vairāgyeṇa cha gṛihyate",
+"translationEn": "Lord Shri Krishna replied: Doubtless, O Mighty One, the mind is fickle and exceedingly difficult to restrain; however, O Son of Kunti, with practice and renunciation, it can be done."
+},
+{
+"id": 36,
+"sanskrit": "असंयतात्मना योगो दुष्प्राप इति मे मतिः।\n\nवश्यात्मना तु यतता शक्योऽवाप्तुमुपायतः",
+"transliteration": "asaṅyatātmanā yogo duṣhprāpa iti me matiḥ\nvaśhyātmanā tu yatatā śhakyo ’vāptum upāyataḥ",
+"translationEn": "It is not possible to attain Self-Realization unless one knows how to control oneself; however, for one who, striving by the proper means, learns such control, it is possible."
+},
+{
+"id": 37,
+"sanskrit": "अर्जुन उवाच\n\nअयतिः श्रद्धयोपेतो योगाच्चलितमानसः।\n\nअप्राप्य योगसंसिद्धिं कां गतिं कृष्ण गच्छति",
+"transliteration": "arjuna uvācha\nayatiḥ śhraddhayopeto yogāch chalita-mānasaḥ\naprāpya yoga-sansiddhiṁ kāṅ gatiṁ kṛiṣhṇa gachchhati",
+"translationEn": "Arjuna asked: What of him who fails to control himself, whose mind falls from spiritual contemplation, yet retains his faith and does not attain perfection?"
+},
+{
+"id": 38,
+"sanskrit": "कच्चिन्नोभयविभ्रष्टश्छिन्नाभ्रमिव नश्यति।\n\nअप्रतिष्ठो महाबाहो विमूढो ब्रह्मणः पथि",
+"transliteration": "kachchin nobhaya-vibhraṣhṭaśh chhinnābhram iva naśhyati\napratiṣhṭho mahā-bāho vimūḍho brahmaṇaḥ pathi",
+"translationEn": "Having failed in both, my Lord, is he without hope, like a riven cloud with no support, lost on the spiritual path?"
+},
+{
+"id": 39,
+"sanskrit": "एतन्मे संशयं कृष्ण छेत्तुमर्हस्यशेषतः।\n\nत्वदन्यः संशयस्यास्य छेत्ता न ह्युपपद्यते",
+"transliteration": "etan me sanśhayaṁ kṛiṣhṇa chhettum arhasyaśheṣhataḥ\ntvad-anyaḥ sanśhayasyāsya chhettā na hyupapadyate",
+"translationEn": "My Lord! You are worthy to solve this doubt once and for all; there is no one else competent to do so, save Yourself."
+},
+{
+"id": 40,
+"sanskrit": "श्री भगवानुवाच\n\nपार्थ नैवेह नामुत्र विनाशस्तस्य विद्यते।\n\nनहि कल्याणकृत्कश्िचद्दुर्गतिं तात गच्छति",
+"transliteration": "śhrī bhagavān uvācha\npārtha naiveha nāmutra vināśhas tasya vidyate\nna hi kalyāṇa-kṛit kaśhchid durgatiṁ tāta gachchhati",
+"translationEn": "Lord Shri Krishna replied: My beloved child! There is no destruction for him, either in this world or the next. No evil fate awaits him who treads the path of righteousness."
+},
+{
+"id": 41,
+"sanskrit": "प्राप्य पुण्यकृतां लोकानुषित्वा शाश्वतीः समाः।\n\nशुचीनां श्रीमतां गेहे योगभ्रष्टोऽभिजायते",
+"transliteration": "prāpya puṇya-kṛitāṁ lokān uṣhitvā śhāśhvatīḥ samāḥ\nśhuchīnāṁ śhrīmatāṁ gehe yoga-bhraṣhṭo’bhijāyate",
+"translationEn": "Having reached the worlds where the righteous dwell, and having remained there for many years, he who has strayed from the path of spirituality will be born again into the family of the pure, benevolent, and prosperous."
+},
+{
+"id": 42,
+"sanskrit": "अथवा योगिनामेव कुले भवति धीमताम्।\n\nएतद्धि दुर्लभतरं लोके जन्म यदीदृशम्",
+"transliteration": "atha vā yoginām eva kule bhavati dhīmatām\netad dhi durlabhataraṁ loke janma yad īdṛiśham",
+"translationEn": "Or, he may be born in the family of wise sages, though such a birth is indeed very difficult to obtain."
+},
+{
+"id": 43,
+"sanskrit": "तत्र तं बुद्धिसंयोगं लभते पौर्वदेहिकम्।\n\nयतते च ततो भूयः संसिद्धौ कुरुनन्दन",
+"transliteration": "tatra taṁ buddhi-sanyogaṁ labhate paurva-dehikam\nyatate cha tato bhūyaḥ sansiddhau kuru-nandana",
+"translationEn": "Then, the experience acquired in his former life will revive, and with it, he will more eagerly strive for perfection than before."
+},
+{
+"id": 44,
+"sanskrit": "पूर्वाभ्यासेन तेनैव ह्रियते ह्यवशोऽपि सः।\n\nजिज्ञासुरपि योगस्य शब्दब्रह्मातिवर्तते",
+"transliteration": "pūrvābhyāsena tenaiva hriyate hyavaśho ’pi saḥ\njijñāsur api yogasya śhabda-brahmātivartate",
+"translationEn": "Unconsciously, he will return to the practices of his old life; thus, one who strives to attain spiritual consciousness is certainly superior to one who merely talks about it."
+},
+{
+"id": 45,
+"sanskrit": "प्रयत्नाद्यतमानस्तु योगी संशुद्धकिल्बिषः।\n\nअनेकजन्मसंसिद्धस्ततो याति परां गतिम्",
+"transliteration": "prayatnād yatamānas tu yogī sanśhuddha-kilbiṣhaḥ\naneka-janma-sansiddhas tato yāti parāṁ gatim",
+"translationEn": "Then, after many lives of earnest striving and absolution of sins, the student of spirituality attains perfection and reaches the Supreme."
+},
+{
+"id": 46,
+"sanskrit": "तपस्विभ्योऽधिको योगी ज्ञानिभ्योऽपि मतोऽधिकः।\n\nकर्मिभ्यश्चाधिको योगी तस्माद्योगी भवार्जुन",
+"transliteration": "tapasvibhyo ’dhiko yogī\njñānibhyo ’pi mato ’dhikaḥ\nkarmibhyaśh chādhiko yogī\ntasmād yogī bhavārjuna",
+"translationEn": "The wise person is superior to the ascetic, the scholar, and the man of action; therefore, be thou a wise person, O Arjuna!"
+},
+{
+"id": 47,
+"sanskrit": "योगिनामपि सर्वेषां मद्गतेनान्तरात्मना।\n\nश्रद्धावान्भजते यो मां स मे युक्ततमो मतः",
+"transliteration": "yoginām api sarveṣhāṁ mad-gatenāntar-ātmanā\nśhraddhāvān bhajate yo māṁ sa me yuktatamo mataḥ",
+"translationEn": "I look upon him as the best of mystics, who, full of faith, worships Me and abides in Me."
+}
+]
+}

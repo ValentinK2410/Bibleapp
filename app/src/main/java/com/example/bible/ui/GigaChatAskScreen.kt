@@ -2,6 +2,7 @@ package com.example.bible.ui
 
 import android.widget.Toast
 import androidx.activity.compose.BackHandler
+import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -25,8 +26,11 @@ import androidx.compose.material.icons.filled.ContentCopy
 import androidx.compose.material.icons.filled.Forum
 import androidx.compose.material.icons.filled.Mic
 import androidx.compose.material.icons.filled.MoreVert
+import androidx.compose.material.icons.filled.Psychology
 import androidx.compose.material.icons.filled.Refresh
+import androidx.compose.material.icons.filled.Speed
 import androidx.compose.material.icons.filled.Stop
+import androidx.compose.material.icons.filled.TravelExplore
 import androidx.compose.material.icons.filled.VolumeOff
 import androidx.compose.material.icons.filled.VolumeUp
 import androidx.compose.material3.AlertDialog
@@ -89,14 +93,22 @@ fun GigaChatAskScreen(
         SimpleDateFormat("dd.MM.yyyy HH:mm", Locale.getDefault())
     }
     val hasConversation = state.messages.any { it.role == "user" || it.role == "assistant" }
-    val tts = rememberAiChatTextToSpeech()
+    val aiTtsSettings by viewModel.aiChatTtsSettings.collectAsStateWithLifecycle()
+    val saluteKey by viewModel.saluteSpeechAuthKey.collectAsStateWithLifecycle()
+    val gigaKey by viewModel.gigaChatAuthKey.collectAsStateWithLifecycle()
+    val saluteScope by viewModel.saluteSpeechScope.collectAsStateWithLifecycle()
+    val speechHandle = rememberAiChatTextToSpeech(
+        saluteAuthKey = saluteKey,
+        gigaChatAuthKey = gigaKey,
+        saluteScope = saluteScope,
+    )
     val speech = rememberGigaChatVoiceRecorder(
         onRecorded = { file ->
             if (state.loading) {
                 file.delete()
                 Toast.makeText(context, R.string.ai_ask_wait_reply, Toast.LENGTH_SHORT).show()
             } else {
-                tts.stop()
+                speechHandle.stop()
                 lastQuestion = "Голосовой вопрос"
                 viewModel.askGigaChatVoice(file.absolutePath)
             }
@@ -120,10 +132,10 @@ fun GigaChatAskScreen(
         if (finished && speakAnswers && state.error == null) {
             val last = state.messages.lastOrNull { it.role == "assistant" }
             if (last != null) {
-                tts.speak(AiChatVoiceText.forSpeech(last.content))
+                speechHandle.speak(AiChatVoiceText.forSpeech(last.content))
             }
         }
-        if (!speakAnswers) tts.stop()
+        if (!speakAnswers) speechHandle.stop()
     }
     LaunchedEffect(Unit) {
         viewModel.openGigaChatAsk()
@@ -135,7 +147,7 @@ fun GigaChatAskScreen(
     }
     DisposableEffect(Unit) {
         onDispose {
-            tts.stop()
+            speechHandle.stop()
             speech.stop()
             viewModel.leaveGigaChatAsk()
         }
@@ -242,7 +254,7 @@ fun GigaChatAskScreen(
                         IconButton(
                             onClick = {
                                 draft = ""
-                                tts.stop()
+                                speechHandle.stop()
                                 speech.stop()
                                 viewModel.startNewGigaChatAsk()
                             },
@@ -292,12 +304,24 @@ fun GigaChatAskScreen(
                     listening = speech.listening,
                     speakAnswers = speakAnswers,
                     imagesDir = imagesDir,
+                    aiTtsSettings = aiTtsSettings,
+                    neuralVoices = speechHandle.neuralVoices,
+                    systemVoices = speechHandle.systemVoices,
+                    onEngineChange = viewModel::setAiChatTtsEngine,
+                    onIntonationChange = viewModel::setAiChatTtsIntonation,
+                    onVoiceChange = viewModel::setAiChatTtsVoice,
+                    onPreviewVoice = {
+                        speechHandle.preview(context.getString(R.string.ai_chat_tts_preview_phrase))
+                    },
+                    onQuick = { viewModel.setGigaChatAskStyle(DeepSeekAskStyle.QUICK) },
+                    onDeep = { viewModel.setGigaChatAskStyle(DeepSeekAskStyle.DEEP) },
+                    onToggleWeb = { viewModel.setGigaChatAskWebSearch(!state.webSearch) },
                     onToggleSpeakAnswers = {
                         speakAnswers = !speakAnswers
-                        if (!speakAnswers) tts.stop()
+                        if (!speakAnswers) speechHandle.stop()
                     },
                     onSpeakMessage = { text ->
-                        tts.speak(AiChatVoiceText.forSpeech(text))
+                        speechHandle.speak(AiChatVoiceText.forSpeech(text))
                     },
                     onSaveImage = { file ->
                         viewModel.saveGigaChatImageToGallery(file) { result ->
@@ -313,14 +337,14 @@ fun GigaChatAskScreen(
                         }
                     },
                     onMicClick = {
-                        tts.stop()
+                        speechHandle.stop()
                         if (speech.listening) speech.stop() else speech.start()
                     },
                     onSend = {
                         val q = draft.trim()
                         if (q.isNotEmpty()) {
                             speech.stop()
-                            tts.stop()
+                            speechHandle.stop()
                             lastQuestion = q
                             viewModel.askGigaChatQuestion(q)
                             draft = ""
@@ -329,7 +353,7 @@ fun GigaChatAskScreen(
                     onRetry = {
                         val q = lastQuestion.trim().ifBlank { draft.trim() }
                         if (q.isNotEmpty() && q != "Голосовой вопрос") {
-                            tts.stop()
+                            speechHandle.stop()
                             speech.stop()
                             lastQuestion = q
                             viewModel.askGigaChatQuestion(q)
@@ -375,6 +399,16 @@ private fun GigaChatAskConversation(
     listening: Boolean,
     speakAnswers: Boolean,
     imagesDir: File,
+    aiTtsSettings: com.example.bible.data.AiChatTtsSettings,
+    neuralVoices: List<com.example.bible.data.AiChatTtsVoiceOption>,
+    systemVoices: List<com.example.bible.data.AiChatTtsVoiceOption>,
+    onEngineChange: (com.example.bible.data.AiChatTtsEngine) -> Unit,
+    onIntonationChange: (com.example.bible.data.AiChatTtsIntonation) -> Unit,
+    onVoiceChange: (String) -> Unit,
+    onPreviewVoice: () -> Unit,
+    onQuick: () -> Unit,
+    onDeep: () -> Unit,
+    onToggleWeb: () -> Unit,
     onToggleSpeakAnswers: () -> Unit,
     onSpeakMessage: (String) -> Unit,
     onSaveImage: (File) -> Unit,
@@ -437,24 +471,66 @@ private fun GigaChatAskConversation(
             }
         }
         Spacer(Modifier.height(8.dp))
-        FilterChip(
-            selected = speakAnswers,
-            onClick = onToggleSpeakAnswers,
-            enabled = !state.loading,
-            leadingIcon = {
-                Icon(
-                    if (speakAnswers) Icons.Filled.VolumeUp else Icons.Filled.VolumeOff,
-                    contentDescription = null,
-                    modifier = Modifier.size(18.dp),
-                )
-            },
-            label = { Text(stringResource(R.string.gigachat_speak_answers)) },
-        )
-        Text(
-            stringResource(R.string.gigachat_speak_answers_hint),
-            style = MaterialTheme.typography.bodySmall,
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
-        )
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .horizontalScroll(rememberScrollState()),
+            horizontalArrangement = Arrangement.spacedBy(8.dp),
+        ) {
+            FilterChip(
+                selected = state.style == DeepSeekAskStyle.QUICK,
+                onClick = onQuick,
+                enabled = !state.loading,
+                leadingIcon = {
+                    Icon(Icons.Filled.Speed, contentDescription = null, modifier = Modifier.size(18.dp))
+                },
+                label = { Text(stringResource(R.string.ai_ask_mode_quick)) },
+            )
+            FilterChip(
+                selected = state.style == DeepSeekAskStyle.DEEP,
+                onClick = onDeep,
+                enabled = !state.loading,
+                leadingIcon = {
+                    Icon(Icons.Filled.Psychology, contentDescription = null, modifier = Modifier.size(18.dp))
+                },
+                label = { Text(stringResource(R.string.ai_ask_mode_deep)) },
+            )
+            FilterChip(
+                selected = state.webSearch,
+                onClick = onToggleWeb,
+                enabled = !state.loading,
+                leadingIcon = {
+                    Icon(Icons.Filled.TravelExplore, contentDescription = null, modifier = Modifier.size(18.dp))
+                },
+                label = { Text(stringResource(R.string.ai_ask_mode_web)) },
+            )
+            FilterChip(
+                selected = speakAnswers,
+                onClick = onToggleSpeakAnswers,
+                enabled = !state.loading,
+                leadingIcon = {
+                    Icon(
+                        if (speakAnswers) Icons.Filled.VolumeUp else Icons.Filled.VolumeOff,
+                        contentDescription = null,
+                        modifier = Modifier.size(18.dp),
+                    )
+                },
+                label = { Text(stringResource(R.string.gigachat_speak_answers)) },
+            )
+        }
+        if (speakAnswers) {
+            Spacer(Modifier.height(8.dp))
+            AiChatTtsSettingsPanel(
+                settings = aiTtsSettings,
+                neuralVoices = neuralVoices,
+                systemVoices = systemVoices,
+                enabled = !state.loading,
+                onEngineChange = onEngineChange,
+                onIntonationChange = onIntonationChange,
+                onVoiceChange = onVoiceChange,
+                onPreview = onPreviewVoice,
+            )
+        }
         Spacer(Modifier.height(8.dp))
         Row(verticalAlignment = Alignment.Bottom) {
             OutlinedTextField(

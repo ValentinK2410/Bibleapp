@@ -1,0 +1,441 @@
+{
+"id": 2,
+"name": "सांख्ययोग",
+"transliteration": "Санкхья-йога",
+"translation": "Йога знания",
+"total_verses": 72,
+"verses": [
+{
+"id": 1,
+"sanskrit": "सञ्जय उवाच\n\nतं तथा कृपयाऽविष्टमश्रुपूर्णाकुलेक्षणम्।\n\nविषीदन्तमिदं वाक्यमुवाच मधुसूदनः",
+"transliteration": "sañjaya uvācha\ntaṁ tathā kṛipayāviṣhṭamaśhru pūrṇākulekṣhaṇam\nviṣhīdantamidaṁ vākyam uvācha madhusūdanaḥ",
+"translationEn": "Sanjaya then told how the Lord Shri Krishna, seeing Arjuna overwhelmed with compassion, his eyes dimmed with flowing tears and full of despondency, consoled him:"
+},
+{
+"id": 2,
+"sanskrit": "श्री भगवानुवाच\n\nकुतस्त्वा कश्मलमिदं विषमे समुपस्थितम्।\n\nअनार्यजुष्टमस्वर्ग्यमकीर्तिकरमर्जुन",
+"transliteration": "śhrī bhagavān uvācha\nkutastvā kaśhmalamidaṁ viṣhame samupasthitam\nanārya-juṣhṭamaswargyam akīrti-karam arjuna",
+"translationEn": "The Lord said: My beloved friend! Why yield to this weakness, on the eve of battle, which does no credit to those who call themselves Aryans and only brings them infamy, barring them from the gates of heaven?"
+},
+{
+"id": 3,
+"sanskrit": "क्लैब्यं मा स्म गमः पार्थ नैतत्त्वय्युपपद्यते।\n\nक्षुद्रं हृदयदौर्बल्यं त्यक्त्वोत्तिष्ठ परन्तप",
+"transliteration": "klaibyaṁ mā sma gamaḥ pārtha naitat tvayyupapadyate\nkṣhudraṁ hṛidaya-daurbalyaṁ tyaktvottiṣhṭha parantapa",
+"translationEn": "O Arjuna! Why give way to unmanliness? O thou, who art the terror of thy enemies! Shake off such shameful effeminacy and make ready to act!"
+},
+{
+"id": 4,
+"sanskrit": "अर्जुन उवाच\n\nकथं भीष्ममहं संख्ये द्रोणं च मधुसूदन।\n\nइषुभिः प्रतियोत्स्यामि पूजार्हावरिसूदन",
+"transliteration": "arjuna uvācha\nkathaṁ bhīṣhmam ahaṁ sankhye droṇaṁ cha madhusūdana\niṣhubhiḥ pratiyotsyāmi pūjārhāvari-sūdana",
+"translationEn": "Arjuna argued: My Lord! How can I, when the battle rages, send an arrow through Bheeshma and Drona, whom I should revere?"
+},
+{
+"id": 5,
+"sanskrit": "गुरूनहत्वा हि महानुभावान्\n\nश्रेयो भोक्तुं भैक्ष्यमपीह लोके।\n\nहत्वार्थकामांस्तु गुरूनिहैव\n\nभुञ्जीय भोगान् रुधिरप्रदिग्धान्",
+"transliteration": "gurūnahatvā hi mahānubhāvān\nśhreyo bhoktuṁ bhaikṣhyamapīha loke\nhatvārtha-kāmāṁstu gurūnihaiva\nbhuñjīya bhogān rudhira-pradigdhān",
+"translationEn": "Rather, I would be content with a beggar's crust than to kill these teachers of mine, these precious noble souls! To slay these masters who are my benefactors would be to stain the sweetness of life's pleasures with their blood."
+},
+{
+"id": 6,
+"sanskrit": "न चैतद्विद्मः कतरन्नो गरीयो\n\nयद्वा जयेम यदि वा नो जयेयुः।\n\nयानेव हत्वा न जिजीविषाम\n\nस्तेऽवस्थिताः प्रमुखे धार्तराष्ट्राः",
+"transliteration": "na chaitadvidmaḥ kataranno garīyo\nyadvā jayema yadi vā no jayeyuḥ\nyāneva hatvā na jijīviṣhāmas\nte ’vasthitāḥ pramukhe dhārtarāṣhṭrāḥ",
+"translationEn": "Nor can I say whether it would be better for them to conquer me or for me to conquer them, since I would no longer care to live if I killed these sons of Dhritarashtra, who are now preparing for battle."
+},
+{
+"id": 7,
+"sanskrit": "कार्पण्यदोषोपहतस्वभावः\n\nपृच्छामि त्वां धर्मसंमूढचेताः।\n\nयच्छ्रेयः स्यान्निश्िचतं ब्रूहि तन्मे\n\nशिष्यस्तेऽहं शाधि मां त्वां प्रपन्नम्",
+"transliteration": "kārpaṇya-doṣhopahata-svabhāvaḥ\npṛichchhāmi tvāṁ dharma-sammūḍha-chetāḥ\nyach-chhreyaḥ syānniśhchitaṁ brūhi tanme\nśhiṣhyaste ’haṁ śhādhi māṁ tvāṁ prapannam",
+"translationEn": "My heart is oppressed with pity, and my mind is confused as to what my duty is. Therefore, my Lord, tell me what is best for my spiritual welfare, for I am Your disciple. Please direct me, I pray."
+},
+{
+"id": 8,
+"sanskrit": "न हि प्रपश्यामि ममापनुद्या\n\nद्यच्छोकमुच्छोषणमिन्द्रियाणाम्।\n\nअवाप्य भूमावसपत्नमृद्धम्\n\nराज्यं सुराणामपि चाधिपत्यम्",
+"transliteration": "na hi prapaśhyāmi mamāpanudyād\nyach-chhokam uchchhoṣhaṇam-indriyāṇām\navāpya bhūmāv-asapatnamṛiddhaṁ\nrājyaṁ surāṇāmapi chādhipatyam",
+"translationEn": "For even if I were to attain the monarchy of the visible world, or the sovereignty over the invisible world, it would not drive away the anguish that is now paralyzing my senses."
+},
+{
+"id": 9,
+"sanskrit": "सञ्जय उवाच\n\nएवमुक्त्वा हृषीकेशं गुडाकेशः परन्तप।\n\nन योत्स्य इति गोविन्दमुक्त्वा तूष्णीं बभूव ह",
+"transliteration": "sañjaya uvācha\nevam-uktvā hṛiṣhīkeśhaṁ guḍākeśhaḥ parantapa\nna yotsya iti govindam uktvā tūṣhṇīṁ babhūva ha",
+"translationEn": "Sanjaya continued: \"Arjuna, the conqueror of all enemies, then told the Lord of All-Hearts that he would not fight, and became silent, O King!"
+},
+{
+"id": 10,
+"sanskrit": "तमुवाच हृषीकेशः प्रहसन्निव भारत।\n\nसेनयोरुभयोर्मध्ये विषीदन्तमिदं वचः",
+"transliteration": "tam-uvācha hṛiṣhīkeśhaḥ prahasanniva bhārata\nsenayorubhayor-madhye viṣhīdantam-idaṁ vachaḥ",
+"translationEn": "Thereupon, the Lord, with a gracious smile, addressed him who was so much depressed in the midst of the two armies."
+},
+{
+"id": 11,
+"sanskrit": "श्री भगवानुवाच\n\nअशोच्यानन्वशोचस्त्वं प्रज्ञावादांश्च भाषसे।\n\nगतासूनगतासूंश्च नानुशोचन्ति पण्डिताः",
+"transliteration": "śhrī bhagavān uvācha\naśhochyān-anvaśhochas-tvaṁ prajñā-vādānśh cha bhāṣhase\ngatāsūn-agatāsūnśh-cha nānuśhochanti paṇḍitāḥ",
+"translationEn": "Lord Shri Krishna said: Why grieve for those for whom no grief is due, yet professing wisdom? The wise grieve neither for the dead nor the living."
+},
+{
+"id": 12,
+"sanskrit": "न त्वेवाहं जातु नासं न त्वं नेमे जनाधिपाः।\n\nन चैव न भविष्यामः सर्वे वयमतः परम्",
+"transliteration": "na tvevāhaṁ jātu nāsaṁ na tvaṁ neme janādhipāḥ\nna chaiva na bhaviṣhyāmaḥ sarve vayamataḥ param",
+"translationEn": "There was never a time when I was not, nor you, nor these princes were not; there will never be a time when we shall cease to exist."
+},
+{
+"id": 13,
+"sanskrit": "देहिनोऽस्मिन्यथा देहे कौमारं यौवनं जरा।\n\nतथा देहान्तरप्राप्तिर्धीरस्तत्र न मुह्यति",
+"transliteration": "dehino ’smin yathā dehe kaumāraṁ yauvanaṁ jarā\ntathā dehāntara-prāptir dhīras tatra na muhyati",
+"translationEn": "As the soul experiences infancy, youth, and old age in this body, so finally it passes into another; the wise have no delusion about this."
+},
+{
+"id": 14,
+"sanskrit": "मात्रास्पर्शास्तु कौन्तेय शीतोष्णसुखदुःखदाः।\n\nआगमापायिनोऽनित्यास्तांस्तितिक्षस्व भारत",
+"transliteration": "mātrā-sparśhās tu kaunteya śhītoṣhṇa-sukha-duḥkha-dāḥ\nāgamāpāyino ’nityās tans-titikṣhasva bhārata",
+"translationEn": "Those external relations that bring cold and heat, pain and happiness come and go; they are not permanent. Endure them bravely, O Prince!"
+},
+{
+"id": 15,
+"sanskrit": "यं हि न व्यथयन्त्येते पुरुषं पुरुषर्षभ।\n\nसमदुःखसुखं धीरं सोऽमृतत्वाय कल्पते",
+"transliteration": "yaṁ hi na vyathayantyete puruṣhaṁ puruṣharṣhabha\nsama-duḥkha-sukhaṁ dhīraṁ so ’mṛitatvāya kalpate",
+"translationEn": "The hero whose soul is unmoved by circumstances, who accepts pleasure and pain with equanimity, is only fit for immortality."
+},
+{
+"id": 16,
+"sanskrit": "नासतो विद्यते भावो नाभावो विद्यते सतः।\n\nउभयोरपि दृष्टोऽन्तस्त्वनयोस्तत्त्वदर्शिभिः",
+"transliteration": "nāsato vidyate bhāvo nābhāvo vidyate sataḥ\nubhayorapi dṛiṣhṭo ’nta stvanayos tattva-darśhibhiḥ",
+"translationEn": "That which is not shall never be; that which is shall never cease to be. These truths are self-evident to the wise."
+},
+{
+"id": 17,
+"sanskrit": "अविनाशि तु तद्विद्धि येन सर्वमिदं ततम्।\n\nविनाशमव्ययस्यास्य न कश्चित् कर्तुमर्हति",
+"transliteration": "avināśhi tu tadviddhi yena sarvam idaṁ tatam\nvināśham avyayasyāsya na kaśhchit kartum arhati",
+"translationEn": "The Spirit, which pervades all that is seen, is imperishable. Nothing can destroy it."
+},
+{
+"id": 18,
+"sanskrit": "अन्तवन्त इमे देहा नित्यस्योक्ताः शरीरिणः।\n\nअनाशिनोऽप्रमेयस्य तस्माद्युध्यस्व भारत",
+"transliteration": "antavanta ime dehā nityasyoktāḥ śharīriṇaḥ\nanāśhino ’prameyasya tasmād yudhyasva bhārata",
+"translationEn": "The material bodies that this Eternal, Indestructible, and Immeasurable Spirit inhabits are all finite; therefore, fight, O valiant man!"
+},
+{
+"id": 19,
+"sanskrit": "य एनं वेत्ति हन्तारं यश्चैनं मन्यते हतम्।\n\nउभौ तौ न विजानीतो नायं हन्ति न हन्यते",
+"transliteration": "ya enaṁ vetti hantāraṁ yaśh chainaṁ manyate hatam\nubhau tau na vijānīto nāyaṁ hanti na hanyate",
+"translationEn": "He who thinks that the Spirit kills, and he who thinks of it as killed, are both ignorant. The Spirit neither kills nor is it killed."
+},
+{
+"id": 20,
+"sanskrit": "न जायते म्रियते वा कदाचि\n\nन्नायं भूत्वा भविता वा न भूयः।\n\nअजो नित्यः शाश्वतोऽयं पुराणो\n\nन हन्यते हन्यमाने शरीरे",
+"transliteration": "na jāyate mriyate vā kadāchin\nnāyaṁ bhūtvā bhavitā vā na bhūyaḥ\najo nityaḥ śhāśhvato ’yaṁ purāṇo\nna hanyate hanyamāne śharīre",
+"translationEn": "It was not born; it will never die, nor, once having been, can it cease to exist. Unborn, eternal, ever-enduring, yet most ancient, the spirit does not die when the body is dead."
+},
+{
+"id": 21,
+"sanskrit": "वेदाविनाशिनं नित्यं य एनमजमव्ययम्।\n\nकथं स पुरुषः पार्थ कं घातयति हन्ति कम्",
+"transliteration": "vedāvināśhinaṁ nityaṁ ya enam ajam avyayam\nkathaṁ sa puruṣhaḥ pārtha kaṁ ghātayati hanti kam",
+"translationEn": "He who knows the Spirit to be indestructible, immortal, unborn, and always the same, how should he kill or cause to be killed?"
+},
+{
+"id": 22,
+"sanskrit": "वासांसि जीर्णानि यथा विहाय\n\nनवानि गृह्णाति नरोऽपराणि।\n\nतथा शरीराणि विहाय जीर्णा\n\nन्यन्यानि संयाति नवानि देही",
+"transliteration": "vāsānsi jīrṇāni yathā vihāya\nnavāni gṛihṇāti naro ’parāṇi\ntathā śharīrāṇi vihāya jīrṇānya\nnyāni sanyāti navāni dehī",
+"translationEn": "As a man discards his threadbare robes and puts on new ones, so the Spirit throws off its worn-out bodies and takes on fresh ones."
+},
+{
+"id": 23,
+"sanskrit": "नैनं छिन्दन्ति शस्त्राणि नैनं दहति पावकः।\n\nन चैनं क्लेदयन्त्यापो न शोषयति मारुतः",
+"transliteration": "nainaṁ chhindanti śhastrāṇi nainaṁ dahati pāvakaḥ\nna chainaṁ kledayantyāpo na śhoṣhayati mārutaḥ",
+"translationEn": "Weapons cannot cleave it, fire cannot burn it, water cannot drench it, and wind cannot dry it."
+},
+{
+"id": 24,
+"sanskrit": "अच्छेद्योऽयमदाह्योऽयमक्लेद्योऽशोष्य एव च।\n\nनित्यः सर्वगतः स्थाणुरचलोऽयं सनातनः",
+"transliteration": "achchhedyo ’yam adāhyo ’yam akledyo ’śhoṣhya eva cha\nnityaḥ sarva-gataḥ sthāṇur achalo ’yaṁ sanātanaḥ",
+"translationEn": "It is impenetrable; it cannot be drowned, scorched, or dried. It is eternal, all-pervasive, unchanging, immovable, and most ancient."
+},
+{
+"id": 25,
+"sanskrit": "अव्यक्तोऽयमचिन्त्योऽयमविकार्योऽयमुच्यते।\n\nतस्मादेवं विदित्वैनं नानुशोचितुमर्हसि",
+"transliteration": "avyakto ’yam achintyo ’yam avikāryo ’yam uchyate\ntasmādevaṁ viditvainaṁ nānuśhochitum arhasi",
+"translationEn": "It is named the Unmanifest, the Unthinkable, and the immutable. Therefore, knowing the Spirit as such, you have no cause to grieve."
+},
+{
+"id": 26,
+"sanskrit": "अथ चैनं नित्यजातं नित्यं वा मन्यसे मृतम्।\n\nतथापि त्वं महाबाहो नैवं शोचितुमर्हसि",
+"transliteration": "atha chainaṁ nitya-jātaṁ nityaṁ vā manyase mṛitam\ntathāpi tvaṁ mahā-bāho naivaṁ śhochitum arhasi",
+"translationEn": "Even if thou thinkest of it as constantly being born and constantly dying, O Mighty Man, thou still hast no cause to grieve."
+},
+{
+"id": 27,
+"sanskrit": "जातस्य हि ध्रुवो मृत्युर्ध्रुवं जन्म मृतस्य च।\n\nतस्मादपरिहार्येऽर्थे न त्वं शोचितुमर्हसि",
+"transliteration": "jātasya hi dhruvo mṛityur dhruvaṁ janma mṛitasya cha\ntasmād aparihārye ’rthe na tvaṁ śhochitum arhasi",
+"translationEn": "For death is certain for that which is born, just as birth is certain for that which is dead. Therefore, do not grieve for what is inevitable."
+},
+{
+"id": 28,
+"sanskrit": "अव्यक्तादीनि भूतानि व्यक्तमध्यानि भारत।\n\nअव्यक्तनिधनान्येव तत्र का परिदेवना",
+"transliteration": "avyaktādīni bhūtāni vyakta-madhyāni bhārata\navyakta-nidhanānyeva tatra kā paridevanā",
+"translationEn": "The end and beginning of beings are unknown; we only see the intervening formations. So, what is there to grieve about?"
+},
+{
+"id": 29,
+"sanskrit": "आश्चर्यवत्पश्यति कश्चिदेन\n\nमाश्चर्यवद्वदति तथैव चान्यः।\n\nआश्चर्यवच्चैनमन्यः श्रृणोति\n\nश्रुत्वाप्येनं वेद न चैव कश्चित्",
+"transliteration": "āśhcharya-vat paśhyati kaśhchid enan\nāśhcharya-vad vadati tathaiva chānyaḥ\nāśhcharya-vach chainam anyaḥ śhṛiṇoti\nśhrutvāpyenaṁ veda na chaiva kaśhchit",
+"translationEn": "One hears of the Spirit with surprise, another thinks it marvelous, the third listens without comprehending. Thus, though many are told about it, scarcely is there one who knows it."
+},
+{
+"id": 30,
+"sanskrit": "देही नित्यमवध्योऽयं देहे सर्वस्य भारत।\n\nतस्मात्सर्वाणि भूतानि न त्वं शोचितुमर्हसि",
+"transliteration": "dehī nityam avadhyo ’yaṁ dehe sarvasya bhārata\ntasmāt sarvāṇi bhūtāni na tvaṁ śhochitum arhasi",
+"translationEn": "Do not be anxious about these armies; the spirit in man is imperishable."
+},
+{
+"id": 31,
+"sanskrit": "स्वधर्ममपि चावेक्ष्य न विकम्पितुमर्हसि।\n\nधर्म्याद्धि युद्धाछ्रेयोऽन्यत्क्षत्रियस्य न विद्यते",
+"transliteration": "swa-dharmam api chāvekṣhya na vikampitum arhasi\ndharmyāddhi yuddhāch chhreyo ’nyat kṣhatriyasya na vidyate",
+"translationEn": "You must look at your duty. Nothing can be more welcome to a soldier than a righteous war. Therefore, wavering in this resolve is unworthy, O Arjuna!"
+},
+{
+"id": 32,
+"sanskrit": "यदृच्छया चोपपन्नं स्वर्गद्वारमपावृतम्।\n\nसुखिनः क्षत्रियाः पार्थ लभन्ते युद्धमीदृशम्",
+"transliteration": "yadṛichchhayā chopapannaṁ swarga-dvāram apāvṛitam\nsukhinaḥ kṣhatriyāḥ pārtha labhante yuddham īdṛiśham",
+"translationEn": "Blessed are the soldiers who find their opportunity; this opportunity has opened for thee the gates of heaven."
+},
+{
+"id": 33,
+"sanskrit": "अथ चैत्त्वमिमं धर्म्यं संग्रामं न करिष्यसि।\n\nततः स्वधर्मं कीर्तिं च हित्वा पापमवाप्स्यसि",
+"transliteration": "atha chet tvam imaṁ dharmyaṁ saṅgrāmaṁ na kariṣhyasi\ntataḥ sva-dharmaṁ kīrtiṁ cha hitvā pāpam avāpsyasi",
+"translationEn": "Refuse to fight in this righteous cause, and you will be a traitor, losing fame, incurring only sin."
+},
+{
+"id": 34,
+"sanskrit": "अकीर्तिं चापि भूतानि कथयिष्यन्ति तेऽव्ययाम्।\n\nसंभावितस्य चाकीर्तिर्मरणादतिरिच्यते",
+"transliteration": "akīrtiṁ chāpi bhūtāni\nkathayiṣhyanti te ’vyayām\nsambhāvitasya chākīrtir\nmaraṇād atirichyate",
+"translationEn": "Men will talk forever of thy disgrace; and to the noble, dishonor is worse than death."
+},
+{
+"id": 35,
+"sanskrit": "भयाद्रणादुपरतं मंस्यन्ते त्वां महारथाः।\n\nयेषां च त्वं बहुमतो भूत्वा यास्यसि लाघवम्",
+"transliteration": "bhayād raṇād uparataṁ mansyante tvāṁ mahā-rathāḥ\nyeṣhāṁ cha tvaṁ bahu-mato bhūtvā yāsyasi lāghavam",
+"translationEn": "Great generals will think that you have fled from the battlefield out of cowardice; though once honored, you will seem despicable."
+},
+{
+"id": 36,
+"sanskrit": "अवाच्यवादांश्च बहून् वदिष्यन्ति तवाहिताः।\n\nनिन्दन्तस्तव सामर्थ्यं ततो दुःखतरं नु किम्",
+"transliteration": "avāchya-vādānśh cha bahūn vadiṣhyanti tavāhitāḥ\nnindantastava sāmarthyaṁ tato duḥkhataraṁ nu kim",
+"translationEn": "Your enemies will spread scandal and mock your courage. Is there anything more humiliating?"
+},
+{
+"id": 37,
+"sanskrit": "हतो वा प्राप्स्यसि स्वर्गं जित्वा वा भोक्ष्यसे महीम्।\n\nतस्मादुत्तिष्ठ कौन्तेय युद्धाय कृतनिश्चयः",
+"transliteration": "hato vā prāpsyasi swargaṁ jitvā vā bhokṣhyase mahīm\ntasmād uttiṣhṭha kaunteya yuddhāya kṛita-niśhchayaḥ",
+"translationEn": "If you are killed, you will attain Heaven; if you are victorious, you will enjoy the kingdom of earth. Therefore, arise, O Son of Kunti, and fight!"
+},
+{
+"id": 38,
+"sanskrit": "सुखदुःखे समे कृत्वा लाभालाभौ जयाजयौ।\n\nततो युद्धाय युज्यस्व नैवं पापमवाप्स्यसि",
+"transliteration": "sukha-duḥkhe same kṛitvā lābhālābhau jayājayau\ntato yuddhāya yujyasva naivaṁ pāpam avāpsyasi",
+"translationEn": "Look upon pleasure and pain, victory and defeat, with an equal eye. Be prepared for the combat, and you will commit no sin."
+},
+{
+"id": 39,
+"sanskrit": "एषा तेऽभिहिता सांख्ये बुद्धिर्योगे त्विमां श्रृणु।\n\nबुद्ध्यायुक्तो यया पार्थ कर्मबन्धं प्रहास्यसि",
+"transliteration": "eṣhā te ’bhihitā sānkhye\nbuddhir yoge tvimāṁ śhṛiṇu\nbuddhyā yukto yayā pārtha\nkarma-bandhaṁ prahāsyasi",
+"translationEn": "I have told you the philosophy of knowledge. Now, listen, and I will explain the philosophy of action, by means of which, O Arjuna, you will break through the bondage of all action."
+},
+{
+"id": 40,
+"sanskrit": "नेहाभिक्रमनाशोऽस्ति प्रत्यवायो न विद्यते।\n\nस्वल्पमप्यस्य धर्मस्य त्रायते महतो भयात्",
+"transliteration": "nehābhikrama-nāśho ’sti pratyavāyo na vidyate\nsvalpam apyasya dharmasya trāyate mahato bhayāt",
+"translationEn": "On this path, endeavour is never wasted nor repressed. Even a little practice of it protects one from great danger."
+},
+{
+"id": 41,
+"sanskrit": "व्यवसायात्मिका बुद्धिरेकेह कुरुनन्दन।\n\nबहुशाखा ह्यनन्ताश्च बुद्धयोऽव्यवसायिनाम्",
+"transliteration": "vyavasāyātmikā buddhir ekeha kuru-nandana\nbahu-śhākhā hyanantāśh cha buddhayo ’vyavasāyinām",
+"translationEn": "By its means, the straying intellect becomes steadied in contemplating one object only; whereas the minds of the irresolute stray into innumerable bypaths."
+},
+{
+"id": 42,
+"sanskrit": "यामिमां पुष्पितां वाचं प्रवदन्त्यविपश्चितः।\n\nवेदवादरताः पार्थ नान्यदस्तीति वादिनः",
+"transliteration": "yāmimāṁ puṣhpitāṁ vāchaṁ pravadanty-avipaśhchitaḥ\nveda-vāda-ratāḥ pārtha nānyad astīti vādinaḥ\n kāmātmānaḥ swarga-parā janma-karma-phala-pradām\nkriyā-viśheṣha-bahulāṁ bhogaiśhwarya-gatiṁ prati",
+"translationEn": "Only the ignorant speak in figurative language; it is they who extol the letter of the scriptures, saying, \"There is nothing deeper than this.\""
+},
+{
+"id": 43,
+"sanskrit": "कामात्मानः स्वर्गपरा जन्मकर्मफलप्रदाम्।\n\nक्रियाविशेषबहुलां भोगैश्वर्यगतिं प्रति",
+"transliteration": "kāmātmānaḥ svarga-parā \n\n janma-karma-phala-pradām\n\n kriyā-viśeṣa-bahulāṁ\n\n bhogaiśvarya-gatiṁ prati",
+"translationEn": "Consulting only their own desires, they construct their own heaven, devising arduous and complex rites to secure their own pleasure and power; and the only result is rebirth."
+},
+{
+"id": 44,
+"sanskrit": "भोगैश्वर्यप्रसक्तानां तयापहृतचेतसाम्।\n\nव्यवसायात्मिका बुद्धिः समाधौ न विधीयते",
+"transliteration": "bhogaiśwvarya-prasaktānāṁ tayāpahṛita-chetasām\nvyavasāyātmikā buddhiḥ samādhau na vidhīyate",
+"translationEn": "While their minds are absorbed with thoughts of power and personal enjoyment, they cannot focus their discrimination on one point."
+},
+{
+"id": 45,
+"sanskrit": "त्रैगुण्यविषया वेदा निस्त्रैगुण्यो भवार्जुन।\n\nनिर्द्वन्द्वो नित्यसत्त्वस्थो निर्योगक्षेम आत्मवान्",
+"transliteration": "trai-guṇya-viṣhayā vedā nistrai-guṇyo bhavārjuna\nnirdvandvo nitya-sattva-stho niryoga-kṣhema ātmavān",
+"translationEn": "The Vedic Scriptures tell of the three constituents of life—the Qualities. Rise above all of them, O Arjuna, above all the pairs of opposing sensations; be steadfast in truth, free from worldly anxieties, and centered in the Self."
+},
+{
+"id": 46,
+"sanskrit": "यावानर्थ उदपाने सर्वतः संप्लुतोदके।\n\nतावान्सर्वेषु वेदेषु ब्राह्मणस्य विजानतः",
+"transliteration": "yāvān artha udapāne sarvataḥ samplutodake\ntāvānsarveṣhu vedeṣhu brāhmaṇasya vijānataḥ",
+"translationEn": "As a man can drink water from any side of a full tank, so the skilled theologian can extract from any scripture that which will serve their purpose."
+},
+{
+"id": 47,
+"sanskrit": "कर्मण्येवाधिकारस्ते मा फलेषु कदाचन।\n\nमा कर्मफलहेतुर्भूर्मा ते सङ्गोऽस्त्वकर्मणि",
+"transliteration": "karmaṇy-evādhikāras te mā phaleṣhu kadāchana\nmā karma-phala-hetur bhūr mā te saṅgo ’stvakarmaṇi",
+"translationEn": "But you have only the right to work, but none to the fruit of it. Let not the fruit of your action be your motive; nor be you enamored of inaction."
+},
+{
+"id": 48,
+"sanskrit": "योगस्थः कुरु कर्माणि सङ्गं त्यक्त्वा धनञ्जय।\n\nसिद्ध्यसिद्ध्योः समो भूत्वा समत्वं योग उच्यते",
+"transliteration": "yoga-sthaḥ kuru karmāṇi saṅgaṁ tyaktvā dhanañjaya\nsiddhy-asiddhyoḥ samo bhūtvā samatvaṁ yoga uchyate",
+"translationEn": "Revised:\nPerform all your actions with your mind concentrated on the Divine, renouncing attachment and looking upon success and failure with an equal eye. Spirituality implies equanimity."
+},
+{
+"id": 49,
+"sanskrit": "दूरेण ह्यवरं कर्म बुद्धियोगाद्धनञ्जय।\n\nबुद्धौ शरणमन्विच्छ कृपणाः फलहेतवः",
+"transliteration": "dūreṇa hy-avaraṁ karma buddhi-yogād dhanañjaya\nbuddhau śharaṇam anvichchha kṛipaṇāḥ phala-hetavaḥ",
+"translationEn": "Physical action is far inferior to an intellect concentrated on the Divine. Therefore, have recourse to Pure Intelligence. It is only the small-minded who work for reward."
+},
+{
+"id": 50,
+"sanskrit": "बुद्धियुक्तो जहातीह उभे सुकृतदुष्कृते।\n\nतस्माद्योगाय युज्यस्व योगः कर्मसु कौशलम्",
+"transliteration": "buddhi-yukto jahātīha ubhe sukṛita-duṣhkṛite\ntasmād yogāya yujyasva yogaḥ karmasu kauśhalam",
+"translationEn": "When a person attains Pure Reason, they renounce in this world the results of both good and evil. Cling to Right Action. Spirituality is the true art of living."
+},
+{
+"id": 51,
+"sanskrit": "कर्मजं बुद्धियुक्ता हि फलं त्यक्त्वा मनीषिणः।\n\nजन्मबन्धविनिर्मुक्ताः पदं गच्छन्त्यनामयम्",
+"transliteration": "karma-jaṁ buddhi-yuktā hi phalaṁ tyaktvā manīṣhiṇaḥ\njanma-bandha-vinirmuktāḥ padaṁ gachchhanty-anāmayam",
+"translationEn": "The sages, guided by pure intellect, renounce the fruits of their actions; and, thus freed from the shackles of rebirth, they attain the highest bliss."
+},
+{
+"id": 52,
+"sanskrit": "यदा ते मोहकलिलं बुद्धिर्व्यतितरिष्यति।\n\nतदा गन्तासि निर्वेदं श्रोतव्यस्य श्रुतस्य च",
+"transliteration": "yadā te moha-kalilaṁ buddhir vyatitariṣhyati\ntadā gantāsi nirvedaṁ śhrotavyasya śhrutasya cha",
+"translationEn": "When your reason has crossed the entanglements of illusion, then you will become indifferent to both the philosophies you have heard and those you may yet hear."
+},
+{
+"id": 53,
+"sanskrit": "श्रुतिविप्रतिपन्ना ते यदा स्थास्यति निश्चला।\n\nसमाधावचला बुद्धिस्तदा योगमवाप्स्यसि",
+"transliteration": "śhruti-vipratipannā te yadā sthāsyati niśhchalā\nsamādhāv-achalā buddhis tadā yogam avāpsyasi",
+"translationEn": "When the intellect, bewildered by the multiplicity of holy scriptures, stands unperturbed in blissful contemplation of the infinite, then you have attained spirituality."
+},
+{
+"id": 54,
+"sanskrit": "अर्जुन उवाच\n\nस्थितप्रज्ञस्य का भाषा समाधिस्थस्य केशव।\n\nस्थितधीः किं प्रभाषेत किमासीत व्रजेत किम्",
+"transliteration": "arjuna uvācha\nsthita-prajñasya kā bhāṣhā samādhi-sthasya keśhava\nsthita-dhīḥ kiṁ prabhāṣheta kim āsīta vrajeta kim",
+"translationEn": "Arjuna asked: My Lord! How can we recognize the saint who has attained Pure Intellect, who has reached this state of Bliss, and whose mind is steady? How does he talk, how does he live, and how does he act?"
+},
+{
+"id": 55,
+"sanskrit": "श्री भगवानुवाच\n\nप्रजहाति यदा कामान् सर्वान् पार्थ मनोगतान्।\n\nआत्मन्येवात्मना तुष्टः स्थितप्रज्ञस्तदोच्यते",
+"transliteration": "śhrī bhagavān uvācha\nprajahāti yadā kāmān sarvān pārtha mano-gatān\nātmany-evātmanā tuṣhṭaḥ sthita-prajñas tadochyate",
+"translationEn": "Lord Shri Krishna replied: When a person has given up the desires of their heart and is content with the Self alone, they have surely reached the highest state."
+},
+{
+"id": 56,
+"sanskrit": "दुःखेष्वनुद्विग्नमनाः सुखेषु विगतस्पृहः।\n\nवीतरागभयक्रोधः स्थितधीर्मुनिरुच्यते",
+"transliteration": "duḥkheṣhv-anudvigna-manāḥ sukheṣhu vigata-spṛihaḥ\nvīta-rāga-bhaya-krodhaḥ sthita-dhīr munir uchyate",
+"translationEn": "The sage whose mind is unruffled in suffering, whose desire is not aroused by enjoyment, who is without attachment, anger, or fear—take him to be one who stands at a lofty level."
+},
+{
+"id": 57,
+"sanskrit": "यः सर्वत्रानभिस्नेहस्तत्तत्प्राप्य शुभाशुभम्।\n\nनाभिनन्दति न द्वेष्टि तस्य प्रज्ञा प्रतिष्ठिता",
+"transliteration": "yaḥ sarvatrānabhisnehas tat tat prāpya śhubhāśhubham\nnābhinandati na dveṣhṭi tasya prajñā pratiṣhṭhitā",
+"translationEn": "He who, wherever he goes, is not attached to any person or place by ties of flesh; who accepts good and evil alike, neither welcoming the one nor shrinking from the other—take him to be one who is merged in the Infinite."
+},
+{
+"id": 58,
+"sanskrit": "यदा संहरते चायं कूर्मोऽङ्गानीव सर्वशः।\n\nइन्द्रियाणीन्द्रियार्थेभ्यस्तस्य प्रज्ञा प्रतिष्ठिता",
+"transliteration": "yadā sanharate chāyaṁ kūrmo ’ṅgānīva sarvaśhaḥ\nindriyāṇīndriyārthebhyas tasya prajñā pratiṣhṭhitā",
+"translationEn": "He who can withdraw his senses from the attraction of their objects, as the tortoise draws its limbs within its shell—take it that such a one has attained perfection."
+},
+{
+"id": 59,
+"sanskrit": "विषया विनिवर्तन्ते निराहारस्य देहिनः।\n\nरसवर्जं रसोऽप्यस्य परं दृष्ट्वा निवर्तते",
+"transliteration": "viṣhayā vinivartante nirāhārasya dehinaḥ\nrasa-varjaṁ raso ’pyasya paraṁ dṛiṣhṭvā nivartate",
+"translationEn": "The objects of sense turn away from him who is abstinent. Even the taste for them is lost in him who has seen the Truth."
+},
+{
+"id": 60,
+"sanskrit": "यततो ह्यपि कौन्तेय पुरुषस्य विपश्चितः।\n\nइन्द्रियाणि प्रमाथीनि हरन्ति प्रसभं मनः",
+"transliteration": "yatato hyapi kaunteya puruṣhasya vipaśhchitaḥ\nindriyāṇi pramāthīni haranti prasabhaṁ manaḥ",
+"translationEn": "O Arjuna! The mind of one who is attempting to conquer it is forcibly carried away, in spite of their efforts, by their tumultuous senses."
+},
+{
+"id": 61,
+"sanskrit": "तानि सर्वाणि संयम्य युक्त आसीत मत्परः।\n\nवशे हि यस्येन्द्रियाणि तस्य प्रज्ञा प्रतिष्ठिता",
+"transliteration": "tāni sarvāṇi sanyamya yukta āsīta mat-paraḥ\nvaśhe hi yasyendriyāṇi tasya prajñā pratiṣhṭhitā",
+"translationEn": "Restraining them all, let him steadfastly meditate on Me; for whoever conquers their senses achieves perfection."
+},
+{
+"id": 62,
+"sanskrit": "ध्यायतो विषयान्पुंसः सङ्गस्तेषूपजायते।\n\nसङ्गात् संजायते कामः कामात्क्रोधोऽभिजायते",
+"transliteration": "dhyāyato viṣhayān puṁsaḥ saṅgas teṣhūpajāyate\nsaṅgāt sañjāyate kāmaḥ kāmāt krodho ’bhijāyate",
+"translationEn": "When a person dwells on the objects of sense, they create an attraction for them; this attraction develops into desire, and desire breeds anger."
+},
+{
+"id": 63,
+"sanskrit": "क्रोधाद्भवति संमोहः संमोहात्स्मृतिविभ्रमः।\n\nस्मृतिभ्रंशाद् बुद्धिनाशो बुद्धिनाशात्प्रणश्यति",
+"transliteration": "krodhād bhavati sammohaḥ sammohāt smṛiti-vibhramaḥ\nsmṛiti-bhranśhād buddhi-nāśho buddhi-nāśhāt praṇaśhyati",
+"translationEn": "Anger induces delusion; delusion leads to loss of memory; loss of memory results in the shattering of reason; and the destruction of reason leads to destruction."
+},
+{
+"id": 64,
+"sanskrit": "रागद्वेषवियुक्तैस्तु विषयानिन्द्रियैश्चरन्।\n\nआत्मवश्यैर्विधेयात्मा प्रसादमधिगच्छति",
+"transliteration": "rāga-dveṣha-viyuktais tu viṣhayān indriyaiśh charan\nātma-vaśhyair-vidheyātmā prasādam adhigachchhati",
+"translationEn": "But the self-controlled soul, who moves among sense objects, free from attachment or repulsion, wins eternal peace."
+},
+{
+"id": 65,
+"sanskrit": "प्रसादे सर्वदुःखानां हानिरस्योपजायते।\n\nप्रसन्नचेतसो ह्याशु बुद्धिः पर्यवतिष्ठते",
+"transliteration": "prasāde sarva-duḥkhānāṁ hānir asyopajāyate\nprasanna-chetaso hyāśhu buddhiḥ paryavatiṣhṭhate",
+"translationEn": "Having attained peace, he becomes free from misery; for when the mind gains peace, right discrimination follows."
+},
+{
+"id": 66,
+"sanskrit": "नास्ति बुद्धिरयुक्तस्य न चायुक्तस्य भावना।\n\nन चाभावयतः शान्तिरशान्तस्य कुतः सुखम्",
+"transliteration": "nāsti buddhir-ayuktasya na chāyuktasya bhāvanā\nna chābhāvayataḥ śhāntir aśhāntasya kutaḥ sukham",
+"translationEn": "Right discrimination is not for him who cannot concentrate. Without concentration, there cannot be meditation; he who cannot meditate must not expect peace; and without peace, how can one expect happiness?"
+},
+{
+"id": 67,
+"sanskrit": "इन्द्रियाणां हि चरतां यन्मनोऽनुविधीयते।\n\nतदस्य हरति प्रज्ञां वायुर्नावमिवाम्भसि",
+"transliteration": "indriyāṇāṁ hi charatāṁ yan mano ’nuvidhīyate\ntadasya harati prajñāṁ vāyur nāvam ivāmbhasi",
+"translationEn": "As a ship at sea is tossed by the tempest, so the reason is carried away by the mind when preyed upon by straying senses."
+},
+{
+"id": 68,
+"sanskrit": "तस्माद्यस्य महाबाहो निगृहीतानि सर्वशः।\n\nइन्द्रियाणीन्द्रियार्थेभ्यस्तस्य प्रज्ञा प्रतिष्ठिता",
+"transliteration": "tasmād yasya mahā-bāho nigṛihītāni sarvaśhaḥ\nindriyāṇīndriyārthebhyas tasya prajñā pratiṣhṭhitā",
+"translationEn": "Therefore, O Mighty-Armed One, he whose senses are detached from their objects—take it that his reason is purified."
+},
+{
+"id": 69,
+"sanskrit": "या निशा सर्वभूतानां तस्यां जागर्ति संयमी।\n\nयस्यां जाग्रति भूतानि सा निशा पश्यतो मुनेः",
+"transliteration": "yā niśhā sarva-bhūtānāṁ tasyāṁ jāgarti sanyamī\nyasyāṁ jāgrati bhūtāni sā niśhā paśhyato muneḥ",
+"translationEn": "The saint is awake when the world sleeps, and he disregards that for which the world lives."
+},
+{
+"id": 70,
+"sanskrit": "आपूर्यमाणमचलप्रतिष्ठं\n\nसमुद्रमापः प्रविशन्ति यद्वत्।\n\nतद्वत्कामा यं प्रविशन्ति सर्वे\n\nस शान्तिमाप्नोति न कामकामी",
+"transliteration": "āpūryamāṇam achala-pratiṣhṭhaṁ\nsamudram āpaḥ praviśhanti yadvat\ntadvat kāmā yaṁ praviśhanti sarve\nsa śhāntim āpnoti na kāma-kāmī",
+"translationEn": "He attains peace into whom desires flow as rivers into the ocean, which, though brimming with water, remains ever the same; not he whom desires carry away."
+},
+{
+"id": 71,
+"sanskrit": "विहाय कामान्यः सर्वान्पुमांश्चरति निःस्पृहः।\n\nनिर्ममो निरहंकारः स शांतिमधिगच्छति",
+"transliteration": "vihāya kāmān yaḥ sarvān pumānśh charati niḥspṛihaḥ\nnirmamo nirahankāraḥ sa śhāntim adhigachchhati",
+"translationEn": "He attains peace who, giving up desire, moves through the world without aspiration, possessing nothing that he can call his own and is free from pride."
+},
+{
+"id": 72,
+"sanskrit": "एषा ब्राह्मी स्थितिः पार्थ नैनां प्राप्य विमुह्यति।\n\nस्थित्वाऽस्यामन्तकालेऽपि ब्रह्मनिर्वाणमृच्छति",
+"transliteration": "eṣhā brāhmī sthitiḥ pārtha naināṁ prāpya vimuhyati\nsthitvāsyām anta-kāle ’pi brahma-nirvāṇam ṛichchhati",
+"translationEn": "O Arjuna! This is the state of the Self, the Supreme Spirit, to which, if one attains, it shall never be taken away. Even at the time of leaving the body, one will remain firmly enthroned there and become one with the Eternal."
+}
+]
+}

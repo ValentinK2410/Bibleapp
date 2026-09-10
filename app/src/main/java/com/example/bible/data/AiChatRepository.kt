@@ -107,7 +107,15 @@ class AiChatRepository(
             return if (one.length <= 48) one else one.take(47) + "…"
         }
 
-        fun apiMessages(stored: List<AiChatMessageEntity>): List<DeepSeekMessage> {
+        fun apiMessages(
+            stored: List<AiChatMessageEntity>,
+            extraSystemHints: String = "",
+        ): List<DeepSeekMessage> {
+            val system = if (extraSystemHints.isBlank()) {
+                SYSTEM_PROMPT
+            } else {
+                "$SYSTEM_PROMPT\n\n${extraSystemHints.trim()}"
+            }
             val turns = stored.filter { it.role == "user" || it.role == "assistant" }
             val picked = ArrayDeque<DeepSeekMessage>()
             var chars = 0
@@ -118,7 +126,7 @@ class AiChatRepository(
                 picked.addFirst(DeepSeekMessage(item.role, text))
                 chars += text.length
             }
-            return listOf(DeepSeekMessage("system", SYSTEM_PROMPT)) + picked
+            return listOf(DeepSeekMessage("system", system)) + picked
         }
     }
 }

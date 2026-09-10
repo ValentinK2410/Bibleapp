@@ -59,7 +59,9 @@ object BibleTtsVoiceHelper {
         tts.setVoice(chosen)
     }
 
-    private fun voiceScore(v: Voice): Int {
+    private fun voiceScore(v: Voice): Int = scoreVoice(v)
+
+    fun scoreVoice(v: Voice): Int {
         var score = v.quality * 1_000
         val name = v.name.lowercase(Locale.ROOT)
         if (name.contains("network")) score += 800
@@ -104,14 +106,6 @@ fun applyTtsVoiceForTranslation(tts: TextToSpeech, translation: TranslationId, u
     }
     tts.setSpeechRate(userRate)
     tts.setPitch((basePitch * userPitch).coerceIn(0.2f, 2.0f))
-}
-
-/** Голос для ответов GigaChat / DeepSeek: русский, лучший доступный (часто Google TTS). */
-fun applyAiChatVoice(tts: TextToSpeech, user: TtsUserSettings) {
-    tts.setLanguage(Locale.forLanguageTag("ru"))
-    BibleTtsVoiceHelper.applyBestVoiceForCurrentLanguage(tts, preferHigh = true)
-    tts.setSpeechRate(user.speechRate.coerceIn(0.35f, 2.2f))
-    tts.setPitch(user.pitch.coerceIn(0.5f, 1.4f))
 }
 
 fun resolveTtsEnginePackage(context: Context, user: TtsUserSettings): String {

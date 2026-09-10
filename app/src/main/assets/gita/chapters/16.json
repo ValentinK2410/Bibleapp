@@ -1,0 +1,153 @@
+{
+"id": 16,
+"name": "दैवासुरसम्पद्विभागयोग",
+"transliteration": "Дайва-асура-сампад-вибхага-йога",
+"translation": "Божественные и демонические свойства",
+"total_verses": 24,
+"verses": [
+{
+"id": 1,
+"sanskrit": "श्री भगवानुवाच\n\nअभयं सत्त्वसंशुद्धिः ज्ञानयोगव्यवस्थितिः।\n\nदानं दमश्च यज्ञश्च स्वाध्यायस्तप आर्जवम्",
+"transliteration": "śhrī-bhagavān uvācha\nabhayaṁ sattva-sanśhuddhir jñāna-yoga-vyavasthitiḥ\ndānaṁ damaśh cha yajñaśh cha svādhyāyas tapa ārjavam",
+"translationEn": "Lord Shri Krishna continued: Fearlessness, clean living, unceasing concentration on wisdom, readiness to give, self-control, a spirit of sacrifice, regular study of the scriptures, austerity, candor,"
+},
+{
+"id": 2,
+"sanskrit": "अहिंसा सत्यमक्रोधस्त्यागः शान्तिरपैशुनम्।दया भूतेष्वलोलुप्त्वं मार्दवं ह्रीरचापलम्",
+"transliteration": "ahinsā satyam akrodhas tyāgaḥ śhāntir apaiśhunam\ndayā bhūteṣhv aloluptvaṁ mārdavaṁ hrīr achāpalam",
+"translationEn": "Harmlessness, truth, absence of wrath, renunciation, contentment, straightforwardness, compassion towards all, uncovetousness, courtesy, modesty, and constancy."
+},
+{
+"id": 3,
+"sanskrit": "तेजः क्षमा धृतिः शौचमद्रोहो नातिमानिता।\n\nभवन्ति सम्पदं दैवीमभिजातस्य भारत",
+"transliteration": "tejaḥ kṣhamā dhṛitiḥ śhaucham adroho nāti-mānitā\nbhavanti sampadaṁ daivīm abhijātasya bhārata",
+"translationEn": "Valor, forgiveness, fortitude, purity, freedom from hate and vanity—these are the qualities of one who possesses the divine, O Arjuna!"
+},
+{
+"id": 4,
+"sanskrit": "दम्भो दर्पोऽभिमानश्च क्रोधः पारुष्यमेव च।अज्ञानं चाभिजातस्य पार्थ सम्पदमासुरीम्",
+"transliteration": "dambho darpo ’bhimānaśh cha krodhaḥ pāruṣhyam eva cha\najñānaṁ chābhijātasya pārtha sampadam āsurīm",
+"translationEn": "Hypocrisy, pride, insolence, cruelty, and ignorance belong to those born of godless qualities."
+},
+{
+"id": 5,
+"sanskrit": "दैवी सम्पद्विमोक्षाय निबन्धायासुरी मता।मा शुचः सम्पदं दैवीमभिजातोऽसि पाण्डव",
+"transliteration": "daivī sampad vimokṣhāya nibandhāyāsurī matā\nmā śhuchaḥ sampadaṁ daivīm abhijāto ’si pāṇḍava",
+"translationEn": "Godly qualities lead to liberation; godless ones lead to bondage. Do not be anxious, Prince! You have the Godly qualities."
+},
+{
+"id": 6,
+"sanskrit": "द्वौ भूतसर्गौ लोकेऽस्मिन् दैव आसुर एव च।दैवो विस्तरशः प्रोक्त आसुरं पार्थ मे श्रृणु",
+"transliteration": "dvau bhūta-sargau loke ’smin daiva āsura eva cha\ndaivo vistaraśhaḥ prokta āsuraṁ pārtha me śhṛiṇu",
+"translationEn": "No changes needed."
+},
+{
+"id": 7,
+"sanskrit": "प्रवृत्तिं च निवृत्तिं च जना न विदुरासुराः।न शौचं नापि चाचारो न सत्यं तेषु विद्यते",
+"transliteration": "pravṛittiṁ cha nivṛittiṁ cha janā na vidur āsurāḥ\nna śhauchaṁ nāpi chāchāro na satyaṁ teṣhu vidyate",
+"translationEn": "The godless do not know how to act or renounce; they lack both purity and truth. They do not understand the right principles of conduct."
+},
+{
+"id": 8,
+"sanskrit": "असत्यमप्रतिष्ठं ते जगदाहुरनीश्वरम्।अपरस्परसम्भूतं किमन्यत्कामहैतुकम्",
+"transliteration": "asatyam apratiṣhṭhaṁ te jagad āhur anīśhvaram\naparaspara-sambhūtaṁ kim anyat kāma-haitukam",
+"translationEn": "They say the universe is an accident with no purpose and no God. Life is created through sexual union, a product of lust and nothing else."
+},
+{
+"id": 9,
+"sanskrit": "एतां दृष्टिमवष्टभ्य नष्टात्मानोऽल्पबुद्धयः।प्रभवन्त्युग्रकर्माणः क्षयाय जगतोऽहिताः",
+"transliteration": "etāṁ dṛiṣhṭim avaṣhṭabhya naṣhṭātmāno ’lpa-buddhayaḥ\nprabhavanty ugra-karmāṇaḥ kṣhayāya jagato ’hitāḥ",
+"translationEn": "Thinking thus, these degraded souls, these enemies of mankind—whose intelligence is negligible and whose deeds are monstrous—come into the world only to destroy."
+},
+{
+"id": 10,
+"sanskrit": "काममाश्रित्य दुष्पूरं दम्भमानमदान्विताः।मोहाद्गृहीत्वासद्ग्राहान्प्रवर्तन्तेऽशुचिव्रताः",
+"transliteration": "kāmam āśhritya duṣhpūraṁ dambha-māna-madānvitāḥ\nmohād gṛihītvāsad-grāhān pravartante ’śhuchi-vratāḥ",
+"translationEn": "Giving themselves up to insatiable passions, hypocritically, self-sufficiently, and arrogantly, cherishing false conceptions founded on delusion, they work only to carry out their own unholy purposes."
+},
+{
+"id": 11,
+"sanskrit": "चिन्तामपरिमेयां च प्रलयान्तामुपाश्रिताः।कामोपभोगपरमा एतावदिति निश्िचताः",
+"transliteration": "chintām aparimeyāṁ cha pralayāntām upāśhritāḥ\nkāmopabhoga-paramā etāvad iti niśhchitāḥ",
+"translationEn": "Poring anxiously over evil resolutions that only end in death, seeking only the gratification of desire as the highest goal, and seeing nothing beyond—"
+},
+{
+"id": 12,
+"sanskrit": "आशापाशशतैर्बद्धाः कामक्रोधपरायणाः।ईहन्ते कामभोगार्थमन्यायेनार्थसञ्चयान्",
+"transliteration": "āśhā-pāśha-śhatair baddhāḥ kāma-krodha-parāyaṇāḥ\nīhante kāma-bhogārtham anyāyenārtha-sañchayān",
+"translationEn": "Caught in the toils of a hundred vain hopes, enslaved by passion and wrath, they accumulate hoards of unjust wealth, only to indulge their sensual desires."
+},
+{
+"id": 13,
+"sanskrit": "इदमद्य मया लब्धमिमं प्राप्स्ये मनोरथम्।इदमस्तीदमपि मे भविष्यति पुनर्धनम्",
+"transliteration": "idam adya mayā labdham imaṁ prāpsye manoratham\nidam astīdam api me bhaviṣhyati punar dhanam",
+"translationEn": "Today I have gained this; tomorrow I will fulfill another desire; this wealth is mine now, and the rest will soon be mine."
+},
+{
+"id": 14,
+"sanskrit": "असौ मया हतः शत्रुर्हनिष्ये चापरानपि।ईश्वरोऽहमहं भोगी सिद्धोऽहं बलवान्सुखी",
+"transliteration": "asau mayā hataḥ śhatrur haniṣhye chāparān api\nīśhvaro ’ham ahaṁ bhogī siddho ’haṁ balavān sukhī",
+"translationEn": "I have slain one enemy; I will slay the others too. I am worthy of enjoying; I am the Almighty, perfect, powerful, and happy."
+},
+{
+"id": 15,
+"sanskrit": "आढ्योऽभिजनवानस्मि कोऽन्योऽस्ति सदृशो मया।यक्ष्ये दास्यामि मोदिष्य इत्यज्ञानविमोहिताः",
+"transliteration": "āḍhyo ’bhijanavān asmi ko ’nyo ’sti sadṛiśho mayā\nyakṣhye dāsyāmi modiṣhya ity ajñāna-vimohitāḥ\n aneka-chitta-vibhrāntā moha-jāla-samāvṛitāḥ\nprasaktāḥ kāma-bhogeṣhu patanti narake ’śhuchau",
+"translationEn": "I am wealthy, I am of noble birth; who can compare with me? I will sacrifice, I will give, I will pay—and I will enjoy. Thus blinded by ignorance,"
+},
+{
+"id": 16,
+"sanskrit": "अनेकचित्तविभ्रान्ता मोहजालसमावृताः।प्रसक्ताः कामभोगेषु पतन्ति नरकेऽशुचौ",
+"transliteration": "aneka-citta-vibhrāntā    moha-jāla-samāvṛtāḥ prasaktāḥ   kāma-bhogeṣu    patanti narake  'śucau",
+"translationEn": "Perplexed by discordant thoughts, entangled in the snares of desire, infatuated by passion, they sink into the depths of hell."
+},
+{
+"id": 17,
+"sanskrit": "आत्मसम्भाविताः स्तब्धा धनमानमदान्विताः।यजन्ते नामयज्ञैस्ते दम्भेनाविधिपूर्वकम्",
+"transliteration": "ātma-sambhāvitāḥ stabdhā dhana-māna-madānvitāḥ\nyajante nāma-yajñais te dambhenāvidhi-pūrvakam",
+"translationEn": "Self-conceited, stubborn, wealthy, proud, and insolent, they make a show of their patronage, disregarding the norms of propriety."
+},
+{
+"id": 18,
+"sanskrit": "अहङ्कारं बलं दर्पं कामं क्रोधं च संश्रिताः।मामात्मपरदेहेषु प्रद्विषन्तोऽभ्यसूयकाः",
+"transliteration": "ahankāraṁ balaṁ darpaṁ kāmaṁ krodhaṁ cha sanśhritāḥ\nmām ātma-para-deheṣhu pradviṣhanto ’bhyasūyakāḥ",
+"translationEn": "Puffed up by power and inordinate conceit, swayed by lust and wrath, these wicked people hate Me, Who am within them as I am within all."
+},
+{
+"id": 19,
+"sanskrit": "तानहं द्विषतः क्रूरान्संसारेषु नराधमान्।क्षिपाम्यजस्रमशुभानासुरीष्वेव योनिषु",
+"transliteration": "tān ahaṁ dviṣhataḥ krūrān sansāreṣhu narādhamān\nkṣhipāmy ajasram aśhubhān āsurīṣhv eva yoniṣhu",
+"translationEn": "Those who thus hate Me, who are cruel, the dregs of mankind, I condemn them to a continuous, miserable, and godless rebirth."
+},
+{
+"id": 20,
+"sanskrit": "असुरीं योनिमापन्ना मूढा जन्मनि जन्मनि।मामप्राप्यैव कौन्तेय ततो यान्त्यधमां गतिम्",
+"transliteration": "āsurīṁ yonim āpannā mūḍhā janmani janmani\nmām aprāpyaiva kaunteya tato yānty adhamāṁ gatim",
+"translationEn": "So, reborn, they spend life after life enveloped in delusion, and they never reach Me, O Prince, but degenerate into even lower forms of life."
+},
+{
+"id": 21,
+"sanskrit": "त्रिविधं नरकस्येदं द्वारं नाशनमात्मनः।कामः क्रोधस्तथा लोभस्तस्मादेतत्त्रयं त्यजेत्",
+"transliteration": "tri-vidhaṁ narakasyedaṁ dvāraṁ nāśhanam ātmanaḥ\nkāmaḥ krodhas tathā lobhas tasmād etat trayaṁ tyajet",
+"translationEn": "The gates of hell are three: lust, wrath, and avarice; they destroy the Self, so avoid them."
+},
+{
+"id": 22,
+"sanskrit": "एतैर्विमुक्तः कौन्तेय तमोद्वारैस्त्रिभिर्नरः।आचरत्यात्मनः श्रेयस्ततो याति परां गतिम्",
+"transliteration": "etair vimuktaḥ kaunteya tamo-dvārais tribhir naraḥ\nācharaty ātmanaḥ śhreyas tato yāti parāṁ gatim",
+"translationEn": "These are the gates that lead to darkness; if one avoids them, they will ensure their own welfare and eventually attain liberation."
+},
+{
+"id": 23,
+"sanskrit": "यः शास्त्रविधिमुत्सृज्य वर्तते कामकारतः।न स सिद्धिमवाप्नोति न सुखं न परां गतिम्",
+"transliteration": "yaḥ śhāstra-vidhim utsṛijya vartate kāma-kārataḥ\nna sa siddhim avāpnoti na sukhaṁ na parāṁ gatim",
+"translationEn": "But he who neglects the commands of the scriptures and follows the promptings of passion does not attain perfection, happiness, or the final goal."
+},
+{
+"id": 24,
+"sanskrit": "तस्माच्छास्त्रं प्रमाणं ते कार्याकार्यव्यवस्थितौ।ज्ञात्वा शास्त्रविधानोक्तं कर्म कर्तुमिहार्हसि",
+"transliteration": "tasmāch chhāstraṁ pramāṇaṁ te kāryākārya-vyavasthitau\njñātvā śhāstra-vidhānoktaṁ karma kartum ihārhasi",
+"translationEn": "Therefore, whenever there is doubt as to whether you should do something or not, let the scriptures guide your conduct. In the light of the scriptures, you should labor your whole life."
+}
+]
+}

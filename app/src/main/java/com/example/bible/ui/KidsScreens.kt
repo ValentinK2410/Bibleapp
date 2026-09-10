@@ -26,6 +26,7 @@ import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.grid.GridCells
@@ -47,6 +48,7 @@ import androidx.compose.material.icons.filled.Park
 import androidx.compose.material.icons.filled.Pets
 import androidx.compose.material.icons.filled.Public
 import androidx.compose.material.icons.filled.SetMeal
+import androidx.compose.material.icons.filled.MusicNote
 import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.material.icons.filled.Stop
@@ -57,6 +59,7 @@ import androidx.compose.material3.ColorScheme
 import androidx.compose.material3.ElevatedCard
 import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
@@ -75,7 +78,13 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.asPaddingValues
+import androidx.compose.foundation.layout.navigationBars
+import androidx.compose.foundation.layout.statusBars
+import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.luminance
@@ -400,7 +409,9 @@ internal fun kidsHubCardVisualToToken(v: KidsHubCardVisual): String = when (v) {
     KidsHubCardVisual.Audios -> "Audios"
 }
 
-internal fun kidsHubDefaultRows(): List<KidsHubRow> = listOf(
+internal fun kidsHubDefaultRows(): List<KidsHubRow> = KIDS_HUB_DEFAULT_ROWS
+
+private val KIDS_HUB_DEFAULT_ROWS: List<KidsHubRow> = listOf(
     KidsHubRow(
         title = "Алфавит",
         subtitle = "Буквы, слоги и примеры слов",
@@ -419,7 +430,7 @@ internal fun kidsHubDefaultRows(): List<KidsHubRow> = listOf(
     ),
     KidsHubRow(
         title = "Игры",
-        subtitle = "Крестики-нолики, шашки, го и другие настольные игры",
+        subtitle = "Крестики-нолики, шашки, го, водопровод и другие игры",
         route = "kids_games",
         icon = Icons.Filled.Extension,
         cardStyle = KidsHubCardVisual.Videos,
@@ -1089,18 +1100,17 @@ fun KidsPicturedGridScreen(
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colorScheme.surface,
                 ) {
-                    val detailScale = if (tileStyle == KidsPicturedTileStyle.FishWide) {
-                        ContentScale.Fit
-                    } else {
-                        ContentScale.Crop
-                    }
-                    val detailBackdrop = if (tileStyle == KidsPicturedTileStyle.FishWide) {
-                        MaterialTheme.colorScheme.surfaceVariant
-                    } else {
-                        null
-                    }
+                    val detailScale = ContentScale.Fit
+                    val detailBackdrop = MaterialTheme.colorScheme.surfaceVariant
+                    val hasAnimalSound =
+                        item.soundRes != null ||
+                            item.customSoundPath?.let { File(context.filesDir, it).isFile } == true
+                    val navBarBottom = WindowInsets.navigationBars.asPaddingValues().calculateBottomPadding()
+                    val bottomSafePad = maxOf(navBarBottom, 56.dp)
                     Column(
-                        Modifier.fillMaxSize(),
+                        Modifier
+                            .fillMaxSize()
+                            .windowInsetsPadding(WindowInsets.statusBars),
                         horizontalAlignment = if (item.detailFullScreen) {
                             Alignment.Start
                         } else {
@@ -1124,29 +1134,28 @@ fun KidsPicturedGridScreen(
                                 Icon(Icons.Filled.Close, contentDescription = "Закрыть")
                             }
                         }
-                        if (item.detailFullScreen) {
-                            KidsPicturedTileImage(
-                                item = item,
-                                emojiSize = 120.sp,
-                                contentScale = detailScale,
-                                imageBackdrop = detailBackdrop,
-                                modifier = Modifier
-                                    .weight(1f)
-                                    .fillMaxWidth()
-                                    .padding(horizontal = 12.dp),
-                            )
-                        } else {
-                            Box(
-                                modifier = Modifier
-                                    .weight(1f)
-                                    .fillMaxWidth(),
-                                contentAlignment = Alignment.Center,
-                            ) {
+                        Box(
+                            modifier = Modifier
+                                .weight(1f, fill = true)
+                                .fillMaxWidth()
+                                .heightIn(min = 0.dp)
+                                .padding(horizontal = 12.dp),
+                            contentAlignment = Alignment.Center,
+                        ) {
+                            if (item.detailFullScreen) {
+                                KidsPicturedTileImage(
+                                    item = item,
+                                    emojiSize = 120.sp,
+                                    contentScale = detailScale,
+                                    imageBackdrop = detailBackdrop,
+                                    modifier = Modifier.fillMaxSize(),
+                                )
+                            } else {
                                 KidsPicturedTileImage(
                                     item = item,
                                     emojiSize = 96.sp,
-                                    contentScale = imageContentScale,
-                                    imageBackdrop = imageBackdrop,
+                                    contentScale = detailScale,
+                                    imageBackdrop = detailBackdrop,
                                     modifier = Modifier
                                         .widthIn(max = 420.dp)
                                         .fillMaxWidth(0.92f)
@@ -1154,19 +1163,55 @@ fun KidsPicturedGridScreen(
                                 )
                             }
                         }
-                        TextButton(
-                            onClick = { speak(item.speak) },
+                        Row(
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .padding(16.dp),
+                                .padding(horizontal = 12.dp, vertical = 12.dp),
+                            horizontalArrangement = Arrangement.spacedBy(8.dp),
                         ) {
-                            Icon(
-                                Icons.AutoMirrored.Filled.VolumeUp,
-                                contentDescription = null,
-                                modifier = Modifier.padding(end = 8.dp),
-                            )
-                            Text("Прослушать ещё раз")
+                            FilledTonalButton(
+                                onClick = {
+                                    stopSfx()
+                                    speak(item.speak)
+                                },
+                                modifier = Modifier.weight(1f),
+                            ) {
+                                Icon(
+                                    Icons.AutoMirrored.Filled.VolumeUp,
+                                    contentDescription = null,
+                                    modifier = Modifier.size(18.dp),
+                                )
+                                Spacer(Modifier.width(6.dp))
+                                Text(
+                                    stringResource(R.string.kids_pictured_speak_name),
+                                    style = MaterialTheme.typography.labelLarge,
+                                    maxLines = 2,
+                                    textAlign = TextAlign.Center,
+                                )
+                            }
+                            FilledTonalButton(
+                                onClick = {
+                                    ttsState.value?.stop()
+                                    playSfx(item)
+                                },
+                                enabled = hasAnimalSound,
+                                modifier = Modifier.weight(1f),
+                            ) {
+                                Icon(
+                                    Icons.Filled.MusicNote,
+                                    contentDescription = null,
+                                    modifier = Modifier.size(18.dp),
+                                )
+                                Spacer(Modifier.width(6.dp))
+                                Text(
+                                    stringResource(R.string.kids_pictured_play_sound),
+                                    style = MaterialTheme.typography.labelLarge,
+                                    maxLines = 2,
+                                    textAlign = TextAlign.Center,
+                                )
+                            }
                         }
+                        Spacer(Modifier.height(bottomSafePad))
                     }
                 }
             }
@@ -1182,12 +1227,17 @@ private fun KidsHubThumbnail(
     iconBrush: Brush,
     iconTint: Color,
 ) {
+    val context = LocalContext.current
     val thumbShape = RoundedCornerShape(16.dp)
     val mod = Modifier.size(72.dp)
     when {
         imageRes != null -> {
-            Image(
-                painter = painterResource(imageRes),
+            AsyncImage(
+                model = ImageRequest.Builder(context)
+                    .data(imageRes)
+                    .size(216)
+                    .crossfade(true)
+                    .build(),
                 contentDescription = null,
                 modifier = mod.clip(thumbShape),
                 contentScale = ContentScale.Crop,
@@ -1302,7 +1352,7 @@ fun KidsHubScreen(
     onEditSections: (() -> Unit)? = null,
 ) {
     val rows = remember(hubState) {
-        mergeKidsHubRows(kidsHubDefaultRows(), hubState)
+        mergeKidsHubRows(KIDS_HUB_DEFAULT_ROWS, hubState)
     }
     var menuOpen by remember { mutableStateOf(false) }
     Scaffold(

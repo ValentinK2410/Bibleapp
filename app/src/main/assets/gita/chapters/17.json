@@ -1,0 +1,177 @@
+{
+"id": 17,
+"name": "श्रद्धात्रयविभागयोग",
+"transliteration": "Шраддха-трая-вибхага-йога",
+"translation": "Три вида веры",
+"total_verses": 28,
+"verses": [
+{
+"id": 1,
+"sanskrit": "अर्जुन उवाचये शास्त्रविधिमुत्सृज्य यजन्ते श्रद्धयाऽन्विताः।तेषां निष्ठा तु का कृष्ण सत्त्वमाहो रजस्तमः",
+"transliteration": "arjuna uvācha\nye śhāstra-vidhim utsṛijya yajante śhraddhayānvitāḥ\nteṣhāṁ niṣhṭhā tu kā kṛiṣhṇa sattvam āho rajas tamaḥ",
+"translationEn": "Arjuna asked, \"My Lord, what is the condition of those who perform acts of sacrifice not according to the scriptures, but with implicit faith? Is it one of purity, passion, or ignorance?\""
+},
+{
+"id": 2,
+"sanskrit": "श्री भगवानुवाचत्रिविधा भवति श्रद्धा देहिनां सा स्वभावजा।सात्त्विकी राजसी चैव तामसी चेति तां श्रृणु",
+"transliteration": "śhrī-bhagavān uvācha\ntri-vidhā bhavati śhraddhā dehināṁ sā svabhāva-jā\nsāttvikī rājasī chaiva tāmasī cheti tāṁ śhṛiṇu",
+"translationEn": "Lord Shri Krishna replied: Man has an inherent faith in one or another of the qualities—purity, passion, and ignorance. Now, listen."
+},
+{
+"id": 3,
+"sanskrit": "सत्त्वानुरूपा सर्वस्य श्रद्धा भवति भारत।श्रद्धामयोऽयं पुरुषो यो यच्छ्रद्धः स एव सः",
+"transliteration": "sattvānurūpā sarvasya śhraddhā bhavati bhārata\nśhraddhā-mayo ‘yaṁ puruṣho yo yach-chhraddhaḥ sa eva saḥ",
+"translationEn": "Every person's faith conforms to their nature. By nature, they are full of faith. They are, in fact, what their faith makes them."
+},
+{
+"id": 4,
+"sanskrit": "यजन्ते सात्त्विका देवान्यक्षरक्षांसि राजसाः।प्रेतान्भूतगणांश्चान्ये यजन्ते तामसा जनाः",
+"transliteration": "yajante sāttvikā devān yakṣha-rakṣhānsi rājasāḥ\npretān bhūta-gaṇānśh chānye yajante tāmasā janāḥ",
+"translationEn": "The pure worship the true God; the passionate, the powers of wealth and magic; the ignorant, the spirits of the dead and lower orders of nature."
+},
+{
+"id": 5,
+"sanskrit": "अशास्त्रविहितं घोरं तप्यन्ते ये तपो जनाः।दम्भाहङ्कारसंयुक्ताः कामरागबलान्विताः",
+"transliteration": "aśhāstra-vihitaṁ ghoraṁ tapyante ye tapo janāḥ\ndambhāhankāra-sanyuktāḥ kāma-rāga-balānvitāḥ",
+"translationEn": "Those who practice austerities not commanded by scripture, who are enslaved to hypocrisy and egotism, who are carried away by the fury of desire and passion,"
+},
+{
+"id": 6,
+"sanskrit": "कर्षयन्तः शरीरस्थं भूतग्राममचेतसः।मां चैवान्तःशरीरस्थं तान्विद्ध्यासुरनिश्चयान्",
+"transliteration": "karṣhayantaḥ śharīra-sthaṁ bhūta-grāmam achetasaḥ\nmāṁ chaivāntaḥ śharīra-sthaṁ tān viddhy āsura-niśhchayān",
+"translationEn": "They are ignorant and torment the organs of the body, harassing Me who lives within. Know that they are devoted to evil."
+},
+{
+"id": 7,
+"sanskrit": "आहारस्त्वपि सर्वस्य त्रिविधो भवति प्रियः।यज्ञस्तपस्तथा दानं तेषां भेदमिमं श्रृणु",
+"transliteration": "āhāras tv api sarvasya tri-vidho bhavati priyaḥ\nyajñas tapas tathā dānaṁ teṣhāṁ bhedam imaṁ śhṛiṇu",
+"translationEn": "The food that people enjoy is also threefold, like the ways of sacrifice, austerity, and almsgiving. Listen to the distinction."
+},
+{
+"id": 8,
+"sanskrit": "आयुःसत्त्वबलारोग्यसुखप्रीतिविवर्धनाः।रस्याः स्निग्धाः स्थिरा हृद्या आहाराः सात्त्विकप्रियाः",
+"transliteration": "āyuḥ-sattva-balārogya-sukha-prīti-vivardhanāḥ\nrasyāḥ snigdhāḥ sthirā hṛidyā āhārāḥ sāttvika-priyāḥ",
+"translationEn": "The foods that prolong life, increase purity, vigour, health, cheerfulness, and happiness are those that are delicious, soothing, substantial, and agreeable; these are loved by the pure."
+},
+{
+"id": 9,
+"sanskrit": "कट्वम्ललवणात्युष्णतीक्ष्णरूक्षविदाहिनः।आहारा राजसस्येष्टा दुःखशोकामयप्रदाः",
+"transliteration": "kaṭv-amla-lavaṇāty-uṣhṇa- tīkṣhṇa-rūkṣha-vidāhinaḥ\nāhārā rājasasyeṣhṭā duḥkha-śhokāmaya-pradāḥ",
+"translationEn": "Those in whom passion is dominant like foods that are bitter, sour, salty, overly hot, pungent, dry, and burning. These produce unhappiness, repentance, and disease."
+},
+{
+"id": 10,
+"sanskrit": "यातयामं गतरसं पूति पर्युषितं च यत्।उच्छिष्टमपि चामेध्यं भोजनं तामसप्रियम्",
+"transliteration": "yāta-yāmaṁ gata-rasaṁ pūti paryuṣhitaṁ cha yat\nuchchhiṣhṭam api chāmedhyaṁ bhojanaṁ tāmasa-priyam",
+"translationEn": "The ignorant love food that is stale, not nourishing, putrid, and corrupt; the leftovers of others, and unclean."
+},
+{
+"id": 11,
+"sanskrit": "अफलाकाङ्क्षिभिर्यज्ञो विधिदृष्टो य इज्यते।यष्टव्यमेवेति मनः समाधाय स सात्त्विकः",
+"transliteration": "aphalākāṅkṣhibhir yajño vidhi-driṣhṭo ya ijyate\nyaṣhṭavyam eveti manaḥ samādhāya sa sāttvikaḥ",
+"translationEn": "Sacrifice is pure when it is offered by one who does not covet the fruit of it, when it is done according to the commands of scripture, and with implicit faith that the sacrifice is a duty."
+},
+{
+"id": 12,
+"sanskrit": "अभिसंधाय तु फलं दम्भार्थमपि चैव यत्।इज्यते भरतश्रेष्ठ तं यज्ञं विद्धि राजसम्",
+"transliteration": "abhisandhāya tu phalaṁ dambhārtham api chaiva yat\nijyate bharata-śhreṣhṭha taṁ yajñaṁ viddhi rājasam",
+"translationEn": "Sacrifice which is performed for the sake of its results, or for self-glorification - that, O best of Aryans, is the product of passion."
+},
+{
+"id": 13,
+"sanskrit": "विधिहीनमसृष्टान्नं मन्त्रहीनमदक्षिणम्।श्रद्धाविरहितं यज्ञं तामसं परिचक्षते",
+"transliteration": "vidhi-hīnam asṛiṣhṭānnaṁ mantra-hīnam adakṣhiṇam\nśhraddhā-virahitaṁ yajñaṁ tāmasaṁ parichakṣhate",
+"translationEn": "Sacrifice that is contrary to scriptural command, that is unaccompanied by prayers or gifts of food or money, and is without faith—that is the product of ignorance."
+},
+{
+"id": 14,
+"sanskrit": "देवद्विजगुरुप्राज्ञपूजनं शौचमार्जवम्।ब्रह्मचर्यमहिंसा च शारीरं तप उच्यते",
+"transliteration": "deva-dwija-guru-prājña- pūjanaṁ śhaucham ārjavam\nbrahmacharyam ahinsā cha śhārīraṁ tapa uchyate",
+"translationEn": "Worship of God and the Master; respect for the preacher and the philosopher; purity, rectitude, continence, and harmlessness—all of these constitute physical austerity."
+},
+{
+"id": 15,
+"sanskrit": "अनुद्वेगकरं वाक्यं सत्यं प्रियहितं च यत्।स्वाध्यायाभ्यसनं चैव वाङ्मयं तप उच्यते",
+"transliteration": "anudvega-karaṁ vākyaṁ satyaṁ priya-hitaṁ cha yat\nsvādhyāyābhyasanaṁ chaiva vāṅ-mayaṁ tapa uchyate",
+"translationEn": "Speech that hurts no one, that is true, pleasant to listen to, and beneficial, and the constant study of the scriptures—this is austerity of speech."
+},
+{
+"id": 16,
+"sanskrit": "मनःप्रसादः सौम्यत्वं मौनमात्मविनिग्रहः।भावसंशुद्धिरित्येतत्तपो मानसमुच्यते",
+"transliteration": "manaḥ-prasādaḥ saumyatvaṁ maunam ātma-vinigrahaḥ\nbhāva-sanśhuddhir ity etat tapo mānasam uchyate",
+"translationEn": "Serenity, kindness, silence, self-control, and purity—these are the austerities of the mind."
+},
+{
+"id": 17,
+"sanskrit": "श्रद्धया परया तप्तं तपस्तत्ित्रविधं नरैः।अफलाकाङ्क्षिभिर्युक्तैः सात्त्विकं परिचक्षते",
+"transliteration": "śhraddhayā parayā taptaṁ tapas tat tri-vidhaṁ naraiḥ\naphalākāṅkṣhibhir yuktaiḥ sāttvikaṁ parichakṣhate",
+"translationEn": "These threefold austerities, performed with faith and without thought of reward, can truly be considered pure."
+},
+{
+"id": 18,
+"sanskrit": "सत्कारमानपूजार्थं तपो दम्भेन चैव यत्।क्रियते तदिह प्रोक्तं राजसं चलमध्रुवम्",
+"transliteration": "satkāra-māna-pūjārthaṁ tapo dambhena chaiva yat\nkriyate tad iha proktaṁ rājasaṁ chalam adhruvam",
+"translationEn": "Austerity coupled with hypocrisy, or performed for the sake of self-glorification, popularity, or vanity, comes from passion, and its result is always uncertain and temporary."
+},
+{
+"id": 19,
+"sanskrit": "मूढग्राहेणात्मनो यत्पीडया क्रियते तपः।परस्योत्सादनार्थं वा तत्तामसमुदाहृतम्",
+"transliteration": "mūḍha-grāheṇātmano yat pīḍayā kriyate tapaḥ\nparasyotsādanārthaṁ vā tat tāmasam udāhṛitam",
+"translationEn": "Austerity done under delusion, and accompanied with sorcery or the infliction of pain upon oneself or another, may be assumed to spring from ignorance."
+},
+{
+"id": 20,
+"sanskrit": "दातव्यमिति यद्दानं दीयतेऽनुपकारिणे।देशे काले च पात्रे च तद्दानं सात्त्विकं स्मृतम्",
+"transliteration": "dātavyam iti yad dānaṁ dīyate ‘nupakāriṇe\ndeśhe kāle cha pātre cha tad dānaṁ sāttvikaṁ smṛitam",
+"translationEn": "The gift that is given without thought of recompense, believing it should be made, in an appropriate place, at an opportune time, and to a deserving person—such a gift is pure."
+},
+{
+"id": 21,
+"sanskrit": "यत्तु प्रत्युपकारार्थं फलमुद्दिश्य वा पुनः।दीयते च परिक्लिष्टं तद्दानं राजसं स्मृतम्",
+"transliteration": "yat tu pratyupakārārthaṁ phalam uddiśhya vā punaḥ\ndīyate cha parikliṣhṭaṁ tad dānaṁ rājasaṁ smṛitam",
+"translationEn": "That which is given for the sake of the results it will produce, or with the hope of recompense, or grudgingly—that may truly be said to be the outcome of passion."
+},
+{
+"id": 22,
+"sanskrit": "अदेशकाले यद्दानमपात्रेभ्यश्च दीयते।असत्कृतमवज्ञातं तत्तामसमुदाहृतम्",
+"transliteration": "adeśha-kāle yad dānam apātrebhyaśh cha dīyate\nasat-kṛitam avajñātaṁ tat tāmasam udāhṛitam",
+"translationEn": "And that which is given at an inappropriate place or time or to one who is undeserving, or with disrespect or contempt - such a gift is the result of ignorance."
+},
+{
+"id": 23,
+"sanskrit": "तत्सदिति निर्देशो ब्रह्मणस्त्रिविधः स्मृतः।ब्राह्मणास्तेन वेदाश्च यज्ञाश्च विहिताः पुरा",
+"transliteration": "oṁ tat sad iti nirdeśho brahmaṇas tri-vidhaḥ smṛitaḥ\nbrāhmaṇās tena vedāśh cha yajñāśh cha vihitāḥ purā",
+"translationEn": "Om Tat Sat is the triple designation of the Eternal Spirit, by which the Vedic Scriptures, ceremonials, and sacrifices were ordained of old."
+},
+{
+"id": 24,
+"sanskrit": "तस्मादोमित्युदाहृत्य यज्ञदानतपःक्रियाः।प्रवर्तन्ते विधानोक्ताः सततं ब्रह्मवादिनाम्",
+"transliteration": "tasmād oṁ ity udāhṛitya yajña-dāna-tapaḥ-kriyāḥ\npravartante vidhānoktāḥ satataṁ brahma-vādinām",
+"translationEn": "Therefore, all acts of sacrifice, gifts, and austerities prescribed by the scriptures are always begun by those who understand the Spirit with the word \"Om.\""
+},
+{
+"id": 25,
+"sanskrit": "तदित्यनभिसन्धाय फलं यज्ञतपःक्रियाः।दानक्रियाश्च विविधाः क्रियन्ते मोक्षकाङ्क्षि",
+"transliteration": "tad ity anabhisandhāya phalaṁ yajña-tapaḥ-kriyāḥ\ndāna-kriyāśh cha vividhāḥ kriyante mokṣha-kāṅkṣhibhiḥ",
+"translationEn": "Those who desire deliverance begin their acts of sacrifice, austerity, or gift with the word \"Tat\" (meaning \"That\"), without thought of reward."
+},
+{
+"id": 26,
+"sanskrit": "सद्भावे साधुभावे च सदित्येतत्प्रयुज्यते।प्रशस्ते कर्मणि तथा सच्छब्दः पार्थ युज्यते",
+"transliteration": "sad-bhāve sādhu-bhāve cha sad ity etat prayujyate\npraśhaste karmaṇi tathā sach-chhabdaḥ pārtha yujyate",
+"translationEn": "Sat' means Reality or the highest Good, and also, O Arjuna, it is used to denote an action of exceptional merit."
+},
+{
+"id": 27,
+"sanskrit": "यज्ञे तपसि दाने च स्थितिः सदिति चोच्यते।कर्म चैव तदर्थीयं सदित्येवाभिधीयते",
+"transliteration": "yajñe tapasi dāne cha sthitiḥ sad iti chochyate\nkarma chaiva tad-arthīyaṁ sad ity evābhidhīyate",
+"translationEn": "Conviction in sacrifice, austerity, and giving is also called Sat. So too, an action done only for the Lord's sake."
+},
+{
+"id": 28,
+"sanskrit": "अश्रद्धया हुतं दत्तं तपस्तप्तं कृतं च यत्।असदित्युच्यते पार्थ न च तत्प्रेत्य नो इह",
+"transliteration": "aśhraddhayā hutaṁ dattaṁ tapas taptaṁ kṛitaṁ cha yat\nasad ity uchyate pārtha na cha tat pretya no iha",
+"translationEn": "Whatever is done without faith, whether it be sacrifice, austerity, gift, or anything else, is called Asat (meaning \"Unreal\"), for it is the negation of Sat, O Arjuna! Such an act has no significance, here or hereafter."
+}
+]
+}

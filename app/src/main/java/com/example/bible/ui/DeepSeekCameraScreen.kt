@@ -98,11 +98,17 @@ fun DeepSeekCameraScreen(
     val deepSeekVision by viewModel.deepSeekVision.collectAsStateWithLifecycle()
     val gigaChatVision by viewModel.gigaChatVision.collectAsStateWithLifecycle()
     val vision = if (engine == VisionAiEngine.GIGACHAT) gigaChatVision else deepSeekVision
-    val tts = rememberAiChatTextToSpeech()
+    val saluteKey by viewModel.saluteSpeechAuthKey.collectAsStateWithLifecycle()
+    val gigaChatKey by viewModel.gigaChatAuthKey.collectAsStateWithLifecycle()
+    val saluteScope by viewModel.saluteSpeechScope.collectAsStateWithLifecycle()
+    val tts = rememberAiChatTextToSpeech(
+        saluteAuthKey = saluteKey,
+        gigaChatAuthKey = gigaChatKey,
+        saluteScope = saluteScope,
+    )
     var speakAnswer by rememberSaveable { mutableStateOf(engine == VisionAiEngine.GIGACHAT) }
     var replyWasLoading by remember { mutableStateOf(false) }
     val deepSeekKey by viewModel.deepSeekApiKey.collectAsStateWithLifecycle()
-    val gigaChatKey by viewModel.gigaChatAuthKey.collectAsStateWithLifecycle()
     val hasKey = if (engine == VisionAiEngine.GIGACHAT) gigaChatKey else deepSeekKey
     val analyzeJpeg: (ByteArray) -> Unit = { bytes ->
         if (engine == VisionAiEngine.GIGACHAT) {

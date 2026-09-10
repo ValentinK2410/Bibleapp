@@ -26,6 +26,7 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Call
+import androidx.compose.material.icons.filled.Contacts
 import androidx.compose.material.icons.filled.Sms
 import androidx.compose.material3.Button
 import androidx.compose.material3.CenterAlignedTopAppBar
@@ -34,6 +35,7 @@ import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
@@ -53,6 +55,7 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat
 import com.example.bible.R
+import com.example.bible.data.loadImportedPhoneContact
 import com.example.bible.data.normalizeRussianOutboundPhoneDigits
 import com.example.bible.sms.SmsOutboundCrypto
 import com.example.bible.sms.sendSmsMultipart
@@ -104,6 +107,47 @@ fun ExperimentCallsSmsScreen(
     ) { granted ->
         if (granted) {
             simSlots = context.loadSimSlots()
+        }
+    }
+
+    val pickContactLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.PickContact(),
+    ) { uri ->
+        if (uri == null) return@rememberLauncherForActivityResult
+        val imported =
+            runCatching { context.contentResolver.loadImportedPhoneContact(uri) }.getOrElse {
+                Toast.makeText(context, context.getString(R.string.contacts_import_read_failed), Toast.LENGTH_SHORT)
+                    .show()
+                return@rememberLauncherForActivityResult
+            }
+        if (imported == null) {
+            Toast.makeText(context, context.getString(R.string.contacts_import_pick_failed), Toast.LENGTH_SHORT).show()
+            return@rememberLauncherForActivityResult
+        }
+        if (imported.phone.isBlank()) {
+            Toast.makeText(context, context.getString(R.string.experiment_calls_contact_no_phone), Toast.LENGTH_SHORT)
+                .show()
+            return@rememberLauncherForActivityResult
+        }
+        phone = imported.phone
+    }
+
+    val readContactsLauncher = rememberLauncherForActivityResult(
+        ActivityResultContracts.RequestPermission(),
+    ) { granted ->
+        if (granted) {
+            pickContactLauncher.launch(null)
+        } else {
+            Toast.makeText(context, context.getString(R.string.contacts_permission_contacts_denied), Toast.LENGTH_LONG)
+                .show()
+        }
+    }
+
+    fun openDeviceContactPicker() {
+        when {
+            ContextCompat.checkSelfPermission(context, Manifest.permission.READ_CONTACTS) ==
+                PackageManager.PERMISSION_GRANTED -> pickContactLauncher.launch(null)
+            else -> readContactsLauncher.launch(Manifest.permission.READ_CONTACTS)
         }
     }
 
@@ -311,6 +355,15 @@ fun ExperimentCallsSmsScreen(
                 onSelectIndex = { selectedSimIndexSms = it },
             )
             Spacer(Modifier.height(12.dp))
+            OutlinedButton(
+                onClick = { openDeviceContactPicker() },
+                modifier = Modifier.fillMaxWidth(),
+            ) {
+                Icon(Icons.Default.Contacts, contentDescription = null)
+                Spacer(Modifier.width(8.dp))
+                Text(stringResource(R.string.contacts_import_from_phone))
+            }
+            Spacer(Modifier.height(8.dp))
             OutlinedTextField(
                 value = phone,
                 onValueChange = { phone = it },

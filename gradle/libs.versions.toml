@@ -1,5 +1,5 @@
 [versions]
-agp = "9.1.0"
+agp = "9.2.1"
 kotlin = "2.2.10"
 coreKtx = "1.15.0"
 junit = "4.13.2"
@@ -15,7 +15,7 @@ datastore = "1.1.1"
 reorderable = "2.5.1"
 room = "2.6.1"
 # Совместимость с Kotlin 2.2.10: https://github.com/google/ksp/releases
-ksp = "2.2.10-2.0.2"
+ksp = "2.3.2"
 
 [libraries]
 androidx-room-runtime = { group = "androidx.room", name = "room-runtime", version.ref = "room" }

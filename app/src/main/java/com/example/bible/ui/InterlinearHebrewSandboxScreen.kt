@@ -27,6 +27,7 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CenterAlignedTopAppBar
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
@@ -121,10 +122,17 @@ fun InterlinearHebrewSandboxScreen(
         return
     }
 
-    val book = remember(bookId) { library.getBook(TranslationId.INTERLINEAR, bookId) }
-    val chapterObj = remember(book, chapter) { book?.chapters?.find { it.number == chapter } }
-    val versesWithWords = remember(chapterObj) {
-        chapterObj?.verses?.filter { !it.interlinearWords.isNullOrEmpty() }.orEmpty()
+    val chapterLoad = rememberLoadedChapter(library, TranslationId.INTERLINEAR, bookId, chapter)
+    val versesWithWords = remember(chapterLoad) {
+        when (chapterLoad) {
+            is BibleChapterLoadState.Ready ->
+                chapterLoad.chapter.verses.filter { !it.interlinearWords.isNullOrEmpty() }
+            else -> emptyList()
+        }
+    }
+    val bookName = when (chapterLoad) {
+        is BibleChapterLoadState.Ready -> chapterLoad.bookName
+        else -> ""
     }
 
     var verseIndex by remember(versesWithWords) { mutableIntStateOf(0) }
@@ -178,6 +186,56 @@ fun InterlinearHebrewSandboxScreen(
 
     val lettersEdited = remember(editedWord) { tts.hebrewSandboxLetters(editedWord) }
     val skeleton = remember(editedWord) { tts.hebrewLetterSkeleton(editedWord) }
+
+    if (chapterLoad is BibleChapterLoadState.Loading) {
+        Scaffold(
+            topBar = {
+                CenterAlignedTopAppBar(
+                    title = { Text(stringResource(R.string.hebrew_sandbox_title)) },
+                    navigationIcon = {
+                        IconButton(onClick = onBack) {
+                            Icon(
+                                Icons.AutoMirrored.Filled.ArrowBack,
+                                contentDescription = stringResource(R.string.back),
+                            )
+                        }
+                    },
+                )
+            },
+        ) { padding ->
+            Box(
+                Modifier.padding(padding).fillMaxSize(),
+                contentAlignment = Alignment.Center,
+            ) {
+                CircularProgressIndicator()
+            }
+        }
+        return
+    }
+    if (chapterLoad is BibleChapterLoadState.NotFound) {
+        Scaffold(
+            topBar = {
+                CenterAlignedTopAppBar(
+                    title = { Text(stringResource(R.string.hebrew_sandbox_title)) },
+                    navigationIcon = {
+                        IconButton(onClick = onBack) {
+                            Icon(
+                                Icons.AutoMirrored.Filled.ArrowBack,
+                                contentDescription = stringResource(R.string.back),
+                            )
+                        }
+                    },
+                )
+            },
+        ) { padding ->
+            Text(
+                stringResource(R.string.error_load),
+                modifier = Modifier.padding(padding).padding(20.dp),
+                color = MaterialTheme.colorScheme.error,
+            )
+        }
+        return
+    }
 
     Scaffold(
         topBar = {
@@ -266,13 +324,6 @@ fun InterlinearHebrewSandboxScreen(
                 .padding(20.dp),
             verticalArrangement = Arrangement.spacedBy(14.dp),
         ) {
-            if (book == null) {
-                Text(
-                    stringResource(R.string.error_load),
-                    color = MaterialTheme.colorScheme.error,
-                )
-                return@Column
-            }
             if (versesWithWords.isEmpty()) {
                 Text(
                     stringResource(R.string.hebrew_sandbox_no_interlinear),
@@ -286,7 +337,7 @@ fun InterlinearHebrewSandboxScreen(
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
             Text(
-                book.name + " $chapter",
+                bookName + " $chapter",
                 style = MaterialTheme.typography.titleSmall,
                 color = MaterialTheme.colorScheme.primary,
             )

@@ -66,6 +66,13 @@ PHRASES = [
     ("от, шатёр", "из шатра"),
     ("был Иов", "Иов"),
     ("долгий назад", "давно"),
+    ("он был спичлесс.", "он был безмолвен."),
+    ("персуасиве спич;", "убедительной речью;"),
+    ("в спич я есмь,", "в слове я"),
+    ("и, спич, его", "и слово его"),
+    ("спич, мой", "слово, моё"),
+    ("спичлесс,", "немы,"),
+    ("в спич", "в слове"),
 ]
 PHRASES = sorted(dict(PHRASES).items(), key=lambda x: -len(x[0]))
 
@@ -118,12 +125,27 @@ REMAINING_SUSPICIOUS_SUBSTRINGS = sorted(
 )
 
 
-def fix_russian_gloss(raw: str) -> str:
+SPEECH_AS_WORD_STRONGS = {"G3056", "H0565", "H4405", "H9002"}
+SPEECH_TRANSLIT = re.compile(r"(?i)спич(?![a-zа-яё])")
+
+
+def fix_russian_gloss(raw: str, strong: str = "") -> str:
     if not raw:
         return raw
     s = raw
     for a, b in PHRASES:
         s = s.replace(a, b)
+    speech_ru = "слово" if strong in SPEECH_AS_WORD_STRONGS else "речь"
+
+    def repl(m: re.Match[str]) -> str:
+        w = m.group(0)
+        if w.isupper():
+            return speech_ru.upper()
+        if w[0].isupper():
+            return speech_ru.capitalize()
+        return speech_ru
+
+    s = SPEECH_TRANSLIT.sub(repl, s)
     for a, b in TOKENS:
         s = s.replace(a, b)
     return s
@@ -180,7 +202,7 @@ def main() -> int:
                 for wi, w in enumerate(verse.get("words", [])):
                     r = w.get("r") or ""
                     o = w.get("o") or ""
-                    fixed = fix_russian_gloss(r)
+                    fixed = fix_russian_gloss(r, w.get("s") or "")
                     if fixed != r:
                         fix_rows.append({
                             "testament": testament,

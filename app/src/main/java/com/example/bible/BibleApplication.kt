@@ -28,6 +28,9 @@ class BibleApplication : Application(), ImageLoaderFactory {
             StrongsImporter.importFromAssetsIfEmpty(app, db)
             LanguageStudyBootstrap.importBundledIfNeeded(app)
         }
+        bibleDbWarmExecutor.execute {
+            com.example.bible.data.db.BibleDatabase.getInstance(app)
+        }
     }
 
     override fun newImageLoader(): ImageLoader {
@@ -56,6 +59,9 @@ class BibleApplication : Application(), ImageLoaderFactory {
     companion object {
         private val studySqliteInitExecutor = Executors.newSingleThreadExecutor { r ->
             Thread(r, "study-sqlite-init").apply { isDaemon = true }
+        }
+        private val bibleDbWarmExecutor = Executors.newSingleThreadExecutor { r ->
+            Thread(r, "bible-db-warm").apply { isDaemon = true }
         }
 
         private const val USER_AGENT =

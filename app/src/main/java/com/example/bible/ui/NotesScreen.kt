@@ -607,16 +607,16 @@ fun NoteEditorScreen(
         } else {
             updated.add(
                 NoteSpan(
-                    start = start,
-                    end = end,
-                    bold = isBold,
-                    italic = isItalic,
-                    underline = isUnderline,
-                    fontSize = currentFontSize,
-                    colorArgb = currentColorArgb,
-                    bgColorArgb = currentBgColorArgb,
+            start = start,
+            end = end,
+            bold = isBold,
+            italic = isItalic,
+            underline = isUnderline,
+            fontSize = currentFontSize,
+            colorArgb = currentColorArgb,
+            bgColorArgb = currentBgColorArgb,
                 ),
-            )
+        )
         }
         spans = updated
     }
@@ -753,10 +753,10 @@ fun NoteEditorScreen(
                     ) {
                         Column(Modifier.padding(horizontal = 12.dp, vertical = 8.dp)) {
                             Row(verticalAlignment = Alignment.CenterVertically) {
-                                Text(
-                                    text = if (vLabel.isNotEmpty()) "Стих: $vLabel" else "Стих",
-                                    style = MaterialTheme.typography.labelLarge,
-                                    color = MaterialTheme.colorScheme.primary,
+                            Text(
+                                text = if (vLabel.isNotEmpty()) "Стих: $vLabel" else "Стих",
+                                style = MaterialTheme.typography.labelLarge,
+                                color = MaterialTheme.colorScheme.primary,
                                     modifier = Modifier.weight(1f),
                                     maxLines = 1,
                                     overflow = TextOverflow.Ellipsis,
@@ -772,38 +772,38 @@ fun NoteEditorScreen(
                                 }
                             }
                             if (showDetails) {
+                            Text(
+                                text = stringResource(R.string.note_verse_all_translations_hint),
+                                style = MaterialTheme.typography.labelSmall,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                modifier = Modifier.padding(top = 4.dp),
+                            )
+                            if (tCode.isNotEmpty()) {
                                 Text(
-                                    text = stringResource(R.string.note_verse_all_translations_hint),
-                                    style = MaterialTheme.typography.labelSmall,
+                                    text = stringResource(R.string.note_verse_snapshot_translation, tLabel),
+                                    style = MaterialTheme.typography.labelMedium,
                                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                                     modifier = Modifier.padding(top = 4.dp),
                                 )
-                                if (tCode.isNotEmpty()) {
-                                    Text(
-                                        text = stringResource(R.string.note_verse_snapshot_translation, tLabel),
-                                        style = MaterialTheme.typography.labelMedium,
-                                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                                        modifier = Modifier.padding(top = 4.dp),
-                                    )
-                                }
-                                if (snap.isNotEmpty()) {
-                                    Text(
-                                        text = snap,
-                                        style = MaterialTheme.typography.bodyMedium,
-                                        modifier = Modifier.padding(top = 8.dp),
-                                    )
-                                } else {
-                                    Text(
-                                        text = "Текст стиха не сохранён.",
-                                        style = MaterialTheme.typography.bodySmall,
-                                        fontStyle = FontStyle.Italic,
-                                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                                        modifier = Modifier.padding(top = 8.dp),
-                                    )
-                                }
+                            }
+                            if (snap.isNotEmpty()) {
+                                Text(
+                                    text = snap,
+                                    style = MaterialTheme.typography.bodyMedium,
+                                    modifier = Modifier.padding(top = 8.dp),
+                                )
+                            } else {
+                                Text(
+                                    text = "Текст стиха не сохранён.",
+                                    style = MaterialTheme.typography.bodySmall,
+                                    fontStyle = FontStyle.Italic,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                    modifier = Modifier.padding(top = 8.dp),
+                                )
                             }
                         }
                     }
+                }
                 }
             }
 
@@ -851,11 +851,11 @@ fun NoteEditorScreen(
                             .fillMaxWidth(),
                     ) {
                         verseRefBlock()
-                        Row(
-                            modifier = Modifier
-                                .fillMaxWidth()
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
                                 .padding(start = 8.dp, end = 12.dp),
-                            verticalAlignment = Alignment.CenterVertically,
+                    verticalAlignment = Alignment.CenterVertically,
                         ) {
                             Box {
                                 AssistChip(
@@ -881,19 +881,19 @@ fun NoteEditorScreen(
                                 DropdownMenu(
                                     expanded = kindMenuExpanded,
                                     onDismissRequest = { kindMenuExpanded = false },
-                                ) {
-                                    listOf(
-                                        UserNoteKind.NOTE,
-                                        UserNoteKind.QUESTION,
-                                        UserNoteKind.ANSWER,
-                                        UserNoteKind.REFLECTION,
-                                    ).forEach { k ->
+                ) {
+                    listOf(
+                        UserNoteKind.NOTE,
+                        UserNoteKind.QUESTION,
+                        UserNoteKind.ANSWER,
+                        UserNoteKind.REFLECTION,
+                    ).forEach { k ->
                                         DropdownMenuItem(
                                             text = { Text(k.labelRu()) },
-                                            onClick = {
-                                                kind = k
-                                                customKindLabel = ""
-                                                if (k != UserNoteKind.ANSWER) linkedQuestionId = null
+                            onClick = {
+                                kind = k
+                                customKindLabel = ""
+                                if (k != UserNoteKind.ANSWER) linkedQuestionId = null
                                                 kindMenuExpanded = false
                                             },
                                             leadingIcon = if (kind == k) {
@@ -906,15 +906,15 @@ fun NoteEditorScreen(
                                     if (customKindChips.isNotEmpty()) {
                                         HorizontalDivider()
                                     }
-                                    customKindChips.forEach { chipLabel ->
+                    customKindChips.forEach { chipLabel ->
                                         val selected = kind == UserNoteKind.CUSTOM &&
                                             customKindLabel.trim().equals(chipLabel.trim(), ignoreCase = true)
                                         DropdownMenuItem(
                                             text = { Text(chipLabel) },
-                                            onClick = {
-                                                kind = UserNoteKind.CUSTOM
-                                                customKindLabel = chipLabel
-                                                linkedQuestionId = null
+                            onClick = {
+                                kind = UserNoteKind.CUSTOM
+                                customKindLabel = chipLabel
+                                linkedQuestionId = null
                                                 kindMenuExpanded = false
                                             },
                                             leadingIcon = if (selected) {
@@ -928,11 +928,11 @@ fun NoteEditorScreen(
                                     DropdownMenuItem(
                                         text = { Text("Добавить тип…") },
                                         leadingIcon = { Icon(Icons.Default.Add, contentDescription = null) },
-                                        onClick = {
+                        onClick = {
                                             kindMenuExpanded = false
-                                            newKindDraft = ""
-                                            showAddKindDialog = true
-                                        },
+                            newKindDraft = ""
+                            showAddKindDialog = true
+                        },
                                     )
                                 }
                             }
@@ -960,15 +960,15 @@ fun NoteEditorScreen(
                                     }
                                 },
                             )
-                        }
-                        if (kind == UserNoteKind.ANSWER && linkCandidates.isNotEmpty()) {
-                            val selected = linkCandidates.find { it.id == linkedQuestionId }
-                            val displayLink = selected?.let { s ->
-                                s.title.ifBlank { s.previewText().take(60) }
+                }
+                if (kind == UserNoteKind.ANSWER && linkCandidates.isNotEmpty()) {
+                    val selected = linkCandidates.find { it.id == linkedQuestionId }
+                    val displayLink = selected?.let { s ->
+                        s.title.ifBlank { s.previewText().take(60) }
                             } ?: "Связать с вопросом"
-                            Box(
-                                modifier = Modifier
-                                    .fillMaxWidth()
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
                                     .padding(horizontal = 12.dp),
                             ) {
                                 AssistChip(
@@ -980,70 +980,70 @@ fun NoteEditorScreen(
                                             overflow = TextOverflow.Ellipsis,
                                         )
                                     },
-                                    trailingIcon = {
-                                        ExposedDropdownMenuDefaults.TrailingIcon(expanded = linkMenuExpanded)
+                            trailingIcon = {
+                                ExposedDropdownMenuDefaults.TrailingIcon(expanded = linkMenuExpanded)
+                            },
+                        )
+                        DropdownMenu(
+                            expanded = linkMenuExpanded,
+                            onDismissRequest = { linkMenuExpanded = false },
+                            modifier = Modifier.heightIn(max = 320.dp),
+                        ) {
+                            DropdownMenuItem(
+                                text = { Text("— не выбран —") },
+                                onClick = {
+                                    linkedQuestionId = null
+                                    linkMenuExpanded = false
+                                },
+                            )
+                            linkCandidates.forEach { q ->
+                                DropdownMenuItem(
+                                    text = {
+                                        Text(
+                                            q.title.ifBlank { q.previewText().take(48) },
+                                            maxLines = 2,
+                                        )
+                                    },
+                                    onClick = {
+                                        linkedQuestionId = q.id
+                                        linkMenuExpanded = false
                                     },
                                 )
-                                DropdownMenu(
-                                    expanded = linkMenuExpanded,
-                                    onDismissRequest = { linkMenuExpanded = false },
-                                    modifier = Modifier.heightIn(max = 320.dp),
-                                ) {
-                                    DropdownMenuItem(
-                                        text = { Text("— не выбран —") },
-                                        onClick = {
-                                            linkedQuestionId = null
-                                            linkMenuExpanded = false
-                                        },
-                                    )
-                                    linkCandidates.forEach { q ->
-                                        DropdownMenuItem(
-                                            text = {
-                                                Text(
-                                                    q.title.ifBlank { q.previewText().take(48) },
-                                                    maxLines = 2,
-                                                )
-                                            },
-                                            onClick = {
-                                                linkedQuestionId = q.id
-                                                linkMenuExpanded = false
-                                            },
-                                        )
-                                    }
-                                }
                             }
                         }
+                    }
+                }
                         TextField(
-                            value = textFieldValue,
-                            onValueChange = { newValue ->
-                                val oldLen = textFieldValue.text.length
-                                val newLen = newValue.text.length
-                                if (newLen != oldLen) {
-                                    val diff = newLen - oldLen
-                                    val changePos = newValue.selection.start - (if (diff > 0) diff else 0)
-                                    spans = adjustSpansAfterEdit(spans, changePos, diff)
+                    value = textFieldValue,
+                    onValueChange = { newValue ->
+                        val oldLen = textFieldValue.text.length
+                        val newLen = newValue.text.length
+                        if (newLen != oldLen) {
+                            val diff = newLen - oldLen
+                            val changePos = newValue.selection.start - (if (diff > 0) diff else 0)
+                            spans = adjustSpansAfterEdit(spans, changePos, diff)
                                     if (diff > 0) applyTypingFormat(changePos, changePos + diff)
-                                    textFieldValue = newValue
+                        textFieldValue = newValue
                                     if (diff < 0) syncFormatFromCursor(newValue)
                                 } else {
                                     textFieldValue = newValue
                                     syncFormatFromCursor(newValue)
                                 }
-                            },
-                            modifier = Modifier
+                    },
+                    modifier = Modifier
                                 .weight(1f)
                                 .fillMaxWidth(),
-                            textStyle = TextStyle(
-                                color = MaterialTheme.colorScheme.onSurface,
+                    textStyle = TextStyle(
+                        color = MaterialTheme.colorScheme.onSurface,
                                 fontSize = 17.sp,
                                 lineHeight = 26.sp,
                             ),
-                            visualTransformation = spanVisualTransformation,
+                    visualTransformation = spanVisualTransformation,
                             colors = editorFieldColors,
                         )
                         FlowRow(
-                            modifier = Modifier
-                                .fillMaxWidth()
+                        modifier = Modifier
+                            .fillMaxWidth()
                                 .padding(horizontal = 8.dp, vertical = 4.dp),
                             horizontalArrangement = Arrangement.spacedBy(4.dp),
                         ) {
@@ -1058,8 +1058,8 @@ fun NoteEditorScreen(
                                     enabled = !noteAssist.loading,
                                 ) {
                                     Text(stringResource(R.string.note_ai_improve))
-                                }
-                                TextButton(
+                }
+                TextButton(
                                     onClick = { requestNoteAssist(DeepSeekNoteAssistKind.SIMPLIFY) },
                                     enabled = !noteAssist.loading,
                                 ) {
@@ -1067,25 +1067,25 @@ fun NoteEditorScreen(
                                 }
                         }
                         Surface(tonalElevation = 2.dp) {
-                            FormatToolbar(
-                                isBold = isBold,
+            FormatToolbar(
+                isBold = isBold,
                                 onBoldChange = {
                                     isBold = it
                                     applyFormatToSelection(bold = it)
                                 },
-                                isItalic = isItalic,
+                isItalic = isItalic,
                                 onItalicChange = {
                                     isItalic = it
                                     applyFormatToSelection(italic = it)
                                 },
-                                isUnderline = isUnderline,
+                isUnderline = isUnderline,
                                 onUnderlineChange = {
                                     isUnderline = it
                                     applyFormatToSelection(underline = it)
                                 },
-                                onBulletList = { insertListPrefix(false) },
-                                onNumberedList = { insertListPrefix(true) },
-                                currentFontSize = currentFontSize,
+                onBulletList = { insertListPrefix(false) },
+                onNumberedList = { insertListPrefix(true) },
+                currentFontSize = currentFontSize,
                                 showFontSizePicker = showFontSizePicker,
                                 onFontSizeClick = {
                                     showFontSizePicker = !showFontSizePicker
@@ -1095,15 +1095,15 @@ fun NoteEditorScreen(
                                     currentFontSize = size
                                     applyFormatToSelection(fontSize = size)
                                 },
-                                currentColorArgb = currentColorArgb,
-                                currentBgColorArgb = currentBgColorArgb,
-                                colorMode = colorMode,
+                currentColorArgb = currentColorArgb,
+                currentBgColorArgb = currentBgColorArgb,
+                colorMode = colorMode,
                                 showColorPicker = showColorPicker,
                                 onToggleColorPicker = {
                                     showColorPicker = !showColorPicker
                                     if (showColorPicker) showFontSizePicker = false
                                 },
-                                onColorModeChange = { colorMode = it },
+                onColorModeChange = { colorMode = it },
                                 onColorSelect = {
                                     currentColorArgb = it
                                     applyFormatToSelection(colorArgb = it)
@@ -1335,8 +1335,8 @@ private fun NoteViewSection(
                 color = MaterialTheme.colorScheme.onSurface,
                 lineHeight = 24.sp,
             ),
-            modifier = Modifier
-                .fillMaxWidth()
+        modifier = Modifier
+            .fillMaxWidth()
                 .padding(horizontal = 12.dp, vertical = 8.dp),
             onClick = { offset ->
                 annotated.getStringAnnotations(SCRIPTURE_LINK_TAG, offset, offset)
@@ -1545,17 +1545,17 @@ private fun FormatToolbar(
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(horizontal = 8.dp, vertical = 4.dp),
-                    verticalAlignment = Alignment.CenterVertically,
+            verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.spacedBy(6.dp),
-                ) {
-                    val textModeActive = colorMode == ColorPickerMode.TEXT
-                    Box(
-                        modifier = Modifier
+        ) {
+            val textModeActive = colorMode == ColorPickerMode.TEXT
+            Box(
+                modifier = Modifier
                             .clip(RoundedCornerShape(8.dp))
-                            .background(
+                    .background(
                                 if (textModeActive) primary else MaterialTheme.colorScheme.surfaceVariant,
-                            )
-                            .clickable { onColorModeChange(ColorPickerMode.TEXT) }
+                    )
+                    .clickable { onColorModeChange(ColorPickerMode.TEXT) }
                             .padding(horizontal = 10.dp, vertical = 6.dp),
                     ) {
                         Row(verticalAlignment = Alignment.CenterVertically) {
@@ -1566,21 +1566,21 @@ private fun FormatToolbar(
                                 tint = if (textModeActive) MaterialTheme.colorScheme.onPrimary else muted,
                             )
                             Spacer(Modifier.width(4.dp))
-                            Text(
+                Text(
                                 "Текст",
-                                fontSize = 12.sp,
+                    fontSize = 12.sp,
                                 fontWeight = FontWeight.SemiBold,
                                 color = if (textModeActive) MaterialTheme.colorScheme.onPrimary else muted,
-                            )
+                )
                         }
-                    }
-                    Box(
-                        modifier = Modifier
+            }
+            Box(
+                modifier = Modifier
                             .clip(RoundedCornerShape(8.dp))
-                            .background(
+                    .background(
                                 if (!textModeActive) primary else MaterialTheme.colorScheme.surfaceVariant,
-                            )
-                            .clickable { onColorModeChange(ColorPickerMode.BACKGROUND) }
+                    )
+                    .clickable { onColorModeChange(ColorPickerMode.BACKGROUND) }
                             .padding(horizontal = 10.dp, vertical = 6.dp),
                     ) {
                         Row(verticalAlignment = Alignment.CenterVertically) {
@@ -1591,56 +1591,56 @@ private fun FormatToolbar(
                                 tint = if (!textModeActive) MaterialTheme.colorScheme.onPrimary else muted,
                             )
                             Spacer(Modifier.width(4.dp))
-                            Text(
+                Text(
                                 "Фон",
-                                fontSize = 12.sp,
+                    fontSize = 12.sp,
                                 fontWeight = FontWeight.SemiBold,
                                 color = if (!textModeActive) MaterialTheme.colorScheme.onPrimary else muted,
-                            )
-                        }
-                    }
+                )
+            }
+        }
                 }
-                val colors = if (colorMode == ColorPickerMode.TEXT) textColors else bgColors
-                val selectedArgb = if (colorMode == ColorPickerMode.TEXT) currentColorArgb else currentBgColorArgb
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .horizontalScroll(rememberScrollState())
+        val colors = if (colorMode == ColorPickerMode.TEXT) textColors else bgColors
+        val selectedArgb = if (colorMode == ColorPickerMode.TEXT) currentColorArgb else currentBgColorArgb
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .horizontalScroll(rememberScrollState())
                         .padding(horizontal = 8.dp, vertical = 4.dp),
                     horizontalArrangement = Arrangement.spacedBy(6.dp),
-                ) {
-                    colors.forEach { color ->
-                        val argb = color.toArgb()
-                        val isNone = (color == Color.White && colorMode == ColorPickerMode.TEXT) ||
-                            (color == Color.Transparent && colorMode == ColorPickerMode.BACKGROUND)
-                        val isSelected = if (isNone) selectedArgb == 0 else selectedArgb == argb
-                        Box(
-                            modifier = Modifier
+        ) {
+            colors.forEach { color ->
+                val argb = color.toArgb()
+                val isNone = (color == Color.White && colorMode == ColorPickerMode.TEXT) ||
+                    (color == Color.Transparent && colorMode == ColorPickerMode.BACKGROUND)
+                val isSelected = if (isNone) selectedArgb == 0 else selectedArgb == argb
+                Box(
+                    modifier = Modifier
                                 .size(28.dp)
-                                .clip(CircleShape)
-                                .then(
+                        .clip(CircleShape)
+                        .then(
                                     if (color == Color.Transparent) {
-                                        Modifier.background(Color(0xFF333333))
+                                Modifier.background(Color(0xFF333333))
                                     } else {
-                                        Modifier.background(color)
+                                Modifier.background(color)
                                     },
-                                )
-                                .then(
+                        )
+                        .then(
                                     if (isSelected) {
                                         Modifier.border(2.5.dp, primary, CircleShape)
                                     } else {
                                         Modifier.border(0.5.dp, MaterialTheme.colorScheme.outline, CircleShape)
                                     },
-                                )
-                                .clickable {
-                                    val value = if (isNone) 0 else argb
-                                    if (colorMode == ColorPickerMode.TEXT) onColorSelect(value)
-                                    else onBgColorSelect(value)
-                                },
-                            contentAlignment = Alignment.Center,
-                        ) {
-                            if (isNone) {
-                                Text("✕", fontSize = 10.sp, color = Color(0xFFAAAAAA))
+                        )
+                        .clickable {
+                            val value = if (isNone) 0 else argb
+                            if (colorMode == ColorPickerMode.TEXT) onColorSelect(value)
+                            else onBgColorSelect(value)
+                        },
+                    contentAlignment = Alignment.Center,
+                ) {
+                    if (isNone) {
+                        Text("✕", fontSize = 10.sp, color = Color(0xFFAAAAAA))
                             }
                         }
                     }

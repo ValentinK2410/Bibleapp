@@ -1,0 +1,183 @@
+{
+"id": 5,
+"name": "कर्मसंन्यासयोग",
+"transliteration": "Карма-санньяса-йога",
+"translation": "Йога отречения от плодов действия",
+"total_verses": 29,
+"verses": [
+{
+"id": 1,
+"sanskrit": "अर्जुन उवाच\n\nसंन्यासं कर्मणां कृष्ण पुनर्योगं च शंससि।\n\nयच्छ्रेय एतयोरेकं तन्मे ब्रूहि सुनिश्िचतम्",
+"transliteration": "arjuna uvācha\nsannyāsaṁ karmaṇāṁ kṛiṣhṇa punar yogaṁ cha śhansasi\nyach chhreya etayor ekaṁ tan me brūhi su-niśhchitam",
+"translationEn": "Arjuna said: My Lord! At one moment, You praise renunciation of action; at another, You praise right action. Tell me truly, I pray, which of these is more conducive to my highest welfare?"
+},
+{
+"id": 2,
+"sanskrit": "श्री भगवानुवाच\n\nसंन्यासः कर्मयोगश्च निःश्रेयसकरावुभौ।\n\nतयोस्तु कर्मसंन्यासात्कर्मयोगो विशिष्यते",
+"transliteration": "śhrī bhagavān uvācha\nsannyāsaḥ karma-yogaśh cha niḥśhreyasa-karāvubhau\ntayos tu karma-sannyāsāt karma-yogo viśhiṣhyate",
+"translationEn": "Lord Shri Krishna replied: Both renunciation of action and the path of right action lead to the highest; however, right action is the better of the two."
+},
+{
+"id": 3,
+"sanskrit": "ज्ञेयः स नित्यसंन्यासी यो न द्वेष्टि न काङ्क्षति।\n\nनिर्द्वन्द्वो हि महाबाहो सुखं बन्धात्प्रमुच्यते",
+"transliteration": "jñeyaḥ sa nitya-sannyāsī yo na dveṣhṭi na kāṅkṣhati\nnirdvandvo hi mahā-bāho sukhaṁ bandhāt pramuchyate",
+"translationEn": "He is a true ascetic who never desires nor dislikes, who is unaffected by the opposites and is easily freed from bondage."
+},
+{
+"id": 4,
+"sanskrit": "सांख्ययोगौ पृथग्बालाः प्रवदन्ति न पण्डिताः।\n\nएकमप्यास्थितः सम्यगुभयोर्विन्दते फलम्",
+"transliteration": "sānkhya-yogau pṛithag bālāḥ pravadanti na paṇḍitāḥ\nekamapyāsthitaḥ samyag ubhayor vindate phalam",
+"translationEn": "Only the unenlightened speak of wisdom and right action as separate; the wise do not. If anyone knows one, they enjoy the fruit of both."
+},
+{
+"id": 5,
+"sanskrit": "यत्सांख्यैः प्राप्यते स्थानं तद्योगैरपि गम्यते।\n\nएकं सांख्यं च योगं च यः पश्यति स पश्यति",
+"transliteration": "yat sānkhyaiḥ prāpyate sthānaṁ tad yogair api gamyate\nekaṁ sānkhyaṁ cha yogaṁ cha yaḥ paśhyati sa paśhyati",
+"translationEn": "The level which is attained through wisdom is also reached through right action. He who perceives that the two are one, knows the truth."
+},
+{
+"id": 6,
+"sanskrit": "संन्यासस्तु महाबाहो दुःखमाप्तुमयोगतः।\n\nयोगयुक्तो मुनिर्ब्रह्म नचिरेणाधिगच्छति",
+"transliteration": "sannyāsas tu mahā-bāho duḥkham āptum ayogataḥ\nyoga-yukto munir brahma na chireṇādhigachchhati",
+"translationEn": "Without concentration, O Mighty One, renunciation is difficult. But the sage who is always meditating on the Divine, shall soon attain the Absolute."
+},
+{
+"id": 7,
+"sanskrit": "योगयुक्तो विशुद्धात्मा विजितात्मा जितेन्द्रियः।\n\nसर्वभूतात्मभूतात्मा कुर्वन्नपि न लिप्यते",
+"transliteration": "yoga-yukto viśhuddhātmā vijitātmā jitendriyaḥ\nsarva-bhūtātma-bhūtātmā kurvann api na lipyate",
+"translationEn": "He who is spiritual, pure, has overcome his senses and his personal self, and has realized his highest Self as the Self of all—even though he acts, he is not bound by his actions."
+},
+{
+"id": 8,
+"sanskrit": "नैव किंचित्करोमीति युक्तो मन्येत तत्त्ववित्।\n\nपश्यन् श्रृणवन्स्पृशञ्जिघ्रन्नश्नन्गच्छन्स्वपन् श्वसन्",
+"transliteration": "naiva kiñchit karomīti yukto manyeta tattva-vit\npaśhyañ śhṛiṇvan spṛiśhañjighrann aśhnangachchhan svapañśhvasan\n pralapan visṛijan gṛihṇann unmiṣhan nimiṣhann api\nindriyāṇīndriyārtheṣhu vartanta iti dhārayan",
+"translationEn": "Though the saint sees, hears, touches, smells, eats, moves, sleeps, and breathes, yet he knows the truth and knows that it is not he who acts."
+},
+{
+"id": 9,
+"sanskrit": "प्रलपन्विसृजन्गृह्णन्नुन्मिषन्निमिषन्नपि।\n\nइन्द्रियाणीन्द्रियार्थेषु वर्तन्त इति धारयन्",
+"transliteration": "pralapan visṛjan gṛhṇann unmiṣan nimiṣann api indriyāṇīndriyārtheṣu vartanta iti dhārayan",
+"translationEn": "Though he talks, gives, receives, opens his eyes, and shuts them, he still knows that his senses are merely disporting themselves among the objects of perception."
+},
+{
+"id": 10,
+"sanskrit": "ब्रह्मण्याधाय कर्माणि सङ्गं त्यक्त्वा करोति यः।\n\nलिप्यते न स पापेन पद्मपत्रमिवाम्भसा",
+"transliteration": "brahmaṇyādhāya karmāṇi saṅgaṁ tyaktvā karoti yaḥ\nlipyate na sa pāpena padma-patram ivāmbhasā",
+"translationEn": "He who dedicates his actions to the Spirit, without any personal attachment to them, is no more tainted by sin than the water lily is wetted by water."
+},
+{
+"id": 11,
+"sanskrit": "कायेन मनसा बुद्ध्या केवलैरिन्द्रियैरपि।\n\nयोगिनः कर्म कुर्वन्ति सङ्गं त्यक्त्वाऽऽत्मशुद्धये",
+"transliteration": "kāyena manasā buddhyā kevalair indriyair api\nyoginaḥ karma kurvanti saṅgaṁ tyaktvātma-śhuddhaye",
+"translationEn": "The sage performs his action dispassionately, using his body, mind, intellect, and even his senses, always as a means for purification."
+},
+{
+"id": 12,
+"sanskrit": "युक्तः कर्मफलं त्यक्त्वा शान्तिमाप्नोति नैष्ठिकीम्।\n\nअयुक्तः कामकारेण फले सक्तो निबध्यते",
+"transliteration": "yuktaḥ karma-phalaṁ tyaktvā śhāntim āpnoti naiṣhṭhikīm\nayuktaḥ kāma-kāreṇa phale sakto nibadhyate",
+"translationEn": "Having abandoned the fruit of action, he wins eternal peace. Others, unacquainted with spirituality, led by desire and clinging to the benefit they think will follow their actions, become entangled in them."
+},
+{
+"id": 13,
+"sanskrit": "सर्वकर्माणि मनसा संन्यस्यास्ते सुखं वशी।\n\nनवद्वारे पुरे देही नैव कुर्वन्न कारयन्",
+"transliteration": "sarva-karmāṇi manasā sannyasyāste sukhaṁ vaśhī\nnava-dvāre pure dehī naiva kurvan na kārayan",
+"translationEn": "Mentally renouncing all actions, the self-controlled soul enjoys bliss in this body, the city of the nine gates, neither doing anything themselves nor causing anything to be done."
+},
+{
+"id": 14,
+"sanskrit": "न कर्तृत्वं न कर्माणि लोकस्य सृजति प्रभुः।\n\nन कर्मफलसंयोगं स्वभावस्तु प्रवर्तते",
+"transliteration": "na kartṛitvaṁ na karmāṇi lokasya sṛijati prabhuḥ\nna karma-phala-saṅyogaṁ svabhāvas tu pravartate",
+"translationEn": "The Lord of this universe has not ordained activity, nor any incentive thereto, nor any relation between an act and its consequences; all this is the work of Nature."
+},
+{
+"id": 15,
+"sanskrit": "नादत्ते कस्यचित्पापं न चैव सुकृतं विभुः।\n\nअज्ञानेनावृतं ज्ञानं तेन मुह्यन्ति जन्तवः",
+"transliteration": "nādatte kasyachit pāpaṁ na chaiva sukṛitaṁ vibhuḥ\najñānenāvṛitaṁ jñānaṁ tena muhyanti jantavaḥ",
+"translationEn": "The Lord does not accept responsibility for any person's sin or merit; they are deluded, for wisdom is submerged in ignorance within them."
+},
+{
+"id": 16,
+"sanskrit": "ज्ञानेन तु तदज्ञानं येषां नाशितमात्मनः।\n\nतेषामादित्यवज्ज्ञानं प्रकाशयति तत्परम्",
+"transliteration": "jñānena tu tad ajñānaṁ yeṣhāṁ nāśhitam ātmanaḥ\nteṣhām āditya-vaj jñānaṁ prakāśhayati tat param",
+"translationEn": "Surely, wisdom is like the sun, revealing the supreme truth to those whose ignorance has been dispelled by the wisdom of the Self."
+},
+{
+"id": 17,
+"sanskrit": "तद्बुद्धयस्तदात्मानस्तन्निष्ठास्तत्परायणाः।\n\nगच्छन्त्यपुनरावृत्तिं ज्ञाननिर्धूतकल्मषाः",
+"transliteration": "tad-buddhayas tad-ātmānas tan-niṣhṭhās tat-parāyaṇāḥ\ngachchhantyapunar-āvṛittiṁ jñāna-nirdhūta-kalmaṣhāḥ",
+"translationEn": "Meditating on the divine, having faith in the divine, concentrating on the divine, and losing themselves in the divine, their sins dissolve in wisdom, and they go from whence there is no return."
+},
+{
+"id": 18,
+"sanskrit": "विद्याविनयसंपन्ने ब्राह्मणे गवि हस्तिनि।\n\nशुनि चैव श्वपाके च पण्डिताः समदर्शिनः",
+"transliteration": "vidyā-vinaya-sampanne brāhmaṇe gavi hastini\nśhuni chaiva śhva-pāke cha paṇḍitāḥ sama-darśhinaḥ",
+"translationEn": "Sages look upon all equally, whether they be a minister of learning and humility, an infidel, a cow, an elephant, or a dog."
+},
+{
+"id": 19,
+"sanskrit": "इहैव तैर्जितः सर्गो येषां साम्ये स्थितं मनः।\n\nनिर्दोषं हि समं ब्रह्म तस्माद्ब्रह्मणि ते स्थिताः",
+"transliteration": "ihaiva tair jitaḥ sargo yeṣhāṁ sāmye sthitaṁ manaḥ\nnirdoṣhaṁ hi samaṁ brahma tasmād brahmaṇi te sthitāḥ",
+"translationEn": "Even in this world, those whose minds remain always balanced, fixed on the Supreme, conquer their earthly life; for the Supreme has neither blemish nor bias."
+},
+{
+"id": 20,
+"sanskrit": "न प्रहृष्येत्प्रियं प्राप्य नोद्विजेत्प्राप्य चाप्रियम्।\n\nस्थिरबुद्धिरसम्मूढो ब्रह्मविद्ब्रह्मणि स्थितः",
+"transliteration": "na prahṛiṣhyet priyaṁ prāpya nodvijet prāpya chāpriyam\nsthira-buddhir asammūḍho brahma-vid brahmaṇi sthitaḥ",
+"translationEn": "He who knows and lives in the Absolute remains unmoved and unperturbed; he is not elated by pleasure nor depressed by pain."
+},
+{
+"id": 21,
+"sanskrit": "बाह्यस्पर्शेष्वसक्तात्मा विन्दत्यात्मनि यत्सुखम्।\n\nस ब्रह्मयोगयुक्तात्मा सुखमक्षयमश्नुते",
+"transliteration": "bāhya-sparśheṣhvasaktātmā vindatyātmani yat sukham\nsa brahma-yoga-yuktātmā sukham akṣhayam aśhnute",
+"translationEn": "He finds happiness in his own Self and enjoys eternal bliss, whose heart does not yearn for the contacts of the earth and whose Self is one with the Everlasting."
+},
+{
+"id": 22,
+"sanskrit": "ये हि संस्पर्शजा भोगा दुःखयोनय एव ते।\n\nआद्यन्तवन्तः कौन्तेय न तेषु रमते बुधः",
+"transliteration": "ye hi sansparśha-jā bhogā duḥkha-yonaya eva te\nādyantavantaḥ kaunteya na teṣhu ramate budhaḥ",
+"translationEn": "The joys that spring from external associations bring pain; they have their beginnings and their endings. The wise person does not rejoice in them."
+},
+{
+"id": 23,
+"sanskrit": "शक्नोतीहैव यः सोढुं प्राक्शरीरविमोक्षणात्।\n\nकामक्रोधोद्भवं वेगं स युक्तः स सुखी नरः",
+"transliteration": "śhaknotīhaiva yaḥ soḍhuṁ prāk śharīra-vimokṣhaṇāt\nkāma-krodhodbhavaṁ vegaṁ sa yuktaḥ sa sukhī naraḥ",
+"translationEn": "He who, before leaving his body, learns to overcome the promptings of desire and anger, is a saint and is happy."
+},
+{
+"id": 24,
+"sanskrit": "योऽन्तःसुखोऽन्तरारामस्तथान्तर्ज्योतिरेव यः।\n\nस योगी ब्रह्मनिर्वाणं ब्रह्मभूतोऽधिगच्छति",
+"transliteration": "yo 'ntaḥ-sukho 'ntar-ārāmas tathāntar-jyotir eva yaḥ\nsa yogī brahma-nirvāṇaṁ brahma-bhūto 'dhigachchhati",
+"translationEn": "He who is happy within himself and has found its peace, and in whom the inner light shines, that sage attains eternal bliss and becomes one with the spirit."
+},
+{
+"id": 25,
+"sanskrit": "लभन्ते ब्रह्मनिर्वाणमृषयः क्षीणकल्मषाः।\n\nछिन्नद्वैधा यतात्मानः सर्वभूतहिते रताः",
+"transliteration": "labhante brahma-nirvāṇam ṛiṣhayaḥ kṣhīṇa-kalmaṣhāḥ\nchhinna-dvaidhā yatātmānaḥ sarva-bhūta-hite ratāḥ",
+"translationEn": "Sages whose sins have been washed away, whose sense of separateness has dissipated, who have subdued themselves, and seek only the welfare of all, come to the Eternal Spirit."
+},
+{
+"id": 26,
+"sanskrit": "कामक्रोधवियुक्तानां यतीनां यतचेतसाम्।\n\nअभितो ब्रह्मनिर्वाणं वर्तते विदितात्मनाम्",
+"transliteration": "kāma-krodha-viyuktānāṁ yatīnāṁ yata-chetasām\nabhito brahma-nirvāṇaṁ vartate viditātmanām",
+"translationEn": "Saints who know themselves, who control their minds, and feel neither desire nor anger, find eternal bliss everywhere."
+},
+{
+"id": 27,
+"sanskrit": "स्पर्शान्कृत्वा बहिर्बाह्यांश्चक्षुश्चैवान्तरे भ्रुवोः।\n\nप्राणापानौ समौ कृत्वा नासाभ्यन्तरचारिणौ",
+"transliteration": "sparśhān kṛitvā bahir bāhyānśh chakṣhuśh chaivāntare bhruvoḥ\nprāṇāpānau samau kṛitvā nāsābhyantara-chāriṇau\n yatendriya-mano-buddhir munir mokṣha-parāyaṇaḥ\nvigatechchhā-bhaya-krodho yaḥ sadā mukta eva saḥ",
+"translationEn": "Excluding external objects, with his gaze fixed between the eyebrows, and the inward and outward breathings passing equally through his nostrils;"
+},
+{
+"id": 28,
+"sanskrit": "यतेन्द्रियमनोबुद्धिर्मुनिर्मोक्षपरायणः।\n\nविगतेच्छाभयक्रोधो यः सदा मुक्त एव सः",
+"transliteration": "yatendriya-mano-buddhir  munir   mokṣa-parāyaṇaḥ vigatecchā-bhaya-krodho yaḥ sadā    mukta   eva saḥ",
+"translationEn": "Governing sense, mind, and intellect, intent on liberation, free from desire, fear, and anger, the sage is eternally free."
+},
+{
+"id": 29,
+"sanskrit": "भोक्तारं यज्ञतपसां सर्वलोकमहेश्वरम्।\n\nसुहृदं सर्वभूतानां ज्ञात्वा मां शान्तिमृच्छति",
+"transliteration": "bhoktāraṁ yajña-tapasāṁ sarva-loka-maheśhvaram\nsuhṛidaṁ sarva-bhūtānāṁ jñātvā māṁ śhāntim ṛichchhati",
+"translationEn": "Knowing Me as the One who gladly receives all offerings of austerity and sacrifice, as the Mighty Ruler of all the Worlds and the Friend of all beings, he passes to Eternal Peace."
+}
+]
+}

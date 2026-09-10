@@ -38,6 +38,7 @@ import androidx.compose.material3.Tab
 import androidx.compose.material3.Text
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
@@ -68,6 +69,7 @@ fun StudyToolsSheet(
     bookName: String,
     chapter: Int,
     verse: Int,
+    initialTab: Int = 0,
     viewModel: BibleViewModel,
     onDismiss: () -> Unit,
     onNavigateToVerse: ((String, Int, Int) -> Unit)? = null,
@@ -82,11 +84,20 @@ fun StudyToolsSheet(
     val speakStudy = rememberStudyTextToSpeech(translation)
     val speakComparisons = rememberComparisonSpeech()
 
-    var currentVerse by remember { mutableIntStateOf(verse) }
-    var selectedTab by remember { mutableIntStateOf(0) }
+    var currentVerse by remember(verse) { mutableIntStateOf(verse) }
+    var selectedTab by remember(initialTab) { mutableIntStateOf(initialTab) }
     val tabs = listOf("Комментарии", "Переводы", "Ссылки", "Стронг")
 
     val maxVerse = if (totalVerses > 0) totalVerses else 176
+
+    LaunchedEffect(bookId, chapter, verse, initialTab) {
+        currentVerse = verse
+        when (initialTab) {
+            1 -> viewModel.loadVerseComparison(bookId, chapter, verse)
+            2 -> viewModel.loadCrossReferences(bookId, chapter, verse)
+            3 -> viewModel.loadStrongNumbers(bookId, chapter, verse)
+        }
+    }
 
     fun reloadCurrentTab() {
         when (selectedTab) {

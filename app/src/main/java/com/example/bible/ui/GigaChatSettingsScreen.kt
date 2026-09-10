@@ -198,6 +198,107 @@ fun GigaChatSettingsScreen(
                 )
             }
             Spacer(Modifier.height(16.dp))
+            Text(
+                stringResource(R.string.salute_speech_settings_title),
+                style = MaterialTheme.typography.titleMedium,
+                modifier = Modifier.padding(horizontal = 16.dp),
+            )
+            Text(
+                stringResource(R.string.salute_speech_settings_hint),
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                modifier = Modifier.padding(horizontal = 16.dp, vertical = 4.dp),
+            )
+            val savedSaluteKey by viewModel.saluteSpeechAuthKey.collectAsStateWithLifecycle()
+            val saluteKeyTest by viewModel.saluteSpeechKeyTest.collectAsStateWithLifecycle()
+            var saluteDraft by remember { mutableStateOf(savedSaluteKey) }
+            LaunchedEffect(savedSaluteKey) { saluteDraft = savedSaluteKey }
+            OutlinedTextField(
+                value = saluteDraft,
+                onValueChange = { saluteDraft = it },
+                label = { Text(stringResource(R.string.salute_speech_settings_key_label)) },
+                singleLine = true,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 16.dp, vertical = 4.dp),
+                visualTransformation = PasswordVisualTransformation(),
+                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
+            )
+            FlowRow(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 8.dp),
+                horizontalArrangement = Arrangement.spacedBy(4.dp),
+            ) {
+                TextButton(onClick = { viewModel.setSaluteSpeechAuthKey(saluteDraft) }) {
+                    Text(stringResource(R.string.gigachat_settings_save))
+                }
+                TextButton(
+                    onClick = { viewModel.testSaluteSpeechKey(saluteDraft) },
+                    enabled = !saluteKeyTest.loading,
+                ) {
+                    Text(stringResource(R.string.salute_speech_settings_test))
+                }
+                TextButton(onClick = {
+                    saluteDraft = ""
+                    viewModel.setSaluteSpeechAuthKey("")
+                }) {
+                    Text(stringResource(R.string.gigachat_settings_clear))
+                }
+            }
+            saluteKeyTest.message?.let { msg ->
+                Text(
+                    msg,
+                    color = if (saluteKeyTest.ok) {
+                        MaterialTheme.colorScheme.primary
+                    } else {
+                        MaterialTheme.colorScheme.error
+                    },
+                    style = MaterialTheme.typography.bodySmall,
+                    modifier = Modifier.padding(horizontal = 16.dp, vertical = 4.dp),
+                )
+            }
+            TextButton(
+                onClick = {
+                    context.startActivity(
+                        Intent(
+                            Intent.ACTION_VIEW,
+                            Uri.parse("https://developers.sber.ru/docs/ru/salutespeech/quick-start/integration-individuals"),
+                        ),
+                    )
+                },
+                modifier = Modifier.padding(horizontal = 8.dp),
+            ) {
+                Text(stringResource(R.string.salute_speech_settings_get_key))
+            }
+            Spacer(Modifier.height(16.dp))
+            Text(
+                stringResource(R.string.gigachat_settings_voice_section),
+                style = MaterialTheme.typography.titleMedium,
+                modifier = Modifier.padding(horizontal = 16.dp),
+            )
+            val aiTtsSettings by viewModel.aiChatTtsSettings.collectAsStateWithLifecycle()
+            val gigaKey by viewModel.gigaChatAuthKey.collectAsStateWithLifecycle()
+            val saluteScope by viewModel.saluteSpeechScope.collectAsStateWithLifecycle()
+            val speechHandle = rememberAiChatTextToSpeech(
+                saluteAuthKey = savedSaluteKey,
+                gigaChatAuthKey = gigaKey,
+                saluteScope = saluteScope,
+            )
+            AiChatTtsSettingsPanel(
+                settings = aiTtsSettings,
+                neuralVoices = speechHandle.neuralVoices,
+                systemVoices = speechHandle.systemVoices,
+                enabled = true,
+                onEngineChange = viewModel::setAiChatTtsEngine,
+                onIntonationChange = viewModel::setAiChatTtsIntonation,
+                onVoiceChange = viewModel::setAiChatTtsVoice,
+                onPreview = {
+                    speechHandle.preview(context.getString(R.string.ai_chat_tts_preview_phrase))
+                },
+                modifier = Modifier.padding(horizontal = 16.dp),
+            )
+            Spacer(Modifier.height(16.dp))
         }
     }
 }

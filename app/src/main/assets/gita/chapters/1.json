@@ -1,0 +1,291 @@
+{
+"id": 1,
+"name": "अर्जुनविषादयोग",
+"transliteration": "Арджуна-вишада-йога",
+"translation": "Сомнение Арджуны",
+"total_verses": 47,
+"verses": [
+{
+"id": 1,
+"sanskrit": "धृतराष्ट्र उवाच\n\nधर्मक्षेत्रे कुरुक्षेत्रे समवेता युयुत्सवः।\n\nमामकाः पाण्डवाश्चैव किमकुर्वत सञ्जय",
+"transliteration": "dhṛitarāśhtra uvācha\ndharma-kṣhetre kuru-kṣhetre samavetā yuyutsavaḥ\nmāmakāḥ pāṇḍavāśhchaiva kimakurvata sañjaya",
+"translationEn": "The King Dhritarashtra asked, \"O Sanjaya! What happened on the sacred battlefield of Kurukshetra when my people and the Pandavas gathered?\""
+},
+{
+"id": 2,
+"sanskrit": "सञ्जय उवाच\n\nदृष्ट्वा तु पाण्डवानीकं व्यूढं दुर्योधनस्तदा।\n\nआचार्यमुपसङ्गम्य राजा वचनमब्रवीत्",
+"transliteration": "sañjaya uvācha\ndṛiṣhṭvā tu pāṇḍavānīkaṁ vyūḍhaṁ duryodhanastadā\nāchāryamupasaṅgamya rājā vachanamabravīt",
+"translationEn": "Sanjaya replied: \"When Prince Duryodhana saw the Pandavas' army paraded, he approached his preceptor Guru Drona and spoke these words:"
+},
+{
+"id": 3,
+"sanskrit": "पश्यैतां पाण्डुपुत्राणामाचार्य महतीं चमूम्।\n\nव्यूढां द्रुपदपुत्रेण तव शिष्येण धीमता",
+"transliteration": "paśhyaitāṁ pāṇḍu-putrāṇām āchārya mahatīṁ chamūm\nvyūḍhāṁ drupada-putreṇa tava śhiṣhyeṇa dhīmatā",
+"translationEn": "Revered Father! Behold this mighty host of the Pandavas, paraded by the son of King Drupada, your wise disciple."
+},
+{
+"id": 4,
+"sanskrit": "अत्र शूरा महेष्वासा भीमार्जुनसमा युधि।\n\nयुयुधानो विराटश्च द्रुपदश्च महारथः",
+"transliteration": "atra śhūrā maheṣhvāsā bhīmārjuna-samā yudhi\nyuyudhāno virāṭaśhcha drupadaśhcha mahā-rathaḥ",
+"translationEn": "In it are heroes and great bowmen; the equals in battle of Arjuna, Bheema, Yuyudhana, Virata, and Drupada—all great soldiers."
+},
+{
+"id": 5,
+"sanskrit": "धृष्टकेतुश्चेकितानः काशिराजश्च वीर्यवान्।\n\nपुरुजित्कुन्तिभोजश्च शैब्यश्च नरपुङ्गवः",
+"transliteration": "dhṛiṣhṭaketuśhchekitānaḥ kāśhirājaśhcha vīryavān\npurujit kuntibhojaśhcha śhaibyaśhcha nara-puṅgavaḥ\nyudhāmanyuśhcha vikrānta uttamaujāśhcha vīryavān",
+"translationEn": "Dhrishtaketu, Chekitan, the valiant king of Benares, Purujit, Kuntibhoja, and Shaibya—a master of many."
+},
+{
+"id": 6,
+"sanskrit": "युधामन्युश्च विक्रान्त उत्तमौजाश्च वीर्यवान्।\n\nसौभद्रो द्रौपदेयाश्च सर्व एव महारथाः",
+"transliteration": "saubhadro draupadeyāśhcha sarva eva mahā-rathāḥ",
+"translationEn": "Yudhamanyu, Uttamouja, Soubhadra, and the sons of Droupadi—all famous men."
+},
+{
+"id": 7,
+"sanskrit": "अस्माकं तु विशिष्टा ये तान्निबोध द्विजोत्तम।\n\nनायका मम सैन्यस्य संज्ञार्थं तान्ब्रवीमि ते",
+"transliteration": "asmākaṁ tu viśhiṣhṭā ye tānnibodha dwijottama\nnāyakā mama sainyasya sanjñārthaṁ tānbravīmi te",
+"translationEn": "No changes needed."
+},
+{
+"id": 8,
+"sanskrit": "भवान्भीष्मश्च कर्णश्च कृपश्च समितिञ्जयः।\n\nअश्वत्थामा विकर्णश्च सौमदत्तिस्तथैव च",
+"transliteration": "bhavānbhīṣhmaśhcha karṇaśhcha kṛipaśhcha samitiñjayaḥ\naśhvatthāmā vikarṇaśhcha saumadattis tathaiva cha",
+"translationEn": "You come first; then Bheeshma, Karna, Kripa, great warriors; Ashwaththama, Vikarna, and the son of Somadhatta;"
+},
+{
+"id": 9,
+"sanskrit": "अन्ये च बहवः शूरा मदर्थे त्यक्तजीविताः।\n\nनानाशस्त्रप्रहरणाः सर्वे युद्धविशारदाः",
+"transliteration": "anye cha bahavaḥ śhūrā madarthe tyaktajīvitāḥ\nnānā-śhastra-praharaṇāḥ sarve yuddha-viśhāradāḥ",
+"translationEn": "And many others, all ready to die for My sake; all armed, all skilled in warfare."
+},
+{
+"id": 10,
+"sanskrit": "अपर्याप्तं तदस्माकं बलं भीष्माभिरक्षितम्।\n\nपर्याप्तं त्विदमेतेषां बलं भीमाभिरक्षितम्",
+"transliteration": "aparyāptaṁ tadasmākaṁ balaṁ bhīṣhmābhirakṣhitam\nparyāptaṁ tvidameteṣhāṁ balaṁ bhīmābhirakṣhitam",
+"translationEn": "Yet our army seems weaker, though commanded by Bhishma; their army seems stronger, though commanded by Bhima."
+},
+{
+"id": 11,
+"sanskrit": "अयनेषु च सर्वेषु यथाभागमवस्थिताः।\n\nभीष्ममेवाभिरक्षन्तु भवन्तः सर्व एव हि",
+"transliteration": "ayaneṣhu cha sarveṣhu yathā-bhāgamavasthitāḥ\nbhīṣhmamevābhirakṣhantu bhavantaḥ sarva eva hi",
+"translationEn": "Therefore, let the rank and file stand firm in their posts according to battalions, and all you generals around Bheeshma."
+},
+{
+"id": 12,
+"sanskrit": "तस्य संजनयन्हर्षं कुरुवृद्धः पितामहः।\n\nसिंहनादं विनद्योच्चैः शङ्खं दध्मौ प्रतापवान्",
+"transliteration": "tasya sañjanayan harṣhaṁ kuru-vṛiddhaḥ pitāmahaḥ\nsiṁha-nādaṁ vinadyochchaiḥ śhaṅkhaṁ dadhmau pratāpavān",
+"translationEn": "Then, to enliven his spirits, the brave Grandfather Bheeshma, the eldest of the Kuru clan, blew his conch, its sound resembling that of a lion's roar."
+},
+{
+"id": 13,
+"sanskrit": "ततः शङ्खाश्च भेर्यश्च पणवानकगोमुखाः।\n\nसहसैवाभ्यहन्यन्त स शब्दस्तुमुलोऽभवत्",
+"transliteration": "tataḥ śhaṅkhāśhcha bheryaśhcha paṇavānaka-gomukhāḥ\nsahasaivābhyahanyanta sa śhabdastumulo ’bhavat",
+"translationEn": "And immediately, all the conches, drums, trumpets, and horns blared forth in a tumultuous uproar."
+},
+{
+"id": 14,
+"sanskrit": "ततः श्वेतैर्हयैर्युक्ते महति स्यन्दने स्थितौ।\n\nमाधवः पाण्डवश्चैव दिव्यौ शङ्खौ प्रदध्मतुः",
+"transliteration": "tataḥ śhvetairhayairyukte mahati syandane sthitau\nmādhavaḥ pāṇḍavaśhchaiva divyau śhaṅkhau pradadhmatuḥ",
+"translationEn": "Then, seated in their spacious war chariot, yoked with white horses, Lord Shri Krishna and Arjuna sounded their divine conch shells."
+},
+{
+"id": 15,
+"sanskrit": "पाञ्चजन्यं हृषीकेशो देवदत्तं धनंजयः।\n\nपौण्ड्रं दध्मौ महाशङ्खं भीमकर्मा वृकोदरः",
+"transliteration": "pāñchajanyaṁ hṛiṣhīkeśho devadattaṁ dhanañjayaḥ\npauṇḍraṁ dadhmau mahā-śhaṅkhaṁ bhīma-karmā vṛikodaraḥ",
+"translationEn": "Lord Shri Krishna blew his Panchajanya, and Arjuna blew his Devadatta; brave Bheema blew his renowned shell, Poundra."
+},
+{
+"id": 16,
+"sanskrit": "अनन्तविजयं राजा कुन्तीपुत्रो युधिष्ठिरः।\n\nनकुलः सहदेवश्च सुघोषमणिपुष्पकौ",
+"transliteration": "anantavijayaṁ rājā kuntī-putro yudhiṣhṭhiraḥ\nnakulaḥ sahadevaśhcha sughoṣha-maṇipuṣhpakau",
+"translationEn": "The King Dharmaraja, the son of Kunti, blew the Anantavijaya, Nakula, and Sahadeva, the Sughosa and Manipushpaka, respectively."
+},
+{
+"id": 17,
+"sanskrit": "काश्यश्च परमेष्वासः शिखण्डी च महारथः।\n\nधृष्टद्युम्नो विराटश्च सात्यकिश्चापराजितः",
+"transliteration": "kāśhyaśhcha parameṣhvāsaḥ śhikhaṇḍī cha mahā-rathaḥ\ndhṛiṣhṭadyumno virāṭaśhcha sātyakiśh chāparājitaḥ",
+"translationEn": "And the Maharaja of Benares, the great archer, Shikhandi, the great soldier, Dhrishtayumna, Virata, and Satyaki, the invincible one,"
+},
+{
+"id": 18,
+"sanskrit": "द्रुपदो द्रौपदेयाश्च सर्वशः पृथिवीपते।\n\nसौभद्रश्च महाबाहुः शङ्खान्दध्मुः पृथक्पृथक्",
+"transliteration": "drupado draupadeyāśhcha sarvaśhaḥ pṛithivī-pate\nsaubhadraśhcha mahā-bāhuḥ śhaṅkhāndadhmuḥ pṛithak pṛithak",
+"translationEn": "And, O King! Drupada's sons, Droupadi's sons, and the great soldier Soubhadra blew their conches."
+},
+{
+"id": 19,
+"sanskrit": "स घोषो धार्तराष्ट्राणां हृदयानि व्यदारयत्।\n\nनभश्च पृथिवीं चैव तुमुलो व्यनुनादयन्",
+"transliteration": "sa ghoṣho dhārtarāṣhṭrāṇāṁ hṛidayāni vyadārayat\nnabhaśhcha pṛithivīṁ chaiva tumulo nunādayan",
+"translationEn": "The tumult rent the hearts of the sons of Dhritarashtra, shaking heaven and earth with its echoing violence."
+},
+{
+"id": 20,
+"sanskrit": "अथ व्यवस्थितान् दृष्ट्वा धार्तराष्ट्रान्कपिध्वजः।\n\nप्रवृत्ते शस्त्रसंपाते धनुरुद्यम्य पाण्डवः",
+"transliteration": "atha vyavasthitān dṛiṣhṭvā dhārtarāṣhṭrān kapi-dhwajaḥ\npravṛitte śhastra-sampāte dhanurudyamya pāṇḍavaḥ\nhṛiṣhīkeśhaṁ tadā vākyam idam āha mahī-pate",
+"translationEn": "Then, upon beholding the sons of Dhritarashtra, drawn up on the battlefield, ready to fight, Arjuna, whose flag bore the image of Hanuman,"
+},
+{
+"id": 21,
+"sanskrit": "अर्जुन उवाच\n\nहृषीकेशं तदा वाक्यमिदमाह महीपते।\n\nसेनयोरुभयोर्मध्ये रथं स्थापय मेऽच्युत",
+"transliteration": "arjuna uvācha\nsenayor ubhayor madhye rathaṁ sthāpaya me ’chyuta",
+"translationEn": "Raising his bow, he spoke this to the Lord Shri Krishna: O Infallible Lord of the earth! Please draw up my chariot between the two armies."
+},
+{
+"id": 22,
+"sanskrit": "यावदेतान्निरीक्षेऽहं योद्धुकामानवस्थितान्।\n\nकैर्मया सह योद्धव्यमस्मिन्रणसमुद्यमे",
+"transliteration": "yāvadetān nirīkṣhe ’haṁ yoddhu-kāmān avasthitān\nkairmayā saha yoddhavyam asmin raṇa-samudyame",
+"translationEn": "So that I may observe those who must fight on my side and those who must fight against me."
+},
+{
+"id": 23,
+"sanskrit": "योत्स्यमानानवेक्षेऽहं य एतेऽत्र समागताः।\n\nधार्तराष्ट्रस्य दुर्बुद्धेर्युद्धे प्रियचिकीर्षवः",
+"transliteration": "yotsyamānān avekṣhe ’haṁ ya ete ’tra samāgatāḥ\ndhārtarāṣhṭrasya durbuddher yuddhe priya-chikīrṣhavaḥ",
+"translationEn": "And gaze upon this array of soldiers, eager to please the sons of Dhritarashtra who are sinful."
+},
+{
+"id": 24,
+"sanskrit": "संजय उवाच\n\nएवमुक्तो हृषीकेशो गुडाकेशेन भारत।\n\nसेनयोरुभयोर्मध्ये स्थापयित्वा रथोत्तमम्",
+"transliteration": "sañjaya uvācha\nevam ukto hṛiṣhīkeśho guḍākeśhena bhārata\nsenayor ubhayor madhye sthāpayitvā rathottamam",
+"translationEn": "Sanjaya said: \"Having listened to Arjuna's request, Lord Shri Krishna drew up His bright chariot in the midst between the two armies."
+},
+{
+"id": 25,
+"sanskrit": "भीष्मद्रोणप्रमुखतः सर्वेषां च महीक्षिताम्।\n\nउवाच पार्थ पश्यैतान्समवेतान्कुरूनिति",
+"transliteration": "bhīṣhma-droṇa-pramukhataḥ sarveṣhāṁ cha mahī-kṣhitām\nuvācha pārtha paśhyaitān samavetān kurūn iti",
+"translationEn": "Where Bheeshma and Drona had led all the rulers of the earth, they spoke thus: O Arjuna! Behold, these members of the family of Kuru are assembled."
+},
+{
+"id": 26,
+"sanskrit": "तत्रापश्यत्स्थितान्पार्थः पितृ़नथ पितामहान्।\n\nआचार्यान्मातुलान्भ्रातृ़न्पुत्रान्पौत्रान्सखींस्तथा",
+"transliteration": "tatrāpaśhyat sthitān pārthaḥ pitṝīn atha pitāmahān\nāchāryān mātulān bhrātṝīn putrān pautrān sakhīṁs tathā\nśhvaśhurān suhṛidaśh chaiva senayor ubhayor api",
+"translationEn": "There, Arjuna noticed fathers, grandfathers, uncles, cousins, sons, grandsons, teachers, and friends."
+},
+{
+"id": 27,
+"sanskrit": "श्वशुरान्सुहृदश्चैव सेनयोरुभयोरपि।\n\nतान्समीक्ष्य स कौन्तेयः सर्वान्बन्धूनवस्थितान्",
+"transliteration": "tān samīkṣhya sa kaunteyaḥ sarvān bandhūn avasthitān\nkṛipayā parayāviṣhṭo viṣhīdann idam abravīt",
+"translationEn": "Fathers-in-law and benefactors were arrayed on both sides, and Arjuna then gazed at all those kinsmen before him."
+},
+{
+"id": 28,
+"sanskrit": "अर्जुन उवाच\n\nकृपया परयाऽऽविष्टो विषीदन्निदमब्रवीत्।\n\nदृष्ट्वेमं स्वजनं कृष्ण युयुत्सुं समुपस्थितम्",
+"transliteration": "arjuna uvācha\ndṛiṣhṭvemaṁ sva-janaṁ kṛiṣhṇa yuyutsuṁ samupasthitam",
+"translationEn": "And his heart melted with pity, and sadly he spoke: \"O my Lord! When I see all these, my own people, thirsting for battle,"
+},
+{
+"id": 29,
+"sanskrit": "सीदन्ति मम गात्राणि मुखं च परिशुष्यति।\n\nवेपथुश्च शरीरे मे रोमहर्षश्च जायते",
+"transliteration": "sīdanti mama gātrāṇi mukhaṁ cha pariśhuṣhyati\nvepathuśh cha śharīre me roma-harṣhaśh cha jāyate",
+"translationEn": "My limbs are failing me, my throat is parched, my body is trembling, and my hair is standing on end."
+},
+{
+"id": 30,
+"sanskrit": "गाण्डीवं स्रंसते हस्तात्त्वक्चैव परिदह्यते।\n\nन च शक्नोम्यवस्थातुं भ्रमतीव च मे मनः",
+"transliteration": "gāṇḍīvaṁ sraṁsate hastāt tvak chaiva paridahyate\nna cha śhaknomy avasthātuṁ bhramatīva cha me manaḥ",
+"translationEn": "The bow Gandiva slips from my hand, and my skin burns. I cannot remain still, for my mind is in tumult."
+},
+{
+"id": 31,
+"sanskrit": "निमित्तानि च पश्यामि विपरीतानि केशव।\n\nन च श्रेयोऽनुपश्यामि हत्वा स्वजनमाहवे",
+"transliteration": "nimittāni cha paśhyāmi viparītāni keśhava\nna cha śhreyo ’nupaśhyāmi hatvā sva-janam āhave",
+"translationEn": "The omens are unfavorable; what good can come from the slaughter of my people on this battlefield?"
+},
+{
+"id": 32,
+"sanskrit": "न काङ्क्षे विजयं कृष्ण न च राज्यं सुखानि च।\n\nकिं नो राज्येन गोविन्द किं भोगैर्जीवितेन वा",
+"transliteration": "na kāṅkṣhe vijayaṁ kṛiṣhṇa na cha rājyaṁ sukhāni cha\nkiṁ no rājyena govinda kiṁ bhogair jīvitena vā",
+"translationEn": "Ah, my Lord! I do not crave victory, nor a kingdom, nor any pleasure. What would a kingdom, happiness, or life be to me?"
+},
+{
+"id": 33,
+"sanskrit": "येषामर्थे काङ्क्षितं नो राज्यं भोगाः सुखानि च।\n\nत इमेऽवस्थिता युद्धे प्राणांस्त्यक्त्वा धनानि च",
+"transliteration": "yeṣhām arthe kāṅkṣhitaṁ no rājyaṁ bhogāḥ sukhāni cha\nta ime ’vasthitā yuddhe prāṇāṁs tyaktvā dhanāni cha",
+"translationEn": "When those for whose sake I desire these things stand here, about to sacrifice their property and lives:"
+},
+{
+"id": 34,
+"sanskrit": "आचार्याः पितरः पुत्रास्तथैव च पितामहाः।\n\nमातुलाः श्चशुराः पौत्राः श्यालाः सम्बन्धिनस्तथा",
+"transliteration": "āchāryāḥ pitaraḥ putrās tathaiva cha pitāmahāḥ\nmātulāḥ śhvaśhurāḥ pautrāḥ śhyālāḥ sambandhinas tathā",
+"translationEn": "Teachers, fathers, grandfathers, sons, grandsons, uncles, fathers-in-law, brothers-in-law, and other relatives."
+},
+{
+"id": 35,
+"sanskrit": "एतान्न हन्तुमिच्छामि घ्नतोऽपि मधुसूदन।\n\nअपि त्रैलोक्यराज्यस्य हेतोः किं नु महीकृते",
+"transliteration": "etān na hantum ichchhāmi ghnato ’pi madhusūdana\napi trailokya-rājyasya hetoḥ kiṁ nu mahī-kṛite",
+"translationEn": "I would not kill them, even for three worlds; why then for this earth alone? It matters not if I myself am killed."
+},
+{
+"id": 36,
+"sanskrit": "निहत्य धार्तराष्ट्रान्नः का प्रीतिः स्याज्जनार्दन।\n\nपापमेवाश्रयेदस्मान्हत्वैतानाततायिनः",
+"transliteration": "nihatya dhārtarāṣhṭrān naḥ kā prītiḥ syāj janārdana\npāpam evāśhrayed asmān hatvaitān ātatāyinaḥ",
+"translationEn": "My Lord! What happiness can come from the death of these sons of Dhritarashtra? We shall be committing a sin if we kill these desperate men."
+},
+{
+"id": 37,
+"sanskrit": "तस्मान्नार्हा वयं हन्तुं धार्तराष्ट्रान्स्वबान्धवान्।\n\nस्वजनं हि कथं हत्वा सुखिनः स्याम माधव",
+"transliteration": "tasmān nārhā vayaṁ hantuṁ dhārtarāṣhṭrān sa-bāndhavān \nsva-janaṁ hi kathaṁ hatvā sukhinaḥ syāma mādhava",
+"translationEn": "We are worthy of a nobler feat than slaughtering our relatives—the sons of Dhritarashtra; for, my Lord, how can we be happy if we kill our kinsmen?"
+},
+{
+"id": 38,
+"sanskrit": "यद्यप्येते न पश्यन्ति लोभोपहतचेतसः।\n\nकुलक्षयकृतं दोषं मित्रद्रोहे च पातकम्",
+"transliteration": "yady apy ete na paśhyanti lobhopahata-chetasaḥ\nkula-kṣhaya-kṛitaṁ doṣhaṁ mitra-drohe cha pātakam",
+"translationEn": "Although these men, blinded by greed, see no guilt in destroying their kin or fighting against their friends,"
+},
+{
+"id": 39,
+"sanskrit": "कथं न ज्ञेयमस्माभिः पापादस्मान्निवर्तितुम्।\n\nकुलक्षयकृतं दोषं प्रपश्यद्भिर्जनार्दन",
+"transliteration": "kathaṁ na jñeyam asmābhiḥ pāpād asmān nivartitum\nkula-kṣhaya-kṛitaṁ doṣhaṁ prapaśhyadbhir janārdana",
+"translationEn": "Should we not, whose eyes are open and who consider it wrong to annihilate our family, turn away from such a great crime?"
+},
+{
+"id": 40,
+"sanskrit": "कुलक्षये प्रणश्यन्ति कुलधर्माः सनातनाः।\n\nधर्मे नष्टे कुलं कृत्स्नमधर्मोऽभिभवत्युत",
+"transliteration": "kula-kṣhaye praṇaśhyanti kula-dharmāḥ sanātanāḥ\ndharme naṣhṭe kulaṁ kṛitsnam adharmo ’bhibhavaty uta",
+"translationEn": "The destruction of our kindred means the destruction of the traditions of our ancient lineage, and when these are lost, irreligion will overrun our homes."
+},
+{
+"id": 41,
+"sanskrit": "अधर्माभिभवात्कृष्ण प्रदुष्यन्ति कुलस्त्रियः।\n\nस्त्रीषु दुष्टासु वार्ष्णेय जायते वर्णसङ्करः",
+"transliteration": "adharmābhibhavāt kṛiṣhṇa praduṣhyanti kula-striyaḥ\nstrīṣhu duṣhṭāsu vārṣhṇeya jāyate varṇa-saṅkaraḥ",
+"translationEn": "When irreligion spreads, the women of the house start to stray; when they lose their purity, adulteration of the lineage follows."
+},
+{
+"id": 42,
+"sanskrit": "सङ्करो नरकायैव कुलघ्नानां कुलस्य च।\n\nपतन्ति पितरो ह्येषां लुप्तपिण्डोदकक्रियाः",
+"transliteration": "saṅkaro narakāyaiva kula-ghnānāṁ kulasya cha\npatanti pitaro hy eṣhāṁ lupta-piṇḍodaka-kriyāḥ",
+"translationEn": "Promiscuity ruins both the family and those who defile it; while the souls of our ancestors droop, due to the lack of funeral cakes and ablutions."
+},
+{
+"id": 43,
+"sanskrit": "दोषैरेतैः कुलघ्नानां वर्णसङ्करकारकैः।\n\nउत्साद्यन्ते जातिधर्माः कुलधर्माश्च शाश्वताः",
+"transliteration": "doṣhair etaiḥ kula-ghnānāṁ varṇa-saṅkara-kārakaiḥ\nutsādyante jāti-dharmāḥ kula-dharmāśh cha śhāśhvatāḥ",
+"translationEn": "By the destruction of our lineage and the pollution of our blood, ancient class traditions and family purity alike perish."
+},
+{
+"id": 44,
+"sanskrit": "उत्सन्नकुलधर्माणां मनुष्याणां जनार्दन।\n\nनरकेऽनियतं वासो भवतीत्यनुशुश्रुम",
+"transliteration": "utsanna-kula-dharmāṇāṁ manuṣhyāṇāṁ janārdana\nnarake ‘niyataṁ vāso bhavatītyanuśhuśhruma",
+"translationEn": "The wise say, my Lord, that they are forever lost whose ancient traditions have been lost."
+},
+{
+"id": 45,
+"sanskrit": "अहो बत महत्पापं कर्तुं व्यवसिता वयम्।\n\nयद्राज्यसुखलोभेन हन्तुं स्वजनमुद्यताः",
+"transliteration": "aho bata mahat pāpaṁ kartuṁ vyavasitā vayam\nyad rājya-sukha-lobhena hantuṁ sva-janam udyatāḥ",
+"translationEn": "Alas, it is strange that we should be willing to kill our own countrymen and commit a great sin, in order to enjoy the pleasures of kingdom."
+},
+{
+"id": 46,
+"sanskrit": "यदि मामप्रतीकारमशस्त्रं शस्त्रपाणयः।\n\nधार्तराष्ट्रा रणे हन्युस्तन्मे क्षेमतरं भवेत्",
+"transliteration": "yadi mām apratīkāram aśhastraṁ śhastra-pāṇayaḥ\ndhārtarāṣhṭrā raṇe hanyus tan me kṣhemataraṁ bhavet",
+"translationEn": "If, on the contrary, the sons of Dhritarashtra, with weapons in hand, should slay me, unarmed and unresisting, surely that would be better for my welfare!"
+},
+{
+"id": 47,
+"sanskrit": "सञ्जय उवाच\n\nएवमुक्त्वाऽर्जुनः संख्ये रथोपस्थ उपाविशत्।\n\nविसृज्य सशरं चापं शोकसंविग्नमानसः",
+"transliteration": "sañjaya uvācha\nevam uktvārjunaḥ saṅkhye rathopastha upāviśhat\nvisṛijya sa-śharaṁ chāpaṁ śhoka-saṁvigna-mānasaḥ",
+"translationEn": "Sanjaya said: \"Having spoken thus, Arjuna sank into the seat of his chariot, discarding his bow and arrow, overwhelmed with grief in the midst of the armies.\""
+}
+]
+}

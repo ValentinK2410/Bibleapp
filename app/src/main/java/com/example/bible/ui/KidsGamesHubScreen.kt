@@ -35,6 +35,7 @@ fun KidsGamesHubScreen(
     onOpenTicTacToe: () -> Unit,
     onOpenCheckers: () -> Unit,
     onOpenGo: () -> Unit,
+    onOpenPipePuzzle: () -> Unit,
 ) {
     Scaffold(
         topBar = {
@@ -154,6 +155,40 @@ fun KidsGamesHubScreen(
                             Spacer(Modifier.height(4.dp))
                             Text(
                                 "Доска 9×9, 13×13 или 19×19: снимайте группы без «дыханий». Два паса — конец партии.",
+                                style = MaterialTheme.typography.bodySmall,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            )
+                        }
+                    }
+                    Icon(Icons.AutoMirrored.Filled.ArrowForward, contentDescription = null, modifier = Modifier.size(22.dp))
+                }
+            }
+            Card(
+                onClick = onOpenPipePuzzle,
+                modifier = Modifier.fillMaxWidth(),
+                shape = RoundedCornerShape(16.dp),
+                colors = CardDefaults.cardColors(
+                    containerColor = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.45f),
+                ),
+            ) {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(20.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                ) {
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Text("🚰", modifier = Modifier.padding(end = 12.dp))
+                        Column {
+                            Text(
+                                "Водопровод",
+                                style = MaterialTheme.typography.titleMedium,
+                                fontWeight = FontWeight.Bold,
+                            )
+                            Spacer(Modifier.height(4.dp))
+                            Text(
+                                "Поворачивай плитки с трубами: одна цепочка от крана до стока через все клетки.",
                                 style = MaterialTheme.typography.bodySmall,
                                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                             )

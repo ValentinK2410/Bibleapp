@@ -94,6 +94,7 @@ import com.example.bible.data.QuranAyahAudioApi
 import com.example.bible.data.QuranAyahAudioStorage
 import com.example.bible.data.QuranAyahStreamingPlayer
 import com.example.bible.data.QuranSearchHistoryEntry
+import com.example.bible.data.QuranReadingHistoryEntry
 import com.example.bible.data.QuranRepository
 import com.example.bible.data.QuranSearchHit
 import com.example.bible.data.QuranSurahContent
@@ -104,8 +105,11 @@ import com.example.bible.data.QuranTanzilLatinToCyrillic
 import com.example.bible.data.QuranVerse
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.debounce
+import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import androidx.compose.runtime.snapshotFlow
 import androidx.navigation.NavBackStackEntry
 import java.time.Instant
 import java.time.ZoneId
@@ -184,6 +188,8 @@ fun QuranSurahListScreen(
     onBack: () -> Unit,
     onOpenSurah: (Int) -> Unit,
     onOpenSearch: () -> Unit,
+    lastReading: QuranReadingHistoryEntry? = null,
+    onContinueReading: ((surah: Int, ayah: Int) -> Unit)? = null,
 ) {
     val context = LocalContext.current
     val listScope = rememberCoroutineScope()
@@ -262,6 +268,36 @@ fun QuranSurahListScreen(
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                     modifier = Modifier.padding(bottom = 8.dp),
                 )
+            }
+            if (lastReading != null && onContinueReading != null) {
+                item {
+                    Card(
+                        onClick = { onContinueReading(lastReading.surahNumber, lastReading.ayahNumber) },
+                        modifier = Modifier.fillMaxWidth(),
+                        colors = CardDefaults.cardColors(
+                            containerColor = MaterialTheme.colorScheme.secondaryContainer.copy(alpha = 0.55f),
+                        ),
+                    ) {
+                        Column(Modifier.padding(14.dp)) {
+                            Text(
+                                stringResource(R.string.quran_continue_reading_title),
+                                style = MaterialTheme.typography.labelMedium,
+                                color = MaterialTheme.colorScheme.onSecondaryContainer,
+                            )
+                            Text(
+                                stringResource(
+                                    R.string.quran_continue_reading_line,
+                                    lastReading.surahNumber,
+                                    lastReading.surahNameRu.ifBlank { "—" },
+                                    lastReading.ayahNumber,
+                                ),
+                                style = MaterialTheme.typography.titleSmall,
+                                color = MaterialTheme.colorScheme.onSecondaryContainer,
+                                modifier = Modifier.padding(top = 4.dp),
+                            )
+                        }
+                    }
+                }
             }
             items(summaries, key = { it.number }) { s ->
                 val appCtx = context.applicationContext
@@ -510,9 +546,22 @@ fun QuranSurahReaderScreen(
     onBack: () -> Unit,
     /** Номер аята (как в тексте) для открытия песочницы на этой суре. */
     onOpenArabicSandbox: (verseNumber: Int) -> Unit = { _ -> },
+    onBeginReadingSession: (surahNumber: Int, surahNameRu: String, initialAyah: Int) -> Unit = { _, _, _ -> },
+    onVisibleAyah: (surahNumber: Int, surahNameRu: String, ayah: Int) -> Unit = { _, _, _ -> },
+    onFlushReadingDwell: () -> Unit = {},
 ) {
     val context = LocalContext.current
     val readerScope = rememberCoroutineScope()
+    val lifecycleOwner = LocalLifecycleOwner.current
+    DisposableEffect(lifecycleOwner) {
+        val observer = LifecycleEventObserver { _, event ->
+            if (event == Lifecycle.Event.ON_STOP) {
+                onFlushReadingDwell()
+            }
+        }
+        lifecycleOwner.lifecycle.addObserver(observer)
+        onDispose { lifecycleOwner.lifecycle.removeObserver(observer) }
+    }
     var readerOverflowOpen by remember { mutableStateOf(false) }
     var bulkAyahDownload by remember { mutableStateOf<QuranBulkAyahDownloadUi?>(null) }
     val quranTextScale by preferences.quranReaderTextScale.collectAsStateWithLifecycle(
@@ -530,6 +579,13 @@ fun QuranSurahReaderScreen(
         }
     }
     val content = repository.loadSurah(surahNumber)
+    LaunchedEffect(content?.summary?.number, scrollToVerseNumber) {
+        val summary = content?.summary ?: return@LaunchedEffect
+        val initialAyah = scrollToVerseNumber
+            ?: content.verses.firstOrNull()?.number
+            ?: 1
+        onBeginReadingSession(summary.number, summary.nameRussian, initialAyah)
+    }
     val titleTranslitCyr = remember(content?.summary?.nameTransliteration) {
         content?.summary?.nameTransliteration?.let { QuranTanzilLatinToCyrillic.convert(it) }.orEmpty()
     }
@@ -704,6 +760,9 @@ fun QuranSurahReaderScreen(
             arabicWordByWordTts = arabicWordByWordTts,
             scrollToVerseNumber = scrollToVerseNumber,
             onOpenArabicSandbox = onOpenArabicSandbox,
+            onVisibleAyah = { ayah ->
+                onVisibleAyah(content.summary.number, content.summary.nameRussian, ayah)
+            },
             modifier = Modifier
                 .fillMaxSize()
                 .padding(padding),
@@ -781,6 +840,31 @@ fun QuranSurahReaderScreen(
     }
 }
 
+private fun primaryVisibleQuranAyahNumber(
+    listState: androidx.compose.foundation.lazy.LazyListState,
+    verses: List<QuranVerse>,
+): Int? {
+    if (verses.isEmpty()) return null
+    val info = listState.layoutInfo
+    if (info.visibleItemsInfo.isEmpty()) return null
+    val viewportCenter = info.viewportStartOffset + info.viewportSize.height / 2
+    var bestAyah: Int? = null
+    var bestDist = Int.MAX_VALUE
+    for (item in info.visibleItemsInfo) {
+        val li = item.index
+        if (li <= 0) continue
+        val vIdx = li - 1
+        if (vIdx !in verses.indices) continue
+        val center = item.offset + item.size / 2
+        val dist = kotlin.math.abs(center - viewportCenter)
+        if (dist < bestDist) {
+            bestDist = dist
+            bestAyah = verses[vIdx].number
+        }
+    }
+    return bestAyah
+}
+
 @Composable
 private fun QuranSurahBody(
     content: QuranSurahContent,
@@ -792,6 +876,7 @@ private fun QuranSurahBody(
     arabicWordByWordTts: Boolean,
     scrollToVerseNumber: Int? = null,
     onOpenArabicSandbox: (verseNumber: Int) -> Unit,
+    onVisibleAyah: (ayah: Int) -> Unit = {},
     modifier: Modifier = Modifier,
 ) {
     val listState = rememberLazyListState()
@@ -801,6 +886,15 @@ private fun QuranSurahBody(
         if (vi >= 0) {
             listState.scrollToItem(vi + 1)
         }
+    }
+    LaunchedEffect(listState, content.verses) {
+        @Suppress("OPT_IN_USAGE")
+        snapshotFlow { primaryVisibleQuranAyahNumber(listState, content.verses) }
+            .distinctUntilChanged()
+            .debounce(400L)
+            .collect { ayah ->
+                if (ayah != null) onVisibleAyah(ayah)
+            }
     }
     LazyColumn(
         state = listState,

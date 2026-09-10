@@ -1,6 +1,7 @@
 package com.example.bible.ui
 
 import android.widget.Toast
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -46,16 +47,25 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.bible.R
 import com.example.bible.data.BiblePreferences
 import com.example.bible.data.QuranAyahAudioStorage
+import com.example.bible.data.QuranReadingHistoryEntry
+import com.example.bible.data.QuranReadingTraceEntry
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import java.text.SimpleDateFormat
+import java.util.Date
+import java.util.Locale
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun OtherBooksScreen(
     preferences: BiblePreferences,
+    quranReadingHistory: List<QuranReadingHistoryEntry>,
+    quranReadingTrace: List<QuranReadingTraceEntry>,
+    onClearQuranReadingHistory: () -> Unit,
+    onOpenQuranAyah: (surah: Int, ayah: Int) -> Unit,
     onBack: () -> Unit,
     onOpenQuran: () -> Unit,
 ) {
@@ -81,6 +91,16 @@ fun OtherBooksScreen(
     val arabicWordByWord by preferences.quranArabicWordByWordTts.collectAsStateWithLifecycle(initialValue = false)
 
     val isBulkRunning = quranBulkDownload is QuranBulkAyahDownloadUi.Running
+    val dateFormat = remember {
+        SimpleDateFormat("dd.MM.yyyy HH:mm", Locale.getDefault())
+    }
+    val sortedHistory = remember(quranReadingHistory) {
+        quranReadingHistory.sortedByDescending { it.timestamp }
+    }
+    val sortedTrace = remember(quranReadingTrace) {
+        quranReadingTrace.sortedByDescending { it.timestamp }
+    }
+    val lastReading = sortedHistory.firstOrNull()
 
     Scaffold(
         topBar = {
@@ -227,11 +247,114 @@ fun OtherBooksScreen(
                 }
             }
 
-            Text(
-                text = stringResource(R.string.other_books_placeholder),
-                style = MaterialTheme.typography.bodyLarge,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-            )
+            if (lastReading != null) {
+                Text(
+                    stringResource(R.string.other_books_quran_history_title),
+                    style = MaterialTheme.typography.titleSmall,
+                    color = MaterialTheme.colorScheme.primary,
+                    modifier = Modifier.padding(bottom = 8.dp, top = 4.dp),
+                )
+                Card(
+                    onClick = { onOpenQuranAyah(lastReading.surahNumber, lastReading.ayahNumber) },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(bottom = 12.dp),
+                    colors = CardDefaults.cardColors(
+                        containerColor = MaterialTheme.colorScheme.secondaryContainer.copy(alpha = 0.45f),
+                    ),
+                ) {
+                    Column(Modifier.padding(14.dp)) {
+                        Text(
+                            stringResource(R.string.other_books_quran_history_continue),
+                            style = MaterialTheme.typography.labelMedium,
+                            color = MaterialTheme.colorScheme.onSecondaryContainer,
+                        )
+                        Text(
+                            stringResource(
+                                R.string.quran_continue_reading_line,
+                                lastReading.surahNumber,
+                                lastReading.surahNameRu.ifBlank { "—" },
+                                lastReading.ayahNumber,
+                            ),
+                            style = MaterialTheme.typography.titleSmall,
+                            modifier = Modifier.padding(top = 4.dp),
+                        )
+                        Text(
+                            dateFormat.format(Date(lastReading.timestamp)),
+                            style = MaterialTheme.typography.labelSmall,
+                            color = MaterialTheme.colorScheme.onSecondaryContainer.copy(alpha = 0.85f),
+                            modifier = Modifier.padding(top = 4.dp),
+                        )
+                    }
+                }
+            }
+
+            if (sortedTrace.isNotEmpty()) {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(bottom = 6.dp),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
+                    Text(
+                        stringResource(R.string.other_books_quran_history_trace_title),
+                        style = MaterialTheme.typography.titleSmall,
+                        color = MaterialTheme.colorScheme.primary,
+                    )
+                    TextButton(onClick = onClearQuranReadingHistory) {
+                        Text(stringResource(R.string.other_books_quran_history_clear))
+                    }
+                }
+                Text(
+                    stringResource(R.string.other_books_quran_history_trace_hint),
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    modifier = Modifier.padding(bottom = 8.dp),
+                )
+                sortedTrace.take(30).forEach { trace ->
+                    Column(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .clickable { onOpenQuranAyah(trace.surahNumber, trace.ayahNumber) }
+                            .padding(vertical = 8.dp),
+                    ) {
+                        Text(
+                            stringResource(
+                                R.string.other_books_quran_history_trace_line,
+                                trace.surahNumber,
+                                trace.surahNameRu.ifBlank { "—" },
+                                trace.ayahNumber,
+                            ),
+                            style = MaterialTheme.typography.bodyMedium,
+                        )
+                        Text(
+                            buildString {
+                                append(dateFormat.format(Date(trace.timestamp)))
+                                if (trace.dwellSeconds > 0) {
+                                    append(" · ")
+                                    append(
+                                        context.getString(
+                                            R.string.other_books_quran_history_dwell,
+                                            trace.dwellSeconds,
+                                        ),
+                                    )
+                                }
+                            },
+                            style = MaterialTheme.typography.labelSmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            modifier = Modifier.padding(top = 2.dp),
+                        )
+                    }
+                    HorizontalDivider()
+                }
+            } else if (sortedHistory.isEmpty()) {
+                Text(
+                    text = stringResource(R.string.other_books_placeholder),
+                    style = MaterialTheme.typography.bodyLarge,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+            }
         }
     }
 

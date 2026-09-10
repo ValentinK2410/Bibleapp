@@ -101,7 +101,14 @@ fun DeepSeekAskScreen(
         SimpleDateFormat("dd.MM.yyyy HH:mm", Locale.getDefault())
     }
     val hasConversation = state.messages.any { it.role == "user" || it.role == "assistant" }
-    val tts = rememberAiChatTextToSpeech()
+    val saluteKey by viewModel.saluteSpeechAuthKey.collectAsStateWithLifecycle()
+    val gigaKey by viewModel.gigaChatAuthKey.collectAsStateWithLifecycle()
+    val saluteScope by viewModel.saluteSpeechScope.collectAsStateWithLifecycle()
+    val tts = rememberAiChatTextToSpeech(
+        saluteAuthKey = saluteKey,
+        gigaChatAuthKey = gigaKey,
+        saluteScope = saluteScope,
+    )
     var lastQuestion by remember { mutableStateOf("") }
     val speech = rememberAiSpeechToText(
         onPartial = { draft = it },

@@ -8,6 +8,9 @@
   SYN_ONLY=1 python3 scripts/build_bible_assets.py  # только синодальный
   WEB_ONLY=1 python3 scripts/build_bible_assets.py    # только WEB (медленно)
   WEB_SLEEP=2.0 WEB_ONLY=1 python3 scripts/build_bible_assets.py  # пауза между главами (сек)
+
+Новый русский перевод (НРП):
+  python3 scripts/build_nrt_assets.py
 """
 from __future__ import annotations
 

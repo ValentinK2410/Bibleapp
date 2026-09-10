@@ -688,6 +688,7 @@ WORD_MAP = {
 
     # Nouns - abstract
     "word": "слово", "words": "слова",
+    "speech": "речь", "speechless": "немой",
     "name": "имя", "names": "имена",
     "voice": "голос", "voices": "голоса",
     "sound": "звук", "sounds": "звуки",

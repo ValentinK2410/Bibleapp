@@ -24,6 +24,7 @@ import androidx.compose.material.icons.filled.CloudDownload
 import androidx.compose.material.icons.filled.Timer
 import androidx.compose.material.icons.filled.Pause
 import androidx.compose.material.icons.filled.PlayArrow
+import androidx.compose.material.icons.filled.Stop
 import androidx.compose.material.icons.automirrored.filled.PlaylistPlay
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.CircularProgressIndicator
@@ -259,7 +260,7 @@ fun BibleAudioBar(
                     }
 
                     IconButton(
-                        onClick = { BibleAudioPlayer.release() },
+                        onClick = { stopReaderChapterAudio() },
                         modifier = Modifier.size(28.dp),
                     ) {
                         Icon(
@@ -387,6 +388,83 @@ private fun SleepTimerDialog(
         },
         dismissButton = {},
     )
+}
+
+/** Компактная панель паузы и остановки озвучки (редактор заметок, без полной [BibleAudioBar]). */
+@Composable
+fun BibleAudioMiniBar(modifier: Modifier = Modifier) {
+    val ps by BibleAudioPlayer.state.collectAsState()
+    val isActive = ps.bookId.isNotBlank() || ps.isLoading
+    AnimatedVisibility(
+        visible = isActive,
+        enter = slideInVertically { -it },
+        exit = slideOutVertically { -it },
+        modifier = modifier,
+    ) {
+        val bookName = BibleCanon.byId(ps.bookId)?.abbrRu ?: ps.bookId
+        Surface(
+            modifier = Modifier.fillMaxWidth(),
+            color = MaterialTheme.colorScheme.primaryContainer,
+            tonalElevation = 2.dp,
+        ) {
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 8.dp, vertical = 4.dp),
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                if (ps.isLoading) {
+                    CircularProgressIndicator(Modifier.size(28.dp), strokeWidth = 2.dp)
+                } else {
+                    FilledTonalIconButton(
+                        onClick = { BibleAudioPlayer.togglePlay() },
+                        modifier = Modifier.size(36.dp),
+                    ) {
+                        Icon(
+                            if (ps.isPlaying) Icons.Default.Pause else Icons.Default.PlayArrow,
+                            contentDescription = stringResource(
+                                if (ps.isPlaying) R.string.audio_pause else R.string.audio_resume,
+                            ),
+                        )
+                    }
+                }
+                Column(
+                    modifier = Modifier
+                        .weight(1f)
+                        .padding(horizontal = 8.dp),
+                ) {
+                    Text(
+                        if (bookName.isNotBlank() && ps.chapter > 0) {
+                            "$bookName ${ps.chapter}"
+                        } else {
+                            stringResource(R.string.verse_action_play_narration)
+                        },
+                        style = MaterialTheme.typography.labelLarge,
+                        fontWeight = FontWeight.SemiBold,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis,
+                    )
+                    Text(
+                        if (ps.isPlaying) {
+                            stringResource(R.string.bible_audio_playing_hint)
+                        } else {
+                            stringResource(R.string.bible_audio_paused_hint)
+                        },
+                        style = MaterialTheme.typography.labelSmall,
+                        color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.8f),
+                        maxLines = 1,
+                    )
+                }
+                IconButton(onClick = { stopReaderChapterAudio() }) {
+                    Icon(
+                        Icons.Default.Stop,
+                        contentDescription = stringResource(R.string.audio_stop),
+                        tint = MaterialTheme.colorScheme.error,
+                    )
+                }
+            }
+        }
+    }
 }
 
 private fun formatMs(ms: Int): String {

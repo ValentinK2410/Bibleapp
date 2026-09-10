@@ -15,6 +15,7 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.DirectionsCar
 import androidx.compose.material.icons.filled.Face
 import androidx.compose.material.icons.filled.Gesture
 import androidx.compose.material.icons.filled.Phone
@@ -51,6 +52,7 @@ fun ExperimentHubScreen(
     onOpenSensorLab: () -> Unit,
     onOpenSoundLab: () -> Unit,
     onOpenWifi: () -> Unit,
+    onOpenAuto: () -> Unit,
 ) {
     Scaffold(
         topBar = {
@@ -134,6 +136,12 @@ fun ExperimentHubScreen(
                 title = stringResource(R.string.experiment_hub_section_sound_lab),
                 description = stringResource(R.string.experiment_hub_section_sound_lab_desc),
                 onClick = onOpenSoundLab,
+            )
+            ExperimentHubSectionButton(
+                icon = { Icon(Icons.Filled.DirectionsCar, contentDescription = null, modifier = Modifier.size(28.dp)) },
+                title = stringResource(R.string.experiment_hub_section_auto),
+                description = stringResource(R.string.experiment_hub_section_auto_desc),
+                onClick = onOpenAuto,
             )
         }
     }

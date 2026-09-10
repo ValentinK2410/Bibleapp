@@ -1,0 +1,128 @@
+[
+  {
+    "id": 1,
+    "name": "अर्जुनविषादयोग",
+    "transliteration": "Арджуна-вишада-йога",
+    "translation": "Сомнение Арджуны",
+    "total_verses": 47
+  },
+  {
+    "id": 2,
+    "name": "सांख्ययोग",
+    "transliteration": "Санкхья-йога",
+    "translation": "Йога знания",
+    "total_verses": 72
+  },
+  {
+    "id": 3,
+    "name": "कर्मयोग",
+    "transliteration": "Карма-йога",
+    "translation": "Йога действия",
+    "total_verses": 43
+  },
+  {
+    "id": 4,
+    "name": "ज्ञानकर्मसंन्यासयोग",
+    "transliteration": "Джняна-карма-санньяса-йога",
+    "translation": "Йога знания и отречения в действии",
+    "total_verses": 42
+  },
+  {
+    "id": 5,
+    "name": "कर्मसंन्यासयोग",
+    "transliteration": "Карма-санньяса-йога",
+    "translation": "Йога отречения от плодов действия",
+    "total_verses": 29
+  },
+  {
+    "id": 6,
+    "name": "ध्यानयोग",
+    "transliteration": "Дхьяна-йога",
+    "translation": "Йога медитации",
+    "total_verses": 47
+  },
+  {
+    "id": 7,
+    "name": "ज्ञानविज्ञानयोग",
+    "transliteration": "Джняна-виджняна-йога",
+    "translation": "Йога знания и различения",
+    "total_verses": 30
+  },
+  {
+    "id": 8,
+    "name": "अक्षरब्रह्मयोग",
+    "transliteration": "Акшара-брахма-йога",
+    "translation": "Йога нетленного Брахмана",
+    "total_verses": 28
+  },
+  {
+    "id": 9,
+    "name": "राजविद्याराजगुह्ययोग",
+    "transliteration": "Раджа-видья-раджа-гухья-йога",
+    "translation": "Царственное знание и тайна",
+    "total_verses": 34
+  },
+  {
+    "id": 10,
+    "name": "विभूतियोग",
+    "transliteration": "Вибхути-йога",
+    "translation": "Йога божественных проявлений",
+    "total_verses": 42
+  },
+  {
+    "id": 11,
+    "name": "विश्वरूपदर्शनयोग",
+    "transliteration": "Вишварупа-даршана-йога",
+    "translation": "Видение вселенского образа",
+    "total_verses": 55
+  },
+  {
+    "id": 12,
+    "name": "भक्तियोग",
+    "transliteration": "Бхакти-йога",
+    "translation": "Йога преданности",
+    "total_verses": 20
+  },
+  {
+    "id": 13,
+    "name": "क्षेत्रक्षेत्रज्ञविभागयोग",
+    "transliteration": "Кшетра-кшетраджня-вибхага-йога",
+    "translation": "Поле и знающий поле",
+    "total_verses": 35
+  },
+  {
+    "id": 14,
+    "name": "गुणत्रयविभागयोग",
+    "transliteration": "Гуна-трая-вибхага-йога",
+    "translation": "Три гуны природы",
+    "total_verses": 27
+  },
+  {
+    "id": 15,
+    "name": "पुरुषोत्तमयोग",
+    "transliteration": "Пурушоттама-йога",
+    "translation": "Йога Высшего Духа",
+    "total_verses": 20
+  },
+  {
+    "id": 16,
+    "name": "दैवासुरसम्पद्विभागयोग",
+    "transliteration": "Дайва-асура-сампад-вибхага-йога",
+    "translation": "Божественные и демонические свойства",
+    "total_verses": 24
+  },
+  {
+    "id": 17,
+    "name": "श्रद्धात्रयविभागयोग",
+    "transliteration": "Шраддха-трая-вибхага-йога",
+    "translation": "Три вида веры",
+    "total_verses": 28
+  },
+  {
+    "id": 18,
+    "name": "मोक्षसंन्यासयोग",
+    "transliteration": "Мокша-санньяса-йога",
+    "translation": "Йога освобождения и отречения",
+    "total_verses": 78
+  }
+]
