@@ -194,7 +194,10 @@ object TimemarkSharePackage {
             }
         }
 
-    private fun portableProjectJson(project: TimemarkProject): JSONObject {
+    internal fun portableProjectJson(
+        project: TimemarkProject,
+        stripImages: Boolean = false,
+    ): JSONObject {
         val audioName = File(project.audioFilePath).name.takeIf { it.isNotBlank() } ?: ""
         val narratorId = detectNarratorIdFromAudioPath(project.audioFilePath)
         return JSONObject().apply {
@@ -214,17 +217,24 @@ object TimemarkSharePackage {
                                 put("verseStart", cue.verseStart)
                                 cue.verseEnd?.let { put("verseEnd", it) }
                                 cue.note?.takeIf { it.isNotBlank() }?.let { put("note", it) }
-                                if (cue.attachments.isNotEmpty()) {
+                                val atts = if (stripImages) {
+                                    cue.attachments.filter { it.kind != "image" }
+                                } else {
+                                    cue.attachments
+                                }
+                                if (atts.isNotEmpty()) {
                                     put(
                                         "attachments",
                                         JSONArray().apply {
-                                            cue.attachments.forEach { att ->
+                                            atts.forEach { att ->
                                                 put(
                                                     JSONObject().apply {
                                                         put("kind", att.kind)
                                                         att.text?.takeIf { it.isNotBlank() }?.let { put("text", it) }
-                                                        att.path?.takeIf { it.isNotBlank() }?.let { p ->
-                                                            put("mediaPath", attachmentZipPath(p))
+                                                        if (!stripImages) {
+                                                            att.path?.takeIf { it.isNotBlank() }?.let { p ->
+                                                                put("mediaPath", attachmentZipPath(p))
+                                                            }
                                                         }
                                                     },
                                                 )
@@ -322,8 +332,9 @@ object TimemarkSharePackage {
             narratorId = json.optString("narratorId", "").trim(),
         )
 
+        val stableId = json.optString("id", "").trim().takeIf { it.isNotBlank() }
         return TimemarkProject(
-            id = UUID.randomUUID().toString(),
+            id = stableId ?: UUID.randomUUID().toString(),
             translationCode = translationCode,
             bookId = bookId,
             chapter = chapter,
@@ -331,6 +342,81 @@ object TimemarkSharePackage {
             audioFilePath = audioPath,
             cues = cues,
         )
+    }
+
+    fun importPortableProject(
+        context: Context,
+        json: JSONObject,
+        projectId: String? = null,
+    ): TimemarkProject? {
+        val audioDir = File(context.filesDir, "timemark_audio").apply { mkdirs() }
+        val attachDir = File(context.filesDir, "timemark_attachments").apply { mkdirs() }
+        val project = portableJsonToProject(context, json, emptyMap(), audioDir, attachDir) ?: return null
+        val id = projectId?.takeIf { it.isNotBlank() } ?: project.id
+        val saved = project.copy(id = id)
+        TimemarkStore.save(context, saved)
+        return saved
+    }
+
+    fun toPortableJson(project: TimemarkProject, includeId: Boolean = false): JSONObject {
+        val json = portableProjectJson(project)
+        if (includeId && project.id.isNotBlank()) {
+            json.put("id", project.id)
+        }
+        return json
+    }
+
+    suspend fun exportGithubPackZip(
+        context: Context,
+        scope: TimemarkShareScope,
+        translationCode: String,
+        bookId: String,
+        chapter: Int,
+    ): File = withContext(Dispatchers.IO) {
+        val projects = projectsForScope(context, scope, translationCode, bookId, chapter)
+        if (projects.isEmpty()) throw NothingToExportException()
+
+        val zipFile = File(
+            context.cacheDir,
+            "timemark_github_${System.currentTimeMillis()}.zip",
+        )
+        val items = JSONArray()
+        ZipOutputStream(FileOutputStream(zipFile)).use { zos ->
+            projects.forEach { project ->
+                val id = TimemarkGithubCatalog.projectId(
+                    project.translationCode,
+                    project.bookId,
+                    project.chapter,
+                )
+                val fileName = TimemarkGithubCatalog.projectFileName(
+                    project.translationCode,
+                    project.bookId,
+                    project.chapter,
+                )
+                val portable = portableProjectJson(project, stripImages = true)
+                portable.put("id", id)
+                zos.putNextEntry(ZipEntry("projects/$fileName"))
+                zos.write(portable.toString(2).toByteArray(Charsets.UTF_8))
+                zos.closeEntry()
+                items.put(
+                    TimemarkGithubCatalog.itemJson(
+                        id = id,
+                        translationCode = project.translationCode,
+                        bookId = project.bookId,
+                        chapter = project.chapter,
+                        title = project.title,
+                        cueCount = project.cues.size,
+                        narratorId = detectNarratorIdFromAudioPath(project.audioFilePath).orEmpty(),
+                        file = "projects/$fileName",
+                    ),
+                )
+            }
+            val catalog = TimemarkGithubCatalog.buildCatalogJson(items)
+            zos.putNextEntry(ZipEntry("catalog.json"))
+            zos.write(catalog.toString(2).toByteArray(Charsets.UTF_8))
+            zos.closeEntry()
+        }
+        zipFile
     }
 
     private fun detectNarratorIdFromAudioPath(path: String): String? {

@@ -1,5 +1,6 @@
 package com.example.bible.ui
 
+import android.content.Intent
 import android.media.MediaPlayer
 import android.net.Uri
 import android.util.Log
@@ -33,7 +34,10 @@ import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Image
 import androidx.compose.material.icons.filled.Pause
 import androidx.compose.material.icons.filled.PlayArrow
+import androidx.compose.material.icons.filled.CloudDownload
+import androidx.compose.material.icons.filled.Download
 import androidx.compose.material.icons.filled.Save
+import androidx.compose.material.icons.filled.Share
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
@@ -82,6 +86,11 @@ import com.example.bible.data.BibleUserImage
 import com.example.bible.data.TimemarkAttachment
 import com.example.bible.data.TimemarkCue
 import com.example.bible.data.TimemarkProject
+import androidx.core.content.FileProvider
+import com.example.bible.data.TimemarkShareImportError
+import com.example.bible.data.TimemarkShareImportOutcome
+import com.example.bible.data.TimemarkSharePackage
+import com.example.bible.data.TimemarkShareScope
 import com.example.bible.data.TimemarkStore
 import com.example.bible.data.TranslationId
 import com.example.bible.data.localAudioFile
@@ -91,9 +100,36 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.io.File
+import java.io.FileOutputStream
 import java.util.UUID
 
 private const val TAG = "TimemarkEditor"
+
+/** Маршрут редактора таймкодов; при bookId/chapter подставляет текущую главу читалки. */
+fun timemarkEditorRoute(
+    bookId: String? = null,
+    chapter: Int? = null,
+    translationCode: String? = null,
+    narratorId: String? = null,
+): String {
+    if (bookId.isNullOrBlank() || chapter == null || chapter <= 0) {
+        return "timemark_editor"
+    }
+    return buildString {
+        append("timemark_editor?bookId=")
+        append(Uri.encode(bookId))
+        append("&chapter=")
+        append(chapter)
+        if (!translationCode.isNullOrBlank()) {
+            append("&translationCode=")
+            append(Uri.encode(translationCode))
+        }
+        if (!narratorId.isNullOrBlank()) {
+            append("&narratorId=")
+            append(Uri.encode(narratorId))
+        }
+    }
+}
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -103,16 +139,45 @@ fun TimemarkEditorScreen(
     narratorId: String,
     onBack: () -> Unit,
     mediaLibraryImages: List<BibleUserImage> = emptyList(),
+    initialBookId: String? = null,
+    initialChapter: Int? = null,
+    initialNarratorId: String? = null,
+    autoSelectDownloadedAudio: Boolean = false,
 ) {
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
 
     var title by remember { mutableStateOf("") }
     var projectId by remember { mutableStateOf<String?>(null) }
-    var bookId by remember { mutableStateOf(BibleCanon.allBooks.first().id) }
-    var chapterNum by remember { mutableIntStateOf(1) }
+    var bookId by remember(initialBookId) {
+        mutableStateOf(initialBookId ?: BibleCanon.allBooks.first().id)
+    }
+    var chapterNum by remember(initialChapter) {
+        mutableIntStateOf(initialChapter?.coerceAtLeast(1) ?: 1)
+    }
     var translationPick by remember { mutableStateOf(translation) }
     var audioPath by remember { mutableStateOf<String?>(null) }
+    val effectiveNarratorId = initialNarratorId?.takeIf { it.isNotBlank() } ?: narratorId
+
+    LaunchedEffect(translation) {
+        translationPick = translation
+    }
+
+    LaunchedEffect(autoSelectDownloadedAudio, initialBookId, initialChapter, bookId, chapterNum, translationPick, effectiveNarratorId) {
+        if (!autoSelectDownloadedAudio) return@LaunchedEffect
+        if (initialBookId.isNullOrBlank() || initialChapter == null || initialChapter <= 0) return@LaunchedEffect
+        val narrator = narratorForTranslation(translationPick, effectiveNarratorId)
+        val downloaded = withContext(Dispatchers.IO) {
+            localAudioFile(context, narrator.id, bookId, chapterNum)
+        }
+        if (downloaded.exists() && downloaded.length() > 1024) {
+            audioPath = downloaded.absolutePath
+        }
+        if (title.isBlank()) {
+            val bookName = BibleCanon.byId(bookId)?.nameRu ?: bookId
+            title = "$bookName $chapterNum"
+        }
+    }
 
     val cues = remember { mutableStateListOf<TimemarkCue>() }
     var cuesVersion by remember { mutableIntStateOf(0) }
@@ -130,8 +195,11 @@ fun TimemarkEditorScreen(
     var isPlaying by remember { mutableStateOf(false) }
 
     val canon = BibleCanon.byId(bookId)
-    val book = library.getBook(translationPick, bookId)
-    val verses = book?.chapters?.find { it.number == chapterNum }?.verses.orEmpty()
+    val chapterLoad = rememberLoadedChapter(library, translationPick, bookId, chapterNum)
+    val verses = when (chapterLoad) {
+        is BibleChapterLoadState.Ready -> chapterLoad.chapter.verses
+        else -> emptyList()
+    }
 
     LaunchedEffect(bookId, chapterNum, verses) {
         if (verses.isNotEmpty()) {
@@ -280,6 +348,8 @@ fun TimemarkEditorScreen(
     }
 
     var showLoadDialog by remember { mutableStateOf(false) }
+    var showShareMenu by remember { mutableStateOf(false) }
+    var showGithubDialog by remember { mutableStateOf(false) }
     var loadDialogRefresh by remember { mutableIntStateOf(0) }
     var showDeleteChapterDialog by remember { mutableStateOf(false) }
     var showDeleteBookDialog by remember { mutableStateOf(false) }
@@ -324,6 +394,121 @@ fun TimemarkEditorScreen(
         }
     }
 
+    fun shareTimemarks(shareScope: TimemarkShareScope) {
+        scope.launch {
+            try {
+                val zip = withContext(Dispatchers.IO) {
+                    TimemarkSharePackage.exportToZip(
+                        context = context,
+                        scope = shareScope,
+                        translationCode = translationPick.code,
+                        bookId = bookId,
+                        chapter = chapterNum,
+                    )
+                }
+                val shareUri = FileProvider.getUriForFile(
+                    context,
+                    "${context.packageName}.provider",
+                    zip,
+                )
+                val send = Intent(Intent.ACTION_SEND).apply {
+                    type = "application/zip"
+                    putExtra(Intent.EXTRA_STREAM, shareUri)
+                    addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+                }
+                context.startActivity(
+                    Intent.createChooser(send, context.getString(R.string.timemark_share_chooser_title)),
+                )
+            } catch (_: TimemarkSharePackage.NothingToExportException) {
+                Toast.makeText(context, R.string.timemark_share_empty, Toast.LENGTH_SHORT).show()
+            } catch (e: Exception) {
+                Log.e(TAG, "share timemarks", e)
+                Toast.makeText(context, R.string.timemark_share_failed, Toast.LENGTH_SHORT).show()
+            }
+        }
+    }
+
+    fun shareGithubPack(shareScope: TimemarkShareScope) {
+        scope.launch {
+            try {
+                val zip = withContext(Dispatchers.IO) {
+                    TimemarkSharePackage.exportGithubPackZip(
+                        context = context,
+                        scope = shareScope,
+                        translationCode = translationPick.code,
+                        bookId = bookId,
+                        chapter = chapterNum,
+                    )
+                }
+                val shareUri = FileProvider.getUriForFile(
+                    context,
+                    "${context.packageName}.provider",
+                    zip,
+                )
+                val send = Intent(Intent.ACTION_SEND).apply {
+                    type = "application/zip"
+                    putExtra(Intent.EXTRA_STREAM, shareUri)
+                    addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+                }
+                context.startActivity(
+                    Intent.createChooser(send, context.getString(R.string.timemark_github_export_chooser)),
+                )
+            } catch (_: TimemarkSharePackage.NothingToExportException) {
+                Toast.makeText(context, R.string.timemark_share_empty, Toast.LENGTH_SHORT).show()
+            } catch (e: Exception) {
+                Log.e(TAG, "export github timemarks", e)
+                Toast.makeText(context, R.string.timemark_share_failed, Toast.LENGTH_SHORT).show()
+            }
+        }
+    }
+
+    val importTimemarkLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.OpenDocument(),
+    ) { uri: Uri? ->
+        if (uri == null) return@rememberLauncherForActivityResult
+        scope.launch {
+            val tmp = File(context.cacheDir, "timemark_import_${System.currentTimeMillis()}.zip")
+            try {
+                context.contentResolver.openInputStream(uri)?.use { input ->
+                    FileOutputStream(tmp).use { output -> input.copyTo(output) }
+                } ?: run {
+                    Toast.makeText(context, R.string.timemark_import_failed, Toast.LENGTH_SHORT).show()
+                    return@launch
+                }
+                when (
+                    val outcome = withContext(Dispatchers.IO) {
+                        TimemarkSharePackage.importFromZip(context, tmp)
+                    }
+                ) {
+                    is TimemarkShareImportOutcome.Ok -> {
+                        loadDialogRefresh++
+                        Toast.makeText(
+                            context,
+                            context.getString(R.string.timemark_import_ok, outcome.imported),
+                            Toast.LENGTH_LONG,
+                        ).show()
+                    }
+                    is TimemarkShareImportOutcome.Err -> {
+                        val msgRes = when (outcome.error) {
+                            TimemarkShareImportError.MISSING_MANIFEST,
+                            TimemarkShareImportError.IO_OR_PARSE,
+                            -> R.string.timemark_import_failed
+                            TimemarkShareImportError.WRONG_FORMAT -> R.string.timemark_import_wrong_format
+                            TimemarkShareImportError.FULL_APP_BACKUP -> R.string.timemark_import_full_backup
+                            TimemarkShareImportError.NO_PROJECTS -> R.string.timemark_import_empty
+                        }
+                        Toast.makeText(context, msgRes, Toast.LENGTH_LONG).show()
+                    }
+                }
+            } catch (e: Exception) {
+                Log.e(TAG, "import timemarks", e)
+                Toast.makeText(context, R.string.timemark_import_failed, Toast.LENGTH_SHORT).show()
+            } finally {
+                runCatching { tmp.delete() }
+            }
+        }
+    }
+
     Scaffold(
         topBar = {
             CenterAlignedTopAppBar(
@@ -336,6 +521,71 @@ fun TimemarkEditorScreen(
                 actions = {
                     TextButton(onClick = { showLoadDialog = true }) {
                         Text(stringResource(R.string.timemark_editor_open))
+                    }
+                    IconButton(onClick = { showShareMenu = true }) {
+                        Icon(
+                            Icons.Default.Share,
+                            contentDescription = stringResource(R.string.timemark_share_menu_cd),
+                        )
+                    }
+                    DropdownMenu(
+                        expanded = showShareMenu,
+                        onDismissRequest = { showShareMenu = false },
+                    ) {
+                        DropdownMenuItem(
+                            text = { Text(stringResource(R.string.timemark_share_chapter)) },
+                            onClick = {
+                                showShareMenu = false
+                                shareTimemarks(TimemarkShareScope.CHAPTER)
+                            },
+                            leadingIcon = { Icon(Icons.Default.Share, contentDescription = null) },
+                        )
+                        DropdownMenuItem(
+                            text = { Text(stringResource(R.string.timemark_share_book)) },
+                            onClick = {
+                                showShareMenu = false
+                                shareTimemarks(TimemarkShareScope.BOOK)
+                            },
+                            leadingIcon = { Icon(Icons.Default.Share, contentDescription = null) },
+                        )
+                        DropdownMenuItem(
+                            text = { Text(stringResource(R.string.timemark_share_all)) },
+                            onClick = {
+                                showShareMenu = false
+                                shareTimemarks(TimemarkShareScope.ALL)
+                            },
+                            leadingIcon = { Icon(Icons.Default.Share, contentDescription = null) },
+                        )
+                        DropdownMenuItem(
+                            text = { Text(stringResource(R.string.timemark_github_export_all)) },
+                            onClick = {
+                                showShareMenu = false
+                                shareGithubPack(TimemarkShareScope.ALL)
+                            },
+                            leadingIcon = { Icon(Icons.Default.CloudDownload, contentDescription = null) },
+                        )
+                    }
+                    IconButton(onClick = { showGithubDialog = true }) {
+                        Icon(
+                            Icons.Default.CloudDownload,
+                            contentDescription = stringResource(R.string.timemark_github_cd),
+                        )
+                    }
+                    IconButton(
+                        onClick = {
+                            importTimemarkLauncher.launch(
+                                arrayOf(
+                                    "application/zip",
+                                    "application/x-zip-compressed",
+                                    "application/octet-stream",
+                                ),
+                            )
+                        },
+                    ) {
+                        Icon(
+                            Icons.Default.Download,
+                            contentDescription = stringResource(R.string.timemark_import_cd),
+                        )
                     }
                     IconButton(
                         onClick = {
@@ -492,8 +742,8 @@ fun TimemarkEditorScreen(
 
             Spacer(Modifier.height(12.dp))
             Text(stringResource(R.string.timemark_audio_section), style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.Bold)
-            val narrator = narratorForTranslation(translationPick, narratorId)
-            val downloaded = remember(bookId, chapterNum, narrator.id, narratorId) {
+            val narrator = narratorForTranslation(translationPick, effectiveNarratorId)
+            val downloaded = remember(bookId, chapterNum, narrator.id, effectiveNarratorId) {
                 localAudioFile(context, narrator.id, bookId, chapterNum)
             }
             Row(
@@ -772,6 +1022,16 @@ fun TimemarkEditorScreen(
             confirmButton = {
                 TextButton(onClick = { showLoadDialog = false }) { Text(stringResource(R.string.timemark_close)) }
             },
+        )
+    }
+
+    if (showGithubDialog) {
+        TimemarkGithubDialog(
+            translationCode = translationPick.code,
+            bookId = bookId,
+            chapter = chapterNum,
+            onDismiss = { showGithubDialog = false },
+            onImported = { loadDialogRefresh++ },
         )
     }
 
