@@ -154,6 +154,7 @@ fun UserMediaPlaylistsListScreen(
     val allPlaylists by viewModel.userMediaPlaylists.collectAsStateWithLifecycle()
     val videos by viewModel.bibleUserVideos.collectAsStateWithLifecycle()
     val audios by viewModel.bibleUserAudios.collectAsStateWithLifecycle()
+    val videoThoughts by viewModel.userVideoThoughts.collectAsStateWithLifecycle()
     val playlists =
         remember(allPlaylists, kind) {
             allPlaylists
@@ -263,6 +264,8 @@ fun UserMediaPlaylistsListScreen(
                     PlaylistLookCard(
                         playlist = pl,
                         fileCount = pl.itemIds.size,
+                        hasVideoThoughts = kind == UserMediaPlaylistKind.VIDEO &&
+                            pl.itemIds.any { videoThoughts[it].orEmpty().isNotEmpty() },
                         onClick = { onOpenPlaylist(pl.id) },
                         trailing = {
                             Box {
@@ -791,6 +794,7 @@ fun UserMediaPlaylistDetailScreen(
                                         metaLine = metaLine,
                                         videoFile = f,
                                         progress = playbackProgress[mediaId],
+                                        hasThoughts = videoThoughts[mediaId].orEmpty().isNotEmpty(),
                                         onToggleWatched = {
                                             val p = playbackProgress[mediaId]
                                             if (p?.completed == true) {
@@ -1301,6 +1305,7 @@ private fun PlaylistEntryTextBlock(
     progress: UserMediaPlaybackProgress?,
     kind: UserMediaKind,
     modifier: Modifier = Modifier,
+    hasThoughts: Boolean = false,
 ) {
     Column(modifier) {
         Text(
@@ -1320,6 +1325,15 @@ private fun PlaylistEntryTextBlock(
             overflow = TextOverflow.Ellipsis,
             modifier = Modifier.padding(top = 2.dp),
         )
+        if (hasThoughts) {
+            Text(
+                "есть мысли",
+                style = MaterialTheme.typography.labelSmall,
+                color = MaterialTheme.colorScheme.tertiary,
+                maxLines = 1,
+                modifier = Modifier.padding(top = 2.dp),
+            )
+        }
         val progressLabel = progress.completedLabelRu(kind)
         if (progress != null && progress.percent > 0f && !progress.completed) {
             LinearProgressIndicator(
@@ -1356,6 +1370,7 @@ private fun VideoPlaylistEntry(
     metaLine: String,
     videoFile: File,
     progress: UserMediaPlaybackProgress? = null,
+    hasThoughts: Boolean = false,
     onToggleWatched: () -> Unit = {},
     onPlay: () -> Unit,
     onShare: () -> Unit,
@@ -1380,6 +1395,13 @@ private fun VideoPlaylistEntry(
                 progress = progress,
                 modifier = Modifier.align(Alignment.BottomCenter),
             )
+            if (hasThoughts) {
+                VideoHasThoughtsBadge(
+                    modifier = Modifier
+                        .align(Alignment.TopEnd)
+                        .padding(3.dp),
+                )
+            }
         }
         PlaylistEntryTextBlock(
             title = title,
@@ -1388,6 +1410,7 @@ private fun VideoPlaylistEntry(
             metaSp = metaSp,
             progress = progress,
             kind = UserMediaKind.VIDEO,
+            hasThoughts = hasThoughts,
             modifier = Modifier
                 .weight(1f)
                 .padding(horizontal = 8.dp)

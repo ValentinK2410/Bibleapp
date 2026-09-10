@@ -26,6 +26,7 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.StickyNote2
 import androidx.compose.material.icons.filled.Image
 import androidx.compose.material.icons.filled.MusicNote
 import androidx.compose.material.icons.filled.Palette
@@ -129,6 +130,7 @@ fun PlaylistLookCard(
     fileCount: Int,
     onClick: () -> Unit,
     trailing: @Composable () -> Unit,
+    hasVideoThoughts: Boolean = false,
 ) {
     Box(
         modifier = Modifier
@@ -162,14 +164,27 @@ fun PlaylistLookCard(
                         append(" · ")
                     }
                     append("$fileCount файлов")
+                    if (hasVideoThoughts) append(" · есть мысли")
                 }
-                Text(
-                    line,
-                    color = Color.White.copy(alpha = 0.86f),
-                    style = MaterialTheme.typography.labelMedium,
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis,
-                )
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    if (hasVideoThoughts) {
+                        Icon(
+                            Icons.AutoMirrored.Filled.StickyNote2,
+                            contentDescription = "В плейлисте есть видео с мыслями",
+                            tint = Color(0xFFFFC107),
+                            modifier = Modifier
+                                .padding(end = 6.dp)
+                                .size(16.dp),
+                        )
+                    }
+                    Text(
+                        line,
+                        color = Color.White.copy(alpha = 0.86f),
+                        style = MaterialTheme.typography.labelMedium,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis,
+                    )
+                }
             }
             trailing()
         }

@@ -10,9 +10,11 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.OpenInNew
+import androidx.compose.material.icons.automirrored.filled.StickyNote2
 import androidx.compose.material.icons.automirrored.filled.PlaylistPlay
 import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.Delete
@@ -38,6 +40,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.TextUnit
@@ -61,6 +64,25 @@ internal fun mediaLibrarySourceLabelRu(source: String): String = when (source) {
 internal fun mediaLibrarySizeMb(bytes: Long): String =
     "%.1f МБ".format(bytes / (1024.0 * 1024.0))
 
+/** Метка на превью: у этого видео есть мысли. */
+@Composable
+internal fun VideoHasThoughtsBadge(modifier: Modifier = Modifier) {
+    Box(
+        modifier
+            .size(22.dp)
+            .clip(CircleShape)
+            .background(Color.Black.copy(alpha = 0.72f)),
+        contentAlignment = Alignment.Center,
+    ) {
+        Icon(
+            Icons.AutoMirrored.Filled.StickyNote2,
+            contentDescription = "Есть мысли",
+            tint = Color(0xFFFFC107),
+            modifier = Modifier.size(13.dp),
+        )
+    }
+}
+
 @Composable
 internal fun LibraryCompactVideoRow(
     title: String,
@@ -69,6 +91,7 @@ internal fun LibraryCompactVideoRow(
     metaLine: String,
     videoFile: File,
     progress: UserMediaPlaybackProgress?,
+    hasThoughts: Boolean = false,
     onPlay: () -> Unit,
     onEdit: () -> Unit,
     onToggleWatched: () -> Unit,
@@ -93,6 +116,13 @@ internal fun LibraryCompactVideoRow(
                 progress = progress,
                 modifier = Modifier.align(Alignment.BottomCenter),
             )
+            if (hasThoughts) {
+                VideoHasThoughtsBadge(
+                    modifier = Modifier
+                        .align(Alignment.TopEnd)
+                        .padding(3.dp),
+                )
+            }
         }
         LibraryCompactTextBlock(
             title = title,
@@ -101,6 +131,7 @@ internal fun LibraryCompactVideoRow(
             metaSp = metaSp,
             progress = progress,
             kind = UserMediaKind.VIDEO,
+            hasThoughts = hasThoughts,
             modifier = Modifier
                 .weight(1f)
                 .padding(horizontal = 8.dp)
@@ -212,6 +243,7 @@ private fun LibraryCompactTextBlock(
     progress: UserMediaPlaybackProgress?,
     kind: UserMediaKind,
     modifier: Modifier = Modifier,
+    hasThoughts: Boolean = false,
 ) {
     Column(modifier) {
         Text(
@@ -231,6 +263,15 @@ private fun LibraryCompactTextBlock(
             overflow = TextOverflow.Ellipsis,
             modifier = Modifier.padding(top = 2.dp),
         )
+        if (hasThoughts) {
+            Text(
+                "есть мысли",
+                style = MaterialTheme.typography.labelSmall,
+                color = MaterialTheme.colorScheme.tertiary,
+                maxLines = 1,
+                modifier = Modifier.padding(top = 2.dp),
+            )
+        }
         val progressLabel = progress.completedLabelRu(kind)
         if (progress != null && progress.percent > 0f && !progress.completed) {
             LinearProgressIndicator(

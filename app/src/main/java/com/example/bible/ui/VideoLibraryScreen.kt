@@ -402,6 +402,7 @@ fun VideoLibraryScreen(
                             metaLine = metaLine,
                             videoFile = f,
                             progress = playbackProgress[vid.id],
+                            hasThoughts = videoThoughts[vid.id].orEmpty().isNotEmpty(),
                             onPlay = {
                                 if (playableFiltered.isEmpty()) {
                                     Toast.makeText(context, "Нет файлов для воспроизведения", Toast.LENGTH_SHORT).show()
