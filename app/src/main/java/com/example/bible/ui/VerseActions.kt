@@ -5,11 +5,6 @@ import android.content.ClipboardManager
 import android.content.Context
 import android.content.Intent
 import android.speech.tts.TextToSpeech
-import android.text.InputType
-import android.view.ViewGroup
-import android.view.WindowManager
-import android.widget.EditText
-import android.widget.FrameLayout
 import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
@@ -18,8 +13,11 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.FlowRow
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.Comment
 import androidx.compose.material.icons.automirrored.filled.VolumeUp
@@ -47,7 +45,9 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.ListItem
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
+import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
@@ -56,9 +56,9 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
@@ -160,76 +160,6 @@ private fun applyVerseRangeCopy(
             verseNumbers = verses,
             verseTextsByNumber = texts,
         )
-    }
-}
-
-@Composable
-private fun VerseRangeAndroidDialog(
-    snap: VerseRangeDialogSnapshot,
-    initialDraft: String,
-    onConfirm: (String) -> Unit,
-    onDismiss: () -> Unit,
-) {
-    val context = LocalContext.current
-    val confirmLatest = rememberUpdatedState(onConfirm)
-    val dismissLatest = rememberUpdatedState(onDismiss)
-    DisposableEffect(snap.target.ref, snap.mode, snap.chapterVerseCount) {
-        val density = context.resources.displayMetrics.density
-        val pad = (20 * density).toInt()
-        val input = EditText(context).apply {
-            setText(initialDraft)
-            setSelection(text.length)
-            inputType = InputType.TYPE_CLASS_TEXT
-            hint = context.getString(R.string.verse_copy_audio_link_range_example)
-            isSingleLine = true
-        }
-        val box = FrameLayout(context).apply {
-            setPadding(pad, (8 * density).toInt(), pad, 0)
-            addView(
-                input,
-                FrameLayout.LayoutParams(
-                    ViewGroup.LayoutParams.MATCH_PARENT,
-                    ViewGroup.LayoutParams.WRAP_CONTENT,
-                ),
-            )
-        }
-        val isAudio = snap.mode == VerseRangeDialogMode.COPY_AUDIO
-        val dlg = android.app.AlertDialog.Builder(context)
-            .setTitle(
-                context.getString(
-                    if (isAudio) R.string.verse_copy_audio_link_range_title
-                    else R.string.verse_copy_range_title,
-                ),
-            )
-            .setMessage(
-                context.getString(
-                    R.string.verse_copy_audio_link_range_hint,
-                    snap.target.ref.verse,
-                    snap.chapterVerseCount.coerceAtLeast(snap.target.ref.verse),
-                ),
-            )
-            .setView(box)
-            .setPositiveButton(R.string.verse_copy_audio_link_copy) { _, _ ->
-                confirmLatest.value(input.text?.toString().orEmpty())
-            }
-            .setNegativeButton(R.string.timemark_close) { _, _ ->
-                dismissLatest.value()
-            }
-            .setOnCancelListener { dismissLatest.value() }
-            .create()
-        dlg.setCanceledOnTouchOutside(false)
-        dlg.setOnShowListener {
-            input.requestFocus()
-            dlg.window?.setSoftInputMode(
-                WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_VISIBLE or
-                    WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE,
-            )
-        }
-        dlg.show()
-        onDispose {
-            dlg.setOnShowListener(null)
-            if (dlg.isShowing) dlg.dismiss()
-        }
     }
 }
 
@@ -610,29 +540,11 @@ fun VerseActionsBottomSheet(
     var previewAttachment by remember { mutableStateOf<VerseAttachment?>(null) }
     var rangeDialog by remember { mutableStateOf<VerseRangeDialogSnapshot?>(null) }
     var rangeDraft by remember { mutableStateOf("") }
-    val suppressSheetDismiss = remember { mutableStateOf(false) }
     previewAttachment?.let { att ->
         AttachmentPreviewDialog(
             attachment = att,
             onDismiss = { previewAttachment = null },
             onPauseMainAudio = onPauseMainAudioForAttachment,
-        )
-    }
-
-    rangeDialog?.let { snap ->
-        VerseRangeAndroidDialog(
-            snap = snap,
-            initialDraft = rangeDraft,
-            onConfirm = { raw ->
-                applyVerseRangeCopy(context, snap, raw)
-                rangeDialog = null
-                suppressSheetDismiss.value = false
-                onDismiss()
-            },
-            onDismiss = {
-                rangeDialog = null
-                suppressSheetDismiss.value = false
-            },
         )
     }
 
@@ -683,7 +595,6 @@ fun VerseActionsBottomSheet(
     }
 
     fun openRangeDialog(mode: VerseRangeDialogMode) {
-        suppressSheetDismiss.value = true
         rangeDraft = (target.ref.verse + 1).coerceAtMost(chapterVerseCount).toString()
         rangeDialog = VerseRangeDialogSnapshot(
             mode = mode,
@@ -692,7 +603,6 @@ fun VerseActionsBottomSheet(
             chapterVerseTexts = chapterVerseTexts,
             translation = translation,
         )
-        onDismiss()
     }
 
     val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
@@ -766,14 +676,67 @@ fun VerseActionsBottomSheet(
     }
     val primaryNote = notesAtVerse.firstOrNull()
 
-    if (rangeDialog == null) {
     ModalBottomSheet(
-        onDismissRequest = {
-            if (suppressSheetDismiss.value) return@ModalBottomSheet
-            onDismiss()
-        },
+        onDismissRequest = onDismiss,
         sheetState = sheetState,
     ) {
+        val snap = rangeDialog
+        if (snap != null) {
+            val isAudio = snap.mode == VerseRangeDialogMode.COPY_AUDIO
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .imePadding()
+                    .padding(horizontal = 16.dp, bottom = 24.dp),
+            ) {
+                Text(
+                    stringResource(
+                        if (isAudio) R.string.verse_copy_audio_link_range_title
+                        else R.string.verse_copy_range_title,
+                    ),
+                    style = MaterialTheme.typography.titleMedium,
+                    modifier = Modifier.padding(top = 8.dp, bottom = 8.dp),
+                )
+                Text(
+                    stringResource(
+                        R.string.verse_copy_audio_link_range_hint,
+                        snap.target.ref.verse,
+                        snap.chapterVerseCount.coerceAtLeast(snap.target.ref.verse),
+                    ),
+                    style = MaterialTheme.typography.bodyMedium,
+                )
+                OutlinedTextField(
+                    value = rangeDraft,
+                    onValueChange = { rangeDraft = it.filter { ch -> ch.isDigit() || ch in ",-*" } },
+                    label = { Text(stringResource(R.string.verse_copy_audio_link_range_end)) },
+                    placeholder = { Text(stringResource(R.string.verse_copy_audio_link_range_example)) },
+                    singleLine = true,
+                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Text),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(top = 8.dp),
+                )
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(top = 8.dp),
+                    horizontalArrangement = Arrangement.End,
+                ) {
+                    TextButton(onClick = { rangeDialog = null }) {
+                        Text(stringResource(R.string.timemark_close))
+                    }
+                    TextButton(
+                        onClick = {
+                            applyVerseRangeCopy(context, snap, rangeDraft)
+                            rangeDialog = null
+                            onDismiss()
+                        },
+                    ) {
+                        Text(stringResource(R.string.verse_copy_audio_link_copy))
+                    }
+                }
+            }
+        } else {
         Column(Modifier.padding(bottom = 24.dp)) {
             Text(
                 text = stringResource(
@@ -1200,6 +1163,6 @@ fun VerseActionsBottomSheet(
                 }
             }
         }
-    }
+        }
     }
 }
