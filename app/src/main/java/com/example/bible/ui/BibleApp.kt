@@ -5215,7 +5215,6 @@ private fun ReaderContent(
     var selectionInfo by remember { mutableStateOf<VerseHighlightSelection?>(null) }
     var clearSelectionSignal by remember { mutableIntStateOf(0) }
     var verseActionsTarget by remember { mutableStateOf<VerseActionTarget?>(null) }
-    var verseRangeCopy by remember { mutableStateOf<VerseRangeCopyRequest?>(null) }
     var deepSeekTarget by remember { mutableStateOf<VerseActionTarget?>(null) }
     var gigaChatTarget by remember { mutableStateOf<VerseActionTarget?>(null) }
     var gigaChatInitialScope by remember { mutableStateOf<com.example.bible.data.DeepSeekPassageScope?>(null) }
@@ -5778,11 +5777,6 @@ private fun ReaderContent(
             translation = translation,
             chapterVerseCount = verses.size,
             chapterVerseTexts = chapterVerseTexts,
-            onCopyVerseRange = { verseRangeCopy = it },
-        )
-        VerseRangeCopyDialogHost(
-            request = verseRangeCopy,
-            onDismiss = { verseRangeCopy = null },
         )
         deepSeekTarget?.let { t ->
             DeepSeekVerseDialog(

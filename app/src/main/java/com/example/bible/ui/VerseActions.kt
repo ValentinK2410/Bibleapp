@@ -1,11 +1,13 @@
 package com.example.bible.ui
 
+import android.app.Activity
 import android.app.AlertDialog
 import android.os.Handler
 import android.os.Looper
 import android.content.ClipData
 import android.content.ClipboardManager
 import android.content.Context
+import android.content.ContextWrapper
 import android.content.Intent
 import android.speech.tts.TextToSpeech
 import android.text.InputType
@@ -165,46 +167,48 @@ private fun applyVerseRangeCopy(
     }
 }
 
-@Composable
-fun VerseRangeCopyDialogHost(
-    request: VerseRangeCopyRequest?,
-    onDismiss: () -> Unit,
-) {
-    val context = LocalContext.current
-    val dialogKey = request?.let { "${it.target.ref.toKey()}:${it.audioLink}" }
-    DisposableEffect(dialogKey) {
-        val snap = request ?: return@DisposableEffect onDispose { }
-        val density = context.resources.displayMetrics.density
+private var activeVerseRangeCopyDialog: AlertDialog? = null
+
+private tailrec fun Context.findDialogActivity(): Activity? = when (this) {
+    is Activity -> this
+    is ContextWrapper -> baseContext.findDialogActivity()
+    else -> null
+}
+
+/** Системный диапазон стихов: не привязан к Compose, чтобы клавиатура не закрывала окно. */
+internal fun showVerseRangeCopyDialog(context: Context, snap: VerseRangeCopyRequest) {
+    val activity = context.findDialogActivity() ?: return
+    activeVerseRangeCopyDialog?.dismiss()
+    activeVerseRangeCopyDialog = null
+    val title = activity.getString(
+        if (snap.audioLink) {
+            R.string.verse_copy_audio_link_range_title
+        } else {
+            R.string.verse_copy_range_title
+        },
+    )
+    val hintText = activity.getString(
+        R.string.verse_copy_audio_link_range_hint,
+        snap.target.ref.verse,
+        snap.chapterVerseCount.coerceAtLeast(snap.target.ref.verse),
+    )
+    val defaultEnd = (snap.target.ref.verse + 1)
+        .coerceAtMost(snap.chapterVerseCount)
+        .toString()
+    Handler(Looper.getMainLooper()).postDelayed({
+        if (activity.isFinishing || activity.isDestroyed) return@postDelayed
+        val density = activity.resources.displayMetrics.density
         val padPx = (16 * density).toInt()
-        val title = context.getString(
-            if (snap.audioLink) {
-                R.string.verse_copy_audio_link_range_title
-            } else {
-                R.string.verse_copy_range_title
-            },
-        )
-        val hintText = context.getString(
-            R.string.verse_copy_audio_link_range_hint,
-            snap.target.ref.verse,
-            snap.chapterVerseCount.coerceAtLeast(snap.target.ref.verse),
-        )
-        val defaultEnd = (snap.target.ref.verse + 1)
-            .coerceAtMost(snap.chapterVerseCount)
-            .toString()
-        val input = EditText(context).apply {
+        val input = EditText(activity).apply {
             setText(defaultEnd)
             setSelection(text.length)
             inputType = InputType.TYPE_CLASS_TEXT
-            setHint(context.getString(R.string.verse_copy_audio_link_range_example))
+            setHint(activity.getString(R.string.verse_copy_audio_link_range_example))
         }
-        val container = LinearLayout(context).apply {
+        val container = LinearLayout(activity).apply {
             orientation = LinearLayout.VERTICAL
             setPadding(padPx, padPx, padPx, 0)
-            addView(
-                TextView(context).apply {
-                    text = hintText
-                },
-            )
+            addView(TextView(activity).apply { text = hintText })
             addView(
                 input,
                 LinearLayout.LayoutParams(
@@ -213,46 +217,38 @@ fun VerseRangeCopyDialogHost(
                 ).apply { topMargin = (8 * density).toInt() },
             )
         }
-        var finished = false
-        var dialog: AlertDialog? = null
-        fun finish() {
-            if (finished) return
-            finished = true
-            onDismiss()
-        }
-        val handler = Handler(Looper.getMainLooper())
-        val showRunnable = Runnable {
-            if (finished) return@Runnable
-            dialog = AlertDialog.Builder(context)
-                .setTitle(title)
-                .setView(container)
-                .setNegativeButton(context.getString(R.string.timemark_close)) { d, _ ->
-                    d.dismiss()
-                    finish()
+        val dialog = AlertDialog.Builder(activity)
+            .setTitle(title)
+            .setView(container)
+            .setNegativeButton(activity.getString(R.string.timemark_close)) { d, _ -> d.dismiss() }
+            .setPositiveButton(activity.getString(R.string.verse_copy_audio_link_copy)) { d, _ ->
+                applyVerseRangeCopy(activity, snap, input.text.toString())
+                d.dismiss()
+            }
+            .create()
+            .also { built ->
+                built.setCancelable(false)
+                built.setCanceledOnTouchOutside(false)
+                val previousSoftInput = activity.window.attributes.softInputMode
+                activity.window.setSoftInputMode(
+                    WindowManager.LayoutParams.SOFT_INPUT_ADJUST_PAN or
+                        WindowManager.LayoutParams.SOFT_INPUT_STATE_UNSPECIFIED,
+                )
+                built.setOnDismissListener {
+                    activity.window.setSoftInputMode(previousSoftInput)
+                    if (activeVerseRangeCopyDialog === built) {
+                        activeVerseRangeCopyDialog = null
+                    }
                 }
-                .setPositiveButton(context.getString(R.string.verse_copy_audio_link_copy)) { d, _ ->
-                    applyVerseRangeCopy(context, snap, input.text.toString())
-                    d.dismiss()
-                    finish()
-                }
-                .setOnCancelListener { finish() }
-                .create()
-                .also { built ->
-                    built.window?.setSoftInputMode(
-                        WindowManager.LayoutParams.SOFT_INPUT_ADJUST_PAN or
-                            WindowManager.LayoutParams.SOFT_INPUT_STATE_VISIBLE,
-                    )
-                    built.setCanceledOnTouchOutside(false)
-                    built.show()
-                }
-        }
-        handler.postDelayed(showRunnable, 350)
-        onDispose {
-            finished = true
-            handler.removeCallbacks(showRunnable)
-            dialog?.dismiss()
-        }
-    }
+                built.window?.setSoftInputMode(
+                    WindowManager.LayoutParams.SOFT_INPUT_ADJUST_PAN or
+                        WindowManager.LayoutParams.SOFT_INPUT_STATE_UNSPECIFIED,
+                )
+                activeVerseRangeCopyDialog = built
+                built.show()
+                input.requestFocus()
+            }
+    }, 350)
 }
 
 /** Озвучка стиха и комментариев: воспроизведение и остановка. */
@@ -627,7 +623,6 @@ fun VerseActionsBottomSheet(
     translation: TranslationId = TranslationId.SYNODAL,
     chapterVerseCount: Int = 0,
     chapterVerseTexts: Map<Int, String> = emptyMap(),
-    onCopyVerseRange: ((VerseRangeCopyRequest) -> Unit)? = null,
 ) {
     val context = LocalContext.current
     var previewAttachment by remember { mutableStateOf<VerseAttachment?>(null) }
@@ -686,16 +681,15 @@ fun VerseActionsBottomSheet(
     }
 
     fun openRangeCopy(audioLink: Boolean) {
-        onCopyVerseRange?.invoke(
-            VerseRangeCopyRequest(
-                audioLink = audioLink,
-                target = target,
-                chapterVerseCount = chapterVerseCount,
-                chapterVerseTexts = chapterVerseTexts,
-                translation = translation,
-            ),
+        val snap = VerseRangeCopyRequest(
+            audioLink = audioLink,
+            target = target,
+            chapterVerseCount = chapterVerseCount,
+            chapterVerseTexts = chapterVerseTexts,
+            translation = translation,
         )
         onDismiss()
+        showVerseRangeCopyDialog(context, snap)
     }
 
     val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
