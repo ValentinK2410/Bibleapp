@@ -55,6 +55,7 @@ import coil.compose.AsyncImage
 import coil.request.ImageRequest
 import com.example.bible.R
 import com.example.bible.data.AttachmentKind
+import com.example.bible.data.AppMediaButtonSession
 import com.example.bible.data.MediaPlaybackInterruption
 import com.example.bible.data.VerseAttachment
 import com.example.bible.data.resolveFile
@@ -204,7 +205,45 @@ private fun AttachmentAudioPreviewDialog(
                 }
             },
         )
-        onDispose { unregister() }
+        val unregisterMedia = AppMediaButtonSession.register(
+            id = "attachment_audio_preview",
+            controls = AppMediaButtonSession.Controls(
+                title = { title },
+                isPlaying = {
+                    try {
+                        mp.isPlaying || isPlayingRef.value
+                    } catch (_: Exception) {
+                        false
+                    }
+                },
+                playPause = {
+                    try {
+                        if (mp.isPlaying) {
+                            mp.pause()
+                            isPlaying = false
+                        } else {
+                            mp.start()
+                            isPlaying = true
+                        }
+                        AppMediaButtonSession.refreshPlaybackState()
+                    } catch (_: Exception) {
+                    }
+                },
+                pause = {
+                    try {
+                        if (mp.isPlaying) mp.pause()
+                        isPlaying = false
+                        AppMediaButtonSession.refreshPlaybackState()
+                    } catch (_: Exception) {
+                    }
+                },
+                skipToNext = null,
+            ),
+        )
+        onDispose {
+            unregister()
+            unregisterMedia()
+        }
     }
 
     Dialog(
@@ -376,7 +415,26 @@ private fun AttachmentVideoPreviewDialog(
             pause = { vv.pause() },
             resume = { if (!vv.isPlaying) vv.start() },
         )
-        onDispose { unregister() }
+        val unregisterMedia = AppMediaButtonSession.register(
+            id = "attachment_video_preview",
+            controls = AppMediaButtonSession.Controls(
+                title = { file.name },
+                isPlaying = { vv.isPlaying },
+                playPause = {
+                    if (vv.isPlaying) vv.pause() else vv.start()
+                    AppMediaButtonSession.refreshPlaybackState()
+                },
+                pause = {
+                    vv.pause()
+                    AppMediaButtonSession.refreshPlaybackState()
+                },
+                skipToNext = null,
+            ),
+        )
+        onDispose {
+            unregister()
+            unregisterMedia()
+        }
     }
     Dialog(
         onDismissRequest = onDismiss,

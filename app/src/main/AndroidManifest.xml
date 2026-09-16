@@ -137,6 +137,13 @@
                 <action android:name="android.intent.action.BOOT_COMPLETED" />
             </intent-filter>
         </receiver>
+        <receiver
+            android:name=".receiver.AppMediaButtonReceiver"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.intent.action.MEDIA_BUTTON" />
+            </intent-filter>
+        </receiver>
         <!-- SMS_RECEIVED приходит от системы; на API 33+ динамическая регистрация с RECEIVER_NOT_EXPORTED его не получает. -->
         <receiver
             android:name=".receiver.SmsSpeakBroadcastReceiver"

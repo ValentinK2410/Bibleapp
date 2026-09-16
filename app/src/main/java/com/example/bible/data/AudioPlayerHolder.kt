@@ -22,6 +22,10 @@ data class PlayerState(
 
 object AudioPlayerHolder {
 
+    /** Следующий трек в плейлисте (если задан экраном списка песен). */
+    @Volatile
+    var onSkipToNext: (() -> Unit)? = null
+
     private var player: MediaPlayer? = null
     private var currentPath: String = ""
 
@@ -34,6 +38,7 @@ object AudioPlayerHolder {
                 player!!.start()
                 applyParams()
                 _state.value = _state.value.copy(isPlaying = true)
+                AppMediaButtonSession.refreshPlaybackState()
             } catch (e: Exception) {
                 Log.e(TAG, "resume failed", e)
             }
@@ -62,6 +67,7 @@ object AudioPlayerHolder {
                 pitch = 0f,
                 looping = keepLoop,
             )
+            AppMediaButtonSession.refreshPlaybackState()
         } catch (e: Exception) {
             Log.e(TAG, "play failed: $audioPath", e)
         }
@@ -78,6 +84,7 @@ object AudioPlayerHolder {
                 applyParams()
                 _state.value = _state.value.copy(isPlaying = true)
             }
+            AppMediaButtonSession.refreshPlaybackState()
         } catch (e: Exception) {
             Log.e(TAG, "togglePlay failed", e)
         }
@@ -89,6 +96,7 @@ object AudioPlayerHolder {
             if (mp.isPlaying) {
                 mp.pause()
                 _state.value = _state.value.copy(isPlaying = false)
+                AppMediaButtonSession.refreshPlaybackState()
             }
         } catch (_: Exception) {}
     }
@@ -101,6 +109,7 @@ object AudioPlayerHolder {
                 mp.start()
                 applyParams()
                 _state.value = _state.value.copy(isPlaying = true)
+                AppMediaButtonSession.refreshPlaybackState()
             }
         } catch (e: Exception) {
             Log.e(TAG, "resumeAfterInterruption failed", e)
@@ -138,6 +147,7 @@ object AudioPlayerHolder {
             player?.pause()
             player?.seekTo(0)
             _state.value = _state.value.copy(isPlaying = false, positionMs = 0)
+            AppMediaButtonSession.refreshPlaybackState()
         } catch (_: Exception) {}
     }
 
@@ -148,7 +158,9 @@ object AudioPlayerHolder {
         } catch (_: Exception) {}
         player = null
         currentPath = ""
+        onSkipToNext = null
         _state.value = PlayerState()
+        AppMediaButtonSession.refreshPlaybackState()
     }
 
     fun updatePosition() {

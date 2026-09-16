@@ -22,6 +22,7 @@ class BibleApplication : Application(), ImageLoaderFactory {
         super.onCreate()
         MediaCatalogMigration.migrateIfNeeded(this)
         com.example.bible.data.MediaPlaybackInterruption.install(this)
+        com.example.bible.data.AppMediaButtonSession.install(this)
         val app = this
         studySqliteInitExecutor.execute {
             val db = StudyDatabase.getInstance(app)

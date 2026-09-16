@@ -623,8 +623,10 @@ object BibleAudioPlayer {
                 }
                 applyPlaybackSpeed(player!!)
                 player!!.start()
+                applyPlaybackSpeed(player!!)
                 _state.value = _state.value.copy(isPlaying = true, error = null)
                 resolveSegmentStopMs(_state.value.durationMs)
+                AppMediaButtonSession.refreshPlaybackState()
             } catch (e: Exception) {
                 Log.e(TAG, "resume failed", e)
             }
@@ -696,6 +698,7 @@ object BibleAudioPlayer {
                 )
                 stopAtPositionMs?.let { setStopAtPositionMs(it) }
                 resolveSegmentStopMs(prepared.duration)
+                AppMediaButtonSession.refreshPlaybackState()
             }
             mp.setOnCompletionListener {
                 if (player !== mp) return@setOnCompletionListener
@@ -746,11 +749,13 @@ object BibleAudioPlayer {
             if (mp.isPlaying) {
                 mp.pause()
                 _state.value = _state.value.copy(isPlaying = false)
+                AppMediaButtonSession.refreshPlaybackState()
             } else {
                 applyPlaybackSpeed(mp)
                 mp.start()
                 _state.value = _state.value.copy(isPlaying = true)
                 resolveSegmentStopMs(_state.value.durationMs)
+                AppMediaButtonSession.refreshPlaybackState()
             }
         } catch (e: Exception) {
             Log.e(TAG, "togglePlay failed", e)
@@ -764,6 +769,7 @@ object BibleAudioPlayer {
             if (mp.isPlaying) {
                 mp.pause()
                 _state.value = _state.value.copy(isPlaying = false)
+                AppMediaButtonSession.refreshPlaybackState()
             }
         } catch (_: Exception) {}
     }
@@ -778,10 +784,25 @@ object BibleAudioPlayer {
                 mp.start()
                 _state.value = _state.value.copy(isPlaying = true)
                 resolveSegmentStopMs(_state.value.durationMs)
+                AppMediaButtonSession.refreshPlaybackState()
             }
         } catch (e: Exception) {
             Log.e(TAG, "resumeAfterInterruption failed", e)
         }
+    }
+
+    /** Следующая глава той же книги (кнопка «далее» на наушниках). */
+    fun skipToNextChapter() {
+        val ctx = appContext ?: return
+        val st = _state.value
+        if (st.bookId.isBlank() || st.narratorId.isBlank()) return
+        val canon = BibleCanon.byId(st.bookId) ?: return
+        if (st.chapter >= canon.chapters) return
+        val narrator = BibleAudioNarrators.byId(st.narratorId) ?: return
+        val nextCh = st.chapter + 1
+        _chapterContinueNavigation.tryEmit(st.bookId to nextCh)
+        playChapter(ctx, narrator, st.bookId, nextCh)
+        AppMediaButtonSession.refreshPlaybackState()
     }
 
     /** Полная остановка при уходе с чтения или смене книги — отменяет и загрузку дорожки. */
@@ -829,6 +850,7 @@ object BibleAudioPlayer {
         currentKey = ""
         appContext = null
         _state.value = BiblePlayerState()
+        AppMediaButtonSession.refreshPlaybackState()
     }
 
     suspend fun downloadChapter(

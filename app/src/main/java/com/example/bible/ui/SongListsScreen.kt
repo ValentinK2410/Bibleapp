@@ -550,7 +550,11 @@ fun UserSongPlaylistDetailScreen(
                                 handleModifier = Modifier.draggableHandle(),
                                 dragging = dragging,
                                 onPlay = {
-                                    row?.audioPath?.let { AudioPlayerHolder.play(it, row.title) }
+                                    val rowsInOrder = displayRefs.mapNotNull { r ->
+                                        resolved.firstOrNull { it.ref == r }
+                                    }
+                                    val idx = rowsInOrder.indexOfFirst { it.ref == ref }
+                                    if (idx >= 0) playSongListRow(rowsInOrder, idx)
                                 },
                                 onOpen = {
                                     when {
@@ -572,7 +576,8 @@ fun UserSongPlaylistDetailScreen(
                             handleModifier = Modifier,
                             dragging = false,
                             onPlay = {
-                                row.audioPath?.let { AudioPlayerHolder.play(it, row.title) }
+                                val idx = resolved.indexOf(row)
+                                if (idx >= 0) playSongListRow(resolved, idx)
                             },
                             onOpen = {
                                 when {
@@ -610,6 +615,38 @@ fun UserSongPlaylistDetailScreen(
             onDismiss = { styleOpen = false },
         )
     }
+}
+
+private fun playSongListRow(rows: List<SongListRowData>, startIndex: Int) {
+    fun playAt(index: Int) {
+        val row = rows.getOrNull(index) ?: run {
+            AudioPlayerHolder.onSkipToNext = null
+            return
+        }
+        val path = row.audioPath ?: run {
+            AudioPlayerHolder.onSkipToNext = null
+            return
+        }
+        AudioPlayerHolder.onSkipToNext = {
+            var j = index + 1
+            var played = false
+            while (j < rows.size && !played) {
+                val next = rows[j]
+                if (next.hasAudio && next.audioPath != null) {
+                    playAt(j)
+                    played = true
+                } else {
+                    j++
+                }
+            }
+            if (!played) {
+                AudioPlayerHolder.onSkipToNext = null
+            }
+        }
+        AudioPlayerHolder.play(path, row.title)
+    }
+    if (rows.isEmpty()) return
+    playAt(startIndex.coerceIn(0, rows.lastIndex))
 }
 
 private data class SongListRowData(

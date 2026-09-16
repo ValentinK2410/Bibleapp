@@ -667,9 +667,12 @@ fun LibraryVideoPlayerDialog(
     val isPlayingForIntr = rememberUpdatedState(isPlaying)
     val surfaceForIntr = rememberUpdatedState(surfaceHolder)
     val speedForIntr = rememberUpdatedState(speed)
+    val titleForMedia = rememberUpdatedState(
+        tracks.getOrNull(currentIx)?.first?.title ?: "Видео",
+    )
 
     DisposableEffect(player) {
-        val unregister = com.example.bible.data.MediaPlaybackInterruption.register(
+        val unregisterIntr = com.example.bible.data.MediaPlaybackInterruption.register(
             id = "library_video_player",
             isPlaying = {
                 try {
@@ -683,6 +686,7 @@ fun LibraryVideoPlayerDialog(
                     try {
                         if (player.isPlaying) player.pause()
                         isPlaying = false
+                        com.example.bible.data.AppMediaButtonSession.refreshPlaybackState()
                     } catch (_: Exception) {
                     }
                 }
@@ -694,13 +698,50 @@ fun LibraryVideoPlayerDialog(
                             player.start()
                             runCatching { player.applyForwardSpeedVideo(speedForIntr.value) }
                             isPlaying = true
+                            com.example.bible.data.AppMediaButtonSession.refreshPlaybackState()
                         }
                     } catch (_: Exception) {
                     }
                 }
             },
         )
-        onDispose { unregister() }
+        val unregisterMedia = com.example.bible.data.AppMediaButtonSession.register(
+            id = "library_video_player",
+            controls = com.example.bible.data.AppMediaButtonSession.Controls(
+                title = { titleForMedia.value },
+                isPlaying = {
+                    try {
+                        player.isPlaying || isPlayingForIntr.value
+                    } catch (_: Exception) {
+                        false
+                    }
+                },
+                playPause = { mainHandler.post { togglePlayPause() } },
+                pause = {
+                    mainHandler.post {
+                        try {
+                            if (player.isPlaying) player.pause()
+                            isPlaying = false
+                            com.example.bible.data.AppMediaButtonSession.refreshPlaybackState()
+                        } catch (_: Exception) {
+                        }
+                    }
+                },
+                skipToNext = {
+                    mainHandler.post {
+                        val sVal = surfaceForIntr.value ?: return@post
+                        val ci = currentIxAtomic.get()
+                        if (ci + 1 < tracksRef.value.size) {
+                            playbackScope.launch { playIndex(ci + 1, sVal) }
+                        }
+                    }
+                },
+            ),
+        )
+        onDispose {
+            unregisterIntr()
+            unregisterMedia()
+        }
     }
 
     Dialog(
