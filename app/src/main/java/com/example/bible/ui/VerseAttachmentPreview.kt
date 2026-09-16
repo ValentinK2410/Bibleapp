@@ -36,6 +36,7 @@ import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -54,6 +55,7 @@ import coil.compose.AsyncImage
 import coil.request.ImageRequest
 import com.example.bible.R
 import com.example.bible.data.AttachmentKind
+import com.example.bible.data.MediaPlaybackInterruption
 import com.example.bible.data.VerseAttachment
 import com.example.bible.data.resolveFile
 import kotlinx.coroutines.delay
@@ -161,6 +163,7 @@ private fun AttachmentAudioPreviewDialog(
     }
 
     val p = player
+    val isPlayingRef = rememberUpdatedState(isPlaying)
     LaunchedEffect(p, isPlaying) {
         if (p == null || !isPlaying) return@LaunchedEffect
         while (true) {
@@ -171,6 +174,37 @@ private fun AttachmentAudioPreviewDialog(
             }
             delay(400)
         }
+    }
+
+    DisposableEffect(p) {
+        val mp = p ?: return@DisposableEffect onDispose { }
+        val unregister = MediaPlaybackInterruption.register(
+            id = "attachment_audio_preview",
+            isPlaying = {
+                try {
+                    mp.isPlaying || isPlayingRef.value
+                } catch (_: Exception) {
+                    false
+                }
+            },
+            pause = {
+                try {
+                    if (mp.isPlaying) mp.pause()
+                    isPlaying = false
+                } catch (_: Exception) {
+                }
+            },
+            resume = {
+                try {
+                    if (!mp.isPlaying) {
+                        mp.start()
+                        isPlaying = true
+                    }
+                } catch (_: Exception) {
+                }
+            },
+        )
+        onDispose { unregister() }
     }
 
     Dialog(
@@ -329,9 +363,20 @@ private fun AttachmentVideoPreviewDialog(
     onBeforeStart: () -> Unit,
 ) {
     val context = LocalContext.current
+    var videoView by remember { mutableStateOf<VideoView?>(null) }
     DisposableEffect(file) {
         onBeforeStart()
         onDispose { }
+    }
+    DisposableEffect(videoView) {
+        val vv = videoView ?: return@DisposableEffect onDispose { }
+        val unregister = MediaPlaybackInterruption.register(
+            id = "attachment_video_preview",
+            isPlaying = { vv.isPlaying },
+            pause = { vv.pause() },
+            resume = { if (!vv.isPlaying) vv.start() },
+        )
+        onDispose { unregister() }
     }
     Dialog(
         onDismissRequest = onDismiss,
@@ -348,10 +393,14 @@ private fun AttachmentVideoPreviewDialog(
                             )
                             setVideoPath(file.absolutePath)
                             setOnPreparedListener { it.start() }
+                            videoView = this
                         }
                     },
                     modifier = Modifier.fillMaxSize(),
-                    onRelease = { it.stopPlayback() },
+                    onRelease = {
+                        videoView = null
+                        it.stopPlayback()
+                    },
                 )
                 IconButton(
                     onClick = onDismiss,

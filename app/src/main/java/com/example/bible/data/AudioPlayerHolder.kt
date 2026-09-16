@@ -83,6 +83,30 @@ object AudioPlayerHolder {
         }
     }
 
+    fun pauseIfPlaying() {
+        val mp = player ?: return
+        try {
+            if (mp.isPlaying) {
+                mp.pause()
+                _state.value = _state.value.copy(isPlaying = false)
+            }
+        } catch (_: Exception) {}
+    }
+
+    fun resumeAfterInterruption() {
+        val mp = player ?: return
+        if (currentPath.isBlank()) return
+        try {
+            if (!mp.isPlaying) {
+                mp.start()
+                applyParams()
+                _state.value = _state.value.copy(isPlaying = true)
+            }
+        } catch (e: Exception) {
+            Log.e(TAG, "resumeAfterInterruption failed", e)
+        }
+    }
+
     fun seekTo(ms: Int) {
         try {
             player?.seekTo(ms)

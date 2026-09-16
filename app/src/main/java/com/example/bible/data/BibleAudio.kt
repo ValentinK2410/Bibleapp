@@ -768,6 +768,22 @@ object BibleAudioPlayer {
         } catch (_: Exception) {}
     }
 
+    /** Продолжить после отключения наушников / звонка, если дорожка была на паузе автоматически. */
+    fun resumeAfterInterruption() {
+        val mp = player ?: return
+        if (_state.value.bookId.isBlank()) return
+        try {
+            if (!mp.isPlaying) {
+                applyPlaybackSpeed(mp)
+                mp.start()
+                _state.value = _state.value.copy(isPlaying = true)
+                resolveSegmentStopMs(_state.value.durationMs)
+            }
+        } catch (e: Exception) {
+            Log.e(TAG, "resumeAfterInterruption failed", e)
+        }
+    }
+
     /** Полная остановка при уходе с чтения или смене книги — отменяет и загрузку дорожки. */
     fun stopForNavigation() {
         if (player != null || _state.value.isLoading || _state.value.bookId.isNotBlank()) {

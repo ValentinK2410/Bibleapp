@@ -664,6 +664,45 @@ fun LibraryVideoPlayerDialog(
         }
     }
 
+    val isPlayingForIntr = rememberUpdatedState(isPlaying)
+    val surfaceForIntr = rememberUpdatedState(surfaceHolder)
+    val speedForIntr = rememberUpdatedState(speed)
+
+    DisposableEffect(player) {
+        val unregister = com.example.bible.data.MediaPlaybackInterruption.register(
+            id = "library_video_player",
+            isPlaying = {
+                try {
+                    player.isPlaying || isPlayingForIntr.value
+                } catch (_: Exception) {
+                    false
+                }
+            },
+            pause = {
+                mainHandler.post {
+                    try {
+                        if (player.isPlaying) player.pause()
+                        isPlaying = false
+                    } catch (_: Exception) {
+                    }
+                }
+            },
+            resume = {
+                mainHandler.post {
+                    try {
+                        if (surfaceForIntr.value != null && !player.isPlaying) {
+                            player.start()
+                            runCatching { player.applyForwardSpeedVideo(speedForIntr.value) }
+                            isPlaying = true
+                        }
+                    } catch (_: Exception) {
+                    }
+                }
+            },
+        )
+        onDispose { unregister() }
+    }
+
     Dialog(
         onDismissRequest = { finishPlayerUi() },
         properties = DialogProperties(usePlatformDefaultWidth = false),
