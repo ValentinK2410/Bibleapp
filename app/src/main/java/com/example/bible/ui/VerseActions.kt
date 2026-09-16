@@ -47,6 +47,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Text
 import androidx.compose.material3.rememberModalBottomSheetState
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
@@ -56,10 +57,14 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.window.DialogProperties
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.bible.R
 import com.example.bible.data.AiChatNeuralSpeechPlayer
@@ -99,6 +104,14 @@ data class VerseActionTarget(
 )
 
 private enum class VerseRangeDialogMode { COPY_TEXT, COPY_AUDIO }
+
+private data class VerseRangeDialogSnapshot(
+    val mode: VerseRangeDialogMode,
+    val target: VerseActionTarget,
+    val chapterVerseCount: Int,
+    val chapterVerseTexts: Map<Int, String>,
+    val translation: TranslationId,
+)
 
 /** Озвучка стиха и комментариев: воспроизведение и остановка. */
 data class BibleVoiceTts(
@@ -475,10 +488,9 @@ fun VerseActionsBottomSheet(
 ) {
     val context = LocalContext.current
     var previewAttachment by remember { mutableStateOf<VerseAttachment?>(null) }
-    var verseRangeDialogMode by remember { mutableStateOf<VerseRangeDialogMode?>(null) }
-    var audioRangeEndDraft by remember(target?.ref?.verse) {
-        mutableStateOf((target?.ref?.verse ?: 1).toString())
-    }
+    var rangeDialog by remember { mutableStateOf<VerseRangeDialogSnapshot?>(null) }
+    var rangeDraft by remember { mutableStateOf("") }
+    val suppressSheetDismiss = remember { mutableStateOf(false) }
     previewAttachment?.let { att ->
         AttachmentPreviewDialog(
             attachment = att,
@@ -486,6 +498,122 @@ fun VerseActionsBottomSheet(
             onPauseMainAudio = onPauseMainAudioForAttachment,
         )
     }
+
+    rangeDialog?.let { snap ->
+        val isAudio = snap.mode == VerseRangeDialogMode.COPY_AUDIO
+        val rangeFocus = remember { FocusRequester() }
+        LaunchedEffect(snap.target.ref) {
+            rangeFocus.requestFocus()
+        }
+        AlertDialog(
+            onDismissRequest = {
+                rangeDialog = null
+                suppressSheetDismiss.value = false
+            },
+            properties = DialogProperties(
+                dismissOnClickOutside = false,
+                dismissOnBackPress = true,
+            ),
+            title = {
+                Text(
+                    stringResource(
+                        if (isAudio) R.string.verse_copy_audio_link_range_title
+                        else R.string.verse_copy_range_title,
+                    ),
+                )
+            },
+            text = {
+                Column {
+                    Text(
+                        stringResource(
+                            R.string.verse_copy_audio_link_range_hint,
+                            snap.target.ref.verse,
+                            snap.chapterVerseCount.coerceAtLeast(snap.target.ref.verse),
+                        ),
+                    )
+                    OutlinedTextField(
+                        value = rangeDraft,
+                        onValueChange = { rangeDraft = it.filter { ch -> ch.isDigit() || ch in ",-*" } },
+                        label = { Text(stringResource(R.string.verse_copy_audio_link_range_end)) },
+                        placeholder = { Text(stringResource(R.string.verse_copy_audio_link_range_example)) },
+                        singleLine = true,
+                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Text),
+                        modifier = Modifier
+                            .padding(top = 8.dp)
+                            .focusRequester(rangeFocus),
+                    )
+                }
+            },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        val raw = rangeDraft.trim()
+                        val start = snap.target.ref.verse
+                        val maxV = snap.chapterVerseCount.coerceAtLeast(start)
+                        val spec = when {
+                            raw.contains(',') || raw.contains('*') || raw.contains('-') ||
+                                raw.contains('–') || raw.contains('—') -> raw
+                            else -> {
+                                val end = raw.toIntOrNull() ?: start
+                                "$start-${end.coerceIn(start, maxV)}"
+                            }
+                        }
+                        val verses = VerseShareText.verseNumbersFromRangeSpec(start, raw, maxV)
+                        val texts = snap.chapterVerseTexts.toMutableMap()
+                        if (snap.target.verseText.isNotBlank()) {
+                            texts.putIfAbsent(snap.target.ref.verse, snap.target.verseText)
+                        }
+                        if (isAudio) {
+                            val mode = when {
+                                spec.contains('*') || spec.contains(',') -> ScriptureAudioPlayMode.SEGMENTS
+                                spec.contains('-') -> ScriptureAudioPlayMode.RANGE
+                                else -> ScriptureAudioPlayMode.VERSE
+                            }
+                            val link = NoteScriptureLinks.formatAudioLinkWithVerseTexts(
+                                bookId = snap.target.ref.bookId,
+                                chapter = snap.target.ref.chapter,
+                                verses = verses,
+                                mode = mode,
+                                translation = snap.translation,
+                                verseTextsByNumber = texts,
+                                chapterVerseCount = snap.chapterVerseCount,
+                                segmentSpec = spec,
+                            )
+                            if (link.isNotBlank()) {
+                                val cm = context.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
+                                cm.setPrimaryClip(ClipData.newPlainText("audio_link", link))
+                                Toast.makeText(context, R.string.verse_audio_link_copied, Toast.LENGTH_SHORT).show()
+                            }
+                        } else if (verses.isNotEmpty()) {
+                            copyVersesToClipboard(
+                                context = context,
+                                bookName = snap.target.bookName,
+                                chapter = snap.target.ref.chapter,
+                                verseNumbers = verses,
+                                verseTextsByNumber = texts,
+                            )
+                        }
+                        rangeDialog = null
+                        suppressSheetDismiss.value = false
+                        onDismiss()
+                    },
+                ) {
+                    Text(stringResource(R.string.verse_copy_audio_link_copy))
+                }
+            },
+            dismissButton = {
+                TextButton(
+                    onClick = {
+                        rangeDialog = null
+                        suppressSheetDismiss.value = false
+                    },
+                ) {
+                    Text(stringResource(R.string.timemark_close))
+                }
+            },
+        )
+    }
+
     if (target == null) return
 
     fun copyAudioLink(
@@ -532,80 +660,15 @@ fun VerseActionsBottomSheet(
         )
     }
 
-    fun resolveRangeSpec(raw: String): Pair<String, Set<Int>> {
-        val start = target.ref.verse
-        val maxV = chapterVerseCount.coerceAtLeast(start)
-        val spec = when {
-            raw.contains(',') || raw.contains('*') || raw.contains('-') ||
-                raw.contains('–') || raw.contains('—') -> raw
-            else -> {
-                val end = raw.toIntOrNull() ?: start
-                "$start-${end.coerceIn(start, maxV)}"
-            }
-        }
-        val verses = VerseShareText.verseNumbersFromRangeSpec(start, raw, maxV)
-        return spec to verses
-    }
-
-    if (verseRangeDialogMode != null) {
-        val isAudio = verseRangeDialogMode == VerseRangeDialogMode.COPY_AUDIO
-        AlertDialog(
-            onDismissRequest = { verseRangeDialogMode = null },
-            title = {
-                Text(
-                    stringResource(
-                        if (isAudio) R.string.verse_copy_audio_link_range_title
-                        else R.string.verse_copy_range_title,
-                    ),
-                )
-            },
-            text = {
-                Column {
-                    Text(
-                        stringResource(
-                            R.string.verse_copy_audio_link_range_hint,
-                            target.ref.verse,
-                            chapterVerseCount.coerceAtLeast(target.ref.verse),
-                        ),
-                    )
-                    OutlinedTextField(
-                        value = audioRangeEndDraft,
-                        onValueChange = { audioRangeEndDraft = it.filter { ch -> ch.isDigit() || ch in ",-*" } },
-                        label = { Text(stringResource(R.string.verse_copy_audio_link_range_end)) },
-                        placeholder = { Text(stringResource(R.string.verse_copy_audio_link_range_example)) },
-                        singleLine = true,
-                        modifier = Modifier.padding(top = 8.dp),
-                    )
-                }
-            },
-            confirmButton = {
-                TextButton(
-                    onClick = {
-                        val raw = audioRangeEndDraft.trim()
-                        if (isAudio) {
-                            val (spec, verses) = resolveRangeSpec(raw)
-                            val mode = when {
-                                spec.contains('*') || spec.contains(',') -> ScriptureAudioPlayMode.SEGMENTS
-                                spec.contains('-') -> ScriptureAudioPlayMode.RANGE
-                                else -> ScriptureAudioPlayMode.VERSE
-                            }
-                            copyAudioLink(mode, verses, segmentSpec = spec)
-                        } else {
-                            val (_, verses) = resolveRangeSpec(raw)
-                            copyTextVerses(verses)
-                        }
-                        verseRangeDialogMode = null
-                        onDismiss()
-                    },
-                ) {
-                    Text(stringResource(R.string.verse_copy_audio_link_copy))
-                }
-            },
-            dismissButton = {
-                TextButton(onClick = { verseRangeDialogMode = null }) {
-                    Text(stringResource(R.string.timemark_close))
-                }
-            },
+    fun openRangeDialog(mode: VerseRangeDialogMode) {
+        suppressSheetDismiss.value = true
+        rangeDraft = (target.ref.verse + 1).coerceAtMost(chapterVerseCount).toString()
+        rangeDialog = VerseRangeDialogSnapshot(
+            mode = mode,
+            target = target,
+            chapterVerseCount = chapterVerseCount,
+            chapterVerseTexts = chapterVerseTexts,
+            translation = translation,
         )
     }
 
@@ -680,8 +743,12 @@ fun VerseActionsBottomSheet(
     }
     val primaryNote = notesAtVerse.firstOrNull()
 
+    if (rangeDialog == null) {
     ModalBottomSheet(
-        onDismissRequest = onDismiss,
+        onDismissRequest = {
+            if (suppressSheetDismiss.value) return@ModalBottomSheet
+            onDismiss()
+        },
         sheetState = sheetState,
     ) {
         Column(Modifier.padding(bottom = 24.dp)) {
@@ -846,8 +913,7 @@ fun VerseActionsBottomSheet(
                     modifier = Modifier
                         .fillMaxWidth()
                         .clickable {
-                            audioRangeEndDraft = (target.ref.verse + 1).coerceAtMost(chapterVerseCount).toString()
-                            verseRangeDialogMode = VerseRangeDialogMode.COPY_TEXT
+                            openRangeDialog(VerseRangeDialogMode.COPY_TEXT)
                         },
                 )
                 ListItem(
@@ -888,8 +954,7 @@ fun VerseActionsBottomSheet(
                     modifier = Modifier
                         .fillMaxWidth()
                         .clickable {
-                            audioRangeEndDraft = (target.ref.verse + 1).coerceAtMost(chapterVerseCount).toString()
-                            verseRangeDialogMode = VerseRangeDialogMode.COPY_AUDIO
+                            openRangeDialog(VerseRangeDialogMode.COPY_AUDIO)
                         },
                 )
                 ListItem(
@@ -1112,5 +1177,6 @@ fun VerseActionsBottomSheet(
                 }
             }
         }
+    }
     }
 }
