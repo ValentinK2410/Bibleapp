@@ -17,7 +17,7 @@ import com.example.bible.receiver.AppMediaButtonReceiver
 import java.util.concurrent.ConcurrentHashMap
 
 private const val TAG = "AppMediaButtonSession"
-private const val HEADSET_MULTI_TAP_MS = 450L
+private const val HEADSET_MULTI_TAP_MS = 320L
 
 /**
  * Кнопки наушников (AVRCP / MEDIA_BUTTON): пауза, play/pause, следующий трек.
@@ -43,10 +43,8 @@ object AppMediaButtonSession {
 
     @Suppress("DEPRECATION")
     private val audioFocusChangeListener = AudioManager.OnAudioFocusChangeListener { focusChange ->
-        when (focusChange) {
-            AudioManager.AUDIOFOCUS_LOSS,
-            AudioManager.AUDIOFOCUS_LOSS_TRANSIENT,
-            -> mainHandler.post {
+        if (focusChange == AudioManager.AUDIOFOCUS_LOSS) {
+            mainHandler.post {
                 activeControls()?.pause()
                 refreshPlaybackState()
             }
@@ -110,7 +108,10 @@ object AppMediaButtonSession {
                 if (st.bookId.isBlank()) "" else "${st.bookId} ${st.chapter}"
             },
             isPlaying = { BibleAudioPlayer.state.value.isPlaying },
-            playPause = { BibleAudioPlayer.togglePlay() },
+            playPause = {
+                BibleAudioPlayer.togglePlay()
+                refreshPlaybackState()
+            },
             pause = { BibleAudioPlayer.pauseIfPlaying() },
             resume = {
                 if (BibleAudioPlayer.state.value.isPlaying) {
@@ -127,7 +128,10 @@ object AppMediaButtonSession {
         slots["library_audio_holder"] = Controls(
             title = { AudioPlayerHolder.state.value.title },
             isPlaying = { AudioPlayerHolder.state.value.isPlaying },
-            playPause = { AudioPlayerHolder.togglePlay() },
+            playPause = {
+                AudioPlayerHolder.togglePlay()
+                refreshPlaybackState()
+            },
             pause = { AudioPlayerHolder.pauseIfPlaying() },
             resume = {
                 if (AudioPlayerHolder.state.value.isPlaying) {
@@ -219,15 +223,13 @@ object AppMediaButtonSession {
     private val sessionCallback = object : MediaSessionCompat.Callback() {
         override fun onPlay() {
             mainHandler.post {
-                activeControls()?.resume()
-                refreshPlaybackState()
+                applyTransportResume()
             }
         }
 
         override fun onPause() {
             mainHandler.post {
-                activeControls()?.pause()
-                refreshPlaybackState()
+                applyTransportPause()
             }
         }
 
@@ -247,15 +249,13 @@ object AppMediaButtonSession {
             return when (keyEvent.keyCode) {
                 KeyEvent.KEYCODE_MEDIA_PLAY -> {
                     mainHandler.post {
-                        activeControls()?.resume()
-                        refreshPlaybackState()
+                        applyTransportResume()
                     }
                     true
                 }
                 KeyEvent.KEYCODE_MEDIA_PAUSE -> {
                     mainHandler.post {
-                        activeControls()?.pause()
-                        refreshPlaybackState()
+                        applyTransportPause()
                     }
                     true
                 }
@@ -266,15 +266,40 @@ object AppMediaButtonSession {
                     }
                     true
                 }
-                KeyEvent.KEYCODE_HEADSETHOOK,
-                KeyEvent.KEYCODE_MEDIA_PLAY_PAUSE,
-                -> {
+                KeyEvent.KEYCODE_MEDIA_PLAY_PAUSE -> {
+                    mainHandler.post {
+                        applyTransportToggle()
+                    }
+                    true
+                }
+                KeyEvent.KEYCODE_HEADSETHOOK -> {
                     mainHandler.post { scheduleHeadsetHookTap() }
                     true
                 }
                 else -> super.onMediaButtonEvent(mediaButtonEvent)
             }
         }
+    }
+
+    private fun applyTransportPause() {
+        val controls = activeControls() ?: return
+        if (runCatching { controls.isPlaying() }.getOrDefault(false)) {
+            controls.pause()
+        }
+        refreshPlaybackState()
+    }
+
+    private fun applyTransportResume() {
+        val controls = activeControls() ?: return
+        if (!runCatching { controls.isPlaying() }.getOrDefault(false)) {
+            controls.playPause()
+        }
+        refreshPlaybackState()
+    }
+
+    private fun applyTransportToggle() {
+        activeControls()?.playPause()
+        refreshPlaybackState()
     }
 
     private fun scheduleHeadsetHookTap() {
@@ -292,20 +317,7 @@ object AppMediaButtonSession {
         hookTapCount = 0
         when {
             taps >= 3 -> controls.skipToNext?.invoke()
-            taps == 2 -> {
-                if (controls.isPlaying()) {
-                    controls.pause()
-                } else {
-                    controls.resume()
-                }
-            }
-            taps == 1 -> {
-                if (controls.isPlaying()) {
-                    controls.pause()
-                } else {
-                    controls.resume()
-                }
-            }
+            else -> applyTransportToggle()
         }
         refreshPlaybackState()
     }

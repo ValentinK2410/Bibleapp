@@ -662,6 +662,7 @@ fun LibraryVideoPlayerDialog(
         } catch (e: Exception) {
             toastPlaybackErrorRu(context, e)
         }
+        com.example.bible.data.AppMediaButtonSession.refreshPlaybackState()
     }
 
     val isPlayingForIntr = rememberUpdatedState(isPlaying)
@@ -676,7 +677,7 @@ fun LibraryVideoPlayerDialog(
             id = "library_video_player",
             isPlaying = {
                 try {
-                    player.isPlaying || isPlayingForIntr.value
+                    player.isPlaying
                 } catch (_: Exception) {
                     false
                 }
@@ -711,43 +712,24 @@ fun LibraryVideoPlayerDialog(
                 title = { titleForMedia.value },
                 isPlaying = {
                     try {
-                        player.isPlaying || isPlayingForIntr.value
+                        player.isPlaying
                     } catch (_: Exception) {
                         false
                     }
                 },
-                playPause = { mainHandler.post { togglePlayPause() } },
+                playPause = { togglePlayPause() },
                 pause = {
-                    mainHandler.post {
-                        try {
-                            if (player.isPlaying) player.pause()
-                            isPlaying = false
-                            com.example.bible.data.AppMediaButtonSession.refreshPlaybackState()
-                        } catch (_: Exception) {
-                        }
+                    try {
+                        if (player.isPlaying) player.pause()
+                        isPlaying = false
+                    } catch (_: Exception) {
                     }
+                    com.example.bible.data.AppMediaButtonSession.refreshPlaybackState()
                 },
                 resume = {
-                    mainHandler.post {
-                        try {
-                            if (player.isPlaying) {
-                                isPlaying = true
-                                com.example.bible.data.AppMediaButtonSession.refreshPlaybackState()
-                                return@post
-                            }
-                            if (player.duration > 0) {
-                                player.start()
-                                runCatching { player.applyForwardSpeedVideo(speedForIntr.value) }
-                                isPlaying = true
-                            } else {
-                                val sVal = surfaceForIntr.value ?: return@post
-                                playbackScope.launch {
-                                    playIndex(currentIxAtomic.get(), sVal)
-                                }
-                            }
-                            com.example.bible.data.AppMediaButtonSession.refreshPlaybackState()
-                        } catch (_: Exception) {
-                        }
+                    try {
+                        togglePlayPause()
+                    } catch (_: Exception) {
                     }
                 },
                 skipToNext = {

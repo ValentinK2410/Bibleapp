@@ -404,43 +404,25 @@ fun PlaylistAudioPlayer(
                 title = { titleForMedia.value },
                 isPlaying = {
                     try {
-                        player.isPlaying || isPlayingRef.value
+                        player.isPlaying
                     } catch (_: Exception) {
                         false
                     }
                 },
-                playPause = { mainHandler.post { togglePlayPause() } },
+                playPause = { togglePlayPause() },
                 pause = {
-                    mainHandler.post {
-                        try {
-                            if (player.isPlaying) player.pause()
-                            isPlaying = false
-                            publishHandle()
-                            com.example.bible.data.AppMediaButtonSession.refreshPlaybackState()
-                        } catch (_: Exception) {
-                        }
+                    try {
+                        if (player.isPlaying) player.pause()
+                        isPlaying = false
+                        publishHandle()
+                    } catch (_: Exception) {
                     }
+                    com.example.bible.data.AppMediaButtonSession.refreshPlaybackState()
                 },
                 resume = {
-                    mainHandler.post {
-                        try {
-                            if (player.isPlaying) {
-                                isPlaying = true
-                                publishHandle()
-                                com.example.bible.data.AppMediaButtonSession.refreshPlaybackState()
-                                return@post
-                            }
-                            if (player.duration > 0) {
-                                player.start()
-                                player.applyForwardSpeedAudio(speedRef.value)
-                                isPlaying = true
-                            } else {
-                                scope.launch { playIndex(currentIxAtomic.get()) }
-                            }
-                            publishHandle()
-                            com.example.bible.data.AppMediaButtonSession.refreshPlaybackState()
-                        } catch (_: Exception) {
-                        }
+                    try {
+                        togglePlayPause()
+                    } catch (_: Exception) {
                     }
                 },
                 skipToNext = {
