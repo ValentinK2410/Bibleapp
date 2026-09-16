@@ -2013,9 +2013,11 @@ private fun ReaderPane(
         val isSyncScrolling = remember { mutableStateOf(false) }
         val activeLinkRequest = scrollToVerseRequest?.takeIf { it.matchesChapter(bookId, chapterNum) }
         val highlightVerses = activeLinkRequest?.verses.orEmpty()
-        val displayVerses = remember(verses, activeLinkRequest) {
+        val displayVerses = remember(verses, activeLinkRequest, multiSelect.isActive) {
             val request = activeLinkRequest
-            if (request != null && !request.showFullChapter && request.verses.isNotEmpty()) {
+            if (multiSelect.isActive) {
+                verses
+            } else if (request != null && !request.showFullChapter && request.verses.isNotEmpty()) {
                 verses.filter { it.number in request.verses }
             } else {
                 verses

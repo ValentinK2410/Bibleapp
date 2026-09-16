@@ -19,6 +19,7 @@ import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.defaultMinSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.imePadding
@@ -401,7 +402,7 @@ fun NoteEditorScreen(
             return
         }
         val key = NoteScriptureLinks.formatNavigationAnnotation(parsed.bookId, parsed.chapter, parsed.verses)
-        val showFullChapter = if (lastNavLinkKey == key) !lastNavShowFullChapter else false
+        val showFullChapter = if (lastNavLinkKey == key) !lastNavShowFullChapter else true
         lastNavLinkKey = key
         lastNavShowFullChapter = showFullChapter
         bibleNavRequest = NoteBibleNavigation(
@@ -1042,29 +1043,47 @@ fun NoteEditorScreen(
                             colors = editorFieldColors,
                         )
                         FlowRow(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                                .padding(horizontal = 8.dp, vertical = 4.dp),
-                            horizontalArrangement = Arrangement.spacedBy(4.dp),
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(horizontal = 4.dp),
+                            horizontalArrangement = Arrangement.spacedBy(0.dp),
+                            verticalArrangement = Arrangement.spacedBy(0.dp),
                         ) {
-                                TextButton(
-                                    onClick = { requestNoteAssist(DeepSeekNoteAssistKind.CORRECT) },
-                                    enabled = !noteAssist.loading,
-                                ) {
-                                    Text(stringResource(R.string.note_ai_correct))
-                                }
-                                TextButton(
-                                    onClick = { requestNoteAssist(DeepSeekNoteAssistKind.IMPROVE) },
-                                    enabled = !noteAssist.loading,
-                                ) {
-                                    Text(stringResource(R.string.note_ai_improve))
-                }
-                TextButton(
-                                    onClick = { requestNoteAssist(DeepSeekNoteAssistKind.SIMPLIFY) },
-                                    enabled = !noteAssist.loading,
-                                ) {
-                                    Text(stringResource(R.string.note_ai_simplify))
-                                }
+                            val aiButtonPadding = PaddingValues(horizontal = 6.dp, vertical = 0.dp)
+                            val aiButtonMod = Modifier.defaultMinSize(minWidth = 1.dp, minHeight = 28.dp)
+                            TextButton(
+                                onClick = { requestNoteAssist(DeepSeekNoteAssistKind.CORRECT) },
+                                enabled = !noteAssist.loading,
+                                modifier = aiButtonMod,
+                                contentPadding = aiButtonPadding,
+                            ) {
+                                Text(
+                                    stringResource(R.string.note_ai_correct),
+                                    style = MaterialTheme.typography.labelLarge,
+                                )
+                            }
+                            TextButton(
+                                onClick = { requestNoteAssist(DeepSeekNoteAssistKind.IMPROVE) },
+                                enabled = !noteAssist.loading,
+                                modifier = aiButtonMod,
+                                contentPadding = aiButtonPadding,
+                            ) {
+                                Text(
+                                    stringResource(R.string.note_ai_improve),
+                                    style = MaterialTheme.typography.labelLarge,
+                                )
+                            }
+                            TextButton(
+                                onClick = { requestNoteAssist(DeepSeekNoteAssistKind.SIMPLIFY) },
+                                enabled = !noteAssist.loading,
+                                modifier = aiButtonMod,
+                                contentPadding = aiButtonPadding,
+                            ) {
+                                Text(
+                                    stringResource(R.string.note_ai_simplify),
+                                    style = MaterialTheme.typography.labelLarge,
+                                )
+                            }
                         }
                         Surface(tonalElevation = 2.dp) {
             FormatToolbar(
@@ -1130,9 +1149,9 @@ fun NoteEditorScreen(
                 noteEditorBody(Modifier.weight(1f))
             }
         } else {
-            var splitFraction by remember { mutableFloatStateOf(0.5f) }
+            var splitFraction by remember { mutableFloatStateOf(0.38f) }
             var resizeMode by remember { mutableStateOf(false) }
-            var dragFraction by remember { mutableFloatStateOf(0.5f) }
+            var dragFraction by remember { mutableFloatStateOf(0.38f) }
             var contentHeightPx by remember { mutableIntStateOf(1) }
             val density = LocalDensity.current
             val keyboardOpen = WindowInsets.ime.getBottom(density) > 0

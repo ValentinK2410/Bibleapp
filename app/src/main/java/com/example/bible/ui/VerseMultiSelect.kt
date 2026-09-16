@@ -6,9 +6,12 @@ import android.content.Context
 import android.widget.Toast
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.defaultMinSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
@@ -102,32 +105,55 @@ fun VerseMultiSelectBottomBar(
     modifier: Modifier = Modifier,
 ) {
     Surface(
-        modifier = modifier.fillMaxWidth(),
+        modifier = modifier
+            .fillMaxWidth()
+            .wrapContentHeight(),
         tonalElevation = 6.dp,
         shadowElevation = 8.dp,
     ) {
+        val compactPad = PaddingValues(horizontal = 8.dp, vertical = 0.dp)
+        val compactMod = Modifier.defaultMinSize(minWidth = 1.dp, minHeight = 36.dp)
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(horizontal = 8.dp, vertical = 4.dp),
+                .padding(horizontal = 4.dp, vertical = 2.dp),
             verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.SpaceBetween,
+            horizontalArrangement = Arrangement.End,
         ) {
-            Text(
-                text = stringResource(R.string.verse_multi_select_count, selectedCount),
-                style = MaterialTheme.typography.bodyMedium,
-                modifier = Modifier.weight(1f),
-            )
-            TextButton(onClick = onCancel) {
-                Text(stringResource(R.string.verse_multi_select_cancel))
+            TextButton(
+                onClick = onCancel,
+                modifier = compactMod,
+                contentPadding = compactPad,
+            ) {
+                Text(
+                    stringResource(R.string.verse_multi_select_cancel),
+                    style = MaterialTheme.typography.labelLarge,
+                    maxLines = 1,
+                )
             }
             if (onReflectGigaChat != null) {
-                TextButton(onClick = onReflectGigaChat) {
-                    Text(stringResource(R.string.verse_multi_select_gigachat))
+                TextButton(
+                    onClick = onReflectGigaChat,
+                    modifier = compactMod,
+                    contentPadding = compactPad,
+                ) {
+                    Text(
+                        stringResource(R.string.verse_multi_select_gigachat),
+                        style = MaterialTheme.typography.labelLarge,
+                        maxLines = 1,
+                    )
                 }
             }
-            TextButton(onClick = onCopy) {
-                Text(stringResource(R.string.verse_multi_select_copy, selectedCount))
+            TextButton(
+                onClick = onCopy,
+                modifier = compactMod,
+                contentPadding = compactPad,
+            ) {
+                Text(
+                    stringResource(R.string.verse_multi_select_copy, selectedCount),
+                    style = MaterialTheme.typography.labelLarge,
+                    maxLines = 1,
+                )
             }
         }
     }
