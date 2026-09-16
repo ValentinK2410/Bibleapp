@@ -1963,6 +1963,7 @@ private fun ReaderPane(
     var selectionInfo by remember { mutableStateOf<VerseHighlightSelection?>(null) }
     var clearSelectionSignal by remember { mutableIntStateOf(0) }
     var verseActionsTarget by remember { mutableStateOf<VerseActionTarget?>(null) }
+    var verseRangeCopy by remember { mutableStateOf<VerseRangeCopyRequest?>(null) }
     var deepSeekTarget by remember { mutableStateOf<VerseActionTarget?>(null) }
     var gigaChatTarget by remember { mutableStateOf<VerseActionTarget?>(null) }
     var gigaChatInitialScope by remember { mutableStateOf<com.example.bible.data.DeepSeekPassageScope?>(null) }
@@ -2525,6 +2526,12 @@ private fun ReaderPane(
             translation = translation,
             chapterVerseCount = verses.size,
             chapterVerseTexts = chapterVerseTexts,
+            onCopyVerseRange = { verseRangeCopy = it },
+        )
+        VerseRangeCopyDialogHost(
+            request = verseRangeCopy,
+            sheetOpen = verseActionsTarget != null,
+            onDismiss = { verseRangeCopy = null },
         )
         val dsVm = viewModel
         if (dsVm != null) {

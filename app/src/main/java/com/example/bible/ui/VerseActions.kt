@@ -6,6 +6,7 @@ import android.content.Context
 import android.content.Intent
 import android.speech.tts.TextToSpeech
 import android.widget.Toast
+import androidx.activity.compose.BackHandler
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.clickable
@@ -17,6 +18,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.Comment
@@ -46,6 +48,7 @@ import androidx.compose.material3.ListItem
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.rememberModalBottomSheetState
@@ -63,6 +66,9 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.window.Dialog
+import androidx.compose.ui.window.DialogProperties
+import kotlinx.coroutines.delay
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.bible.R
 import com.example.bible.data.AiChatNeuralSpeechPlayer
@@ -101,10 +107,8 @@ data class VerseActionTarget(
     val bookName: String,
 )
 
-private enum class VerseRangeDialogMode { COPY_TEXT, COPY_AUDIO }
-
-private data class VerseRangeDialogSnapshot(
-    val mode: VerseRangeDialogMode,
+data class VerseRangeCopyRequest(
+    val audioLink: Boolean,
     val target: VerseActionTarget,
     val chapterVerseCount: Int,
     val chapterVerseTexts: Map<Int, String>,
@@ -113,7 +117,7 @@ private data class VerseRangeDialogSnapshot(
 
 private fun applyVerseRangeCopy(
     context: Context,
-    snap: VerseRangeDialogSnapshot,
+    snap: VerseRangeCopyRequest,
     rawInput: String,
 ) {
     val raw = rawInput.filter { it.isDigit() || it in ",-*" }.trim()
@@ -132,7 +136,7 @@ private fun applyVerseRangeCopy(
     if (snap.target.verseText.isNotBlank()) {
         texts.putIfAbsent(snap.target.ref.verse, snap.target.verseText)
     }
-    if (snap.mode == VerseRangeDialogMode.COPY_AUDIO) {
+    if (snap.audioLink) {
         val mode = when {
             spec.contains('*') || spec.contains(',') -> ScriptureAudioPlayMode.SEGMENTS
             spec.contains('-') -> ScriptureAudioPlayMode.RANGE
@@ -160,6 +164,106 @@ private fun applyVerseRangeCopy(
             verseNumbers = verses,
             verseTextsByNumber = texts,
         )
+    }
+}
+
+@Composable
+fun VerseRangeCopyDialogHost(
+    request: VerseRangeCopyRequest?,
+    sheetOpen: Boolean,
+    onDismiss: () -> Unit,
+) {
+    var visible by remember { mutableStateOf(false) }
+    LaunchedEffect(request, sheetOpen) {
+        if (request != null && !sheetOpen) {
+            delay(400)
+            visible = true
+        } else {
+            visible = false
+        }
+    }
+    if (!visible || request == null) return
+    VerseRangeCopyDialog(request = request, onDismiss = onDismiss)
+}
+
+@Composable
+private fun VerseRangeCopyDialog(
+    request: VerseRangeCopyRequest,
+    onDismiss: () -> Unit,
+) {
+    val context = LocalContext.current
+    var draft by remember(request.target.ref, request.audioLink) {
+        mutableStateOf(
+            (request.target.ref.verse + 1).coerceAtMost(request.chapterVerseCount).toString(),
+        )
+    }
+    Dialog(
+        onDismissRequest = { },
+        properties = DialogProperties(
+            dismissOnBackPress = false,
+            dismissOnClickOutside = false,
+            decorFitsSystemWindows = true,
+            usePlatformDefaultWidth = true,
+        ),
+    ) {
+        BackHandler(onBack = onDismiss)
+        Surface(
+            shape = RoundedCornerShape(28.dp),
+            tonalElevation = 6.dp,
+            modifier = Modifier.fillMaxWidth(),
+        ) {
+            Column(
+                modifier = Modifier
+                    .imePadding()
+                    .padding(24.dp),
+            ) {
+                Text(
+                    stringResource(
+                        if (request.audioLink) R.string.verse_copy_audio_link_range_title
+                        else R.string.verse_copy_range_title,
+                    ),
+                    style = MaterialTheme.typography.titleLarge,
+                )
+                Text(
+                    stringResource(
+                        R.string.verse_copy_audio_link_range_hint,
+                        request.target.ref.verse,
+                        request.chapterVerseCount.coerceAtLeast(request.target.ref.verse),
+                    ),
+                    style = MaterialTheme.typography.bodyMedium,
+                    modifier = Modifier.padding(top = 12.dp),
+                )
+                OutlinedTextField(
+                    value = draft,
+                    onValueChange = { draft = it.filter { ch -> ch.isDigit() || ch in ",-*" } },
+                    label = { Text(stringResource(R.string.verse_copy_audio_link_range_end)) },
+                    placeholder = { Text(stringResource(R.string.verse_copy_audio_link_range_example)) },
+                    singleLine = true,
+                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Text),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(top = 12.dp),
+                )
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(top = 8.dp),
+                    horizontalArrangement = Arrangement.End,
+                ) {
+                    TextButton(onClick = onDismiss) {
+                        Text(stringResource(R.string.timemark_close))
+                    }
+                    TextButton(
+                        onClick = {
+                            applyVerseRangeCopy(context, request, draft)
+                            onDismiss()
+                        },
+                    ) {
+                        Text(stringResource(R.string.verse_copy_audio_link_copy))
+                    }
+                }
+            }
+        }
     }
 }
 
@@ -535,11 +639,10 @@ fun VerseActionsBottomSheet(
     translation: TranslationId = TranslationId.SYNODAL,
     chapterVerseCount: Int = 0,
     chapterVerseTexts: Map<Int, String> = emptyMap(),
+    onCopyVerseRange: ((VerseRangeCopyRequest) -> Unit)? = null,
 ) {
     val context = LocalContext.current
     var previewAttachment by remember { mutableStateOf<VerseAttachment?>(null) }
-    var rangeDialog by remember { mutableStateOf<VerseRangeDialogSnapshot?>(null) }
-    var rangeDraft by remember { mutableStateOf("") }
     previewAttachment?.let { att ->
         AttachmentPreviewDialog(
             attachment = att,
@@ -594,15 +697,17 @@ fun VerseActionsBottomSheet(
         )
     }
 
-    fun openRangeDialog(mode: VerseRangeDialogMode) {
-        rangeDraft = (target.ref.verse + 1).coerceAtMost(chapterVerseCount).toString()
-        rangeDialog = VerseRangeDialogSnapshot(
-            mode = mode,
-            target = target,
-            chapterVerseCount = chapterVerseCount,
-            chapterVerseTexts = chapterVerseTexts,
-            translation = translation,
+    fun openRangeCopy(audioLink: Boolean) {
+        onCopyVerseRange?.invoke(
+            VerseRangeCopyRequest(
+                audioLink = audioLink,
+                target = target,
+                chapterVerseCount = chapterVerseCount,
+                chapterVerseTexts = chapterVerseTexts,
+                translation = translation,
+            ),
         )
+        onDismiss()
     }
 
     val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
@@ -680,63 +785,6 @@ fun VerseActionsBottomSheet(
         onDismissRequest = onDismiss,
         sheetState = sheetState,
     ) {
-        val snap = rangeDialog
-        if (snap != null) {
-            val isAudio = snap.mode == VerseRangeDialogMode.COPY_AUDIO
-            Column(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .imePadding()
-                    .padding(start = 16.dp, end = 16.dp, bottom = 24.dp),
-            ) {
-                Text(
-                    stringResource(
-                        if (isAudio) R.string.verse_copy_audio_link_range_title
-                        else R.string.verse_copy_range_title,
-                    ),
-                    style = MaterialTheme.typography.titleMedium,
-                    modifier = Modifier.padding(top = 8.dp, bottom = 8.dp),
-                )
-                Text(
-                    stringResource(
-                        R.string.verse_copy_audio_link_range_hint,
-                        snap.target.ref.verse,
-                        snap.chapterVerseCount.coerceAtLeast(snap.target.ref.verse),
-                    ),
-                    style = MaterialTheme.typography.bodyMedium,
-                )
-                OutlinedTextField(
-                    value = rangeDraft,
-                    onValueChange = { rangeDraft = it.filter { ch -> ch.isDigit() || ch in ",-*" } },
-                    label = { Text(stringResource(R.string.verse_copy_audio_link_range_end)) },
-                    placeholder = { Text(stringResource(R.string.verse_copy_audio_link_range_example)) },
-                    singleLine = true,
-                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Text),
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(top = 8.dp),
-                )
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(top = 8.dp),
-                    horizontalArrangement = Arrangement.End,
-                ) {
-                    TextButton(onClick = { rangeDialog = null }) {
-                        Text(stringResource(R.string.timemark_close))
-                    }
-                    TextButton(
-                        onClick = {
-                            applyVerseRangeCopy(context, snap, rangeDraft)
-                            rangeDialog = null
-                            onDismiss()
-                        },
-                    ) {
-                        Text(stringResource(R.string.verse_copy_audio_link_copy))
-                    }
-                }
-            }
-        } else {
         Column(Modifier.padding(bottom = 24.dp)) {
             Text(
                 text = stringResource(
@@ -899,7 +947,7 @@ fun VerseActionsBottomSheet(
                     modifier = Modifier
                         .fillMaxWidth()
                         .clickable {
-                            openRangeDialog(VerseRangeDialogMode.COPY_TEXT)
+                            openRangeCopy(audioLink = false)
                         },
                 )
                 ListItem(
@@ -940,7 +988,7 @@ fun VerseActionsBottomSheet(
                     modifier = Modifier
                         .fillMaxWidth()
                         .clickable {
-                            openRangeDialog(VerseRangeDialogMode.COPY_AUDIO)
+                            openRangeCopy(audioLink = true)
                         },
                 )
                 ListItem(
@@ -1162,7 +1210,6 @@ fun VerseActionsBottomSheet(
                     )
                 }
             }
-        }
         }
     }
 }
