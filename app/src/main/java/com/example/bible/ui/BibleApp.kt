@@ -5782,7 +5782,6 @@ private fun ReaderContent(
         )
         VerseRangeCopyDialogHost(
             request = verseRangeCopy,
-            sheetOpen = verseActionsTarget != null,
             onDismiss = { verseRangeCopy = null },
         )
         deepSeekTarget?.let { t ->

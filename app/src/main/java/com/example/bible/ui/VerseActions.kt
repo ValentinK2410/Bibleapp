@@ -1,12 +1,19 @@
 package com.example.bible.ui
 
+import android.app.AlertDialog
+import android.os.Handler
+import android.os.Looper
 import android.content.ClipData
 import android.content.ClipboardManager
 import android.content.Context
 import android.content.Intent
 import android.speech.tts.TextToSpeech
+import android.text.InputType
+import android.view.WindowManager
+import android.widget.EditText
+import android.widget.LinearLayout
+import android.widget.TextView
 import android.widget.Toast
-import androidx.activity.compose.BackHandler
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.clickable
@@ -16,10 +23,7 @@ import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.Comment
 import androidx.compose.material.icons.automirrored.filled.VolumeUp
@@ -47,8 +51,6 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.ListItem
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
-import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.rememberModalBottomSheetState
@@ -61,14 +63,10 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.window.Dialog
-import androidx.compose.ui.window.DialogProperties
-import kotlinx.coroutines.delay
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.bible.R
 import com.example.bible.data.AiChatNeuralSpeechPlayer
@@ -170,99 +168,89 @@ private fun applyVerseRangeCopy(
 @Composable
 fun VerseRangeCopyDialogHost(
     request: VerseRangeCopyRequest?,
-    sheetOpen: Boolean,
-    onDismiss: () -> Unit,
-) {
-    var visible by remember { mutableStateOf(false) }
-    LaunchedEffect(request, sheetOpen) {
-        if (request != null && !sheetOpen) {
-            delay(400)
-            visible = true
-        } else {
-            visible = false
-        }
-    }
-    if (!visible || request == null) return
-    VerseRangeCopyDialog(request = request, onDismiss = onDismiss)
-}
-
-@Composable
-private fun VerseRangeCopyDialog(
-    request: VerseRangeCopyRequest,
     onDismiss: () -> Unit,
 ) {
     val context = LocalContext.current
-    var draft by remember(request.target.ref, request.audioLink) {
-        mutableStateOf(
-            (request.target.ref.verse + 1).coerceAtMost(request.chapterVerseCount).toString(),
+    val dialogKey = request?.let { "${it.target.ref.toKey()}:${it.audioLink}" }
+    DisposableEffect(dialogKey) {
+        val snap = request ?: return@DisposableEffect onDispose { }
+        val density = context.resources.displayMetrics.density
+        val padPx = (16 * density).toInt()
+        val title = context.getString(
+            if (snap.audioLink) {
+                R.string.verse_copy_audio_link_range_title
+            } else {
+                R.string.verse_copy_range_title
+            },
         )
-    }
-    Dialog(
-        onDismissRequest = { },
-        properties = DialogProperties(
-            dismissOnBackPress = false,
-            dismissOnClickOutside = false,
-            decorFitsSystemWindows = true,
-            usePlatformDefaultWidth = true,
-        ),
-    ) {
-        BackHandler(onBack = onDismiss)
-        Surface(
-            shape = RoundedCornerShape(28.dp),
-            tonalElevation = 6.dp,
-            modifier = Modifier.fillMaxWidth(),
-        ) {
-            Column(
-                modifier = Modifier
-                    .imePadding()
-                    .padding(24.dp),
-            ) {
-                Text(
-                    stringResource(
-                        if (request.audioLink) R.string.verse_copy_audio_link_range_title
-                        else R.string.verse_copy_range_title,
-                    ),
-                    style = MaterialTheme.typography.titleLarge,
-                )
-                Text(
-                    stringResource(
-                        R.string.verse_copy_audio_link_range_hint,
-                        request.target.ref.verse,
-                        request.chapterVerseCount.coerceAtLeast(request.target.ref.verse),
-                    ),
-                    style = MaterialTheme.typography.bodyMedium,
-                    modifier = Modifier.padding(top = 12.dp),
-                )
-                OutlinedTextField(
-                    value = draft,
-                    onValueChange = { draft = it.filter { ch -> ch.isDigit() || ch in ",-*" } },
-                    label = { Text(stringResource(R.string.verse_copy_audio_link_range_end)) },
-                    placeholder = { Text(stringResource(R.string.verse_copy_audio_link_range_example)) },
-                    singleLine = true,
-                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Text),
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(top = 12.dp),
-                )
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(top = 8.dp),
-                    horizontalArrangement = Arrangement.End,
-                ) {
-                    TextButton(onClick = onDismiss) {
-                        Text(stringResource(R.string.timemark_close))
-                    }
-                    TextButton(
-                        onClick = {
-                            applyVerseRangeCopy(context, request, draft)
-                            onDismiss()
-                        },
-                    ) {
-                        Text(stringResource(R.string.verse_copy_audio_link_copy))
-                    }
+        val hintText = context.getString(
+            R.string.verse_copy_audio_link_range_hint,
+            snap.target.ref.verse,
+            snap.chapterVerseCount.coerceAtLeast(snap.target.ref.verse),
+        )
+        val defaultEnd = (snap.target.ref.verse + 1)
+            .coerceAtMost(snap.chapterVerseCount)
+            .toString()
+        val input = EditText(context).apply {
+            setText(defaultEnd)
+            setSelection(text.length)
+            inputType = InputType.TYPE_CLASS_TEXT
+            setHint(context.getString(R.string.verse_copy_audio_link_range_example))
+        }
+        val container = LinearLayout(context).apply {
+            orientation = LinearLayout.VERTICAL
+            setPadding(padPx, padPx, padPx, 0)
+            addView(
+                TextView(context).apply {
+                    text = hintText
+                },
+            )
+            addView(
+                input,
+                LinearLayout.LayoutParams(
+                    LinearLayout.LayoutParams.MATCH_PARENT,
+                    LinearLayout.LayoutParams.WRAP_CONTENT,
+                ).apply { topMargin = (8 * density).toInt() },
+            )
+        }
+        var finished = false
+        var dialog: AlertDialog? = null
+        fun finish() {
+            if (finished) return
+            finished = true
+            onDismiss()
+        }
+        val handler = Handler(Looper.getMainLooper())
+        val showRunnable = Runnable {
+            if (finished) return@Runnable
+            dialog = AlertDialog.Builder(context)
+                .setTitle(title)
+                .setView(container)
+                .setNegativeButton(context.getString(R.string.timemark_close)) { d, _ ->
+                    d.dismiss()
+                    finish()
                 }
-            }
+                .setPositiveButton(context.getString(R.string.verse_copy_audio_link_copy)) { d, _ ->
+                    applyVerseRangeCopy(context, snap, input.text.toString())
+                    d.dismiss()
+                    finish()
+                }
+                .setOnCancelListener { finish() }
+                .create()
+                .also { built ->
+                    built.window?.setSoftInputMode(
+                        WindowManager.LayoutParams.SOFT_INPUT_ADJUST_PAN or
+                            WindowManager.LayoutParams.SOFT_INPUT_STATE_VISIBLE,
+                    )
+                    built.setCanceledOnTouchOutside(false)
+                    built.show()
+                }
+        }
+        handler.postDelayed(showRunnable, 350)
+        onDispose {
+            finished = true
+            handler.removeCallbacks(showRunnable)
+            dialog?.dismiss()
         }
     }
 }

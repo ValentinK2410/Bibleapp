@@ -2530,7 +2530,6 @@ private fun ReaderPane(
         )
         VerseRangeCopyDialogHost(
             request = verseRangeCopy,
-            sheetOpen = verseActionsTarget != null,
             onDismiss = { verseRangeCopy = null },
         )
         val dsVm = viewModel
