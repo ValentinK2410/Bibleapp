@@ -687,7 +687,7 @@ fun VerseActionsBottomSheet(
                 modifier = Modifier
                     .fillMaxWidth()
                     .imePadding()
-                    .padding(horizontal = 16.dp, bottom = 24.dp),
+                    .padding(start = 16.dp, end = 16.dp, bottom = 24.dp),
             ) {
                 Text(
                     stringResource(
