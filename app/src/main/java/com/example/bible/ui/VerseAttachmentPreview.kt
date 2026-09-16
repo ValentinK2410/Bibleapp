@@ -237,6 +237,16 @@ private fun AttachmentAudioPreviewDialog(
                     } catch (_: Exception) {
                     }
                 },
+                resume = {
+                    try {
+                        if (!mp.isPlaying) {
+                            mp.start()
+                            isPlaying = true
+                        }
+                        AppMediaButtonSession.refreshPlaybackState()
+                    } catch (_: Exception) {
+                    }
+                },
                 skipToNext = null,
             ),
         )
@@ -426,6 +436,10 @@ private fun AttachmentVideoPreviewDialog(
                 },
                 pause = {
                     vv.pause()
+                    AppMediaButtonSession.refreshPlaybackState()
+                },
+                resume = {
+                    if (!vv.isPlaying) vv.start()
                     AppMediaButtonSession.refreshPlaybackState()
                 },
                 skipToNext = null,

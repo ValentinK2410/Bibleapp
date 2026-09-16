@@ -383,6 +383,7 @@ fun PlaylistAudioPlayer(
                 }
             }
             publishHandle()
+            com.example.bible.data.AppMediaButtonSession.refreshPlaybackState()
         } catch (e: Exception) {
             Toast.makeText(context, e.message ?: "Пауза", Toast.LENGTH_SHORT).show()
         }
@@ -393,6 +394,67 @@ fun PlaylistAudioPlayer(
     }
     handle?.toggleImpl = { togglePlayPause() }
     SideEffect { publishHandle() }
+
+    val isPlayingRef = rememberUpdatedState(isPlaying)
+    val titleForMedia = rememberUpdatedState(tracks.getOrNull(currentIx)?.first?.title.orEmpty())
+    DisposableEffect(player) {
+        val unregisterMedia = com.example.bible.data.AppMediaButtonSession.register(
+            id = "media_playlist_audio",
+            controls = com.example.bible.data.AppMediaButtonSession.Controls(
+                title = { titleForMedia.value },
+                isPlaying = {
+                    try {
+                        player.isPlaying || isPlayingRef.value
+                    } catch (_: Exception) {
+                        false
+                    }
+                },
+                playPause = { mainHandler.post { togglePlayPause() } },
+                pause = {
+                    mainHandler.post {
+                        try {
+                            if (player.isPlaying) player.pause()
+                            isPlaying = false
+                            publishHandle()
+                            com.example.bible.data.AppMediaButtonSession.refreshPlaybackState()
+                        } catch (_: Exception) {
+                        }
+                    }
+                },
+                resume = {
+                    mainHandler.post {
+                        try {
+                            if (player.isPlaying) {
+                                isPlaying = true
+                                publishHandle()
+                                com.example.bible.data.AppMediaButtonSession.refreshPlaybackState()
+                                return@post
+                            }
+                            if (player.duration > 0) {
+                                player.start()
+                                player.applyForwardSpeedAudio(speedRef.value)
+                                isPlaying = true
+                            } else {
+                                scope.launch { playIndex(currentIxAtomic.get()) }
+                            }
+                            publishHandle()
+                            com.example.bible.data.AppMediaButtonSession.refreshPlaybackState()
+                        } catch (_: Exception) {
+                        }
+                    }
+                },
+                skipToNext = {
+                    mainHandler.post {
+                        val next = currentIxAtomic.get() + 1
+                        if (next < tracksRef.value.size) {
+                            scope.launch { playIndex(next) }
+                        }
+                    }
+                },
+            ),
+        )
+        onDispose { unregisterMedia() }
+    }
 
     val trackKey = remember(tracks) { tracks.joinToString { it.first.id } }
     LaunchedEffect(trackKey, safeStart, restartOnTrackListChange, autoPlayOnStart) {

@@ -5,6 +5,7 @@ import android.app.PendingIntent
 import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
+import android.media.AudioManager
 import android.os.Handler
 import android.os.Looper
 import android.support.v4.media.MediaMetadataCompat
@@ -29,6 +30,7 @@ object AppMediaButtonSession {
         val isPlaying: () -> Boolean,
         val playPause: () -> Unit,
         val pause: () -> Unit,
+        val resume: () -> Unit = playPause,
         val skipToNext: (() -> Unit)? = null,
     )
 
@@ -36,6 +38,20 @@ object AppMediaButtonSession {
     private val slots = ConcurrentHashMap<String, Controls>()
     private var appContext: Context? = null
     private var mediaSession: MediaSessionCompat? = null
+    private var audioManager: AudioManager? = null
+    private var hasAudioFocus = false
+
+    @Suppress("DEPRECATION")
+    private val audioFocusChangeListener = AudioManager.OnAudioFocusChangeListener { focusChange ->
+        when (focusChange) {
+            AudioManager.AUDIOFOCUS_LOSS,
+            AudioManager.AUDIOFOCUS_LOSS_TRANSIENT,
+            -> mainHandler.post {
+                activeControls()?.pause()
+                refreshPlaybackState()
+            }
+        }
+    }
 
     private var hookTapCount = 0
     private val hookTapRunnable = Runnable { dispatchHookTapCount() }
@@ -44,6 +60,7 @@ object AppMediaButtonSession {
         if (appContext != null) return
         val ctx = application.applicationContext
         appContext = ctx
+        audioManager = ctx.getSystemService(AudioManager::class.java)
         installBuiltInControls()
         val pending = PendingIntent.getBroadcast(
             ctx,
@@ -95,6 +112,16 @@ object AppMediaButtonSession {
             isPlaying = { BibleAudioPlayer.state.value.isPlaying },
             playPause = { BibleAudioPlayer.togglePlay() },
             pause = { BibleAudioPlayer.pauseIfPlaying() },
+            resume = {
+                if (BibleAudioPlayer.state.value.isPlaying) {
+                    BibleAudioPlayer.togglePlay()
+                } else {
+                    BibleAudioPlayer.resumeAfterInterruption()
+                    if (!BibleAudioPlayer.state.value.isPlaying) {
+                        BibleAudioPlayer.togglePlay()
+                    }
+                }
+            },
             skipToNext = { BibleAudioPlayer.skipToNextChapter() },
         )
         slots["library_audio_holder"] = Controls(
@@ -102,6 +129,16 @@ object AppMediaButtonSession {
             isPlaying = { AudioPlayerHolder.state.value.isPlaying },
             playPause = { AudioPlayerHolder.togglePlay() },
             pause = { AudioPlayerHolder.pauseIfPlaying() },
+            resume = {
+                if (AudioPlayerHolder.state.value.isPlaying) {
+                    AudioPlayerHolder.togglePlay()
+                } else {
+                    AudioPlayerHolder.resumeAfterInterruption()
+                    if (!AudioPlayerHolder.state.value.isPlaying) {
+                        AudioPlayerHolder.togglePlay()
+                    }
+                }
+            },
             skipToNext = { AudioPlayerHolder.onSkipToNext?.invoke() },
         )
     }
@@ -110,6 +147,7 @@ object AppMediaButtonSession {
         if (slots.isEmpty()) return null
         val priority = listOf(
             "library_video_player",
+            "media_playlist_audio",
             "attachment_video_preview",
             "attachment_audio_preview",
         )
@@ -130,8 +168,10 @@ object AppMediaButtonSession {
         val controls = activeControls()
         if (controls == null) {
             session.isActive = false
+            releaseAudioFocus()
             return
         }
+        acquireAudioFocus()
         val playing = runCatching { controls.isPlaying() }.getOrDefault(false)
         var actions = PlaybackStateCompat.ACTION_PLAY or
             PlaybackStateCompat.ACTION_PAUSE or
@@ -157,10 +197,29 @@ object AppMediaButtonSession {
         session.isActive = true
     }
 
+    @Suppress("DEPRECATION")
+    private fun acquireAudioFocus() {
+        if (hasAudioFocus) return
+        val am = audioManager ?: return
+        val granted = am.requestAudioFocus(
+            audioFocusChangeListener,
+            AudioManager.STREAM_MUSIC,
+            AudioManager.AUDIOFOCUS_GAIN,
+        )
+        hasAudioFocus = granted == AudioManager.AUDIOFOCUS_REQUEST_GRANTED
+    }
+
+    @Suppress("DEPRECATION")
+    private fun releaseAudioFocus() {
+        if (!hasAudioFocus) return
+        audioManager?.abandonAudioFocus(audioFocusChangeListener)
+        hasAudioFocus = false
+    }
+
     private val sessionCallback = object : MediaSessionCompat.Callback() {
         override fun onPlay() {
             mainHandler.post {
-                activeControls()?.playPause()
+                activeControls()?.resume()
                 refreshPlaybackState()
             }
         }
@@ -188,7 +247,7 @@ object AppMediaButtonSession {
             return when (keyEvent.keyCode) {
                 KeyEvent.KEYCODE_MEDIA_PLAY -> {
                     mainHandler.post {
-                        activeControls()?.playPause()
+                        activeControls()?.resume()
                         refreshPlaybackState()
                     }
                     true
@@ -233,8 +292,20 @@ object AppMediaButtonSession {
         hookTapCount = 0
         when {
             taps >= 3 -> controls.skipToNext?.invoke()
-            taps == 2 -> controls.pause()
-            taps == 1 -> controls.playPause()
+            taps == 2 -> {
+                if (controls.isPlaying()) {
+                    controls.pause()
+                } else {
+                    controls.resume()
+                }
+            }
+            taps == 1 -> {
+                if (controls.isPlaying()) {
+                    controls.pause()
+                } else {
+                    controls.resume()
+                }
+            }
         }
         refreshPlaybackState()
     }

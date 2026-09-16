@@ -727,6 +727,29 @@ fun LibraryVideoPlayerDialog(
                         }
                     }
                 },
+                resume = {
+                    mainHandler.post {
+                        try {
+                            if (player.isPlaying) {
+                                isPlaying = true
+                                com.example.bible.data.AppMediaButtonSession.refreshPlaybackState()
+                                return@post
+                            }
+                            if (player.duration > 0) {
+                                player.start()
+                                runCatching { player.applyForwardSpeedVideo(speedForIntr.value) }
+                                isPlaying = true
+                            } else {
+                                val sVal = surfaceForIntr.value ?: return@post
+                                playbackScope.launch {
+                                    playIndex(currentIxAtomic.get(), sVal)
+                                }
+                            }
+                            com.example.bible.data.AppMediaButtonSession.refreshPlaybackState()
+                        } catch (_: Exception) {
+                        }
+                    }
+                },
                 skipToNext = {
                     mainHandler.post {
                         val sVal = surfaceForIntr.value ?: return@post
