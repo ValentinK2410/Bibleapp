@@ -97,6 +97,7 @@ private fun ShareOptionRow(
 fun ShareMyAppScreen(
     onBack: () -> Unit,
     exportShare: suspend (ShareExportOptions, ((ExportShareProgressEvent) -> Unit)?) -> File,
+    onCheckPortableServer: (onResult: (List<com.example.bible.data.PortableCatalogItem>) -> Unit) -> Unit = { it(emptyList()) },
 ) {
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
@@ -119,6 +120,10 @@ fun ShareMyAppScreen(
     var bibleAudioNarratorSelection by remember { mutableStateOf(setOf<String>()) }
     var quranHistory by remember { mutableStateOf(true) }
     var includeInstalledApk by remember { mutableStateOf(true) }
+    var mediaPlaylists by remember { mutableStateOf(false) }
+    var videoThoughts by remember { mutableStateOf(false) }
+    var songPlaylists by remember { mutableStateOf(false) }
+    var microblog by remember { mutableStateOf(false) }
 
     var narratorsOnDevice by remember { mutableStateOf<List<String>>(emptyList()) }
     LaunchedEffect(Unit) {
@@ -155,7 +160,35 @@ fun ShareMyAppScreen(
             bibleDownloadedAudio = bibleAudio && bibleAudioNarratorSelection.isNotEmpty(),
             bibleAudioNarratorIds = audioFilter,
             quranSearchHistory = quranHistory,
+            userMediaPlaylists = mediaPlaylists,
+            userVideoThoughts = videoThoughts,
+            userSongPlaylists = songPlaylists,
+            microblogPosts = microblog,
         )
+    }
+
+    fun applyPortablePreset() {
+        val p = com.example.bible.data.PortableExchange.userContentShareOptions()
+        includeInstalledApk = p.includeInstalledApk
+        appSettings = p.appSettings
+        readerData = p.readerBookmarksHighlightsHistory
+        personalNotes = p.personalNotes
+        verseAttachments = p.verseAttachmentsAndComments
+        semanticLexicon = p.semanticLexicon
+        wordSpanLinks = p.wordSpanLinks
+        bibleImages = p.bibleCatalogImages
+        bibleVideos = p.bibleCatalogVideos
+        bibleAudios = p.bibleCatalogAudios
+        songTextsCues = p.songTextsTagsAndLyricCues
+        songMedia = p.songMediaFiles
+        timemarkBible = p.timemarkBibleProjects
+        studyOffline = p.studyOfflineMaterials
+        bibleAudio = p.bibleDownloadedAudio
+        quranHistory = p.quranSearchHistory
+        mediaPlaylists = p.userMediaPlaylists
+        videoThoughts = p.userVideoThoughts
+        songPlaylists = p.userSongPlaylists
+        microblog = p.microblogPosts
     }
 
     fun shareZip(file: File) {
@@ -345,6 +378,8 @@ fun ShareMyAppScreen(
             ShareOptionRow(stringResource(R.string.share_app_opt_bible_images), bibleImages) { bibleImages = it }
             ShareOptionRow(stringResource(R.string.share_app_opt_bible_videos), bibleVideos) { bibleVideos = it }
             ShareOptionRow(stringResource(R.string.share_app_opt_bible_audios), bibleAudios) { bibleAudios = it }
+            ShareOptionRow(stringResource(R.string.share_app_opt_media_playlists), mediaPlaylists) { mediaPlaylists = it }
+            ShareOptionRow(stringResource(R.string.share_app_opt_video_thoughts), videoThoughts) { videoThoughts = it }
             HorizontalDivider(Modifier.padding(vertical = 12.dp))
             Text(
                 stringResource(R.string.share_app_section_songs),
@@ -353,6 +388,7 @@ fun ShareMyAppScreen(
             Spacer(Modifier.height(8.dp))
             ShareOptionRow(stringResource(R.string.share_app_opt_song_texts_cues), songTextsCues) { songTextsCues = it }
             ShareOptionRow(stringResource(R.string.share_app_opt_song_files), songMedia) { songMedia = it }
+            ShareOptionRow(stringResource(R.string.share_app_opt_song_playlists), songPlaylists) { songPlaylists = it }
             HorizontalDivider(Modifier.padding(vertical = 12.dp))
             Text(
                 stringResource(R.string.share_app_section_study),
@@ -403,6 +439,42 @@ fun ShareMyAppScreen(
             Spacer(Modifier.height(8.dp))
             ShareOptionRow(stringResource(R.string.share_app_opt_timemark_bible), timemarkBible) { timemarkBible = it }
             ShareOptionRow(stringResource(R.string.share_app_opt_quran_history), quranHistory) { quranHistory = it }
+            ShareOptionRow(stringResource(R.string.share_app_opt_microblog), microblog) { microblog = it }
+            HorizontalDivider(Modifier.padding(vertical = 12.dp))
+            Text(
+                stringResource(R.string.share_app_section_portable),
+                style = MaterialTheme.typography.titleSmall,
+            )
+            Spacer(Modifier.height(8.dp))
+            OutlinedButton(
+                onClick = { applyPortablePreset() },
+                modifier = Modifier.fillMaxWidth(),
+            ) {
+                Text(stringResource(R.string.share_app_portable_preset))
+            }
+            Spacer(Modifier.height(8.dp))
+            OutlinedButton(
+                onClick = {
+                    onCheckPortableServer { items ->
+                        if (items.isEmpty()) {
+                            Toast.makeText(
+                                context,
+                                R.string.share_app_server_none,
+                                Toast.LENGTH_LONG,
+                            ).show()
+                        } else {
+                            Toast.makeText(
+                                context,
+                                items.joinToString("\n") { "• ${it.title} (v${it.version})" },
+                                Toast.LENGTH_LONG,
+                            ).show()
+                        }
+                    }
+                },
+                modifier = Modifier.fillMaxWidth(),
+            ) {
+                Text(stringResource(R.string.share_app_check_server))
+            }
             Spacer(Modifier.height(16.dp))
             Text(
                 stringResource(R.string.share_app_footer_hint),

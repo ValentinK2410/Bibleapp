@@ -86,6 +86,8 @@ private object Keys {
     val MEDIA_HOME_SECTION_ORDER = stringPreferencesKey("media_home_section_order")
     /** Пользовательское название микроблога. */
     val MICROBLOG_TITLE = stringPreferencesKey("microblog_title")
+    /** Версии пакетов portableExchange, уже импортированных с сервера (bundleId → version). */
+    val PORTABLE_INSTALLED_VERSIONS_JSON = stringPreferencesKey("portable_installed_versions_json")
     /** Порядок пунктов главного меню экрана книг (см. [BooksMainMenuOrder]), без «Настройки» и переводов. */
     val BOOKS_MAIN_MENU_ORDER = stringPreferencesKey("books_main_menu_order")
     /** Озвучка полного названия книги при долгом нажатии на экране выбора книг. */
@@ -1697,6 +1699,42 @@ class BiblePreferences(
 
     suspend fun preferencesSnapshot(): Preferences =
         appContext.bibleDataStore.data.first()
+
+    val portableInstalledVersions: Flow<Map<String, Long>> = appContext.bibleDataStore.data.map { prefs ->
+        parsePortableInstalledVersions(prefs[Keys.PORTABLE_INSTALLED_VERSIONS_JSON].orEmpty())
+    }
+
+    suspend fun recordPortableBundleInstall(bundleId: String, version: Long) {
+        if (bundleId.isBlank() || version <= 0L) return
+        appContext.bibleDataStore.edit { prefs ->
+            val map = parsePortableInstalledVersions(prefs[Keys.PORTABLE_INSTALLED_VERSIONS_JSON].orEmpty())
+                .toMutableMap()
+            map[bundleId] = version
+            prefs[Keys.PORTABLE_INSTALLED_VERSIONS_JSON] = portableInstalledVersionsToJson(map)
+        }
+    }
+
+    private fun parsePortableInstalledVersions(json: String): Map<String, Long> {
+        if (json.isBlank()) return emptyMap()
+        return try {
+            val root = JSONObject(json)
+            buildMap {
+                val keys = root.keys()
+                while (keys.hasNext()) {
+                    val k = keys.next()
+                    put(k, root.optLong(k, 0L))
+                }
+            }
+        } catch (_: Exception) {
+            emptyMap()
+        }
+    }
+
+    private fun portableInstalledVersionsToJson(map: Map<String, Long>): String {
+        val root = JSONObject()
+        map.forEach { (id, v) -> root.put(id, v) }
+        return root.toString()
+    }
 
     suspend fun snapshotToJson(): JSONObject {
         val snapshot = appContext.bibleDataStore.data.first()

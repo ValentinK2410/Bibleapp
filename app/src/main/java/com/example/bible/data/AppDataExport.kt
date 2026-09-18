@@ -127,8 +127,18 @@ data class ShareExportOptions(
      */
     val bibleAudioNarratorIds: Set<String>? = null,
     val quranSearchHistory: Boolean = true,
+    /** Плейлисты видео/аудио в медиатеке. */
+    val userMediaPlaylists: Boolean = false,
+    /** Заметки к видео. */
+    val userVideoThoughts: Boolean = false,
+    /** Плейлисты песен (тексты и аккорды в user_songs_json). */
+    val userSongPlaylists: Boolean = false,
+    /** Микроблог: записи и картинки. */
+    val microblogPosts: Boolean = false,
     /** Копия установленного APK в папку bundled_app/ архива (для установки на другом устройстве). */
     val includeInstalledApk: Boolean = true,
+    /** Метаданные переносимого пакета (версии модулей для сервера/флешки). */
+    val portableBundleMeta: PortableBundleMeta? = null,
 ) {
     fun anySelected(): Boolean = listOf(
         includeInstalledApk,
@@ -143,10 +153,14 @@ data class ShareExportOptions(
         bibleCatalogAudios,
         songTextsTagsAndLyricCues,
         songMediaFiles,
+        userSongPlaylists,
         timemarkBibleProjects,
         studyOfflineMaterials,
         bibleDownloadedAudio,
         quranSearchHistory,
+        userMediaPlaylists,
+        userVideoThoughts,
+        microblogPosts,
     ).any { it }
 }
 
@@ -322,6 +336,9 @@ object AppDataExport {
                 userKeys += "user_songs_json"
                 userKeys += "user_song_tags"
             }
+            if (options.userSongPlaylists) userKeys += "user_song_playlists_json"
+            if (options.userMediaPlaylists) userKeys += "user_media_playlists_json"
+            if (options.userVideoThoughts) userKeys += "user_bible_video_thoughts_json"
             if (options.songMediaFiles && "user_songs_json" !in userKeys) userKeys += "user_songs_json"
             if (options.quranSearchHistory) {
                 userKeys += "quran_search_history_json"
@@ -360,7 +377,12 @@ object AppDataExport {
                 }
                 put("quranSearchHistory", options.quranSearchHistory)
                 put("includeInstalledApk", options.includeInstalledApk)
+                put("userMediaPlaylists", options.userMediaPlaylists)
+                put("userVideoThoughts", options.userVideoThoughts)
+                put("userSongPlaylists", options.userSongPlaylists)
+                put("microblogPosts", options.microblogPosts)
             }
+            options.portableBundleMeta?.let { PortableExchange.attachPortableMetaToManifest(manifest, it) }
 
             var zipOrdinal = 0
             fun bumpZipProgress(pathInArchive: String) {
@@ -447,6 +469,16 @@ object AppDataExport {
                         }
                     }
                 }
+                if (options.microblogPosts) {
+                    val postsJson = exportMicroblogPostsJson(context)
+                    if (postsJson != null) {
+                        zos.putNextEntry(ZipEntry("microblog_posts.json"))
+                        zos.write(postsJson.toByteArray(Charsets.UTF_8))
+                        zos.closeEntry()
+                        bumpZipProgress("microblog_posts.json")
+                    }
+                    addDirIf(MediaCatalogPaths.MICROBLOG, true)
+                }
 
                 if (options.includeInstalledApk) {
                     try {
@@ -484,14 +516,20 @@ object AppDataExport {
         zipFile: File,
         fileBaseName: String,
         onCopyProgress: ((bytesDone: Long, bytesTotal: Long) -> Unit)? = null,
+        subFolderRelative: String? = PortableExchange.USB_FOLDER,
     ): Boolean {
         val root = DocumentFile.fromTreeUri(context, treeUri) ?: return false
+        val folder = if (subFolderRelative.isNullOrBlank()) {
+            root
+        } else {
+            ensureSubFolder(root, subFolderRelative) ?: root
+        }
         val safeName = fileBaseName.replace(Regex("""[^\w.\-]+"""), "_").trim('_').ifBlank { "bible_export" }
         val displayName = "$safeName.zip"
-        val out = root.createFile("application/zip", displayName)
-            ?: root.createFile("application/octet-stream", displayName)
+        val out = folder.createFile("application/zip", displayName)
+            ?: folder.createFile("application/octet-stream", displayName)
             ?: run {
-                val existing = root.findFile(displayName)
+                val existing = folder.findFile(displayName)
                 if (existing != null && existing.isFile) existing else null
             }
             ?: return false
@@ -613,6 +651,10 @@ object AppDataExport {
                                     idx.writeBytes(bytes)
                                 }
                             }
+                            name == "microblog_posts.json" -> {
+                                val bytes = zis.readBytes()
+                                importMicroblogPostsJson(context, String(bytes, Charsets.UTF_8))
+                            }
                             name.startsWith("files/") -> {
                                 val rel = name.removePrefix("files/")
                                     .replace('\\', '/')
@@ -665,8 +707,80 @@ object AppDataExport {
                 true
             } catch (_: Throwable) {
                 false
+        }
+    }
+
+    fun readManifestFromZip(zipFile: File): JSONObject? = try {
+        ZipInputStream(FileInputStream(zipFile)).use { zis ->
+            var entry = zis.nextEntry
+            while (entry != null) {
+                if (entry.name == MANIFEST) {
+                    return JSONObject(zis.readBytes().toString(Charsets.UTF_8))
+                }
+                zis.drainZipEntry()
+                entry = zis.nextEntry
             }
         }
+        null
+    } catch (_: Exception) {
+        null
+    }
+
+    private fun ensureSubFolder(root: DocumentFile, relative: String): DocumentFile? {
+        var cur: DocumentFile = root
+        for (part in relative.split('/')) {
+            if (part.isBlank()) continue
+            cur = cur.findFile(part) ?: cur.createDirectory(part) ?: return null
+        }
+        return cur
+    }
+
+    private suspend fun exportMicroblogPostsJson(context: Context): String? {
+        return try {
+            val posts = MicroblogRepository(context).listPosts()
+            if (posts.isEmpty()) return null
+            val arr = JSONArray()
+            posts.forEach { p ->
+                arr.put(
+                    JSONObject().apply {
+                        put("id", p.id)
+                        put("title", p.title)
+                        put("body", p.body)
+                        put("spans", spansToJson(p.spans))
+                        put("images", imagesToJson(p.images))
+                        put("createdAtMs", p.createdAtMs)
+                        put("updatedAtMs", p.updatedAtMs)
+                    },
+                )
+            }
+            JSONObject().apply { put("posts", arr) }.toString()
+        } catch (_: Exception) {
+            null
+        }
+    }
+
+    private suspend fun importMicroblogPostsJson(context: Context, raw: String) {
+        if (raw.isBlank()) return
+        try {
+            val root = JSONObject(raw)
+            val arr = root.optJSONArray("posts") ?: return
+            val repo = MicroblogRepository(context)
+            for (i in 0 until arr.length()) {
+                val o = arr.optJSONObject(i) ?: continue
+                val post = MicroblogPost(
+                    id = o.optString("id").ifBlank { java.util.UUID.randomUUID().toString() },
+                    title = o.optString("title", ""),
+                    body = o.optString("body", ""),
+                    spans = spansFromJson(o.optString("spans", "[]")),
+                    images = imagesFromJson(o.optString("images", "[]")),
+                    createdAtMs = o.optLong("createdAtMs", System.currentTimeMillis()),
+                    updatedAtMs = o.optLong("updatedAtMs", System.currentTimeMillis()),
+                )
+                repo.save(post)
+            }
+        } catch (_: Exception) {
+        }
+    }
 
     /** Пропуск содержимого записи ZIP без загрузки всего в память (APK в архиве и пр.). */
     private fun ZipInputStream.drainZipEntry() {

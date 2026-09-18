@@ -91,6 +91,9 @@ import com.example.bible.data.SemanticLexiconRule
 import com.example.bible.data.findUnifiedSemanticSpans
 import com.example.bible.data.BooksMainMenuOrder
 import com.example.bible.data.MediaHomeSectionOrder
+import com.example.bible.data.PortableCatalogItem
+import com.example.bible.data.PortableContentCatalog
+import com.example.bible.data.PortableExchange
 import com.example.bible.data.OfflineDownloadBookOrder
 import com.example.bible.data.KidsUserSectionsState
 import com.example.bible.data.KidsUserMediaStorage
@@ -1020,14 +1023,105 @@ class BibleViewModel(
     suspend fun exportShareBundle(
         options: ShareExportOptions,
         onProgress: ((ExportShareProgressEvent) -> Unit)? = null,
-    ): File = AppDataExport.exportShareZip(appContext, preferences, options, onProgress)
+    ): File {
+        val enriched = enrichShareOptionsWithPortableMeta(options)
+        return AppDataExport.exportShareZip(appContext, preferences, enriched, onProgress)
+    }
+
+    private suspend fun enrichShareOptionsWithPortableMeta(options: ShareExportOptions): ShareExportOptions {
+        if (options.portableBundleMeta != null) return options
+        val looksPortable = options.userMediaPlaylists ||
+            options.userVideoThoughts ||
+            options.microblogPosts ||
+            (options.timemarkBibleProjects && options.bibleCatalogVideos && !options.appSettings)
+        if (!looksPortable) return options
+        val modules = PortableExchange.buildModuleVersions(appContext, preferences)
+        return options.copy(
+            portableBundleMeta = PortableExchange.buildLocalBundleMeta("Пакет BibleApp", modules),
+        )
+    }
 
     suspend fun importBackupZip(file: File): Boolean {
         val ok = withContext(Dispatchers.IO) {
             AppDataExport.importZip(appContext, preferences, file)
         }
         if (ok) reload()
+        if (ok) {
+            val meta = withContext(Dispatchers.IO) {
+                AppDataExport.readManifestFromZip(file)?.let { PortableExchange.readPortableMetaFromManifest(it) }
+            }
+            if (meta != null) {
+                preferences.recordPortableBundleInstall(meta.bundleId, meta.bundleVersion)
+            }
+        }
         return ok
+    }
+
+    val portableInstalledVersions: StateFlow<Map<String, Long>> =
+        preferences.portableInstalledVersions.stateIn(
+            viewModelScope,
+            SharingStarted.WhileSubscribed(5_000),
+            emptyMap(),
+        )
+
+    suspend fun buildPortableShareOptions(title: String): ShareExportOptions {
+        val modules = PortableExchange.buildModuleVersions(appContext, preferences)
+        val meta = PortableExchange.buildLocalBundleMeta(title, modules)
+        return PortableExchange.userContentShareOptions().copy(portableBundleMeta = meta)
+    }
+
+    suspend fun exportPortableUserContentToUsb(
+        treeUri: android.net.Uri,
+        onCopyProgress: (Long, Long) -> Unit,
+    ): Boolean = withContext(Dispatchers.IO) {
+        val opts = buildPortableShareOptions("Мой контент")
+        val zip = AppDataExport.exportShareZip(appContext, preferences, opts, null)
+        AppDataExport.copyZipToUserFolder(
+            appContext,
+            treeUri,
+            zip,
+            "BibleApp_portable_${System.currentTimeMillis()}",
+            onCopyProgress = { d, t ->
+                onCopyProgress(d, t)
+            },
+            subFolderRelative = PortableExchange.USB_FOLDER,
+        )
+    }
+
+    fun downloadPortableCatalogItem(item: PortableCatalogItem, onDone: (String) -> Unit) {
+        viewModelScope.launch {
+            try {
+                val file = withContext(Dispatchers.IO) {
+                    PortableContentCatalog.downloadToCache(appContext, item)
+                }
+                val manifest = AppDataExport.readManifestFromZip(file)
+                val ok = importBackupZip(file)
+                file.delete()
+                if (ok) {
+                    preferences.recordPortableBundleInstall(item.id, item.version)
+                    val meta = manifest?.let { PortableExchange.readPortableMetaFromManifest(it) }
+                    val summary = meta?.let { PortableExchange.formatModuleSummary(it.moduleVersions) }
+                        ?: PortableExchange.formatModuleSummary(item.moduleVersions)
+                    onDone("«${item.title}» загружено (версия ${item.version}). $summary")
+                } else {
+                    onDone("Не удалось импортировать «${item.title}»")
+                }
+            } catch (e: Exception) {
+                onDone(e.message ?: "Ошибка загрузки")
+            }
+        }
+    }
+
+    fun checkPortableServerUpdates(onResult: (List<PortableCatalogItem>) -> Unit) {
+        viewModelScope.launch {
+            try {
+                val catalog = withContext(Dispatchers.IO) { PortableContentCatalog.fetchCatalog() }
+                val newer = PortableContentCatalog.itemsNewerThan(catalog, portableInstalledVersions.value)
+                onResult(newer)
+            } catch (_: Exception) {
+                onResult(emptyList())
+            }
+        }
     }
 
     fun addTextHighlight(h: TextHighlight) {

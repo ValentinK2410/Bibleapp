@@ -274,6 +274,7 @@ fun BibleApp(
         val navController = rememberNavController()
         val state by viewModel.state.collectAsStateWithLifecycle()
         SharedMediaImportEffect(viewModel)
+        PortableExchangeHost(viewModel)
         var mimicCursor by remember { mutableStateOf<Offset?>(null) }
         var mimicPointerPressed by remember { mutableStateOf(false) }
         var mimicFallbackVelocityVector by remember { mutableStateOf<Pair<Offset, Offset>?>(null) }
@@ -1529,6 +1530,7 @@ private fun BibleNavHost(
                 exportShare = { opts, onProgress ->
                     viewModel.exportShareBundle(opts, onProgress)
                 },
+                onCheckPortableServer = { cb -> viewModel.checkPortableServerUpdates(cb) },
             )
         }
         composable("offline_download") {
