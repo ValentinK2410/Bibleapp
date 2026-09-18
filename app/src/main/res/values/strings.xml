@@ -837,6 +837,12 @@
     <string name="timemark_share_chooser_title">Отправить таймкоды</string>
     <string name="timemark_share_empty">Нет сохранённых таймкодов для экспорта</string>
     <string name="timemark_share_failed">Не удалось собрать архив таймкодов</string>
+    <string name="video_share_menu_cd">Поделиться видео</string>
+    <string name="video_share_video_file">Поделиться видеофайлом</string>
+    <string name="video_share_thoughts_only">Поделиться заметками</string>
+    <string name="video_share_video_and_thoughts_app">Поделиться видео с заметками (для приложения)</string>
+    <string name="video_share_thoughts_chooser">Отправить заметки</string>
+    <string name="video_share_app_pack_chooser">Отправить архив для приложения</string>
     <string name="timemark_import_cd">Импорт таймкодов</string>
     <string name="timemark_import_ok">Импортировано проектов: %1$d. Откройте ту же книгу и главу, включите озвучку.</string>
     <string name="timemark_import_failed">Не удалось импортировать архив</string>

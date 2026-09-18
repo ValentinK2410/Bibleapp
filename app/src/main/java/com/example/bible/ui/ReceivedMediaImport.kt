@@ -37,6 +37,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.bible.data.MediaCatalogPaths
+import com.example.bible.data.VideoSharePackage
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
@@ -154,6 +155,16 @@ fun rememberReceivedMediaImportHandlers(viewModel: BibleViewModel): ReceivedMedi
                 Toast.makeText(context, "Не удалось открыть файл", Toast.LENGTH_SHORT).show()
                 return@launch
             }
+            val format = VideoSharePackage.readFormat(tmp)
+            if (format == VideoSharePackage.FORMAT) {
+                busyMessage = "Импорт видео и заметок…"
+                viewModel.importVideoShareFromFile(tmp) { msg ->
+                    busyMessage = null
+                    tmp.delete()
+                    Toast.makeText(context, msg, Toast.LENGTH_LONG).show()
+                }
+                return@launch
+            }
             busyMessage = "Импорт плейлиста…"
             viewModel.importUserMediaPlaylistFromFile(tmp) { msg ->
                 busyMessage = null
@@ -257,7 +268,7 @@ fun rememberReceivedMediaImportHandlers(viewModel: BibleViewModel): ReceivedMedi
 }
 
 @Composable
-private fun ReceivedMediaImportBusyOverlay(busyMessage: String?) {
+internal fun ReceivedMediaImportBusyOverlay(busyMessage: String?) {
     if (busyMessage == null) return
     AlertDialog(
         onDismissRequest = {},

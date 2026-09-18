@@ -1398,6 +1398,26 @@ class BiblePreferences(
         }
     }
 
+    suspend fun mergeVideoThoughts(videoId: String, incoming: List<VideoThought>) {
+        if (videoId.isBlank() || incoming.isEmpty()) return
+        appContext.bibleDataStore.edit { prefs ->
+            val map = VideoThought.parseMap(prefs[Keys.USER_BIBLE_VIDEO_THOUGHTS_JSON].orEmpty())
+                .mapValues { it.value.toMutableList() }
+                .toMutableMap()
+            val byId = map.getOrPut(videoId) { mutableListOf() }.associateBy { it.id }.toMutableMap()
+            incoming.forEach { t ->
+                val text = t.text.trim()
+                if (text.isNotBlank()) byId[t.id] = t.copy(text = text)
+            }
+            map[videoId] = byId.values.sortedWith(
+                compareBy<VideoThought> { it.positionMs != null }
+                    .thenBy { it.positionMs ?: 0 }
+                    .thenBy { it.createdAt },
+            ).toMutableList()
+            prefs[Keys.USER_BIBLE_VIDEO_THOUGHTS_JSON] = VideoThought.toJsonMap(map)
+        }
+    }
+
     private fun stripVideoThoughts(prefs: MutablePreferences, videoId: String) {
         val map = VideoThought.parseMap(prefs[Keys.USER_BIBLE_VIDEO_THOUGHTS_JSON].orEmpty()).toMutableMap()
         if (map.remove(videoId) != null) {

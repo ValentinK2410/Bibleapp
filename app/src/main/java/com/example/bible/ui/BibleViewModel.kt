@@ -80,6 +80,9 @@ import com.example.bible.data.UserMediaPlaybackProgress
 import com.example.bible.data.UserMediaPlaylistShareError
 import com.example.bible.data.UserMediaPlaylistShareOutcome
 import com.example.bible.data.UserMediaPlaylistSharePackage
+import com.example.bible.data.VideoShareImportError
+import com.example.bible.data.VideoShareImportOutcome
+import com.example.bible.data.VideoSharePackage
 import com.example.bible.data.UserSongPlaylist
 import com.example.bible.data.WordSpanMediaAttachment
 import com.example.bible.data.LexiconTone
@@ -3218,6 +3221,52 @@ class BibleViewModel(
                         UserMediaPlaylistShareError.EMPTY ->
                             "Плейлист пустой"
                         UserMediaPlaylistShareError.IO_OR_PARSE ->
+                            "Не удалось прочитать файл"
+                    },
+                )
+            }
+        }
+    }
+
+    fun importVideoShareFromFile(file: File, onDone: (String) -> Unit) {
+        viewModelScope.launch {
+            when (
+                val outcome = VideoSharePackage.importFromFile(
+                    appContext,
+                    file,
+                    bibleUserVideos.value,
+                    bibleVideoLibrary,
+                )
+            ) {
+                is VideoShareImportOutcome.Ok -> {
+                    preferences.saveBibleVideo(outcome.video)
+                    if (outcome.thoughts.isNotEmpty()) {
+                        preferences.mergeVideoThoughts(outcome.video.id, outcome.thoughts)
+                    }
+                    val thoughtsBit = when (outcome.thoughts.size) {
+                        0 -> ""
+                        1 -> " Заметка: 1."
+                        else -> " Заметок: ${outcome.thoughts.size}."
+                    }
+                    val filesBit = when {
+                        outcome.filesCopied > 0 -> " Файл видео скопирован."
+                        outcome.video.fileName.isBlank() && !outcome.video.sourceUrl.isNullOrBlank() ->
+                            " Видео по ссылке — скачайте из библиотеки."
+                        else -> ""
+                    }
+                    onDone("«${outcome.video.title}» импортировано.$thoughtsBit$filesBit")
+                }
+                is VideoShareImportOutcome.Err -> onDone(
+                    when (outcome.error) {
+                        VideoShareImportError.MISSING_MANIFEST ->
+                            "В файле нет описания видео"
+                        VideoShareImportError.FULL_APP_BACKUP ->
+                            "Это полный архив приложения, а не видео с заметками"
+                        VideoShareImportError.WRONG_FORMAT ->
+                            "Неизвестный формат файла"
+                        VideoShareImportError.EMPTY ->
+                            "В файле нет видео и заметок"
+                        VideoShareImportError.IO_OR_PARSE ->
                             "Не удалось прочитать файл"
                     },
                 )

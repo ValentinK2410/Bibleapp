@@ -105,6 +105,11 @@ import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.WindowInsetsControllerCompat
 import com.example.bible.data.BibleUserVideo
 import com.example.bible.data.VideoThought
+import androidx.compose.material.icons.filled.Share
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.ui.res.stringResource
+import com.example.bible.R
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
@@ -230,6 +235,9 @@ fun LibraryVideoPlayerDialog(
     onThoughtsSplitChange: (landscape: Boolean, fraction: Float) -> Unit = { _, _ -> },
 ) {
     val context = LocalContext.current
+    val videoShareState = rememberLibraryVideoShareState()
+    LibraryVideoShareBusyOverlay(videoShareState)
+    var videoShareMenuOpen by remember { mutableStateOf(false) }
     /** Колбэки MediaPlayer живут дольше compose-scope — отдельная область, не rememberCoroutineScope. */
     val playbackScope = remember {
         CoroutineScope(SupervisorJob() + Dispatchers.Main.immediate)
@@ -1121,6 +1129,79 @@ fun LibraryVideoPlayerDialog(
                                         "${currentIx + 1} из ${tracks.size}",
                                         color = Color.White.copy(alpha = 0.7f),
                                         style = MaterialTheme.typography.labelSmall,
+                                    )
+                                }
+                            }
+                            Box {
+                                IconButton(
+                                    onClick = {
+                                        videoShareMenuOpen = true
+                                        pokeControls()
+                                    },
+                                ) {
+                                    Icon(
+                                        Icons.Filled.Share,
+                                        contentDescription = stringResource(R.string.video_share_menu_cd),
+                                        tint = Color.White,
+                                    )
+                                }
+                                DropdownMenu(
+                                    expanded = videoShareMenuOpen,
+                                    onDismissRequest = { videoShareMenuOpen = false },
+                                ) {
+                                    DropdownMenuItem(
+                                        text = { Text(stringResource(R.string.video_share_video_file)) },
+                                        onClick = {
+                                            videoShareMenuOpen = false
+                                            val pair = tracksRef.value.getOrNull(currentIxAtomic.get())
+                                            if (pair != null) {
+                                                videoShareState.share(
+                                                    pair.first,
+                                                    pair.second,
+                                                    currentThoughts,
+                                                    LibraryVideoShareAction.VIDEO,
+                                                )
+                                            }
+                                        },
+                                        leadingIcon = {
+                                            Icon(Icons.Filled.Share, contentDescription = null)
+                                        },
+                                    )
+                                    DropdownMenuItem(
+                                        text = { Text(stringResource(R.string.video_share_thoughts_only)) },
+                                        onClick = {
+                                            videoShareMenuOpen = false
+                                            val pair = tracksRef.value.getOrNull(currentIxAtomic.get())
+                                            if (pair != null) {
+                                                videoShareState.share(
+                                                    pair.first,
+                                                    pair.second,
+                                                    currentThoughts,
+                                                    LibraryVideoShareAction.THOUGHTS,
+                                                )
+                                            }
+                                        },
+                                        leadingIcon = {
+                                            Icon(Icons.AutoMirrored.Filled.StickyNote2, contentDescription = null)
+                                        },
+                                    )
+                                    DropdownMenuItem(
+                                        text = { Text(stringResource(R.string.video_share_video_and_thoughts_app)) },
+                                        onClick = {
+                                            videoShareMenuOpen = false
+                                            val pair = tracksRef.value.getOrNull(currentIxAtomic.get())
+                                            if (pair != null) {
+                                                videoShareState.share(
+                                                    pair.first,
+                                                    pair.second,
+                                                    currentThoughts,
+                                                    LibraryVideoShareAction.VIDEO_WITH_THOUGHTS,
+                                                )
+                                            }
+                                        },
+                                        leadingIcon = {
+                                            Icon(Icons.AutoMirrored.Filled.OpenInNew, contentDescription = null)
+                                        },
                                     )
                                 }
                             }
