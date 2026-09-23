@@ -39,6 +39,7 @@ import com.example.bible.data.AiChatRepository
 import com.example.bible.data.AiChatShare
 import com.example.bible.data.AiChatSummary
 import com.example.bible.data.BiblePassagePrompts
+import com.example.bible.data.DailyJournalEntry
 import com.example.bible.data.DeepSeekPassageScope
 import com.example.bible.data.HistoryEntry
 import com.example.bible.data.QuranReadingHistoryEntry
@@ -3146,6 +3147,28 @@ class BibleViewModel(
 
     fun deleteVideoThought(videoId: String, thoughtId: String) {
         viewModelScope.launch { preferences.deleteVideoThought(videoId, thoughtId) }
+    }
+
+    val dailyJournalEntries: StateFlow<List<DailyJournalEntry>> =
+        preferences.dailyJournalEntries.stateIn(
+            viewModelScope,
+            SharingStarted.WhileSubscribed(5_000),
+            emptyList(),
+        )
+
+    fun saveDailyJournalEntry(entry: DailyJournalEntry) {
+        viewModelScope.launch { preferences.saveDailyJournalEntry(entry) }
+    }
+
+    fun deleteDailyJournalEntry(id: String) {
+        viewModelScope.launch { preferences.deleteDailyJournalEntry(id) }
+    }
+
+    fun maxVersesInChapter(bookId: String, chapter: Int, translation: TranslationId): Int {
+        return repository.loadChapter(translation, bookId, chapter)
+            ?.verses
+            ?.maxOfOrNull { it.number }
+            ?: 50
     }
 
     val bibleUserAudios: StateFlow<List<BibleUserAudio>> = preferences.userBibleAudios.stateIn(

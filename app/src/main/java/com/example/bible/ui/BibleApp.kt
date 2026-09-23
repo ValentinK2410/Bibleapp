@@ -669,6 +669,8 @@ private fun BibleNavHost(
             var showBookNarratorPicker by remember { mutableStateOf(false) }
             var showBibleAudioDownloadSheet by remember { mutableStateOf(false) }
             var previewBook by remember { mutableStateOf<CanonBookEntry?>(null) }
+            var bookOpenMenu by remember { mutableStateOf<CanonBookEntry?>(null) }
+            var passagePickBook by remember { mutableStateOf<CanonBookEntry?>(null) }
             val bookPickerLongPressTts by viewModel.bookPickerLongPressTts.collectAsStateWithLifecycle()
             val bookNameTts = rememberVerseTextToSpeech(TranslationId.SYNODAL)
             val booksScreenContext = LocalContext.current
@@ -841,6 +843,23 @@ private fun BibleNavHost(
                             navController.navigate("read/${dailyVerse.bookId}/${dailyVerse.chapter}/${dailyVerse.verse}")
                         },
                     )
+                    BibleHomePassageBar(
+                        onOpenChapters = { bookId ->
+                            com.example.bible.data.BibleAudioPlayer.stopForNavigation()
+                            navController.navigate("chapters/$bookId")
+                        },
+                        onOpenVerseGrid = { bookId, chapter ->
+                            com.example.bible.data.BibleAudioPlayer.stopForNavigation()
+                            navController.navigate("verses/$bookId/$chapter")
+                        },
+                        onOpenReader = { bookId, chapter, verse ->
+                            com.example.bible.data.BibleAudioPlayer.stopForNavigation()
+                            navController.navigate("read/$bookId/$chapter/$verse")
+                        },
+                        maxVersesInChapter = { bookId, chapter ->
+                            viewModel.maxVersesInChapter(bookId, chapter, translation)
+                        },
+                    )
                     BookSelectionContent(
                         layoutMode = bookLayoutMode,
                         modifier = Modifier
@@ -849,7 +868,7 @@ private fun BibleNavHost(
                         booksWithAudio = booksWithAudio,
                         onBookClick = { bookId ->
                             com.example.bible.data.BibleAudioPlayer.stopForNavigation()
-                            navController.navigate("chapters/$bookId")
+                            bookOpenMenu = BibleCanon.byId(bookId)
                         },
                         onBookLongPress = { entry ->
                             previewBook = entry
@@ -861,6 +880,39 @@ private fun BibleNavHost(
                         },
                     )
                 }
+            }
+            bookOpenMenu?.let { book ->
+                BookOpenActionsDialog(
+                    book = book,
+                    onDismiss = { bookOpenMenu = null },
+                    onChapters = {
+                        bookOpenMenu = null
+                        navController.navigate("chapters/${book.id}")
+                    },
+                    onPickVerse = {
+                        bookOpenMenu = null
+                        passagePickBook = book
+                    },
+                    onReadStart = {
+                        bookOpenMenu = null
+                        navController.navigate("read/${book.id}/1/1")
+                    },
+                )
+            }
+            passagePickBook?.let { book ->
+                BiblePassagePickerDialog(
+                    onDismiss = { passagePickBook = null },
+                    onBookOnly = { navController.navigate("chapters/$it") },
+                    onChapter = { b, ch -> navController.navigate("verses/$b/$ch") },
+                    onVerse = { b, ch, v ->
+                        passagePickBook = null
+                        navController.navigate("read/$b/$ch/$v")
+                    },
+                    maxVersesInChapter = { b, ch ->
+                        viewModel.maxVersesInChapter(b, ch, translation)
+                    },
+                    initialBookId = book.id,
+                )
             }
             if (showBookNarratorPicker) {
                 NarratorPickerDialog(
@@ -3408,6 +3460,18 @@ private fun BibleNavHost(
                     viewModel.deleteNote(noteId)
                 },
                 onBack = { navController.navigateUp() },
+            )
+        }
+        composable("daily_journal") {
+            val journal by viewModel.dailyJournalEntries.collectAsStateWithLifecycle()
+            DailyJournalScreen(
+                entries = journal,
+                onBack = { navController.navigateUp() },
+                onSave = { viewModel.saveDailyJournalEntry(it) },
+                onDelete = { viewModel.deleteDailyJournalEntry(it) },
+                onOpenVerse = { bookId, chapter, verse ->
+                    navController.navigate("read/$bookId/$chapter/$verse")
+                },
             )
         }
         composable("app_contacts") {

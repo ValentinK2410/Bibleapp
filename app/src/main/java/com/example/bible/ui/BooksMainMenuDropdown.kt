@@ -75,6 +75,11 @@ fun BooksMainMenuOrderedItems(
                 onClick = { closeMenu(); navController.navigate("notes") },
                 leadingIcon = { Icon(Icons.Default.Edit, contentDescription = null) },
             )
+            BooksMainMenuOrder.DAILY_JOURNAL -> DropdownMenuItem(
+                text = { Text(stringResource(R.string.daily_journal_title)) },
+                onClick = { closeMenu(); navController.navigate("daily_journal") },
+                leadingIcon = { Icon(Icons.Default.CalendarToday, contentDescription = null) },
+            )
             BooksMainMenuOrder.AI -> DropdownMenuItem(
                 text = { Text(stringResource(R.string.ai_hub_title)) },
                 onClick = { closeMenu(); navController.navigate("ai") },

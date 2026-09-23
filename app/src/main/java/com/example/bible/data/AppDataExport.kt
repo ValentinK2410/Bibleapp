@@ -52,6 +52,7 @@ private val USER_DATA_KEYS = setOf(
     "reading_history_json",
     "reading_trace_json",
     "user_notes_json",
+    "daily_journal_json",
     "user_songs_json",
     "user_song_tags",
     "user_song_playlists_json",
@@ -318,6 +319,7 @@ object AppDataExport {
             if (options.personalNotes) {
                 userKeys += "user_notes_json"
                 userKeys += "note_custom_kinds_json"
+                userKeys += "daily_journal_json"
             }
             if (options.semanticLexicon) {
                 userKeys += setOf(

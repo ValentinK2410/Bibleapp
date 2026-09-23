@@ -86,6 +86,7 @@ private object Keys {
     val MEDIA_HOME_SECTION_ORDER = stringPreferencesKey("media_home_section_order")
     /** Пользовательское название микроблога. */
     val MICROBLOG_TITLE = stringPreferencesKey("microblog_title")
+    val DAILY_JOURNAL_JSON = stringPreferencesKey("daily_journal_json")
     /** Версии пакетов portableExchange, уже импортированных с сервера (bundleId → version). */
     val PORTABLE_INSTALLED_VERSIONS_JSON = stringPreferencesKey("portable_installed_versions_json")
     /** Порядок пунктов главного меню экрана книг (см. [BooksMainMenuOrder]), без «Настройки» и переводов. */
@@ -1222,6 +1223,26 @@ class BiblePreferences(
         appContext.bibleDataStore.edit { prefs ->
             val cur = UserNote.parseList(prefs[Keys.NOTES_JSON].orEmpty())
             prefs[Keys.NOTES_JSON] = UserNote.toJsonArray(cur.filter { it.id != noteId })
+        }
+    }
+
+    val dailyJournalEntries: Flow<List<DailyJournalEntry>> = appContext.bibleDataStore.data.map { prefs ->
+        DailyJournalEntry.parseList(prefs[Keys.DAILY_JOURNAL_JSON].orEmpty())
+    }
+
+    suspend fun saveDailyJournalEntry(entry: DailyJournalEntry) {
+        appContext.bibleDataStore.edit { prefs ->
+            val cur = DailyJournalEntry.parseList(prefs[Keys.DAILY_JOURNAL_JSON].orEmpty()).toMutableList()
+            cur.removeAll { it.id == entry.id }
+            cur.add(0, entry.copy(updatedAt = System.currentTimeMillis()))
+            prefs[Keys.DAILY_JOURNAL_JSON] = DailyJournalEntry.toJsonArray(cur)
+        }
+    }
+
+    suspend fun deleteDailyJournalEntry(id: String) {
+        appContext.bibleDataStore.edit { prefs ->
+            val cur = DailyJournalEntry.parseList(prefs[Keys.DAILY_JOURNAL_JSON].orEmpty())
+            prefs[Keys.DAILY_JOURNAL_JSON] = DailyJournalEntry.toJsonArray(cur.filter { it.id != id })
         }
     }
 
