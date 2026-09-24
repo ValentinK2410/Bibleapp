@@ -60,6 +60,15 @@ data class DailyJournalEntry(
     /** Час 0–23, если задача привязана ко времени. */
     val hour: Int? = null,
     val minute: Int? = null,
+    val allDay: Boolean = false,
+    val endDayKey: String? = null,
+    val endHour: Int? = null,
+    val endMinute: Int? = null,
+    /** none, daily, weekly, monthly, yearly */
+    val repeat: String = "none",
+    val reminderOn: Boolean = true,
+    val reminderMinutes: Int = 10,
+    val location: String = "",
     val createdAt: Long = System.currentTimeMillis(),
     val updatedAt: Long = System.currentTimeMillis(),
 ) {
@@ -93,6 +102,14 @@ data class DailyJournalEntry(
         if (pinned) put("pin", true)
         hour?.let { put("hh", it) }
         minute?.let { put("mm", it) }
+        if (allDay) put("ad", true)
+        endDayKey?.let { put("ed", it) }
+        endHour?.let { put("eh", it) }
+        endMinute?.let { put("em", it) }
+        if (repeat != "none") put("rp", repeat)
+        put("ro", reminderOn)
+        put("rm", reminderMinutes)
+        if (location.isNotBlank()) put("loc", location)
         put("ca", createdAt)
         put("ua", updatedAt)
     }
@@ -132,6 +149,14 @@ data class DailyJournalEntry(
                 pinned = j.optBoolean("pin", false),
                 hour = if (j.has("hh")) j.optInt("hh").coerceIn(0, 23) else null,
                 minute = if (j.has("mm")) j.optInt("mm").coerceIn(0, 59) else null,
+                allDay = j.optBoolean("ad", !j.has("hh")),
+                endDayKey = j.optString("ed").takeIf { it.isNotBlank() },
+                endHour = if (j.has("eh")) j.optInt("eh").coerceIn(0, 23) else null,
+                endMinute = if (j.has("em")) j.optInt("em").coerceIn(0, 59) else null,
+                repeat = j.optString("rp", "none").ifBlank { "none" },
+                reminderOn = j.optBoolean("ro", true),
+                reminderMinutes = j.optInt("rm", 10),
+                location = j.optString("loc", ""),
                 createdAt = j.optLong("ca", 0L),
                 updatedAt = j.optLong("ua", 0L),
             )

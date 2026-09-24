@@ -27,9 +27,11 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Check
+import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.PushPin
 import androidx.compose.material.icons.filled.Search
+import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
@@ -45,6 +47,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
+import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
@@ -56,6 +59,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
@@ -65,6 +69,7 @@ import com.example.bible.data.DailyJournalEntry
 import com.example.bible.data.JournalCheckItem
 import com.example.bible.data.JournalMood
 import java.time.LocalDate
+import java.time.ZoneId
 import java.time.format.DateTimeFormatter
 import java.util.Locale
 
@@ -331,6 +336,9 @@ private fun DailyJournalEditorScreen(
     onSave: (DailyJournalEntry) -> Unit,
     onDelete: (DailyJournalEntry) -> Unit,
 ) {
+    val context = LocalContext.current
+    val dateTimeFmt = remember { DateTimeFormatter.ofPattern("EEEE, d MMMM HH:mm", Locale("ru")) }
+    val dateFmt = remember { DateTimeFormatter.ofPattern("EEEE, d MMMM", Locale("ru")) }
     var title by remember(initial.id) { mutableStateOf(initial.title) }
     var body by remember(initial.id) { mutableStateOf(initial.body) }
     var mood by remember(initial.id) { mutableStateOf(initial.mood) }
@@ -341,30 +349,140 @@ private fun DailyJournalEditorScreen(
     var verseVs by remember(initial.id) { mutableStateOf(initial.verseVerse) }
     var checks by remember(initial.id) { mutableStateOf(initial.checkItems) }
     var newCheck by remember { mutableStateOf("") }
-    var refInput by remember { mutableStateOf("") }
-    var hour by remember(initial.id) { mutableStateOf(initial.hour) }
+    var allDay by remember(initial.id) { mutableStateOf(initial.allDay || initial.hour == null) }
+    var startDay by remember(initial.id) {
+        mutableStateOf(runCatching { LocalDate.parse(initial.dayKey) }.getOrElse { LocalDate.now() })
+    }
+    var startHour by remember(initial.id) { mutableIntStateOf(initial.hour ?: 1) }
+    var startMinute by remember(initial.id) { mutableIntStateOf(initial.minute ?: 30) }
+    var endDay by remember(initial.id) {
+        mutableStateOf(
+            runCatching { LocalDate.parse(initial.endDayKey ?: initial.dayKey) }.getOrElse { startDay },
+        )
+    }
+    var endHour by remember(initial.id) { mutableIntStateOf(initial.endHour ?: ((initial.hour ?: 1) + 1).coerceAtMost(23)) }
+    var endMinute by remember(initial.id) { mutableIntStateOf(initial.endMinute ?: (initial.minute ?: 30)) }
+    var repeat by remember(initial.id) { mutableStateOf(initial.repeat) }
+    var reminderOn by remember(initial.id) { mutableStateOf(initial.reminderOn) }
+    var reminderMinutes by remember(initial.id) { mutableIntStateOf(initial.reminderMinutes) }
+    var location by remember(initial.id) { mutableStateOf(initial.location) }
+    var picker by remember { mutableStateOf<String?>(null) }
+    val zoneLabel = remember {
+        val zone = ZoneId.systemDefault()
+        val offset = zone.rules.getOffset(java.time.Instant.now())
+        val hours = offset.totalSeconds / 3600
+        "GMT ${if (hours >= 0) "+" else ""}$hours:00"
+    }
+
+    fun formatWhen(day: LocalDate, hour: Int, minute: Int): String {
+        val stamp = day.atTime(hour, minute)
+        return if (allDay) stamp.format(dateFmt) else stamp.format(dateTimeFmt)
+    }
+
+    fun openDateThenTime(day: LocalDate, hour: Int, minute: Int, onResult: (LocalDate, Int, Int) -> Unit) {
+        android.app.DatePickerDialog(
+            context,
+            { _, year, month, dayOfMonth ->
+                val picked = LocalDate.of(year, month + 1, dayOfMonth)
+                if (allDay) {
+                    onResult(picked, hour, minute)
+                } else {
+                    android.app.TimePickerDialog(
+                        context,
+                        { _, h, m -> onResult(picked, h, m) },
+                        hour,
+                        minute,
+                        true,
+                    ).show()
+                }
+            },
+            day.year,
+            day.monthValue - 1,
+            day.dayOfMonth,
+        ).show()
+    }
+
+    if (picker == "repeat") {
+        AlertDialog(
+            onDismissRequest = { picker = null },
+            title = { Text(stringResource(R.string.journal_event_repeat)) },
+            text = {
+                Column {
+                    listOf(
+                        "none" to R.string.journal_event_repeat_none,
+                        "daily" to R.string.journal_event_repeat_daily,
+                        "weekly" to R.string.journal_event_repeat_weekly,
+                        "monthly" to R.string.journal_event_repeat_monthly,
+                        "yearly" to R.string.journal_event_repeat_yearly,
+                    ).forEach { (code, label) ->
+                        TextButton(onClick = { repeat = code; picker = null }) {
+                            Text(stringResource(label))
+                        }
+                    }
+                }
+            },
+            confirmButton = {
+                TextButton(onClick = { picker = null }) { Text(stringResource(R.string.song_share_pick_cancel)) }
+            },
+        )
+    }
+    if (picker == "remind") {
+        AlertDialog(
+            onDismissRequest = { picker = null },
+            title = { Text(stringResource(R.string.journal_event_reminders)) },
+            text = {
+                Column {
+                    listOf(5, 10, 30, 60, 1440).forEach { minutes ->
+                        TextButton(onClick = { reminderMinutes = minutes; picker = null }) {
+                            Text(journalReminderLabel(minutes))
+                        }
+                    }
+                }
+            },
+            confirmButton = {
+                TextButton(onClick = { picker = null }) { Text(stringResource(R.string.song_share_pick_cancel)) }
+            },
+        )
+    }
 
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text(stringResource(R.string.daily_journal_edit)) },
+                title = {
+                    Text(
+                        if (initial.title.isBlank()) {
+                            stringResource(R.string.journal_event_new)
+                        } else {
+                            stringResource(R.string.journal_event_edit)
+                        },
+                    )
+                },
                 navigationIcon = {
                     IconButton(onClick = onBack) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = null)
+                        Icon(Icons.Default.Close, contentDescription = null)
                     }
                 },
                 actions = {
-                    TextButton(
+                    IconButton(
                         onClick = {
                             onSave(
                                 initial.copy(
+                                    dayKey = startDay.toString(),
                                     title = title.trim(),
                                     body = body.trim(),
                                     mood = mood,
                                     pinned = pinned,
                                     checkItems = checks,
-                                    hour = hour,
-                                    minute = if (hour != null) (initial.minute ?: 0) else null,
+                                    allDay = allDay,
+                                    hour = if (allDay) null else startHour,
+                                    minute = if (allDay) null else startMinute,
+                                    endDayKey = endDay.toString(),
+                                    endHour = if (allDay) null else endHour,
+                                    endMinute = if (allDay) null else endMinute,
+                                    repeat = repeat,
+                                    reminderOn = reminderOn,
+                                    reminderMinutes = reminderMinutes,
+                                    location = location.trim(),
                                     verseBookId = verseBook,
                                     verseChapter = verseCh,
                                     verseVerse = verseVs,
@@ -374,9 +492,7 @@ private fun DailyJournalEditorScreen(
                             )
                         },
                     ) {
-                        Icon(Icons.Default.Check, contentDescription = null, modifier = Modifier.size(18.dp))
-                        Spacer(Modifier.width(4.dp))
-                        Text(stringResource(R.string.daily_journal_save))
+                        Icon(Icons.Default.Check, contentDescription = stringResource(R.string.daily_journal_save))
                     }
                 },
             )
@@ -386,69 +502,93 @@ private fun DailyJournalEditorScreen(
             Modifier
                 .fillMaxSize()
                 .padding(padding)
-                .verticalScroll(rememberScrollState())
-                .padding(horizontal = 16.dp, vertical = 8.dp),
-            verticalArrangement = Arrangement.spacedBy(12.dp),
+                .verticalScroll(rememberScrollState()),
         ) {
             OutlinedTextField(
                 value = title,
                 onValueChange = { title = it },
-                label = { Text(stringResource(R.string.daily_journal_field_title)) },
-                modifier = Modifier.fillMaxWidth(),
+                placeholder = { Text(stringResource(R.string.journal_event_name)) },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 16.dp, vertical = 8.dp),
                 singleLine = true,
             )
-            Text(stringResource(R.string.journal_pick_time), style = MaterialTheme.typography.labelLarge)
-            FlowRow(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
-                FilterChip(
-                    selected = hour == null,
-                    onClick = { hour = null },
-                    label = { Text("—") },
-                )
-                (0..23).forEach { h ->
-                    FilterChip(
-                        selected = hour == h,
-                        onClick = { hour = h },
-                        label = { Text("%02d:00".format(h)) },
-                    )
-                }
-            }
-            Text(
-                stringResource(R.string.daily_journal_mood_label),
-                style = MaterialTheme.typography.labelLarge,
-            )
-            FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                JournalMood.entries.forEach { m ->
-                    val selected = mood == m
-                    Surface(
-                        onClick = { mood = if (selected) null else m },
-                        shape = RoundedCornerShape(12.dp),
-                        color = if (selected) {
-                            MaterialTheme.colorScheme.primaryContainer
-                        } else {
-                            MaterialTheme.colorScheme.surfaceContainerHighest
-                        },
-                    ) {
-                        Text(
-                            "${m.emoji} ${m.labelRu}",
-                            modifier = Modifier.padding(horizontal = 12.dp, vertical = 8.dp),
-                            style = MaterialTheme.typography.labelLarge,
-                        )
+            HorizontalDivider()
+            EventSwitchRow(stringResource(R.string.journal_event_all_day), allDay) { allDay = it }
+            HorizontalDivider()
+            EventValueRow(
+                title = stringResource(R.string.journal_event_from),
+                value = formatWhen(startDay, startHour, startMinute),
+                onClick = {
+                    openDateThenTime(startDay, startHour, startMinute) { day, hour, minute ->
+                        startDay = day
+                        startHour = hour
+                        startMinute = minute
                     }
-                }
-            }
+                },
+            )
+            EventValueRow(
+                title = stringResource(R.string.journal_event_to),
+                value = formatWhen(endDay, endHour, endMinute),
+                onClick = {
+                    openDateThenTime(endDay, endHour, endMinute) { day, hour, minute ->
+                        endDay = day
+                        endHour = hour
+                        endMinute = minute
+                    }
+                },
+            )
+            HorizontalDivider()
+            EventValueRow(
+                title = stringResource(R.string.journal_event_repeat),
+                value = journalRepeatLabel(repeat),
+                onClick = { picker = "repeat" },
+            )
+            EventValueRow(
+                title = stringResource(R.string.journal_event_reminders),
+                value = journalReminderLabel(reminderMinutes),
+                onClick = { picker = "remind" },
+            )
+            EventSwitchRow(stringResource(R.string.journal_event_reminders), reminderOn) { reminderOn = it }
+            HorizontalDivider()
+            EventValueRow(
+                title = stringResource(R.string.journal_event_account),
+                value = stringResource(R.string.journal_event_account_local),
+                onClick = {},
+            )
+            EventValueRow(
+                title = stringResource(R.string.journal_event_timezone),
+                value = zoneLabel,
+                onClick = {},
+            )
+            HorizontalDivider()
+            OutlinedTextField(
+                value = location,
+                onValueChange = { location = it },
+                placeholder = { Text(stringResource(R.string.journal_event_place)) },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 16.dp, vertical = 8.dp),
+                singleLine = true,
+            )
             OutlinedTextField(
                 value = body,
                 onValueChange = { body = it },
                 label = { Text(stringResource(R.string.daily_journal_field_body)) },
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(160.dp),
+                    .padding(horizontal = 16.dp)
+                    .height(120.dp),
             )
             Text(
                 stringResource(R.string.daily_journal_tasks_section),
                 style = MaterialTheme.typography.labelLarge,
+                modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
             )
-            Row(verticalAlignment = Alignment.CenterVertically) {
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                modifier = Modifier.padding(horizontal = 16.dp),
+            ) {
                 OutlinedTextField(
                     value = newCheck,
                     onValueChange = { newCheck = it },
@@ -469,7 +609,10 @@ private fun DailyJournalEditorScreen(
                 }
             }
             checks.forEach { c ->
-                Row(verticalAlignment = Alignment.CenterVertically) {
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    modifier = Modifier.padding(horizontal = 8.dp),
+                ) {
                     Checkbox(
                         checked = c.done,
                         onCheckedChange = {
@@ -482,64 +625,60 @@ private fun DailyJournalEditorScreen(
                     }
                 }
             }
-            Text(
-                stringResource(R.string.daily_journal_verse_section),
-                style = MaterialTheme.typography.labelLarge,
-            )
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                OutlinedTextField(
-                    value = refInput,
-                    onValueChange = { refInput = it },
-                    label = { Text(stringResource(R.string.passage_quick_hint)) },
-                    modifier = Modifier.weight(1f),
-                    singleLine = true,
-                )
-                TextButton(
-                    onClick = {
-                        com.example.bible.data.BiblePassageResolve.resolve(refInput)?.let { r ->
-                            verseBook = r.bookId
-                            verseCh = r.chapter
-                            verseVs = r.verse
-                            verseLabel = r.label
-                        }
-                    },
-                ) { Text(stringResource(R.string.daily_journal_add_verse)) }
-            }
-            if (verseLabel.isNotBlank()) {
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    Text(
-                        verseLabel,
-                        color = MaterialTheme.colorScheme.primary,
-                        modifier = Modifier.weight(1f),
-                    )
-                    IconButton(
-                        onClick = {
-                            verseLabel = ""
-                            verseBook = null
-                            verseCh = null
-                            verseVs = null
-                        },
-                    ) {
-                        Icon(Icons.Default.Delete, contentDescription = null)
-                    }
-                }
-            }
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                Checkbox(checked = pinned, onCheckedChange = { pinned = it })
-                Text(stringResource(R.string.daily_journal_pin))
-            }
-            if (initial.title.isNotBlank() || initial.body.isNotBlank() || initial.checkItems.isNotEmpty()) {
-                TextButton(
-                    onClick = { onDelete(initial) },
-                    modifier = Modifier.align(Alignment.Start),
-                ) {
-                    Text(
-                        stringResource(R.string.attachment_delete),
-                        color = MaterialTheme.colorScheme.error,
-                    )
+            if (initial.title.isNotBlank() || initial.body.isNotBlank() || initial.location.isNotBlank()) {
+                TextButton(onClick = { onDelete(initial) }, modifier = Modifier.padding(horizontal = 8.dp)) {
+                    Text(stringResource(R.string.attachment_delete), color = MaterialTheme.colorScheme.error)
                 }
             }
             Spacer(Modifier.height(24.dp))
         }
     }
+}
+
+@Composable
+private fun EventSwitchRow(label: String, checked: Boolean, onChecked: (Boolean) -> Unit) {
+    Row(
+        Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 16.dp, vertical = 6.dp),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        Text(label, modifier = Modifier.weight(1f), style = MaterialTheme.typography.titleMedium)
+        Switch(checked = checked, onCheckedChange = onChecked)
+    }
+}
+
+@Composable
+private fun EventValueRow(title: String, value: String, onClick: () -> Unit) {
+    Column(
+        Modifier
+            .fillMaxWidth()
+            .clickable(onClick = onClick)
+            .padding(horizontal = 16.dp, vertical = 10.dp),
+    ) {
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            Column(Modifier.weight(1f)) {
+                Text(title, style = MaterialTheme.typography.titleMedium)
+                Text(value, style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
+            }
+            Icon(Icons.AutoMirrored.Filled.KeyboardArrowRight, contentDescription = null)
+        }
+    }
+}
+
+private fun journalRepeatLabel(code: String): String = when (code) {
+    "daily" -> "Каждый день"
+    "weekly" -> "Каждую неделю"
+    "monthly" -> "Каждый месяц"
+    "yearly" -> "Каждый год"
+    else -> "Однократное мероприятие"
+}
+
+private fun journalReminderLabel(minutes: Int): String = when (minutes) {
+    5 -> "5 мин. до события"
+    10 -> "10 мин. до события"
+    30 -> "30 мин. до события"
+    60 -> "1 ч. до события"
+    1440 -> "1 день до события"
+    else -> "$minutes мин. до события"
 }
