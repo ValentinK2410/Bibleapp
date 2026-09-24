@@ -4,6 +4,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.calculateZoom
+import androidx.compose.foundation.gestures.detectHorizontalDragGestures
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -35,10 +36,8 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.example.bible.data.DailyJournalEntry
 import java.time.DayOfWeek
-import java.time.Instant
 import java.time.LocalDate
 import java.time.YearMonth
-import java.time.ZoneId
 import java.time.format.DateTimeFormatter
 import java.time.temporal.TemporalAdjusters
 import java.util.Locale
@@ -74,15 +73,29 @@ internal fun JournalCalendar(
     focusDate: LocalDate,
     onFocusDate: (LocalDate) -> Unit,
     onOpenEntry: (DailyJournalEntry) -> Unit,
+    onPickHour: (Int) -> Unit,
     modifier: Modifier = Modifier,
 ) {
     val byDay = remember(entries) { entries.groupBy { it.dayKey } }
+    fun shift(direction: Int) {
+        val next = when (zoomLevel) {
+            JOURNAL_ZOOM_MONTHS -> focusDate.plusYears(direction.toLong())
+            JOURNAL_ZOOM_WEEKS, JOURNAL_ZOOM_DAYS -> focusDate.plusWeeks(direction.toLong())
+            JOURNAL_ZOOM_HOURS -> focusDate.plusDays(direction.toLong())
+            else -> focusDate.plusMonths(direction.toLong())
+        }
+        onFocusDate(next)
+    }
     Box(
         modifier
             .fillMaxSize()
             .journalPinchZoom(
                 onZoomIn = { if (zoomLevel < JOURNAL_ZOOM_HOURS) onZoomLevel(zoomLevel + 1) },
                 onZoomOut = { if (zoomLevel > JOURNAL_ZOOM_MONTHS) onZoomLevel(zoomLevel - 1) },
+            )
+            .journalSwipe(
+                onPrevious = { shift(-1) },
+                onNext = { shift(1) },
             ),
     ) {
         when (zoomLevel) {
@@ -125,6 +138,7 @@ internal fun JournalCalendar(
                 focus = focusDate,
                 entries = byDay[focusDate.toString()].orEmpty(),
                 onOpenEntry = onOpenEntry,
+                onPickHour = onPickHour,
             )
         }
     }
@@ -134,6 +148,25 @@ private fun LocalDate.coerceDay(day: Int): LocalDate {
     val max = lengthOfMonth()
     return withDayOfMonth(day.coerceIn(1, max))
 }
+
+private fun Modifier.journalSwipe(onPrevious: () -> Unit, onNext: () -> Unit): Modifier =
+    pointerInput(onPrevious, onNext) {
+        var drag = 0f
+        detectHorizontalDragGestures(
+            onDragEnd = {
+                when {
+                    drag > 72f -> onPrevious()
+                    drag < -72f -> onNext()
+                }
+                drag = 0f
+            },
+            onDragCancel = { drag = 0f },
+            onHorizontalDrag = { change, amount ->
+                drag += amount
+                change.consume()
+            },
+        )
+    }
 
 private fun Modifier.journalPinchZoom(onZoomIn: () -> Unit, onZoomOut: () -> Unit): Modifier =
     pointerInput(onZoomIn, onZoomOut) {
@@ -367,23 +400,22 @@ private fun HoursGrid(
     focus: LocalDate,
     entries: List<DailyJournalEntry>,
     onOpenEntry: (DailyJournalEntry) -> Unit,
+    onPickHour: (Int) -> Unit,
 ) {
-    val zone = remember { ZoneId.systemDefault() }
     LazyColumn(
         modifier = Modifier.fillMaxSize(),
         contentPadding = PaddingValues(8.dp),
         verticalArrangement = Arrangement.spacedBy(4.dp),
     ) {
         items(24) { hour ->
-            val hourEntries = entries.filter { entry ->
-                Instant.ofEpochMilli(entry.createdAt).atZone(zone).hour == hour
-            }
+            val hourEntries = entries.filter { it.hour == hour }
             Row(
                 Modifier
                     .fillMaxWidth()
                     .heightIn(min = 48.dp)
                     .clip(RoundedCornerShape(8.dp))
                     .background(MaterialTheme.colorScheme.surfaceContainerLow)
+                    .clickable { onPickHour(hour) }
                     .padding(horizontal = 10.dp, vertical = 6.dp),
                 verticalAlignment = Alignment.CenterVertically,
             ) {

@@ -5,6 +5,7 @@ import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.PaddingValues
@@ -33,6 +34,7 @@ import androidx.compose.material3.FilterChip
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Checkbox
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.FloatingActionButton
@@ -81,6 +83,8 @@ fun DailyJournalScreen(
     var showSearch by remember { mutableStateOf(false) }
     var zoomLevel by remember { mutableIntStateOf(JOURNAL_ZOOM_MONTHS) }
     var focusDate by remember { mutableStateOf(LocalDate.now()) }
+    var focusHour by remember { mutableStateOf<Int?>(null) }
+    var showYearPicker by remember { mutableStateOf(false) }
 
     if (editorEntry != null) {
         DailyJournalEditorScreen(
@@ -107,7 +111,8 @@ fun DailyJournalScreen(
                         Text(
                             journalZoomTitle(zoomLevel, focusDate),
                             style = MaterialTheme.typography.labelMedium,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            color = MaterialTheme.colorScheme.primary,
+                            modifier = Modifier.clickable { showYearPicker = true },
                         )
                     }
                 },
@@ -126,7 +131,11 @@ fun DailyJournalScreen(
         floatingActionButton = {
             FloatingActionButton(
                 onClick = {
-                    editorEntry = DailyJournalEntry(dayKey = focusDate.toString())
+                    editorEntry = DailyJournalEntry(
+                        dayKey = focusDate.toString(),
+                        hour = if (zoomLevel == JOURNAL_ZOOM_HOURS) focusHour else null,
+                        minute = if (zoomLevel == JOURNAL_ZOOM_HOURS && focusHour != null) 0 else null,
+                    )
                 },
             ) {
                 Icon(Icons.Default.Add, contentDescription = stringResource(R.string.daily_journal_new))
@@ -166,10 +175,58 @@ fun DailyJournalScreen(
                     selectedDay = it.toString()
                 },
                 onOpenEntry = { editorEntry = it },
+                onPickHour = { hour ->
+                    focusHour = hour
+                    editorEntry = DailyJournalEntry(
+                        dayKey = focusDate.toString(),
+                        hour = hour,
+                        minute = 0,
+                    )
+                },
                 modifier = Modifier.fillMaxSize(),
             )
+            if (showYearPicker) {
+                YearPickerDialog(
+                    selectedYear = focusDate.year,
+                    onYear = { year ->
+                        val day = focusDate.dayOfMonth.coerceAtMost(java.time.YearMonth.of(year, focusDate.monthValue).lengthOfMonth())
+                        focusDate = focusDate.withYear(year).withDayOfMonth(day)
+                        showYearPicker = false
+                    },
+                    onDismiss = { showYearPicker = false },
+                )
+            }
         }
     }
+}
+
+@OptIn(ExperimentalLayoutApi::class)
+@Composable
+private fun YearPickerDialog(
+    selectedYear: Int,
+    onYear: (Int) -> Unit,
+    onDismiss: () -> Unit,
+) {
+    val nowYear = LocalDate.now().year
+    val years = (nowYear - 12)..(nowYear + 12)
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = { Text(stringResource(R.string.journal_pick_year)) },
+        text = {
+            FlowRow(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                years.forEach { year ->
+                    FilterChip(
+                        selected = year == selectedYear,
+                        onClick = { onYear(year) },
+                        label = { Text(year.toString()) },
+                    )
+                }
+            }
+        },
+        confirmButton = {
+            TextButton(onClick = onDismiss) { Text(stringResource(R.string.song_share_pick_cancel)) }
+        },
+    )
 }
 
 @OptIn(ExperimentalFoundationApi::class)
@@ -285,6 +342,7 @@ private fun DailyJournalEditorScreen(
     var checks by remember(initial.id) { mutableStateOf(initial.checkItems) }
     var newCheck by remember { mutableStateOf("") }
     var refInput by remember { mutableStateOf("") }
+    var hour by remember(initial.id) { mutableStateOf(initial.hour) }
 
     Scaffold(
         topBar = {
@@ -305,6 +363,8 @@ private fun DailyJournalEditorScreen(
                                     mood = mood,
                                     pinned = pinned,
                                     checkItems = checks,
+                                    hour = hour,
+                                    minute = if (hour != null) (initial.minute ?: 0) else null,
                                     verseBookId = verseBook,
                                     verseChapter = verseCh,
                                     verseVerse = verseVs,
@@ -337,6 +397,21 @@ private fun DailyJournalEditorScreen(
                 modifier = Modifier.fillMaxWidth(),
                 singleLine = true,
             )
+            Text(stringResource(R.string.journal_pick_time), style = MaterialTheme.typography.labelLarge)
+            FlowRow(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                FilterChip(
+                    selected = hour == null,
+                    onClick = { hour = null },
+                    label = { Text("—") },
+                )
+                (0..23).forEach { h ->
+                    FilterChip(
+                        selected = hour == h,
+                        onClick = { hour = h },
+                        label = { Text("%02d:00".format(h)) },
+                    )
+                }
+            }
             Text(
                 stringResource(R.string.daily_journal_mood_label),
                 style = MaterialTheme.typography.labelLarge,

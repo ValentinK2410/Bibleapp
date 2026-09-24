@@ -897,6 +897,8 @@
     <string name="journal_zoom_weeks">Недели</string>
     <string name="journal_zoom_days">Дни</string>
     <string name="journal_zoom_hours">Часы</string>
+    <string name="journal_pick_year">Выберите год</string>
+    <string name="journal_pick_time">Время</string>
     <string name="timemark_import_cd">Импорт таймкодов</string>
     <string name="timemark_import_ok">Импортировано проектов: %1$d. Откройте ту же книгу и главу, включите озвучку.</string>
     <string name="timemark_import_failed">Не удалось импортировать архив</string>

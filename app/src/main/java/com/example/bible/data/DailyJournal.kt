@@ -57,6 +57,9 @@ data class DailyJournalEntry(
     val verseVerse: Int? = null,
     val verseLabel: String? = null,
     val pinned: Boolean = false,
+    /** Час 0–23, если задача привязана ко времени. */
+    val hour: Int? = null,
+    val minute: Int? = null,
     val createdAt: Long = System.currentTimeMillis(),
     val updatedAt: Long = System.currentTimeMillis(),
 ) {
@@ -88,6 +91,8 @@ data class DailyJournalEntry(
         verseVerse?.let { put("vv", it) }
         verseLabel?.let { put("vl", it) }
         if (pinned) put("pin", true)
+        hour?.let { put("hh", it) }
+        minute?.let { put("mm", it) }
         put("ca", createdAt)
         put("ua", updatedAt)
     }
@@ -125,6 +130,8 @@ data class DailyJournalEntry(
                 verseVerse = if (j.has("vv")) j.optInt("vv") else null,
                 verseLabel = j.optString("vl").takeIf { it.isNotBlank() },
                 pinned = j.optBoolean("pin", false),
+                hour = if (j.has("hh")) j.optInt("hh").coerceIn(0, 23) else null,
+                minute = if (j.has("mm")) j.optInt("mm").coerceIn(0, 59) else null,
                 createdAt = j.optLong("ca", 0L),
                 updatedAt = j.optLong("ua", 0L),
             )
