@@ -6004,60 +6004,52 @@ private fun VersesRouteContent(
     viewModel: BibleViewModel,
     navController: androidx.navigation.NavHostController,
 ) {
-    val bookShell = rememberBookShell(library, translation, bookId)
-    val isOnline = when (bookShell) {
-        is BibleBookShellState.Fallback -> bookShell.isOnlineOnly
-        else -> false
-    }
-    val chapterLoad = rememberLoadedChapter(library, translation, bookId, chapterNum)
-    val onlineLoading by viewModel.onlineChapterLoading.collectAsStateWithLifecycle()
-    val onlineVerses by viewModel.onlineChapterVerses.collectAsStateWithLifecycle()
-    val onlineError by viewModel.onlineChapterError.collectAsStateWithLifecycle()
+    val bookName = BibleCanon.byId(bookId)?.let { BibleCanon.displayName(it, translation) } ?: bookId
+    var verseNumbers by remember(bookId, chapterNum, translation) { mutableStateOf<List<Int>?>(null) }
+    var loadError by remember(bookId, chapterNum, translation) { mutableStateOf<String?>(null) }
+    var reloadTick by remember(bookId, chapterNum, translation) { mutableIntStateOf(0) }
 
-    LaunchedEffect(translation, bookId, chapterNum, isOnline) {
-        if (isOnline) {
-            viewModel.loadOnlineChapter(translation, bookId, chapterNum)
+    LaunchedEffect(bookId, chapterNum, translation, reloadTick) {
+        verseNumbers = null
+        loadError = null
+        val numbers = withContext(Dispatchers.IO) {
+            val fromDb = library.loadChapter(translation, bookId, chapterNum)
+                ?.verses
+                ?.map { it.number }
+                ?.filter { it > 0 }
+                ?.distinct()
+                ?.sorted()
+                .orEmpty()
+            if (fromDb.isNotEmpty()) {
+                fromDb
+            } else if (translation.onlineCode != null) {
+                emptyList()
+            } else {
+                val max = runCatching {
+                    viewModel.maxVersesInChapter(bookId, chapterNum, translation)
+                }.getOrDefault(0)
+                if (max > 0) (1..max).toList() else emptyList()
+            }
         }
-    }
-
-    var fallbackVerseMax by remember(bookId, chapterNum, translation) { mutableIntStateOf(0) }
-    val needFallbackNumbers = !isOnline && (
-        chapterLoad is BibleChapterLoadState.NotFound ||
-            (chapterLoad is BibleChapterLoadState.Ready && chapterLoad.chapter.verses.isEmpty())
-        )
-    LaunchedEffect(needFallbackNumbers, bookId, chapterNum, translation) {
-        if (!needFallbackNumbers) return@LaunchedEffect
-        fallbackVerseMax = withContext(Dispatchers.IO) {
-            viewModel.maxVersesInChapter(bookId, chapterNum, translation)
+        if (numbers.isNotEmpty()) {
+            verseNumbers = numbers
+            return@LaunchedEffect
         }
-    }
-
-    val bookName = when (chapterLoad) {
-        is BibleChapterLoadState.Ready -> chapterLoad.bookName
-        else -> when (bookShell) {
-            is BibleBookShellState.Ready -> bookShell.book.name
-            is BibleBookShellState.Fallback -> bookShell.book.name
-            BibleBookShellState.Loading ->
-                BibleCanon.byId(bookId)?.let { BibleCanon.displayName(it, translation) } ?: bookId
+        if (translation.onlineCode != null) {
+            try {
+                val online = viewModel.fetchOnlineVerses(translation, bookId, chapterNum)
+                val onlineNumbers = online.map { it.number }.filter { it > 0 }.distinct().sorted()
+                if (onlineNumbers.isEmpty()) {
+                    loadError = "Не удалось загрузить стихи"
+                } else {
+                    verseNumbers = onlineNumbers
+                }
+            } catch (e: Exception) {
+                loadError = e.message ?: "Не удалось загрузить стихи"
+            }
+        } else {
+            loadError = "Нет стихов в этой главе"
         }
-    }
-    val titleText = "$bookName $chapterNum — ${stringResource(R.string.verse_picker_title)}"
-
-    val versesForGrid: List<BibleVerse>? = when {
-        chapterLoad is BibleChapterLoadState.Ready && chapterLoad.chapter.verses.isNotEmpty() ->
-            chapterLoad.chapter.verses
-        isOnline && onlineVerses.isNotEmpty() -> onlineVerses
-        !isOnline && fallbackVerseMax > 0 &&
-            (chapterLoad is BibleChapterLoadState.NotFound ||
-                (chapterLoad is BibleChapterLoadState.Ready && chapterLoad.chapter.verses.isEmpty())) ->
-            (1..fallbackVerseMax).map { n -> BibleVerse(number = n, text = "") }
-        else -> null
-    }
-
-    val loading = when {
-        !isOnline && chapterLoad is BibleChapterLoadState.Loading -> true
-        isOnline && onlineLoading && onlineVerses.isEmpty() && onlineError == null -> true
-        else -> false
     }
 
     Scaffold(
@@ -6065,7 +6057,7 @@ private fun VersesRouteContent(
             CenterAlignedTopAppBar(
                 title = {
                     Text(
-                        titleText,
+                        "$bookName $chapterNum — ${stringResource(R.string.verse_picker_title)}",
                         style = MaterialTheme.typography.titleMedium,
                     )
                 },
@@ -6077,8 +6069,9 @@ private fun VersesRouteContent(
             )
         },
     ) { padding ->
+        val numbers = verseNumbers
         when {
-            loading || (needFallbackNumbers && fallbackVerseMax == 0 && versesForGrid == null) -> {
+            numbers == null && loadError == null -> {
                 Box(
                     modifier = Modifier
                         .padding(padding)
@@ -6088,53 +6081,36 @@ private fun VersesRouteContent(
                     CircularProgressIndicator()
                 }
             }
-            versesForGrid != null -> {
+            numbers != null -> {
                 VerseGrid(
-                    modifier = Modifier.padding(padding),
-                    verses = versesForGrid,
+                    modifier = Modifier
+                        .padding(padding)
+                        .fillMaxSize(),
+                    verses = numbers.map { BibleVerse(number = it, text = "") },
                     onVerseClick = { verseNum ->
                         navController.navigate("read/$bookId/$chapterNum/$verseNum")
                     },
                 )
             }
-            isOnline && onlineError != null -> {
-                Column(
-                    horizontalAlignment = Alignment.CenterHorizontally,
-                    modifier = Modifier
-                        .padding(padding)
-                        .padding(24.dp)
-                        .fillMaxSize(),
-                ) {
-                    Text(
-                        onlineError!!,
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.error,
-                        textAlign = TextAlign.Center,
-                    )
-                    Spacer(Modifier.height(12.dp))
-                    TextButton(
-                        onClick = {
-                            viewModel.loadOnlineChapter(translation, bookId, chapterNum)
-                        },
-                    ) {
-                        Text(stringResource(R.string.retry))
-                    }
-                }
-            }
             else -> {
-                Box(
+                Column(
                     modifier = Modifier
                         .padding(padding)
-                        .fillMaxSize(),
-                    contentAlignment = Alignment.Center,
+                        .fillMaxSize()
+                        .padding(24.dp),
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    verticalArrangement = Arrangement.Center,
                 ) {
                     Text(
-                        stringResource(R.string.no_chapters_loaded),
+                        loadError ?: stringResource(R.string.no_chapters_loaded),
                         style = MaterialTheme.typography.bodyLarge,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                         textAlign = TextAlign.Center,
-                        modifier = Modifier.padding(24.dp),
                     )
+                    Spacer(Modifier.height(12.dp))
+                    TextButton(onClick = { reloadTick++ }) {
+                        Text(stringResource(R.string.retry))
+                    }
                 }
             }
         }
