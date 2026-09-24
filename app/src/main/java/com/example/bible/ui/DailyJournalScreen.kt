@@ -1,6 +1,12 @@
 package com.example.bible.ui
 
+import android.Manifest
+import android.content.pm.PackageManager
+import android.os.Build
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.core.content.ContextCompat
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -337,6 +343,9 @@ private fun DailyJournalEditorScreen(
     onDelete: (DailyJournalEntry) -> Unit,
 ) {
     val context = LocalContext.current
+    val notificationPermission = rememberLauncherForActivityResult(
+        ActivityResultContracts.RequestPermission(),
+    ) { }
     val dateTimeFmt = remember { DateTimeFormatter.ofPattern("EEEE, d MMMM HH:mm", Locale("ru")) }
     val dateFmt = remember { DateTimeFormatter.ofPattern("EEEE, d MMMM", Locale("ru")) }
     var title by remember(initial.id) { mutableStateOf(initial.title) }
@@ -549,7 +558,15 @@ private fun DailyJournalEditorScreen(
                 value = journalReminderLabel(reminderMinutes),
                 onClick = { picker = "remind" },
             )
-            EventSwitchRow(stringResource(R.string.journal_event_reminders), reminderOn) { reminderOn = it }
+            EventSwitchRow(stringResource(R.string.journal_event_reminders), reminderOn) { on ->
+                reminderOn = on
+                if (on && Build.VERSION.SDK_INT >= 33 &&
+                    ContextCompat.checkSelfPermission(context, Manifest.permission.POST_NOTIFICATIONS) !=
+                    PackageManager.PERMISSION_GRANTED
+                ) {
+                    notificationPermission.launch(Manifest.permission.POST_NOTIFICATIONS)
+                }
+            }
             HorizontalDivider()
             EventValueRow(
                 title = stringResource(R.string.journal_event_account),

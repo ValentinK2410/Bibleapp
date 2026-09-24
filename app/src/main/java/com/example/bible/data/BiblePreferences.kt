@@ -1231,19 +1231,26 @@ class BiblePreferences(
     }
 
     suspend fun saveDailyJournalEntry(entry: DailyJournalEntry) {
+        var saved = emptyList<DailyJournalEntry>()
         appContext.bibleDataStore.edit { prefs ->
             val cur = DailyJournalEntry.parseList(prefs[Keys.DAILY_JOURNAL_JSON].orEmpty()).toMutableList()
             cur.removeAll { it.id == entry.id }
             cur.add(0, entry.copy(updatedAt = System.currentTimeMillis()))
+            saved = cur.toList()
             prefs[Keys.DAILY_JOURNAL_JSON] = DailyJournalEntry.toJsonArray(cur)
         }
+        JournalAlarmScheduler.reschedule(appContext, saved)
     }
 
     suspend fun deleteDailyJournalEntry(id: String) {
+        var saved = emptyList<DailyJournalEntry>()
         appContext.bibleDataStore.edit { prefs ->
             val cur = DailyJournalEntry.parseList(prefs[Keys.DAILY_JOURNAL_JSON].orEmpty())
-            prefs[Keys.DAILY_JOURNAL_JSON] = DailyJournalEntry.toJsonArray(cur.filter { it.id != id })
+                .filter { it.id != id }
+            saved = cur
+            prefs[Keys.DAILY_JOURNAL_JSON] = DailyJournalEntry.toJsonArray(cur)
         }
+        JournalAlarmScheduler.reschedule(appContext, saved)
     }
 
     val userSongs: Flow<List<SongItem>> = appContext.bibleDataStore.data.map { prefs ->

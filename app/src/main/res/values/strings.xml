@@ -916,6 +916,10 @@
     <string name="journal_event_account_local">Местный календарь</string>
     <string name="journal_event_timezone">Часовой пояс</string>
     <string name="journal_event_place">Место</string>
+    <string name="journal_alarm_channel">Будильник ежедневника</string>
+    <string name="journal_alarm_title">Ежедневник</string>
+    <string name="journal_alarm_now">Пора: запланированное дело</string>
+    <string name="journal_alarm_soon">Скоро начнётся запланированное дело</string>
     <string name="timemark_import_cd">Импорт таймкодов</string>
     <string name="timemark_import_ok">Импортировано проектов: %1$d. Откройте ту же книгу и главу, включите озвучку.</string>
     <string name="timemark_import_failed">Не удалось импортировать архив</string>

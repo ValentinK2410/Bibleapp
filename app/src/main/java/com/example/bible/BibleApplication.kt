@@ -9,6 +9,8 @@ import com.example.bible.data.languagestudy.LanguageStudyBootstrap
 import coil.ImageLoader
 import coil.ImageLoaderFactory
 import coil.decode.SvgDecoder
+import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.runBlocking
 import okhttp3.OkHttpClient
 import java.util.concurrent.Executors
 
@@ -33,6 +35,10 @@ class BibleApplication : Application(), ImageLoaderFactory {
         }
         bibleDbWarmExecutor.execute {
             com.example.bible.data.db.BibleDatabase.getInstance(app)
+            kotlinx.coroutines.runBlocking {
+                val entries = com.example.bible.data.BiblePreferences(app).dailyJournalEntries.first()
+                com.example.bible.data.JournalAlarmScheduler.reschedule(app, entries)
+            }
         }
     }
 

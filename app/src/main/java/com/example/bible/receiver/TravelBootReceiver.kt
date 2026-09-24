@@ -26,6 +26,8 @@ class TravelBootReceiver : BroadcastReceiver() {
             if (polygonMonitor && hasPoly) {
                 TravelMonitorService.start(app)
             }
+            val journal = com.example.bible.data.BiblePreferences(app).dailyJournalEntries.first()
+            com.example.bible.data.JournalAlarmScheduler.reschedule(app, journal)
         }
     }
 }
