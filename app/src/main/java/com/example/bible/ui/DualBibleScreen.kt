@@ -211,6 +211,24 @@ internal data class DualReaderChrome(
     val isDarkTheme: Boolean,
 )
 
+private fun openAppBookPicker(
+    navController: NavHostController?,
+    viewModel: BibleViewModel?,
+    fallback: () -> Unit,
+) {
+    val nav = navController
+    if (nav == null) {
+        fallback()
+        return
+    }
+    com.example.bible.data.BibleAudioPlayer.stopForNavigation()
+    viewModel?.passagePickerReset()
+    nav.navigate("books") {
+        popUpTo("books") { inclusive = false }
+        launchSingleTop = true
+    }
+}
+
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class)
 @Composable
 private fun DualPaneChapterHeader(
@@ -1345,7 +1363,9 @@ fun NoteEditorBiblePane(
             onAdjustReaderFontScale = onAdjustReaderFontScale,
             onExit = null,
             onLongPressTopBar = {},
-            onOpenQuickNav = { showQuickNav = true },
+            onOpenQuickNav = {
+                openAppBookPicker(navController, viewModel) { showQuickNav = true }
+            },
             showSyncControl = false,
             showInternalBack = true,
             includeReaderStatusBar = false,
@@ -1498,7 +1518,9 @@ internal fun BiblePaneColumn(
                 onAdjustFontScale = onAdjustReaderFontScale,
                 readerFontScale = readerFontScale,
                 onLongPress = onLongPressTopBar,
-                onTitleClick = onOpenQuickNav ?: { showQuickNav = true },
+                onTitleClick = onOpenQuickNav ?: {
+                    openAppBookPicker(readerChrome?.navController, viewModel) { showQuickNav = true }
+                },
                 showSyncControl = showSyncControl,
                 showInternalBack = showInternalBack,
                 includeStatusBar = onExit != null && paneIndex == 0,
@@ -1648,7 +1670,9 @@ internal fun BiblePaneColumn(
                             onInternalBack = internalBack,
                             onClosePane = onClosePane,
                             onLongPress = onLongPressTopBar,
-                            onOpenQuickNav = { showQuickNav = true },
+                            onOpenQuickNav = {
+                                openAppBookPicker(chrome?.navController, viewModel) { showQuickNav = true }
+                            },
                             translationTabColors = translationTabColors,
                             readerChrome = chrome,
                             readingAudioNarrator = readingAudioNarrator,
@@ -1679,7 +1703,9 @@ internal fun BiblePaneColumn(
                             onAdjustFontScale = onAdjustReaderFontScale,
                             readerFontScale = readerFontScale,
                             onLongPress = onLongPressTopBar,
-                            onTitleClick = onOpenQuickNav ?: { showQuickNav = true },
+                            onTitleClick = onOpenQuickNav ?: {
+                    openAppBookPicker(readerChrome?.navController, viewModel) { showQuickNav = true }
+                },
                             showSyncControl = showSyncControl,
                             showInternalBack = showInternalBack,
                         )

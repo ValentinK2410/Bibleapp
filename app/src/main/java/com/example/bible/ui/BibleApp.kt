@@ -2361,7 +2361,14 @@ private fun BibleNavHost(
                         centerContent = {
                             ReaderChapterNavTitle(
                                 title = chapterShortTitle,
-                                onTitleClick = { showQuickNav = true },
+                                onTitleClick = {
+                                    com.example.bible.data.BibleAudioPlayer.stopForNavigation()
+                                    viewModel.passagePickerReset()
+                                    navController.navigate("books") {
+                                        popUpTo("books") { inclusive = false }
+                                        launchSingleTop = true
+                                    }
+                                },
                                 onPrevChapter = if (hasPrev) {
                                     {
                                         val prev = chapterNum - 1
