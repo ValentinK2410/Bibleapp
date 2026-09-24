@@ -48,6 +48,7 @@ import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -78,27 +79,8 @@ fun DailyJournalScreen(
     var editorEntry by remember { mutableStateOf<DailyJournalEntry?>(null) }
     var searchQuery by remember { mutableStateOf("") }
     var showSearch by remember { mutableStateOf(false) }
-
-    val dayFormatter = remember { DateTimeFormatter.ofPattern("EEE, d MMMM", Locale("ru")) }
-    val chipFormatter = remember { DateTimeFormatter.ofPattern("d", Locale("ru")) }
-    val weekDays = remember {
-        val today = LocalDate.now()
-        (13 downTo 0).map { today.minusDays(it.toLong()) }
-    }
-    val selectedDate = remember(selectedDay) {
-        runCatching { LocalDate.parse(selectedDay) }.getOrElse { LocalDate.now() }
-    }
-
-    val filtered = remember(entries, selectedDay, searchQuery) {
-        val q = searchQuery.trim().lowercase()
-        entries.filter { e ->
-            (q.isEmpty() || e.title.lowercase().contains(q) || e.body.lowercase().contains(q)) &&
-                (q.isNotEmpty() || e.dayKey == selectedDay)
-        }.sortedWith(
-            compareByDescending<DailyJournalEntry> { it.pinned }
-                .thenByDescending { it.updatedAt },
-        )
-    }
+    var zoomLevel by remember { mutableIntStateOf(JOURNAL_ZOOM_MONTHS) }
+    var focusDate by remember { mutableStateOf(LocalDate.now()) }
 
     if (editorEntry != null) {
         DailyJournalEditorScreen(
@@ -123,7 +105,7 @@ fun DailyJournalScreen(
                     Column {
                         Text(stringResource(R.string.daily_journal_title))
                         Text(
-                            selectedDate.format(dayFormatter),
+                            journalZoomTitle(zoomLevel, focusDate),
                             style = MaterialTheme.typography.labelMedium,
                             color = MaterialTheme.colorScheme.onSurfaceVariant,
                         )
@@ -144,7 +126,7 @@ fun DailyJournalScreen(
         floatingActionButton = {
             FloatingActionButton(
                 onClick = {
-                    editorEntry = DailyJournalEntry(dayKey = selectedDay)
+                    editorEntry = DailyJournalEntry(dayKey = focusDate.toString())
                 },
             ) {
                 Icon(Icons.Default.Add, contentDescription = stringResource(R.string.daily_journal_new))
@@ -167,71 +149,25 @@ fun DailyJournalScreen(
                     singleLine = true,
                 )
             }
-            LazyRow(
-                contentPadding = PaddingValues(horizontal = 12.dp, vertical = 8.dp),
-                horizontalArrangement = Arrangement.spacedBy(6.dp),
-            ) {
-                items(weekDays, key = { it.format(DateTimeFormatter.ISO_LOCAL_DATE) }) { date ->
-                    val key = date.format(DateTimeFormatter.ISO_LOCAL_DATE)
-                    val selected = key == selectedDay
-                    val isToday = key == DailyJournalEntry.todayKey()
-                    FilterChip(
-                        selected = selected,
-                        onClick = {
-                            selectedDay = key
-                            searchQuery = ""
-                        },
-                        label = {
-                            Text(
-                                if (isToday) {
-                                    stringResource(R.string.daily_journal_today)
-                                } else {
-                                    date.format(chipFormatter)
-                                },
-                            )
-                        },
-                    )
-                }
-            }
-            if (filtered.isEmpty()) {
-                Box(
-                    Modifier
-                        .fillMaxSize()
-                        .padding(32.dp),
-                    contentAlignment = Alignment.Center,
-                ) {
-                    Text(
-                        stringResource(R.string.daily_journal_empty),
-                        style = MaterialTheme.typography.bodyLarge,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    )
-                }
-            } else {
-                LazyColumn(
-                    contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp),
-                    verticalArrangement = Arrangement.spacedBy(12.dp),
-                ) {
-                    items(filtered, key = { it.id }) { entry ->
-                        DailyJournalCard(
-                            entry = entry,
-                            onOpen = { editorEntry = entry },
-                            onToggleCheck = { itemId ->
-                                val updated = entry.copy(
-                                    checkItems = entry.checkItems.map { c ->
-                                        if (c.id == itemId) c.copy(done = !c.done) else c
-                                    },
-                                    updatedAt = System.currentTimeMillis(),
-                                )
-                                onSave(updated)
-                            },
-                            onTogglePin = {
-                                onSave(entry.copy(pinned = !entry.pinned, updatedAt = System.currentTimeMillis()))
-                            },
-                            onOpenVerse = onOpenVerse,
-                        )
+            JournalCalendar(
+                entries = if (searchQuery.isBlank()) {
+                    entries
+                } else {
+                    val q = searchQuery.trim().lowercase()
+                    entries.filter {
+                        it.title.lowercase().contains(q) || it.body.lowercase().contains(q)
                     }
-                }
-            }
+                },
+                zoomLevel = zoomLevel,
+                onZoomLevel = { zoomLevel = it },
+                focusDate = focusDate,
+                onFocusDate = {
+                    focusDate = it
+                    selectedDay = it.toString()
+                },
+                onOpenEntry = { editorEntry = it },
+                modifier = Modifier.fillMaxSize(),
+            )
         }
     }
 }
