@@ -225,8 +225,10 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.emptyFlow
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.ui.window.Dialog
@@ -6019,11 +6021,14 @@ private fun VersesRouteContent(
     }
 
     var fallbackVerseMax by remember(bookId, chapterNum, translation) { mutableIntStateOf(0) }
-    LaunchedEffect(chapterLoad, isOnline, bookId, chapterNum, translation) {
-        if (!isOnline && chapterLoad !is BibleChapterLoadState.Ready) {
-            fallbackVerseMax = viewModel.maxVersesInChapter(bookId, chapterNum, translation)
-        } else if (!isOnline && chapterLoad is BibleChapterLoadState.Ready && chapterLoad.chapter.verses.isEmpty()) {
-            fallbackVerseMax = viewModel.maxVersesInChapter(bookId, chapterNum, translation)
+    val needFallbackNumbers = !isOnline && (
+        chapterLoad is BibleChapterLoadState.NotFound ||
+            (chapterLoad is BibleChapterLoadState.Ready && chapterLoad.chapter.verses.isEmpty())
+        )
+    LaunchedEffect(needFallbackNumbers, bookId, chapterNum, translation) {
+        if (!needFallbackNumbers) return@LaunchedEffect
+        fallbackVerseMax = withContext(Dispatchers.IO) {
+            viewModel.maxVersesInChapter(bookId, chapterNum, translation)
         }
     }
 
@@ -6072,45 +6077,57 @@ private fun VersesRouteContent(
             )
         },
     ) { padding ->
-        Box(
-            modifier = Modifier
-                .padding(padding)
-                .fillMaxSize(),
-            contentAlignment = Alignment.Center,
-        ) {
-            when {
-                loading -> CircularProgressIndicator()
-                versesForGrid != null -> {
-                    VerseGrid(
-                        modifier = Modifier.fillMaxSize(),
-                        verses = versesForGrid,
-                        onVerseClick = { verseNum ->
-                            navController.navigate("read/$bookId/$chapterNum/$verseNum")
-                        },
-                    )
+        when {
+            loading || (needFallbackNumbers && fallbackVerseMax == 0 && versesForGrid == null) -> {
+                Box(
+                    modifier = Modifier
+                        .padding(padding)
+                        .fillMaxSize(),
+                    contentAlignment = Alignment.Center,
+                ) {
+                    CircularProgressIndicator()
                 }
-                isOnline && onlineError != null -> {
-                    Column(
-                        horizontalAlignment = Alignment.CenterHorizontally,
-                        modifier = Modifier.padding(24.dp),
+            }
+            versesForGrid != null -> {
+                VerseGrid(
+                    modifier = Modifier.padding(padding),
+                    verses = versesForGrid,
+                    onVerseClick = { verseNum ->
+                        navController.navigate("read/$bookId/$chapterNum/$verseNum")
+                    },
+                )
+            }
+            isOnline && onlineError != null -> {
+                Column(
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    modifier = Modifier
+                        .padding(padding)
+                        .padding(24.dp)
+                        .fillMaxSize(),
+                ) {
+                    Text(
+                        onlineError!!,
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.error,
+                        textAlign = TextAlign.Center,
+                    )
+                    Spacer(Modifier.height(12.dp))
+                    TextButton(
+                        onClick = {
+                            viewModel.loadOnlineChapter(translation, bookId, chapterNum)
+                        },
                     ) {
-                        Text(
-                            onlineError!!,
-                            style = MaterialTheme.typography.bodyMedium,
-                            color = MaterialTheme.colorScheme.error,
-                            textAlign = TextAlign.Center,
-                        )
-                        Spacer(Modifier.height(12.dp))
-                        TextButton(
-                            onClick = {
-                                viewModel.loadOnlineChapter(translation, bookId, chapterNum)
-                            },
-                        ) {
-                            Text(stringResource(R.string.retry))
-                        }
+                        Text(stringResource(R.string.retry))
                     }
                 }
-                else -> {
+            }
+            else -> {
+                Box(
+                    modifier = Modifier
+                        .padding(padding)
+                        .fillMaxSize(),
+                    contentAlignment = Alignment.Center,
+                ) {
                     Text(
                         stringResource(R.string.no_chapters_loaded),
                         style = MaterialTheme.typography.bodyLarge,
