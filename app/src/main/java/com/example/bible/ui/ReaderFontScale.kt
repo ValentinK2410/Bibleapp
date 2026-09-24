@@ -72,7 +72,6 @@ fun ReaderFontScaleFabControls(
 ) {
     val canDecrease = readerFontScale > ReaderFontScaleDefaults.MIN + 0.001f
     val canIncrease = readerFontScale < ReaderFontScaleDefaults.MAX - 0.001f
-    val buttonAlpha = 0.42f
 
     AnimatedVisibility(
         visible = shown,
@@ -90,10 +89,10 @@ fun ReaderFontScaleFabControls(
                     if (canIncrease) onAdjustFontScale(ReaderFontScaleDefaults.STEP)
                 },
                 containerColor = MaterialTheme.colorScheme.secondaryContainer.copy(
-                    alpha = if (canIncrease) buttonAlpha else 0.2f,
+                    alpha = if (canIncrease) 1f else 0.45f,
                 ),
                 contentColor = MaterialTheme.colorScheme.onSecondaryContainer.copy(
-                    alpha = if (canIncrease) 0.9f else 0.35f,
+                    alpha = if (canIncrease) 1f else 0.45f,
                 ),
             ) {
                 Icon(
@@ -106,10 +105,10 @@ fun ReaderFontScaleFabControls(
                     if (canDecrease) onAdjustFontScale(-ReaderFontScaleDefaults.STEP)
                 },
                 containerColor = MaterialTheme.colorScheme.secondaryContainer.copy(
-                    alpha = if (canDecrease) buttonAlpha else 0.2f,
+                    alpha = if (canDecrease) 1f else 0.45f,
                 ),
                 contentColor = MaterialTheme.colorScheme.onSecondaryContainer.copy(
-                    alpha = if (canDecrease) 0.9f else 0.35f,
+                    alpha = if (canDecrease) 1f else 0.45f,
                 ),
             ) {
                 Icon(
