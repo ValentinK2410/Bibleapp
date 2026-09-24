@@ -675,6 +675,8 @@ private fun BibleNavHost(
             val bookPickerLongPressTts by viewModel.bookPickerLongPressTts.collectAsStateWithLifecycle()
             val bookNameTts = rememberVerseTextToSpeech(TranslationId.SYNODAL)
             val booksScreenContext = LocalContext.current
+            val pickerBookId by viewModel.passagePickerBookId.collectAsStateWithLifecycle()
+            val pickerChapter by viewModel.passagePickerChapter.collectAsStateWithLifecycle()
             val canPop = navController.previousBackStackEntry != null
             Scaffold(
                 containerColor = MaterialTheme.colorScheme.background,
@@ -683,13 +685,27 @@ private fun BibleNavHost(
                         TopAppBar(
                             title = {
                                 Text(
-                                    stringResource(R.string.book_picker_title),
+                                    when {
+                                        pickerBookId != null && pickerChapter > 0 ->
+                                            "${passagePickerBookTitle(pickerBookId!!, translation)} $pickerChapter — " +
+                                                stringResource(R.string.verse_picker_title)
+                                        pickerBookId != null ->
+                                            passagePickerBookTitle(pickerBookId!!, translation)
+                                        else ->
+                                            stringResource(R.string.book_picker_title)
+                                    },
                                     style = MaterialTheme.typography.titleMedium,
                                 )
                             },
                             navigationIcon = {
-                                if (canPop) {
-                                    IconButton(onClick = { navController.navigateUp() }) {
+                                if (pickerBookId != null || canPop) {
+                                    IconButton(
+                                        onClick = {
+                                            if (!viewModel.passagePickerBack()) {
+                                                navController.navigateUp()
+                                            }
+                                        },
+                                    ) {
                                         Icon(
                                             Icons.AutoMirrored.Filled.ArrowBack,
                                             contentDescription = stringResource(R.string.back),
@@ -824,7 +840,7 @@ private fun BibleNavHost(
                 }
                 val dailyVerse = remember { DailyVerse.forToday() }
                 Column(
-                    modifier = if (bookLayoutMode == BookLayoutMode.GRID) {
+                    modifier = if (bookLayoutMode == BookLayoutMode.GRID && pickerBookId == null) {
                         Modifier
                             .fillMaxSize()
                             .padding(top = topPad, bottom = bottomPad)
@@ -835,34 +851,98 @@ private fun BibleNavHost(
                             .background(MaterialTheme.colorScheme.background)
                     },
                 ) {
-                    previewBook?.let { entry ->
-                        BookPickerPreviewBanner(entry = entry)
-                    }
-                    DailyVerseCard(
-                        entry = dailyVerse,
-                        onClick = {
-                            navController.navigate("read/${dailyVerse.bookId}/${dailyVerse.chapter}/${dailyVerse.verse}")
-                        },
-                    )
-                    BookSelectionContent(
-                        layoutMode = bookLayoutMode,
-                        modifier = Modifier
-                            .fillMaxSize()
-                            .weight(1f),
-                        booksWithAudio = booksWithAudio,
-                        onBookClick = { bookId ->
-                            com.example.bible.data.BibleAudioPlayer.stopForNavigation()
-                            navController.navigate("chapters/$bookId")
-                        },
-                        onBookLongPress = { entry ->
-                            previewBook = entry
-                            if (bookPickerLongPressTts) {
-                                bookNameTts.speak(entry.nameRu)
-                            } else {
-                                bookNameTts.stop()
+                    if (pickerBookId == null) {
+                        previewBook?.let { entry ->
+                            BookPickerPreviewBanner(entry = entry)
+                        }
+                        DailyVerseCard(
+                            entry = dailyVerse,
+                            onClick = {
+                                navController.navigate("read/${dailyVerse.bookId}/${dailyVerse.chapter}/${dailyVerse.verse}")
+                            },
+                        )
+                        BookSelectionContent(
+                            layoutMode = bookLayoutMode,
+                            modifier = Modifier
+                                .fillMaxSize()
+                                .weight(1f),
+                            booksWithAudio = booksWithAudio,
+                            onBookClick = { bookId ->
+                                com.example.bible.data.BibleAudioPlayer.stopForNavigation()
+                                viewModel.passagePickerSelectBook(bookId)
+                            },
+                            onBookLongPress = { entry ->
+                                previewBook = entry
+                                if (bookPickerLongPressTts) {
+                                    bookNameTts.speak(entry.nameRu)
+                                } else {
+                                    bookNameTts.stop()
+                                }
+                            },
+                        )
+                    } else when (val shellState = rememberBookShell(library, translation, pickerBookId!!)) {
+                        BibleBookShellState.Loading -> {
+                            Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                                CircularProgressIndicator()
                             }
-                        },
-                    )
+                        }
+                        is BibleBookShellState.Ready -> {
+                            if (pickerChapter <= 0) {
+                                BiblePassagePickerChapterStep(
+                                    book = shellState.book,
+                                    bookId = pickerBookId!!,
+                                    translation = translation,
+                                    viewModel = viewModel,
+                                    narratorId = narratorId,
+                                    downloadTick = downloadTick,
+                                    onChapterSelected = { ch ->
+                                        viewModel.passagePickerSelectChapter(ch)
+                                    },
+                                    modifier = Modifier.fillMaxSize(),
+                                )
+                            } else {
+                                BiblePassagePickerVerseStep(
+                                    bookId = pickerBookId!!,
+                                    chapterNum = pickerChapter,
+                                    translation = translation,
+                                    viewModel = viewModel,
+                                    onVerseSelected = { verseNum ->
+                                        com.example.bible.data.BibleAudioPlayer.stopForNavigation()
+                                        navController.navigate("read/$pickerBookId/$pickerChapter/$verseNum")
+                                    },
+                                    modifier = Modifier.fillMaxSize(),
+                                )
+                            }
+                        }
+                        is BibleBookShellState.Fallback -> {
+                            if (pickerChapter <= 0) {
+                                BiblePassagePickerChapterStep(
+                                    book = shellState.book,
+                                    bookId = pickerBookId!!,
+                                    translation = translation,
+                                    viewModel = viewModel,
+                                    narratorId = narratorId,
+                                    downloadTick = downloadTick,
+                                    onChapterSelected = { ch ->
+                                        viewModel.passagePickerSelectChapter(ch)
+                                    },
+                                    modifier = Modifier.fillMaxSize(),
+                                )
+                            } else {
+                                BiblePassagePickerVerseStep(
+                                    bookId = pickerBookId!!,
+                                    chapterNum = pickerChapter,
+                                    translation = translation,
+                                    viewModel = viewModel,
+                                    onVerseSelected = { verseNum ->
+                                        com.example.bible.data.BibleAudioPlayer.stopForNavigation()
+                                        navController.navigate("read/$pickerBookId/$pickerChapter/$verseNum")
+                                    },
+                                    modifier = Modifier.fillMaxSize(),
+                                )
+                            }
+                        }
+                    }
                 }
             }
             if (showBookNarratorPicker) {
@@ -1942,50 +2022,24 @@ private fun BibleNavHost(
         composable("chapters/{bookId}") { entry ->
             val bookId = entry.arguments?.getString("bookId") ?: return@composable
             if (BibleCanon.byId(bookId) == null) return@composable
-            when (val shellState = rememberBookShell(library, translation, bookId)) {
-                BibleBookShellState.Loading -> {
-                    Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                        CircularProgressIndicator()
-                    }
-                }
-                is BibleBookShellState.Ready -> {
-                    val book = shellState.book
-                    ChaptersRouteContent(
-                        book = book,
-                        bookId = bookId,
-                        translation = translation,
-                        isOnlineTranslation = false,
-                        viewModel = viewModel,
-                        narratorId = narratorId,
-                        downloadTick = downloadTick,
-                        navController = navController,
-                    )
-                }
-                is BibleBookShellState.Fallback -> {
-                    ChaptersRouteContent(
-                        book = shellState.book,
-                        bookId = bookId,
-                        translation = translation,
-                        isOnlineTranslation = shellState.isOnlineOnly,
-                        viewModel = viewModel,
-                        narratorId = narratorId,
-                        downloadTick = downloadTick,
-                        navController = navController,
-                    )
+            LaunchedEffect(bookId) {
+                viewModel.passagePickerGoTo(bookId, 0)
+                navController.navigate("books") {
+                    popUpTo("books") { inclusive = true }
+                    launchSingleTop = true
                 }
             }
         }
         composable("verses/{bookId}/{chapter}") { entry ->
             val bookId = entry.arguments?.getString("bookId") ?: return@composable
             val chapterNum = entry.arguments?.getString("chapter")?.toIntOrNull() ?: return@composable
-            VersesRouteContent(
-                bookId = bookId,
-                chapterNum = chapterNum,
-                translation = translation,
-                library = library,
-                viewModel = viewModel,
-                navController = navController,
-            )
+            LaunchedEffect(bookId, chapterNum) {
+                viewModel.passagePickerGoTo(bookId, chapterNum)
+                navController.navigate("books") {
+                    popUpTo("books") { inclusive = true }
+                    launchSingleTop = true
+                }
+            }
         }
         composable(
             route = "read/{bookId}/{chapter}/{scrollVerse}",
@@ -4653,7 +4707,7 @@ private fun HistoryScreen(
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
-private fun ChapterGrid(
+internal fun ChapterGrid(
     modifier: Modifier = Modifier,
     book: BibleBook,
     bookId: String = book.id,
@@ -4729,7 +4783,7 @@ private fun ChapterGrid(
 }
 
 @Composable
-private fun VerseGrid(
+internal fun VerseGrid(
     modifier: Modifier = Modifier,
     verses: List<BibleVerse>,
     onVerseClick: (Int) -> Unit,

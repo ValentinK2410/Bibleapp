@@ -3164,6 +3164,42 @@ class BibleViewModel(
         viewModelScope.launch { preferences.deleteDailyJournalEntry(id) }
     }
 
+    private val _passagePickerBookId = MutableStateFlow<String?>(null)
+    val passagePickerBookId: StateFlow<String?> = _passagePickerBookId.asStateFlow()
+    private val _passagePickerChapter = MutableStateFlow(0)
+    val passagePickerChapter: StateFlow<Int> = _passagePickerChapter.asStateFlow()
+
+    fun passagePickerSelectBook(bookId: String) {
+        _passagePickerBookId.value = bookId
+        _passagePickerChapter.value = 0
+    }
+
+    fun passagePickerSelectChapter(chapter: Int) {
+        _passagePickerChapter.value = chapter
+    }
+
+    fun passagePickerGoTo(bookId: String, chapter: Int) {
+        _passagePickerBookId.value = bookId
+        _passagePickerChapter.value = chapter.coerceAtLeast(0)
+    }
+
+    fun passagePickerBack(): Boolean = when {
+        _passagePickerChapter.value > 0 -> {
+            _passagePickerChapter.value = 0
+            true
+        }
+        _passagePickerBookId.value != null -> {
+            _passagePickerBookId.value = null
+            true
+        }
+        else -> false
+    }
+
+    fun passagePickerReset() {
+        _passagePickerBookId.value = null
+        _passagePickerChapter.value = 0
+    }
+
     suspend fun verseNumbersForPicker(bookId: String, chapter: Int, translation: TranslationId): List<Int> =
         withContext(Dispatchers.IO) {
             try {
