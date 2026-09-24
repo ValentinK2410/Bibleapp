@@ -1400,8 +1400,15 @@ fun NoteEditorBiblePane(
             library = library,
             translation = paneState.translation,
             currentBookId = paneState.bookId.orEmpty(),
-            onNavigate = { bookId, chapter ->
+            onNavigate = { bookId, chapter, verse ->
                 paneState = paneState.copy(bookId = bookId, chapter = chapter)
+                scrollToVerseRequest = VerseScrollRequest(
+                    bookId = bookId,
+                    chapter = chapter,
+                    verses = setOf(verse),
+                    showFullChapter = true,
+                    nonce = System.currentTimeMillis(),
+                )
                 showQuickNav = false
             },
             onDismiss = { showQuickNav = false },
@@ -1461,6 +1468,7 @@ internal fun BiblePaneColumn(
 ) {
     val paneContext = LocalContext.current
     var showQuickNav by remember { mutableStateOf(false) }
+    var quickNavScroll by remember { mutableStateOf<VerseScrollRequest?>(null) }
     var showStudyTools by remember { mutableStateOf(false) }
     var studyVerse by remember { mutableIntStateOf(1) }
     var showTextSizeDialog by remember { mutableStateOf(false) }
@@ -1714,7 +1722,7 @@ internal fun BiblePaneColumn(
                             onRemoveWordSpanMediaIntersecting = onRemoveWordSpanMediaIntersecting,
                             onVerseNote = onVerseNote,
                             onOpenVerseNote = onOpenVerseNote,
-                            scrollToVerseRequest = scrollToVerseRequest,
+                            scrollToVerseRequest = quickNavScroll ?: scrollToVerseRequest,
                             onPlayChapterFromVerse = onPlayChapterFromVerse,
                             viewModel = viewModel,
                             onOpenDeepSeekSettings = onOpenDeepSeekSettings,
@@ -1772,8 +1780,15 @@ internal fun BiblePaneColumn(
             library = library,
             translation = state.translation,
             currentBookId = state.bookId.orEmpty(),
-            onNavigate = { bookId, chapter ->
+            onNavigate = { bookId, chapter, verse ->
                 onStateChange(state.copy(bookId = bookId, chapter = chapter))
+                quickNavScroll = VerseScrollRequest(
+                    bookId = bookId,
+                    chapter = chapter,
+                    verses = setOf(verse),
+                    showFullChapter = true,
+                    nonce = System.currentTimeMillis(),
+                )
                 showQuickNav = false
             },
             onDismiss = { showQuickNav = false },

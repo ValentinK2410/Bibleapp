@@ -3000,11 +3000,11 @@ private fun BibleNavHost(
                     library = library,
                     translation = translation,
                     currentBookId = bookId,
-                    onNavigate = { targetBookId, targetChapter ->
+                    onNavigate = { targetBookId, targetChapter, targetVerse ->
                         showQuickNav = false
                         com.example.bible.data.BibleAudioPlayer.stopForNavigation()
                         runCatching {
-                            navController.navigate("read/$targetBookId/$targetChapter/0") {
+                            navController.navigate("read/$targetBookId/$targetChapter/$targetVerse") {
                                 popUpTo("read/$bookId/$chapterNum/$scrollVerse") { inclusive = true }
                                 launchSingleTop = true
                             }

@@ -10,6 +10,7 @@ import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -19,6 +20,7 @@ import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items as gridItems
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
@@ -27,7 +29,9 @@ import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -40,6 +44,8 @@ import androidx.compose.ui.unit.sp
 import com.example.bible.data.BibleCanon
 import com.example.bible.data.BibleLibrary
 import com.example.bible.data.TranslationId
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -47,13 +53,44 @@ fun QuickNavigatorSheet(
     library: BibleLibrary,
     translation: TranslationId,
     currentBookId: String,
-    onNavigate: (bookId: String, chapter: Int) -> Unit,
+    onNavigate: (bookId: String, chapter: Int, verse: Int) -> Unit,
     onDismiss: () -> Unit,
 ) {
     val presence = rememberTimemarkPresenceIndex()
     val tabColors = rememberTranslationTabColorsMap()
     var selectedBookId by remember { mutableStateOf(currentBookId) }
+    var selectedChapter by remember { mutableIntStateOf(0) }
     var step by remember { mutableStateOf(if (currentBookId.isNotEmpty()) "chapters" else "books") }
+    var verseNumbers by remember(selectedBookId, selectedChapter, translation) { mutableStateOf<List<Int>?>(null) }
+
+    LaunchedEffect(step, selectedBookId, selectedChapter, translation) {
+        if (step != "verses" || selectedChapter <= 0) return@LaunchedEffect
+        verseNumbers = null
+        verseNumbers = withContext(Dispatchers.IO) {
+            val local = library.loadChapter(translation, selectedBookId, selectedChapter)
+                ?.verses
+                ?.map { it.number }
+                ?.filter { it > 0 }
+                ?.distinct()
+                ?.sorted()
+                .orEmpty()
+            if (local.isNotEmpty()) {
+                local
+            } else {
+                val code = translation.onlineCode
+                if (code != null) {
+                    com.example.bible.data.StudyBibleRepository
+                        .fetchChapterText(code, selectedBookId, selectedChapter)
+                        .map { it.first }
+                        .filter { it > 0 }
+                        .distinct()
+                        .sorted()
+                } else {
+                    emptyList()
+                }
+            }
+        }
+    }
 
     ModalBottomSheet(
         onDismissRequest = onDismiss,
@@ -62,10 +99,73 @@ fun QuickNavigatorSheet(
         Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .heightIn(max = 450.dp)
+                .heightIn(max = 520.dp)
                 .padding(bottom = 16.dp),
         ) {
-            if (step == "chapters") {
+            if (step == "verses") {
+                val canon = BibleCanon.byId(selectedBookId)
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 16.dp, vertical = 8.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
+                    TextButton(onClick = { step = "chapters" }) {
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = null, modifier = Modifier.size(18.dp))
+                        Spacer(Modifier.width(4.dp))
+                        Text("Главы")
+                    }
+                    Spacer(Modifier.weight(1f))
+                    Text(
+                        "${canon?.abbrRu ?: selectedBookId} $selectedChapter",
+                        style = MaterialTheme.typography.titleMedium,
+                    )
+                    Spacer(Modifier.weight(1f))
+                }
+                HorizontalDivider()
+                val numbers = verseNumbers
+                if (numbers == null) {
+                    Box(
+                        Modifier.fillMaxWidth().padding(32.dp),
+                        contentAlignment = Alignment.Center,
+                    ) {
+                        CircularProgressIndicator()
+                    }
+                } else if (numbers.isEmpty()) {
+                    Text(
+                        "Нет стихов",
+                        modifier = Modifier.padding(16.dp),
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                } else {
+                    LazyVerticalGrid(
+                        columns = GridCells.Fixed(5),
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(360.dp),
+                        contentPadding = PaddingValues(8.dp),
+                        horizontalArrangement = Arrangement.spacedBy(4.dp),
+                        verticalArrangement = Arrangement.spacedBy(4.dp),
+                    ) {
+                        gridItems(numbers, key = { it }) { verseNum ->
+                            Box(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .heightIn(min = 44.dp)
+                                    .background(
+                                        MaterialTheme.colorScheme.surfaceVariant,
+                                        MaterialTheme.shapes.small,
+                                    )
+                                    .clickable { onNavigate(selectedBookId, selectedChapter, verseNum) }
+                                    .padding(vertical = 8.dp),
+                                contentAlignment = Alignment.Center,
+                            ) {
+                                Text("$verseNum", fontWeight = FontWeight.Bold)
+                            }
+                        }
+                    }
+                }
+            } else if (step == "chapters") {
                 val canon = BibleCanon.byId(selectedBookId)
                 when (val shellState = rememberBookShell(library, translation, selectedBookId)) {
                     BibleBookShellState.Loading -> {
@@ -123,7 +223,10 @@ fun QuickNavigatorSheet(
                                                 },
                                                 MaterialTheme.shapes.small,
                                             )
-                                            .clickable { onNavigate(selectedBookId, ch.number) }
+                                            .clickable {
+                                                selectedChapter = ch.number
+                                                step = "verses"
+                                            }
                                             .padding(vertical = 4.dp, horizontal = 2.dp),
                                         horizontalAlignment = Alignment.CenterHorizontally,
                                         verticalArrangement = Arrangement.spacedBy(2.dp),
