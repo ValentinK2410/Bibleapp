@@ -133,6 +133,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.input.pointer.PointerEventPass
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalConfiguration
@@ -2611,7 +2612,28 @@ private fun BibleNavHost(
                     }
                 }
 
-                Box(modifier = Modifier.padding(padding).fillMaxSize()) {
+                var fontButtonsShown by remember { mutableStateOf(true) }
+                var readerTouchTick by remember { mutableIntStateOf(0) }
+                LaunchedEffect(readerTouchTick) {
+                    fontButtonsShown = true
+                    delay(1600)
+                    fontButtonsShown = false
+                }
+                Box(
+                    modifier = Modifier
+                        .padding(padding)
+                        .fillMaxSize()
+                        .pointerInput(Unit) {
+                            awaitPointerEventScope {
+                                while (true) {
+                                    val event = awaitPointerEvent(PointerEventPass.Initial)
+                                    if (event.changes.any { it.pressed }) {
+                                        readerTouchTick++
+                                    }
+                                }
+                            }
+                        },
+                ) {
                 Column(modifier = Modifier.fillMaxSize()) {
                     val selectedTabArgb = translationTabColors[translations[pagerState.currentPage].code]
                     val tabIndicatorColor = selectedTabArgb?.let { Color(it) } ?: MaterialTheme.colorScheme.primary
@@ -2899,6 +2921,7 @@ private fun BibleNavHost(
                     onAdjustFontScale = { delta -> viewModel.adjustReaderFontScale(delta) },
                     modifier = Modifier.align(Alignment.BottomEnd),
                     bottomInset = bibleAudioBarInsetDp,
+                    shown = fontButtonsShown,
                 )
                 }
             }
@@ -5859,10 +5882,12 @@ private fun ChaptersRouteContent(
     var dlProgress by remember { mutableStateOf<Pair<Int, Int>?>(null) }
     var dlError by remember { mutableStateOf<String?>(null) }
     var pickedChapter by rememberSaveable(bookId) { mutableIntStateOf(0) }
+    var verseClicksArmed by remember(pickedChapter) { mutableStateOf(false) }
     var verseNumbers by remember(bookId, pickedChapter) { mutableStateOf<List<Int>?>(null) }
     var verseLoadError by remember(bookId, pickedChapter) { mutableStateOf<String?>(null) }
     var verseReload by remember(bookId, pickedChapter) { mutableIntStateOf(0) }
     LaunchedEffect(bookId, pickedChapter, translation, verseReload) {
+        verseClicksArmed = false
         if (pickedChapter <= 0) return@LaunchedEffect
         verseNumbers = null
         verseLoadError = null
@@ -5872,6 +5897,8 @@ private fun ChaptersRouteContent(
         } else {
             verseNumbers = numbers
         }
+        delay(400)
+        verseClicksArmed = true
     }
     Scaffold(
         topBar = {
@@ -6017,7 +6044,9 @@ private fun ChaptersRouteContent(
                                 modifier = Modifier.fillMaxSize(),
                                 verses = numbers.map { BibleVerse(number = it, text = "") },
                                 onVerseClick = { verseNum ->
-                                    navController.navigate("read/$bookId/$pickedChapter/$verseNum")
+                                    if (verseClicksArmed) {
+                                        navController.navigate("read/$bookId/$pickedChapter/$verseNum")
+                                    }
                                 },
                             )
                         }

@@ -1,5 +1,8 @@
 package com.example.bible.ui
 
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.padding
@@ -65,46 +68,55 @@ fun ReaderFontScaleFabControls(
     modifier: Modifier = Modifier,
     /** Отступ снизу под панель озвучки главы. */
     bottomInset: Dp = 0.dp,
+    shown: Boolean = true,
 ) {
     val canDecrease = readerFontScale > ReaderFontScaleDefaults.MIN + 0.001f
     val canIncrease = readerFontScale < ReaderFontScaleDefaults.MAX - 0.001f
+    val buttonAlpha = 0.42f
 
-    Column(
-        modifier = modifier.padding(end = 12.dp, bottom = 12.dp + bottomInset),
-        verticalArrangement = Arrangement.spacedBy(8.dp),
-        horizontalAlignment = Alignment.CenterHorizontally,
+    AnimatedVisibility(
+        visible = shown,
+        modifier = modifier,
+        enter = fadeIn(),
+        exit = fadeOut(),
     ) {
-        SmallFloatingActionButton(
-            onClick = {
-                if (canIncrease) onAdjustFontScale(ReaderFontScaleDefaults.STEP)
-            },
-            containerColor = MaterialTheme.colorScheme.secondaryContainer.copy(
-                alpha = if (canIncrease) 1f else 0.45f,
-            ),
-            contentColor = MaterialTheme.colorScheme.onSecondaryContainer.copy(
-                alpha = if (canIncrease) 1f else 0.45f,
-            ),
+        Column(
+            modifier = Modifier.padding(end = 12.dp, bottom = 12.dp + bottomInset),
+            verticalArrangement = Arrangement.spacedBy(8.dp),
+            horizontalAlignment = Alignment.CenterHorizontally,
         ) {
-            Icon(
-                Icons.Default.Add,
-                contentDescription = stringResource(R.string.font_increase),
-            )
-        }
-        SmallFloatingActionButton(
-            onClick = {
-                if (canDecrease) onAdjustFontScale(-ReaderFontScaleDefaults.STEP)
-            },
-            containerColor = MaterialTheme.colorScheme.secondaryContainer.copy(
-                alpha = if (canDecrease) 1f else 0.45f,
-            ),
-            contentColor = MaterialTheme.colorScheme.onSecondaryContainer.copy(
-                alpha = if (canDecrease) 1f else 0.45f,
-            ),
-        ) {
-            Icon(
-                Icons.Default.Remove,
-                contentDescription = stringResource(R.string.font_decrease),
-            )
+            SmallFloatingActionButton(
+                onClick = {
+                    if (canIncrease) onAdjustFontScale(ReaderFontScaleDefaults.STEP)
+                },
+                containerColor = MaterialTheme.colorScheme.secondaryContainer.copy(
+                    alpha = if (canIncrease) buttonAlpha else 0.2f,
+                ),
+                contentColor = MaterialTheme.colorScheme.onSecondaryContainer.copy(
+                    alpha = if (canIncrease) 0.9f else 0.35f,
+                ),
+            ) {
+                Icon(
+                    Icons.Default.Add,
+                    contentDescription = stringResource(R.string.font_increase),
+                )
+            }
+            SmallFloatingActionButton(
+                onClick = {
+                    if (canDecrease) onAdjustFontScale(-ReaderFontScaleDefaults.STEP)
+                },
+                containerColor = MaterialTheme.colorScheme.secondaryContainer.copy(
+                    alpha = if (canDecrease) buttonAlpha else 0.2f,
+                ),
+                contentColor = MaterialTheme.colorScheme.onSecondaryContainer.copy(
+                    alpha = if (canDecrease) 0.9f else 0.35f,
+                ),
+            ) {
+                Icon(
+                    Icons.Default.Remove,
+                    contentDescription = stringResource(R.string.font_decrease),
+                )
+            }
         }
     }
 }
