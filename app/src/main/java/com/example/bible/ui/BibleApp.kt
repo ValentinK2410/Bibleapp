@@ -120,6 +120,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberUpdatedState
@@ -5857,6 +5858,21 @@ private fun ChaptersRouteContent(
     val chapterCtx = LocalContext.current
     var dlProgress by remember { mutableStateOf<Pair<Int, Int>?>(null) }
     var dlError by remember { mutableStateOf<String?>(null) }
+    var pickedChapter by rememberSaveable(bookId) { mutableIntStateOf(0) }
+    var verseNumbers by remember(bookId, pickedChapter) { mutableStateOf<List<Int>?>(null) }
+    var verseLoadError by remember(bookId, pickedChapter) { mutableStateOf<String?>(null) }
+    var verseReload by remember(bookId, pickedChapter) { mutableIntStateOf(0) }
+    LaunchedEffect(bookId, pickedChapter, translation, verseReload) {
+        if (pickedChapter <= 0) return@LaunchedEffect
+        verseNumbers = null
+        verseLoadError = null
+        val numbers = viewModel.verseNumbersForPicker(bookId, pickedChapter, translation)
+        if (numbers.isEmpty()) {
+            verseLoadError = "Нет стихов в этой главе"
+        } else {
+            verseNumbers = numbers
+        }
+    }
     Scaffold(
         topBar = {
             CenterAlignedTopAppBar(
@@ -5877,13 +5893,21 @@ private fun ChaptersRouteContent(
                         }
                     } else {
                         Text(
-                            titleText,
+                            if (pickedChapter > 0) {
+                                "$titleText · гл. $pickedChapter"
+                            } else {
+                                titleText
+                            },
                             style = MaterialTheme.typography.titleMedium,
                         )
                     }
                 },
                 navigationIcon = {
-                    IconButton(onClick = { navController.navigateUp() }) {
+                    IconButton(
+                        onClick = {
+                            if (pickedChapter > 0) pickedChapter = 0 else navController.navigateUp()
+                        },
+                    ) {
                         Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = stringResource(R.string.back))
                     }
                 },
@@ -5980,15 +6004,52 @@ private fun ChaptersRouteContent(
                     val downloaded = viewModel.downloadedChaptersFor(eff, bookId)
                     fromAssets + downloaded
                 }
-                ChapterGrid(
-                    modifier = Modifier.fillMaxSize(),
-                    book = book,
-                    bookId = bookId,
-                    chaptersWithAudio = chaptersWithAudio,
-                    onChapterClick = { chapter ->
-                        navController.navigate("verses/$bookId/$chapter")
-                    },
-                )
+                if (pickedChapter > 0) {
+                    val numbers = verseNumbers
+                    when {
+                        numbers == null && verseLoadError == null -> {
+                            Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                                CircularProgressIndicator()
+                            }
+                        }
+                        numbers != null -> {
+                            VerseGrid(
+                                modifier = Modifier.fillMaxSize(),
+                                verses = numbers.map { BibleVerse(number = it, text = "") },
+                                onVerseClick = { verseNum ->
+                                    navController.navigate("read/$bookId/$pickedChapter/$verseNum")
+                                },
+                            )
+                        }
+                        else -> {
+                            Column(
+                                Modifier
+                                    .fillMaxSize()
+                                    .padding(24.dp),
+                                horizontalAlignment = Alignment.CenterHorizontally,
+                                verticalArrangement = Arrangement.Center,
+                            ) {
+                                Text(
+                                    verseLoadError ?: stringResource(R.string.no_chapters_loaded),
+                                    textAlign = TextAlign.Center,
+                                )
+                                TextButton(onClick = { verseReload++ }) {
+                                    Text(stringResource(R.string.retry))
+                                }
+                            }
+                        }
+                    }
+                } else {
+                    ChapterGrid(
+                        modifier = Modifier.fillMaxSize(),
+                        book = book,
+                        bookId = bookId,
+                        chaptersWithAudio = chaptersWithAudio,
+                        onChapterClick = { chapter ->
+                            pickedChapter = chapter
+                        },
+                    )
+                }
             }
         }
     }

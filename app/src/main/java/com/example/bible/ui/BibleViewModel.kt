@@ -3164,6 +3164,33 @@ class BibleViewModel(
         viewModelScope.launch { preferences.deleteDailyJournalEntry(id) }
     }
 
+    suspend fun verseNumbersForPicker(bookId: String, chapter: Int, translation: TranslationId): List<Int> =
+        withContext(Dispatchers.IO) {
+            try {
+                val fromDb = repository.loadChapter(translation, bookId, chapter)
+                    ?.verses
+                    ?.map { it.number }
+                    ?.filter { it > 0 }
+                    ?.distinct()
+                    ?.sorted()
+                    .orEmpty()
+                if (fromDb.isNotEmpty()) return@withContext fromDb
+                val max = repository.maxVerseInChapter(translation, bookId, chapter) ?: 0
+                if (max > 0) return@withContext (1..max).toList()
+                if (translation.onlineCode != null) {
+                    fetchOnlineVerses(translation, bookId, chapter)
+                        .map { it.number }
+                        .filter { it > 0 }
+                        .distinct()
+                        .sorted()
+                } else {
+                    emptyList()
+                }
+            } catch (_: Exception) {
+                emptyList()
+            }
+        }
+
     fun maxVersesInChapter(bookId: String, chapter: Int, translation: TranslationId): Int {
         repository.loadChapter(translation, bookId, chapter)
             ?.verses
