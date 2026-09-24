@@ -1,9 +1,9 @@
 package com.example.bible.ui
 
-import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
-import androidx.compose.foundation.horizontalScroll
+import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.FlowRow
@@ -14,11 +14,14 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Add
@@ -26,17 +29,20 @@ import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.PushPin
 import androidx.compose.material.icons.filled.Search
-import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.FilterChip
 import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Checkbox
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.FilterChip
+import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.FloatingActionButton
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
@@ -47,9 +53,9 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.example.bible.R
 import com.example.bible.data.DailyJournalEntry
@@ -73,10 +79,14 @@ fun DailyJournalScreen(
     var searchQuery by remember { mutableStateOf("") }
     var showSearch by remember { mutableStateOf(false) }
 
-    val dayFormatter = remember { DateTimeFormatter.ofPattern("d MMM", Locale("ru")) }
+    val dayFormatter = remember { DateTimeFormatter.ofPattern("EEE, d MMMM", Locale("ru")) }
+    val chipFormatter = remember { DateTimeFormatter.ofPattern("d", Locale("ru")) }
     val weekDays = remember {
         val today = LocalDate.now()
-        (6 downTo 0).map { today.minusDays(it.toLong()) }
+        (13 downTo 0).map { today.minusDays(it.toLong()) }
+    }
+    val selectedDate = remember(selectedDay) {
+        runCatching { LocalDate.parse(selectedDay) }.getOrElse { LocalDate.now() }
     }
 
     val filtered = remember(entries, selectedDay, searchQuery) {
@@ -91,9 +101,9 @@ fun DailyJournalScreen(
     }
 
     if (editorEntry != null) {
-        DailyJournalEditorDialog(
+        DailyJournalEditorScreen(
             initial = editorEntry!!,
-            onDismiss = { editorEntry = null },
+            onBack = { editorEntry = null },
             onSave = {
                 onSave(it)
                 editorEntry = null
@@ -103,12 +113,22 @@ fun DailyJournalScreen(
                 editorEntry = null
             },
         )
+        return
     }
 
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text(stringResource(R.string.daily_journal_title)) },
+                title = {
+                    Column {
+                        Text(stringResource(R.string.daily_journal_title))
+                        Text(
+                            selectedDate.format(dayFormatter),
+                            style = MaterialTheme.typography.labelMedium,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        )
+                    }
+                },
                 navigationIcon = {
                     IconButton(onClick = onBack) {
                         Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = null)
@@ -142,21 +162,19 @@ fun DailyJournalScreen(
                     onValueChange = { searchQuery = it },
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(horizontal = 12.dp, vertical = 4.dp),
+                        .padding(horizontal = 16.dp, vertical = 4.dp),
                     placeholder = { Text(stringResource(R.string.daily_journal_search)) },
                     singleLine = true,
                 )
             }
-            Row(
-                Modifier
-                    .fillMaxWidth()
-                    .horizontalScroll(rememberScrollState())
-                    .padding(horizontal = 8.dp, vertical = 8.dp),
+            LazyRow(
+                contentPadding = PaddingValues(horizontal = 12.dp, vertical = 8.dp),
                 horizontalArrangement = Arrangement.spacedBy(6.dp),
             ) {
-                weekDays.forEach { date ->
+                items(weekDays, key = { it.format(DateTimeFormatter.ISO_LOCAL_DATE) }) { date ->
                     val key = date.format(DateTimeFormatter.ISO_LOCAL_DATE)
                     val selected = key == selectedDay
+                    val isToday = key == DailyJournalEntry.todayKey()
                     FilterChip(
                         selected = selected,
                         onClick = {
@@ -165,96 +183,144 @@ fun DailyJournalScreen(
                         },
                         label = {
                             Text(
-                                if (key == DailyJournalEntry.todayKey()) {
+                                if (isToday) {
                                     stringResource(R.string.daily_journal_today)
                                 } else {
-                                    date.format(dayFormatter)
+                                    date.format(chipFormatter)
                                 },
                             )
                         },
                     )
                 }
             }
-            LazyColumn(
-                contentPadding = PaddingValues(12.dp),
-                verticalArrangement = Arrangement.spacedBy(10.dp),
-            ) {
-                items(filtered, key = { it.id }) { entry ->
-                    DailyJournalCard(
-                        entry = entry,
-                        onClick = { editorEntry = entry },
-                        onToggleCheck = { itemId ->
-                            val updated = entry.copy(
-                                checkItems = entry.checkItems.map { c ->
-                                    if (c.id == itemId) c.copy(done = !c.done) else c
-                                },
-                                updatedAt = System.currentTimeMillis(),
-                            )
-                            onSave(updated)
-                        },
-                        onOpenVerse = onOpenVerse,
+            if (filtered.isEmpty()) {
+                Box(
+                    Modifier
+                        .fillMaxSize()
+                        .padding(32.dp),
+                    contentAlignment = Alignment.Center,
+                ) {
+                    Text(
+                        stringResource(R.string.daily_journal_empty),
+                        style = MaterialTheme.typography.bodyLarge,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
                     )
+                }
+            } else {
+                LazyColumn(
+                    contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp),
+                    verticalArrangement = Arrangement.spacedBy(12.dp),
+                ) {
+                    items(filtered, key = { it.id }) { entry ->
+                        DailyJournalCard(
+                            entry = entry,
+                            onOpen = { editorEntry = entry },
+                            onToggleCheck = { itemId ->
+                                val updated = entry.copy(
+                                    checkItems = entry.checkItems.map { c ->
+                                        if (c.id == itemId) c.copy(done = !c.done) else c
+                                    },
+                                    updatedAt = System.currentTimeMillis(),
+                                )
+                                onSave(updated)
+                            },
+                            onTogglePin = {
+                                onSave(entry.copy(pinned = !entry.pinned, updatedAt = System.currentTimeMillis()))
+                            },
+                            onOpenVerse = onOpenVerse,
+                        )
+                    }
                 }
             }
         }
     }
 }
 
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
 private fun DailyJournalCard(
     entry: DailyJournalEntry,
-    onClick: () -> Unit,
+    onOpen: () -> Unit,
     onToggleCheck: (String) -> Unit,
+    onTogglePin: () -> Unit,
     onOpenVerse: (bookId: String, chapter: Int, verse: Int) -> Unit,
 ) {
     Card(
-        modifier = Modifier
-            .fillMaxWidth()
-            .clickable(onClick = onClick),
+        modifier = Modifier.fillMaxWidth(),
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.surfaceContainerLow,
+        ),
+        shape = RoundedCornerShape(16.dp),
     ) {
-        Column(Modifier.padding(14.dp)) {
+        Column(Modifier.padding(16.dp)) {
             Row(verticalAlignment = Alignment.CenterVertically) {
-                entry.mood?.let { Text(it.emoji, modifier = Modifier.padding(end = 8.dp)) }
-                Text(
-                    entry.title.ifBlank { stringResource(R.string.daily_journal_untitled) },
-                    style = MaterialTheme.typography.titleMedium,
-                    fontWeight = FontWeight.SemiBold,
-                    modifier = Modifier.weight(1f),
-                )
-                if (entry.pinned) {
-                    Icon(Icons.Default.PushPin, contentDescription = null, modifier = Modifier.padding(start = 4.dp))
+                Column(
+                    modifier = Modifier
+                        .weight(1f)
+                        .combinedClickable(onClick = onOpen, onLongClick = onOpen),
+                ) {
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        entry.mood?.let {
+                            Text(it.emoji, modifier = Modifier.padding(end = 6.dp))
+                        }
+                        Text(
+                            entry.title.ifBlank { stringResource(R.string.daily_journal_untitled) },
+                            style = MaterialTheme.typography.titleMedium,
+                            fontWeight = FontWeight.SemiBold,
+                            maxLines = 2,
+                            overflow = TextOverflow.Ellipsis,
+                        )
+                    }
+                    if (entry.body.isNotBlank()) {
+                        Spacer(Modifier.height(4.dp))
+                        Text(
+                            entry.body.trim().lineSequence().first().take(160),
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            maxLines = 3,
+                            overflow = TextOverflow.Ellipsis,
+                        )
+                    }
+                }
+                IconButton(onClick = onTogglePin) {
+                    Icon(
+                        Icons.Default.PushPin,
+                        contentDescription = null,
+                        tint = if (entry.pinned) {
+                            MaterialTheme.colorScheme.primary
+                        } else {
+                            MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f)
+                        },
+                    )
                 }
             }
-            if (entry.body.isNotBlank()) {
-                Spacer(Modifier.height(6.dp))
-                Text(
-                    entry.body.trim().lineSequence().first().take(200),
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                )
-            }
             entry.verseLabel?.let { label ->
-                Spacer(Modifier.height(6.dp))
-                Text(
-                    label,
-                    style = MaterialTheme.typography.labelLarge,
-                    color = MaterialTheme.colorScheme.primary,
-                    modifier = Modifier.clickable {
-                        val b = entry.verseBookId ?: return@clickable
-                        val c = entry.verseChapter ?: return@clickable
-                        val v = entry.verseVerse ?: return@clickable
+                Spacer(Modifier.height(8.dp))
+                FilledTonalButton(
+                    onClick = {
+                        val b = entry.verseBookId ?: return@FilledTonalButton
+                        val c = entry.verseChapter ?: return@FilledTonalButton
+                        val v = entry.verseVerse ?: return@FilledTonalButton
                         onOpenVerse(b, c, v)
                     },
-                )
+                    modifier = Modifier.fillMaxWidth(),
+                ) {
+                    Text(label)
+                }
             }
             if (entry.checkItems.isNotEmpty()) {
                 Spacer(Modifier.height(8.dp))
-                entry.checkItems.take(5).forEach { item ->
-                    Row(verticalAlignment = Alignment.CenterVertically) {
+                HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
+                Spacer(Modifier.height(4.dp))
+                entry.checkItems.take(8).forEach { item ->
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        modifier = Modifier.fillMaxWidth(),
+                    ) {
                         Checkbox(checked = item.done, onCheckedChange = { onToggleCheck(item.id) })
                         Text(
                             item.text,
-                            style = MaterialTheme.typography.bodySmall,
+                            style = MaterialTheme.typography.bodyMedium,
                             modifier = Modifier.weight(1f),
                         )
                     }
@@ -264,11 +330,11 @@ private fun DailyJournalCard(
     }
 }
 
-@OptIn(ExperimentalLayoutApi::class)
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalLayoutApi::class)
 @Composable
-private fun DailyJournalEditorDialog(
+private fun DailyJournalEditorScreen(
     initial: DailyJournalEntry,
-    onDismiss: () -> Unit,
+    onBack: () -> Unit,
     onSave: (DailyJournalEntry) -> Unit,
     onDelete: (DailyJournalEntry) -> Unit,
 ) {
@@ -284,135 +350,185 @@ private fun DailyJournalEditorDialog(
     var newCheck by remember { mutableStateOf("") }
     var refInput by remember { mutableStateOf("") }
 
-    AlertDialog(
-        onDismissRequest = onDismiss,
-        title = { Text(stringResource(R.string.daily_journal_edit)) },
-        text = {
-            Column(
-                Modifier
-                    .fillMaxWidth()
-                    .height(420.dp),
-            ) {
-                OutlinedTextField(
-                    value = title,
-                    onValueChange = { title = it },
-                    label = { Text(stringResource(R.string.daily_journal_field_title)) },
-                    modifier = Modifier.fillMaxWidth(),
-                    singleLine = true,
-                )
-                Spacer(Modifier.height(8.dp))
-                FlowRow(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
-                    JournalMood.entries.forEach { m ->
-                        FilterChip(
-                            selected = mood == m,
-                            onClick = { mood = if (mood == m) null else m },
-                            label = { Text("${m.emoji} ${m.labelRu}") },
+    Scaffold(
+        topBar = {
+            TopAppBar(
+                title = { Text(stringResource(R.string.daily_journal_edit)) },
+                navigationIcon = {
+                    IconButton(onClick = onBack) {
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = null)
+                    }
+                },
+                actions = {
+                    TextButton(
+                        onClick = {
+                            onSave(
+                                initial.copy(
+                                    title = title.trim(),
+                                    body = body.trim(),
+                                    mood = mood,
+                                    pinned = pinned,
+                                    checkItems = checks,
+                                    verseBookId = verseBook,
+                                    verseChapter = verseCh,
+                                    verseVerse = verseVs,
+                                    verseLabel = verseLabel.takeIf { it.isNotBlank() },
+                                    updatedAt = System.currentTimeMillis(),
+                                ),
+                            )
+                        },
+                    ) {
+                        Icon(Icons.Default.Check, contentDescription = null, modifier = Modifier.size(18.dp))
+                        Spacer(Modifier.width(4.dp))
+                        Text(stringResource(R.string.daily_journal_save))
+                    }
+                },
+            )
+        },
+    ) { padding ->
+        Column(
+            Modifier
+                .fillMaxSize()
+                .padding(padding)
+                .verticalScroll(rememberScrollState())
+                .padding(horizontal = 16.dp, vertical = 8.dp),
+            verticalArrangement = Arrangement.spacedBy(12.dp),
+        ) {
+            OutlinedTextField(
+                value = title,
+                onValueChange = { title = it },
+                label = { Text(stringResource(R.string.daily_journal_field_title)) },
+                modifier = Modifier.fillMaxWidth(),
+                singleLine = true,
+            )
+            Text(
+                stringResource(R.string.daily_journal_mood_label),
+                style = MaterialTheme.typography.labelLarge,
+            )
+            FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                JournalMood.entries.forEach { m ->
+                    val selected = mood == m
+                    Surface(
+                        onClick = { mood = if (selected) null else m },
+                        shape = RoundedCornerShape(12.dp),
+                        color = if (selected) {
+                            MaterialTheme.colorScheme.primaryContainer
+                        } else {
+                            MaterialTheme.colorScheme.surfaceContainerHighest
+                        },
+                    ) {
+                        Text(
+                            "${m.emoji} ${m.labelRu}",
+                            modifier = Modifier.padding(horizontal = 12.dp, vertical = 8.dp),
+                            style = MaterialTheme.typography.labelLarge,
                         )
                     }
                 }
-                Spacer(Modifier.height(8.dp))
+            }
+            OutlinedTextField(
+                value = body,
+                onValueChange = { body = it },
+                label = { Text(stringResource(R.string.daily_journal_field_body)) },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(160.dp),
+            )
+            Text(
+                stringResource(R.string.daily_journal_tasks_section),
+                style = MaterialTheme.typography.labelLarge,
+            )
+            Row(verticalAlignment = Alignment.CenterVertically) {
                 OutlinedTextField(
-                    value = body,
-                    onValueChange = { body = it },
-                    label = { Text(stringResource(R.string.daily_journal_field_body)) },
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .weight(1f),
+                    value = newCheck,
+                    onValueChange = { newCheck = it },
+                    label = { Text(stringResource(R.string.daily_journal_new_task)) },
+                    modifier = Modifier.weight(1f),
+                    singleLine = true,
                 )
-                Spacer(Modifier.height(8.dp))
+                IconButton(
+                    onClick = {
+                        val t = newCheck.trim()
+                        if (t.isNotEmpty()) {
+                            checks = checks + JournalCheckItem(text = t)
+                            newCheck = ""
+                        }
+                    },
+                ) {
+                    Icon(Icons.Default.Add, contentDescription = null)
+                }
+            }
+            checks.forEach { c ->
                 Row(verticalAlignment = Alignment.CenterVertically) {
-                    OutlinedTextField(
-                        value = refInput,
-                        onValueChange = { refInput = it },
-                        label = { Text(stringResource(R.string.passage_quick_hint)) },
-                        modifier = Modifier.weight(1f),
-                        singleLine = true,
-                    )
-                    TextButton(
-                        onClick = {
-                            com.example.bible.data.BiblePassageResolve.resolve(refInput)?.let { r ->
-                                verseBook = r.bookId
-                                verseCh = r.chapter
-                                verseVs = r.verse
-                                verseLabel = r.label
-                            }
+                    Checkbox(
+                        checked = c.done,
+                        onCheckedChange = {
+                            checks = checks.map { if (it.id == c.id) it.copy(done = !it.done) else it }
                         },
-                    ) { Text(stringResource(R.string.daily_journal_add_verse)) }
+                    )
+                    Text(c.text, modifier = Modifier.weight(1f))
+                    IconButton(onClick = { checks = checks.filter { it.id != c.id } }) {
+                        Icon(Icons.Default.Delete, contentDescription = null)
+                    }
                 }
-                if (verseLabel.isNotBlank()) {
-                    Text(verseLabel, color = MaterialTheme.colorScheme.primary)
-                }
+            }
+            Text(
+                stringResource(R.string.daily_journal_verse_section),
+                style = MaterialTheme.typography.labelLarge,
+            )
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                OutlinedTextField(
+                    value = refInput,
+                    onValueChange = { refInput = it },
+                    label = { Text(stringResource(R.string.passage_quick_hint)) },
+                    modifier = Modifier.weight(1f),
+                    singleLine = true,
+                )
+                TextButton(
+                    onClick = {
+                        com.example.bible.data.BiblePassageResolve.resolve(refInput)?.let { r ->
+                            verseBook = r.bookId
+                            verseCh = r.chapter
+                            verseVs = r.verse
+                            verseLabel = r.label
+                        }
+                    },
+                ) { Text(stringResource(R.string.daily_journal_add_verse)) }
+            }
+            if (verseLabel.isNotBlank()) {
                 Row(verticalAlignment = Alignment.CenterVertically) {
-                    OutlinedTextField(
-                        value = newCheck,
-                        onValueChange = { newCheck = it },
-                        label = { Text(stringResource(R.string.daily_journal_new_task)) },
+                    Text(
+                        verseLabel,
+                        color = MaterialTheme.colorScheme.primary,
                         modifier = Modifier.weight(1f),
-                        singleLine = true,
                     )
                     IconButton(
                         onClick = {
-                            val t = newCheck.trim()
-                            if (t.isNotEmpty()) {
-                                checks = checks + JournalCheckItem(text = t)
-                                newCheck = ""
-                            }
+                            verseLabel = ""
+                            verseBook = null
+                            verseCh = null
+                            verseVs = null
                         },
                     ) {
-                        Icon(Icons.Default.Add, contentDescription = null)
+                        Icon(Icons.Default.Delete, contentDescription = null)
                     }
-                }
-                checks.forEach { c ->
-                    Row(verticalAlignment = Alignment.CenterVertically) {
-                        Checkbox(
-                            checked = c.done,
-                            onCheckedChange = {
-                                checks = checks.map { if (it.id == c.id) it.copy(done = !it.done) else it }
-                            },
-                        )
-                        Text(c.text, modifier = Modifier.weight(1f))
-                        IconButton(onClick = { checks = checks.filter { it.id != c.id } }) {
-                            Icon(Icons.Default.Delete, contentDescription = null)
-                        }
-                    }
-                }
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    Checkbox(checked = pinned, onCheckedChange = { pinned = it })
-                    Text(stringResource(R.string.daily_journal_pin))
                 }
             }
-        },
-        confirmButton = {
-            TextButton(
-                onClick = {
-                    onSave(
-                        initial.copy(
-                            title = title.trim(),
-                            body = body.trim(),
-                            mood = mood,
-                            pinned = pinned,
-                            checkItems = checks,
-                            verseBookId = verseBook,
-                            verseChapter = verseCh,
-                            verseVerse = verseVs,
-                            verseLabel = verseLabel.takeIf { it.isNotBlank() },
-                            updatedAt = System.currentTimeMillis(),
-                        ),
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Checkbox(checked = pinned, onCheckedChange = { pinned = it })
+                Text(stringResource(R.string.daily_journal_pin))
+            }
+            if (initial.title.isNotBlank() || initial.body.isNotBlank() || initial.checkItems.isNotEmpty()) {
+                TextButton(
+                    onClick = { onDelete(initial) },
+                    modifier = Modifier.align(Alignment.Start),
+                ) {
+                    Text(
+                        stringResource(R.string.attachment_delete),
+                        color = MaterialTheme.colorScheme.error,
                     )
-                },
-            ) { Icon(Icons.Default.Check, contentDescription = null) }
-        },
-        dismissButton = {
-            Row {
-                if (initial.title.isNotBlank() || initial.body.isNotBlank()) {
-                    TextButton(onClick = { onDelete(initial) }) {
-                        Text(stringResource(R.string.attachment_delete))
-                    }
-                }
-                TextButton(onClick = onDismiss) {
-                    Text(stringResource(R.string.song_share_pick_cancel))
                 }
             }
-        },
-    )
+            Spacer(Modifier.height(24.dp))
+        }
+    }
 }

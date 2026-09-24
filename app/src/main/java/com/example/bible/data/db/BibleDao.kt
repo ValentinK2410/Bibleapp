@@ -67,6 +67,12 @@ abstract class BibleDao {
     abstract fun getMaxChapterNumber(code: String, bookId: String): Int?
 
     @Query(
+        "SELECT MAX(verseNumber) FROM bible_verses WHERE translationCode = :code AND bookId = :bookId " +
+            "AND chapterNumber = :chapter",
+    )
+    abstract fun getMaxVerseNumber(code: String, bookId: String, chapter: Int): Int?
+
+    @Query(
         "SELECT * FROM bible_interlinear_words WHERE translationCode = :code AND bookId = :bookId " +
             "AND chapterNumber = :chapter ORDER BY verseNumber, wordIndex",
     )

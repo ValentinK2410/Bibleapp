@@ -70,6 +70,11 @@ class BibleRepository(
         )
     }
 
+    fun maxVerseInChapter(translation: TranslationId, bookId: String, chapterNum: Int): Int? {
+        if (!dao.hasBook(translation.code, bookId)) return null
+        return dao.getMaxVerseNumber(translation.code, bookId, chapterNum)
+    }
+
     fun loadChapter(translation: TranslationId, bookId: String, chapterNum: Int): BibleChapter? {
         if (!dao.hasBook(translation.code, bookId)) return null
         val code = translation.code

@@ -886,6 +886,12 @@
     <string name="daily_journal_add_verse">Стих</string>
     <string name="daily_journal_new_task">Дело или задача</string>
     <string name="daily_journal_pin">Закрепить</string>
+    <string name="verse_picker_title">выбор стиха</string>
+    <string name="daily_journal_empty">На этот день записей нет. Нажмите «+», чтобы добавить мысль или задачу.</string>
+    <string name="daily_journal_save">Сохранить</string>
+    <string name="daily_journal_mood_label">Настроение</string>
+    <string name="daily_journal_tasks_section">Дела</string>
+    <string name="daily_journal_verse_section">Стих дня</string>
     <string name="timemark_import_cd">Импорт таймкодов</string>
     <string name="timemark_import_ok">Импортировано проектов: %1$d. Откройте ту же книгу и главу, включите озвучку.</string>
     <string name="timemark_import_failed">Не удалось импортировать архив</string>

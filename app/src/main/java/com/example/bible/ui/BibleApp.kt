@@ -1975,51 +1975,14 @@ private fun BibleNavHost(
         composable("verses/{bookId}/{chapter}") { entry ->
             val bookId = entry.arguments?.getString("bookId") ?: return@composable
             val chapterNum = entry.arguments?.getString("chapter")?.toIntOrNull() ?: return@composable
-            val chapterLoad = rememberLoadedChapter(library, translation, bookId, chapterNum)
-            when (chapterLoad) {
-                BibleChapterLoadState.Loading -> {
-                    Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                        CircularProgressIndicator()
-                    }
-                }
-                BibleChapterLoadState.NotFound -> {
-                    if (translation.onlineCode != null) {
-                        LaunchedEffect(Unit) {
-                            navController.navigate("read/$bookId/$chapterNum/0") {
-                                popUpTo("verses/$bookId/$chapterNum") { inclusive = true }
-                            }
-                        }
-                    }
-                }
-                is BibleChapterLoadState.Ready -> {
-                    val titleText = "${chapterLoad.bookName} $chapterNum - ${translation.labelRu}"
-                    Scaffold(
-                        topBar = {
-                            CenterAlignedTopAppBar(
-                                title = {
-                                    Text(
-                                        titleText,
-                                        style = MaterialTheme.typography.titleMedium,
-                                    )
-                                },
-                                navigationIcon = {
-                                    IconButton(onClick = { navController.navigateUp() }) {
-                                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = stringResource(R.string.back))
-                                    }
-                                },
-                            )
-                        },
-                    ) { padding ->
-                        VerseGrid(
-                            modifier = Modifier.padding(padding),
-                            verses = chapterLoad.chapter.verses,
-                            onVerseClick = { verseNum ->
-                                navController.navigate("read/$bookId/$chapterNum/$verseNum")
-                            },
-                        )
-                    }
-                }
-            }
+            VersesRouteContent(
+                bookId = bookId,
+                chapterNum = chapterNum,
+                translation = translation,
+                library = library,
+                viewModel = viewModel,
+                navController = navController,
+            )
         }
         composable(
             route = "read/{bookId}/{chapter}/{scrollVerse}",
@@ -6024,6 +5987,138 @@ private fun ChaptersRouteContent(
                         navController.navigate("verses/$bookId/$chapter")
                     },
                 )
+            }
+        }
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun VersesRouteContent(
+    bookId: String,
+    chapterNum: Int,
+    translation: TranslationId,
+    library: BibleLibrary,
+    viewModel: BibleViewModel,
+    navController: androidx.navigation.NavHostController,
+) {
+    val bookShell = rememberBookShell(library, translation, bookId)
+    val isOnline = when (bookShell) {
+        is BibleBookShellState.Fallback -> bookShell.isOnlineOnly
+        else -> false
+    }
+    val chapterLoad = rememberLoadedChapter(library, translation, bookId, chapterNum)
+    val onlineLoading by viewModel.onlineChapterLoading.collectAsStateWithLifecycle()
+    val onlineVerses by viewModel.onlineChapterVerses.collectAsStateWithLifecycle()
+    val onlineError by viewModel.onlineChapterError.collectAsStateWithLifecycle()
+
+    LaunchedEffect(translation, bookId, chapterNum, isOnline) {
+        if (isOnline) {
+            viewModel.loadOnlineChapter(translation, bookId, chapterNum)
+        }
+    }
+
+    var fallbackVerseMax by remember(bookId, chapterNum, translation) { mutableIntStateOf(0) }
+    LaunchedEffect(chapterLoad, isOnline, bookId, chapterNum, translation) {
+        if (!isOnline && chapterLoad !is BibleChapterLoadState.Ready) {
+            fallbackVerseMax = viewModel.maxVersesInChapter(bookId, chapterNum, translation)
+        } else if (!isOnline && chapterLoad is BibleChapterLoadState.Ready && chapterLoad.chapter.verses.isEmpty()) {
+            fallbackVerseMax = viewModel.maxVersesInChapter(bookId, chapterNum, translation)
+        }
+    }
+
+    val bookName = when (chapterLoad) {
+        is BibleChapterLoadState.Ready -> chapterLoad.bookName
+        else -> when (bookShell) {
+            is BibleBookShellState.Ready -> bookShell.book.name
+            is BibleBookShellState.Fallback -> bookShell.book.name
+            BibleBookShellState.Loading ->
+                BibleCanon.byId(bookId)?.let { BibleCanon.displayName(it, translation) } ?: bookId
+        }
+    }
+    val titleText = "$bookName $chapterNum — ${stringResource(R.string.verse_picker_title)}"
+
+    val versesForGrid: List<BibleVerse>? = when {
+        chapterLoad is BibleChapterLoadState.Ready && chapterLoad.chapter.verses.isNotEmpty() ->
+            chapterLoad.chapter.verses
+        isOnline && onlineVerses.isNotEmpty() -> onlineVerses
+        !isOnline && fallbackVerseMax > 0 &&
+            (chapterLoad is BibleChapterLoadState.NotFound ||
+                (chapterLoad is BibleChapterLoadState.Ready && chapterLoad.chapter.verses.isEmpty())) ->
+            (1..fallbackVerseMax).map { n -> BibleVerse(number = n, text = "") }
+        else -> null
+    }
+
+    val loading = when {
+        !isOnline && chapterLoad is BibleChapterLoadState.Loading -> true
+        isOnline && onlineLoading && onlineVerses.isEmpty() && onlineError == null -> true
+        else -> false
+    }
+
+    Scaffold(
+        topBar = {
+            CenterAlignedTopAppBar(
+                title = {
+                    Text(
+                        titleText,
+                        style = MaterialTheme.typography.titleMedium,
+                    )
+                },
+                navigationIcon = {
+                    IconButton(onClick = { navController.navigateUp() }) {
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = stringResource(R.string.back))
+                    }
+                },
+            )
+        },
+    ) { padding ->
+        Box(
+            modifier = Modifier
+                .padding(padding)
+                .fillMaxSize(),
+            contentAlignment = Alignment.Center,
+        ) {
+            when {
+                loading -> CircularProgressIndicator()
+                versesForGrid != null -> {
+                    VerseGrid(
+                        modifier = Modifier.fillMaxSize(),
+                        verses = versesForGrid,
+                        onVerseClick = { verseNum ->
+                            navController.navigate("read/$bookId/$chapterNum/$verseNum")
+                        },
+                    )
+                }
+                isOnline && onlineError != null -> {
+                    Column(
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        modifier = Modifier.padding(24.dp),
+                    ) {
+                        Text(
+                            onlineError!!,
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.error,
+                            textAlign = TextAlign.Center,
+                        )
+                        Spacer(Modifier.height(12.dp))
+                        TextButton(
+                            onClick = {
+                                viewModel.loadOnlineChapter(translation, bookId, chapterNum)
+                            },
+                        ) {
+                            Text(stringResource(R.string.retry))
+                        }
+                    }
+                }
+                else -> {
+                    Text(
+                        stringResource(R.string.no_chapters_loaded),
+                        style = MaterialTheme.typography.bodyLarge,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        textAlign = TextAlign.Center,
+                        modifier = Modifier.padding(24.dp),
+                    )
+                }
             }
         }
     }

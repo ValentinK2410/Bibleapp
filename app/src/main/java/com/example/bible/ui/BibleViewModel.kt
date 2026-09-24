@@ -3165,10 +3165,12 @@ class BibleViewModel(
     }
 
     fun maxVersesInChapter(bookId: String, chapter: Int, translation: TranslationId): Int {
-        return repository.loadChapter(translation, bookId, chapter)
+        repository.loadChapter(translation, bookId, chapter)
             ?.verses
             ?.maxOfOrNull { it.number }
-            ?: 50
+            ?.let { return it }
+        repository.maxVerseInChapter(translation, bookId, chapter)?.let { return it }
+        return 50
     }
 
     val bibleUserAudios: StateFlow<List<BibleUserAudio>> = preferences.userBibleAudios.stateIn(
