@@ -1929,11 +1929,18 @@ private fun ChapterPickerPane(
                                 fontSize = 10.sp,
                             )
                         }
-                        TimemarkPresenceDots(
-                            translationCodes = chapterCodes,
-                            tabColors = tabColors,
-                            size = 7.dp,
-                        )
+                        Box(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .height(16.dp),
+                            contentAlignment = Alignment.Center,
+                        ) {
+                            TimemarkPresenceDots(
+                                translationCodes = chapterCodes,
+                                tabColors = tabColors,
+                                size = 6.dp,
+                            )
+                        }
                     }
                 }
             }

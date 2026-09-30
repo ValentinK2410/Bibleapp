@@ -232,11 +232,18 @@ fun QuickNavigatorSheet(
                                         verticalArrangement = Arrangement.spacedBy(2.dp),
                                     ) {
                                         Text("${ch.number}", fontWeight = FontWeight.Bold)
-                                        TimemarkPresenceDots(
-                                            translationCodes = chapterCodes,
-                                            tabColors = tabColors,
-                                            size = 6.dp,
-                                        )
+                                        Box(
+                                            modifier = Modifier
+                                                .fillMaxWidth()
+                                                .height(14.dp),
+                                            contentAlignment = Alignment.Center,
+                                        ) {
+                                            TimemarkPresenceDots(
+                                                translationCodes = chapterCodes,
+                                                tabColors = tabColors,
+                                                size = 6.dp,
+                                            )
+                                        }
                                     }
                                 }
                             }
@@ -290,11 +297,18 @@ fun QuickNavigatorSheet(
                                 fontWeight = FontWeight.Bold,
                                 textAlign = TextAlign.Center,
                             )
-                            TimemarkPresenceDots(
-                                translationCodes = bookCodes,
-                                tabColors = tabColors,
-                                size = 5.dp,
-                            )
+                            Box(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .height(14.dp),
+                                contentAlignment = Alignment.Center,
+                            ) {
+                                TimemarkPresenceDots(
+                                    translationCodes = bookCodes,
+                                    tabColors = tabColors,
+                                    size = 5.dp,
+                                )
+                            }
                         }
                     }
                 }

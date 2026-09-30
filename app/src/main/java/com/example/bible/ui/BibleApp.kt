@@ -4770,11 +4770,18 @@ internal fun ChapterGrid(
                     style = MaterialTheme.typography.labelSmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
-                TimemarkPresenceDots(
-                    translationCodes = chapterCodes,
-                    tabColors = tabColors,
-                    size = 7.dp,
-                )
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(16.dp),
+                    contentAlignment = Alignment.Center,
+                ) {
+                    TimemarkPresenceDots(
+                        translationCodes = chapterCodes,
+                        tabColors = tabColors,
+                        size = 6.dp,
+                    )
+                }
             }
         }
     }

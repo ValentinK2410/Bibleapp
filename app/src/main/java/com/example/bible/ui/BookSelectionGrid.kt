@@ -14,6 +14,8 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.defaultMinSize
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
@@ -488,6 +490,7 @@ private fun BookCell(
         Column(
             modifier = Modifier
                 .fillMaxWidth()
+                .heightIn(min = 78.dp)
                 .padding(top = 8.dp, bottom = 6.dp, start = 5.dp, end = 5.dp),
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.spacedBy(2.dp),
@@ -514,19 +517,31 @@ private fun BookCell(
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis,
             )
-            if (hasAudio) {
-                Icon(
-                    Icons.Default.Headphones,
-                    contentDescription = null,
-                    tint = scheme.primary,
-                    modifier = Modifier.size(14.dp),
+            Box(
+                modifier = Modifier.size(14.dp),
+                contentAlignment = Alignment.Center,
+            ) {
+                if (hasAudio) {
+                    Icon(
+                        Icons.Default.Headphones,
+                        contentDescription = null,
+                        tint = scheme.primary,
+                        modifier = Modifier.size(14.dp),
+                    )
+                }
+            }
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(16.dp),
+                contentAlignment = Alignment.Center,
+            ) {
+                TimemarkPresenceDots(
+                    translationCodes = timemarkCodes,
+                    tabColors = tabColors,
+                    size = 6.dp,
                 )
             }
-            TimemarkPresenceDots(
-                translationCodes = timemarkCodes,
-                tabColors = tabColors,
-                size = 7.dp,
-            )
         }
     }
 }
