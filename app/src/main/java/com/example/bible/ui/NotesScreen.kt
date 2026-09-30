@@ -1184,14 +1184,20 @@ fun NoteEditorScreen(
                                 resizeMode = true
                             },
                         )
-                        Box(
-                            modifier = Modifier
-                                .weight((1f - notePaneFraction).coerceAtLeast(0.01f))
-                                .fillMaxWidth(),
-                        ) {
-                            embeddedBible(Modifier.fillMaxSize(), bibleNavRequest) {
-                                bibleNavRequest = null
-                            }
+                    }
+                    Box(
+                        modifier = Modifier
+                            .then(
+                                if (keyboardOpen) {
+                                    Modifier.height(0.dp)
+                                } else {
+                                    Modifier.weight((1f - notePaneFraction).coerceAtLeast(0.01f))
+                                },
+                            )
+                            .fillMaxWidth(),
+                    ) {
+                        embeddedBible(Modifier.fillMaxSize(), bibleNavRequest) {
+                            bibleNavRequest = null
                         }
                     }
                 }
