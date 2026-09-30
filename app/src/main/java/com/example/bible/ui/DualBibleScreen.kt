@@ -1363,9 +1363,7 @@ fun NoteEditorBiblePane(
             onAdjustReaderFontScale = onAdjustReaderFontScale,
             onExit = null,
             onLongPressTopBar = {},
-            onOpenQuickNav = {
-                openAppBookPicker(navController, viewModel) { showQuickNav = true }
-            },
+            onOpenQuickNav = { showQuickNav = true },
             showSyncControl = false,
             showInternalBack = true,
             includeReaderStatusBar = false,
@@ -1670,8 +1668,8 @@ internal fun BiblePaneColumn(
                             onInternalBack = internalBack,
                             onClosePane = onClosePane,
                             onLongPress = onLongPressTopBar,
-                            onOpenQuickNav = {
-                                openAppBookPicker(chrome?.navController, viewModel) { showQuickNav = true }
+                            onOpenQuickNav = onOpenQuickNav ?: {
+                                openAppBookPicker(chrome.navController, viewModel) { showQuickNav = true }
                             },
                             translationTabColors = translationTabColors,
                             readerChrome = chrome,
