@@ -207,6 +207,11 @@ object NoteScriptureLinks {
                 i++
                 continue
             }
+            // Сокращение книги только с начала слова, иначе «…нам 1:12» читается как Амос («Ам»).
+            if (i > 0 && text[i - 1].isLetter()) {
+                i++
+                continue
+            }
             val linkStart = i
             var isAudio = false
             for (prefix in audioPrefixes) {

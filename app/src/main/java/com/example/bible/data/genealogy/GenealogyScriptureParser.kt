@@ -23,6 +23,8 @@ object GenealogyScriptureParser {
             add(b.nameRu, b.id)
             synNumberedBookAlias(b.nameRu)?.let { add(it, b.id) }
             spacedNumberedAbbr(b.abbrRu)?.let { add(it, b.id) }
+            // «К Колоссянам» в заметках часто пишут без «К»: «Колоссянам 1:12»
+            if (b.nameRu.startsWith("К ")) add(b.nameRu.removePrefix("К "), b.id)
         }
         // Синодальный перевод: «Евангелие от …» (канон — «От …»)
         add("Евангелие от Матфея", "matthew")
@@ -119,6 +121,8 @@ object GenealogyScriptureParser {
         }
         while (pi < prefix.length && prefix[pi].isWhitespace()) pi++
         if (pi < prefix.length) return null
+        // «Ам» не должен совпасть с окончанием «Колоссянам»
+        if (ti < text.length && text[ti].isLetter()) return null
         return text.substring(ti).trim()
     }
 

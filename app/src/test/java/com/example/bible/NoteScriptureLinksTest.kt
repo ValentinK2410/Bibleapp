@@ -25,6 +25,17 @@ class NoteScriptureLinksTest {
     }
 
     @Test
+    fun colossiansWithoutKIsNotAmos() {
+        val text = "Колоссянам 1:12\nблагодаря Бога и Отца"
+        val links = NoteScriptureLinks.findInText(text)
+        assertEquals(1, links.size)
+        assertEquals("colossians", links[0].bookId)
+        assertEquals(1, links[0].chapter)
+        assertEquals(setOf(12), links[0].verses)
+        assertEquals("Колоссянам 1:12", text.substring(links[0].start, links[0].end))
+    }
+
+    @Test
     fun findsFirstSamuelSynCopyFormat() {
         val text = "1 Царств 3:10 и Господь пришёл"
         val links = NoteScriptureLinks.findInText(text)
