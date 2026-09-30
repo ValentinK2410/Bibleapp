@@ -654,9 +654,10 @@ fun TimemarkEditorScreen(
                 OutlinedTextField(
                 value = title,
                 onValueChange = { title = it },
-                modifier = Modifier.fillMaxWidth(),
+                modifier = Modifier.fillMaxWidth().height(44.dp),
                 label = { Text(stringResource(R.string.timemark_project_name)) },
                 singleLine = true,
+                textStyle = MaterialTheme.typography.bodyMedium,
             )
             Spacer(Modifier.height(8.dp))
 
@@ -671,7 +672,8 @@ fun TimemarkEditorScreen(
                     readOnly = true,
                     label = { Text(stringResource(R.string.timemark_book)) },
                     trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = bookMenuOpen) },
-                    modifier = Modifier.menuAnchor().fillMaxWidth(),
+                    modifier = Modifier.menuAnchor().fillMaxWidth().height(44.dp),
+                    textStyle = MaterialTheme.typography.bodyMedium,
                 )
                 DropdownMenu(
                     expanded = bookMenuOpen,
@@ -722,7 +724,8 @@ fun TimemarkEditorScreen(
                     readOnly = true,
                     label = { Text(stringResource(R.string.timemark_translation)) },
                     trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = transMenuOpen) },
-                    modifier = Modifier.menuAnchor().fillMaxWidth(),
+                    modifier = Modifier.menuAnchor().fillMaxWidth().height(44.dp),
+                    textStyle = MaterialTheme.typography.bodyMedium,
                 )
                 DropdownMenu(
                     expanded = transMenuOpen,
@@ -887,9 +890,11 @@ fun TimemarkEditorScreen(
             OutlinedTextField(
                 value = noteDraft,
                 onValueChange = { noteDraft = it },
-                modifier = Modifier.fillMaxWidth(),
+                modifier = Modifier.fillMaxWidth().heightIn(min = 44.dp, max = 72.dp),
                 label = { Text(stringResource(R.string.timemark_note_hint)) },
-                minLines = 2,
+                textStyle = MaterialTheme.typography.bodyMedium,
+                minLines = 1,
+                maxLines = 3,
             )
             Row(
                 verticalAlignment = Alignment.CenterVertically,
