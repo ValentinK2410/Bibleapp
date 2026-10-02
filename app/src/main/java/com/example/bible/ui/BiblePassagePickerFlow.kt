@@ -1,10 +1,17 @@
 package com.example.bible.ui
 
+import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -18,11 +25,16 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import com.example.bible.R
 import com.example.bible.data.BibleBook
+import com.example.bible.data.BibleCanon
 import com.example.bible.data.BibleVerse
 import com.example.bible.data.TranslationId
 
@@ -56,11 +68,16 @@ internal fun BiblePassagePickerChapterStep(
             )
         }
     } else {
+        var verseCounts by remember(translation, bookId) { mutableStateOf(emptyMap<Int, Int>()) }
+        LaunchedEffect(translation, bookId) {
+            verseCounts = viewModel.chapterVerseCounts(bookId, translation)
+        }
         ChapterGrid(
             modifier = modifier.fillMaxSize(),
             book = book,
             bookId = bookId,
             chaptersWithAudio = chaptersWithAudio,
+            verseCounts = verseCounts,
             onChapterClick = onChapterSelected,
         )
     }
@@ -100,6 +117,7 @@ internal fun BiblePassagePickerVerseStep(
             VerseGrid(
                 modifier = modifier.fillMaxSize(),
                 verses = verseNumbers!!.map { BibleVerse(number = it, text = "") },
+                bookId = bookId,
                 onVerseClick = onVerseSelected,
             )
         }
@@ -120,6 +138,90 @@ internal fun BiblePassagePickerVerseStep(
                 }
             }
         }
+    }
+}
+
+/**
+ * Строка-навигация под панелью: «Книга › Глава N». Название книги не обрезается,
+ * как это было в заголовке панели рядом с иконками.
+ */
+@Composable
+internal fun PassagePickerBreadcrumbs(
+    bookId: String,
+    translation: TranslationId,
+    chapter: Int,
+    onBookClick: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    val canon = BibleCanon.byId(bookId)
+    val accent = canon?.group?.let { groupTextColor(it) } ?: MaterialTheme.colorScheme.primary
+    val bookTitle = passagePickerBookTitle(bookId, translation)
+    Row(
+        modifier = modifier
+            .fillMaxWidth()
+            .background(accent.copy(alpha = 0.08f))
+            .padding(horizontal = 14.dp, vertical = 8.dp),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(8.dp),
+    ) {
+        Box(
+            Modifier
+                .size(width = 3.dp, height = 16.dp)
+                .clip(RoundedCornerShape(2.dp))
+                .background(accent),
+        )
+        Text(
+            text = bookTitle,
+            color = accent,
+            fontSize = 15.sp,
+            fontWeight = FontWeight.Bold,
+            maxLines = 1,
+            overflow = TextOverflow.Ellipsis,
+            modifier = if (chapter > 0) {
+                Modifier.clickable(onClick = onBookClick)
+            } else {
+                Modifier
+            },
+        )
+        if (chapter > 0) {
+            Text(
+                text = "›",
+                color = accent.copy(alpha = 0.6f),
+                fontSize = 15.sp,
+                fontWeight = FontWeight.Bold,
+            )
+            Text(
+                text = "глава $chapter",
+                color = accent.copy(alpha = 0.9f),
+                fontSize = 14.sp,
+                fontWeight = FontWeight.SemiBold,
+            )
+        }
+        Spacer(Modifier.weight(1f))
+        val hint = when {
+            chapter > 0 -> "выберите стих"
+            canon != null -> "${canon.chapters} ${chapterCountSuffix(canon.chapters)}"
+            else -> ""
+        }
+        if (hint.isNotEmpty()) {
+            Text(
+                text = hint,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                fontSize = 12.sp,
+                maxLines = 1,
+            )
+        }
+    }
+}
+
+private fun chapterCountSuffix(count: Int): String {
+    val mod100 = count % 100
+    val mod10 = count % 10
+    return when {
+        mod100 in 11..14 -> "глав"
+        mod10 == 1 -> "глава"
+        mod10 in 2..4 -> "главы"
+        else -> "глав"
     }
 }
 

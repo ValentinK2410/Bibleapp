@@ -18,8 +18,11 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.grid.GridCells
+import androidx.compose.foundation.lazy.grid.GridItemSpan
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items as lazyGridItems
 import androidx.compose.foundation.lazy.items as lazyColumnItems
@@ -45,6 +48,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.luminance
 import androidx.compose.ui.platform.LocalContext
@@ -256,6 +260,123 @@ fun groupTextColor(group: CanonBookGroup): Color {
     }
 }
 
+/** Название раздела канона для заголовка секции. */
+fun canonGroupTitleRu(group: CanonBookGroup): String = when (group) {
+    CanonBookGroup.PENTATEUCH -> "Пятикнижие"
+    CanonBookGroup.HISTORY -> "Исторические книги"
+    CanonBookGroup.WISDOM -> "Учительные книги"
+    CanonBookGroup.MAJOR_PROPHETS -> "Большие пророки"
+    CanonBookGroup.MINOR_PROPHETS -> "Малые пророки"
+    CanonBookGroup.GOSPELS -> "Евангелия"
+    CanonBookGroup.ACTS -> "Деяния апостолов"
+    CanonBookGroup.GENERAL_EPISTLES -> "Соборные послания"
+    CanonBookGroup.PAULINE -> "Послания Павла"
+    CanonBookGroup.HEBREWS -> "Послание к Евреям"
+    CanonBookGroup.REVELATION -> "Откровение"
+}
+
+/** Подряд идущие книги одного раздела канона. */
+data class CanonBookSection(
+    val group: CanonBookGroup,
+    val books: List<CanonBookEntry>,
+) {
+    val isOldTestament: Boolean get() = BibleCanon.isOldTestament(books.first().id)
+}
+
+/** Канон, разбитый на секции в порядке сетки. */
+val canonBookSections: List<CanonBookSection> by lazy {
+    buildList {
+        for (entry in BibleCanon.allBooks) {
+            val last = lastOrNull()
+            if (last != null && last.group == entry.group) {
+                set(lastIndex, last.copy(books = last.books + entry))
+            } else {
+                add(CanonBookSection(entry.group, listOf(entry)))
+            }
+        }
+    }
+}
+
+/** Заголовок завета над первой его секцией. */
+@Composable
+private fun TestamentHeader(
+    title: String,
+    modifier: Modifier = Modifier,
+) {
+    val color = MaterialTheme.colorScheme.onSurfaceVariant
+    Row(
+        modifier = modifier
+            .fillMaxWidth()
+            .padding(start = 6.dp, end = 6.dp, top = 10.dp, bottom = 2.dp),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(10.dp),
+    ) {
+        HorizontalDivider(
+            modifier = Modifier.weight(1f),
+            thickness = 1.dp,
+            color = color.copy(alpha = 0.25f),
+        )
+        Text(
+            text = title.uppercase(),
+            color = color,
+            fontSize = 11.sp,
+            fontWeight = FontWeight.Bold,
+            letterSpacing = 1.6.sp,
+            fontFamily = FontFamily.SansSerif,
+        )
+        HorizontalDivider(
+            modifier = Modifier.weight(1f),
+            thickness = 1.dp,
+            color = color.copy(alpha = 0.25f),
+        )
+    }
+}
+
+/** Компактный заголовок раздела канона в цвете группы. */
+@Composable
+private fun CanonGroupHeader(
+    section: CanonBookSection,
+    modifier: Modifier = Modifier,
+) {
+    val accent = groupTextColor(section.group)
+    Row(
+        modifier = modifier
+            .fillMaxWidth()
+            .padding(start = 6.dp, end = 6.dp, top = 8.dp, bottom = 4.dp),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(8.dp),
+    ) {
+        Box(
+            Modifier
+                .size(width = 3.dp, height = 14.dp)
+                .clip(RoundedCornerShape(2.dp))
+                .background(accent),
+        )
+        Text(
+            text = canonGroupTitleRu(section.group),
+            color = accent,
+            fontSize = 12.sp,
+            fontWeight = FontWeight.Bold,
+            letterSpacing = 0.4.sp,
+            fontFamily = FontFamily.SansSerif,
+            maxLines = 1,
+            overflow = TextOverflow.Ellipsis,
+        )
+        Text(
+            text = section.books.size.toString(),
+            color = accent.copy(alpha = 0.7f),
+            fontSize = 11.sp,
+            fontWeight = FontWeight.Medium,
+            fontFamily = FontFamily.SansSerif,
+        )
+        HorizontalDivider(
+            modifier = Modifier.weight(1f),
+            thickness = 1.dp,
+            color = accent.copy(alpha = 0.2f),
+        )
+    }
+}
+
 /** Крупное название книги после долгого нажатия на плитке. */
 @Composable
 fun BookPickerPreviewBanner(
@@ -327,7 +448,6 @@ fun BookSelectionGrid(
     onBookClick: (String) -> Unit,
     onBookLongPress: (CanonBookEntry) -> Unit = {},
 ) {
-    val books = BibleCanon.allBooks
     var selectedId by remember { mutableStateOf<String?>(null) }
     var infoBook by remember { mutableStateOf<CanonBookEntry?>(null) }
     val presence = rememberTimemarkPresenceIndex()
@@ -340,29 +460,49 @@ fun BookSelectionGrid(
                 modifier = Modifier
                     .fillMaxSize()
                     .background(MaterialTheme.colorScheme.background),
-                contentPadding = PaddingValues(4.dp),
-                horizontalArrangement = Arrangement.spacedBy(4.dp),
-                verticalArrangement = Arrangement.spacedBy(4.dp),
+                contentPadding = PaddingValues(start = 4.dp, end = 4.dp, top = 2.dp, bottom = 12.dp),
+                horizontalArrangement = Arrangement.spacedBy(5.dp),
+                verticalArrangement = Arrangement.spacedBy(5.dp),
             ) {
-                lazyGridItems(
-                    items = books,
-                    key = { it.id },
-                ) { entry ->
-                    BookCell(
-                        entry = entry,
-                        selected = selectedId == entry.id,
-                        hasAudio = entry.id in booksWithAudio,
-                        timemarkCodes = presence.forBook(entry.id),
-                        tabColors = tabColors,
-                        onClick = {
-                            selectedId = entry.id
-                            onBookClick(entry.id)
-                        },
-                        onLongClick = {
-                            infoBook = entry
-                            onBookLongPress(entry)
-                        },
-                    )
+                canonBookSections.forEachIndexed { sectionIndex, section ->
+                    val firstOfTestament = sectionIndex == 0 ||
+                        canonBookSections[sectionIndex - 1].isOldTestament != section.isOldTestament
+                    if (firstOfTestament) {
+                        item(
+                            key = "testament_${section.group.name}",
+                            span = { GridItemSpan(maxLineSpan) },
+                        ) {
+                            TestamentHeader(
+                                title = if (section.isOldTestament) "Ветхий Завет" else "Новый Завет",
+                            )
+                        }
+                    }
+                    item(
+                        key = "group_${section.group.name}",
+                        span = { GridItemSpan(maxLineSpan) },
+                    ) {
+                        CanonGroupHeader(section = section)
+                    }
+                    lazyGridItems(
+                        items = section.books,
+                        key = { it.id },
+                    ) { entry ->
+                        BookCell(
+                            entry = entry,
+                            selected = selectedId == entry.id,
+                            hasAudio = entry.id in booksWithAudio,
+                            timemarkCodes = presence.forBook(entry.id),
+                            tabColors = tabColors,
+                            onClick = {
+                                selectedId = entry.id
+                                onBookClick(entry.id)
+                            },
+                            onLongClick = {
+                                infoBook = entry
+                                onBookLongPress(entry)
+                            },
+                        )
+                    }
                 }
             }
             infoBook?.let { entry ->
@@ -386,7 +526,6 @@ private fun BookSelectionList(
     onBookClick: (String) -> Unit,
     onBookLongPress: (CanonBookEntry) -> Unit = {},
 ) {
-    val books = BibleCanon.allBooks
     val presence = rememberTimemarkPresenceIndex()
     val tabColors = rememberTranslationTabColorsMap()
     var infoBook by remember { mutableStateOf<CanonBookEntry?>(null) }
@@ -395,55 +534,91 @@ private fun BookSelectionList(
         modifier = Modifier
             .fillMaxSize()
             .background(MaterialTheme.colorScheme.background),
-        contentPadding = PaddingValues(vertical = 4.dp),
+        contentPadding = PaddingValues(bottom = 12.dp),
     ) {
-        lazyColumnItems(books, key = { it.id }) { entry ->
-            val textColor = groupTextColor(entry.group)
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .combinedClickable(
-                        onClick = { onBookClick(entry.id) },
-                        onLongClick = {
-                            infoBook = entry
-                            onBookLongPress(entry)
-                        },
-                    )
-                    .padding(horizontal = 16.dp, vertical = 10.dp),
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(16.dp),
-            ) {
-                Text(
-                    text = entry.abbrRu,
-                    color = textColor,
-                    fontWeight = FontWeight.Bold,
-                    fontSize = 15.sp,
-                    fontFamily = FontFamily.SansSerif,
-                    modifier = Modifier.defaultMinSize(minWidth = 48.dp),
-                )
-                Text(
-                    text = entry.nameRu,
-                    color = textColor.copy(alpha = 0.88f),
-                    fontSize = 13.sp,
-                    fontFamily = FontFamily.SansSerif,
-                    modifier = Modifier.weight(1f),
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis,
-                )
-                TimemarkPresenceDots(
-                    translationCodes = presence.forBook(entry.id),
-                    tabColors = tabColors,
-                )
-                if (entry.id in booksWithAudio) {
-                    Icon(
-                        Icons.Default.Headphones,
-                        contentDescription = null,
-                        tint = MaterialTheme.colorScheme.primary,
-                        modifier = Modifier.size(18.dp),
+        canonBookSections.forEachIndexed { sectionIndex, section ->
+            val firstOfTestament = sectionIndex == 0 ||
+                canonBookSections[sectionIndex - 1].isOldTestament != section.isOldTestament
+            if (firstOfTestament) {
+                item(key = "testament_${section.group.name}") {
+                    TestamentHeader(
+                        title = if (section.isOldTestament) "Ветхий Завет" else "Новый Завет",
+                        modifier = Modifier.padding(horizontal = 10.dp),
                     )
                 }
             }
-            HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant, thickness = 0.5.dp)
+            stickyHeader(key = "group_${section.group.name}") {
+                Surface(color = MaterialTheme.colorScheme.background) {
+                    CanonGroupHeader(
+                        section = section,
+                        modifier = Modifier.padding(horizontal = 10.dp),
+                    )
+                }
+            }
+            lazyColumnItems(section.books, key = { it.id }) { entry ->
+                val textColor = groupTextColor(entry.group)
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .combinedClickable(
+                            onClick = { onBookClick(entry.id) },
+                            onLongClick = {
+                                infoBook = entry
+                                onBookLongPress(entry)
+                            },
+                        )
+                        .padding(start = 16.dp, end = 16.dp, top = 10.dp, bottom = 10.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(12.dp),
+                ) {
+                    Box(
+                        Modifier
+                            .size(width = 4.dp, height = 20.dp)
+                            .clip(RoundedCornerShape(2.dp))
+                            .background(textColor.copy(alpha = 0.65f)),
+                    )
+                    Text(
+                        text = entry.abbrRu,
+                        color = textColor,
+                        fontWeight = FontWeight.Bold,
+                        fontSize = 15.sp,
+                        fontFamily = FontFamily.SansSerif,
+                        modifier = Modifier.defaultMinSize(minWidth = 48.dp),
+                    )
+                    Text(
+                        text = entry.nameRu,
+                        color = textColor.copy(alpha = 0.88f),
+                        fontSize = 13.sp,
+                        fontFamily = FontFamily.SansSerif,
+                        modifier = Modifier.weight(1f),
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis,
+                    )
+                    Text(
+                        text = "${entry.chapters} гл.",
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        fontSize = 11.sp,
+                        fontFamily = FontFamily.SansSerif,
+                    )
+                    TimemarkPresenceDots(
+                        translationCodes = presence.forBook(entry.id),
+                        tabColors = tabColors,
+                    )
+                    if (entry.id in booksWithAudio) {
+                        Icon(
+                            Icons.Default.Headphones,
+                            contentDescription = null,
+                            tint = MaterialTheme.colorScheme.primary,
+                            modifier = Modifier.size(18.dp),
+                        )
+                    }
+                }
+                HorizontalDivider(
+                    modifier = Modifier.padding(start = 32.dp),
+                    color = MaterialTheme.colorScheme.outlineVariant,
+                    thickness = 0.5.dp,
+                )
+            }
         }
     }
         infoBook?.let { entry ->
@@ -471,35 +646,46 @@ private fun BookCell(
 ) {
     val textColor = groupTextColor(entry.group)
     val scheme = MaterialTheme.colorScheme
-    val shape = RoundedCornerShape(12.dp)
-    val borderColor = if (selected) textColor.copy(alpha = 0.55f) else scheme.outline.copy(alpha = 0.45f)
+    val shape = RoundedCornerShape(14.dp)
+    val borderColor = if (selected) {
+        textColor.copy(alpha = 0.75f)
+    } else {
+        textColor.copy(alpha = 0.22f)
+    }
+    val tintBrush = Brush.verticalGradient(
+        colors = if (selected) {
+            listOf(textColor.copy(alpha = 0.26f), textColor.copy(alpha = 0.12f))
+        } else {
+            listOf(textColor.copy(alpha = 0.12f), textColor.copy(alpha = 0.04f))
+        },
+    )
     Surface(
         modifier = Modifier
             .fillMaxWidth()
-            .border(width = if (selected) 1.5.dp else 1.dp, color = borderColor, shape = shape)
             .clip(shape)
             .combinedClickable(
                 onClick = onClick,
                 onLongClick = onLongClick,
-            ),
+            )
+            .border(width = if (selected) 1.5.dp else 1.dp, color = borderColor, shape = shape),
         shape = shape,
-        color = if (selected) scheme.surfaceContainerHighest else scheme.surfaceContainerHigh,
-        tonalElevation = if (selected) 3.dp else 0.dp,
-        shadowElevation = if (selected) 2.dp else 0.dp,
+        color = scheme.surfaceContainerLow,
+        shadowElevation = if (selected) 3.dp else 1.dp,
     ) {
         Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .heightIn(min = 78.dp)
-                .padding(top = 8.dp, bottom = 6.dp, start = 5.dp, end = 5.dp),
+                .heightIn(min = 68.dp)
+                .background(tintBrush)
+                .padding(top = 8.dp, bottom = 5.dp, start = 4.dp, end = 4.dp),
             horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.spacedBy(2.dp),
+            verticalArrangement = Arrangement.spacedBy(1.dp),
         ) {
             Text(
                 text = entry.abbrRu,
                 color = textColor,
-                fontSize = 14.sp,
-                lineHeight = 16.sp,
+                fontSize = 15.sp,
+                lineHeight = 17.sp,
                 fontFamily = FontFamily.SansSerif,
                 fontWeight = FontWeight.Bold,
                 textAlign = TextAlign.Center,
@@ -508,7 +694,7 @@ private fun BookCell(
             )
             Text(
                 text = entry.nameRu,
-                color = textColor.copy(alpha = 0.9f),
+                color = textColor.copy(alpha = 0.78f),
                 fontSize = 9.sp,
                 lineHeight = 11.sp,
                 fontFamily = FontFamily.SansSerif,
@@ -517,25 +703,23 @@ private fun BookCell(
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis,
             )
-            Box(
-                modifier = Modifier.size(14.dp),
-                contentAlignment = Alignment.Center,
+            Spacer(Modifier.weight(1f))
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(14.dp),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.Center,
             ) {
                 if (hasAudio) {
                     Icon(
                         Icons.Default.Headphones,
                         contentDescription = null,
                         tint = scheme.primary,
-                        modifier = Modifier.size(14.dp),
+                        modifier = Modifier.size(13.dp),
                     )
+                    if (timemarkCodes.isNotEmpty()) Spacer(Modifier.width(4.dp))
                 }
-            }
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(16.dp),
-                contentAlignment = Alignment.Center,
-            ) {
                 TimemarkPresenceDots(
                     translationCodes = timemarkCodes,
                     tabColors = tabColors,

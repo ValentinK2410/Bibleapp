@@ -70,6 +70,7 @@ import com.example.bible.data.SemanticHighlightSession
 import com.example.bible.data.SemanticScope
 import com.example.bible.data.TextHighlight
 import com.example.bible.data.MediaCatalogPaths
+import com.example.bible.data.MediaDownloadResumeStore
 import com.example.bible.data.PlaylistCoverStore
 import com.example.bible.data.PlaylistLook
 import com.example.bible.data.PvHymnOverlay
@@ -3227,6 +3228,16 @@ class BibleViewModel(
             }
         }
 
+    /** Количество стихов по главам книги для сетки выбора главы. */
+    suspend fun chapterVerseCounts(bookId: String, translation: TranslationId): Map<Int, Int> =
+        withContext(Dispatchers.IO) {
+            try {
+                repository.verseCountsByChapter(translation, bookId)
+            } catch (_: Exception) {
+                emptyMap()
+            }
+        }
+
     fun maxVersesInChapter(bookId: String, chapter: Int, translation: TranslationId): Int {
         repository.loadChapter(translation, bookId, chapter)
             ?.verses
@@ -3462,47 +3473,67 @@ class BibleViewModel(
         onDone: (ok: Boolean, message: String) -> Unit,
     ) {
         viewModelScope.launch {
-            when (kind) {
-                UserMediaKind.VIDEO -> {
-                    val v = bibleUserVideos.value.firstOrNull { it.id == mediaId } ?: run {
-                        onDone(false, "Запись не найдена")
-                        return@launch
-                    }
-                    val url = v.sourceUrl?.takeIf { it.isNotBlank() } ?: run {
-                        onDone(false, "Нет ссылки для скачивания")
-                        return@launch
-                    }
-                    val result = withContext(Dispatchers.IO) {
-                        bibleVideoLibrary.downloadFromUrl(url)
-                    }
-                    result.fold(
-                        onSuccess = { name ->
-                            preferences.saveBibleVideo(v.copy(fileName = name))
-                            onDone(true, "Скачано: ${v.title}")
-                        },
-                        onFailure = { e -> onDone(false, e.message ?: "Ошибка загрузки") },
-                    )
+            val (ok, message) = downloadUserMediaItemNow(mediaId, kind)
+            onDone(ok, message)
+        }
+    }
+
+    /**
+     * Качает один файл медиатеки по его ссылке. Запрос запоминается в
+     * [MediaDownloadResumeStore], поэтому после закрытия приложения загрузка возобновится.
+     */
+    private suspend fun downloadUserMediaItemNow(
+        mediaId: String,
+        kind: UserMediaKind,
+    ): Pair<Boolean, String> {
+        val resumeKey = MediaDownloadResumeStore.userMediaKey(kind, mediaId)
+        MediaDownloadResumeStore.rememberUserMedia(appContext, resumeKey)
+        return when (kind) {
+            UserMediaKind.VIDEO -> {
+                val v = preferences.userBibleVideos.first().firstOrNull { it.id == mediaId }
+                if (v == null) {
+                    MediaDownloadResumeStore.forgetUserMedia(appContext, resumeKey)
+                    return false to "Запись не найдена"
                 }
-                UserMediaKind.AUDIO -> {
-                    val a = bibleUserAudios.value.firstOrNull { it.id == mediaId } ?: run {
-                        onDone(false, "Запись не найдена")
-                        return@launch
-                    }
-                    val url = a.sourceUrl?.takeIf { it.isNotBlank() } ?: run {
-                        onDone(false, "Нет ссылки для скачивания")
-                        return@launch
-                    }
-                    val result = withContext(Dispatchers.IO) {
-                        bibleAudioLibrary.downloadFromUrl(url)
-                    }
-                    result.fold(
-                        onSuccess = { name ->
-                            preferences.saveBibleAudio(a.copy(fileName = name))
-                            onDone(true, "Скачано: ${a.title}")
-                        },
-                        onFailure = { e -> onDone(false, e.message ?: "Ошибка загрузки") },
-                    )
+                val url = v.sourceUrl?.takeIf { it.isNotBlank() }
+                if (url == null) {
+                    MediaDownloadResumeStore.forgetUserMedia(appContext, resumeKey)
+                    return false to "Нет ссылки для скачивания"
                 }
+                val result = withContext(Dispatchers.IO) {
+                    bibleVideoLibrary.downloadFromUrl(url)
+                }
+                result.fold(
+                    onSuccess = { name ->
+                        preferences.saveBibleVideo(v.copy(fileName = name))
+                        MediaDownloadResumeStore.forgetUserMedia(appContext, resumeKey)
+                        true to "Скачано: ${v.title}"
+                    },
+                    onFailure = { e -> false to (e.message ?: "Ошибка загрузки") },
+                )
+            }
+            UserMediaKind.AUDIO -> {
+                val a = preferences.userBibleAudios.first().firstOrNull { it.id == mediaId }
+                if (a == null) {
+                    MediaDownloadResumeStore.forgetUserMedia(appContext, resumeKey)
+                    return false to "Запись не найдена"
+                }
+                val url = a.sourceUrl?.takeIf { it.isNotBlank() }
+                if (url == null) {
+                    MediaDownloadResumeStore.forgetUserMedia(appContext, resumeKey)
+                    return false to "Нет ссылки для скачивания"
+                }
+                val result = withContext(Dispatchers.IO) {
+                    bibleAudioLibrary.downloadFromUrl(url)
+                }
+                result.fold(
+                    onSuccess = { name ->
+                        preferences.saveBibleAudio(a.copy(fileName = name))
+                        MediaDownloadResumeStore.forgetUserMedia(appContext, resumeKey)
+                        true to "Скачано: ${a.title}"
+                    },
+                    onFailure = { e -> false to (e.message ?: "Ошибка загрузки") },
+                )
             }
         }
     }
@@ -3513,73 +3544,134 @@ class BibleViewModel(
         onDone: (ok: Int, fail: Int) -> Unit,
     ) {
         viewModelScope.launch {
-            val pl = userMediaPlaylists.value.firstOrNull { it.id == playlistId } ?: run {
-                onDone(0, 0)
-                return@launch
-            }
-            val videos = bibleUserVideos.value.associateBy { it.id }
-            val audios = bibleUserAudios.value.associateBy { it.id }
-            val videoTasks = if (pl.kind == UserMediaPlaylistKind.VIDEO) {
-                pl.itemIds.mapNotNull { id ->
-                    val v = videos[id] ?: return@mapNotNull null
-                    val f = MediaCatalogPaths.videoFile(appContext, v.fileName)
-                    if (f.isFile && f.length() > 64) return@mapNotNull null
-                    val url = v.sourceUrl?.takeIf { it.isNotBlank() } ?: return@mapNotNull null
-                    v to url
-                }
-            } else {
-                emptyList()
-            }
-            val audioTasks = if (pl.kind == UserMediaPlaylistKind.AUDIO) {
-                pl.itemIds.mapNotNull { id ->
-                    val a = audios[id] ?: return@mapNotNull null
-                    val f = MediaCatalogPaths.audioFile(appContext, a.fileName)
-                    if (f.isFile && f.length() > 64) return@mapNotNull null
-                    val url = a.sourceUrl?.takeIf { it.isNotBlank() } ?: return@mapNotNull null
-                    a to url
-                }
-            } else {
-                emptyList()
-            }
-            val total = videoTasks.size + audioTasks.size
-            if (total == 0) {
-                onDone(0, 0)
-                return@launch
-            }
-            var ok = 0
-            var fail = 0
-            var index = 0
-            for ((item, url) in videoTasks) {
-                onProgress(index, total)
-                val result = withContext(Dispatchers.IO) {
-                    bibleVideoLibrary.downloadFromUrl(url)
-                }
-                result.fold(
-                    onSuccess = { name ->
-                        preferences.saveBibleVideo(item.copy(fileName = name))
-                        ok++
-                    },
-                    onFailure = { fail++ },
-                )
-                index++
-            }
-            for ((item, url) in audioTasks) {
-                onProgress(index, total)
-                val result = withContext(Dispatchers.IO) {
-                    bibleAudioLibrary.downloadFromUrl(url)
-                }
-                result.fold(
-                    onSuccess = { name ->
-                        preferences.saveBibleAudio(item.copy(fileName = name))
-                        ok++
-                    },
-                    onFailure = { fail++ },
-                )
-                index++
-            }
-            onProgress(total, total)
+            val (ok, fail) = downloadMissingUserMediaPlaylistFilesNow(playlistId, onProgress)
             onDone(ok, fail)
         }
+    }
+
+    /**
+     * Догружает файлы плейлиста, у которых есть ссылка, но нет файла. Плейлист остаётся
+     * в [MediaDownloadResumeStore], пока не скачается целиком, — незаконченную закачку
+     * приложение продолжит при следующем запуске.
+     */
+    private suspend fun downloadMissingUserMediaPlaylistFilesNow(
+        playlistId: String,
+        onProgress: (done: Int, total: Int) -> Unit = { _, _ -> },
+    ): Pair<Int, Int> {
+        val pl = preferences.userMediaPlaylists.first().firstOrNull { it.id == playlistId }
+            ?: run {
+                MediaDownloadResumeStore.forgetPlaylist(appContext, playlistId)
+                return 0 to 0
+            }
+        MediaDownloadResumeStore.rememberPlaylist(appContext, playlistId)
+        val videos = preferences.userBibleVideos.first().associateBy { it.id }
+        val audios = preferences.userBibleAudios.first().associateBy { it.id }
+        val videoTasks = if (pl.kind == UserMediaPlaylistKind.VIDEO) {
+            pl.itemIds.mapNotNull { id ->
+                val v = videos[id] ?: return@mapNotNull null
+                val f = MediaCatalogPaths.videoFile(appContext, v.fileName)
+                if (f.isFile && f.length() > 64) return@mapNotNull null
+                val url = v.sourceUrl?.takeIf { it.isNotBlank() } ?: return@mapNotNull null
+                v to url
+            }
+        } else {
+            emptyList()
+        }
+        val audioTasks = if (pl.kind == UserMediaPlaylistKind.AUDIO) {
+            pl.itemIds.mapNotNull { id ->
+                val a = audios[id] ?: return@mapNotNull null
+                val f = MediaCatalogPaths.audioFile(appContext, a.fileName)
+                if (f.isFile && f.length() > 64) return@mapNotNull null
+                val url = a.sourceUrl?.takeIf { it.isNotBlank() } ?: return@mapNotNull null
+                a to url
+            }
+        } else {
+            emptyList()
+        }
+        val total = videoTasks.size + audioTasks.size
+        if (total == 0) {
+            MediaDownloadResumeStore.forgetPlaylist(appContext, playlistId)
+            return 0 to 0
+        }
+        var ok = 0
+        var fail = 0
+        var index = 0
+        for ((item, url) in videoTasks) {
+            onProgress(index, total)
+            val result = withContext(Dispatchers.IO) {
+                bibleVideoLibrary.downloadFromUrl(url)
+            }
+            result.fold(
+                onSuccess = { name ->
+                    preferences.saveBibleVideo(item.copy(fileName = name))
+                    ok++
+                },
+                onFailure = { fail++ },
+            )
+            index++
+        }
+        for ((item, url) in audioTasks) {
+            onProgress(index, total)
+            val result = withContext(Dispatchers.IO) {
+                bibleAudioLibrary.downloadFromUrl(url)
+            }
+            result.fold(
+                onSuccess = { name ->
+                    preferences.saveBibleAudio(item.copy(fileName = name))
+                    ok++
+                },
+                onFailure = { fail++ },
+            )
+            index++
+        }
+        onProgress(total, total)
+        if (fail == 0) MediaDownloadResumeStore.forgetPlaylist(appContext, playlistId)
+        return ok to fail
+    }
+
+    /**
+     * Проверяет при запуске приложения, всё ли скачалось из того, что пользователь заказывал:
+     * недокачанные файлы и неполные плейлисты раздела «Медиа» догружаются с места обрыва.
+     */
+    fun resumePendingUserMediaDownloads() {
+        viewModelScope.launch {
+            val items = MediaDownloadResumeStore.pendingUserMedia(appContext)
+            val playlists = MediaDownloadResumeStore.pendingPlaylists(appContext)
+            if (items.isEmpty() && playlists.isEmpty()) return@launch
+            for (key in items) {
+                val kind = when (key.substringBefore(':')) {
+                    UserMediaKind.VIDEO.name.lowercase() -> UserMediaKind.VIDEO
+                    UserMediaKind.AUDIO.name.lowercase() -> UserMediaKind.AUDIO
+                    else -> null
+                }
+                val mediaId = key.substringAfter(':', "")
+                if (kind == null || mediaId.isBlank()) {
+                    MediaDownloadResumeStore.forgetUserMedia(appContext, key)
+                    continue
+                }
+                if (userMediaFileReady(kind, mediaId)) {
+                    MediaDownloadResumeStore.forgetUserMedia(appContext, key)
+                    continue
+                }
+                downloadUserMediaItemNow(mediaId, kind)
+            }
+            for (playlistId in playlists) {
+                downloadMissingUserMediaPlaylistFilesNow(playlistId)
+            }
+        }
+    }
+
+    /** Файл записи медиатеки уже лежит на диске. */
+    private suspend fun userMediaFileReady(kind: UserMediaKind, mediaId: String): Boolean {
+        val file = when (kind) {
+            UserMediaKind.VIDEO -> preferences.userBibleVideos.first()
+                .firstOrNull { it.id == mediaId }
+                ?.let { MediaCatalogPaths.videoFile(appContext, it.fileName) }
+            UserMediaKind.AUDIO -> preferences.userBibleAudios.first()
+                .firstOrNull { it.id == mediaId }
+                ?.let { MediaCatalogPaths.audioFile(appContext, it.fileName) }
+        }
+        return file != null && file.isFile && file.length() > 64
     }
 
     private fun uniqueUserMediaPlaylistName(

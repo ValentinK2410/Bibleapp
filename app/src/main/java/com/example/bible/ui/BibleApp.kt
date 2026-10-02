@@ -62,6 +62,7 @@ import androidx.compose.material.icons.filled.PermMedia
 import androidx.compose.material.icons.filled.LightMode
 import androidx.compose.material.icons.filled.ContentCopy
 import androidx.compose.material.icons.filled.FormatListNumbered
+import androidx.compose.material.icons.filled.FormatQuote
 import androidx.compose.material.icons.filled.BookmarkBorder
 import androidx.compose.material.icons.filled.CalendarToday
 import androidx.compose.material.icons.filled.Edit
@@ -106,6 +107,7 @@ import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Slider
+import androidx.compose.material3.Surface
 import androidx.compose.material3.ScrollableTabRow
 import androidx.compose.material3.Tab
 import androidx.compose.material3.TabRowDefaults
@@ -608,6 +610,21 @@ private fun BibleNavHost(
             Log.i("BibleScreenshot", "bible_ready")
         }
     }
+    val downloadResumeContext = LocalContext.current
+    // Проверяем на старте, что всё заказанное скачалось: недокачанное продолжаем с места обрыва.
+    LaunchedEffect(Unit) {
+        val resumed = runCatching {
+            com.example.bible.service.MediaDownloadService.resumePending(downloadResumeContext)
+        }.getOrDefault(0)
+        if (resumed > 0) {
+            Toast.makeText(
+                downloadResumeContext,
+                downloadResumeContext.getString(R.string.media_download_resumed, resumed),
+                Toast.LENGTH_LONG,
+            ).show()
+        }
+        viewModel.resumePendingUserMediaDownloads()
+    }
     val translation by viewModel.selectedTranslation.collectAsStateWithLifecycle()
     val translationTabColors by viewModel.translationTabColors.collectAsStateWithLifecycle()
     val bookmarkKeys by viewModel.bookmarkKeys.collectAsStateWithLifecycle()
@@ -684,18 +701,16 @@ private fun BibleNavHost(
                     Column {
                         TopAppBar(
                             title = {
-                                Text(
-                                    when {
-                                        pickerBookId != null && pickerChapter > 0 ->
-                                            "${passagePickerBookTitle(pickerBookId!!, translation)} $pickerChapter — " +
-                                                stringResource(R.string.verse_picker_title)
-                                        pickerBookId != null ->
-                                            passagePickerBookTitle(pickerBookId!!, translation)
-                                        else ->
-                                            stringResource(R.string.book_picker_title)
-                                    },
-                                    style = MaterialTheme.typography.titleMedium,
-                                )
+                                // Книга и глава показаны в строке навигации под панелью.
+                                if (pickerBookId == null) {
+                                    Text(
+                                        stringResource(R.string.book_picker_title),
+                                        style = MaterialTheme.typography.titleMedium,
+                                        fontWeight = FontWeight.SemiBold,
+                                        maxLines = 1,
+                                        overflow = TextOverflow.Ellipsis,
+                                    )
+                                }
                             },
                             navigationIcon = {
                                 if (pickerBookId != null || canPop) {
@@ -826,7 +841,18 @@ private fun BibleNavHost(
                                 actionIconContentColor = MaterialTheme.colorScheme.onSurface,
                             ),
                         )
-                        HorizontalDivider(thickness = 1.dp, color = MaterialTheme.colorScheme.primary)
+                        pickerBookId?.let { id ->
+                            PassagePickerBreadcrumbs(
+                                bookId = id,
+                                translation = translation,
+                                chapter = pickerChapter,
+                                onBookClick = { viewModel.passagePickerSelectChapter(0) },
+                            )
+                        }
+                        HorizontalDivider(
+                            thickness = 1.dp,
+                            color = MaterialTheme.colorScheme.primary.copy(alpha = 0.35f),
+                        )
                     }
                 },
             ) { padding ->
@@ -4719,72 +4745,96 @@ internal fun ChapterGrid(
     book: BibleBook,
     bookId: String = book.id,
     chaptersWithAudio: Set<Int> = emptySet(),
+    verseCounts: Map<Int, Int> = emptyMap(),
     onChapterClick: (Int) -> Unit,
 ) {
     val presence = rememberTimemarkPresenceIndex()
     val tabColors = rememberTranslationTabColorsMap()
     var infoChapter by remember { mutableStateOf<Int?>(null) }
+    val accent = chapterGridAccentColor(bookId)
+    val scheme = MaterialTheme.colorScheme
+    val shape = RoundedCornerShape(14.dp)
     Box(modifier.fillMaxSize()) {
-    LazyVerticalGrid(
-        columns = GridCells.Fixed(5),
-        modifier = Modifier.fillMaxSize(),
-        contentPadding = PaddingValues(4.dp),
-        horizontalArrangement = Arrangement.spacedBy(0.dp),
-        verticalArrangement = Arrangement.spacedBy(0.dp),
-    ) {
-        gridItems(book.chapters, key = { it.number }) { chapter: BibleChapter ->
-            val hasAudio = chapter.number in chaptersWithAudio
-            val chapterCodes = presence.forChapter(bookId, chapter.number)
-            Column(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .heightIn(min = 64.dp)
-                    .border(0.5.dp, MaterialTheme.colorScheme.outlineVariant)
-                    .combinedClickable(
-                        onClick = { onChapterClick(chapter.number) },
-                        onLongClick = { infoChapter = chapter.number },
-                    )
-                    .padding(vertical = 8.dp, horizontal = 4.dp),
-                horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.spacedBy(2.dp),
-            ) {
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    Text(
-                        text = "${chapter.number}",
-                        style = MaterialTheme.typography.titleMedium,
-                        fontWeight = FontWeight.Bold,
-                    )
-                    if (hasAudio) {
-                        Icon(
-                            Icons.Default.Headphones,
-                            contentDescription = null,
-                            tint = MaterialTheme.colorScheme.primary,
-                            modifier = Modifier
-                                .padding(start = 4.dp)
-                                .size(14.dp),
-                        )
-                    }
-                }
-                Text(
-                    text = "${chapter.verses.size}",
-                    style = MaterialTheme.typography.labelSmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                )
-                Box(
+        LazyVerticalGrid(
+            columns = GridCells.Fixed(5),
+            modifier = Modifier.fillMaxSize(),
+            contentPadding = PaddingValues(start = 6.dp, end = 6.dp, top = 8.dp, bottom = 14.dp),
+            horizontalArrangement = Arrangement.spacedBy(6.dp),
+            verticalArrangement = Arrangement.spacedBy(6.dp),
+        ) {
+            gridItems(book.chapters, key = { it.number }) { chapter: BibleChapter ->
+                val hasAudio = chapter.number in chaptersWithAudio
+                val chapterCodes = presence.forChapter(bookId, chapter.number)
+                val verseCount = verseCounts[chapter.number] ?: chapter.verses.size
+                Surface(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .height(16.dp),
-                    contentAlignment = Alignment.Center,
+                        .clip(shape)
+                        .combinedClickable(
+                            onClick = { onChapterClick(chapter.number) },
+                            onLongClick = { infoChapter = chapter.number },
+                        )
+                        .border(1.dp, accent.copy(alpha = 0.22f), shape),
+                    shape = shape,
+                    color = scheme.surfaceContainerLow,
+                    shadowElevation = 1.dp,
                 ) {
-                    TimemarkPresenceDots(
-                        translationCodes = chapterCodes,
-                        tabColors = tabColors,
-                        size = 6.dp,
-                    )
+                    Column(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .heightIn(min = 66.dp)
+                            .background(
+                                Brush.verticalGradient(
+                                    listOf(
+                                        accent.copy(alpha = 0.12f),
+                                        accent.copy(alpha = 0.04f),
+                                    ),
+                                ),
+                            )
+                            .padding(top = 7.dp, bottom = 5.dp, start = 3.dp, end = 3.dp),
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        verticalArrangement = Arrangement.spacedBy(1.dp),
+                    ) {
+                        Text(
+                            text = "${chapter.number}",
+                            color = accent,
+                            fontSize = 19.sp,
+                            lineHeight = 22.sp,
+                            fontWeight = FontWeight.Bold,
+                        )
+                        Text(
+                            text = if (verseCount > 0) "$verseCount ст." else "—",
+                            style = MaterialTheme.typography.labelSmall,
+                            color = scheme.onSurfaceVariant,
+                            maxLines = 1,
+                        )
+                        Spacer(Modifier.weight(1f))
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .height(14.dp),
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.Center,
+                        ) {
+                            if (hasAudio) {
+                                Icon(
+                                    Icons.Default.Headphones,
+                                    contentDescription = null,
+                                    tint = scheme.primary,
+                                    modifier = Modifier.size(13.dp),
+                                )
+                                if (chapterCodes.isNotEmpty()) Spacer(Modifier.width(4.dp))
+                            }
+                            TimemarkPresenceDots(
+                                translationCodes = chapterCodes,
+                                tabColors = tabColors,
+                                size = 6.dp,
+                            )
+                        }
+                    }
                 }
             }
         }
-    }
         infoChapter?.let { chapterNum ->
             TimemarkTranslationsDialog(
                 title = "${book.name}, гл. $chapterNum",
@@ -4796,34 +4846,60 @@ internal fun ChapterGrid(
     }
 }
 
+/** Акцент сетки глав — цвет раздела канона, к которому относится книга. */
+@Composable
+private fun chapterGridAccentColor(bookId: String): Color {
+    val group = com.example.bible.data.BibleCanon.byId(bookId)?.group
+    return if (group != null) groupTextColor(group) else MaterialTheme.colorScheme.primary
+}
+
 @Composable
 internal fun VerseGrid(
     modifier: Modifier = Modifier,
     verses: List<BibleVerse>,
+    bookId: String? = null,
     onVerseClick: (Int) -> Unit,
 ) {
+    val accent = bookId?.let { chapterGridAccentColor(it) } ?: MaterialTheme.colorScheme.primary
+    val scheme = MaterialTheme.colorScheme
+    val shape = RoundedCornerShape(14.dp)
     LazyVerticalGrid(
-        columns = GridCells.Fixed(4),
+        columns = GridCells.Fixed(5),
         modifier = modifier.fillMaxSize(),
-        contentPadding = PaddingValues(4.dp),
-        horizontalArrangement = Arrangement.spacedBy(0.dp),
-        verticalArrangement = Arrangement.spacedBy(0.dp),
+        contentPadding = PaddingValues(start = 6.dp, end = 6.dp, top = 8.dp, bottom = 14.dp),
+        horizontalArrangement = Arrangement.spacedBy(6.dp),
+        verticalArrangement = Arrangement.spacedBy(6.dp),
     ) {
         gridItems(verses, key = { it.number }) { verse ->
-            Box(
+            Surface(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .heightIn(min = 52.dp)
-                    .border(0.5.dp, MaterialTheme.colorScheme.outlineVariant)
+                    .clip(shape)
                     .clickable { onVerseClick(verse.number) }
-                    .padding(vertical = 8.dp, horizontal = 4.dp),
-                contentAlignment = Alignment.Center,
+                    .border(1.dp, accent.copy(alpha = 0.22f), shape),
+                shape = shape,
+                color = scheme.surfaceContainerLow,
+                shadowElevation = 1.dp,
             ) {
-                Text(
-                    text = "${verse.number}",
-                    style = MaterialTheme.typography.titleMedium,
-                    fontWeight = FontWeight.Bold,
-                )
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .heightIn(min = 52.dp)
+                        .background(
+                            Brush.verticalGradient(
+                                listOf(accent.copy(alpha = 0.12f), accent.copy(alpha = 0.04f)),
+                            ),
+                        )
+                        .padding(vertical = 8.dp, horizontal = 4.dp),
+                    contentAlignment = Alignment.Center,
+                ) {
+                    Text(
+                        text = "${verse.number}",
+                        color = accent,
+                        fontSize = 17.sp,
+                        fontWeight = FontWeight.Bold,
+                    )
+                }
             }
         }
     }
@@ -5078,54 +5154,84 @@ private fun DailyVerseCard(
     val ref = remember(entry) { DailyVerse.referenceLabel(entry) }
     val colors = MaterialTheme.colorScheme
     val gradientBrush = Brush.linearGradient(
-        colors = listOf(colors.primaryContainer, colors.secondaryContainer),
+        colors = listOf(
+            colors.primaryContainer,
+            colors.secondaryContainer,
+            colors.tertiaryContainer,
+        ),
     )
     Card(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(horizontal = 8.dp, vertical = 6.dp),
-        shape = RoundedCornerShape(18.dp),
+            .padding(horizontal = 10.dp, vertical = 8.dp),
+        shape = RoundedCornerShape(22.dp),
         colors = CardDefaults.cardColors(containerColor = Color.Transparent),
+        elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
         onClick = onClick,
     ) {
         Box(
             modifier = Modifier
                 .fillMaxWidth()
-                .background(gradientBrush)
-                .padding(14.dp),
+                .background(gradientBrush),
         ) {
-            Column {
+            Icon(
+                Icons.Filled.FormatQuote,
+                contentDescription = null,
+                modifier = Modifier
+                    .align(Alignment.TopEnd)
+                    .padding(end = 10.dp, top = 6.dp)
+                    .size(56.dp),
+                tint = colors.primary.copy(alpha = 0.14f),
+            )
+            Column(modifier = Modifier.padding(16.dp)) {
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Icon(
                         Icons.AutoMirrored.Filled.MenuBook,
                         contentDescription = null,
-                        modifier = Modifier.size(18.dp),
+                        modifier = Modifier.size(16.dp),
                         tint = colors.primary,
                     )
                     Spacer(Modifier.width(6.dp))
                     Text(
-                        "Стих дня",
+                        "СТИХ ДНЯ",
+                        style = MaterialTheme.typography.labelMedium,
+                        color = colors.primary,
+                        fontWeight = FontWeight.Bold,
+                        letterSpacing = 1.4.sp,
+                    )
+                }
+                Spacer(Modifier.height(8.dp))
+                Text(
+                    entry.textRu,
+                    style = MaterialTheme.typography.bodyLarge,
+                    color = colors.onSurface,
+                    fontWeight = FontWeight.Medium,
+                    lineHeight = 22.sp,
+                    maxLines = 3,
+                    overflow = TextOverflow.Ellipsis,
+                )
+                Spacer(Modifier.height(10.dp))
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Text(
+                        ref,
                         style = MaterialTheme.typography.labelLarge,
                         color = colors.primary,
                         fontWeight = FontWeight.Bold,
                     )
+                    Spacer(Modifier.weight(1f))
+                    Text(
+                        "Читать",
+                        style = MaterialTheme.typography.labelMedium,
+                        color = colors.primary.copy(alpha = 0.85f),
+                        fontWeight = FontWeight.SemiBold,
+                    )
+                    Icon(
+                        Icons.AutoMirrored.Filled.ArrowForward,
+                        contentDescription = null,
+                        modifier = Modifier.size(15.dp),
+                        tint = colors.primary.copy(alpha = 0.85f),
+                    )
                 }
-                Spacer(Modifier.height(6.dp))
-                Text(
-                    entry.textRu,
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = colors.onSurface,
-                    fontWeight = FontWeight.Medium,
-                    maxLines = 2,
-                    overflow = TextOverflow.Ellipsis,
-                )
-                Spacer(Modifier.height(4.dp))
-                Text(
-                    ref,
-                    style = MaterialTheme.typography.labelMedium,
-                    color = colors.primary,
-                    fontWeight = FontWeight.Bold,
-                )
             }
         }
     }
@@ -6071,11 +6177,16 @@ private fun ChaptersRouteContent(
                     val downloaded = viewModel.downloadedChaptersFor(eff, bookId)
                     fromAssets + downloaded
                 }
+                var verseCounts by remember(translation, bookId) { mutableStateOf(emptyMap<Int, Int>()) }
+                LaunchedEffect(translation, bookId) {
+                    verseCounts = viewModel.chapterVerseCounts(bookId, translation)
+                }
                 ChapterGrid(
                     modifier = Modifier.fillMaxSize(),
                     book = book,
                     bookId = bookId,
                     chaptersWithAudio = chaptersWithAudio,
+                    verseCounts = verseCounts,
                     onChapterClick = { chapter ->
                         navController.navigate("verses/$bookId/$chapter")
                     },
@@ -6178,6 +6289,7 @@ private fun VersesRouteContent(
                         .padding(padding)
                         .fillMaxSize(),
                     verses = numbers.map { BibleVerse(number = it, text = "") },
+                    bookId = bookId,
                     onVerseClick = { verseNum ->
                         navController.navigate("read/$bookId/$chapterNum/$verseNum")
                     },

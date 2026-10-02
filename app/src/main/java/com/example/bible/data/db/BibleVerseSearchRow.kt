@@ -15,3 +15,9 @@ data class BibleBookTitleRow(
     val bookId: String,
     val name: String,
 )
+
+/** Количество стихов в главе — для сетки выбора главы. */
+data class BibleChapterVerseCountRow(
+    val chapterNumber: Int,
+    val verseCount: Int,
+)

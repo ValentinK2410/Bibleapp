@@ -505,7 +505,7 @@
     <string name="theme_preset_papyrus">Папирус</string>
     <string name="theme_preset_leather">Кожаный свиток</string>
     <string name="toggle_bookmark">Закладка</string>
-    <string name="book_picker_title">Выбор книг…</string>
+    <string name="book_picker_title">Библия</string>
     <string name="book_picker_long_press_tts_on">Озвучивать названия при долгом нажатии</string>
     <string name="book_picker_long_press_tts_off">Не озвучивать названия при долгом нажатии</string>
     <string name="no_chapters_loaded">Для этой книги пока нет загруженного текста. Добавьте полный текст в ресурсы приложения.</string>
@@ -1099,6 +1099,11 @@
     <string name="media_download_done_empty">Загрузка завершена</string>
     <string name="media_download_started">Скачивание идёт в фоне — можно выйти из приложения</string>
     <string name="media_download_queued">Добавлено в очередь: %1$d</string>
+    <string name="media_download_resumed">Продолжаем незавершённые загрузки: %1$d</string>
+    <string name="media_download_stat_saved">скачано</string>
+    <string name="media_download_stat_remaining">осталось</string>
+    <string name="media_download_stat_skipped">пропущено</string>
+    <string name="media_download_stat_failed">с ошибкой</string>
     <string name="media_download_item_paused">На паузе</string>
     <string name="media_download_all_paused">Все загрузки на паузе</string>
     <string name="media_download_pause_all">Пауза</string>

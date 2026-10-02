@@ -75,6 +75,12 @@ class BibleRepository(
         return dao.getMaxVerseNumber(translation.code, bookId, chapterNum)
     }
 
+    fun verseCountsByChapter(translation: TranslationId, bookId: String): Map<Int, Int> {
+        if (!dao.hasBook(translation.code, bookId)) return emptyMap()
+        return dao.getVerseCountsByChapter(translation.code, bookId)
+            .associate { it.chapterNumber to it.verseCount }
+    }
+
     fun loadChapter(translation: TranslationId, bookId: String, chapterNum: Int): BibleChapter? {
         if (!dao.hasBook(translation.code, bookId)) return null
         val code = translation.code

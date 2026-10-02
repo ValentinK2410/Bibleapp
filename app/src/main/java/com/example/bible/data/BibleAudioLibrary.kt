@@ -5,8 +5,6 @@ import android.net.Uri
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import java.io.File
-import java.net.HttpURLConnection
-import java.net.URL
 import java.util.UUID
 
 /**
@@ -84,33 +82,22 @@ class BibleAudioLibrary(private val context: Context) {
         }
     }
 
-    suspend fun downloadFromUrl(urlStr: String): Result<String> = withContext(Dispatchers.IO) {
-        try {
-            val conn = URL(urlStr).openConnection() as HttpURLConnection
-            conn.setRequestProperty("User-Agent", USER_AGENT)
-            conn.connectTimeout = 20_000
-            conn.readTimeout = 120_000
-            conn.connect()
-            if (conn.responseCode != 200) {
-                return@withContext Result.failure(IllegalStateException("HTTP ${conn.responseCode}"))
-            }
-            val mime = conn.contentType?.substringBefore(';')?.trim().orEmpty()
-            val extFromMime = if (mime.startsWith("audio/")) extensionForMime(mime) else null
-            val ext = extFromMime ?: extensionFromUrl(urlStr)
-            val name = "${UUID.randomUUID()}.$ext"
-            val out = File(dir, name)
-            conn.inputStream.use { input ->
-                out.outputStream().use { input.copyTo(it) }
-            }
-            if (out.length() == 0L) {
-                out.delete()
-                return@withContext Result.failure(IllegalStateException("Пустой ответ"))
-            }
-            Result.success(name)
-        } catch (e: Exception) {
-            Result.failure(e)
-        }
-    }
+    /** Прерванная загрузка продолжается с недокачанного места, см. [ResumableHttpDownload]. */
+    suspend fun downloadFromUrl(
+        urlStr: String,
+        onProgress: ((downloadedBytes: Long, totalBytes: Long) -> Unit)? = null,
+    ): Result<String> = ResumableHttpDownload.download(
+        dir = dir,
+        url = urlStr,
+        userAgent = USER_AGENT,
+        fallbackExtension = extensionFromUrl(urlStr),
+        extensionFor = { mime -> if (mime.startsWith("audio/")) extensionForMime(mime) else null },
+        onProgress = onProgress,
+    )
+
+    /** По ссылке остался недокачанный файл — загрузку есть смысл продолжить. */
+    fun hasPartialDownload(urlStr: String): Boolean =
+        ResumableHttpDownload.hasPartialDownload(dir, urlStr)
 
     fun deleteStoredFile(fileName: String) {
         try {

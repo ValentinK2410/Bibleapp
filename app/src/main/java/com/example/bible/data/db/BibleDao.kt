@@ -73,6 +73,12 @@ abstract class BibleDao {
     abstract fun getMaxVerseNumber(code: String, bookId: String, chapter: Int): Int?
 
     @Query(
+        "SELECT chapterNumber, COUNT(*) AS verseCount FROM bible_verses " +
+            "WHERE translationCode = :code AND bookId = :bookId GROUP BY chapterNumber ORDER BY chapterNumber",
+    )
+    abstract fun getVerseCountsByChapter(code: String, bookId: String): List<BibleChapterVerseCountRow>
+
+    @Query(
         "SELECT * FROM bible_interlinear_words WHERE translationCode = :code AND bookId = :bookId " +
             "AND chapterNumber = :chapter ORDER BY verseNumber, wordIndex",
     )

@@ -24,8 +24,10 @@ import com.example.bible.data.MediaDownloadImporter
 import com.example.bible.data.MediaDownloadItem
 import com.example.bible.data.MediaDownloadItemStatus
 import com.example.bible.data.MediaDownloadQueue
+import com.example.bible.data.MediaDownloadResumeStore
 import com.example.bible.data.MediaDownloadState
 import com.example.bible.data.MediaDownloadTask
+import com.example.bible.data.PendingMediaDownload
 import com.example.bible.data.VideoExtractor
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineScope
@@ -127,26 +129,44 @@ class MediaDownloadService : Service() {
         }
 
         val tasks = MediaDownloadTask.listFromJson(intent?.getStringExtra(EXTRA_TASKS))
+        val pausedIds = intent?.getStringArrayExtra(EXTRA_PAUSED_IDS)?.toSet().orEmpty()
+        val restored = intent?.getBooleanExtra(EXTRA_RESTORED, false) == true
         // Уведомление показываем всегда: система требует startForeground после startForegroundService.
         startForegroundWith(buildNotification())
         if (tasks.isEmpty() && !hasLiveWork()) {
             stopEverything()
             return START_NOT_STICKY
         }
-        addTasks(tasks)
+        if (!restored) {
+            // Чтобы недокачанное вернулось в очередь после перезапуска приложения.
+            MediaDownloadResumeStore.remember(applicationContext, tasks, parallel)
+        }
+        addTasks(tasks, pausedIds)
         ensureWorkers()
         return START_NOT_STICKY
     }
 
     /** Добавляет задачи в конец очереди, подчищая старые завершённые строки. */
-    private fun addTasks(tasks: List<MediaDownloadTask>) {
+    private fun addTasks(tasks: List<MediaDownloadTask>, pausedIds: Set<String> = emptySet()) {
         if (tasks.isEmpty()) return
+        val pausedLabel = getString(com.example.bible.R.string.media_download_item_paused)
         MediaDownloadQueue.update { state ->
             val live = state.items.filterNot { it.status.terminal }
             val history = state.items.filter { it.status.terminal }
             val room = (MAX_HISTORY - live.size - tasks.size).coerceAtLeast(0)
+            val added = tasks.map { task ->
+                if (task.id in pausedIds) {
+                    MediaDownloadItem(
+                        task = task,
+                        status = MediaDownloadItemStatus.PAUSED,
+                        message = pausedLabel,
+                    )
+                } else {
+                    MediaDownloadItem(task = task)
+                }
+            }
             state.copy(
-                items = history.takeLast(room) + live + tasks.map { MediaDownloadItem(task = it) },
+                items = history.takeLast(room) + live + added,
                 parallel = parallel,
                 finishedMessage = null,
                 error = null,
@@ -319,6 +339,10 @@ class MediaDownloadService : Service() {
 
     private fun finishItem(id: String, status: MediaDownloadItemStatus, message: String) {
         stopRequests.remove(id)
+        if (status != MediaDownloadItemStatus.FAILED) {
+            // Упавшую задачу помним: при следующем запуске приложения попробуем докачать.
+            MediaDownloadResumeStore.forget(applicationContext, id)
+        }
         MediaDownloadQueue.updateItem(id) {
             it.copy(
                 status = status,
@@ -340,6 +364,7 @@ class MediaDownloadService : Service() {
 
     private fun pauseItem(id: String) {
         val item = MediaDownloadQueue.item(id) ?: return
+        MediaDownloadResumeStore.setPaused(applicationContext, id, true)
         when (item.status) {
             MediaDownloadItemStatus.RUNNING -> {
                 stopRequests[id] = StopKind.PAUSE
@@ -362,6 +387,7 @@ class MediaDownloadService : Service() {
     private fun resumeItem(id: String) {
         val item = MediaDownloadQueue.item(id) ?: return
         if (item.status != MediaDownloadItemStatus.PAUSED) return
+        MediaDownloadResumeStore.setPaused(applicationContext, id, false)
         stopRequests.remove(id)
         MediaDownloadQueue.updateItem(id) {
             it.copy(status = MediaDownloadItemStatus.QUEUED, message = "")
@@ -371,6 +397,7 @@ class MediaDownloadService : Service() {
 
     private fun cancelItem(id: String) {
         val item = MediaDownloadQueue.item(id) ?: return
+        MediaDownloadResumeStore.forget(applicationContext, id)
         if (item.status == MediaDownloadItemStatus.RUNNING) {
             stopRequests[id] = StopKind.CANCEL
             VideoExtractor.cancelProcess(id)
@@ -390,6 +417,7 @@ class MediaDownloadService : Service() {
 
     private fun cancelAll() {
         val state = MediaDownloadQueue.state.value
+        MediaDownloadResumeStore.forgetAll(applicationContext)
         state.items.filter { it.status == MediaDownloadItemStatus.RUNNING }.forEach {
             stopRequests[it.id] = StopKind.CANCEL
             VideoExtractor.cancelProcess(it.id)
@@ -631,6 +659,8 @@ class MediaDownloadService : Service() {
         private const val EXTRA_TASKS = "tasks"
         private const val EXTRA_ITEM_ID = "itemId"
         private const val EXTRA_PARALLEL = "parallel"
+        private const val EXTRA_PAUSED_IDS = "pausedIds"
+        private const val EXTRA_RESTORED = "restored"
 
         /** Добавляет задачи в очередь: если сервис уже работает, они встанут в хвост. */
         fun enqueue(context: Context, tasks: List<MediaDownloadTask>, parallel: Int = 0) {
@@ -642,6 +672,49 @@ class MediaDownloadService : Service() {
                     if (parallel > 0) putExtra(EXTRA_PARALLEL, parallel)
                 },
             )
+        }
+
+        /**
+         * Возвращает в очередь загрузки, которые не успели закончиться до закрытия приложения:
+         * yt-dlp дописывает недокачанный файл, поэтому работа продолжается, а не начинается заново.
+         * Вызывать только когда приложение на экране — иначе система запретит foreground-сервис.
+         *
+         * @return сколько загрузок продолжено (без тех, что пользователь оставил на паузе).
+         */
+        fun resumePending(context: Context): Int {
+            val app = context.applicationContext
+            val stored = MediaDownloadResumeStore.pending(app)
+            if (stored.isEmpty) return 0
+            val liveIds = MediaDownloadQueue.state.value.items.map { it.id }.toSet()
+            val live = stored.downloads.filter { it.task.id in liveIds }
+            val lost = stored.downloads.filterNot { it.task.id in liveIds }
+            val keep = mutableListOf<PendingMediaDownload>()
+            val tasks = mutableListOf<MediaDownloadTask>()
+            val pausedIds = mutableListOf<String>()
+            for (entry in lost) {
+                if (entry.paused) {
+                    keep += entry
+                    tasks += entry.task
+                    pausedIds += entry.task.id
+                    continue
+                }
+                val attempts = entry.attempts + 1
+                if (attempts > MediaDownloadResumeStore.MAX_ATTEMPTS) continue
+                keep += entry.copy(attempts = attempts)
+                tasks += entry.task
+            }
+            MediaDownloadResumeStore.rememberRestored(app, live + keep)
+            if (tasks.isEmpty()) return 0
+            ContextCompat.startForegroundService(
+                app,
+                Intent(app, MediaDownloadService::class.java).apply {
+                    putExtra(EXTRA_TASKS, MediaDownloadTask.listToJson(tasks))
+                    putExtra(EXTRA_PARALLEL, stored.parallel)
+                    putExtra(EXTRA_PAUSED_IDS, pausedIds.toTypedArray())
+                    putExtra(EXTRA_RESTORED, true)
+                },
+            )
+            return tasks.size - pausedIds.size
         }
 
         fun cancel(context: Context) = control(context, ACTION_CANCEL)

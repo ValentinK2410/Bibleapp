@@ -16,6 +16,7 @@ import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -69,10 +70,12 @@ import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ElevatedCard
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilledTonalButton
+import androidx.compose.material3.FilledTonalIconButton
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.Icon
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.IconButtonDefaults
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
@@ -637,114 +640,22 @@ private fun MediaDownloadScreen(
                         .padding(horizontal = 16.dp, vertical = 12.dp),
                 ) {
                     AnimatedVisibility(visible = queue.hasWork) {
-                        Column(modifier = Modifier.padding(bottom = 10.dp)) {
-                            if (progress >= 0f) {
-                                LinearProgressIndicator(
-                                    progress = { (progress / 100f).coerceIn(0f, 1f) },
-                                    modifier = Modifier
-                                        .fillMaxWidth()
-                                        .height(6.dp)
-                                        .clip(RoundedCornerShape(3.dp)),
-                                )
-                            } else {
-                                LinearProgressIndicator(
-                                    modifier = Modifier
-                                        .fillMaxWidth()
-                                        .height(6.dp)
-                                        .clip(RoundedCornerShape(3.dp)),
-                                )
-                            }
-                            Spacer(Modifier.height(6.dp))
-                            Text(
-                                statusText,
-                                style = MaterialTheme.typography.bodySmall,
-                                color = MaterialTheme.colorScheme.primary,
-                                maxLines = 2,
-                                overflow = TextOverflow.Ellipsis,
-                            )
-                            if (queue.total > 1) {
-                                Text(
-                                    stringResource(
-                                        R.string.media_download_counters,
-                                        queue.downloaded,
-                                        queue.skipped,
-                                        queue.remaining,
-                                    ),
-                                    style = MaterialTheme.typography.labelSmall,
-                                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                                )
-                            }
-                            queue.lastCompleted?.let { done ->
-                                Row(
-                                    modifier = Modifier.padding(top = 2.dp),
-                                    verticalAlignment = Alignment.CenterVertically,
-                                ) {
-                                    Icon(
-                                        Icons.Default.CheckCircle,
-                                        contentDescription = null,
-                                        modifier = Modifier.size(14.dp),
-                                        tint = MaterialTheme.colorScheme.tertiary,
-                                    )
-                                    Spacer(Modifier.width(4.dp))
-                                    Text(
-                                        stringResource(R.string.media_download_last_saved, done),
-                                        style = MaterialTheme.typography.labelSmall,
-                                        color = MaterialTheme.colorScheme.tertiary,
-                                        maxLines = 1,
-                                        overflow = TextOverflow.Ellipsis,
-                                    )
+                        MediaDownloadControlPanel(
+                            queue = queue,
+                            statusText = statusText,
+                            progress = progress,
+                            allPaused = allPaused,
+                            modifier = Modifier.padding(bottom = 12.dp),
+                            onOpenQueue = { queueSheetOpen = true },
+                            onTogglePause = {
+                                if (allPaused) {
+                                    MediaDownloadService.resumeAll(context)
+                                } else {
+                                    MediaDownloadService.pauseAll(context)
                                 }
-                            }
-                            Row(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .padding(top = 4.dp),
-                                verticalAlignment = Alignment.CenterVertically,
-                            ) {
-                                TextButton(onClick = { queueSheetOpen = true }) {
-                                    Icon(
-                                        Icons.AutoMirrored.Filled.PlaylistPlay,
-                                        contentDescription = null,
-                                        modifier = Modifier.size(18.dp),
-                                    )
-                                    Spacer(Modifier.width(6.dp))
-                                    Text(
-                                        stringResource(
-                                            R.string.media_download_queue_button,
-                                            queue.remaining,
-                                        ),
-                                    )
-                                }
-                                Spacer(Modifier.weight(1f))
-                                IconButton(
-                                    onClick = {
-                                        if (allPaused) {
-                                            MediaDownloadService.resumeAll(context)
-                                        } else {
-                                            MediaDownloadService.pauseAll(context)
-                                        }
-                                    },
-                                ) {
-                                    Icon(
-                                        if (allPaused) Icons.Default.PlayArrow else Icons.Default.Pause,
-                                        contentDescription = stringResource(
-                                            if (allPaused) {
-                                                R.string.media_download_resume_all
-                                            } else {
-                                                R.string.media_download_pause_all
-                                            },
-                                        ),
-                                    )
-                                }
-                                IconButton(onClick = { MediaDownloadService.cancel(context) }) {
-                                    Icon(
-                                        Icons.Default.Close,
-                                        contentDescription = stringResource(R.string.media_download_cancel),
-                                        tint = MaterialTheme.colorScheme.error,
-                                    )
-                                }
-                            }
-                        }
+                            },
+                            onCancelAll = { MediaDownloadService.cancel(context) },
+                        )
                     }
 
                     AnimatedVisibility(
@@ -1251,6 +1162,251 @@ private fun MediaDownloadScreen(
 }
 
 /**
+ * Пульт текущей загрузки: общий прогресс, что качается прямо сейчас, счётчики по очереди
+ * и кнопки паузы, отмены и перехода к полному списку.
+ */
+@Composable
+private fun MediaDownloadControlPanel(
+    queue: MediaDownloadState,
+    statusText: String,
+    progress: Float,
+    allPaused: Boolean,
+    onOpenQueue: () -> Unit,
+    onTogglePause: () -> Unit,
+    onCancelAll: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    val colors = MaterialTheme.colorScheme
+    val accent = if (allPaused) colors.tertiary else colors.primary
+    Surface(
+        modifier = modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(22.dp),
+        color = colors.surfaceContainerHigh,
+        border = BorderStroke(1.dp, accent.copy(alpha = 0.25f)),
+        tonalElevation = 2.dp,
+    ) {
+        Column(modifier = Modifier.padding(14.dp)) {
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Box(
+                    modifier = Modifier
+                        .size(38.dp)
+                        .clip(CircleShape)
+                        .background(accent.copy(alpha = 0.16f)),
+                    contentAlignment = Alignment.Center,
+                ) {
+                    Icon(
+                        if (allPaused) Icons.Default.Pause else Icons.Default.Download,
+                        contentDescription = null,
+                        tint = accent,
+                        modifier = Modifier.size(20.dp),
+                    )
+                }
+                Spacer(Modifier.width(10.dp))
+                Column(Modifier.weight(1f)) {
+                    Text(
+                        stringResource(
+                            if (allPaused) {
+                                R.string.media_download_all_paused
+                            } else {
+                                R.string.media_download_notif_title
+                            },
+                        ),
+                        style = MaterialTheme.typography.titleSmall,
+                        fontWeight = FontWeight.Bold,
+                        color = accent,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis,
+                    )
+                    if (statusText.isNotBlank()) {
+                        Text(
+                            statusText,
+                            style = MaterialTheme.typography.bodySmall,
+                            color = colors.onSurfaceVariant,
+                            maxLines = 2,
+                            overflow = TextOverflow.Ellipsis,
+                        )
+                    }
+                }
+                Spacer(Modifier.width(8.dp))
+                if (progress >= 0f) {
+                    Text(
+                        "${progress.toInt()}%",
+                        style = MaterialTheme.typography.titleMedium,
+                        fontWeight = FontWeight.Bold,
+                        color = accent,
+                    )
+                } else {
+                    CircularProgressIndicator(
+                        modifier = Modifier.size(20.dp),
+                        strokeWidth = 2.dp,
+                        color = accent,
+                    )
+                }
+            }
+
+            Spacer(Modifier.height(10.dp))
+            if (progress >= 0f) {
+                LinearProgressIndicator(
+                    progress = { (progress / 100f).coerceIn(0f, 1f) },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(8.dp)
+                        .clip(RoundedCornerShape(4.dp)),
+                    color = accent,
+                    trackColor = accent.copy(alpha = 0.16f),
+                )
+            } else {
+                LinearProgressIndicator(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(8.dp)
+                        .clip(RoundedCornerShape(4.dp)),
+                    color = accent,
+                    trackColor = accent.copy(alpha = 0.16f),
+                )
+            }
+
+            Spacer(Modifier.height(10.dp))
+            Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                MediaDownloadStatChip(
+                    icon = Icons.Default.CheckCircle,
+                    value = queue.downloaded,
+                    label = stringResource(R.string.media_download_stat_saved),
+                    color = colors.tertiary,
+                )
+                MediaDownloadStatChip(
+                    icon = Icons.AutoMirrored.Filled.PlaylistPlay,
+                    value = queue.remaining,
+                    label = stringResource(R.string.media_download_stat_remaining),
+                    color = accent,
+                )
+                if (queue.skipped > 0) {
+                    MediaDownloadStatChip(
+                        icon = Icons.Default.Check,
+                        value = queue.skipped,
+                        label = stringResource(R.string.media_download_stat_skipped),
+                        color = colors.onSurfaceVariant,
+                    )
+                }
+                if (queue.failed > 0) {
+                    MediaDownloadStatChip(
+                        icon = Icons.Default.Close,
+                        value = queue.failed,
+                        label = stringResource(R.string.media_download_stat_failed),
+                        color = colors.error,
+                    )
+                }
+            }
+
+            queue.lastCompleted?.let { done ->
+                Spacer(Modifier.height(8.dp))
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Icon(
+                        Icons.Default.CheckCircle,
+                        contentDescription = null,
+                        modifier = Modifier.size(14.dp),
+                        tint = colors.tertiary,
+                    )
+                    Spacer(Modifier.width(4.dp))
+                    Text(
+                        stringResource(R.string.media_download_last_saved, done),
+                        style = MaterialTheme.typography.labelSmall,
+                        color = colors.tertiary,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis,
+                    )
+                }
+            }
+
+            Spacer(Modifier.height(10.dp))
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                FilledTonalButton(
+                    onClick = onOpenQueue,
+                    shape = RoundedCornerShape(14.dp),
+                ) {
+                    Icon(
+                        Icons.AutoMirrored.Filled.PlaylistPlay,
+                        contentDescription = null,
+                        modifier = Modifier.size(18.dp),
+                    )
+                    Spacer(Modifier.width(6.dp))
+                    Text(stringResource(R.string.media_download_queue_button, queue.remaining))
+                }
+                Spacer(Modifier.weight(1f))
+                FilledTonalIconButton(
+                    onClick = onTogglePause,
+                    shape = RoundedCornerShape(14.dp),
+                ) {
+                    Icon(
+                        if (allPaused) Icons.Default.PlayArrow else Icons.Default.Pause,
+                        contentDescription = stringResource(
+                            if (allPaused) {
+                                R.string.media_download_resume_all
+                            } else {
+                                R.string.media_download_pause_all
+                            },
+                        ),
+                    )
+                }
+                Spacer(Modifier.width(6.dp))
+                FilledTonalIconButton(
+                    onClick = onCancelAll,
+                    shape = RoundedCornerShape(14.dp),
+                    colors = IconButtonDefaults.filledTonalIconButtonColors(
+                        containerColor = colors.errorContainer,
+                        contentColor = colors.onErrorContainer,
+                    ),
+                ) {
+                    Icon(
+                        Icons.Default.Close,
+                        contentDescription = stringResource(R.string.media_download_cancel),
+                    )
+                }
+            }
+        }
+    }
+}
+
+/** Счётчик очереди одной плашкой: иконка, число и подпись. */
+@Composable
+private fun MediaDownloadStatChip(
+    icon: androidx.compose.ui.graphics.vector.ImageVector,
+    value: Int,
+    label: String,
+    color: Color,
+) {
+    Surface(
+        shape = RoundedCornerShape(10.dp),
+        color = color.copy(alpha = 0.12f),
+    ) {
+        Row(
+            modifier = Modifier.padding(horizontal = 8.dp, vertical = 5.dp),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            Icon(
+                icon,
+                contentDescription = null,
+                tint = color,
+                modifier = Modifier.size(13.dp),
+            )
+            Spacer(Modifier.width(4.dp))
+            Text(
+                "$value",
+                style = MaterialTheme.typography.labelMedium,
+                fontWeight = FontWeight.Bold,
+                color = color,
+            )
+            Spacer(Modifier.width(3.dp))
+            Text(
+                label,
+                style = MaterialTheme.typography.labelSmall,
+                color = color.copy(alpha = 0.85f),
+            )
+        }
+    }
+}
+
+/**
  * Очередь загрузок целиком: видно, что качается сейчас, что ждёт очереди и что уже готово.
  * Каждую строку можно поставить на паузу, продолжить или убрать.
  */
@@ -1299,7 +1455,7 @@ private fun MediaDownloadQueueSheet(
                 modifier = Modifier
                     .fillMaxWidth()
                     .heightIn(max = 420.dp),
-                verticalArrangement = Arrangement.spacedBy(2.dp),
+                verticalArrangement = Arrangement.spacedBy(6.dp),
             ) {
                 items(state.items, key = { it.id }) { item ->
                     MediaDownloadQueueRow(
@@ -1336,12 +1492,31 @@ private fun MediaDownloadQueueRow(
         MediaDownloadItemStatus.RUNNING -> MaterialTheme.colorScheme.primary
         else -> MaterialTheme.colorScheme.onSurfaceVariant
     }
-    Column(modifier = Modifier.padding(vertical = 6.dp)) {
-        Row(verticalAlignment = Alignment.CenterVertically) {
+    Surface(
+        modifier = Modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(14.dp),
+        color = if (item.status == MediaDownloadItemStatus.RUNNING) {
+            statusColor.copy(alpha = 0.08f)
+        } else {
+            MaterialTheme.colorScheme.surfaceContainerLow
+        },
+    ) {
+        Row(
+            modifier = Modifier.padding(start = 10.dp, end = 4.dp, top = 8.dp, bottom = 8.dp),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            Box(
+                Modifier
+                    .size(width = 3.dp, height = 32.dp)
+                    .clip(RoundedCornerShape(2.dp))
+                    .background(statusColor.copy(alpha = 0.7f)),
+            )
+            Spacer(Modifier.width(10.dp))
             Column(Modifier.weight(1f)) {
                 Text(
                     item.label,
                     style = MaterialTheme.typography.bodyMedium,
+                    fontWeight = FontWeight.Medium,
                     maxLines = 2,
                     overflow = TextOverflow.Ellipsis,
                 )
@@ -1352,6 +1527,31 @@ private fun MediaDownloadQueueRow(
                     maxLines = 2,
                     overflow = TextOverflow.Ellipsis,
                 )
+                if (item.status == MediaDownloadItemStatus.RUNNING ||
+                    item.status == MediaDownloadItemStatus.PAUSED
+                ) {
+                    Spacer(Modifier.height(5.dp))
+                    if (item.progress >= 0f) {
+                        LinearProgressIndicator(
+                            progress = { (item.progress / 100f).coerceIn(0f, 1f) },
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .height(5.dp)
+                                .clip(RoundedCornerShape(3.dp)),
+                            color = statusColor,
+                            trackColor = statusColor.copy(alpha = 0.16f),
+                        )
+                    } else if (item.status == MediaDownloadItemStatus.RUNNING) {
+                        LinearProgressIndicator(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .height(5.dp)
+                                .clip(RoundedCornerShape(3.dp)),
+                            color = statusColor,
+                            trackColor = statusColor.copy(alpha = 0.16f),
+                        )
+                    }
+                }
             }
             when (item.status) {
                 MediaDownloadItemStatus.RUNNING, MediaDownloadItemStatus.QUEUED -> {
@@ -1382,25 +1582,6 @@ private fun MediaDownloadQueueRow(
                         tint = MaterialTheme.colorScheme.error,
                     )
                 }
-            }
-        }
-        if (item.status == MediaDownloadItemStatus.RUNNING || item.status == MediaDownloadItemStatus.PAUSED) {
-            val fraction = (item.progress / 100f).coerceIn(0f, 1f)
-            if (item.progress >= 0f) {
-                LinearProgressIndicator(
-                    progress = { fraction },
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(4.dp)
-                        .clip(RoundedCornerShape(2.dp)),
-                )
-            } else if (item.status == MediaDownloadItemStatus.RUNNING) {
-                LinearProgressIndicator(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(4.dp)
-                        .clip(RoundedCornerShape(2.dp)),
-                )
             }
         }
     }

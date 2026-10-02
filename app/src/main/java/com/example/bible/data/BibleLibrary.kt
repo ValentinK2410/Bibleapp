@@ -12,6 +12,7 @@ class BibleLibrary(
     private val chapterCache = mutableMapOf<Triple<TranslationId, String, Int>, BibleChapter?>()
     private val shellCache = mutableMapOf<Pair<TranslationId, String>, BibleBook?>()
     private val nameCache = mutableMapOf<Pair<TranslationId, String>, String?>()
+    private val verseCountCache = mutableMapOf<Pair<TranslationId, String>, Map<Int, Int>>()
     private val searchResultsCache = BibleSearchResultsCache()
 
     fun loadChapter(translation: TranslationId, bookId: String, chapterNum: Int): BibleChapter? {
@@ -43,6 +44,22 @@ class BibleLibrary(
         }
         shellCache[key] = null
         return null
+    }
+
+    /** Количество стихов в каждой главе книги; пусто, если текста нет локально. */
+    fun verseCountsByChapter(translation: TranslationId, bookId: String): Map<Int, Int> {
+        val key = translation to bookId
+        verseCountCache[key]?.let { return it }
+        val counts = if (repository.hasBookAsset(translation, bookId)) {
+            repository.verseCountsByChapter(translation, bookId)
+        } else {
+            legacy?.get(translation)?.books?.find { it.id == bookId }
+                ?.chapters
+                ?.associate { it.number to it.verses.size }
+                .orEmpty()
+        }
+        verseCountCache[key] = counts
+        return counts
     }
 
     fun bookName(translation: TranslationId, bookId: String): String? {
@@ -91,6 +108,7 @@ class BibleLibrary(
         chapterCache.clear()
         shellCache.clear()
         nameCache.clear()
+        verseCountCache.clear()
         searchResultsCache.clear()
     }
 
