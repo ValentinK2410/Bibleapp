@@ -1,10 +1,13 @@
 package com.example.bible.ui
 
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
@@ -18,12 +21,16 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.MenuBook
+import androidx.compose.material.icons.filled.Apps
+import androidx.compose.material.icons.filled.GraphicEq
 import androidx.compose.material.icons.filled.Headphones
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Surface
@@ -38,10 +45,14 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import com.example.bible.data.AppSectionUsage
 import com.example.bible.data.BibleCanon
 import com.example.bible.data.BibleCoverage
@@ -178,13 +189,18 @@ fun BibleCoverageScreen(
             }
         }
         item {
-            CoverageStatsCard(
+            ReadingListenStatsPanel(
+                track = track,
+                summary = summary,
                 stats = stats,
-                showReading = track.hasRead,
-                sectionUsage = sectionUsage,
                 onOpen = { bookId, chapter, verse ->
                     onOpenChapter(track.id, bookId, chapter, verse)
                 },
+            )
+        }
+        item {
+            AppSectionsStatsPanel(
+                sectionUsage = sectionUsage,
                 onOpenSection = onOpenSection,
             )
         }
@@ -400,31 +416,75 @@ private fun CoverageBookCard(
 }
 
 @Composable
-private fun CoverageStatsCard(
+private fun ReadingListenStatsPanel(
+    track: BibleCoverage.Track,
+    summary: BibleCoverage.TrackSummary?,
     stats: BibleReadingStats.Snapshot,
-    showReading: Boolean,
-    sectionUsage: Map<String, Pair<Int, Long>>,
     onOpen: (bookId: String, chapter: Int, verse: Int) -> Unit,
-    onOpenSection: (String) -> Unit,
 ) {
-    Card(shape = RoundedCornerShape(16.dp)) {
+    val scheme = MaterialTheme.colorScheme
+    val readColor = scheme.primary
+    val listenColor = scheme.tertiary
+    val empty = stats.uniqueVerses == 0 && stats.visits == 0 && stats.copies == 0 &&
+        stats.topListenedBooks.isEmpty() && (summary?.readChapters ?: 0) == 0 &&
+        (summary?.listenChapters ?: 0) == 0
+    Card(
+        shape = RoundedCornerShape(22.dp),
+        colors = CardDefaults.cardColors(containerColor = scheme.surfaceContainerLow),
+        elevation = CardDefaults.cardElevation(defaultElevation = 1.dp),
+    ) {
         Column(
-            Modifier.padding(12.dp),
-            verticalArrangement = Arrangement.spacedBy(8.dp),
+            Modifier
+                .background(
+                    Brush.verticalGradient(
+                        listOf(readColor.copy(alpha = 0.10f), listenColor.copy(alpha = 0.05f), Color.Transparent),
+                    ),
+                )
+                .padding(14.dp),
+            verticalArrangement = Arrangement.spacedBy(12.dp),
         ) {
-            Text(
-                "Статистика",
-                style = MaterialTheme.typography.titleSmall,
-                fontWeight = FontWeight.Bold,
+            StatsPanelHeader(
+                icon = Icons.AutoMirrored.Filled.MenuBook,
+                accent = readColor,
+                title = "Чтение и озвучка",
+                subtitle = track.label,
             )
-            if (showReading && stats.uniqueVerses == 0 && stats.visits == 0 && stats.copies == 0) {
+            if (empty) {
                 Text(
-                    "Откройте главу или скопируйте стих — здесь появятся самые читаемые книги, главы и стихи.",
+                    "Откройте главу или дослушайте озвучку — здесь появятся проценты, любимые книги и разделы канона.",
                     style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    color = scheme.onSurfaceVariant,
                 )
             }
-            if (showReading) {
+            if (summary != null) {
+                Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    if (track.hasRead) {
+                        HeroProgressTile(
+                            modifier = Modifier.weight(1f),
+                            icon = Icons.AutoMirrored.Filled.MenuBook,
+                            title = "Прочитано",
+                            done = summary.readChapters,
+                            total = summary.totalChapters,
+                            booksDone = summary.booksRead,
+                            bookCount = summary.bookCount,
+                            color = readColor,
+                        )
+                    }
+                    if (track.hasListen) {
+                        HeroProgressTile(
+                            modifier = Modifier.weight(1f),
+                            icon = Icons.Filled.GraphicEq,
+                            title = "Прослушано",
+                            done = summary.listenChapters,
+                            total = summary.totalChapters,
+                            booksDone = summary.booksListened,
+                            bookCount = summary.bookCount,
+                            color = listenColor,
+                        )
+                    }
+                }
+            }
+            if (track.hasRead) {
                 val metrics = buildList {
                     if (stats.daysActive > 0) add("Дней" to stats.daysActive.toString())
                     if (stats.currentStreak > 0) add("Серия" to "${stats.currentStreak} дн.")
@@ -443,98 +503,155 @@ private fun CoverageStatsCard(
                         add("7 дней" to week)
                     }
                 }
-                metrics.chunked(2).forEach { row ->
-                    Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                        row.forEach { (label, value) ->
-                            Surface(
-                                modifier = Modifier.weight(1f),
-                                shape = RoundedCornerShape(12.dp),
-                                color = MaterialTheme.colorScheme.surfaceContainerHigh,
-                            ) {
-                                Column(Modifier.padding(horizontal = 10.dp, vertical = 8.dp)) {
-                                    Text(
-                                        label,
-                                        style = MaterialTheme.typography.labelSmall,
-                                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                                    )
-                                    Text(
-                                        value,
-                                        style = MaterialTheme.typography.titleSmall,
-                                        fontWeight = FontWeight.Bold,
-                                        maxLines = 1,
-                                        overflow = TextOverflow.Ellipsis,
-                                    )
-                                }
+                if (metrics.isNotEmpty()) {
+                    StatsSectionLabel("Обзор чтения")
+                    metrics.chunked(3).forEach { row ->
+                        Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                            row.forEach { (label, value) ->
+                                MetricChip(Modifier.weight(1f), label, value, readColor)
                             }
+                            repeat(3 - row.size) { Spacer(Modifier.weight(1f)) }
                         }
-                        if (row.size == 1) Spacer(Modifier.weight(1f))
                     }
                 }
-                val testament = testamentLine(stats.oldTestamentSeconds, stats.newTestamentSeconds)
-                if (testament != null) {
-                    Text(
-                        testament,
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    )
-                }
+                TestamentSplitBar(
+                    oldSeconds = stats.oldTestamentSeconds,
+                    newSeconds = stats.newTestamentSeconds,
+                )
                 if (stats.topTools.isNotEmpty()) {
                     Text(
                         "Инструменты: " + stats.topTools.joinToString(" · ") { "${it.first} ${it.second}" },
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        style = MaterialTheme.typography.labelMedium,
+                        color = scheme.onSurfaceVariant,
                     )
                 }
-                RankBlock("Самые читаемые книги", stats.topBooks, onOpen) { rankDetail(it) }
-                RankBlock("Самые читаемые главы", stats.topChapters, onOpen) { rankDetail(it) }
-                RankBlock("Самые читаемые стихи", stats.topVerses, onOpen) { rankDetail(it) }
-                RankBlock("Дольше всего на стихе", stats.topByTime, onOpen) { rankDetail(it) }
-                RankBlock("Чаще всего копируют", stats.topCopied, onOpen) { rankDetail(it) }
+                RankBlock("Самые читаемые книги", stats.topBooks, onOpen, readColor) { rankDetail(it) }
+                RankBlock("Самые читаемые главы", stats.topChapters, onOpen, readColor) { rankDetail(it) }
+                RankBlock("Самые читаемые стихи", stats.topVerses, onOpen, readColor) { rankDetail(it) }
+                RankBlock("Дольше всего на стихе", stats.topByTime, onOpen, readColor) { rankDetail(it) }
+                RankBlock("Чаще всего копируют", stats.topCopied, onOpen, readColor) { rankDetail(it) }
             }
-            RankBlock("Больше всего прослушанных глав", stats.topListenedBooks, onOpen) {
-                "${it.uniqueVerses} гл."
+            if (track.hasListen || stats.topListenedBooks.isNotEmpty()) {
+                RankBlock("Больше всего прослушанных глав", stats.topListenedBooks, onOpen, listenColor) {
+                    "${it.uniqueVerses} гл."
+                }
             }
-            FrequencyBoard(
+            CanonGroupsBoard(
                 groups = stats.groups,
-                sectionUsage = sectionUsage,
                 onOpenGroup = { group ->
                     val bookId = BibleCanon.allBooks.firstOrNull { it.group == group }?.id
                     if (bookId != null) onOpen(bookId, 1, 0)
                 },
-                onOpenSection = onOpenSection,
             )
         }
     }
 }
 
 @Composable
-private fun FrequencyBoard(
-    groups: List<BibleReadingStats.GroupStats>,
+private fun AppSectionsStatsPanel(
     sectionUsage: Map<String, Pair<Int, Long>>,
-    onOpenGroup: (CanonBookGroup) -> Unit,
     onOpenSection: (String) -> Unit,
 ) {
     var band by remember { mutableStateOf<AppSectionUsage.Band?>(null) }
-    val sections = remember(sectionUsage) { AppSectionUsage.rows(sectionUsage) }
-    val groupMax = groups.maxOfOrNull { it.activity } ?: 0
+    val sections = remember(sectionUsage) { AppSectionUsage.nonBibleRows(sectionUsage) }
     val sectionMax = sections.maxOfOrNull { it.opens } ?: 0
-    val visibleGroups = groups.filter { band == null || AppSectionUsage.band(it.activity, groupMax) == band }
-    val visibleSections = sections.filter { band == null || AppSectionUsage.band(it.opens, sectionMax) == band }
+    val bands = sections.map { AppSectionUsage.band(it.opens, sectionMax) }
+    val visible = sections.filter { band == null || AppSectionUsage.band(it.opens, sectionMax) == band }
+    val byArea = remember(visible) {
+        val order = AppSectionUsage.areaOrder()
+        visible.groupBy { it.section.area }
+            .toList()
+            .sortedBy { (area, _) -> order.indexOf(area).let { if (it < 0) 99 else it } }
+    }
+    val scheme = MaterialTheme.colorScheme
+    val accent = scheme.secondary
+    Card(
+        shape = RoundedCornerShape(22.dp),
+        colors = CardDefaults.cardColors(containerColor = scheme.surfaceContainerLow),
+        elevation = CardDefaults.cardElevation(defaultElevation = 1.dp),
+    ) {
+        Column(
+            Modifier
+                .background(
+                    Brush.verticalGradient(
+                        listOf(accent.copy(alpha = 0.12f), Color.Transparent),
+                    ),
+                )
+                .padding(14.dp),
+            verticalArrangement = Arrangement.spacedBy(12.dp),
+        ) {
+            StatsPanelHeader(
+                icon = Icons.Filled.Apps,
+                accent = accent,
+                title = "Разделы приложения",
+                subtitle = "Без Библии — медиа, детям, церковь и остальное",
+            )
+            Text(
+                "Сверху то, куда заходите часто. Внизу — то, что почти не открывали.",
+                style = MaterialTheme.typography.bodySmall,
+                color = scheme.onSurfaceVariant,
+            )
+            Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                BandSummaryChip("часто", bands.count { it == AppSectionUsage.Band.OFTEN }, scheme.primary)
+                BandSummaryChip("иногда", bands.count { it == AppSectionUsage.Band.SOMETIMES }, scheme.tertiary)
+                BandSummaryChip("редко", bands.count { it == AppSectionUsage.Band.RARE }, scheme.onSurfaceVariant)
+                BandSummaryChip("пусто", bands.count { it == AppSectionUsage.Band.NEVER }, scheme.outline)
+            }
+            Row(
+                modifier = Modifier.horizontalScroll(rememberScrollState()),
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+            ) {
+                FilterChip(selected = band == null, onClick = { band = null }, label = { Text("Все") })
+                AppSectionUsage.Band.entries.forEach { item ->
+                    FilterChip(
+                        selected = band == item,
+                        onClick = { band = item },
+                        label = { Text(item.label) },
+                    )
+                }
+            }
+            if (visible.isEmpty()) {
+                Text(
+                    "Нет разделов с таким фильтром",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = scheme.onSurfaceVariant,
+                )
+            }
+            byArea.forEach { (area, rows) ->
+                StatsSectionLabel(area)
+                rows.forEach { row ->
+                    val itemBand = AppSectionUsage.band(row.opens, sectionMax)
+                    UsageMeterCard(
+                        title = row.section.title,
+                        band = itemBand,
+                        fraction = if (sectionMax <= 0) 0f else row.opens.toFloat() / sectionMax,
+                        detail = if (row.opens <= 0) {
+                            "ещё не открывали"
+                        } else {
+                            openingsLabel(row.opens) + " · " + lastOpenedLabel(row.lastAt)
+                        },
+                        neverLabel = "не открывали",
+                        onClick = { onOpenSection(row.section.id) },
+                    )
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun CanonGroupsBoard(
+    groups: List<BibleReadingStats.GroupStats>,
+    onOpenGroup: (CanonBookGroup) -> Unit,
+) {
+    if (groups.isEmpty()) return
+    var band by remember { mutableStateOf<AppSectionUsage.Band?>(null) }
+    val groupMax = groups.maxOfOrNull { it.activity } ?: 0
+    val visible = groups.filter { band == null || AppSectionUsage.band(it.activity, groupMax) == band }
+    StatsSectionLabel("Разделы канона")
     Text(
-        "Каждый раздел",
-        style = MaterialTheme.typography.titleSmall,
-        fontWeight = FontWeight.Bold,
-    )
-    Text(
-        "Сверху то, к чему возвращаетесь. Внизу — то, что почти не открывали.",
+        "Пятикнижие, Евангелия и остальные — что читают и слушают чаще.",
         style = MaterialTheme.typography.bodySmall,
-        color = MaterialTheme.colorScheme.onSurfaceVariant,
-    )
-    Text(
-        frequencySummary(groups.map { AppSectionUsage.band(it.activity, groupMax) }, "канон") +
-            " · " +
-            frequencySummary(sections.map { AppSectionUsage.band(it.opens, sectionMax) }, "приложение"),
-        style = MaterialTheme.typography.labelSmall,
         color = MaterialTheme.colorScheme.onSurfaceVariant,
     )
     Row(
@@ -550,15 +667,10 @@ private fun FrequencyBoard(
             )
         }
     }
-    Text("Разделы Библии", style = MaterialTheme.typography.labelLarge, fontWeight = FontWeight.SemiBold)
-    if (visibleGroups.isEmpty()) {
-        Text("Нет таких разделов", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
-    }
-    visibleGroups.forEach { group ->
+    visible.forEach { group ->
         val itemBand = AppSectionUsage.band(group.activity, groupMax)
-        UsageMeter(
+        UsageMeterCard(
             title = group.title,
-            caption = "Библия",
             band = itemBand,
             fraction = if (groupMax <= 0) 0f else group.activity.toFloat() / groupMax,
             detail = groupDetail(group),
@@ -566,32 +678,179 @@ private fun FrequencyBoard(
             onClick = { onOpenGroup(group.group) },
         )
     }
-    Text("Разделы приложения", style = MaterialTheme.typography.labelLarge, fontWeight = FontWeight.SemiBold)
-    if (visibleSections.isEmpty()) {
-        Text("Нет таких разделов", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+}
+
+@Composable
+private fun StatsPanelHeader(
+    icon: ImageVector,
+    accent: Color,
+    title: String,
+    subtitle: String,
+) {
+    Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+        Box(
+            modifier = Modifier
+                .size(40.dp)
+                .clip(RoundedCornerShape(12.dp))
+                .background(accent.copy(alpha = 0.16f)),
+            contentAlignment = Alignment.Center,
+        ) {
+            Icon(icon, contentDescription = null, tint = accent, modifier = Modifier.size(22.dp))
+        }
+        Column {
+            Text(title, style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
+            Text(subtitle, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+        }
     }
-    visibleSections.forEach { row ->
-        val itemBand = AppSectionUsage.band(row.opens, sectionMax)
-        UsageMeter(
-            title = row.section.title,
-            caption = row.section.area,
-            band = itemBand,
-            fraction = if (sectionMax <= 0) 0f else row.opens.toFloat() / sectionMax,
-            detail = if (row.opens <= 0) {
-                "ещё не открывали"
-            } else {
-                openingsLabel(row.opens) + " · " + lastOpenedLabel(row.lastAt)
-            },
-            neverLabel = "не открывали",
-            onClick = { onOpenSection(row.section.id) },
+}
+
+@Composable
+private fun StatsSectionLabel(text: String) {
+    Text(
+        text,
+        style = MaterialTheme.typography.labelLarge,
+        fontWeight = FontWeight.SemiBold,
+        color = MaterialTheme.colorScheme.onSurface,
+    )
+}
+
+@Composable
+private fun HeroProgressTile(
+    modifier: Modifier = Modifier,
+    icon: ImageVector,
+    title: String,
+    done: Int,
+    total: Int,
+    booksDone: Int,
+    bookCount: Int,
+    color: Color,
+) {
+    val pct = BibleCoverage.percent(done, total)
+    Surface(
+        modifier = modifier,
+        shape = RoundedCornerShape(18.dp),
+        color = color.copy(alpha = 0.10f),
+        border = BorderStroke(1.dp, color.copy(alpha = 0.28f)),
+    ) {
+        Column(Modifier.padding(12.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Icon(icon, contentDescription = null, tint = color, modifier = Modifier.size(18.dp))
+                Spacer(Modifier.width(6.dp))
+                Text(title, color = color, fontWeight = FontWeight.SemiBold, fontSize = 13.sp)
+            }
+            Text(
+                "$pct%",
+                color = color,
+                fontWeight = FontWeight.Bold,
+                fontSize = 28.sp,
+                lineHeight = 30.sp,
+            )
+            LinearProgressIndicator(
+                progress = { if (total <= 0) 0f else done.toFloat() / total },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(7.dp)
+                    .clip(CircleShape),
+                color = color,
+                trackColor = color.copy(alpha = 0.14f),
+                drawStopIndicator = {},
+            )
+            Text(
+                "$done из $total глав",
+                style = MaterialTheme.typography.labelMedium,
+                color = MaterialTheme.colorScheme.onSurface,
+                fontWeight = FontWeight.Medium,
+            )
+            Text(
+                "книг целиком $booksDone из $bookCount",
+                style = MaterialTheme.typography.labelSmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+        }
+    }
+}
+
+@Composable
+private fun MetricChip(modifier: Modifier, label: String, value: String, accent: Color) {
+    Surface(
+        modifier = modifier,
+        shape = RoundedCornerShape(14.dp),
+        color = MaterialTheme.colorScheme.surface,
+        border = BorderStroke(1.dp, accent.copy(alpha = 0.18f)),
+    ) {
+        Column(Modifier.padding(horizontal = 8.dp, vertical = 8.dp)) {
+            Text(label, style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+            Text(
+                value,
+                style = MaterialTheme.typography.titleSmall,
+                fontWeight = FontWeight.Bold,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
+            )
+        }
+    }
+}
+
+@Composable
+private fun TestamentSplitBar(oldSeconds: Int, newSeconds: Int) {
+    val total = oldSeconds + newSeconds
+    if (total <= 0) return
+    val oldPct = oldSeconds * 100 / total
+    val newPct = 100 - oldPct
+    val scheme = MaterialTheme.colorScheme
+    Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
+        StatsSectionLabel("Ветхий и Новый Завет")
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(10.dp)
+                .clip(CircleShape)
+                .background(scheme.surfaceVariant),
+        ) {
+            if (oldPct > 0) {
+                Box(
+                    Modifier
+                        .weight(oldPct.toFloat().coerceAtLeast(1f))
+                        .fillMaxSize()
+                        .background(scheme.primary),
+                )
+            }
+            if (newPct > 0) {
+                Box(
+                    Modifier
+                        .weight(newPct.toFloat().coerceAtLeast(1f))
+                        .fillMaxSize()
+                        .background(scheme.tertiary),
+                )
+            }
+        }
+        Row {
+            Text("ВЗ $oldPct%", color = scheme.primary, style = MaterialTheme.typography.labelMedium, fontWeight = FontWeight.SemiBold)
+            Spacer(Modifier.weight(1f))
+            Text("НЗ $newPct%", color = scheme.tertiary, style = MaterialTheme.typography.labelMedium, fontWeight = FontWeight.SemiBold)
+        }
+    }
+}
+
+@Composable
+private fun BandSummaryChip(label: String, count: Int, color: Color) {
+    Surface(
+        shape = RoundedCornerShape(999.dp),
+        color = color.copy(alpha = 0.12f),
+    ) {
+        Text(
+            "$label $count",
+            modifier = Modifier.padding(horizontal = 10.dp, vertical = 5.dp),
+            color = color,
+            style = MaterialTheme.typography.labelMedium,
+            fontWeight = FontWeight.SemiBold,
         )
     }
 }
 
 @Composable
-private fun UsageMeter(
+private fun UsageMeterCard(
     title: String,
-    caption: String,
     band: AppSectionUsage.Band,
     fraction: Float,
     detail: String,
@@ -604,57 +863,49 @@ private fun UsageMeter(
         AppSectionUsage.Band.RARE -> MaterialTheme.colorScheme.onSurfaceVariant
         AppSectionUsage.Band.NEVER -> MaterialTheme.colorScheme.outline
     }
-    Column(
+    Surface(
         modifier = Modifier
             .fillMaxWidth()
-            .clickable(onClick = onClick)
-            .padding(vertical = 2.dp),
-        verticalArrangement = Arrangement.spacedBy(2.dp),
+            .clickable(onClick = onClick),
+        shape = RoundedCornerShape(16.dp),
+        color = MaterialTheme.colorScheme.surface,
+        border = BorderStroke(1.dp, color.copy(alpha = 0.18f)),
     ) {
-        Row(verticalAlignment = Alignment.CenterVertically) {
+        Column(Modifier.padding(horizontal = 12.dp, vertical = 10.dp), verticalArrangement = Arrangement.spacedBy(5.dp)) {
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Text(
+                    title,
+                    modifier = Modifier.weight(1f),
+                    fontWeight = FontWeight.SemiBold,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
+                )
+                Text(
+                    if (band == AppSectionUsage.Band.NEVER) neverLabel else band.label,
+                    color = color,
+                    style = MaterialTheme.typography.labelSmall,
+                    fontWeight = FontWeight.Bold,
+                )
+            }
+            LinearProgressIndicator(
+                progress = { fraction.coerceIn(0f, 1f) },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(5.dp)
+                    .clip(CircleShape),
+                color = color,
+                trackColor = color.copy(alpha = 0.14f),
+                drawStopIndicator = {},
+            )
             Text(
-                title,
-                modifier = Modifier.weight(1f),
-                fontWeight = FontWeight.SemiBold,
-                maxLines = 1,
+                detail,
+                style = MaterialTheme.typography.labelSmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                maxLines = 2,
                 overflow = TextOverflow.Ellipsis,
             )
-            Text(
-                if (band == AppSectionUsage.Band.NEVER) neverLabel else band.label,
-                color = color,
-                style = MaterialTheme.typography.labelSmall,
-                fontWeight = FontWeight.Bold,
-            )
         }
-        Text(
-            caption,
-            style = MaterialTheme.typography.labelSmall,
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
-        )
-        LinearProgressIndicator(
-            progress = { fraction.coerceIn(0f, 1f) },
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(4.dp),
-            color = color,
-            trackColor = color.copy(alpha = 0.15f),
-            drawStopIndicator = {},
-        )
-        Text(
-            detail,
-            style = MaterialTheme.typography.labelSmall,
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
-            maxLines = 2,
-            overflow = TextOverflow.Ellipsis,
-        )
     }
-}
-
-private fun frequencySummary(bands: List<AppSectionUsage.Band>, scope: String): String {
-    val often = bands.count { it == AppSectionUsage.Band.OFTEN }
-    val rare = bands.count { it == AppSectionUsage.Band.RARE || it == AppSectionUsage.Band.SOMETIMES }
-    val never = bands.count { it == AppSectionUsage.Band.NEVER }
-    return "$scope: часто $often, реже $rare, пусто $never"
 }
 
 private fun groupDetail(group: BibleReadingStats.GroupStats): String {
@@ -685,43 +936,60 @@ private fun RankBlock(
     title: String,
     rows: List<BibleReadingStats.PassageRank>,
     onOpen: (bookId: String, chapter: Int, verse: Int) -> Unit,
+    accent: Color,
     detail: (BibleReadingStats.PassageRank) -> String,
 ) {
     if (rows.isEmpty()) return
-    Text(title, style = MaterialTheme.typography.labelLarge, fontWeight = FontWeight.SemiBold)
-    rows.forEachIndexed { index, rank ->
-        val place = index + 1
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .clickable {
-                    onOpen(rank.bookId, if (rank.chapter > 0) rank.chapter else 1, rank.verse)
+    StatsSectionLabel(title)
+    Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
+        rows.forEachIndexed { index, rank ->
+            val place = index + 1
+            Surface(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clickable {
+                        onOpen(rank.bookId, if (rank.chapter > 0) rank.chapter else 1, rank.verse)
+                    },
+                shape = RoundedCornerShape(14.dp),
+                color = MaterialTheme.colorScheme.surface,
+                border = BorderStroke(1.dp, accent.copy(alpha = 0.14f)),
+            ) {
+                Row(
+                    modifier = Modifier.padding(horizontal = 10.dp, vertical = 8.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
+                    Box(
+                        modifier = Modifier
+                            .size(28.dp)
+                            .clip(CircleShape)
+                            .background(accent.copy(alpha = if (place <= 3) 0.22f else 0.10f)),
+                        contentAlignment = Alignment.Center,
+                    ) {
+                        Text(
+                            "$place",
+                            color = accent,
+                            fontWeight = FontWeight.Bold,
+                            fontSize = 13.sp,
+                        )
+                    }
+                    Spacer(Modifier.width(10.dp))
+                    Column(Modifier.weight(1f)) {
+                        Text(
+                            passageTitle(rank),
+                            style = MaterialTheme.typography.bodyMedium,
+                            fontWeight = FontWeight.SemiBold,
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis,
+                        )
+                        Text(
+                            detail(rank),
+                            style = MaterialTheme.typography.labelSmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis,
+                        )
+                    }
                 }
-                .padding(vertical = 2.dp),
-            verticalAlignment = Alignment.CenterVertically,
-        ) {
-            Text(
-                "$place",
-                modifier = Modifier.width(22.dp),
-                color = MaterialTheme.colorScheme.primary,
-                fontWeight = FontWeight.Bold,
-                style = MaterialTheme.typography.labelLarge,
-            )
-            Column(Modifier.weight(1f)) {
-                Text(
-                    passageTitle(rank),
-                    style = MaterialTheme.typography.bodyMedium,
-                    fontWeight = FontWeight.Medium,
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis,
-                )
-                Text(
-                    detail(rank),
-                    style = MaterialTheme.typography.labelSmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis,
-                )
             }
         }
     }

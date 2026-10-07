@@ -20,6 +20,8 @@ object AppSectionUsage {
         val lastAt: Long,
     )
 
+    const val BIBLE_AREA = "Библия"
+
     enum class Band(val label: String) {
         OFTEN("часто"),
         SOMETIMES("иногда"),
@@ -171,6 +173,14 @@ object AppSectionUsage {
             Row(section, stored?.first ?: 0, stored?.second ?: 0L)
         }.sortedWith(compareByDescending<Row> { it.opens }.thenBy { it.section.area }.thenBy { it.section.title })
     }
+
+    /** Разделы приложения без Библии — медиа, детям, церковь и остальное. */
+    fun nonBibleRows(usage: Map<String, Pair<Int, Long>>): List<Row> =
+        rows(usage).filter { it.section.area != BIBLE_AREA }
+
+    fun areaOrder(): List<String> = listOf(
+        "Медиа", "Жизнь", "Церковь", "ИИ", "Детям", "Эксперимент", "Настройки", "Другое",
+    )
 
     fun band(value: Int, max: Int): Band {
         if (value <= 0 || max <= 0) return Band.NEVER

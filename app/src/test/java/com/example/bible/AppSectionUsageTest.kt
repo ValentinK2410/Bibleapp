@@ -32,6 +32,20 @@ class AppSectionUsageTest {
     }
 
     @Test
+    fun nonBibleRowsSkipBibleArea() {
+        val rows = AppSectionUsage.nonBibleRows(
+            mapOf(
+                "search" to (5 to 1L),
+                "media" to (2 to 2L),
+                "kids" to (0 to 0L),
+            ),
+        )
+        assertTrue(rows.none { it.section.area == AppSectionUsage.BIBLE_AREA })
+        assertTrue(rows.any { it.section.id == "media" && it.opens == 2 })
+        assertTrue(rows.any { it.section.id == "kids" })
+    }
+
+    @Test
     fun canonGroupsIncludeUntouchedSections() {
         val stats = BibleReadingStats.build(
             trackId = TranslationId.SYNODAL.code,
