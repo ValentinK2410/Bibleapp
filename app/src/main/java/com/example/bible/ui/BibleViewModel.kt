@@ -6,7 +6,9 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import com.example.bible.data.AppDataExport
+import com.example.bible.data.BibleAudioPlayer
 import com.example.bible.data.BibleCanon
+import com.example.bible.data.BibleCoverage
 import com.example.bible.data.BibleLibrary
 import com.example.bible.data.BiblePreferences
 import com.example.bible.data.BibleSearchHistoryEntry
@@ -955,7 +957,34 @@ class BibleViewModel(
             BibleSearchListState(),
         )
 
+    val coverageReadChapters: StateFlow<Set<String>> = preferences.coverageReadChapters.stateIn(
+        viewModelScope,
+        SharingStarted.WhileSubscribed(5000),
+        emptySet(),
+    )
+
+    val coverageListenChapters: StateFlow<Set<String>> = preferences.coverageListenChapters.stateIn(
+        viewModelScope,
+        SharingStarted.WhileSubscribed(5000),
+        emptySet(),
+    )
+
+    fun setBookCoverage(listen: Boolean, trackId: String, bookId: String, chapterCount: Int, marked: Boolean) {
+        viewModelScope.launch {
+            preferences.setBookCoverage(listen, trackId, bookId, chapterCount, marked)
+        }
+    }
+
     init {
+        viewModelScope.launch {
+            preferences.importCoverageFromHistoryIfNeeded()
+        }
+        viewModelScope.launch {
+            BibleAudioPlayer.chapterFinished.collect { finished ->
+                val track = BibleCoverage.trackForNarrator(finished.narratorId) ?: return@collect
+                preferences.markChapterListened(track, finished.bookId, finished.chapter)
+            }
+        }
         viewModelScope.launch {
             ttsUserSettings.collect { BibleTtsController.setSettings(it) }
         }

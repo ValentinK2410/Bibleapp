@@ -345,6 +345,12 @@ fun booksWithDownloadedAudio(context: Context, narratorId: String): Set<String> 
     }
 }
 
+data class ChapterAudioFinished(
+    val narratorId: String,
+    val bookId: String,
+    val chapter: Int,
+)
+
 data class BiblePlayerState(
     val isPlaying: Boolean = false,
     val bookId: String = "",
@@ -412,6 +418,10 @@ object BibleAudioPlayer {
      */
     private val _chapterContinueNavigation = MutableSharedFlow<Pair<String, Int>>(extraBufferCapacity = 1)
     val chapterContinueNavigation: SharedFlow<Pair<String, Int>> = _chapterContinueNavigation.asSharedFlow()
+
+    private val _chapterFinished = MutableSharedFlow<ChapterAudioFinished>(extraBufferCapacity = 16)
+    /** Глава доиграла до конца или до неё осталось меньше 10%, и включили другую. */
+    val chapterFinished: SharedFlow<ChapterAudioFinished> = _chapterFinished.asSharedFlow()
 
     private val _playbackSpeed = MutableStateFlow(1f)
     val playbackSpeed: StateFlow<Float> = _playbackSpeed.asStateFlow()
@@ -594,6 +604,26 @@ object BibleAudioPlayer {
         }
     }
 
+    private fun emitChapterFinished(st: BiblePlayerState) {
+        if (st.bookId.isBlank() || st.narratorId.isBlank() || st.chapter <= 0) return
+        _chapterFinished.tryEmit(
+            ChapterAudioFinished(
+                narratorId = st.narratorId,
+                bookId = st.bookId,
+                chapter = st.chapter,
+            ),
+        )
+    }
+
+    /** Если ушли на другую главу, когда до конца осталось меньше 10%. */
+    private fun creditChapterIfAlmostFinished() {
+        val st = _state.value
+        val duration = st.durationMs
+        if (duration < 5_000) return
+        if (st.positionMs < (duration * 0.9f).toInt()) return
+        emitChapterFinished(st)
+    }
+
     fun playChapter(
         context: Context,
         narrator: AudioNarrator,
@@ -612,6 +642,9 @@ object BibleAudioPlayer {
             setStopAtPositionMs(stopAtPositionMs)
         } else if (key != currentKey && segmentStopEndVerse == null) {
             clearStopAtPosition()
+        }
+        if (key != currentKey) {
+            creditChapterIfAlmostFinished()
         }
         if (key == currentKey && player != null) {
             appContext = context.applicationContext
@@ -702,6 +735,7 @@ object BibleAudioPlayer {
             }
             mp.setOnCompletionListener {
                 if (player !== mp) return@setOnCompletionListener
+                emitChapterFinished(_state.value)
                 if (pendingSleepStopAfterChapter) {
                     applySleepStop()
                     return@setOnCompletionListener

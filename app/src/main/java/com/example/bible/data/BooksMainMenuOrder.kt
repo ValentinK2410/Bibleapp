@@ -5,6 +5,7 @@ object BooksMainMenuOrder {
     const val SEARCH = "search"
     const val BOOKMARKS = "bookmarks"
     const val HISTORY = "history"
+    const val COVERAGE = "coverage"
     const val NOTES = "notes"
     const val DAILY_JOURNAL = "daily_journal"
     const val AI = "ai"
@@ -32,6 +33,7 @@ object BooksMainMenuOrder {
         SEARCH,
         BOOKMARKS,
         HISTORY,
+        COVERAGE,
         NOTES,
         DAILY_JOURNAL,
         AI,
@@ -69,7 +71,14 @@ object BooksMainMenuOrder {
             }
         }
         allIds.forEach { id ->
-            if (id !in seen) out.add(id)
+            if (id !in seen) {
+                if (id == COVERAGE) {
+                    val afterHistory = out.indexOf(HISTORY)
+                    if (afterHistory >= 0) out.add(afterHistory + 1, id) else out.add(id)
+                } else {
+                    out.add(id)
+                }
+            }
         }
         return out
     }
@@ -85,6 +94,7 @@ object BooksMainMenuOrder {
         SEARCH -> "Поиск"
         BOOKMARKS -> "Закладки"
         HISTORY -> "История чтения"
+        COVERAGE -> "Прочитано и прослушано"
         NOTES -> "Заметки"
         DAILY_JOURNAL -> "Ежедневник"
         AI -> "ИИ"

@@ -65,6 +65,11 @@ fun BooksMainMenuOrderedItems(
                 onClick = { closeMenu(); navController.navigate("bookmarks") },
                 leadingIcon = { Icon(Icons.Default.BookmarkBorder, contentDescription = null) },
             )
+            BooksMainMenuOrder.COVERAGE -> DropdownMenuItem(
+                text = { Text("Прочитано и прослушано") },
+                onClick = { closeMenu(); navController.navigate("bible_coverage") },
+                leadingIcon = { Icon(Icons.AutoMirrored.Filled.MenuBook, contentDescription = null, tint = primary) },
+            )
             BooksMainMenuOrder.HISTORY -> DropdownMenuItem(
                 text = { Text("История чтения") },
                 onClick = { closeMenu(); navController.navigate("history") },

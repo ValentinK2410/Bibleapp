@@ -640,6 +640,8 @@ private fun BibleNavHost(
     val audioPlaybackState by viewModel.audioPlaybackState.collectAsStateWithLifecycle()
     val audioPlaybackSpeed by viewModel.audioPlaybackSpeed.collectAsStateWithLifecycle()
     val readingHistory by viewModel.readingHistory.collectAsStateWithLifecycle()
+    val coverageRead by viewModel.coverageReadChapters.collectAsStateWithLifecycle()
+    val coverageListen by viewModel.coverageListenChapters.collectAsStateWithLifecycle()
     val readingTrace by viewModel.readingTrace.collectAsStateWithLifecycle()
     val narratorId by viewModel.audioNarratorId.collectAsStateWithLifecycle()
     val downloadTick by com.example.bible.data.BibleAudioPlayer.downloadTick.collectAsState()
@@ -887,12 +889,20 @@ private fun BibleNavHost(
                                 navController.navigate("read/${dailyVerse.bookId}/${dailyVerse.chapter}/${dailyVerse.verse}")
                             },
                         )
+                        val tileCoverage = remember(coverageRead, coverageListen, translation) {
+                            com.example.bible.data.BibleCoverage.tileCounts(
+                                translation.code,
+                                coverageRead,
+                                coverageListen,
+                            )
+                        }
                         BookSelectionContent(
                             layoutMode = bookLayoutMode,
                             modifier = Modifier
                                 .fillMaxSize()
                                 .weight(1f),
                             booksWithAudio = booksWithAudio,
+                            coverageByBook = tileCoverage,
                             onBookClick = { bookId ->
                                 com.example.bible.data.BibleAudioPlayer.stopForNavigation()
                                 viewModel.passagePickerSelectBook(bookId)
@@ -3374,6 +3384,47 @@ private fun BibleNavHost(
                         }
                     },
                     onSetBookmarkTags = { ref, tags -> viewModel.setBookmarkTags(ref, tags) },
+                )
+            }
+        }
+        composable("bible_coverage") {
+            val initialTrack = translation.code
+            Scaffold(
+                topBar = {
+                    CenterAlignedTopAppBar(
+                        title = { Text("Прочитано и прослушано") },
+                        navigationIcon = {
+                            IconButton(onClick = { navController.navigateUp() }) {
+                                Icon(
+                                    Icons.AutoMirrored.Filled.ArrowBack,
+                                    contentDescription = stringResource(R.string.back),
+                                )
+                            }
+                        },
+                    )
+                },
+            ) { padding ->
+                BibleCoverageScreen(
+                    modifier = Modifier.padding(padding),
+                    readKeys = coverageRead,
+                    listenKeys = coverageListen,
+                    initialTrackId = initialTrack,
+                    onOpenChapter = { trackId, bookId, chapter ->
+                        val track = com.example.bible.data.BibleCoverage.trackById(trackId)
+                        scope.launch {
+                            viewModel.setTranslation(track?.textTranslation ?: TranslationId.INTERLINEAR)
+                            navController.navigate("read/$bookId/$chapter/0") {
+                                popUpTo("bible_coverage") { inclusive = true }
+                                launchSingleTop = true
+                            }
+                        }
+                    },
+                    onSetBookRead = { trackId, bookId, chapterCount, marked ->
+                        viewModel.setBookCoverage(listen = false, trackId, bookId, chapterCount, marked)
+                    },
+                    onSetBookListened = { trackId, bookId, chapterCount, marked ->
+                        viewModel.setBookCoverage(listen = true, trackId, bookId, chapterCount, marked)
+                    },
                 )
             }
         }

@@ -29,6 +29,8 @@ import androidx.compose.foundation.lazy.items as lazyColumnItems
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.MenuBook
+import androidx.compose.material.icons.filled.GraphicEq
 import androidx.compose.material.icons.filled.Headphones
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.HorizontalDivider
@@ -422,6 +424,7 @@ fun BookSelectionContent(
     layoutMode: BookLayoutMode,
     modifier: Modifier = Modifier,
     booksWithAudio: Set<String> = emptySet(),
+    coverageByBook: Map<String, Pair<Int, Int>> = emptyMap(),
     onBookClick: (String) -> Unit,
     onBookLongPress: (CanonBookEntry) -> Unit = {},
 ) {
@@ -429,12 +432,14 @@ fun BookSelectionContent(
         BookLayoutMode.GRID -> BookSelectionGrid(
             modifier = modifier,
             booksWithAudio = booksWithAudio,
+            coverageByBook = coverageByBook,
             onBookClick = onBookClick,
             onBookLongPress = onBookLongPress,
         )
         BookLayoutMode.LIST -> BookSelectionList(
             modifier = modifier,
             booksWithAudio = booksWithAudio,
+            coverageByBook = coverageByBook,
             onBookClick = onBookClick,
             onBookLongPress = onBookLongPress,
         )
@@ -445,6 +450,7 @@ fun BookSelectionContent(
 fun BookSelectionGrid(
     modifier: Modifier = Modifier,
     booksWithAudio: Set<String> = emptySet(),
+    coverageByBook: Map<String, Pair<Int, Int>> = emptyMap(),
     onBookClick: (String) -> Unit,
     onBookLongPress: (CanonBookEntry) -> Unit = {},
 ) {
@@ -491,6 +497,8 @@ fun BookSelectionGrid(
                             entry = entry,
                             selected = selectedId == entry.id,
                             hasAudio = entry.id in booksWithAudio,
+                            readChapters = coverageByBook[entry.id]?.first ?: 0,
+                            listenedChapters = coverageByBook[entry.id]?.second ?: 0,
                             timemarkCodes = presence.forBook(entry.id),
                             tabColors = tabColors,
                             onClick = {
@@ -523,6 +531,7 @@ fun BookSelectionGrid(
 private fun BookSelectionList(
     modifier: Modifier = Modifier,
     booksWithAudio: Set<String> = emptySet(),
+    coverageByBook: Map<String, Pair<Int, Int>> = emptyMap(),
     onBookClick: (String) -> Unit,
     onBookLongPress: (CanonBookEntry) -> Unit = {},
 ) {
@@ -594,6 +603,11 @@ private fun BookSelectionList(
                         maxLines = 1,
                         overflow = TextOverflow.Ellipsis,
                     )
+                    CoverageMiniMarks(
+                        read = coverageByBook[entry.id]?.first ?: 0,
+                        listened = coverageByBook[entry.id]?.second ?: 0,
+                        chapters = entry.chapters,
+                    )
                     Text(
                         text = "${entry.chapters} гл.",
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
@@ -633,12 +647,56 @@ private fun BookSelectionList(
     }
 }
 
+@Composable
+private fun CoverageMiniMarks(
+    read: Int,
+    listened: Int,
+    chapters: Int,
+) {
+    if (read <= 0 && listened <= 0) return
+    Row(
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(3.dp),
+    ) {
+        if (read > 0) {
+            Icon(
+                Icons.AutoMirrored.Filled.MenuBook,
+                contentDescription = "Прочитано $read из $chapters",
+                tint = MaterialTheme.colorScheme.primary,
+                modifier = Modifier.size(12.dp),
+            )
+            Text(
+                text = read.toString(),
+                color = MaterialTheme.colorScheme.primary,
+                fontSize = 9.sp,
+                fontWeight = FontWeight.Bold,
+            )
+        }
+        if (listened > 0) {
+            Icon(
+                Icons.Filled.GraphicEq,
+                contentDescription = "Прослушано $listened из $chapters",
+                tint = MaterialTheme.colorScheme.tertiary,
+                modifier = Modifier.size(12.dp),
+            )
+            Text(
+                text = listened.toString(),
+                color = MaterialTheme.colorScheme.tertiary,
+                fontSize = 9.sp,
+                fontWeight = FontWeight.Bold,
+            )
+        }
+    }
+}
+
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
 private fun BookCell(
     entry: CanonBookEntry,
     selected: Boolean,
     hasAudio: Boolean = false,
+    readChapters: Int = 0,
+    listenedChapters: Int = 0,
     timemarkCodes: Set<String> = emptySet(),
     tabColors: Map<String, Int> = emptyMap(),
     onClick: () -> Unit,
@@ -704,6 +762,11 @@ private fun BookCell(
                 overflow = TextOverflow.Ellipsis,
             )
             Spacer(Modifier.weight(1f))
+            CoverageMiniMarks(
+                read = readChapters,
+                listened = listenedChapters,
+                chapters = entry.chapters,
+            )
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
