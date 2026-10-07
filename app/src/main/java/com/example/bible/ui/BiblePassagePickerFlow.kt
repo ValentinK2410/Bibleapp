@@ -83,6 +83,7 @@ internal fun BiblePassagePickerChapterStep(
             modifier = modifier.fillMaxSize(),
             book = book,
             bookId = bookId,
+            translation = translation,
             chaptersWithAudio = chaptersWithAudio,
             verseCounts = verseCounts,
             readChapters = readChapters,
@@ -123,10 +124,18 @@ internal fun BiblePassagePickerVerseStep(
             }
         }
         verseNumbers != null -> {
+            val numbers = verseNumbers!!
+            val marks = rememberVerseCoverageMarks(viewModel, bookId, chapterNum)
+            val tabColors = rememberTranslationTabColorsMap()
+            LaunchedEffect(bookId, chapterNum, translation, numbers) {
+                viewModel.expandListenedVersesIfChapterDone(translation, bookId, chapterNum, numbers)
+            }
             VerseGrid(
                 modifier = modifier.fillMaxSize(),
-                verses = verseNumbers!!.map { BibleVerse(number = it, text = "") },
+                verses = numbers.map { BibleVerse(number = it, text = "") },
                 bookId = bookId,
+                verseMarks = marks,
+                tabColors = tabColors,
                 onVerseClick = onVerseSelected,
             )
         }
@@ -255,6 +264,19 @@ internal fun rememberPassageCoverageChapters(
         BibleCoverage.chaptersMarked(listenKeys, listenTrack, bookId)
     }
     return readChapters to listenedChapters
+}
+
+@Composable
+internal fun rememberVerseCoverageMarks(
+    viewModel: BibleViewModel,
+    bookId: String,
+    chapter: Int,
+): Map<Int, List<BibleCoverage.VerseMark>> {
+    val readKeys by viewModel.coverageReadVerses.collectAsStateWithLifecycle()
+    val listenKeys by viewModel.coverageListenVerses.collectAsStateWithLifecycle()
+    return remember(readKeys, listenKeys, bookId, chapter) {
+        BibleCoverage.marksForChapter(readKeys, listenKeys, bookId, chapter)
+    }
 }
 
 internal fun passagePickerBookTitle(bookId: String, translation: TranslationId): String =

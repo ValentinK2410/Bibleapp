@@ -67,4 +67,40 @@ class BibleCoverageTest {
         )
         assertEquals(2, jonah.firstMissing(marked, wantRead = true))
     }
+
+    @Test
+    fun verseSpansRoundTripAndMergeOnce() {
+        assertEquals("1-3,5,8-9", BibleCoverage.encodeVerseSpans(listOf(9, 1, 2, 3, 5, 8)))
+        assertEquals(setOf(1, 2, 3, 5, 8, 9), BibleCoverage.decodeVerseSpans("1-3,5,8-9"))
+        val keys = mutableSetOf<String>()
+        assertTrue(BibleCoverage.mergeVerseRecord(keys, "SYN", "john", 1, listOf(1, 2)))
+        assertFalse(BibleCoverage.mergeVerseRecord(keys, "SYN", "john", 1, listOf(2)))
+        assertEquals(1, keys.size)
+        assertTrue(keys.single().endsWith("|1-2"))
+    }
+
+    @Test
+    fun verseMarksKeepEachTranslationColorTrack() {
+        val read = mutableSetOf<String>()
+        BibleCoverage.mergeVerseRecord(read, TranslationId.SYNODAL.code, "john", 1, listOf(3))
+        BibleCoverage.mergeVerseRecord(read, TranslationId.NRT.code, "john", 1, listOf(3, 4))
+        val listen = mutableSetOf<String>()
+        BibleCoverage.mergeVerseRecord(listen, TranslationId.SYNODAL.code, "john", 1, listOf(3))
+        val marks = BibleCoverage.marksForChapter(read, listen, "john", 1)
+        val syn = marks[3]!!.first { it.trackId == TranslationId.SYNODAL.code }
+        assertTrue(syn.read && syn.listened)
+        val nrt = marks[3]!!.first { it.trackId == TranslationId.NRT.code }
+        assertTrue(nrt.read && !nrt.listened)
+        assertEquals(TranslationId.NRT.code, marks[4]!!.single().trackId)
+        assertTrue(BibleCoverage.markColorArgb(TranslationId.SYNODAL.code) != BibleCoverage.markColorArgb(TranslationId.NRT.code))
+        assertEquals(0xFF00FF00.toInt(), BibleCoverage.markColorArgb(TranslationId.SYNODAL.code, mapOf(TranslationId.SYNODAL.code to 0xFF00FF00.toInt())))
+    }
+
+    @Test
+    fun interlinearListenTrackFollowsTestament() {
+        assertEquals(BibleCoverage.HEBREW, BibleCoverage.listenTrackFor(TranslationId.INTERLINEAR, "genesis"))
+        assertEquals(BibleCoverage.GREEK, BibleCoverage.listenTrackFor(TranslationId.INTERLINEAR, "john"))
+        assertEquals(100, BibleCoverage.percent(5, 5))
+        assertEquals(0, BibleCoverage.percent(0, 5))
+    }
 }

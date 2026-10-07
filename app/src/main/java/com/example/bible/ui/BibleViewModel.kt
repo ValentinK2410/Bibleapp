@@ -969,20 +969,58 @@ class BibleViewModel(
         emptySet(),
     )
 
+    val coverageReadVerses: StateFlow<Set<String>> = preferences.coverageReadVerses.stateIn(
+        viewModelScope,
+        SharingStarted.WhileSubscribed(5000),
+        emptySet(),
+    )
+
+    val coverageListenVerses: StateFlow<Set<String>> = preferences.coverageListenVerses.stateIn(
+        viewModelScope,
+        SharingStarted.WhileSubscribed(5000),
+        emptySet(),
+    )
+
     fun setBookCoverage(listen: Boolean, trackId: String, bookId: String, chapterCount: Int, marked: Boolean) {
         viewModelScope.launch {
             preferences.setBookCoverage(listen, trackId, bookId, chapterCount, marked)
         }
     }
 
+    /** Если глава уже засчитана как прослушанная, отметить все её стихи. */
+    fun expandListenedVersesIfChapterDone(
+        translation: TranslationId,
+        bookId: String,
+        chapter: Int,
+        verseNumbers: List<Int>,
+    ) {
+        if (chapter <= 0 || verseNumbers.isEmpty()) return
+        viewModelScope.launch {
+            val track = BibleCoverage.listenTrackFor(translation, bookId)
+            val key = BibleCoverage.chapterKey(track, bookId, chapter)
+            if (key !in preferences.coverageListenChapters.first()) return@launch
+            preferences.markVersesListened(track, bookId, chapter, verseNumbers)
+        }
+    }
+
     init {
         viewModelScope.launch {
             preferences.importCoverageFromHistoryIfNeeded()
+            preferences.importVerseCoverageFromHistoryIfNeeded()
         }
         viewModelScope.launch {
             BibleAudioPlayer.chapterFinished.collect { finished ->
                 val track = BibleCoverage.trackForNarrator(finished.narratorId) ?: return@collect
                 preferences.markChapterListened(track, finished.bookId, finished.chapter)
+                val textTranslation = BibleCoverage.trackById(track)?.textTranslation ?: TranslationId.SYNODAL
+                val count = withContext(Dispatchers.IO) {
+                    runCatching {
+                        repository.verseCountsByChapter(textTranslation, finished.bookId)[finished.chapter] ?: 0
+                    }.getOrDefault(0)
+                }
+                if (count > 0) {
+                    preferences.markVersesListened(track, finished.bookId, finished.chapter, (1..count).toList())
+                }
             }
         }
         viewModelScope.launch {
@@ -2721,6 +2759,7 @@ class BibleViewModel(
                 dwellVerse = initialVerse.coerceAtLeast(1)
                 dwellSegmentStartMs = System.currentTimeMillis()
                 val iv = initialVerse.coerceAtLeast(1)
+                preferences.markVerseRead(translation.code, bookId, chapter, iv)
                 preferences.appendReadingTrace(
                     ReadingTraceEntry(
                         timestamp = System.currentTimeMillis(),
@@ -2755,6 +2794,7 @@ class BibleViewModel(
                     dwellChapter = chapter
                     dwellVerse = v
                     dwellSegmentStartMs = System.currentTimeMillis()
+                    preferences.markVerseRead(translation.code, bookId, chapter, v)
                     preferences.appendReadingTrace(
                         ReadingTraceEntry(
                             timestamp = System.currentTimeMillis(),
@@ -2773,6 +2813,7 @@ class BibleViewModel(
                     commitReadingDwellSegmentLocked()
                     dwellVerse = v
                     dwellSegmentStartMs = System.currentTimeMillis()
+                    preferences.markVerseRead(dwellTransCode, dwellBookId, dwellChapter, v)
                     preferences.appendReadingTrace(
                         ReadingTraceEntry(
                             timestamp = System.currentTimeMillis(),

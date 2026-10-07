@@ -51,6 +51,11 @@ private object Keys {
     /** Главы, у которых озвучка доиграла до конца: «перевод|книга|глава». */
     val COVERAGE_LISTEN = stringSetPreferencesKey("coverage_listen_chapters")
     val COVERAGE_HISTORY_IMPORTED = booleanPreferencesKey("coverage_history_imported")
+    /** Стихи, которые открывали: «перевод|книга|глава|1-3,5». */
+    val COVERAGE_READ_VERSES = stringSetPreferencesKey("coverage_read_verses")
+    /** Стихи главы, чья озвучка доиграла до конца. Тот же формат, что у прочитанных. */
+    val COVERAGE_LISTEN_VERSES = stringSetPreferencesKey("coverage_listen_verses")
+    val COVERAGE_VERSES_IMPORTED = booleanPreferencesKey("coverage_verses_imported")
     /** Хронология: какие стихи открывались и сколько на них задерживались (порядок по времени). */
     val READING_TRACE_JSON = stringPreferencesKey("reading_trace_json")
     val NOTES_JSON = stringPreferencesKey("user_notes_json")
@@ -1147,6 +1152,19 @@ class BiblePreferences(
                 val coverageKey = BibleCoverage.chapterKey(entry.translation, entry.bookId, entry.chapter)
                 val marked = prefs[Keys.COVERAGE_READ] ?: emptySet()
                 if (coverageKey !in marked) prefs[Keys.COVERAGE_READ] = marked + coverageKey
+                if (entry.verse > 0) {
+                    val verses = (prefs[Keys.COVERAGE_READ_VERSES] ?: emptySet()).toMutableSet()
+                    if (BibleCoverage.mergeVerseRecord(
+                            verses,
+                            entry.translation,
+                            entry.bookId,
+                            entry.chapter,
+                            listOf(entry.verse),
+                        )
+                    ) {
+                        prefs[Keys.COVERAGE_READ_VERSES] = verses
+                    }
+                }
             }
         }
     }
@@ -1157,6 +1175,14 @@ class BiblePreferences(
 
     val coverageListenChapters: Flow<Set<String>> = appContext.bibleDataStore.data.map { prefs ->
         prefs[Keys.COVERAGE_LISTEN] ?: emptySet()
+    }
+
+    val coverageReadVerses: Flow<Set<String>> = appContext.bibleDataStore.data.map { prefs ->
+        prefs[Keys.COVERAGE_READ_VERSES] ?: emptySet()
+    }
+
+    val coverageListenVerses: Flow<Set<String>> = appContext.bibleDataStore.data.map { prefs ->
+        prefs[Keys.COVERAGE_LISTEN_VERSES] ?: emptySet()
     }
 
     /** Один раз переносит уже открытые главы из истории и журнала чтения. */
@@ -1179,6 +1205,46 @@ class BiblePreferences(
         }
     }
 
+    /** Один раз переносит уже открытые стихи из истории и журнала чтения. */
+    suspend fun importVerseCoverageFromHistoryIfNeeded() {
+        appContext.bibleDataStore.edit { prefs ->
+            if (prefs[Keys.COVERAGE_VERSES_IMPORTED] == true) return@edit
+            val read = (prefs[Keys.COVERAGE_READ_VERSES] ?: emptySet()).toMutableSet()
+            fun add(translation: String, bookId: String, chapter: Int, verse: Int) {
+                if (verse <= 0) return
+                BibleCoverage.mergeVerseRecord(read, translation, bookId, chapter, listOf(verse))
+            }
+            HistoryEntry.parseList(prefs[Keys.HISTORY_JSON].orEmpty()).forEach {
+                add(it.translation, it.bookId, it.chapter, it.verse)
+            }
+            ReadingTraceEntry.parseList(prefs[Keys.READING_TRACE_JSON].orEmpty()).forEach {
+                add(it.translation, it.bookId, it.chapter, it.verse)
+            }
+            prefs[Keys.COVERAGE_READ_VERSES] = read
+            prefs[Keys.COVERAGE_VERSES_IMPORTED] = true
+        }
+    }
+
+    suspend fun markVerseRead(trackId: String, bookId: String, chapter: Int, verse: Int) {
+        if (verse <= 0) return
+        appContext.bibleDataStore.edit { prefs ->
+            val verses = (prefs[Keys.COVERAGE_READ_VERSES] ?: emptySet()).toMutableSet()
+            if (BibleCoverage.mergeVerseRecord(verses, trackId, bookId, chapter, listOf(verse))) {
+                prefs[Keys.COVERAGE_READ_VERSES] = verses
+            }
+        }
+    }
+
+    suspend fun markVersesListened(trackId: String, bookId: String, chapter: Int, verses: Collection<Int>) {
+        if (verses.isEmpty()) return
+        appContext.bibleDataStore.edit { prefs ->
+            val marked = (prefs[Keys.COVERAGE_LISTEN_VERSES] ?: emptySet()).toMutableSet()
+            if (BibleCoverage.mergeVerseRecord(marked, trackId, bookId, chapter, verses)) {
+                prefs[Keys.COVERAGE_LISTEN_VERSES] = marked
+            }
+        }
+    }
+
     suspend fun markChapterListened(trackId: String, bookId: String, chapter: Int) {
         if (chapter <= 0 || trackId.isBlank() || bookId.isBlank()) return
         val coverageKey = BibleCoverage.chapterKey(trackId, bookId, chapter)
@@ -1196,6 +1262,12 @@ class BiblePreferences(
             val cur = (prefs[prefKey] ?: emptySet()).toMutableSet()
             if (marked) cur.addAll(chapterKeys) else cur.removeAll(chapterKeys.toSet())
             prefs[prefKey] = cur
+            if (!marked) {
+                val verseKey = if (listen) Keys.COVERAGE_LISTEN_VERSES else Keys.COVERAGE_READ_VERSES
+                val verses = (prefs[verseKey] ?: emptySet()).toMutableSet()
+                BibleCoverage.removeBookVerseRecords(verses, trackId, bookId)
+                prefs[verseKey] = verses
+            }
         }
     }
 

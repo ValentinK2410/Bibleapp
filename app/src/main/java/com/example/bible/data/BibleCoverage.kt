@@ -37,6 +37,162 @@ object BibleCoverage {
     fun chapterKey(trackId: String, bookId: String, chapter: Int): String =
         "$trackId|$bookId|$chapter"
 
+    /**
+     * Дорожка прослушивания для экрана выбора.
+     * У подстрочника слушают иврит (Ветхий Завет) или греческий (Новый).
+     */
+    fun listenTrackFor(translation: TranslationId, bookId: String): String =
+        if (translation == TranslationId.INTERLINEAR) {
+            if (BibleCanon.isOldTestament(bookId)) HEBREW else GREEK
+        } else {
+            translation.code
+        }
+
+    fun percent(done: Int, total: Int): Int =
+        if (total <= 0) 0 else ((done.coerceAtLeast(0) * 100L) / total).toInt().coerceIn(0, 100)
+
+    /** Цвет метки перевода: свой цвет вкладки, иначе постоянная палитра. */
+    fun markColorArgb(trackId: String, custom: Map<String, Int> = emptyMap()): Int {
+        custom[trackId]?.let { return it }
+        custom.entries.firstOrNull { it.key.equals(trackId, ignoreCase = true) }?.value?.let { return it }
+        return defaultMarkColors[trackId] ?: 0xFF546E7A.toInt()
+    }
+
+    private val defaultMarkColors: Map<String, Int> = mapOf(
+        TranslationId.SYNODAL.code to 0xFF1565C0.toInt(),
+        TranslationId.NRT.code to 0xFF2E7D32.toInt(),
+        TranslationId.RBO.code to 0xFF6A1B9A.toInt(),
+        TranslationId.BTI.code to 0xFFEF6C00.toInt(),
+        TranslationId.WEB.code to 0xFF00838F.toInt(),
+        TranslationId.INTERLINEAR.code to 0xFF6D4C41.toInt(),
+        HEBREW to 0xFFC62828.toInt(),
+        GREEK to 0xFF283593.toInt(),
+    )
+
+    data class VerseMark(
+        val trackId: String,
+        val read: Boolean,
+        val listened: Boolean,
+    )
+
+    /** Сжатая запись стихов главы: `перевод|книга|глава|1-3,5`. */
+    fun encodeVerseSpans(verses: Collection<Int>): String {
+        val sorted = verses.filter { it > 0 }.distinct().sorted()
+        if (sorted.isEmpty()) return ""
+        val parts = ArrayList<String>(sorted.size)
+        var start = sorted[0]
+        var prev = start
+        for (index in 1 until sorted.size) {
+            val verse = sorted[index]
+            if (verse == prev + 1) {
+                prev = verse
+            } else {
+                parts += verseSpan(start, prev)
+                start = verse
+                prev = verse
+            }
+        }
+        parts += verseSpan(start, prev)
+        return parts.joinToString(",")
+    }
+
+    fun decodeVerseSpans(spec: String): Set<Int> {
+        if (spec.isBlank()) return emptySet()
+        val out = HashSet<Int>()
+        for (raw in spec.split(',')) {
+            val part = raw.trim()
+            if (part.isEmpty()) continue
+            val dash = part.indexOf('-')
+            if (dash <= 0) {
+                part.toIntOrNull()?.let { if (it > 0) out += it }
+            } else {
+                val from = part.substring(0, dash).toIntOrNull() ?: continue
+                val to = part.substring(dash + 1).toIntOrNull() ?: continue
+                if (from <= 0 || to < from || to - from > 400) continue
+                for (verse in from..to) out += verse
+            }
+        }
+        return out
+    }
+
+    /**
+     * Добавляет стихи в единственную запись главы.
+     * @return true, если набор ключей изменился.
+     */
+    fun mergeVerseRecord(
+        keys: MutableSet<String>,
+        trackId: String,
+        bookId: String,
+        chapter: Int,
+        extra: Collection<Int>,
+    ): Boolean {
+        if (trackId.isBlank() || bookId.isBlank() || chapter <= 0) return false
+        val adding = extra.filter { it > 0 }
+        if (adding.isEmpty()) return false
+        val prefix = "$trackId|$bookId|$chapter|"
+        val existingKeys = keys.filter { it.startsWith(prefix) }
+        val have = HashSet<Int>()
+        for (key in existingKeys) have += decodeVerseSpans(key.substring(prefix.length))
+        if (adding.all { it in have } && existingKeys.size == 1) return false
+        have += adding
+        if (existingKeys.isNotEmpty()) keys.removeAll(existingKeys.toSet())
+        keys += prefix + encodeVerseSpans(have)
+        return true
+    }
+
+    fun removeBookVerseRecords(keys: MutableSet<String>, trackId: String, bookId: String) {
+        if (trackId.isBlank() || bookId.isBlank()) return
+        val prefix = "$trackId|$bookId|"
+        keys.removeAll { it.startsWith(prefix) }
+    }
+
+    fun marksForChapter(
+        readKeys: Set<String>,
+        listenKeys: Set<String>,
+        bookId: String,
+        chapter: Int,
+    ): Map<Int, List<VerseMark>> {
+        if (bookId.isBlank() || chapter <= 0) return emptyMap()
+        val readByTrack = versesByTrack(readKeys, bookId, chapter)
+        val listenByTrack = versesByTrack(listenKeys, bookId, chapter)
+        val verseNumbers = HashSet<Int>()
+        readByTrack.values.forEach { verseNumbers += it }
+        listenByTrack.values.forEach { verseNumbers += it }
+        if (verseNumbers.isEmpty()) return emptyMap()
+        val trackIds = (readByTrack.keys + listenByTrack.keys).sortedBy { trackOrder(it) }
+        return verseNumbers.associateWith { verse ->
+            trackIds.mapNotNull { trackId ->
+                val read = verse in (readByTrack[trackId] ?: emptySet())
+                val listened = verse in (listenByTrack[trackId] ?: emptySet())
+                if (!read && !listened) null else VerseMark(trackId, read, listened)
+            }
+        }
+    }
+
+    private fun versesByTrack(keys: Set<String>, bookId: String, chapter: Int): Map<String, Set<Int>> {
+        if (keys.isEmpty()) return emptyMap()
+        val needle = "|$bookId|$chapter|"
+        val out = HashMap<String, MutableSet<Int>>()
+        for (key in keys) {
+            val at = key.indexOf(needle)
+            if (at <= 0) continue
+            val trackId = key.substring(0, at)
+            if (trackId.contains('|')) continue
+            val verses = decodeVerseSpans(key.substring(at + needle.length))
+            if (verses.isEmpty()) continue
+            out.getOrPut(trackId) { HashSet() }.addAll(verses)
+        }
+        return out
+    }
+
+    private fun trackOrder(trackId: String): Int {
+        val index = tracks.indexOfFirst { it.id == trackId }
+        return if (index < 0) tracks.size else index
+    }
+
+    private fun verseSpan(start: Int, end: Int): String =
+        if (start == end) "$start" else "$start-$end"
+
     /** Дорожка прослушивания по диктору. Синодальные чтецы сходятся в один перевод. */
     fun trackForNarrator(narratorId: String): String? = when (narratorId) {
         "bondarenko", "kozlov", "efimov", "jbl" -> TranslationId.SYNODAL.code

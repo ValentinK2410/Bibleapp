@@ -33,6 +33,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.grid.GridCells
+import androidx.compose.foundation.lazy.grid.GridItemSpan
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items as gridItems
 import androidx.compose.foundation.lazy.items
@@ -179,6 +180,7 @@ import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import com.example.bible.data.AudioPlaybackState
 import com.example.bible.data.BibleCanon
+import com.example.bible.data.BibleCoverage
 import com.example.bible.data.BibleSearchHistoryEntry
 import com.example.bible.data.BibleBook
 import com.example.bible.data.BibleChapter
@@ -904,6 +906,7 @@ private fun BibleNavHost(
                                 .weight(1f),
                             booksWithAudio = booksWithAudio,
                             coverageByBook = tileCoverage,
+                            readProgressColor = coverageMarkColor(translation.code, translationTabColors),
                             onBookClick = { bookId ->
                                 com.example.bible.data.BibleAudioPlayer.stopForNavigation()
                                 viewModel.passagePickerSelectBook(bookId)
@@ -4796,6 +4799,7 @@ internal fun ChapterGrid(
     modifier: Modifier = Modifier,
     book: BibleBook,
     bookId: String = book.id,
+    translation: TranslationId? = null,
     chaptersWithAudio: Set<Int> = emptySet(),
     verseCounts: Map<Int, Int> = emptyMap(),
     readChapters: Set<Int> = emptySet(),
@@ -4816,6 +4820,16 @@ internal fun ChapterGrid(
             horizontalArrangement = Arrangement.spacedBy(6.dp),
             verticalArrangement = Arrangement.spacedBy(6.dp),
         ) {
+            item(key = "chapter_progress", span = { GridItemSpan(maxLineSpan) }) {
+                ChapterCoverageBanner(
+                    read = readChapters.size,
+                    listened = listenedChapters.size,
+                    total = book.chapters.size,
+                    readColor = translation?.let { coverageMarkColor(it.code, tabColors) }
+                        ?: scheme.primary,
+                    listenColor = scheme.tertiary,
+                )
+            }
             gridItems(book.chapters, key = { it.number }) { chapter: BibleChapter ->
                 val hasAudio = chapter.number in chaptersWithAudio
                 val isRead = chapter.number in readChapters
@@ -4928,21 +4942,126 @@ internal fun ChapterGrid(
 
 /** Акцент сетки глав — цвет раздела канона, к которому относится книга. */
 @Composable
+private fun ChapterCoverageBanner(
+    read: Int,
+    listened: Int,
+    total: Int,
+    readColor: Color,
+    listenColor: Color,
+) {
+    val readPct = BibleCoverage.percent(read, total)
+    val listenPct = BibleCoverage.percent(listened, total)
+    val scheme = MaterialTheme.colorScheme
+    val shape = RoundedCornerShape(16.dp)
+    val caption = when {
+        total > 0 && readPct == 100 && listenPct == 100 -> "Вся книга прочитана и прослушана"
+        total > 0 && readPct == 100 -> "Все главы прочитаны"
+        total > 0 && listenPct == 100 -> "Все главы прослушаны"
+        else -> null
+    }
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(bottom = 2.dp)
+            .clip(shape)
+            .background(scheme.surfaceContainerHigh)
+            .border(1.dp, readColor.copy(alpha = 0.28f), shape)
+            .padding(horizontal = 12.dp, vertical = 8.dp),
+        verticalArrangement = Arrangement.spacedBy(6.dp),
+    ) {
+        ChapterCoverageMeter(
+            icon = Icons.AutoMirrored.Filled.MenuBook,
+            label = "Прочитано",
+            done = read,
+            total = total,
+            percent = readPct,
+            color = readColor,
+        )
+        ChapterCoverageMeter(
+            icon = Icons.Filled.GraphicEq,
+            label = "Прослушано",
+            done = listened,
+            total = total,
+            percent = listenPct,
+            color = listenColor,
+        )
+        if (caption != null) {
+            Text(
+                text = caption,
+                color = if (readPct == 100 && listenPct == 100) readColor else scheme.onSurfaceVariant,
+                fontSize = 12.sp,
+                fontWeight = FontWeight.SemiBold,
+            )
+        }
+    }
+}
+
+@Composable
+private fun ChapterCoverageMeter(
+    icon: androidx.compose.ui.graphics.vector.ImageVector,
+    label: String,
+    done: Int,
+    total: Int,
+    percent: Int,
+    color: Color,
+) {
+    Row(verticalAlignment = Alignment.CenterVertically) {
+        Icon(icon, contentDescription = null, tint = color, modifier = Modifier.size(16.dp))
+        Spacer(Modifier.width(8.dp))
+        Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(2.dp)) {
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Text(
+                    text = label,
+                    color = color,
+                    fontSize = 12.sp,
+                    fontWeight = FontWeight.SemiBold,
+                    modifier = Modifier.weight(1f),
+                )
+                Text(
+                    text = "$done из $total · $percent%",
+                    color = if (percent == 100) color else MaterialTheme.colorScheme.onSurfaceVariant,
+                    fontSize = 12.sp,
+                    fontWeight = if (percent == 100) FontWeight.Bold else FontWeight.Medium,
+                )
+            }
+            LinearProgressIndicator(
+                progress = { if (total <= 0) 0f else done.coerceAtLeast(0).toFloat() / total },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(6.dp)
+                    .clip(CircleShape),
+                color = color,
+                trackColor = color.copy(alpha = 0.16f),
+                drawStopIndicator = {},
+            )
+        }
+    }
+}
+
+@Composable
 private fun chapterGridAccentColor(bookId: String): Color {
     val group = com.example.bible.data.BibleCanon.byId(bookId)?.group
     return if (group != null) groupTextColor(group) else MaterialTheme.colorScheme.primary
 }
 
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
 internal fun VerseGrid(
     modifier: Modifier = Modifier,
     verses: List<BibleVerse>,
     bookId: String? = null,
+    verseMarks: Map<Int, List<BibleCoverage.VerseMark>> = emptyMap(),
+    tabColors: Map<String, Int> = emptyMap(),
     onVerseClick: (Int) -> Unit,
 ) {
     val accent = bookId?.let { chapterGridAccentColor(it) } ?: MaterialTheme.colorScheme.primary
     val scheme = MaterialTheme.colorScheme
     val shape = RoundedCornerShape(14.dp)
+    var detailVerse by remember { mutableStateOf<Int?>(null) }
+    val tracksInChapter = remember(verseMarks) {
+        verseMarks.values.flatten().map { it.trackId }.distinct()
+            .sortedBy { id -> BibleCoverage.tracks.indexOfFirst { it.id == id }.let { if (it < 0) 99 else it } }
+    }
     LazyVerticalGrid(
         columns = GridCells.Fixed(5),
         modifier = modifier.fillMaxSize(),
@@ -4950,28 +5069,45 @@ internal fun VerseGrid(
         horizontalArrangement = Arrangement.spacedBy(6.dp),
         verticalArrangement = Arrangement.spacedBy(6.dp),
     ) {
+        item(key = "verse_legend", span = { GridItemSpan(maxLineSpan) }) {
+            VerseCoverageLegend(
+                tracks = tracksInChapter,
+                tabColors = tabColors,
+            )
+        }
         gridItems(verses, key = { it.number }) { verse ->
+            val marks = verseMarks[verse.number].orEmpty()
+            val tileBorder = when {
+                marks.any { it.read && it.listened } -> accent.copy(alpha = 0.85f)
+                marks.any { it.read } -> scheme.primary.copy(alpha = 0.65f)
+                marks.any { it.listened } -> scheme.tertiary.copy(alpha = 0.7f)
+                else -> accent.copy(alpha = 0.22f)
+            }
             Surface(
                 modifier = Modifier
                     .fillMaxWidth()
                     .clip(shape)
-                    .clickable { onVerseClick(verse.number) }
-                    .border(1.dp, accent.copy(alpha = 0.22f), shape),
+                    .combinedClickable(
+                        onClick = { onVerseClick(verse.number) },
+                        onLongClick = { detailVerse = verse.number },
+                    )
+                    .border(if (marks.isEmpty()) 1.dp else 1.5.dp, tileBorder, shape),
                 shape = shape,
                 color = scheme.surfaceContainerLow,
                 shadowElevation = 1.dp,
             ) {
-                Box(
+                Column(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .heightIn(min = 52.dp)
+                        .heightIn(min = 58.dp)
                         .background(
                             Brush.verticalGradient(
                                 listOf(accent.copy(alpha = 0.12f), accent.copy(alpha = 0.04f)),
                             ),
                         )
-                        .padding(vertical = 8.dp, horizontal = 4.dp),
-                    contentAlignment = Alignment.Center,
+                        .padding(top = 8.dp, bottom = 5.dp, start = 3.dp, end = 3.dp),
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    verticalArrangement = Arrangement.spacedBy(3.dp),
                 ) {
                     Text(
                         text = "${verse.number}",
@@ -4979,10 +5115,167 @@ internal fun VerseGrid(
                         fontSize = 17.sp,
                         fontWeight = FontWeight.Bold,
                     )
+                    if (marks.isNotEmpty()) {
+                        Row(
+                            horizontalArrangement = Arrangement.spacedBy(3.dp, Alignment.CenterHorizontally),
+                            verticalAlignment = Alignment.CenterVertically,
+                        ) {
+                            marks.take(5).forEach { mark ->
+                                VerseTranslationDot(
+                                    mark = mark,
+                                    color = coverageMarkColor(mark.trackId, tabColors),
+                                )
+                            }
+                            if (marks.size > 5) {
+                                Text(
+                                    "+${marks.size - 5}",
+                                    color = scheme.onSurfaceVariant,
+                                    fontSize = 8.sp,
+                                    fontWeight = FontWeight.Bold,
+                                )
+                            }
+                        }
+                    }
                 }
             }
         }
     }
+    detailVerse?.let { number ->
+        VerseCoverageDialog(
+            verse = number,
+            marks = verseMarks[number].orEmpty(),
+            tabColors = tabColors,
+            onDismiss = { detailVerse = null },
+        )
+    }
+}
+
+@Composable
+private fun VerseCoverageLegend(
+    tracks: List<String>,
+    tabColors: Map<String, Int>,
+) {
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(bottom = 2.dp)
+            .clip(RoundedCornerShape(14.dp))
+            .background(MaterialTheme.colorScheme.surfaceContainerHigh)
+            .padding(horizontal = 10.dp, vertical = 8.dp),
+        verticalArrangement = Arrangement.spacedBy(6.dp),
+    ) {
+        Row(
+            horizontalArrangement = Arrangement.spacedBy(12.dp),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            VerseLegendSample(filled = true, ring = false, label = "прочитан")
+            VerseLegendSample(filled = false, ring = true, label = "прослушан")
+            VerseLegendSample(filled = true, ring = true, label = "и то и другое")
+        }
+        if (tracks.isNotEmpty()) {
+            Row(
+                modifier = Modifier.horizontalScroll(rememberScrollState()),
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                tracks.forEach { trackId ->
+                    val color = coverageMarkColor(trackId, tabColors)
+                    val label = BibleCoverage.trackById(trackId)?.shortLabel ?: trackId
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Box(
+                            Modifier
+                                .size(8.dp)
+                                .clip(CircleShape)
+                                .background(color),
+                        )
+                        Spacer(Modifier.width(4.dp))
+                        Text(
+                            text = label,
+                            color = color,
+                            fontSize = 11.sp,
+                            fontWeight = FontWeight.SemiBold,
+                        )
+                    }
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun VerseLegendSample(filled: Boolean, ring: Boolean, label: String) {
+    val color = MaterialTheme.colorScheme.onSurface
+    Row(verticalAlignment = Alignment.CenterVertically) {
+        VerseTranslationDot(
+            mark = BibleCoverage.VerseMark("", read = filled, listened = ring),
+            color = color,
+        )
+        Spacer(Modifier.width(4.dp))
+        Text(label, color = MaterialTheme.colorScheme.onSurfaceVariant, fontSize = 11.sp, maxLines = 1)
+    }
+}
+
+@Composable
+private fun VerseTranslationDot(
+    mark: BibleCoverage.VerseMark,
+    color: Color,
+) {
+    Box(
+        modifier = Modifier
+            .size(9.dp)
+            .clip(CircleShape)
+            .border(
+                width = if (mark.listened) 1.5.dp else 0.dp,
+                color = if (mark.listened) color else Color.Transparent,
+                shape = CircleShape,
+            )
+            .padding(if (mark.read && mark.listened) 1.5.dp else 0.dp)
+            .clip(CircleShape)
+            .background(if (mark.read) color else Color.Transparent),
+    )
+}
+
+@Composable
+private fun VerseCoverageDialog(
+    verse: Int,
+    marks: List<BibleCoverage.VerseMark>,
+    tabColors: Map<String, Int>,
+    onDismiss: () -> Unit,
+) {
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = { Text("Стих $verse") },
+        text = {
+            if (marks.isEmpty()) {
+                Text(
+                    "Этот стих ещё не прочитан и не прослушан.",
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+            } else {
+                Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                    marks.forEach { mark ->
+                        val color = coverageMarkColor(mark.trackId, tabColors)
+                        val name = BibleCoverage.trackById(mark.trackId)?.label ?: mark.trackId
+                        val status = when {
+                            mark.read && mark.listened -> "прочитан и прослушан"
+                            mark.read -> "прочитан"
+                            else -> "прослушан"
+                        }
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            VerseTranslationDot(mark = mark, color = color)
+                            Spacer(Modifier.width(8.dp))
+                            Text(name, color = color, fontWeight = FontWeight.SemiBold, fontSize = 14.sp)
+                            Spacer(Modifier.width(6.dp))
+                            Text(status, color = MaterialTheme.colorScheme.onSurfaceVariant, fontSize = 13.sp)
+                        }
+                    }
+                }
+            }
+        },
+        confirmButton = {
+            TextButton(onClick = onDismiss) { Text("Закрыть") }
+        },
+    )
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -6270,6 +6563,7 @@ private fun ChaptersRouteContent(
                     modifier = Modifier.fillMaxSize(),
                     book = book,
                     bookId = bookId,
+                    translation = translation,
                     chaptersWithAudio = chaptersWithAudio,
                     verseCounts = verseCounts,
                     readChapters = readChapters,
@@ -6371,12 +6665,19 @@ private fun VersesRouteContent(
                 }
             }
             numbers != null -> {
+                val marks = rememberVerseCoverageMarks(viewModel, bookId, chapterNum)
+                val tabColors = rememberTranslationTabColorsMap()
+                LaunchedEffect(bookId, chapterNum, translation, numbers) {
+                    viewModel.expandListenedVersesIfChapterDone(translation, bookId, chapterNum, numbers)
+                }
                 VerseGrid(
                     modifier = Modifier
                         .padding(padding)
                         .fillMaxSize(),
                     verses = numbers.map { BibleVerse(number = it, text = "") },
                     bookId = bookId,
+                    verseMarks = marks,
+                    tabColors = tabColors,
                     onVerseClick = { verseNum ->
                         navController.navigate("read/$bookId/$chapterNum/$verseNum")
                     },
