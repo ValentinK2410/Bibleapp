@@ -39,8 +39,7 @@ object BibleWordGamePool {
             TranslationId.BTI,
         )
         for (t in order) {
-            val b = library.getBook(t, "john")
-            if (b != null && b.chapters.isNotEmpty()) return t
+            if (library.hasLocalBook(t, "john")) return t
         }
         return TranslationId.SYNODAL
     }

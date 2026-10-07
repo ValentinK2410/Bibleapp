@@ -137,7 +137,6 @@ import com.example.bible.data.AzbukaLesson
 import com.example.bible.data.AzbukaProgressRepository
 import com.example.bible.data.AzbukaRepository
 import com.example.bible.data.BibleLibrary
-import com.example.bible.data.BibleWordGamePool
 import com.example.bible.data.LetterType
 import com.example.bible.data.RussianLetter
 import androidx.lifecycle.ViewModel
@@ -1809,7 +1808,6 @@ private fun QuizTab(
     library: BibleLibrary,
 ) {
     var subMode by remember { mutableIntStateOf(0) }
-    val gameTranslation = remember(library) { BibleWordGamePool.pickTranslationWithText(library) }
 
     Column(Modifier.fillMaxSize()) {
         ScrollableTabRow(
@@ -1853,7 +1851,6 @@ private fun QuizTab(
                 0 -> LessonQuizPane(speak = speak, progressRepo = progressRepo, scope = scope)
                 1 -> BibleGamesSection(
                     library = library,
-                    translation = gameTranslation,
                     speak = speak,
                     progressRepo = progressRepo,
                     scope = scope,

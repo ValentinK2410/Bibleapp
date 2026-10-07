@@ -54,9 +54,10 @@ import com.example.bible.data.AzbukaProgressRepository
 import com.example.bible.data.BibleLibrary
 import com.example.bible.data.BibleWordGamePool
 import com.example.bible.data.BibleWordItem
-import com.example.bible.data.TranslationId
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import kotlin.random.Random
 
 private enum class BibleGameId {
@@ -79,7 +80,6 @@ private data class GameCardInfo(
 @Composable
 fun BibleGamesSection(
     library: BibleLibrary,
-    translation: TranslationId,
     speak: (String) -> Unit,
     progressRepo: AzbukaProgressRepository,
     scope: CoroutineScope,
@@ -88,9 +88,13 @@ fun BibleGamesSection(
     var loadError by remember { mutableStateOf<String?>(null) }
     val random = remember { Random.Default }
 
-    LaunchedEffect(library, translation) {
+    LaunchedEffect(library) {
         loadError = null
+        pool = null
         pool = try {
+            val translation = withContext(Dispatchers.IO) {
+                BibleWordGamePool.pickTranslationWithText(library)
+            }
             BibleWordGamePool.collectWords(library, translation)
         } catch (e: Exception) {
             loadError = e.message ?: "Ошибка загрузки"
