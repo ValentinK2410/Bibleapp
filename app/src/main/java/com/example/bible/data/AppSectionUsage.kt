@@ -34,7 +34,7 @@ object AppSectionUsage {
         Section(BooksMainMenuOrder.SEARCH, "Поиск", "Библия", "search"),
         Section(BooksMainMenuOrder.BOOKMARKS, "Закладки", "Библия", "bookmarks"),
         Section(BooksMainMenuOrder.HISTORY, "История чтения", "Библия", "history"),
-        Section(BooksMainMenuOrder.COVERAGE, "Прочитано и прослушано", "Библия", "bible_coverage"),
+        Section(BooksMainMenuOrder.COVERAGE, "Статистика", "Библия", "stats"),
         Section(BooksMainMenuOrder.NOTES, "Заметки", "Библия", "notes"),
         Section(BooksMainMenuOrder.DAILY_JOURNAL, "Ежедневник", "Библия", "daily_journal"),
         Section(BooksMainMenuOrder.DUAL, "Сравнение переводов", "Библия", "dual"),
@@ -100,7 +100,7 @@ object AppSectionUsage {
         val head = path.substringBefore("/")
         return when {
             head == "read" || head == "chapters" || head == "verses" -> "reading"
-            head == "bible_coverage" -> BooksMainMenuOrder.COVERAGE
+            head == "bible_coverage" || head == "stats" || head == "stats_detail" -> BooksMainMenuOrder.COVERAGE
             head == "app_contacts" -> BooksMainMenuOrder.CONTACTS
             head == "my_travels" -> BooksMainMenuOrder.TRAVEL
             head == "note_edit" -> BooksMainMenuOrder.NOTES

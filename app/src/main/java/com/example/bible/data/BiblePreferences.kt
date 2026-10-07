@@ -62,6 +62,8 @@ private object Keys {
     val VERSE_COPY_STATS_JSON = stringPreferencesKey("verse_copy_stats_json")
     /** Сколько раз открывали разделы приложения: id → число и время. */
     val SECTION_USE_JSON = stringPreferencesKey("section_use_json")
+    /** Журнал событий статистики (открытия, копии, озвучка). */
+    val STATS_EVENTS_JSON = stringPreferencesKey("stats_events_json")
     val NOTES_JSON = stringPreferencesKey("user_notes_json")
     /** JSON-массив строк — пользовательские названия типов заметок (чипы в редакторе). */
     val NOTES_CUSTOM_KINDS_JSON = stringPreferencesKey("note_custom_kinds_json")
@@ -955,6 +957,15 @@ class BiblePreferences(
                 now = System.currentTimeMillis(),
             )
             prefs[Keys.VERSE_COPY_STATS_JSON] = BibleReadingStats.copiesToJson(merged)
+            appendUsageEventLocked(
+                prefs,
+                AppUsageEvents.Event(
+                    timestamp = System.currentTimeMillis(),
+                    type = AppUsageEvents.TYPE_COPY,
+                    sectionId = "reading",
+                    detail = "$translation|$bookId|$chapter|${verses.filter { it > 0 }.sorted().joinToString(",")}",
+                ),
+            )
         }
     }
 
@@ -962,13 +973,34 @@ class BiblePreferences(
         AppSectionUsage.parse(prefs[Keys.SECTION_USE_JSON].orEmpty())
     }
 
+    val usageEvents: Flow<List<AppUsageEvents.Event>> = appContext.bibleDataStore.data.map { prefs ->
+        AppUsageEvents.parse(prefs[Keys.STATS_EVENTS_JSON].orEmpty())
+    }
+
     suspend fun recordSectionOpen(id: String) {
         if (id.isBlank()) return
+        val now = System.currentTimeMillis()
         appContext.bibleDataStore.edit { prefs ->
             val current = AppSectionUsage.parse(prefs[Keys.SECTION_USE_JSON].orEmpty())
-            val next = AppSectionUsage.increment(current, id, System.currentTimeMillis())
+            val next = AppSectionUsage.increment(current, id, now)
             prefs[Keys.SECTION_USE_JSON] = AppSectionUsage.toJson(next)
+            appendUsageEventLocked(prefs, AppUsageEvents.Event(now, AppUsageEvents.TYPE_OPEN, id))
         }
+    }
+
+    suspend fun recordUsageEvent(type: String, sectionId: String, detail: String = "") {
+        if (type.isBlank() || sectionId.isBlank()) return
+        appContext.bibleDataStore.edit { prefs ->
+            appendUsageEventLocked(
+                prefs,
+                AppUsageEvents.Event(System.currentTimeMillis(), type, sectionId, detail),
+            )
+        }
+    }
+
+    private fun appendUsageEventLocked(prefs: MutablePreferences, event: AppUsageEvents.Event) {
+        val current = AppUsageEvents.parse(prefs[Keys.STATS_EVENTS_JSON].orEmpty())
+        prefs[Keys.STATS_EVENTS_JSON] = AppUsageEvents.toJson(AppUsageEvents.append(current, event))
     }
 
     /** История поиска по переводу Корана; порядок — по времени добавления (старые первыми). */
@@ -1275,6 +1307,15 @@ class BiblePreferences(
             val verses = (prefs[Keys.COVERAGE_READ_VERSES] ?: emptySet()).toMutableSet()
             if (BibleCoverage.mergeVerseRecord(verses, trackId, bookId, chapter, listOf(verse))) {
                 prefs[Keys.COVERAGE_READ_VERSES] = verses
+                appendUsageEventLocked(
+                    prefs,
+                    AppUsageEvents.Event(
+                        timestamp = System.currentTimeMillis(),
+                        type = AppUsageEvents.TYPE_READ,
+                        sectionId = "reading",
+                        detail = "$trackId|$bookId|$chapter|$verse",
+                    ),
+                )
             }
         }
     }
@@ -1294,7 +1335,18 @@ class BiblePreferences(
         val coverageKey = BibleCoverage.chapterKey(trackId, bookId, chapter)
         appContext.bibleDataStore.edit { prefs ->
             val marked = prefs[Keys.COVERAGE_LISTEN] ?: emptySet()
-            if (coverageKey !in marked) prefs[Keys.COVERAGE_LISTEN] = marked + coverageKey
+            if (coverageKey !in marked) {
+                prefs[Keys.COVERAGE_LISTEN] = marked + coverageKey
+                appendUsageEventLocked(
+                    prefs,
+                    AppUsageEvents.Event(
+                        timestamp = System.currentTimeMillis(),
+                        type = AppUsageEvents.TYPE_LISTEN,
+                        sectionId = "reading",
+                        detail = coverageKey,
+                    ),
+                )
+            }
         }
     }
 

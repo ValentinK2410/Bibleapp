@@ -8,6 +8,7 @@ import androidx.lifecycle.viewModelScope
 import com.example.bible.data.AppDataExport
 import com.example.bible.data.BibleAudioPlayer
 import com.example.bible.data.BibleCanon
+import com.example.bible.data.AppUsageEvents
 import com.example.bible.data.BibleCoverage
 import com.example.bible.data.BibleReadingStats
 import com.example.bible.data.BibleLibrary
@@ -2584,8 +2585,18 @@ class BibleViewModel(
         emptyMap(),
     )
 
+    val usageEvents: StateFlow<List<AppUsageEvents.Event>> = preferences.usageEvents.stateIn(
+        viewModelScope,
+        SharingStarted.WhileSubscribed(5000),
+        emptyList(),
+    )
+
     fun recordSectionOpen(id: String) {
         viewModelScope.launch { preferences.recordSectionOpen(id) }
+    }
+
+    fun recordUsageEvent(type: String, sectionId: String, detail: String = "") {
+        viewModelScope.launch { preferences.recordUsageEvent(type, sectionId, detail) }
     }
 
     val quranReadingHistory: StateFlow<List<QuranReadingHistoryEntry>> = preferences.quranReadingHistory.stateIn(

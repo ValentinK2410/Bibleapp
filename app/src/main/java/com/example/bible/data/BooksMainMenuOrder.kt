@@ -94,7 +94,7 @@ object BooksMainMenuOrder {
         SEARCH -> "Поиск"
         BOOKMARKS -> "Закладки"
         HISTORY -> "История чтения"
-        COVERAGE -> "Прочитано и прослушано"
+        COVERAGE -> "Статистика"
         NOTES -> "Заметки"
         DAILY_JOURNAL -> "Ежедневник"
         AI -> "ИИ"

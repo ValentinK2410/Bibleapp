@@ -645,6 +645,7 @@ private fun BibleNavHost(
     val readingHistory by viewModel.readingHistory.collectAsStateWithLifecycle()
     val verseCopyStats by viewModel.verseCopyStats.collectAsStateWithLifecycle()
     val sectionUsage by viewModel.sectionUsage.collectAsStateWithLifecycle()
+    val usageEvents by viewModel.usageEvents.collectAsStateWithLifecycle()
     val coverageRead by viewModel.coverageReadChapters.collectAsStateWithLifecycle()
     val coverageListen by viewModel.coverageListenChapters.collectAsStateWithLifecycle()
     val readingTrace by viewModel.readingTrace.collectAsStateWithLifecycle()
@@ -3398,11 +3399,19 @@ private fun BibleNavHost(
             }
         }
         composable("bible_coverage") {
+            LaunchedEffect(Unit) {
+                navController.navigate("stats") {
+                    popUpTo("bible_coverage") { inclusive = true }
+                    launchSingleTop = true
+                }
+            }
+        }
+        composable("stats") {
             val initialTrack = translation.code
             Scaffold(
                 topBar = {
                     CenterAlignedTopAppBar(
-                        title = { Text("Прочитано и прослушано") },
+                        title = { Text("Статистика") },
                         navigationIcon = {
                             IconButton(onClick = { navController.navigateUp() }) {
                                 Icon(
@@ -3414,7 +3423,7 @@ private fun BibleNavHost(
                     )
                 },
             ) { padding ->
-                BibleCoverageScreen(
+                StatsHubScreen(
                     modifier = Modifier.padding(padding),
                     readKeys = coverageRead,
                     listenKeys = coverageListen,
@@ -3422,32 +3431,101 @@ private fun BibleNavHost(
                     trace = readingTrace,
                     copies = verseCopyStats,
                     sectionUsage = sectionUsage,
+                    usageEvents = usageEvents,
                     initialTrackId = initialTrack,
-                    onOpenSection = { sectionId ->
-                        val route = com.example.bible.data.AppSectionUsage.routeFor(sectionId)
-                        if (route != null) {
-                            navController.navigate(route) {
-                                launchSingleTop = true
-                            }
+                    onOpenArea = { area ->
+                        navController.navigate(
+                            "stats_detail/${android.net.Uri.encode(area)}",
+                        ) {
+                            launchSingleTop = true
                         }
-                    },
-                    onOpenChapter = { trackId, bookId, chapter, verse ->
-                        val track = com.example.bible.data.BibleCoverage.trackById(trackId)
-                        scope.launch {
-                            viewModel.setTranslation(track?.textTranslation ?: TranslationId.INTERLINEAR)
-                            navController.navigate("read/$bookId/$chapter/${verse.coerceAtLeast(0)}") {
-                                popUpTo("bible_coverage") { inclusive = true }
-                                launchSingleTop = true
-                            }
-                        }
-                    },
-                    onSetBookRead = { trackId, bookId, chapterCount, marked ->
-                        viewModel.setBookCoverage(listen = false, trackId, bookId, chapterCount, marked)
-                    },
-                    onSetBookListened = { trackId, bookId, chapterCount, marked ->
-                        viewModel.setBookCoverage(listen = true, trackId, bookId, chapterCount, marked)
                     },
                 )
+            }
+        }
+        composable(
+            route = "stats_detail/{area}",
+            arguments = listOf(
+                navArgument("area") { type = NavType.StringType },
+            ),
+        ) { entry ->
+            val area = android.net.Uri.decode(entry.arguments?.getString("area").orEmpty())
+            val initialTrack = translation.code
+            Scaffold(
+                topBar = {
+                    CenterAlignedTopAppBar(
+                        title = {
+                            Text(
+                                if (area == com.example.bible.data.AppSectionUsage.BIBLE_AREA) {
+                                    "Статистика · Библия"
+                                } else {
+                                    "Статистика · $area"
+                                },
+                            )
+                        },
+                        navigationIcon = {
+                            IconButton(onClick = { navController.navigateUp() }) {
+                                Icon(
+                                    Icons.AutoMirrored.Filled.ArrowBack,
+                                    contentDescription = stringResource(R.string.back),
+                                )
+                            }
+                        },
+                    )
+                },
+            ) { padding ->
+                if (area == com.example.bible.data.AppSectionUsage.BIBLE_AREA) {
+                    BibleCoverageScreen(
+                        modifier = Modifier.padding(padding),
+                        readKeys = coverageRead,
+                        listenKeys = coverageListen,
+                        history = readingHistory,
+                        trace = readingTrace,
+                        copies = verseCopyStats,
+                        sectionUsage = sectionUsage,
+                        usageEvents = usageEvents,
+                        initialTrackId = initialTrack,
+                        onOpenSection = { sectionId ->
+                            val route = com.example.bible.data.AppSectionUsage.routeFor(sectionId)
+                            if (route != null) {
+                                navController.navigate(route) {
+                                    launchSingleTop = true
+                                }
+                            }
+                        },
+                        onOpenChapter = { trackId, bookId, chapter, verse ->
+                            val track = com.example.bible.data.BibleCoverage.trackById(trackId)
+                            scope.launch {
+                                viewModel.setTranslation(track?.textTranslation ?: TranslationId.INTERLINEAR)
+                                navController.navigate("read/$bookId/$chapter/${verse.coerceAtLeast(0)}") {
+                                    popUpTo("stats") { inclusive = false }
+                                    launchSingleTop = true
+                                }
+                            }
+                        },
+                        onSetBookRead = { trackId, bookId, chapterCount, marked ->
+                            viewModel.setBookCoverage(listen = false, trackId, bookId, chapterCount, marked)
+                        },
+                        onSetBookListened = { trackId, bookId, chapterCount, marked ->
+                            viewModel.setBookCoverage(listen = true, trackId, bookId, chapterCount, marked)
+                        },
+                    )
+                } else {
+                    StatsAreaDetailScreen(
+                        area = area,
+                        sectionUsage = sectionUsage,
+                        usageEvents = usageEvents,
+                        onOpenSection = { sectionId ->
+                            val route = com.example.bible.data.AppSectionUsage.routeFor(sectionId)
+                            if (route != null) {
+                                navController.navigate(route) {
+                                    launchSingleTop = true
+                                }
+                            }
+                        },
+                        modifier = Modifier.padding(padding),
+                    )
+                }
             }
         }
         composable("history") {

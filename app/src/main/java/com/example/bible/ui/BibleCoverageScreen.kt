@@ -54,6 +54,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.bible.data.AppSectionUsage
+import com.example.bible.data.AppUsageEvents
 import com.example.bible.data.BibleCanon
 import com.example.bible.data.BibleCoverage
 import com.example.bible.data.BibleReadingStats
@@ -77,6 +78,7 @@ fun BibleCoverageScreen(
     trace: List<ReadingTraceEntry> = emptyList(),
     copies: List<BibleReadingStats.VerseCopyStat> = emptyList(),
     sectionUsage: Map<String, Pair<Int, Long>> = emptyMap(),
+    usageEvents: List<AppUsageEvents.Event> = emptyList(),
     initialTrackId: String,
     onOpenSection: (String) -> Unit = {},
     onOpenChapter: (trackId: String, bookId: String, chapter: Int, verse: Int) -> Unit,
@@ -118,6 +120,19 @@ fun BibleCoverageScreen(
         contentPadding = PaddingValues(horizontal = 16.dp, vertical = 12.dp),
         verticalArrangement = Arrangement.spacedBy(10.dp),
     ) {
+        item {
+            StatsHubPanel(
+                track = track,
+                summary = summary,
+                stats = stats,
+                sectionUsage = sectionUsage,
+                usageEvents = usageEvents,
+                onOpen = { bookId, chapter, verse ->
+                    onOpenChapter(track.id, bookId, chapter, verse)
+                },
+                onOpenSection = onOpenSection,
+            )
+        }
         item {
             Text(
                 "Книга — открытая глава. Наушники — озвучка дошла до конца главы. Цифры — главы в этом переводе.",
@@ -249,18 +264,6 @@ fun BibleCoverageScreen(
                     onLongClick = { actionsFor = book },
                 )
             }
-        }
-        item {
-            StatsHubPanel(
-                track = track,
-                summary = summary,
-                stats = stats,
-                sectionUsage = sectionUsage,
-                onOpen = { bookId, chapter, verse ->
-                    onOpenChapter(track.id, bookId, chapter, verse)
-                },
-                onOpenSection = onOpenSection,
-            )
         }
     }
 
@@ -423,13 +426,15 @@ private fun StatsHubPanel(
     summary: BibleCoverage.TrackSummary?,
     stats: BibleReadingStats.Snapshot,
     sectionUsage: Map<String, Pair<Int, Long>>,
+    usageEvents: List<AppUsageEvents.Event>,
     onOpen: (bookId: String, chapter: Int, verse: Int) -> Unit,
     onOpenSection: (String) -> Unit,
 ) {
-    val tabs = remember { AppSectionUsage.statsTabAreas() }
-    var selectedTab by remember { mutableStateOf(AppSectionUsage.BIBLE_AREA) }
     val scheme = MaterialTheme.colorScheme
-    val accent = if (selectedTab == AppSectionUsage.BIBLE_AREA) scheme.primary else scheme.secondary
+    val accent = scheme.primary
+    val bibleEvents = remember(usageEvents) {
+        AppUsageEvents.eventsForArea(usageEvents, AppSectionUsage.BIBLE_AREA)
+    }
     Card(
         shape = RoundedCornerShape(22.dp),
         colors = CardDefaults.cardColors(containerColor = scheme.surfaceContainerLow),
@@ -446,53 +451,27 @@ private fun StatsHubPanel(
             verticalArrangement = Arrangement.spacedBy(12.dp),
         ) {
             StatsPanelHeader(
-                icon = if (selectedTab == AppSectionUsage.BIBLE_AREA) {
-                    Icons.AutoMirrored.Filled.MenuBook
-                } else {
-                    Icons.Filled.Apps
-                },
+                icon = Icons.AutoMirrored.Filled.MenuBook,
                 accent = accent,
-                title = "Статистика",
-                subtitle = "Вкладки по разделам — всё на одном экране",
+                title = "Подробно · Библия",
+                subtitle = "Графики, чтение, озвучка и экраны Библии",
             )
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .horizontalScroll(rememberScrollState()),
-                horizontalArrangement = Arrangement.spacedBy(8.dp),
-            ) {
-                tabs.forEach { tab ->
-                    val opens = if (tab == AppSectionUsage.BIBLE_AREA) {
-                        AppSectionUsage.bibleRows(sectionUsage).sumOf { it.opens } +
-                            (summary?.readChapters ?: 0) + (summary?.listenChapters ?: 0)
-                    } else {
-                        AppSectionUsage.rowsForArea(sectionUsage, tab).sumOf { it.opens }
-                    }
-                    FilterChip(
-                        selected = selectedTab == tab,
-                        onClick = { selectedTab = tab },
-                        label = {
-                            Text(if (opens > 0) "$tab · $opens" else tab)
-                        },
-                    )
-                }
-            }
-            if (selectedTab == AppSectionUsage.BIBLE_AREA) {
-                BibleStatsTabContent(
-                    track = track,
-                    summary = summary,
-                    stats = stats,
-                    sectionUsage = sectionUsage,
-                    onOpen = onOpen,
-                    onOpenSection = onOpenSection,
-                )
-            } else {
-                AreaStatsTabContent(
-                    area = selectedTab,
-                    sectionUsage = sectionUsage,
-                    onOpenSection = onOpenSection,
-                )
-            }
+            StatsBarChart(
+                days = AppUsageEvents.countsByDay(bibleEvents, days = 14),
+                color = accent,
+            )
+            StatsTypeBars(
+                types = AppUsageEvents.countsByType(bibleEvents),
+                accent = accent,
+            )
+            BibleStatsTabContent(
+                track = track,
+                summary = summary,
+                stats = stats,
+                sectionUsage = sectionUsage,
+                onOpen = onOpen,
+                onOpenSection = onOpenSection,
+            )
         }
     }
 }
@@ -615,20 +594,6 @@ private fun BibleStatsTabContent(
             onOpenSection = onOpenSection,
         )
     }
-}
-
-@Composable
-private fun AreaStatsTabContent(
-    area: String,
-    sectionUsage: Map<String, Pair<Int, Long>>,
-    onOpenSection: (String) -> Unit,
-) {
-    SectionUsageBoard(
-        title = area,
-        subtitle = "Что открываете часто, а что почти не трогали",
-        rows = AppSectionUsage.rowsForArea(sectionUsage, area),
-        onOpenSection = onOpenSection,
-    )
 }
 
 @Composable
