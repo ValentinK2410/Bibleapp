@@ -178,9 +178,18 @@ object AppSectionUsage {
     fun nonBibleRows(usage: Map<String, Pair<Int, Long>>): List<Row> =
         rows(usage).filter { it.section.area != BIBLE_AREA }
 
+    fun bibleRows(usage: Map<String, Pair<Int, Long>>): List<Row> =
+        rows(usage).filter { it.section.area == BIBLE_AREA }
+
+    fun rowsForArea(usage: Map<String, Pair<Int, Long>>, area: String): List<Row> =
+        rows(usage).filter { it.section.area == area }
+
     fun areaOrder(): List<String> = listOf(
         "Медиа", "Жизнь", "Церковь", "ИИ", "Детям", "Эксперимент", "Настройки", "Другое",
     )
+
+    /** Вкладки статистики: Библия и остальные области приложения. */
+    fun statsTabAreas(): List<String> = listOf(BIBLE_AREA) + areaOrder().filter { it != "Другое" }
 
     fun band(value: Int, max: Int): Band {
         if (value <= 0 || max <= 0) return Band.NEVER

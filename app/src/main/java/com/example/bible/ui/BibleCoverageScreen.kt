@@ -189,20 +189,17 @@ fun BibleCoverageScreen(
             }
         }
         item {
-            ReadingListenStatsPanel(
-                track = track,
-                summary = summary,
-                stats = stats,
-                onOpen = { bookId, chapter, verse ->
-                    onOpenChapter(track.id, bookId, chapter, verse)
-                },
-            )
-        }
-        item {
-            AppSectionsStatsPanel(
-                sectionUsage = sectionUsage,
-                onOpenSection = onOpenSection,
-            )
+            Surface(
+                shape = RoundedCornerShape(14.dp),
+                color = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.45f),
+            ) {
+                Text(
+                    "Нажатие открывает первую непройденную главу. Удержание отмечает книгу целиком или снимает отметки.",
+                    modifier = Modifier.padding(horizontal = 12.dp, vertical = 10.dp),
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurface,
+                )
+            }
         }
         item {
             Row(
@@ -219,13 +216,6 @@ fun BibleCoverageScreen(
                     )
                 }
             }
-        }
-        item {
-            Text(
-                "Нажатие открывает первую непройденную главу. Удержание отмечает книгу целиком или снимает отметки.",
-                style = MaterialTheme.typography.labelSmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-            )
         }
         if (visible.isEmpty()) {
             item {
@@ -259,6 +249,18 @@ fun BibleCoverageScreen(
                     onLongClick = { actionsFor = book },
                 )
             }
+        }
+        item {
+            StatsHubPanel(
+                track = track,
+                summary = summary,
+                stats = stats,
+                sectionUsage = sectionUsage,
+                onOpen = { bookId, chapter, verse ->
+                    onOpenChapter(track.id, bookId, chapter, verse)
+                },
+                onOpenSection = onOpenSection,
+            )
         }
     }
 
@@ -416,155 +418,18 @@ private fun CoverageBookCard(
 }
 
 @Composable
-private fun ReadingListenStatsPanel(
+private fun StatsHubPanel(
     track: BibleCoverage.Track,
     summary: BibleCoverage.TrackSummary?,
     stats: BibleReadingStats.Snapshot,
-    onOpen: (bookId: String, chapter: Int, verse: Int) -> Unit,
-) {
-    val scheme = MaterialTheme.colorScheme
-    val readColor = scheme.primary
-    val listenColor = scheme.tertiary
-    val empty = stats.uniqueVerses == 0 && stats.visits == 0 && stats.copies == 0 &&
-        stats.topListenedBooks.isEmpty() && (summary?.readChapters ?: 0) == 0 &&
-        (summary?.listenChapters ?: 0) == 0
-    Card(
-        shape = RoundedCornerShape(22.dp),
-        colors = CardDefaults.cardColors(containerColor = scheme.surfaceContainerLow),
-        elevation = CardDefaults.cardElevation(defaultElevation = 1.dp),
-    ) {
-        Column(
-            Modifier
-                .background(
-                    Brush.verticalGradient(
-                        listOf(readColor.copy(alpha = 0.10f), listenColor.copy(alpha = 0.05f), Color.Transparent),
-                    ),
-                )
-                .padding(14.dp),
-            verticalArrangement = Arrangement.spacedBy(12.dp),
-        ) {
-            StatsPanelHeader(
-                icon = Icons.AutoMirrored.Filled.MenuBook,
-                accent = readColor,
-                title = "Чтение и озвучка",
-                subtitle = track.label,
-            )
-            if (empty) {
-                Text(
-                    "Откройте главу или дослушайте озвучку — здесь появятся проценты, любимые книги и разделы канона.",
-                    style = MaterialTheme.typography.bodySmall,
-                    color = scheme.onSurfaceVariant,
-                )
-            }
-            if (summary != null) {
-                Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                    if (track.hasRead) {
-                        HeroProgressTile(
-                            modifier = Modifier.weight(1f),
-                            icon = Icons.AutoMirrored.Filled.MenuBook,
-                            title = "Прочитано",
-                            done = summary.readChapters,
-                            total = summary.totalChapters,
-                            booksDone = summary.booksRead,
-                            bookCount = summary.bookCount,
-                            color = readColor,
-                        )
-                    }
-                    if (track.hasListen) {
-                        HeroProgressTile(
-                            modifier = Modifier.weight(1f),
-                            icon = Icons.Filled.GraphicEq,
-                            title = "Прослушано",
-                            done = summary.listenChapters,
-                            total = summary.totalChapters,
-                            booksDone = summary.booksListened,
-                            bookCount = summary.bookCount,
-                            color = listenColor,
-                        )
-                    }
-                }
-            }
-            if (track.hasRead) {
-                val metrics = buildList {
-                    if (stats.daysActive > 0) add("Дней" to stats.daysActive.toString())
-                    if (stats.currentStreak > 0) add("Серия" to "${stats.currentStreak} дн.")
-                    if (stats.longestStreak > 1) add("Рекорд" to "${stats.longestStreak} дн.")
-                    if (stats.uniqueVerses > 0) add("Стихов" to stats.uniqueVerses.toString())
-                    if (stats.uniqueChapters > 0) add("Глав" to stats.uniqueChapters.toString())
-                    if (stats.uniqueBooks > 0) add("Книг" to stats.uniqueBooks.toString())
-                    if (stats.visits > 0) add("Открытий" to stats.visits.toString())
-                    if (stats.dwellSeconds > 0) add("Время" to formatStatsDuration(stats.dwellSeconds))
-                    if (stats.copies > 0) add("Копий" to stats.copies.toString())
-                    if (stats.visitsLast7Days > 0 || stats.dwellLast7Days > 0) {
-                        val week = buildList {
-                            if (stats.visitsLast7Days > 0) add("${stats.visitsLast7Days} откр.")
-                            if (stats.dwellLast7Days > 0) add(formatStatsDuration(stats.dwellLast7Days))
-                        }.joinToString(" · ")
-                        add("7 дней" to week)
-                    }
-                }
-                if (metrics.isNotEmpty()) {
-                    StatsSectionLabel("Обзор чтения")
-                    metrics.chunked(3).forEach { row ->
-                        Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
-                            row.forEach { (label, value) ->
-                                MetricChip(Modifier.weight(1f), label, value, readColor)
-                            }
-                            repeat(3 - row.size) { Spacer(Modifier.weight(1f)) }
-                        }
-                    }
-                }
-                TestamentSplitBar(
-                    oldSeconds = stats.oldTestamentSeconds,
-                    newSeconds = stats.newTestamentSeconds,
-                )
-                if (stats.topTools.isNotEmpty()) {
-                    Text(
-                        "Инструменты: " + stats.topTools.joinToString(" · ") { "${it.first} ${it.second}" },
-                        style = MaterialTheme.typography.labelMedium,
-                        color = scheme.onSurfaceVariant,
-                    )
-                }
-                RankBlock("Самые читаемые книги", stats.topBooks, onOpen, readColor) { rankDetail(it) }
-                RankBlock("Самые читаемые главы", stats.topChapters, onOpen, readColor) { rankDetail(it) }
-                RankBlock("Самые читаемые стихи", stats.topVerses, onOpen, readColor) { rankDetail(it) }
-                RankBlock("Дольше всего на стихе", stats.topByTime, onOpen, readColor) { rankDetail(it) }
-                RankBlock("Чаще всего копируют", stats.topCopied, onOpen, readColor) { rankDetail(it) }
-            }
-            if (track.hasListen || stats.topListenedBooks.isNotEmpty()) {
-                RankBlock("Больше всего прослушанных глав", stats.topListenedBooks, onOpen, listenColor) {
-                    "${it.uniqueVerses} гл."
-                }
-            }
-            CanonGroupsBoard(
-                groups = stats.groups,
-                onOpenGroup = { group ->
-                    val bookId = BibleCanon.allBooks.firstOrNull { it.group == group }?.id
-                    if (bookId != null) onOpen(bookId, 1, 0)
-                },
-            )
-        }
-    }
-}
-
-@Composable
-private fun AppSectionsStatsPanel(
     sectionUsage: Map<String, Pair<Int, Long>>,
+    onOpen: (bookId: String, chapter: Int, verse: Int) -> Unit,
     onOpenSection: (String) -> Unit,
 ) {
-    var band by remember { mutableStateOf<AppSectionUsage.Band?>(null) }
-    val sections = remember(sectionUsage) { AppSectionUsage.nonBibleRows(sectionUsage) }
-    val sectionMax = sections.maxOfOrNull { it.opens } ?: 0
-    val bands = sections.map { AppSectionUsage.band(it.opens, sectionMax) }
-    val visible = sections.filter { band == null || AppSectionUsage.band(it.opens, sectionMax) == band }
-    val byArea = remember(visible) {
-        val order = AppSectionUsage.areaOrder()
-        visible.groupBy { it.section.area }
-            .toList()
-            .sortedBy { (area, _) -> order.indexOf(area).let { if (it < 0) 99 else it } }
-    }
+    val tabs = remember { AppSectionUsage.statsTabAreas() }
+    var selectedTab by remember { mutableStateOf(AppSectionUsage.BIBLE_AREA) }
     val scheme = MaterialTheme.colorScheme
-    val accent = scheme.secondary
+    val accent = if (selectedTab == AppSectionUsage.BIBLE_AREA) scheme.primary else scheme.secondary
     Card(
         shape = RoundedCornerShape(22.dp),
         colors = CardDefaults.cardColors(containerColor = scheme.surfaceContainerLow),
@@ -581,60 +446,246 @@ private fun AppSectionsStatsPanel(
             verticalArrangement = Arrangement.spacedBy(12.dp),
         ) {
             StatsPanelHeader(
-                icon = Icons.Filled.Apps,
+                icon = if (selectedTab == AppSectionUsage.BIBLE_AREA) {
+                    Icons.AutoMirrored.Filled.MenuBook
+                } else {
+                    Icons.Filled.Apps
+                },
                 accent = accent,
-                title = "Разделы приложения",
-                subtitle = "Без Библии — медиа, детям, церковь и остальное",
+                title = "Статистика",
+                subtitle = "Вкладки по разделам — всё на одном экране",
             )
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .horizontalScroll(rememberScrollState()),
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+            ) {
+                tabs.forEach { tab ->
+                    val opens = if (tab == AppSectionUsage.BIBLE_AREA) {
+                        AppSectionUsage.bibleRows(sectionUsage).sumOf { it.opens } +
+                            (summary?.readChapters ?: 0) + (summary?.listenChapters ?: 0)
+                    } else {
+                        AppSectionUsage.rowsForArea(sectionUsage, tab).sumOf { it.opens }
+                    }
+                    FilterChip(
+                        selected = selectedTab == tab,
+                        onClick = { selectedTab = tab },
+                        label = {
+                            Text(if (opens > 0) "$tab · $opens" else tab)
+                        },
+                    )
+                }
+            }
+            if (selectedTab == AppSectionUsage.BIBLE_AREA) {
+                BibleStatsTabContent(
+                    track = track,
+                    summary = summary,
+                    stats = stats,
+                    sectionUsage = sectionUsage,
+                    onOpen = onOpen,
+                    onOpenSection = onOpenSection,
+                )
+            } else {
+                AreaStatsTabContent(
+                    area = selectedTab,
+                    sectionUsage = sectionUsage,
+                    onOpenSection = onOpenSection,
+                )
+            }
+        }
+    }
+}
+
+@Composable
+private fun BibleStatsTabContent(
+    track: BibleCoverage.Track,
+    summary: BibleCoverage.TrackSummary?,
+    stats: BibleReadingStats.Snapshot,
+    sectionUsage: Map<String, Pair<Int, Long>>,
+    onOpen: (bookId: String, chapter: Int, verse: Int) -> Unit,
+    onOpenSection: (String) -> Unit,
+) {
+    val scheme = MaterialTheme.colorScheme
+    val readColor = scheme.primary
+    val listenColor = scheme.tertiary
+    val empty = stats.uniqueVerses == 0 && stats.visits == 0 && stats.copies == 0 &&
+        stats.topListenedBooks.isEmpty() && (summary?.readChapters ?: 0) == 0 &&
+        (summary?.listenChapters ?: 0) == 0
+    Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+        StatsSectionLabel("Чтение и озвучка · ${track.label}")
+        if (empty) {
             Text(
-                "Сверху то, куда заходите часто. Внизу — то, что почти не открывали.",
+                "Откройте главу или дослушайте озвучку — здесь появятся проценты, любимые книги и разделы канона.",
                 style = MaterialTheme.typography.bodySmall,
                 color = scheme.onSurfaceVariant,
             )
-            Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
-                BandSummaryChip("часто", bands.count { it == AppSectionUsage.Band.OFTEN }, scheme.primary)
-                BandSummaryChip("иногда", bands.count { it == AppSectionUsage.Band.SOMETIMES }, scheme.tertiary)
-                BandSummaryChip("редко", bands.count { it == AppSectionUsage.Band.RARE }, scheme.onSurfaceVariant)
-                BandSummaryChip("пусто", bands.count { it == AppSectionUsage.Band.NEVER }, scheme.outline)
-            }
-            Row(
-                modifier = Modifier.horizontalScroll(rememberScrollState()),
-                horizontalArrangement = Arrangement.spacedBy(8.dp),
-            ) {
-                FilterChip(selected = band == null, onClick = { band = null }, label = { Text("Все") })
-                AppSectionUsage.Band.entries.forEach { item ->
-                    FilterChip(
-                        selected = band == item,
-                        onClick = { band = item },
-                        label = { Text(item.label) },
+        }
+        if (summary != null) {
+            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                if (track.hasRead) {
+                    HeroProgressTile(
+                        modifier = Modifier.weight(1f),
+                        icon = Icons.AutoMirrored.Filled.MenuBook,
+                        title = "Прочитано",
+                        done = summary.readChapters,
+                        total = summary.totalChapters,
+                        booksDone = summary.booksRead,
+                        bookCount = summary.bookCount,
+                        color = readColor,
+                    )
+                }
+                if (track.hasListen) {
+                    HeroProgressTile(
+                        modifier = Modifier.weight(1f),
+                        icon = Icons.Filled.GraphicEq,
+                        title = "Прослушано",
+                        done = summary.listenChapters,
+                        total = summary.totalChapters,
+                        booksDone = summary.booksListened,
+                        bookCount = summary.bookCount,
+                        color = listenColor,
                     )
                 }
             }
-            if (visible.isEmpty()) {
+        }
+        if (track.hasRead) {
+            val metrics = buildList {
+                if (stats.daysActive > 0) add("Дней" to stats.daysActive.toString())
+                if (stats.currentStreak > 0) add("Серия" to "${stats.currentStreak} дн.")
+                if (stats.longestStreak > 1) add("Рекорд" to "${stats.longestStreak} дн.")
+                if (stats.uniqueVerses > 0) add("Стихов" to stats.uniqueVerses.toString())
+                if (stats.uniqueChapters > 0) add("Глав" to stats.uniqueChapters.toString())
+                if (stats.uniqueBooks > 0) add("Книг" to stats.uniqueBooks.toString())
+                if (stats.visits > 0) add("Открытий" to stats.visits.toString())
+                if (stats.dwellSeconds > 0) add("Время" to formatStatsDuration(stats.dwellSeconds))
+                if (stats.copies > 0) add("Копий" to stats.copies.toString())
+                if (stats.visitsLast7Days > 0 || stats.dwellLast7Days > 0) {
+                    val week = buildList {
+                        if (stats.visitsLast7Days > 0) add("${stats.visitsLast7Days} откр.")
+                        if (stats.dwellLast7Days > 0) add(formatStatsDuration(stats.dwellLast7Days))
+                    }.joinToString(" · ")
+                    add("7 дней" to week)
+                }
+            }
+            if (metrics.isNotEmpty()) {
+                StatsSectionLabel("Обзор чтения")
+                metrics.chunked(3).forEach { row ->
+                    Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                        row.forEach { (label, value) ->
+                            MetricChip(Modifier.weight(1f), label, value, readColor)
+                        }
+                        repeat(3 - row.size) { Spacer(Modifier.weight(1f)) }
+                    }
+                }
+            }
+            TestamentSplitBar(
+                oldSeconds = stats.oldTestamentSeconds,
+                newSeconds = stats.newTestamentSeconds,
+            )
+            if (stats.topTools.isNotEmpty()) {
                 Text(
-                    "Нет разделов с таким фильтром",
-                    style = MaterialTheme.typography.bodySmall,
+                    "Инструменты: " + stats.topTools.joinToString(" · ") { "${it.first} ${it.second}" },
+                    style = MaterialTheme.typography.labelMedium,
                     color = scheme.onSurfaceVariant,
                 )
             }
-            byArea.forEach { (area, rows) ->
-                StatsSectionLabel(area)
-                rows.forEach { row ->
-                    val itemBand = AppSectionUsage.band(row.opens, sectionMax)
-                    UsageMeterCard(
-                        title = row.section.title,
-                        band = itemBand,
-                        fraction = if (sectionMax <= 0) 0f else row.opens.toFloat() / sectionMax,
-                        detail = if (row.opens <= 0) {
-                            "ещё не открывали"
-                        } else {
-                            openingsLabel(row.opens) + " · " + lastOpenedLabel(row.lastAt)
-                        },
-                        neverLabel = "не открывали",
-                        onClick = { onOpenSection(row.section.id) },
-                    )
-                }
+            RankBlock("Самые читаемые книги", stats.topBooks, onOpen, readColor) { rankDetail(it) }
+            RankBlock("Самые читаемые главы", stats.topChapters, onOpen, readColor) { rankDetail(it) }
+            RankBlock("Самые читаемые стихи", stats.topVerses, onOpen, readColor) { rankDetail(it) }
+            RankBlock("Дольше всего на стихе", stats.topByTime, onOpen, readColor) { rankDetail(it) }
+            RankBlock("Чаще всего копируют", stats.topCopied, onOpen, readColor) { rankDetail(it) }
+        }
+        if (track.hasListen || stats.topListenedBooks.isNotEmpty()) {
+            RankBlock("Больше всего прослушанных глав", stats.topListenedBooks, onOpen, listenColor) {
+                "${it.uniqueVerses} гл."
             }
+        }
+        CanonGroupsBoard(
+            groups = stats.groups,
+            onOpenGroup = { group ->
+                val bookId = BibleCanon.allBooks.firstOrNull { it.group == group }?.id
+                if (bookId != null) onOpen(bookId, 1, 0)
+            },
+        )
+        SectionUsageBoard(
+            title = "Экраны Библии",
+            subtitle = "Поиск, закладки, история, сравнение и другие пункты меню Библии",
+            rows = AppSectionUsage.bibleRows(sectionUsage),
+            onOpenSection = onOpenSection,
+        )
+    }
+}
+
+@Composable
+private fun AreaStatsTabContent(
+    area: String,
+    sectionUsage: Map<String, Pair<Int, Long>>,
+    onOpenSection: (String) -> Unit,
+) {
+    SectionUsageBoard(
+        title = area,
+        subtitle = "Что открываете часто, а что почти не трогали",
+        rows = AppSectionUsage.rowsForArea(sectionUsage, area),
+        onOpenSection = onOpenSection,
+    )
+}
+
+@Composable
+private fun SectionUsageBoard(
+    title: String,
+    subtitle: String,
+    rows: List<AppSectionUsage.Row>,
+    onOpenSection: (String) -> Unit,
+) {
+    var band by remember(title) { mutableStateOf<AppSectionUsage.Band?>(null) }
+    val sectionMax = rows.maxOfOrNull { it.opens } ?: 0
+    val bands = rows.map { AppSectionUsage.band(it.opens, sectionMax) }
+    val visible = rows.filter { band == null || AppSectionUsage.band(it.opens, sectionMax) == band }
+    val scheme = MaterialTheme.colorScheme
+    Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
+        StatsSectionLabel(title)
+        Text(subtitle, style = MaterialTheme.typography.bodySmall, color = scheme.onSurfaceVariant)
+        Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+            BandSummaryChip("часто", bands.count { it == AppSectionUsage.Band.OFTEN }, scheme.primary)
+            BandSummaryChip("иногда", bands.count { it == AppSectionUsage.Band.SOMETIMES }, scheme.tertiary)
+            BandSummaryChip("редко", bands.count { it == AppSectionUsage.Band.RARE }, scheme.onSurfaceVariant)
+            BandSummaryChip("пусто", bands.count { it == AppSectionUsage.Band.NEVER }, scheme.outline)
+        }
+        Row(
+            modifier = Modifier.horizontalScroll(rememberScrollState()),
+            horizontalArrangement = Arrangement.spacedBy(8.dp),
+        ) {
+            FilterChip(selected = band == null, onClick = { band = null }, label = { Text("Все") })
+            AppSectionUsage.Band.entries.forEach { item ->
+                FilterChip(
+                    selected = band == item,
+                    onClick = { band = item },
+                    label = { Text(item.label) },
+                )
+            }
+        }
+        if (visible.isEmpty()) {
+            Text(
+                "Нет разделов с таким фильтром",
+                style = MaterialTheme.typography.bodySmall,
+                color = scheme.onSurfaceVariant,
+            )
+        }
+        visible.forEach { row ->
+            val itemBand = AppSectionUsage.band(row.opens, sectionMax)
+            UsageMeterCard(
+                title = row.section.title,
+                band = itemBand,
+                fraction = if (sectionMax <= 0) 0f else row.opens.toFloat() / sectionMax,
+                detail = if (row.opens <= 0) {
+                    "ещё не открывали"
+                } else {
+                    openingsLabel(row.opens) + " · " + lastOpenedLabel(row.lastAt)
+                },
+                neverLabel = "не открывали",
+                onClick = { onOpenSection(row.section.id) },
+            )
         }
     }
 }

@@ -46,6 +46,16 @@ class AppSectionUsageTest {
     }
 
     @Test
+    fun statsTabsStartWithBibleAndKeepAreas() {
+        val tabs = AppSectionUsage.statsTabAreas()
+        assertEquals(AppSectionUsage.BIBLE_AREA, tabs.first())
+        assertTrue(tabs.contains("Медиа"))
+        assertTrue(tabs.contains("Детям"))
+        assertTrue(AppSectionUsage.bibleRows(mapOf("search" to (1 to 1L))).any { it.section.id == "search" })
+        assertTrue(AppSectionUsage.rowsForArea(emptyMap(), "Медиа").all { it.section.area == "Медиа" })
+    }
+
+    @Test
     fun canonGroupsIncludeUntouchedSections() {
         val stats = BibleReadingStats.build(
             trackId = TranslationId.SYNODAL.code,
