@@ -55,7 +55,9 @@ capture() {
 echo "Снимаю экраны приложения…"
 
 capture "books" "01-books.png"
-capture "chapters/genesis" "02-chapters.png"
+capture "chapters/john" "02-chapters.png"
+capture "verses/john/1" "02b-verses.png"
+capture "bible_coverage" "02c-coverage.png"
 capture "read/genesis/1/0" "03-reader.png"
 capture "media" "04-media.png"
 capture "media_videos" "05-videos.png"
