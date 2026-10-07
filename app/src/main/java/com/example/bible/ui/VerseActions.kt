@@ -113,6 +113,7 @@ data class VerseRangeCopyRequest(
     val chapterVerseCount: Int,
     val chapterVerseTexts: Map<Int, String>,
     val translation: TranslationId,
+    val onVersesCopied: ((Set<Int>) -> Unit)? = null,
 )
 
 private fun applyVerseRangeCopy(
@@ -164,6 +165,7 @@ private fun applyVerseRangeCopy(
             verseNumbers = verses,
             verseTextsByNumber = texts,
         )
+        snap.onVersesCopied?.invoke(verses)
     }
 }
 
@@ -618,6 +620,7 @@ fun VerseActionsBottomSheet(
     onOpenExistingVerseNote: ((String) -> Unit)? = null,
     /** Режим выбора нескольких стихов по номерам (начать с текущего). */
     onEnterMultiVerseSelect: ((Int) -> Unit)? = null,
+    onVersesCopied: ((Set<Int>) -> Unit)? = null,
     /** Песочница иврита: весь стих (подстрочник Винокурова, ВЗ). */
     onOpenInterlinearHebrewSandboxWholeVerse: ((VerseRef) -> Unit)? = null,
     translation: TranslationId = TranslationId.SYNODAL,
@@ -678,6 +681,7 @@ fun VerseActionsBottomSheet(
             verseNumbers = verseNumbers,
             verseTextsByNumber = verseTextsIncludingTarget(),
         )
+        onVersesCopied?.invoke(verseNumbers)
     }
 
     fun openRangeCopy(audioLink: Boolean) {
@@ -687,6 +691,7 @@ fun VerseActionsBottomSheet(
             chapterVerseCount = chapterVerseCount,
             chapterVerseTexts = chapterVerseTexts,
             translation = translation,
+            onVersesCopied = if (audioLink) null else onVersesCopied,
         )
         onDismiss()
         showVerseRangeCopyDialog(context, snap)

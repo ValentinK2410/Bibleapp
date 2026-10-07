@@ -9,6 +9,7 @@ import com.example.bible.data.AppDataExport
 import com.example.bible.data.BibleAudioPlayer
 import com.example.bible.data.BibleCanon
 import com.example.bible.data.BibleCoverage
+import com.example.bible.data.BibleReadingStats
 import com.example.bible.data.BibleLibrary
 import com.example.bible.data.BiblePreferences
 import com.example.bible.data.BibleSearchHistoryEntry
@@ -2558,6 +2559,34 @@ class BibleViewModel(
         SharingStarted.WhileSubscribed(5000),
         emptyList(),
     )
+
+    val verseCopyStats: StateFlow<List<BibleReadingStats.VerseCopyStat>> = preferences.verseCopyStats.stateIn(
+        viewModelScope,
+        SharingStarted.WhileSubscribed(5000),
+        emptyList(),
+    )
+
+    fun recordVerseCopies(
+        translation: String,
+        bookId: String,
+        bookName: String,
+        chapter: Int,
+        verses: Collection<Int>,
+    ) {
+        viewModelScope.launch {
+            preferences.recordVerseCopies(translation, bookId, bookName, chapter, verses)
+        }
+    }
+
+    val sectionUsage: StateFlow<Map<String, Pair<Int, Long>>> = preferences.sectionUsage.stateIn(
+        viewModelScope,
+        SharingStarted.WhileSubscribed(5000),
+        emptyMap(),
+    )
+
+    fun recordSectionOpen(id: String) {
+        viewModelScope.launch { preferences.recordSectionOpen(id) }
+    }
 
     val quranReadingHistory: StateFlow<List<QuranReadingHistoryEntry>> = preferences.quranReadingHistory.stateIn(
         viewModelScope,

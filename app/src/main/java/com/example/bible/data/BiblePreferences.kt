@@ -58,6 +58,10 @@ private object Keys {
     val COVERAGE_VERSES_IMPORTED = booleanPreferencesKey("coverage_verses_imported")
     /** Хронология: какие стихи открывались и сколько на них задерживались (порядок по времени). */
     val READING_TRACE_JSON = stringPreferencesKey("reading_trace_json")
+    /** Сколько раз копировали каждый стих. */
+    val VERSE_COPY_STATS_JSON = stringPreferencesKey("verse_copy_stats_json")
+    /** Сколько раз открывали разделы приложения: id → число и время. */
+    val SECTION_USE_JSON = stringPreferencesKey("section_use_json")
     val NOTES_JSON = stringPreferencesKey("user_notes_json")
     /** JSON-массив строк — пользовательские названия типов заметок (чипы в редакторе). */
     val NOTES_CUSTOM_KINDS_JSON = stringPreferencesKey("note_custom_kinds_json")
@@ -925,6 +929,46 @@ class BiblePreferences(
 
     val readingTrace: Flow<List<ReadingTraceEntry>> = appContext.bibleDataStore.data.map { prefs ->
         ReadingTraceEntry.parseList(prefs[Keys.READING_TRACE_JSON].orEmpty())
+    }
+
+    val verseCopyStats: Flow<List<BibleReadingStats.VerseCopyStat>> = appContext.bibleDataStore.data.map { prefs ->
+        BibleReadingStats.parseCopies(prefs[Keys.VERSE_COPY_STATS_JSON].orEmpty())
+    }
+
+    suspend fun recordVerseCopies(
+        translation: String,
+        bookId: String,
+        bookName: String,
+        chapter: Int,
+        verses: Collection<Int>,
+    ) {
+        if (verses.none { it > 0 }) return
+        appContext.bibleDataStore.edit { prefs ->
+            val current = BibleReadingStats.parseCopies(prefs[Keys.VERSE_COPY_STATS_JSON].orEmpty())
+            val merged = BibleReadingStats.mergeCopies(
+                current = current,
+                translation = translation,
+                bookId = bookId,
+                bookName = bookName,
+                chapter = chapter,
+                verses = verses,
+                now = System.currentTimeMillis(),
+            )
+            prefs[Keys.VERSE_COPY_STATS_JSON] = BibleReadingStats.copiesToJson(merged)
+        }
+    }
+
+    val sectionUsage: Flow<Map<String, Pair<Int, Long>>> = appContext.bibleDataStore.data.map { prefs ->
+        AppSectionUsage.parse(prefs[Keys.SECTION_USE_JSON].orEmpty())
+    }
+
+    suspend fun recordSectionOpen(id: String) {
+        if (id.isBlank()) return
+        appContext.bibleDataStore.edit { prefs ->
+            val current = AppSectionUsage.parse(prefs[Keys.SECTION_USE_JSON].orEmpty())
+            val next = AppSectionUsage.increment(current, id, System.currentTimeMillis())
+            prefs[Keys.SECTION_USE_JSON] = AppSectionUsage.toJson(next)
+        }
     }
 
     /** История поиска по переводу Корана; порядок — по времени добавления (старые первыми). */

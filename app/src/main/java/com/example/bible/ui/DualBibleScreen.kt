@@ -2470,13 +2470,15 @@ private fun ReaderPane(
                 VerseMultiSelectBottomBar(
                     selectedCount = multiSelect.count,
                     onCopy = {
+                        val copied = multiSelect.selectedVerses ?: emptySet()
                         copyVersesToClipboard(
                             context = paneContext,
                             bookName = bookName,
                             chapter = chapterNum,
-                            verseNumbers = multiSelect.selectedVerses ?: emptySet(),
+                            verseNumbers = copied,
                             verseTextsByNumber = chapterVerseTexts,
                         )
+                        viewModel?.recordVerseCopies(translation.code, bookId, bookName, chapterNum, copied)
                         multiSelect.clear()
                     },
                     onReflectGigaChat = viewModel?.let {
@@ -2568,6 +2570,9 @@ private fun ReaderPane(
             },
             onOpenExistingVerseNote = onOpenVerseNote,
             onEnterMultiVerseSelect = { multiSelect.start(it) },
+            onVersesCopied = { copied ->
+                viewModel?.recordVerseCopies(translation.code, bookId, bookName, chapterNum, copied)
+            },
             translation = translation,
             chapterVerseCount = verses.size,
             chapterVerseTexts = chapterVerseTexts,

@@ -643,6 +643,8 @@ private fun BibleNavHost(
     val audioPlaybackState by viewModel.audioPlaybackState.collectAsStateWithLifecycle()
     val audioPlaybackSpeed by viewModel.audioPlaybackSpeed.collectAsStateWithLifecycle()
     val readingHistory by viewModel.readingHistory.collectAsStateWithLifecycle()
+    val verseCopyStats by viewModel.verseCopyStats.collectAsStateWithLifecycle()
+    val sectionUsage by viewModel.sectionUsage.collectAsStateWithLifecycle()
     val coverageRead by viewModel.coverageReadChapters.collectAsStateWithLifecycle()
     val coverageListen by viewModel.coverageListenChapters.collectAsStateWithLifecycle()
     val readingTrace by viewModel.readingTrace.collectAsStateWithLifecycle()
@@ -681,6 +683,8 @@ private fun BibleNavHost(
             com.example.bible.data.BibleAudioPlayer.stopForNavigation()
         }
         wasOnReadRoute = onRead
+        val sectionId = com.example.bible.data.AppSectionUsage.sectionIdForRoute(route)
+        if (sectionId != null) viewModel.recordSectionOpen(sectionId)
     }
 
     NavHost(
@@ -821,6 +825,7 @@ private fun BibleNavHost(
                                         narratorId = narratorId,
                                         closeMenu = { menuOpen = false },
                                         navController = navController,
+                                        onSectionOpened = viewModel::recordSectionOpen,
                                         onShowTextSizeDialog = { showTextSizeDialog = true },
                                         onShowBookNarratorPicker = { showBookNarratorPicker = true },
                                     )
@@ -2529,6 +2534,7 @@ private fun BibleNavHost(
                                         narratorId = narratorId,
                                         closeMenu = { showMoreMenu = false },
                                         navController = navController,
+                                        onSectionOpened = viewModel::recordSectionOpen,
                                         onShowTextSizeDialog = { showTextSizeDialog = true },
                                         onShowBookNarratorPicker = { showNarratorPicker = true },
                                         timemarkBookId = bookId,
@@ -3412,12 +3418,24 @@ private fun BibleNavHost(
                     modifier = Modifier.padding(padding),
                     readKeys = coverageRead,
                     listenKeys = coverageListen,
+                    history = readingHistory,
+                    trace = readingTrace,
+                    copies = verseCopyStats,
+                    sectionUsage = sectionUsage,
                     initialTrackId = initialTrack,
-                    onOpenChapter = { trackId, bookId, chapter ->
+                    onOpenSection = { sectionId ->
+                        val route = com.example.bible.data.AppSectionUsage.routeFor(sectionId)
+                        if (route != null) {
+                            navController.navigate(route) {
+                                launchSingleTop = true
+                            }
+                        }
+                    },
+                    onOpenChapter = { trackId, bookId, chapter, verse ->
                         val track = com.example.bible.data.BibleCoverage.trackById(trackId)
                         scope.launch {
                             viewModel.setTranslation(track?.textTranslation ?: TranslationId.INTERLINEAR)
-                            navController.navigate("read/$bookId/$chapter/0") {
+                            navController.navigate("read/$bookId/$chapter/${verse.coerceAtLeast(0)}") {
                                 popUpTo("bible_coverage") { inclusive = true }
                                 launchSingleTop = true
                             }
@@ -6229,13 +6247,15 @@ private fun ReaderContent(
             VerseMultiSelectBottomBar(
                 selectedCount = multiSelect.count,
                 onCopy = {
+                    val copied = multiSelect.selectedVerses ?: emptySet()
                     copyVersesToClipboard(
                         context = readerContext,
                         bookName = bookName,
                         chapter = chapter,
-                        verseNumbers = multiSelect.selectedVerses ?: emptySet(),
+                        verseNumbers = copied,
                         verseTextsByNumber = chapterVerseTexts,
                     )
+                    viewModel.recordVerseCopies(translation.code, bookId, bookName, chapter, copied)
                     multiSelect.clear()
                 },
                 onReflectGigaChat = {
@@ -6323,6 +6343,9 @@ private fun ReaderContent(
             },
             onOpenExistingVerseNote = onOpenExistingVerseNote,
             onEnterMultiVerseSelect = { multiSelect.start(it) },
+            onVersesCopied = { copied ->
+                viewModel.recordVerseCopies(translation.code, bookId, bookName, chapter, copied)
+            },
             translation = translation,
             chapterVerseCount = verses.size,
             chapterVerseTexts = chapterVerseTexts,

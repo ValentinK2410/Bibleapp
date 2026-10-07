@@ -48,6 +48,7 @@ fun BooksMainMenuOrderedItems(
     navController: NavHostController,
     onShowTextSizeDialog: () -> Unit,
     onShowBookNarratorPicker: () -> Unit,
+    onSectionOpened: (String) -> Unit = {},
     timemarkBookId: String? = null,
     timemarkChapter: Int? = null,
     timemarkNarratorId: String? = null,
@@ -169,7 +170,11 @@ fun BooksMainMenuOrderedItems(
             )
             BooksMainMenuOrder.NARRATOR -> DropdownMenuItem(
                 text = { Text("Озвучка: ${narratorForTranslation(translation, narratorId).name}") },
-                onClick = { closeMenu(); onShowBookNarratorPicker() },
+                onClick = {
+                    closeMenu()
+                    onSectionOpened(BooksMainMenuOrder.NARRATOR)
+                    onShowBookNarratorPicker()
+                },
                 leadingIcon = { Icon(Icons.Default.Headphones, contentDescription = null, tint = primary) },
             )
             BooksMainMenuOrder.READING_PLAN -> DropdownMenuItem(
@@ -198,7 +203,11 @@ fun BooksMainMenuOrderedItems(
             )
             BooksMainMenuOrder.TEXT_SIZE -> DropdownMenuItem(
                 text = { Text("Размер текста") },
-                onClick = { closeMenu(); onShowTextSizeDialog() },
+                onClick = {
+                    closeMenu()
+                    onSectionOpened(BooksMainMenuOrder.TEXT_SIZE)
+                    onShowTextSizeDialog()
+                },
                 leadingIcon = { Icon(Icons.Filled.FormatSize, contentDescription = null) },
             )
             BooksMainMenuOrder.MY_CHURCH -> DropdownMenuItem(
