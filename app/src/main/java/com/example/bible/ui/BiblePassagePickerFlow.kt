@@ -23,6 +23,7 @@ import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -35,6 +36,7 @@ import androidx.compose.ui.unit.sp
 import com.example.bible.R
 import com.example.bible.data.BibleBook
 import com.example.bible.data.BibleCanon
+import com.example.bible.data.BibleCoverage
 import com.example.bible.data.BibleVerse
 import com.example.bible.data.TranslationId
 
@@ -72,12 +74,19 @@ internal fun BiblePassagePickerChapterStep(
         LaunchedEffect(translation, bookId) {
             verseCounts = viewModel.chapterVerseCounts(bookId, translation)
         }
+        val (readChapters, listenedChapters) = rememberPassageCoverageChapters(
+            viewModel = viewModel,
+            translation = translation,
+            bookId = bookId,
+        )
         ChapterGrid(
             modifier = modifier.fillMaxSize(),
             book = book,
             bookId = bookId,
             chaptersWithAudio = chaptersWithAudio,
             verseCounts = verseCounts,
+            readChapters = readChapters,
+            listenedChapters = listenedChapters,
             onChapterClick = onChapterSelected,
         )
     }
@@ -223,6 +232,29 @@ private fun chapterCountSuffix(count: Int): String {
         mod10 in 2..4 -> "главы"
         else -> "глав"
     }
+}
+
+/** Прочитанные и прослушанные номера глав этой книги в текущем переводе. */
+@Composable
+internal fun rememberPassageCoverageChapters(
+    viewModel: BibleViewModel,
+    translation: TranslationId,
+    bookId: String,
+): Pair<Set<Int>, Set<Int>> {
+    val readKeys by viewModel.coverageReadChapters.collectAsStateWithLifecycle()
+    val listenKeys by viewModel.coverageListenChapters.collectAsStateWithLifecycle()
+    val listenTrack = if (translation == TranslationId.INTERLINEAR) {
+        if (BibleCanon.isOldTestament(bookId)) BibleCoverage.HEBREW else BibleCoverage.GREEK
+    } else {
+        translation.code
+    }
+    val readChapters = remember(readKeys, translation, bookId) {
+        BibleCoverage.chaptersMarked(readKeys, translation.code, bookId)
+    }
+    val listenedChapters = remember(listenKeys, listenTrack, bookId) {
+        BibleCoverage.chaptersMarked(listenKeys, listenTrack, bookId)
+    }
+    return readChapters to listenedChapters
 }
 
 internal fun passagePickerBookTitle(bookId: String, translation: TranslationId): String =

@@ -67,6 +67,7 @@ import androidx.compose.material.icons.filled.BookmarkBorder
 import androidx.compose.material.icons.filled.CalendarToday
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Headphones
+import androidx.compose.material.icons.filled.GraphicEq
 import androidx.compose.material.icons.filled.History
 import androidx.compose.material.icons.filled.Pause
 import androidx.compose.material.icons.automirrored.filled.MenuBook
@@ -4797,6 +4798,8 @@ internal fun ChapterGrid(
     bookId: String = book.id,
     chaptersWithAudio: Set<Int> = emptySet(),
     verseCounts: Map<Int, Int> = emptyMap(),
+    readChapters: Set<Int> = emptySet(),
+    listenedChapters: Set<Int> = emptySet(),
     onChapterClick: (Int) -> Unit,
 ) {
     val presence = rememberTimemarkPresenceIndex()
@@ -4815,6 +4818,8 @@ internal fun ChapterGrid(
         ) {
             gridItems(book.chapters, key = { it.number }) { chapter: BibleChapter ->
                 val hasAudio = chapter.number in chaptersWithAudio
+                val isRead = chapter.number in readChapters
+                val isListened = chapter.number in listenedChapters
                 val chapterCodes = presence.forChapter(bookId, chapter.number)
                 val verseCount = verseCounts[chapter.number] ?: chapter.verses.size
                 Surface(
@@ -4825,7 +4830,16 @@ internal fun ChapterGrid(
                             onClick = { onChapterClick(chapter.number) },
                             onLongClick = { infoChapter = chapter.number },
                         )
-                        .border(1.dp, accent.copy(alpha = 0.22f), shape),
+                        .border(
+                            width = if (isRead || isListened) 1.5.dp else 1.dp,
+                            color = when {
+                                isRead && isListened -> accent.copy(alpha = 0.85f)
+                                isRead -> scheme.primary.copy(alpha = 0.7f)
+                                isListened -> scheme.tertiary.copy(alpha = 0.75f)
+                                else -> accent.copy(alpha = 0.22f)
+                            },
+                            shape = shape,
+                        ),
                     shape = shape,
                     color = scheme.surfaceContainerLow,
                     shadowElevation = 1.dp,
@@ -4865,16 +4879,31 @@ internal fun ChapterGrid(
                                 .fillMaxWidth()
                                 .height(14.dp),
                             verticalAlignment = Alignment.CenterVertically,
-                            horizontalArrangement = Arrangement.Center,
+                            horizontalArrangement = Arrangement.spacedBy(2.dp, Alignment.CenterHorizontally),
                         ) {
+                            if (isRead) {
+                                Icon(
+                                    Icons.AutoMirrored.Filled.MenuBook,
+                                    contentDescription = "Прочитана",
+                                    tint = scheme.primary,
+                                    modifier = Modifier.size(12.dp),
+                                )
+                            }
+                            if (isListened) {
+                                Icon(
+                                    Icons.Filled.GraphicEq,
+                                    contentDescription = "Прослушана",
+                                    tint = scheme.tertiary,
+                                    modifier = Modifier.size(12.dp),
+                                )
+                            }
                             if (hasAudio) {
                                 Icon(
                                     Icons.Default.Headphones,
                                     contentDescription = null,
                                     tint = scheme.primary,
-                                    modifier = Modifier.size(13.dp),
+                                    modifier = Modifier.size(12.dp),
                                 )
-                                if (chapterCodes.isNotEmpty()) Spacer(Modifier.width(4.dp))
                             }
                             TimemarkPresenceDots(
                                 translationCodes = chapterCodes,
@@ -6232,12 +6261,19 @@ private fun ChaptersRouteContent(
                 LaunchedEffect(translation, bookId) {
                     verseCounts = viewModel.chapterVerseCounts(bookId, translation)
                 }
+                val (readChapters, listenedChapters) = rememberPassageCoverageChapters(
+                    viewModel = viewModel,
+                    translation = translation,
+                    bookId = bookId,
+                )
                 ChapterGrid(
                     modifier = Modifier.fillMaxSize(),
                     book = book,
                     bookId = bookId,
                     chaptersWithAudio = chaptersWithAudio,
                     verseCounts = verseCounts,
+                    readChapters = readChapters,
+                    listenedChapters = listenedChapters,
                     onChapterClick = { chapter ->
                         navController.navigate("verses/$bookId/$chapter")
                     },
