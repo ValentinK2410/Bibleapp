@@ -74,13 +74,13 @@ import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.input.pointer.PointerEventPass
 import androidx.compose.ui.input.pointer.pointerInput
-import androidx.compose.ui.input.pointer.positionChange
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.semantics.contentDescription
@@ -1344,6 +1344,8 @@ private fun TimemarkLayoutCard(
     }
 }
 
+private enum class ResizeEdge { Horizontal, Vertical, Corner }
+
 @Composable
 private fun ResizableTextSlot(
     enabled: Boolean,
@@ -1351,89 +1353,111 @@ private fun ResizableTextSlot(
     onResize: (width: Float, height: Float) -> Unit,
     content: @Composable (Modifier) -> Unit,
 ) {
+    val latestSize = rememberUpdatedState(size)
+    val latestResize = rememberUpdatedState(onResize)
+    val density = LocalDensity.current
     BoxWithConstraints(Modifier.fillMaxWidth()) {
         val parent = maxWidth
+        val parentPx = with(density) { parent.toPx() }.coerceAtLeast(1f)
+        val fieldW = parent * size.width.coerceIn(0.35f, 1f)
+        val fieldH = size.height.dp
         Box(
             Modifier
-                .width(parent * size.width.coerceIn(0.35f, 1f))
-                .height(size.height.dp)
-                .then(
-                    if (enabled) {
-                        Modifier.border(
-                            1.5.dp,
-                            MaterialTheme.colorScheme.primary,
-                            RoundedCornerShape(12.dp),
+                .fillMaxWidth()
+                .height(if (enabled) fieldH + 16.dp else fieldH)
+                .pointerInput(enabled, parentPx) {
+                    if (!enabled) return@pointerInput
+                    val grip = 28.dp.toPx()
+                    awaitEachGesture {
+                        val down = awaitFirstDown(
+                            pass = PointerEventPass.Initial,
+                            requireUnconsumed = false,
                         )
-                    } else {
-                        Modifier
-                    },
-                ),
+                        val current = latestSize.value
+                        val boxW = parentPx * current.width.coerceIn(0.35f, 1f)
+                        val boxH = with(density) { current.height.dp.toPx() }
+                        val x = down.position.x
+                        val y = down.position.y
+                        val onRight = x >= boxW - grip && x <= boxW + grip && y >= 0f && y <= boxH + grip
+                        val onBottom = y >= boxH - grip && y <= boxH + grip && x >= 0f && x <= boxW + grip
+                        val edge = when {
+                            onRight && onBottom -> ResizeEdge.Corner
+                            onRight -> ResizeEdge.Horizontal
+                            onBottom -> ResizeEdge.Vertical
+                            else -> null
+                        }
+                        if (edge == null) return@awaitEachGesture
+                        down.consume()
+                        var width = current.width
+                        var height = current.height
+                        var last = down.position
+                        while (true) {
+                            val event = awaitPointerEvent(PointerEventPass.Initial)
+                            val change = event.changes.firstOrNull { it.id == down.id } ?: break
+                            if (!change.pressed) break
+                            change.consume()
+                            val delta = change.position - last
+                            last = change.position
+                            if (edge != ResizeEdge.Vertical) {
+                                width = (width + delta.x / parentPx).coerceIn(0.35f, 1f)
+                            }
+                            if (edge != ResizeEdge.Horizontal) {
+                                height = (height + with(density) { delta.y.toDp().value }).coerceIn(56f, 360f)
+                            }
+                            latestResize.value(width, height)
+                        }
+                    }
+                },
         ) {
-            content(Modifier.fillMaxSize())
+            Box(
+                Modifier
+                    .width(fieldW)
+                    .height(fieldH)
+                    .then(
+                        if (enabled) {
+                            Modifier.border(
+                                1.5.dp,
+                                MaterialTheme.colorScheme.primary,
+                                RoundedCornerShape(12.dp),
+                            )
+                        } else {
+                            Modifier
+                        },
+                    ),
+            ) {
+                content(Modifier.fillMaxSize())
+            }
             if (enabled) {
                 val scheme = MaterialTheme.colorScheme
-                ResizeGrip(
+                Box(
                     Modifier
-                        .align(Alignment.CenterEnd)
+                        .align(Alignment.TopStart)
+                        .padding(start = fieldW - 11.dp, top = fieldH / 2 - 18.dp)
                         .width(22.dp)
-                        .fillMaxHeight(),
-                    scheme.primary,
-                ) { dx, _ ->
-                    if (parent.value <= 0f) return@ResizeGrip
-                    val next = size.width + dx / parent.value
-                    onResize(next, size.height)
-                }
-                ResizeGrip(
+                        .height(36.dp)
+                        .clip(RoundedCornerShape(8.dp))
+                        .background(scheme.primary),
+                )
+                Box(
                     Modifier
-                        .align(Alignment.BottomCenter)
-                        .fillMaxWidth()
-                        .height(22.dp),
-                    scheme.primary,
-                ) { _, dy ->
-                    onResize(size.width, size.height + dy)
-                }
-                ResizeGrip(
+                        .align(Alignment.TopStart)
+                        .padding(start = fieldW / 2 - 18.dp, top = fieldH - 11.dp)
+                        .width(36.dp)
+                        .height(22.dp)
+                        .clip(RoundedCornerShape(8.dp))
+                        .background(scheme.primary),
+                )
+                Box(
                     Modifier
-                        .align(Alignment.BottomEnd)
-                        .size(28.dp),
-                    scheme.tertiary,
-                ) { dx, dy ->
-                    if (parent.value <= 0f) return@ResizeGrip
-                    onResize(size.width + dx / parent.value, size.height + dy)
-                }
+                        .align(Alignment.TopStart)
+                        .padding(start = fieldW - 14.dp, top = fieldH - 14.dp)
+                        .size(28.dp)
+                        .clip(RoundedCornerShape(8.dp))
+                        .background(scheme.tertiary),
+                )
             }
         }
     }
-}
-
-@Composable
-private fun ResizeGrip(
-    modifier: Modifier,
-    color: androidx.compose.ui.graphics.Color,
-    onDrag: (dxDp: Float, dyDp: Float) -> Unit,
-) {
-    val density = LocalDensity.current
-    Box(
-        modifier
-            .clip(RoundedCornerShape(8.dp))
-            .background(color.copy(alpha = 0.9f))
-            .pointerInput(Unit) {
-                awaitEachGesture {
-                    val down = awaitFirstDown(pass = PointerEventPass.Initial)
-                    down.consume()
-                    while (true) {
-                        val event = awaitPointerEvent(PointerEventPass.Initial)
-                        val change = event.changes.firstOrNull { it.id == down.id } ?: break
-                        if (!change.pressed) break
-                        val delta = change.positionChange()
-                        change.consume()
-                        with(density) {
-                            onDrag(delta.x.toDp().value, delta.y.toDp().value)
-                        }
-                    }
-                }
-            },
-    )
 }
 
 @Composable
