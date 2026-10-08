@@ -337,4 +337,67 @@ object BibleCoverage {
             (readCounts[id] ?: 0).coerceAtMost(total) to (listenCounts[id] ?: 0).coerceAtMost(total)
         }
     }
+
+    /** Цифры на плитке книги: главы целиком и стихи, прослушанные частично. */
+    data class BookTileCoverage(
+        val readChapters: Int = 0,
+        val listenedChapters: Int = 0,
+        val listenedVerses: Int = 0,
+        /** Главы, где есть стихи, но глава ещё не засчитана целиком. */
+        val listenedOpenChapters: Int = 0,
+    )
+
+    fun homeTiles(
+        translation: TranslationId,
+        readKeys: Set<String>,
+        listenChapterKeys: Set<String>,
+        listenVerseKeys: Set<String>,
+    ): Map<String, BookTileCoverage> {
+        val readCounts = countsByBook(readKeys, translation.code)
+        val listenFull = HashMap<String, MutableSet<Int>>()
+        for (key in listenChapterKeys) {
+            val parts = key.split('|')
+            if (parts.size != 3) continue
+            val bookId = parts[1]
+            if (parts[0] != listenTrackFor(translation, bookId)) continue
+            val chapter = parts[2].toIntOrNull() ?: continue
+            val total = BibleCanon.byId(bookId)?.chapters ?: continue
+            if (chapter !in 1..total) continue
+            listenFull.getOrPut(bookId) { HashSet() }.add(chapter)
+        }
+        val verseCount = HashMap<String, Int>()
+        val verseChapters = HashMap<String, MutableSet<Int>>()
+        for (key in listenVerseKeys) {
+            val parts = key.split('|')
+            if (parts.size < 4) continue
+            val bookId = parts[1]
+            if (parts[0] != listenTrackFor(translation, bookId)) continue
+            val chapter = parts[2].toIntOrNull() ?: continue
+            val verses = decodeVerseSpans(parts.subList(3, parts.size).joinToString("|"))
+            if (verses.isEmpty()) continue
+            verseCount[bookId] = (verseCount[bookId] ?: 0) + verses.size
+            verseChapters.getOrPut(bookId) { HashSet() }.add(chapter)
+        }
+        val ids = readCounts.keys + listenFull.keys + verseCount.keys
+        return ids.associateWith { id ->
+            val total = BibleCanon.byId(id)?.chapters ?: 0
+            val full = listenFull[id].orEmpty()
+            val open = verseChapters[id].orEmpty().count { it !in full }
+            BookTileCoverage(
+                readChapters = (readCounts[id] ?: 0).coerceAtMost(total),
+                listenedChapters = full.size.coerceAtMost(total),
+                listenedVerses = verseCount[id] ?: 0,
+                listenedOpenChapters = open,
+            )
+        }
+    }
+
+    /** Доля полоски: целая глава = 1, начатая глава = половина. */
+    fun listenFill(chapters: Int, coverage: BookTileCoverage): Float {
+        if (chapters <= 0) return 0f
+        val full = coverage.listenedChapters.coerceAtMost(chapters)
+        val room = (chapters - full).coerceAtLeast(0)
+        val open = coverage.listenedOpenChapters.coerceAtMost(room)
+        return ((full + open * 0.5f) / chapters).coerceIn(0f, 1f)
+    }
 }

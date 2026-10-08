@@ -12,10 +12,10 @@ import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.defaultMinSize
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.Spacer
@@ -35,7 +35,6 @@ import androidx.compose.material.icons.filled.Headphones
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
-import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -429,7 +428,7 @@ fun BookSelectionContent(
     layoutMode: BookLayoutMode,
     modifier: Modifier = Modifier,
     booksWithAudio: Set<String> = emptySet(),
-    coverageByBook: Map<String, Pair<Int, Int>> = emptyMap(),
+    coverageByBook: Map<String, BibleCoverage.BookTileCoverage> = emptyMap(),
     readProgressColor: Color? = null,
     onBookClick: (String) -> Unit,
     onBookLongPress: (CanonBookEntry) -> Unit = {},
@@ -458,7 +457,7 @@ fun BookSelectionContent(
 fun BookSelectionGrid(
     modifier: Modifier = Modifier,
     booksWithAudio: Set<String> = emptySet(),
-    coverageByBook: Map<String, Pair<Int, Int>> = emptyMap(),
+    coverageByBook: Map<String, BibleCoverage.BookTileCoverage> = emptyMap(),
     readProgressColor: Color? = null,
     onBookClick: (String) -> Unit,
     onBookLongPress: (CanonBookEntry) -> Unit = {},
@@ -506,8 +505,10 @@ fun BookSelectionGrid(
                             entry = entry,
                             selected = selectedId == entry.id,
                             hasAudio = entry.id in booksWithAudio,
-                            readChapters = coverageByBook[entry.id]?.first ?: 0,
-                            listenedChapters = coverageByBook[entry.id]?.second ?: 0,
+                            readChapters = coverageByBook[entry.id]?.readChapters ?: 0,
+                            listenedChapters = coverageByBook[entry.id]?.listenedChapters ?: 0,
+                            listenedVerses = coverageByBook[entry.id]?.listenedVerses ?: 0,
+                            listenedOpenChapters = coverageByBook[entry.id]?.listenedOpenChapters ?: 0,
                             readProgressColor = readProgressColor,
                             timemarkCodes = presence.forBook(entry.id),
                             tabColors = tabColors,
@@ -541,7 +542,7 @@ fun BookSelectionGrid(
 private fun BookSelectionList(
     modifier: Modifier = Modifier,
     booksWithAudio: Set<String> = emptySet(),
-    coverageByBook: Map<String, Pair<Int, Int>> = emptyMap(),
+    coverageByBook: Map<String, BibleCoverage.BookTileCoverage> = emptyMap(),
     readProgressColor: Color? = null,
     onBookClick: (String) -> Unit,
     onBookLongPress: (CanonBookEntry) -> Unit = {},
@@ -615,8 +616,10 @@ private fun BookSelectionList(
                         overflow = TextOverflow.Ellipsis,
                     )
                     CoverageMiniMarks(
-                        read = coverageByBook[entry.id]?.first ?: 0,
-                        listened = coverageByBook[entry.id]?.second ?: 0,
+                        read = coverageByBook[entry.id]?.readChapters ?: 0,
+                        listened = coverageByBook[entry.id]?.listenedChapters ?: 0,
+                        listenedVerses = coverageByBook[entry.id]?.listenedVerses ?: 0,
+                        listenedOpenChapters = coverageByBook[entry.id]?.listenedOpenChapters ?: 0,
                         chapters = entry.chapters,
                         readColor = readProgressColor,
                         compact = false,
@@ -667,12 +670,19 @@ private fun CoverageMiniMarks(
     chapters: Int,
     readColor: Color? = null,
     compact: Boolean = true,
+    listenedVerses: Int = 0,
+    listenedOpenChapters: Int = 0,
 ) {
     val readTint = readColor ?: MaterialTheme.colorScheme.primary
     val listenTint = MaterialTheme.colorScheme.tertiary
+    val listenCoverage = BibleCoverage.BookTileCoverage(
+        listenedChapters = listened,
+        listenedVerses = listenedVerses,
+        listenedOpenChapters = listenedOpenChapters,
+    )
     Column(
-        modifier = Modifier.then(if (compact) Modifier.fillMaxWidth() else Modifier.width(72.dp)),
-        verticalArrangement = Arrangement.spacedBy(1.dp),
+        modifier = Modifier.then(if (compact) Modifier.fillMaxWidth() else Modifier.width(88.dp)),
+        verticalArrangement = Arrangement.spacedBy(3.dp),
     ) {
         CoverageMiniBar(
             done = read,
@@ -687,8 +697,19 @@ private fun CoverageMiniMarks(
             color = listenTint,
             icon = Icons.Filled.GraphicEq,
             label = "Прослушано",
+            fractionOverride = if (listenedVerses > 0 || listenedOpenChapters > 0) {
+                BibleCoverage.listenFill(chapters, listenCoverage)
+            } else {
+                null
+            },
+            caption = listenTileCaption(listened, chapters, listenedVerses, compact),
         )
     }
+}
+
+private fun listenTileCaption(chaptersDone: Int, chapters: Int, verses: Int, compact: Boolean): String? {
+    if (verses <= 0 || chapters <= 0 || chaptersDone >= chapters) return null
+    return if (compact) "${verses}ст" else "$chaptersDone/$chapters · ${verses}ст"
 }
 
 @Composable
@@ -698,10 +719,12 @@ private fun CoverageMiniBar(
     color: Color,
     icon: androidx.compose.ui.graphics.vector.ImageVector,
     label: String,
+    fractionOverride: Float? = null,
+    caption: String? = null,
 ) {
-    val fraction = if (total <= 0) 0f else done.coerceAtLeast(0).toFloat() / total
+    val fraction = fractionOverride ?: if (total <= 0) 0f else done.coerceAtLeast(0).toFloat() / total
     val pct = BibleCoverage.percent(done, total)
-    val active = done > 0
+    val active = done > 0 || caption != null
     val tint = if (active) color else color.copy(alpha = 0.38f)
     Row(
         modifier = Modifier.fillMaxWidth(),
@@ -709,25 +732,29 @@ private fun CoverageMiniBar(
     ) {
         Icon(
             icon,
-            contentDescription = "$label $pct%",
+            contentDescription = if (caption != null) "$label $caption, глав $done из $total" else "$label $pct%",
             tint = tint,
             modifier = Modifier.size(9.dp),
         )
-        LinearProgressIndicator(
-            progress = { fraction.coerceIn(0f, 1f) },
+        Box(
             modifier = Modifier
                 .weight(1f)
                 .padding(horizontal = 2.dp)
                 .height(3.dp)
-                .clip(CircleShape),
-            color = tint,
-            trackColor = color.copy(alpha = 0.14f),
-            drawStopIndicator = {},
-        )
+                .clip(CircleShape)
+                .background(color.copy(alpha = 0.14f)),
+        ) {
+            Box(
+                modifier = Modifier
+                    .fillMaxHeight()
+                    .fillMaxWidth(fraction.coerceIn(0f, 1f))
+                    .background(tint),
+            )
+        }
         Text(
-            text = "$pct",
-            color = if (pct == 100) color else tint,
-            fontSize = 8.sp,
+            text = caption ?: "$pct",
+            color = if (pct == 100 && caption == null) color else tint,
+            fontSize = 9.sp,
             fontWeight = if (pct == 100) FontWeight.Bold else FontWeight.Medium,
             maxLines = 1,
         )
@@ -742,6 +769,8 @@ private fun BookCell(
     hasAudio: Boolean = false,
     readChapters: Int = 0,
     listenedChapters: Int = 0,
+    listenedVerses: Int = 0,
+    listenedOpenChapters: Int = 0,
     readProgressColor: Color? = null,
     timemarkCodes: Set<String> = emptySet(),
     tabColors: Map<String, Int> = emptyMap(),
@@ -779,11 +808,10 @@ private fun BookCell(
         Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .heightIn(min = 68.dp)
                 .background(tintBrush)
-                .padding(top = 8.dp, bottom = 5.dp, start = 4.dp, end = 4.dp),
+                .padding(top = 6.dp, bottom = 4.dp, start = 4.dp, end = 4.dp),
             horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.spacedBy(1.dp),
+            verticalArrangement = Arrangement.spacedBy(2.dp),
         ) {
             Text(
                 text = entry.abbrRu,
@@ -807,10 +835,11 @@ private fun BookCell(
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis,
             )
-            Spacer(Modifier.weight(1f))
             CoverageMiniMarks(
                 read = readChapters,
                 listened = listenedChapters,
+                listenedVerses = listenedVerses,
+                listenedOpenChapters = listenedOpenChapters,
                 chapters = entry.chapters,
                 readColor = readProgressColor,
             )

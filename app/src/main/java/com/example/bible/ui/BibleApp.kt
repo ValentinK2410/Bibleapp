@@ -654,6 +654,7 @@ private fun BibleNavHost(
     val usageEvents by viewModel.usageEvents.collectAsStateWithLifecycle()
     val coverageRead by viewModel.coverageReadChapters.collectAsStateWithLifecycle()
     val coverageListen by viewModel.coverageListenChapters.collectAsStateWithLifecycle()
+    val coverageListenVerses by viewModel.coverageListenVerses.collectAsStateWithLifecycle()
     val readingTrace by viewModel.readingTrace.collectAsStateWithLifecycle()
     val narratorId by viewModel.audioNarratorId.collectAsStateWithLifecycle()
     val downloadTick by com.example.bible.data.BibleAudioPlayer.downloadTick.collectAsState()
@@ -906,11 +907,12 @@ private fun BibleNavHost(
                                 navController.navigate("read/${dailyVerse.bookId}/${dailyVerse.chapter}/${dailyVerse.verse}")
                             },
                         )
-                        val tileCoverage = remember(coverageRead, coverageListen, translation) {
-                            com.example.bible.data.BibleCoverage.tileCounts(
-                                translation.code,
+                        val tileCoverage = remember(coverageRead, coverageListen, coverageListenVerses, translation) {
+                            com.example.bible.data.BibleCoverage.homeTiles(
+                                translation,
                                 coverageRead,
                                 coverageListen,
+                                coverageListenVerses,
                             )
                         }
                         BookSelectionContent(

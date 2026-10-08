@@ -1,6 +1,7 @@
 package com.example.bible
 
 import com.example.bible.data.BibleCoverage
+import com.example.bible.data.TranslationId
 import com.example.bible.data.TimemarkCue
 import com.example.bible.data.versesHeardByEstimate
 import com.example.bible.data.versesHeardInRanges
@@ -46,5 +47,20 @@ class VersesHeardTest {
     fun partialChapter_countsVersesForTheBookGrid() {
         val keys = setOf("SYN|titus|1|3-5")
         assertEquals(mapOf(1 to 3), BibleCoverage.listenedVersesByChapter(keys, "SYN", "titus"))
+    }
+
+    @Test
+    fun homeTile_showsPartialVersesBesideFinishedChapters() {
+        val tiles = BibleCoverage.homeTiles(
+            translation = TranslationId.SYNODAL,
+            readKeys = setOf("SYN|titus|1"),
+            listenChapterKeys = emptySet(),
+            listenVerseKeys = setOf("SYN|titus|1|3-5"),
+        )
+        val titus = tiles.getValue("titus")
+        assertEquals(1, titus.readChapters)
+        assertEquals(0, titus.listenedChapters)
+        assertEquals(3, titus.listenedVerses)
+        assertEquals(1, titus.listenedOpenChapters)
     }
 }
