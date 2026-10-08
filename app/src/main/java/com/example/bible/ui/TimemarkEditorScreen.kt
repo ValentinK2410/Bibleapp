@@ -47,6 +47,9 @@ import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExposedDropdownMenuBox
 import androidx.compose.material3.ExposedDropdownMenuDefaults
+import androidx.compose.material.icons.filled.Tune
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -617,10 +620,17 @@ fun TimemarkEditorScreen(
     ) { padding ->
         val formScrollState = rememberScrollState()
         val density = LocalDensity.current
+        val editorLayout = rememberTimemarkEditorLayout()
+        val fieldText = MaterialTheme.typography.bodyMedium.let { base ->
+            base.copy(
+                fontSize = base.fontSize * editorLayout.textScale,
+                lineHeight = base.lineHeight * editorLayout.textScale,
+            )
+        }
         BoxWithConstraints(
             modifier = Modifier
                 .padding(padding)
-                .padding(horizontal = 16.dp)
+                .padding(horizontal = editorLayout.sidePadDp.dp)
                 .fillMaxSize(),
         ) {
             val maxH = maxHeight
@@ -629,12 +639,8 @@ fun TimemarkEditorScreen(
             val maxVersesH = (maxH - reservedBottom).coerceAtLeast(minVersesH)
 
             var versesPaneHeight by remember { mutableStateOf(0.dp) }
-            LaunchedEffect(maxH) {
-                versesPaneHeight = if (versesPaneHeight == 0.dp) {
-                    (maxH * 0.36f).coerceIn(minVersesH, maxVersesH)
-                } else {
-                    versesPaneHeight.coerceIn(minVersesH, maxVersesH)
-                }
+            LaunchedEffect(maxH, editorLayout.versesFraction) {
+                versesPaneHeight = (maxH * editorLayout.versesFraction).coerceIn(minVersesH, maxVersesH)
             }
 
             Column(Modifier.fillMaxSize()) {
@@ -650,14 +656,21 @@ fun TimemarkEditorScreen(
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
                 Spacer(Modifier.height(8.dp))
+                TimemarkLayoutCard(
+                    layout = editorLayout,
+                    onChange = { editorLayout.update(it) },
+                )
+                Spacer(Modifier.height(8.dp))
 
                 OutlinedTextField(
                 value = title,
                 onValueChange = { title = it },
-                modifier = Modifier.fillMaxWidth().height(44.dp),
+                modifier = Modifier
+                    .fillMaxWidth(editorLayout.widthFraction)
+                    .heightIn(min = editorLayout.fieldHeightDp.dp),
                 label = { Text(stringResource(R.string.timemark_project_name)) },
                 singleLine = true,
-                textStyle = MaterialTheme.typography.bodyMedium,
+                textStyle = fieldText,
             )
             Spacer(Modifier.height(8.dp))
 
@@ -672,8 +685,11 @@ fun TimemarkEditorScreen(
                     readOnly = true,
                     label = { Text(stringResource(R.string.timemark_book)) },
                     trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = bookMenuOpen) },
-                    modifier = Modifier.menuAnchor().fillMaxWidth().height(44.dp),
-                    textStyle = MaterialTheme.typography.bodyMedium,
+                    modifier = Modifier
+                        .menuAnchor()
+                        .fillMaxWidth(editorLayout.widthFraction)
+                        .heightIn(min = editorLayout.fieldHeightDp.dp),
+                    textStyle = fieldText,
                 )
                 DropdownMenu(
                     expanded = bookMenuOpen,
@@ -724,8 +740,11 @@ fun TimemarkEditorScreen(
                     readOnly = true,
                     label = { Text(stringResource(R.string.timemark_translation)) },
                     trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = transMenuOpen) },
-                    modifier = Modifier.menuAnchor().fillMaxWidth().height(44.dp),
-                    textStyle = MaterialTheme.typography.bodyMedium,
+                    modifier = Modifier
+                        .menuAnchor()
+                        .fillMaxWidth(editorLayout.widthFraction)
+                        .heightIn(min = editorLayout.fieldHeightDp.dp),
+                    textStyle = fieldText,
                 )
                 DropdownMenu(
                     expanded = transMenuOpen,
@@ -866,7 +885,7 @@ fun TimemarkEditorScreen(
                             )
                             Text(
                                 verse.text,
-                                style = MaterialTheme.typography.bodyMedium,
+                                style = fieldText,
                                 modifier = Modifier.weight(1f),
                             )
                         }
@@ -877,6 +896,9 @@ fun TimemarkEditorScreen(
                         versesPaneHeight = with(density) {
                             (versesPaneHeight + dragPx.toDp()).coerceIn(minVersesH, maxVersesH)
                         }
+                        val fraction = if (maxH.value <= 0f) editorLayout.versesFraction
+                        else (versesPaneHeight.value / maxH.value).coerceIn(0.18f, 0.72f)
+                        editorLayout.update(editorLayout.current.copy(versesFraction = fraction))
                     },
                 )
             }
@@ -890,11 +912,13 @@ fun TimemarkEditorScreen(
             OutlinedTextField(
                 value = noteDraft,
                 onValueChange = { noteDraft = it },
-                modifier = Modifier.fillMaxWidth().heightIn(min = 44.dp, max = 72.dp),
+                modifier = Modifier
+                    .fillMaxWidth(editorLayout.widthFraction)
+                    .heightIn(min = editorLayout.noteHeightDp.dp),
                 label = { Text(stringResource(R.string.timemark_note_hint)) },
-                textStyle = MaterialTheme.typography.bodyMedium,
-                minLines = 1,
-                maxLines = 3,
+                textStyle = fieldText,
+                minLines = 3,
+                maxLines = 8,
             )
             Row(
                 verticalAlignment = Alignment.CenterVertically,
@@ -1112,6 +1136,146 @@ fun TimemarkEditorScreen(
             },
         )
     }
+}
+
+private data class TimemarkEditorLayout(
+    val textScale: Float = 1.12f,
+    val fieldHeightDp: Float = 76f,
+    val noteHeightDp: Float = 132f,
+    val versesFraction: Float = 0.42f,
+    val widthFraction: Float = 1f,
+    val sidePadDp: Float = 12f,
+)
+
+private class TimemarkEditorLayoutState(
+    initial: TimemarkEditorLayout,
+    private val persist: (TimemarkEditorLayout) -> Unit,
+) {
+    var textScale by androidx.compose.runtime.mutableFloatStateOf(initial.textScale)
+    var fieldHeightDp by androidx.compose.runtime.mutableFloatStateOf(initial.fieldHeightDp)
+    var noteHeightDp by androidx.compose.runtime.mutableFloatStateOf(initial.noteHeightDp)
+    var versesFraction by androidx.compose.runtime.mutableFloatStateOf(initial.versesFraction)
+    var widthFraction by androidx.compose.runtime.mutableFloatStateOf(initial.widthFraction)
+    var sidePadDp by androidx.compose.runtime.mutableFloatStateOf(initial.sidePadDp)
+
+    val current: TimemarkEditorLayout
+        get() = TimemarkEditorLayout(
+            textScale,
+            fieldHeightDp,
+            noteHeightDp,
+            versesFraction,
+            widthFraction,
+            sidePadDp,
+        )
+
+    fun update(next: TimemarkEditorLayout) {
+        textScale = next.textScale
+        fieldHeightDp = next.fieldHeightDp
+        noteHeightDp = next.noteHeightDp
+        versesFraction = next.versesFraction
+        widthFraction = next.widthFraction
+        sidePadDp = next.sidePadDp
+        persist(next)
+    }
+}
+
+@Composable
+private fun rememberTimemarkEditorLayout(): TimemarkEditorLayoutState {
+    val context = LocalContext.current
+    return remember {
+        val prefs = context.getSharedPreferences("timemark_editor_layout", android.content.Context.MODE_PRIVATE)
+        val initial = TimemarkEditorLayout(
+            textScale = prefs.getFloat("text", 1.12f),
+            fieldHeightDp = prefs.getFloat("field", 76f),
+            noteHeightDp = prefs.getFloat("note", 132f),
+            versesFraction = prefs.getFloat("verses", 0.42f),
+            widthFraction = prefs.getFloat("width", 1f),
+            sidePadDp = prefs.getFloat("pad", 12f),
+        )
+        TimemarkEditorLayoutState(initial) { layout ->
+            prefs.edit()
+                .putFloat("text", layout.textScale)
+                .putFloat("field", layout.fieldHeightDp)
+                .putFloat("note", layout.noteHeightDp)
+                .putFloat("verses", layout.versesFraction)
+                .putFloat("width", layout.widthFraction)
+                .putFloat("pad", layout.sidePadDp)
+                .apply()
+        }
+    }
+}
+
+@Composable
+private fun TimemarkLayoutCard(
+    layout: TimemarkEditorLayoutState,
+    onChange: (TimemarkEditorLayout) -> Unit,
+) {
+    var open by remember { mutableStateOf(false) }
+    val current = layout.current
+    Card(
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.surfaceContainerLow,
+        ),
+        shape = RoundedCornerShape(16.dp),
+    ) {
+        Column(Modifier.padding(horizontal = 12.dp, vertical = 8.dp)) {
+            Row(
+                Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                Icon(Icons.Filled.Tune, contentDescription = null, tint = MaterialTheme.colorScheme.primary)
+                Text(
+                    "Окна и текст",
+                    modifier = Modifier
+                        .weight(1f)
+                        .padding(start = 8.dp),
+                    fontWeight = FontWeight.SemiBold,
+                )
+                TextButton(onClick = { open = !open }) {
+                    Text(if (open) "Скрыть" else "Настроить")
+                }
+            }
+            if (open) {
+                LayoutSlider("Размер текста", current.textScale, 0.9f, 1.7f) {
+                    onChange(current.copy(textScale = it))
+                }
+                LayoutSlider("Высота полей", current.fieldHeightDp, 64f, 140f) {
+                    onChange(current.copy(fieldHeightDp = it))
+                }
+                LayoutSlider("Высота заметки", current.noteHeightDp, 88f, 240f) {
+                    onChange(current.copy(noteHeightDp = it))
+                }
+                LayoutSlider("Окно стихов", current.versesFraction, 0.2f, 0.7f) {
+                    onChange(current.copy(versesFraction = it))
+                }
+                LayoutSlider("Ширина полей", current.widthFraction, 0.55f, 1f) {
+                    onChange(current.copy(widthFraction = it))
+                }
+                LayoutSlider("Поля по краям", current.sidePadDp, 0f, 36f) {
+                    onChange(current.copy(sidePadDp = it))
+                }
+                TextButton(
+                    onClick = { onChange(TimemarkEditorLayout()) },
+                ) { Text("Как по умолчанию") }
+            }
+        }
+    }
+}
+
+@Composable
+private fun LayoutSlider(
+    label: String,
+    value: Float,
+    min: Float,
+    max: Float,
+    onChange: (Float) -> Unit,
+) {
+    Text(label, style = MaterialTheme.typography.labelMedium)
+    Slider(
+        value = value.coerceIn(min, max),
+        onValueChange = onChange,
+        valueRange = min..max,
+    )
 }
 
 @Composable
