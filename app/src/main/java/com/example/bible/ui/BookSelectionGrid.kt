@@ -916,9 +916,7 @@ private fun CoverageMiniBar(
     val active = done > 0 || caption != null
     val tint = if (active) color else color.copy(alpha = 0.72f)
     Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .height(12.dp),
+        modifier = Modifier.fillMaxWidth(),
         verticalAlignment = Alignment.CenterVertically,
     ) {
         Icon(
@@ -946,9 +944,11 @@ private fun CoverageMiniBar(
         Text(
             text = caption ?: "$pct",
             color = if (active) color else tint,
-            fontSize = 9.sp,
+            fontSize = 10.sp,
+            lineHeight = 12.sp,
             fontWeight = if (pct == 100 || caption != null) FontWeight.Bold else FontWeight.Medium,
             maxLines = 1,
+            softWrap = false,
         )
     }
 }
