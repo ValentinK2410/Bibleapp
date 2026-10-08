@@ -351,6 +351,16 @@ data class ChapterAudioFinished(
     val chapter: Int,
 )
 
+/** Сколько аудио реально прошло, пока глава играла, включая обрыв на паузе. */
+data class ChapterListenProgress(
+    val narratorId: String,
+    val bookId: String,
+    val chapter: Int,
+    val listenedMs: Long,
+    val ranges: List<Pair<Long, Long>>,
+    val durationMs: Int,
+)
+
 data class BiblePlayerState(
     val isPlaying: Boolean = false,
     val bookId: String = "",
@@ -424,8 +434,35 @@ object BibleAudioPlayer {
     val chapterFinished: SharedFlow<ChapterAudioFinished> = _chapterFinished.asSharedFlow()
 
     private val _chapterStarted = MutableSharedFlow<ChapterAudioFinished>(extraBufferCapacity = 16)
-    /** Озвучка главы запущена — пишется в статистику, даже если главу не дослушали. */
+    /** Озвучка главы запущена. */
     val chapterStarted: SharedFlow<ChapterAudioFinished> = _chapterStarted.asSharedFlow()
+
+    private val _listenProgress = MutableSharedFlow<ChapterListenProgress>(extraBufferCapacity = 16)
+    /** Накопленное время прослушивания: пауза, смена главы или конец файла. */
+    val listenProgress: SharedFlow<ChapterListenProgress> = _listenProgress.asSharedFlow()
+
+    private val listenLock = Any()
+    private var listenBook: String = ""
+    private var listenChapter: Int = 0
+    private var listenNarrator: String = ""
+    private var listenDurationMs: Int = 0
+    private var listenAccumulatedMs: Long = 0L
+    private var listenLastPos: Int = -1
+    private var listenRangeStart: Long = -1L
+    private val listenRanges = ArrayList<Pair<Long, Long>>()
+
+    private val listenTickRunnable = object : Runnable {
+        override fun run() {
+            if (!_state.value.isPlaying) return
+            try {
+                player?.let { noteListenPosition(it.currentPosition) }
+            } catch (_: Exception) {
+            }
+            if (_state.value.isPlaying) {
+                mainHandler.postDelayed(this, 500)
+            }
+        }
+    }
 
     private val _playbackSpeed = MutableStateFlow(1f)
     val playbackSpeed: StateFlow<Float> = _playbackSpeed.asStateFlow()
@@ -512,6 +549,8 @@ object BibleAudioPlayer {
         try {
             player?.let { mp ->
                 if (mp.isPlaying) {
+                    noteListenPosition(positionMs)
+                    flushListenProgress()
                     mp.pause()
                     _state.value = _state.value.copy(isPlaying = false, positionMs = stop.coerceAtMost(positionMs))
                 }
@@ -608,6 +647,106 @@ object BibleAudioPlayer {
         }
     }
 
+    private fun startListenTick() {
+        mainHandler.removeCallbacks(listenTickRunnable)
+        mainHandler.post(listenTickRunnable)
+    }
+
+    private fun stopListenTick() {
+        mainHandler.removeCallbacks(listenTickRunnable)
+    }
+
+    private fun bindListenChapterLocked(st: BiblePlayerState) {
+        if (listenBook.isEmpty()) {
+            listenBook = st.bookId
+            listenChapter = st.chapter
+            listenNarrator = st.narratorId
+        }
+        if (st.durationMs > 0) listenDurationMs = st.durationMs
+    }
+
+    private fun closeListenRangeLocked() {
+        if (listenRangeStart >= 0 && listenLastPos > listenRangeStart) {
+            listenRanges.add(listenRangeStart to listenLastPos.toLong())
+        }
+        listenRangeStart = -1L
+    }
+
+    private fun takeListenSnapshotLocked(): ChapterListenProgress? {
+        closeListenRangeLocked()
+        val progress = if (
+            listenAccumulatedMs >= 1_000L &&
+            listenBook.isNotBlank() &&
+            listenNarrator.isNotBlank() &&
+            listenChapter > 0
+        ) {
+            ChapterListenProgress(
+                narratorId = listenNarrator,
+                bookId = listenBook,
+                chapter = listenChapter,
+                listenedMs = listenAccumulatedMs,
+                ranges = listenRanges.toList(),
+                durationMs = listenDurationMs,
+            )
+        } else {
+            null
+        }
+        listenAccumulatedMs = 0L
+        listenRanges.clear()
+        listenLastPos = -1
+        listenRangeStart = -1L
+        listenBook = ""
+        listenChapter = 0
+        listenNarrator = ""
+        listenDurationMs = 0
+        return progress
+    }
+
+    private fun noteListenPosition(pos: Int) {
+        val pending = synchronized(listenLock) {
+            val st = _state.value
+            if (st.bookId.isBlank() || st.chapter <= 0 || st.narratorId.isBlank()) return
+            val switched = listenBook.isNotEmpty() &&
+                (st.bookId != listenBook || st.chapter != listenChapter || st.narratorId != listenNarrator)
+            val flushed = if (switched) takeListenSnapshotLocked() else null
+            bindListenChapterLocked(st)
+            if (listenLastPos < 0) {
+                listenLastPos = pos
+                listenRangeStart = pos.toLong()
+                return@synchronized flushed
+            }
+            val delta = pos - listenLastPos
+            if (delta in 1..60_000) {
+                listenAccumulatedMs += delta
+                listenLastPos = pos
+                if (listenRangeStart < 0) listenRangeStart = (pos - delta).toLong()
+            } else if (delta != 0) {
+                closeListenRangeLocked()
+                listenLastPos = pos
+                listenRangeStart = pos.toLong()
+            }
+            flushed
+        }
+        if (pending != null) _listenProgress.tryEmit(pending)
+    }
+
+    private fun noteListenDiscontinuity(pos: Int) {
+        synchronized(listenLock) {
+            val st = _state.value
+            if (st.bookId.isNotBlank() && st.chapter > 0) bindListenChapterLocked(st)
+            closeListenRangeLocked()
+            listenLastPos = pos
+            listenRangeStart = pos.toLong()
+        }
+    }
+
+    /** Сохранить уже прослушанный кусок: пауза, уход с главы, конец файла. */
+    fun flushListenProgress() {
+        stopListenTick()
+        val pending = synchronized(listenLock) { takeListenSnapshotLocked() }
+        if (pending != null) _listenProgress.tryEmit(pending)
+    }
+
     private fun emitChapterStarted(st: BiblePlayerState) {
         if (st.bookId.isBlank() || st.narratorId.isBlank() || st.chapter <= 0) return
         _chapterStarted.tryEmit(
@@ -666,11 +805,13 @@ object BibleAudioPlayer {
             try {
                 val seekMs = startPositionMs?.coerceAtLeast(0)
                 if (seekMs != null) {
+                    noteListenDiscontinuity(seekMs)
                     player!!.seekTo(seekMs)
                     _state.value = _state.value.copy(positionMs = seekMs)
                 }
                 applyPlaybackSpeed(player!!)
                 player!!.start()
+                startListenTick()
                 applyPlaybackSpeed(player!!)
                 _state.value = _state.value.copy(isPlaying = true, error = null)
                 resolveSegmentStopMs(_state.value.durationMs)
@@ -738,6 +879,8 @@ object BibleAudioPlayer {
                     prepared.seekTo(seekMs)
                 }
                 prepared.start()
+                noteListenDiscontinuity(seekMs)
+                startListenTick()
                 emitChapterStarted(_state.value)
                 _state.value = _state.value.copy(
                     isPlaying = true,
@@ -751,6 +894,9 @@ object BibleAudioPlayer {
             }
             mp.setOnCompletionListener {
                 if (player !== mp) return@setOnCompletionListener
+                val endPos = runCatching { mp.duration.coerceAtLeast(mp.currentPosition) }.getOrDefault(mp.currentPosition)
+                noteListenPosition(endPos)
+                flushListenProgress()
                 emitChapterFinished(_state.value)
                 if (pendingSleepStopAfterChapter) {
                     applySleepStop()
@@ -777,6 +923,7 @@ object BibleAudioPlayer {
             }
             mp.setOnErrorListener { _, what, extra ->
                 if (player !== mp) return@setOnErrorListener true
+                flushListenProgress()
                 Log.e(TAG, "MediaPlayer error: what=$what extra=$extra")
                 _state.value = _state.value.copy(
                     isPlaying = false,
@@ -797,12 +944,16 @@ object BibleAudioPlayer {
         val mp = player ?: return
         try {
             if (mp.isPlaying) {
+                val pos = runCatching { mp.currentPosition }.getOrDefault(_state.value.positionMs)
+                noteListenPosition(pos)
+                flushListenProgress()
                 mp.pause()
-                _state.value = _state.value.copy(isPlaying = false)
+                _state.value = _state.value.copy(isPlaying = false, positionMs = pos)
                 AppMediaButtonSession.refreshPlaybackState()
             } else {
                 applyPlaybackSpeed(mp)
                 mp.start()
+                startListenTick()
                 _state.value = _state.value.copy(isPlaying = true)
                 resolveSegmentStopMs(_state.value.durationMs)
                 AppMediaButtonSession.refreshPlaybackState()
@@ -817,8 +968,11 @@ object BibleAudioPlayer {
         val mp = player ?: return
         try {
             if (mp.isPlaying) {
+                val pos = runCatching { mp.currentPosition }.getOrDefault(_state.value.positionMs)
+                noteListenPosition(pos)
+                flushListenProgress()
                 mp.pause()
-                _state.value = _state.value.copy(isPlaying = false)
+                _state.value = _state.value.copy(isPlaying = false, positionMs = pos)
                 AppMediaButtonSession.refreshPlaybackState()
             }
         } catch (_: Exception) {}
@@ -832,6 +986,7 @@ object BibleAudioPlayer {
             if (!mp.isPlaying) {
                 applyPlaybackSpeed(mp)
                 mp.start()
+                startListenTick()
                 _state.value = _state.value.copy(isPlaying = true)
                 resolveSegmentStopMs(_state.value.durationMs)
                 AppMediaButtonSession.refreshPlaybackState()
@@ -864,6 +1019,7 @@ object BibleAudioPlayer {
 
     fun seekTo(ms: Int) {
         try {
+            noteListenDiscontinuity(ms)
             player?.seekTo(ms)
             _state.value = _state.value.copy(positionMs = ms)
         } catch (_: Exception) {}
@@ -875,6 +1031,7 @@ object BibleAudioPlayer {
                 player?.let {
                     val pos = it.currentPosition
                     _state.value = _state.value.copy(positionMs = pos)
+                    noteListenPosition(pos)
                     checkSegmentStopPosition(pos)
                 }
             } catch (_: Exception) {}
@@ -882,6 +1039,7 @@ object BibleAudioPlayer {
     }
 
     fun release(clearSegmentConfig: Boolean = true) {
+        flushListenProgress()
         cancelSleepTimerInternal()
         stopSegmentStopPolling()
         stopAtPositionMs = null

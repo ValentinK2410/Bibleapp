@@ -10,6 +10,9 @@ import com.example.bible.data.BibleAudioPlayer
 import com.example.bible.data.BibleCanon
 import com.example.bible.data.AppUsageEvents
 import com.example.bible.data.BibleCoverage
+import com.example.bible.data.TimemarkStore
+import com.example.bible.data.versesHeardByEstimate
+import com.example.bible.data.versesHeardInRanges
 import com.example.bible.data.BibleReadingStats
 import com.example.bible.data.BibleLibrary
 import com.example.bible.data.BiblePreferences
@@ -1038,13 +1041,36 @@ class BibleViewModel(
             preferences.importVerseCoverageFromHistoryIfNeeded()
         }
         viewModelScope.launch {
-            BibleAudioPlayer.chapterStarted.collect { started ->
-                val track = BibleCoverage.trackForNarrator(started.narratorId) ?: started.narratorId
+            BibleAudioPlayer.listenProgress.collect { snap ->
+                val mapped = BibleCoverage.trackForNarrator(snap.narratorId)
+                val track = mapped ?: snap.narratorId
                 preferences.recordUsageEvent(
                     AppUsageEvents.TYPE_LISTEN,
                     "reading",
-                    "start|$track|${started.bookId}|${started.chapter}",
+                    "played|$track|${snap.bookId}|${snap.chapter}|${snap.listenedMs}",
                 )
+                if (mapped == null) return@collect
+                val textTranslation = BibleCoverage.trackById(mapped)?.textTranslation ?: return@collect
+                val verses = withContext(Dispatchers.IO) {
+                    val project = TimemarkStore.findProjectMatchingNarration(
+                        appContext,
+                        textTranslation.code,
+                        snap.bookId,
+                        snap.chapter,
+                        snap.narratorId,
+                    )
+                    if (project != null && project.cues.isNotEmpty()) {
+                        versesHeardInRanges(project.cues, snap.ranges)
+                    } else {
+                        val count = runCatching {
+                            repository.verseCountsByChapter(textTranslation, snap.bookId)[snap.chapter] ?: 0
+                        }.getOrDefault(0)
+                        versesHeardByEstimate(count, snap.durationMs, snap.ranges)
+                    }
+                }
+                if (verses.isNotEmpty()) {
+                    preferences.markVersesListened(mapped, snap.bookId, snap.chapter, verses)
+                }
             }
         }
         viewModelScope.launch {

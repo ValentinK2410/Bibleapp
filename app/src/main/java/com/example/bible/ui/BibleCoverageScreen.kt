@@ -464,6 +464,14 @@ private fun StatsHubPanel(
                 types = AppUsageEvents.countsByType(bibleEvents),
                 accent = accent,
             )
+            val listenedMs = AppUsageEvents.listenedMillis(bibleEvents)
+            if (listenedMs > 0L) {
+                Text(
+                    "Прослушано аудио: ${AppUsageEvents.formatListened(listenedMs)}",
+                    style = MaterialTheme.typography.bodyMedium,
+                    fontWeight = FontWeight.Medium,
+                )
+            }
             BibleStatsTabContent(
                 track = track,
                 summary = summary,

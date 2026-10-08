@@ -79,6 +79,14 @@ fun StatsAreaDetailScreen(
                     )
                     StatsBarChart(days = days, color = accent)
                     StatsTypeBars(types = types, accent = accent)
+                    val listenedMs = AppUsageEvents.listenedMillis(areaEvents)
+                    if (listenedMs > 0L) {
+                        Text(
+                            "Прослушано аудио: ${AppUsageEvents.formatListened(listenedMs)}",
+                            style = MaterialTheme.typography.bodyMedium,
+                            fontWeight = FontWeight.Medium,
+                        )
+                    }
                     Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
                         BandChip("часто", bands.count { it == AppSectionUsage.Band.OFTEN }, scheme.primary)
                         BandChip("иногда", bands.count { it == AppSectionUsage.Band.SOMETIMES }, scheme.tertiary)

@@ -120,6 +120,27 @@ object AppUsageEvents {
         }.filter { it.count > 0 }
     }
 
+    /** Сумма реально прослушанных миллисекунд из событий `played|…|мс`. */
+    fun listenedMillis(events: List<Event>): Long =
+        events.sumOf { event ->
+            if (event.type != TYPE_LISTEN) return@sumOf 0L
+            val parts = event.detail.split('|')
+            if (parts.firstOrNull() != "played") return@sumOf 0L
+            parts.getOrNull(4)?.toLongOrNull() ?: 0L
+        }
+
+    fun formatListened(ms: Long): String {
+        val totalSec = (ms / 1000L).toInt().coerceAtLeast(0)
+        val hours = totalSec / 3600
+        val minutes = (totalSec % 3600) / 60
+        val seconds = totalSec % 60
+        return if (hours > 0) {
+            "%d:%02d:%02d".format(hours, minutes, seconds)
+        } else {
+            "%d:%02d".format(minutes, seconds)
+        }
+    }
+
     fun typeLabel(type: String): String = when (type) {
         TYPE_OPEN -> "Открытия"
         TYPE_READ -> "Чтение"

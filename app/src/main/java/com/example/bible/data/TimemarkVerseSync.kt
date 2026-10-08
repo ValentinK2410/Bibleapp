@@ -76,6 +76,46 @@ fun estimatedPlaybackStopAfterMs(
     return (chapterDurationMs * fraction).toInt().coerceIn(0, chapterDurationMs)
 }
 
+/**
+ * Стихи, чьи интервалы по таймкодам пересекаются с реально прослушанными отрезками.
+ * [ranges] — пары (начало, конец) в миллисекундах дорожки.
+ */
+fun versesHeardInRanges(cues: List<TimemarkCue>, ranges: List<Pair<Long, Long>>): List<Int> {
+    if (cues.isEmpty() || ranges.isEmpty()) return emptyList()
+    val sorted = cues.sortedBy { it.timeMs }
+    val heard = sortedSetOf<Int>()
+    for ((from, to) in ranges) {
+        if (to <= from) continue
+        for (index in sorted.indices) {
+            val cue = sorted[index]
+            val cueEnd = sorted.getOrNull(index + 1)?.timeMs ?: Long.MAX_VALUE
+            if (cue.timeMs < to && cueEnd > from) {
+                val endVerse = cue.verseEnd ?: cue.verseStart
+                for (verse in cue.verseStart..endVerse) {
+                    if (verse > 0) heard += verse
+                }
+            }
+        }
+    }
+    return heard.toList()
+}
+
+/** Стихи по равномерной нарезке главы, если таймкодов нет, но длина озвучки известна. */
+fun versesHeardByEstimate(
+    verseCount: Int,
+    durationMs: Int,
+    ranges: List<Pair<Long, Long>>,
+): List<Int> {
+    if (verseCount <= 0 || durationMs <= 0 || ranges.isEmpty()) return emptyList()
+    val heard = sortedSetOf<Int>()
+    for (verse in 1..verseCount) {
+        val start = estimatedPlaybackStartMs(verse, verseCount, durationMs)?.toLong() ?: continue
+        val end = estimatedPlaybackStopAfterMs(verse, verseCount, durationMs)?.toLong() ?: continue
+        if (ranges.any { (from, to) -> start < to && end > from }) heard += verse
+    }
+    return heard.toList()
+}
+
 fun formatTimemarkTimeMs(ms: Long): String {
     val s = (ms / 1000).toInt()
     val m = s / 60
