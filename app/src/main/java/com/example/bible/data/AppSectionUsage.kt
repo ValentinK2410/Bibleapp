@@ -88,6 +88,7 @@ object AppSectionUsage {
         Section("experiment_wifi", "Wi‑Fi", "Эксперимент", "experiment_wifi"),
         Section("experiment_auto", "Авто", "Эксперимент", "experiment_auto"),
         Section("main_settings", "Настройки", "Настройки", "main_settings"),
+        Section(BooksMainMenuOrder.THEME, "Тема", "Настройки", "theme_studio"),
         Section(BooksMainMenuOrder.NETWORK_REGION, "Сеть и регион", "Настройки", "network_region"),
         Section("backup", "Резервная копия", "Настройки", "backup"),
         Section("share_app", "Поделиться приложением", "Настройки", "share_app"),
@@ -117,6 +118,7 @@ object AppSectionUsage {
                 head == "experiment_sms_reactions" ||
                 head == "experiment_sms_speech_overrides" -> "experiment_calls_sms"
             head == "quran_search" || head == "quran_arabic_sandbox" -> "quran"
+            head == "theme_studio" -> BooksMainMenuOrder.THEME
             head == "books" || head == "books_menu_order" || head == "about_app" -> null
             catalog.any { it.id == head } -> head
             else -> null

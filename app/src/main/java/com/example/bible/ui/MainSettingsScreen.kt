@@ -5,7 +5,7 @@ import android.provider.Settings
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
 import androidx.compose.ui.Alignment
-import androidx.compose.material3.OutlinedTextField
+import com.example.bible.ui.theme.OutlinedTextField
 import androidx.compose.material3.Slider
 import com.example.bible.data.BibleTtsSampleSpeak
 import com.example.bible.data.TtsUserSettings
@@ -65,16 +65,6 @@ import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.compose.ui.unit.dp
 import com.example.bible.R
 import com.example.bible.ui.theme.BibleAppThemePreset
-
-private fun themePresetLabelRes(preset: BibleAppThemePreset): Int = when (preset) {
-    BibleAppThemePreset.STANDARD -> R.string.theme_preset_standard
-    BibleAppThemePreset.BRUTAL -> R.string.theme_preset_brutal
-    BibleAppThemePreset.PINK -> R.string.theme_preset_pink
-    BibleAppThemePreset.SKY -> R.string.theme_preset_sky
-    BibleAppThemePreset.MEADOW -> R.string.theme_preset_meadow
-    BibleAppThemePreset.PAPYRUS -> R.string.theme_preset_papyrus
-    BibleAppThemePreset.LEATHER -> R.string.theme_preset_leather
-}
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -431,7 +421,7 @@ fun MainSettingsScreen(
                         onClick = {
                             if (preset != appThemePreset) onAppThemePresetChange(preset)
                         },
-                        label = { Text(stringResource(themePresetLabelRes(preset))) },
+                        label = { Text(preset.titleRu) },
                     )
                 }
             }

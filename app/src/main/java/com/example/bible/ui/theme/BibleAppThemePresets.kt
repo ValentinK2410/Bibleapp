@@ -16,21 +16,33 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import com.example.bible.R
 
+enum class ThemeMotif { NONE, FLOWERS, NIGHT, STARS, PAPYRUS, SCROLL, STEEL }
+
 /** Пользовательские темы оформления (плюс стандартная). */
-enum class BibleAppThemePreset(val storageKey: String) {
-    STANDARD("standard"),
-    /** Тёмные тона, «металл», высокий контраст. */
-    BRUTAL("brutal"),
-    /** Розовая, тёплая, с цветочным настроением. */
-    PINK("pink"),
-    /** Голубая нежность, небо. */
-    SKY("sky"),
-    /** Салатовый луг, природа. */
-    MEADOW("meadow"),
-    /** Тёплый пергамент / папирус. */
-    PAPYRUS("papyrus"),
-    /** Коричневые тона кожи и свитков. */
-    LEATHER("leather"),
+enum class BibleAppThemePreset(
+    val storageKey: String,
+    val titleRu: String,
+    val blurb: String,
+    val motif: ThemeMotif,
+) {
+    STANDARD("standard", "Стандартная", "Спокойный дневной вид", ThemeMotif.NONE),
+    BRUTAL("brutal", "Брутальная", "Металл и контраст", ThemeMotif.STEEL),
+    PINK("pink", "Розы", "Тёплый розовый свет", ThemeMotif.FLOWERS),
+    SKY("sky", "Небо", "Голубая нежность", ThemeMotif.FLOWERS),
+    MEADOW("meadow", "Луг", "Светлая зелень", ThemeMotif.FLOWERS),
+    PAPYRUS("papyrus", "Папирус", "Тёплый древний лист", ThemeMotif.PAPYRUS),
+    LEATHER("leather", "Кожаный свиток", "Тёмная кожа и воск", ThemeMotif.SCROLL),
+    BLOSSOM("blossom", "Цветение", "Пудра, крем и лепестки", ThemeMotif.FLOWERS),
+    PEARL("pearl", "Жемчуг", "Молочный свет и сирень", ThemeMotif.FLOWERS),
+    LILAC("lilac", "Сирень", "Мягкий лиловый день", ThemeMotif.FLOWERS),
+    NIGHT_GARDEN("night_garden", "Ночной сад", "Тёмные цветы и золото", ThemeMotif.NIGHT),
+    VELVET("velvet", "Бархат", "Винная ночь и розы", ThemeMotif.NIGHT),
+    STEEL("steel", "Сталь", "Графит и холодный свет", ThemeMotif.STEEL),
+    NAVY("navy", "Адмирал", "Тёмно-синий и латунь", ThemeMotif.STEEL),
+    TAIGA("taiga", "Тайга", "Хвоя, смола и янтарь", ThemeMotif.STEEL),
+    NEBULA("nebula", "Туманность", "Индиго, циан и маджента", ThemeMotif.STARS),
+    STARFIELD("starfield", "Звёздное поле", "Глубокий космос", ThemeMotif.STARS),
+    SCROLL("scroll", "Свиток", "Чернила на пергаменте", ThemeMotif.SCROLL),
     ;
 
     companion object {
@@ -537,6 +549,87 @@ fun colorSchemeFor(preset: BibleAppThemePreset, dark: Boolean): ColorScheme = wh
     BibleAppThemePreset.MEADOW -> if (dark) MeadowDark else MeadowLight
     BibleAppThemePreset.PAPYRUS -> if (dark) PapyrusDark else PapyrusLight
     BibleAppThemePreset.LEATHER -> if (dark) LeatherDark else LeatherLight
+    BibleAppThemePreset.BLOSSOM -> seedScheme(dark, 0xFFC2185B, 0xFFF8BBD0, 0xFFFFF3E0, 0xFF4A148C, 0xFFFFF8F6, 0xFF3E2723)
+    BibleAppThemePreset.PEARL -> seedScheme(dark, 0xFF8E7CC3, 0xFFE6E0F0, 0xFFF7F4EF, 0xFF5E548E, 0xFFFFFCF8, 0xFF3D3454)
+    BibleAppThemePreset.LILAC -> seedScheme(dark, 0xFF7E57C2, 0xFFE1BEE7, 0xFFF3E5F5, 0xFF4A148C, 0xFFFDF7FF, 0xFF311B4A)
+    BibleAppThemePreset.NIGHT_GARDEN -> seedScheme(true, 0xFFE8A0BF, 0xFF2A1B24, 0xFF140E14, 0xFFC9A227, 0xFF1A1218, 0xFFF8E8EE)
+    BibleAppThemePreset.VELVET -> seedScheme(true, 0xFFE57373, 0xFF3E1C24, 0xFF14080C, 0xFFD4A574, 0xFF1C1014, 0xFFFFE4E1)
+    BibleAppThemePreset.STEEL -> seedScheme(dark, 0xFF90A4AE, 0xFF263238, 0xFFECEFF1, 0xFF546E7A, 0xFFF5F7F8, 0xFF102027)
+    BibleAppThemePreset.NAVY -> seedScheme(dark, 0xFFC9A227, 0xFF0D2137, 0xFFE3F2FD, 0xFF1565C0, 0xFFF4F7FB, 0xFF0A1929)
+    BibleAppThemePreset.TAIGA -> seedScheme(dark, 0xFF8D6E63, 0xFF1B3A2F, 0xFFE8F5E9, 0xFF2E7D32, 0xFFF3F7F2, 0xFF10241A)
+    BibleAppThemePreset.NEBULA -> seedScheme(true, 0xFF80DEEA, 0xFF1A1030, 0xFF070612, 0xFFE040FB, 0xFF120C22, 0xFFE8E0FF)
+    BibleAppThemePreset.STARFIELD -> seedScheme(true, 0xFFB0BEC5, 0xFF0B1220, 0xFF05070D, 0xFF64B5F6, 0xFF0A1020, 0xFFE3F2FD)
+    BibleAppThemePreset.SCROLL -> seedScheme(dark, 0xFF6D4C41, 0xFFF3E6C8, 0xFFFFF8E7, 0xFF8D6E63, 0xFFFBF6EA, 0xFF3E2723)
+}
+
+private fun seedScheme(
+    dark: Boolean,
+    primary: Long,
+    secondary: Long,
+    background: Long,
+    tertiary: Long,
+    surface: Long,
+    ink: Long,
+): ColorScheme {
+    val p = Color(primary)
+    val s = Color(secondary)
+    val t = Color(tertiary)
+    val bg = Color(background)
+    val sf = Color(surface)
+    val on = Color(ink)
+    return if (dark) {
+        darkColorScheme(
+            primary = p,
+            onPrimary = Color(0xFF1A1020),
+            primaryContainer = p.copy(alpha = 0.28f),
+            onPrimaryContainer = on,
+            secondary = s,
+            onSecondary = on,
+            secondaryContainer = s.copy(alpha = 0.45f),
+            tertiary = t,
+            onTertiary = Color(0xFF1A1020),
+            tertiaryContainer = t.copy(alpha = 0.28f),
+            background = bg,
+            onBackground = on,
+            surface = sf,
+            onSurface = on,
+            surfaceVariant = sf.copy(alpha = 0.92f),
+            onSurfaceVariant = on.copy(alpha = 0.78f),
+            outline = p.copy(alpha = 0.55f),
+            outlineVariant = on.copy(alpha = 0.2f),
+            surfaceContainerLowest = bg,
+            surfaceContainerLow = sf,
+            surfaceContainer = sf,
+            surfaceContainerHigh = p.copy(alpha = 0.16f),
+            surfaceContainerHighest = p.copy(alpha = 0.24f),
+        )
+    } else {
+        lightColorScheme(
+            primary = p,
+            onPrimary = Color.White,
+            primaryContainer = s,
+            onPrimaryContainer = on,
+            secondary = t,
+            onSecondary = Color.White,
+            secondaryContainer = s,
+            tertiary = t,
+            onTertiary = Color.White,
+            tertiaryContainer = s,
+            background = bg,
+            onBackground = on,
+            surface = sf,
+            onSurface = on,
+            surfaceVariant = s.copy(alpha = 0.55f),
+            onSurfaceVariant = on.copy(alpha = 0.75f),
+            outline = p.copy(alpha = 0.35f),
+            outlineVariant = on.copy(alpha = 0.12f),
+            surfaceContainerLowest = Color.White,
+            surfaceContainerLow = sf,
+            surfaceContainer = s.copy(alpha = 0.35f),
+            surfaceContainerHigh = s.copy(alpha = 0.55f),
+            surfaceContainerHighest = s,
+        )
+    }
 }
 
 /** Стандартные палитры для экранов с собственной оболочкой (например песнопение). */
@@ -545,13 +638,13 @@ val PesnopenieDarkColorScheme: ColorScheme = StandardDark
 
 /** JPEG в `res/drawable-nodpi` (стабильные кадры с picsum.photos по seed). */
 private fun backdropDrawableRes(preset: BibleAppThemePreset): Int? = when (preset) {
-    BibleAppThemePreset.STANDARD -> null
     BibleAppThemePreset.BRUTAL -> R.drawable.theme_backdrop_brutal
     BibleAppThemePreset.PINK -> R.drawable.theme_backdrop_pink
     BibleAppThemePreset.SKY -> R.drawable.theme_backdrop_sky
     BibleAppThemePreset.MEADOW -> R.drawable.theme_backdrop_meadow
     BibleAppThemePreset.PAPYRUS -> R.drawable.theme_backdrop_papyrus
     BibleAppThemePreset.LEATHER -> R.drawable.theme_backdrop_leather
+    else -> null
 }
 
 /**
@@ -564,18 +657,22 @@ fun ThemedWindowBackdrop(
     modifier: Modifier = Modifier,
 ) {
     if (preset == BibleAppThemePreset.STANDARD) return@ThemedWindowBackdrop
-    val resId = backdropDrawableRes(preset) ?: return@ThemedWindowBackdrop
+    val resId = backdropDrawableRes(preset)
     val base = MaterialTheme.colorScheme.background
     val a0 = if (dark) 0.48f else 0.36f
     val a1 = if (dark) 0.62f else 0.46f
     val a2 = if (dark) 0.74f else 0.56f
     Box(modifier = modifier) {
-        Image(
-            painter = painterResource(resId),
-            contentDescription = null,
-            modifier = Modifier.fillMaxSize(),
-            contentScale = ContentScale.Crop,
-        )
+        if (resId != null) {
+            Image(
+                painter = painterResource(resId),
+                contentDescription = null,
+                modifier = Modifier.fillMaxSize(),
+                contentScale = ContentScale.Crop,
+            )
+        } else {
+            ThemeMotifCanvas(preset.motif, Modifier.fillMaxSize())
+        }
         Box(
             Modifier
                 .fillMaxSize()

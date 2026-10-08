@@ -27,6 +27,7 @@ object BooksMainMenuOrder {
     const val KIDS = "kids"
     const val EXPERIMENT = "experiment"
     const val TEXT_SIZE = "text_size"
+    const val THEME = "theme"
     const val MY_CHURCH = "my_church"
 
     val allIds: List<String> = listOf(
@@ -56,6 +57,7 @@ object BooksMainMenuOrder {
         MY_CHURCH,
         EXPERIMENT,
         TEXT_SIZE,
+        THEME,
     )
 
     fun defaultOrder(): List<String> = allIds.toList()
@@ -75,6 +77,9 @@ object BooksMainMenuOrder {
                 if (id == COVERAGE) {
                     val afterHistory = out.indexOf(HISTORY)
                     if (afterHistory >= 0) out.add(afterHistory + 1, id) else out.add(id)
+                } else if (id == THEME) {
+                    val afterSearch = out.indexOf(SEARCH)
+                    if (afterSearch >= 0) out.add(afterSearch + 1, id) else out.add(0, id)
                 } else {
                     out.add(id)
                 }
@@ -116,6 +121,7 @@ object BooksMainMenuOrder {
         KIDS -> "Детям"
         EXPERIMENT -> "Эксперимент"
         TEXT_SIZE -> "Размер текста"
+        THEME -> "Тема"
         MY_CHURCH -> "Моя церковь"
         else -> id
     }

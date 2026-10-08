@@ -106,7 +106,7 @@ import androidx.compose.material3.ListItem
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.OutlinedButton
-import androidx.compose.material3.OutlinedTextField
+import com.example.bible.ui.theme.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Slider
 import androidx.compose.material3.Surface
@@ -270,6 +270,7 @@ fun BibleApp(
     )
     val darkModePref by viewModel.darkMode.collectAsStateWithLifecycle()
     val appThemePreset by viewModel.appThemePreset.collectAsStateWithLifecycle()
+    val themeStudio by viewModel.themeStudio.collectAsStateWithLifecycle()
     val mimicControlOn by viewModel.mimicControlEnabled.collectAsStateWithLifecycle(false)
     val mimicControlV2On by viewModel.mimicControlV2Enabled.collectAsStateWithLifecycle(false)
     val mimicCameraPreviewOn by viewModel.mimicCameraPreviewEnabled.collectAsStateWithLifecycle(false)
@@ -278,7 +279,12 @@ fun BibleApp(
     val systemDark = isSystemInDarkTheme()
     val isDark = darkModePref ?: systemDark
 
-    BibleTheme(darkTheme = isDark, appThemePreset = appThemePreset) {
+    BibleTheme(
+        darkTheme = isDark,
+        appThemePreset = appThemePreset,
+        studio = themeStudio,
+        onSaveFieldLook = viewModel::saveThemeFieldLook,
+    ) {
         val navController = rememberNavController()
         val state by viewModel.state.collectAsStateWithLifecycle()
         SharedMediaImportEffect(viewModel)
@@ -653,6 +659,7 @@ private fun BibleNavHost(
     val downloadTick by com.example.bible.data.BibleAudioPlayer.downloadTick.collectAsState()
     val booksMainMenuOrder by viewModel.booksMainMenuOrder.collectAsStateWithLifecycle()
     val appThemePreset by viewModel.appThemePreset.collectAsStateWithLifecycle()
+    val themeStudio by viewModel.themeStudio.collectAsStateWithLifecycle()
     val mimicCameraPreviewEnabled by viewModel.mimicCameraPreviewEnabled.collectAsStateWithLifecycle(false)
     val mimicFaceOverlayEnabled by viewModel.mimicFaceOverlayEnabled.collectAsStateWithLifecycle(false)
     val mimicMediaPipeFaceGeometryEnabled by viewModel.mimicMediaPipeFaceGeometryEnabled.collectAsStateWithLifecycle(false)
@@ -1504,6 +1511,27 @@ private fun BibleNavHost(
         composable("network_region") {
             NetworkRegionScreen(
                 onBack = { navController.navigateUp() },
+            )
+        }
+        composable("theme_studio") {
+            com.example.bible.ui.theme.ThemeStudioScreen(
+                preset = appThemePreset,
+                studio = themeStudio,
+                isDark = isDark,
+                onBack = { navController.navigateUp() },
+                onPreset = { viewModel.setAppThemePreset(it) },
+                onTextScale = { scale ->
+                    viewModel.updateThemeStudio { it.copy(textScale = scale) }
+                },
+                onColor = { key, argb ->
+                    viewModel.updateThemeStudio { state ->
+                        val next = state.colorOverrides.toMutableMap()
+                        if (argb == null) next.remove(key) else next[key] = argb
+                        state.copy(colorOverrides = next)
+                    }
+                },
+                onToggleDark = { viewModel.toggleDarkMode(isDark) },
+                onReset = { viewModel.resetThemeStudio() },
             )
         }
         composable("main_settings") {

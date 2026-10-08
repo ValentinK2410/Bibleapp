@@ -18,6 +18,7 @@ import androidx.compose.material.icons.filled.Map
 import androidx.compose.material.icons.filled.PermMedia
 import androidx.compose.material.icons.filled.AutoAwesome
 import androidx.compose.material.icons.filled.Psychology
+import androidx.compose.material.icons.filled.Palette
 import androidx.compose.material.icons.filled.Public
 import androidx.compose.material.icons.filled.Schedule
 import androidx.compose.material.icons.filled.School
@@ -200,6 +201,11 @@ fun BooksMainMenuOrderedItems(
                 leadingIcon = {
                     Icon(Icons.Filled.FlashOn, contentDescription = null, tint = primary)
                 },
+            )
+            BooksMainMenuOrder.THEME -> DropdownMenuItem(
+                text = { Text("Тема") },
+                onClick = { closeMenu(); navController.navigate("theme_studio") },
+                leadingIcon = { Icon(Icons.Filled.Palette, contentDescription = null, tint = primary) },
             )
             BooksMainMenuOrder.TEXT_SIZE -> DropdownMenuItem(
                 text = { Text("Размер текста") },

@@ -111,6 +111,8 @@ private object Keys {
     val BOOK_PICKER_LONG_PRESS_TTS = booleanPreferencesKey("book_picker_long_press_tts")
     /** Ключ пресета темы приложения (см. [com.example.bible.ui.theme.BibleAppThemePreset]). */
     val APP_THEME_PRESET = stringPreferencesKey("bible_app_theme_preset")
+    /** Цвета, масштаб текста и оформление полей (см. ThemeStudioState). */
+    val THEME_STUDIO_JSON = stringPreferencesKey("theme_studio_json")
     /** Управление мимикой: камера в фоне, курсор по носу, прокрутка читалки. */
     val MIMIC_CONTROL_ENABLED = booleanPreferencesKey("mimic_control_enabled")
     /** Режим «мимика 2»: направление по дельте носа в экранных координатах, разгон; открытый рот = удержание без двойного открытия. */
@@ -490,6 +492,16 @@ class BiblePreferences(
 
     suspend fun setAppThemePresetKey(storageKey: String) {
         appContext.bibleDataStore.edit { it[Keys.APP_THEME_PRESET] = storageKey }
+    }
+
+    val themeStudioJson: Flow<String> = appContext.bibleDataStore.data.map { prefs ->
+        prefs[Keys.THEME_STUDIO_JSON].orEmpty()
+    }
+
+    suspend fun setThemeStudioJson(json: String) {
+        appContext.bibleDataStore.edit { prefs ->
+            if (json.isBlank()) prefs.remove(Keys.THEME_STUDIO_JSON) else prefs[Keys.THEME_STUDIO_JSON] = json
+        }
     }
 
     val mimicControlEnabled: Flow<Boolean> = appContext.bibleDataStore.data.map { prefs ->

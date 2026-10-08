@@ -724,6 +724,33 @@ class BibleViewModel(
         }
     }
 
+    val themeStudio: StateFlow<com.example.bible.ui.theme.ThemeStudioState> = preferences.themeStudioJson
+        .map { com.example.bible.ui.theme.ThemeStudioState.parse(it) }
+        .stateIn(
+            viewModelScope,
+            SharingStarted.WhileSubscribed(5000),
+            com.example.bible.ui.theme.ThemeStudioState(),
+        )
+
+    fun updateThemeStudio(transform: (com.example.bible.ui.theme.ThemeStudioState) -> com.example.bible.ui.theme.ThemeStudioState) {
+        viewModelScope.launch {
+            val next = transform(themeStudio.value)
+            preferences.setThemeStudioJson(next.toJson())
+        }
+    }
+
+    fun saveThemeFieldLook(id: String, look: com.example.bible.ui.theme.FieldLook) {
+        updateThemeStudio { it.copy(fields = it.fields + (id to look)) }
+    }
+
+    fun resetThemeStudio() {
+        viewModelScope.launch {
+            preferences.setAppThemePresetKey(BibleAppThemePreset.STANDARD.storageKey)
+            preferences.setThemeStudioJson("")
+            preferences.setReaderFontScale(1f)
+        }
+    }
+
     val ttsUserSettings: StateFlow<TtsUserSettings> = combine(
         preferences.ttsSpeechRate,
         preferences.ttsPitch,

@@ -106,3 +106,28 @@ val BibleTypography = Typography(
         letterSpacing = 0.5.sp,
     ),
 )
+
+fun Typography.scaledBy(factor: Float): Typography {
+    if (factor == 1f) return this
+    fun TextStyle.s(): TextStyle = copy(
+        fontSize = fontSize * factor,
+        lineHeight = lineHeight * factor,
+    )
+    return copy(
+        displayLarge = displayLarge.s(),
+        displayMedium = displayMedium.s(),
+        displaySmall = displaySmall.s(),
+        headlineLarge = headlineLarge.s(),
+        headlineMedium = headlineMedium.s(),
+        headlineSmall = headlineSmall.s(),
+        titleLarge = titleLarge.s(),
+        titleMedium = titleMedium.s(),
+        titleSmall = titleSmall.s(),
+        bodyLarge = bodyLarge.s(),
+        bodyMedium = bodyMedium.s(),
+        bodySmall = bodySmall.s(),
+        labelLarge = labelLarge.s(),
+        labelMedium = labelMedium.s(),
+        labelSmall = labelSmall.s(),
+    )
+}
