@@ -68,6 +68,7 @@ fun OtherBooksScreen(
     onOpenQuranAyah: (surah: Int, ayah: Int) -> Unit,
     onBack: () -> Unit,
     onOpenQuran: () -> Unit,
+    onOpenGita: () -> Unit,
 ) {
     val context = LocalContext.current
     val appCtx = context.applicationContext
@@ -143,6 +144,30 @@ fun OtherBooksScreen(
                         stringResource(R.string.other_books_quran_card_subtitle),
                         style = MaterialTheme.typography.bodyMedium,
                         color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.9f),
+                        modifier = Modifier.padding(top = 6.dp),
+                    )
+                }
+            }
+
+            Card(
+                onClick = onOpenGita,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(bottom = 16.dp),
+                colors = CardDefaults.cardColors(
+                    containerColor = MaterialTheme.colorScheme.tertiaryContainer.copy(alpha = 0.7f),
+                ),
+            ) {
+                Column(Modifier.padding(16.dp)) {
+                    Text(
+                        stringResource(R.string.library_gita_card_title),
+                        style = MaterialTheme.typography.titleMedium,
+                        color = MaterialTheme.colorScheme.onTertiaryContainer,
+                    )
+                    Text(
+                        stringResource(R.string.library_gita_card_subtitle),
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onTertiaryContainer.copy(alpha = 0.9f),
                         modifier = Modifier.padding(top = 6.dp),
                     )
                 }

@@ -56,7 +56,7 @@ object AppSectionUsage {
         Section(BooksMainMenuOrder.MAPS, "Карты", "Жизнь", "maps"),
         Section(BooksMainMenuOrder.TRAVEL, "Путешествия", "Жизнь", "my_travels"),
         Section(BooksMainMenuOrder.GENEALOGY, "Родословная", "Жизнь", "genealogy"),
-        Section(BooksMainMenuOrder.OTHER_BOOKS, "Другие книги", "Жизнь", "other_books"),
+        Section(BooksMainMenuOrder.OTHER_BOOKS, "Библиотека", "Жизнь", "other_books"),
         Section(BooksMainMenuOrder.CONTACTS, "Контакты", "Жизнь", "app_contacts"),
         Section("quran", "Коран", "Жизнь", "quran"),
         Section(BooksMainMenuOrder.MY_CHURCH, "Моя церковь", "Церковь", "my_church"),

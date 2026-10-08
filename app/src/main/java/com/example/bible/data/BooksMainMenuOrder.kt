@@ -109,7 +109,7 @@ object BooksMainMenuOrder {
         MAPS -> "Карты"
         TRAVEL -> "Мои путешествия"
         GENEALOGY -> "Родословная"
-        OTHER_BOOKS -> "Другие книги"
+        OTHER_BOOKS -> "Библиотека"
         STRONGS -> "Словарь Стронга"
         SEMANTIC_LEXICON -> "Словарь тематической подсветки"
         LANGUAGE_STUDY -> "Изучение языков"

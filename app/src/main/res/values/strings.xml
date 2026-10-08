@@ -1254,9 +1254,11 @@
     <string name="network_region_refresh_ip">Обновить по IP</string>
     <string name="genealogy_title">Родословная</string>
     <string name="genealogy_menu">Родословная</string>
-    <string name="other_books_title">Другие книги</string>
-    <string name="other_books_menu">Другие книги</string>
+    <string name="other_books_title">Библиотека</string>
+    <string name="other_books_menu">Библиотека</string>
     <string name="other_books_placeholder">Раздел для внеканонических и вспомогательных текстов. Содержимое будет добавлено позже.</string>
+    <string name="library_gita_card_title">Бхагавадгита</string>
+    <string name="library_gita_card_subtitle">18 глав: санскрит, транслитерация и перевод</string>
     <string name="other_books_quran_card_title">Коран</string>
     <string name="other_books_quran_card_subtitle">Арабский текст, кириллическая транслитерация, смысловой перевод по Э. Кулиеву</string>
     <string name="other_books_reader_settings_title">Настройки чтения (Коран)</string>

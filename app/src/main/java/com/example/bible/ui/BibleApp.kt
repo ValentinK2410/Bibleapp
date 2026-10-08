@@ -1930,6 +1930,22 @@ private fun BibleNavHost(
                 },
                 onBack = { navController.navigateUp() },
                 onOpenQuran = { navController.navigate("quran") },
+                onOpenGita = { navController.navigate("gita") },
+            )
+        }
+        composable("gita") {
+            GitaChapterListScreen(
+                onBack = { navController.navigateUp() },
+                onOpenChapter = { chapter -> navController.navigate("gita/$chapter") },
+            )
+        }
+        composable(
+            "gita/{chapter}",
+            arguments = listOf(navArgument("chapter") { type = NavType.IntType }),
+        ) { entry ->
+            GitaChapterScreen(
+                chapterId = entry.arguments?.getInt("chapter") ?: 1,
+                onBack = { navController.navigateUp() },
             )
         }
         composable("quran") { navEntry ->

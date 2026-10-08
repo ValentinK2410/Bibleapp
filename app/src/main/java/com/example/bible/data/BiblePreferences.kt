@@ -2117,7 +2117,7 @@ class BiblePreferences(
     }
 
     companion object {
-        /** Диапазон масштаба текста читалки Корана (Другие книги → настройки). */
+        /** Диапазон масштаба текста читалки Корана (Библиотека → настройки). */
         const val QURAN_READER_TEXT_SCALE_DEFAULT = 1f
         const val QURAN_READER_TEXT_SCALE_MIN = 0.75f
         const val QURAN_READER_TEXT_SCALE_MAX = 1.75f
