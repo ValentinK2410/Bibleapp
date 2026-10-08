@@ -9,6 +9,9 @@ import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.border
+import androidx.compose.foundation.gestures.awaitEachGesture
+import androidx.compose.foundation.gestures.awaitFirstDown
 import androidx.compose.foundation.gestures.detectVerticalDragGestures
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
@@ -17,9 +20,11 @@ import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -73,7 +78,9 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.input.pointer.PointerEventPass
 import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.input.pointer.positionChange
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.semantics.contentDescription
@@ -621,6 +628,7 @@ fun TimemarkEditorScreen(
         val formScrollState = rememberScrollState()
         val density = LocalDensity.current
         val editorLayout = rememberTimemarkEditorLayout()
+        var resizeFields by remember { mutableStateOf(false) }
         val fieldText = MaterialTheme.typography.bodyMedium.let { base ->
             base.copy(
                 fontSize = base.fontSize * editorLayout.textScale,
@@ -658,20 +666,26 @@ fun TimemarkEditorScreen(
                 Spacer(Modifier.height(8.dp))
                 TimemarkLayoutCard(
                     layout = editorLayout,
+                    resizeOn = resizeFields,
+                    onResizeOn = { resizeFields = it },
                     onChange = { editorLayout.update(it) },
                 )
                 Spacer(Modifier.height(8.dp))
 
-                OutlinedTextField(
-                value = title,
-                onValueChange = { title = it },
-                modifier = Modifier
-                    .fillMaxWidth(editorLayout.widthFraction)
-                    .heightIn(min = editorLayout.fieldHeightDp.dp),
-                label = { Text(stringResource(R.string.timemark_project_name)) },
-                singleLine = true,
-                textStyle = fieldText,
-            )
+                ResizableTextSlot(
+                    enabled = resizeFields,
+                    size = editorLayout.sizeOf("title", editorLayout.widthFraction, editorLayout.fieldHeightDp),
+                    onResize = { w, h -> editorLayout.resizeField("title", w, h) },
+                ) { slot ->
+                    OutlinedTextField(
+                        value = title,
+                        onValueChange = { title = it },
+                        modifier = slot,
+                        label = { Text(stringResource(R.string.timemark_project_name)) },
+                        singleLine = true,
+                        textStyle = fieldText,
+                    )
+                }
             Spacer(Modifier.height(8.dp))
 
             var bookMenuOpen by remember { mutableStateOf(false) }
@@ -679,18 +693,21 @@ fun TimemarkEditorScreen(
                 expanded = bookMenuOpen,
                 onExpandedChange = { bookMenuOpen = it },
             ) {
-                OutlinedTextField(
-                    value = BibleCanon.byId(bookId)?.nameRu ?: bookId,
-                    onValueChange = {},
-                    readOnly = true,
-                    label = { Text(stringResource(R.string.timemark_book)) },
-                    trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = bookMenuOpen) },
-                    modifier = Modifier
-                        .menuAnchor()
-                        .fillMaxWidth(editorLayout.widthFraction)
-                        .heightIn(min = editorLayout.fieldHeightDp.dp),
-                    textStyle = fieldText,
-                )
+                ResizableTextSlot(
+                    enabled = resizeFields,
+                    size = editorLayout.sizeOf("book", editorLayout.widthFraction, editorLayout.fieldHeightDp),
+                    onResize = { w, h -> editorLayout.resizeField("book", w, h) },
+                ) { slot ->
+                    OutlinedTextField(
+                        value = BibleCanon.byId(bookId)?.nameRu ?: bookId,
+                        onValueChange = {},
+                        readOnly = true,
+                        label = { Text(stringResource(R.string.timemark_book)) },
+                        trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = bookMenuOpen) },
+                        modifier = slot.menuAnchor(),
+                        textStyle = fieldText,
+                    )
+                }
                 DropdownMenu(
                     expanded = bookMenuOpen,
                     onDismissRequest = { bookMenuOpen = false },
@@ -734,18 +751,21 @@ fun TimemarkEditorScreen(
                 expanded = transMenuOpen,
                 onExpandedChange = { transMenuOpen = it },
             ) {
-                OutlinedTextField(
-                    value = translationPick.labelRu,
-                    onValueChange = {},
-                    readOnly = true,
-                    label = { Text(stringResource(R.string.timemark_translation)) },
-                    trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = transMenuOpen) },
-                    modifier = Modifier
-                        .menuAnchor()
-                        .fillMaxWidth(editorLayout.widthFraction)
-                        .heightIn(min = editorLayout.fieldHeightDp.dp),
-                    textStyle = fieldText,
-                )
+                ResizableTextSlot(
+                    enabled = resizeFields,
+                    size = editorLayout.sizeOf("translation", editorLayout.widthFraction, editorLayout.fieldHeightDp),
+                    onResize = { w, h -> editorLayout.resizeField("translation", w, h) },
+                ) { slot ->
+                    OutlinedTextField(
+                        value = translationPick.labelRu,
+                        onValueChange = {},
+                        readOnly = true,
+                        label = { Text(stringResource(R.string.timemark_translation)) },
+                        trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = transMenuOpen) },
+                        modifier = slot.menuAnchor(),
+                        textStyle = fieldText,
+                    )
+                }
                 DropdownMenu(
                     expanded = transMenuOpen,
                     onDismissRequest = { transMenuOpen = false },
@@ -909,17 +929,21 @@ fun TimemarkEditorScreen(
                     .fillMaxWidth(),
             ) {
             Spacer(Modifier.height(12.dp))
-            OutlinedTextField(
-                value = noteDraft,
-                onValueChange = { noteDraft = it },
-                modifier = Modifier
-                    .fillMaxWidth(editorLayout.widthFraction)
-                    .heightIn(min = editorLayout.noteHeightDp.dp),
-                label = { Text(stringResource(R.string.timemark_note_hint)) },
-                textStyle = fieldText,
-                minLines = 3,
-                maxLines = 8,
-            )
+            ResizableTextSlot(
+                enabled = resizeFields,
+                size = editorLayout.sizeOf("note", editorLayout.widthFraction, editorLayout.noteHeightDp),
+                onResize = { w, h -> editorLayout.resizeField("note", w, h) },
+            ) { slot ->
+                OutlinedTextField(
+                    value = noteDraft,
+                    onValueChange = { noteDraft = it },
+                    modifier = slot,
+                    label = { Text(stringResource(R.string.timemark_note_hint)) },
+                    textStyle = fieldText,
+                    minLines = 3,
+                    maxLines = 8,
+                )
+            }
             Row(
                 verticalAlignment = Alignment.CenterVertically,
             ) {
@@ -1147,9 +1171,12 @@ private data class TimemarkEditorLayout(
     val sidePadDp: Float = 12f,
 )
 
+private data class FieldBox(val width: Float, val height: Float)
+
 private class TimemarkEditorLayoutState(
     initial: TimemarkEditorLayout,
-    private val persist: (TimemarkEditorLayout) -> Unit,
+    initialSizes: Map<String, FieldBox>,
+    private val persist: (TimemarkEditorLayout, Map<String, FieldBox>) -> Unit,
 ) {
     var textScale by androidx.compose.runtime.mutableFloatStateOf(initial.textScale)
     var fieldHeightDp by androidx.compose.runtime.mutableFloatStateOf(initial.fieldHeightDp)
@@ -1157,6 +1184,7 @@ private class TimemarkEditorLayoutState(
     var versesFraction by androidx.compose.runtime.mutableFloatStateOf(initial.versesFraction)
     var widthFraction by androidx.compose.runtime.mutableFloatStateOf(initial.widthFraction)
     var sidePadDp by androidx.compose.runtime.mutableFloatStateOf(initial.sidePadDp)
+    var fieldSizes by androidx.compose.runtime.mutableStateOf(initialSizes)
 
     val current: TimemarkEditorLayout
         get() = TimemarkEditorLayout(
@@ -1168,14 +1196,44 @@ private class TimemarkEditorLayoutState(
             sidePadDp,
         )
 
+    fun sizeOf(id: String, width: Float, height: Float): FieldBox =
+        fieldSizes[id] ?: FieldBox(width, height)
+
+    fun resizeField(id: String, width: Float, height: Float) {
+        fieldSizes = fieldSizes + (id to FieldBox(
+            width.coerceIn(0.35f, 1f),
+            height.coerceIn(56f, 360f),
+        ))
+        persist(current, fieldSizes)
+    }
+
     fun update(next: TimemarkEditorLayout) {
+        val heightChanged = next.fieldHeightDp != fieldHeightDp
+        val noteChanged = next.noteHeightDp != noteHeightDp
+        val widthChanged = next.widthFraction != widthFraction
         textScale = next.textScale
         fieldHeightDp = next.fieldHeightDp
         noteHeightDp = next.noteHeightDp
         versesFraction = next.versesFraction
         widthFraction = next.widthFraction
         sidePadDp = next.sidePadDp
-        persist(next)
+        if (heightChanged || widthChanged || noteChanged) {
+            val nextSizes = fieldSizes.toMutableMap()
+            listOf("title", "book", "translation").forEach { id ->
+                val box = nextSizes[id] ?: FieldBox(next.widthFraction, next.fieldHeightDp)
+                nextSizes[id] = box.copy(
+                    width = if (widthChanged) next.widthFraction else box.width,
+                    height = if (heightChanged) next.fieldHeightDp else box.height,
+                )
+            }
+            val note = nextSizes["note"] ?: FieldBox(next.widthFraction, next.noteHeightDp)
+            nextSizes["note"] = note.copy(
+                width = if (widthChanged) next.widthFraction else note.width,
+                height = if (noteChanged) next.noteHeightDp else note.height,
+            )
+            fieldSizes = nextSizes
+        }
+        persist(current, fieldSizes)
     }
 }
 
@@ -1192,7 +1250,7 @@ private fun rememberTimemarkEditorLayout(): TimemarkEditorLayoutState {
             widthFraction = prefs.getFloat("width", 1f),
             sidePadDp = prefs.getFloat("pad", 12f),
         )
-        TimemarkEditorLayoutState(initial) { layout ->
+        TimemarkEditorLayoutState(initial, decodeFieldBoxes(prefs.getString("sizes", null))) { layout, sizes ->
             prefs.edit()
                 .putFloat("text", layout.textScale)
                 .putFloat("field", layout.fieldHeightDp)
@@ -1200,17 +1258,33 @@ private fun rememberTimemarkEditorLayout(): TimemarkEditorLayoutState {
                 .putFloat("verses", layout.versesFraction)
                 .putFloat("width", layout.widthFraction)
                 .putFloat("pad", layout.sidePadDp)
+                .putString("sizes", encodeFieldBoxes(sizes))
                 .apply()
         }
     }
 }
 
+private fun encodeFieldBoxes(sizes: Map<String, FieldBox>): String =
+    sizes.entries.joinToString(";") { (id, box) -> "$id:${box.width}:${box.height}" }
+
+private fun decodeFieldBoxes(raw: String?): Map<String, FieldBox> {
+    if (raw.isNullOrBlank()) return emptyMap()
+    return raw.split(';').mapNotNull { part ->
+        val bits = part.split(':')
+        if (bits.size != 3) return@mapNotNull null
+        val width = bits[1].toFloatOrNull() ?: return@mapNotNull null
+        val height = bits[2].toFloatOrNull() ?: return@mapNotNull null
+        bits[0] to FieldBox(width, height)
+    }.toMap()
+}
+
 @Composable
 private fun TimemarkLayoutCard(
     layout: TimemarkEditorLayoutState,
+    resizeOn: Boolean,
+    onResizeOn: (Boolean) -> Unit,
     onChange: (TimemarkEditorLayout) -> Unit,
 ) {
-    var open by remember { mutableStateOf(false) }
     val current = layout.current
     Card(
         colors = CardDefaults.cardColors(
@@ -1231,11 +1305,16 @@ private fun TimemarkLayoutCard(
                         .padding(start = 8.dp),
                     fontWeight = FontWeight.SemiBold,
                 )
-                TextButton(onClick = { open = !open }) {
-                    Text(if (open) "Скрыть" else "Настроить")
+                TextButton(onClick = { onResizeOn(!resizeOn) }) {
+                    Text(if (resizeOn) "Готово" else "Настроить")
                 }
             }
-            if (open) {
+            if (resizeOn) {
+                Text(
+                    "У каждого поля три ручки: справа — ширина, снизу — высота, угол — сразу оба размера.",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
                 LayoutSlider("Размер текста", current.textScale, 0.9f, 1.7f) {
                     onChange(current.copy(textScale = it))
                 }
@@ -1255,11 +1334,106 @@ private fun TimemarkLayoutCard(
                     onChange(current.copy(sidePadDp = it))
                 }
                 TextButton(
-                    onClick = { onChange(TimemarkEditorLayout()) },
+                    onClick = {
+                        layout.fieldSizes = emptyMap()
+                        onChange(TimemarkEditorLayout())
+                    },
                 ) { Text("Как по умолчанию") }
             }
         }
     }
+}
+
+@Composable
+private fun ResizableTextSlot(
+    enabled: Boolean,
+    size: FieldBox,
+    onResize: (width: Float, height: Float) -> Unit,
+    content: @Composable (Modifier) -> Unit,
+) {
+    BoxWithConstraints(Modifier.fillMaxWidth()) {
+        val parent = maxWidth
+        Box(
+            Modifier
+                .width(parent * size.width.coerceIn(0.35f, 1f))
+                .height(size.height.dp)
+                .then(
+                    if (enabled) {
+                        Modifier.border(
+                            1.5.dp,
+                            MaterialTheme.colorScheme.primary,
+                            RoundedCornerShape(12.dp),
+                        )
+                    } else {
+                        Modifier
+                    },
+                ),
+        ) {
+            content(Modifier.fillMaxSize())
+            if (enabled) {
+                val scheme = MaterialTheme.colorScheme
+                ResizeGrip(
+                    Modifier
+                        .align(Alignment.CenterEnd)
+                        .width(22.dp)
+                        .fillMaxHeight(),
+                    scheme.primary,
+                ) { dx, _ ->
+                    if (parent.value <= 0f) return@ResizeGrip
+                    val next = size.width + dx / parent.value
+                    onResize(next, size.height)
+                }
+                ResizeGrip(
+                    Modifier
+                        .align(Alignment.BottomCenter)
+                        .fillMaxWidth()
+                        .height(22.dp),
+                    scheme.primary,
+                ) { _, dy ->
+                    onResize(size.width, size.height + dy)
+                }
+                ResizeGrip(
+                    Modifier
+                        .align(Alignment.BottomEnd)
+                        .size(28.dp),
+                    scheme.tertiary,
+                ) { dx, dy ->
+                    if (parent.value <= 0f) return@ResizeGrip
+                    onResize(size.width + dx / parent.value, size.height + dy)
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun ResizeGrip(
+    modifier: Modifier,
+    color: androidx.compose.ui.graphics.Color,
+    onDrag: (dxDp: Float, dyDp: Float) -> Unit,
+) {
+    val density = LocalDensity.current
+    Box(
+        modifier
+            .clip(RoundedCornerShape(8.dp))
+            .background(color.copy(alpha = 0.9f))
+            .pointerInput(Unit) {
+                awaitEachGesture {
+                    val down = awaitFirstDown(pass = PointerEventPass.Initial)
+                    down.consume()
+                    while (true) {
+                        val event = awaitPointerEvent(PointerEventPass.Initial)
+                        val change = event.changes.firstOrNull { it.id == down.id } ?: break
+                        if (!change.pressed) break
+                        val delta = change.positionChange()
+                        change.consume()
+                        with(density) {
+                            onDrag(delta.x.toDp().value, delta.y.toDp().value)
+                        }
+                    }
+                }
+            },
+    )
 }
 
 @Composable
