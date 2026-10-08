@@ -16,6 +16,7 @@ data class GitaVerse(
     val sanskrit: String,
     val transliteration: String,
     val translationEn: String,
+    val translationRu: String,
 )
 
 data class GitaChapter(
@@ -44,6 +45,7 @@ class GitaRepository(private val context: Context) {
             val json = context.assets.open("$CHAPTERS/$id.json").bufferedReader().use { it.readText() }
             val o = JSONObject(json)
             val versesArr = o.optJSONArray("verses") ?: JSONArray()
+            val russian = loadRussian(id)
             val verses = buildList {
                 for (i in 0 until versesArr.length()) {
                     val v = versesArr.optJSONObject(i) ?: continue
@@ -53,6 +55,7 @@ class GitaRepository(private val context: Context) {
                             sanskrit = v.optString("sanskrit"),
                             transliteration = v.optString("transliteration"),
                             translationEn = v.optString("translationEn"),
+                            translationRu = russian.getOrElse(i) { "" },
                         ),
                     )
                 }
@@ -62,6 +65,17 @@ class GitaRepository(private val context: Context) {
             null
         }
     }
+
+    private fun loadRussian(chapterId: Int): List<String> =
+        try {
+            val text = context.assets.open("$RU/$chapterId.json").bufferedReader().use { it.readText() }
+            val arr = JSONArray(text)
+            buildList {
+                for (i in 0 until arr.length()) add(arr.optString(i))
+            }
+        } catch (_: Exception) {
+            emptyList()
+        }
 
     private fun parseSummary(o: JSONObject) = GitaChapterSummary(
         id = o.optInt("id"),
@@ -73,5 +87,6 @@ class GitaRepository(private val context: Context) {
     private companion object {
         const val INDEX = "gita/index.json"
         const val CHAPTERS = "gita/chapters"
+        const val RU = "gita/ru"
     }
 }

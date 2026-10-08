@@ -181,8 +181,9 @@ fun GitaChapterScreen(
                                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                                 )
                             }
-                            if (verse.translationEn.isNotBlank()) {
-                                Text(verse.translationEn, style = MaterialTheme.typography.bodyMedium)
+                            val russian = verse.translationRu.ifBlank { verse.translationEn }
+                            if (russian.isNotBlank()) {
+                                Text(russian, style = MaterialTheme.typography.bodyMedium)
                             }
                         }
                     }
