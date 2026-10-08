@@ -1963,6 +1963,11 @@ private fun BibleNavHost(
                 chapterId = entry.arguments?.getInt("chapter") ?: 1,
                 verseId = entry.arguments?.getInt("verse") ?: 1,
                 onBack = { navController.navigateUp() },
+                onOpenPassage = { chapter, verse ->
+                    navController.navigate("gita/$chapter/v/$verse") {
+                        popUpTo("gita/{chapter}/v/{verse}") { inclusive = true }
+                    }
+                },
             )
         }
         composable("quran") { navEntry ->
