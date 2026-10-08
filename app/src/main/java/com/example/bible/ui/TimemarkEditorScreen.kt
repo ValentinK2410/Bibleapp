@@ -186,9 +186,17 @@ fun TimemarkEditorScreen(
         if (downloaded.exists() && downloaded.length() > 1024) {
             audioPath = downloaded.absolutePath
         }
-        if (title.isBlank()) {
-            val bookName = BibleCanon.byId(bookId)?.nameRu ?: bookId
-            title = "$bookName $chapterNum"
+    }
+
+    LaunchedEffect(bookId, chapterNum, translationPick) {
+        val abbr = BibleCanon.byId(bookId)?.abbrRu ?: bookId
+        val suffix = timemarkProjectSuffix(translationPick)
+        val base = stripTimemarkProjectSuffix(title)
+        val auto = "$abbr $chapterNum"
+        title = if (base.isBlank() || isAutoTimemarkTitleBase(base)) {
+            "$auto $suffix"
+        } else {
+            "$base $suffix"
         }
     }
 
@@ -1549,6 +1557,27 @@ private fun TimemarkVersesHeightSplitter(
         )
     }
 }
+
+private fun timemarkProjectSuffix(translation: TranslationId): String = when (translation) {
+    TranslationId.SYNODAL -> "син"
+    TranslationId.BTI -> "клаков"
+    TranslationId.RBO -> "рбо"
+    TranslationId.NRT -> "нрп"
+    TranslationId.WEB -> "web"
+    TranslationId.INTERLINEAR -> "подстр"
+}
+
+private val timemarkProjectSuffixes = listOf("син", "клаков", "рбо", "нрп", "web", "подстр")
+
+private fun stripTimemarkProjectSuffix(title: String): String {
+    val trimmed = title.trim()
+    val suffix = timemarkProjectSuffixes.firstOrNull { trimmed.endsWith(" $it", ignoreCase = true) }
+        ?: return trimmed
+    return trimmed.dropLast(suffix.length + 1).trimEnd()
+}
+
+private fun isAutoTimemarkTitleBase(base: String): Boolean =
+    Regex("""^.+ \d+$""").matches(base.trim())
 
 private fun formatMs(ms: Long): String {
     val s = (ms / 1000).toInt()
