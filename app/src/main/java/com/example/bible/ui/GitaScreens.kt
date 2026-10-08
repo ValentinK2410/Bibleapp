@@ -4,8 +4,10 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -15,12 +17,14 @@ import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.Card
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -42,7 +46,9 @@ import com.example.bible.R
 import com.example.bible.data.GitaChapter
 import com.example.bible.data.GitaChapterSummary
 import com.example.bible.data.GitaRepository
+import com.example.bible.data.GitaSearchHit
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
@@ -51,6 +57,7 @@ import kotlinx.coroutines.withContext
 fun GitaChapterListScreen(
     onBack: () -> Unit,
     onOpenChapter: (Int) -> Unit,
+    onOpenSearch: () -> Unit,
 ) {
     val context = LocalContext.current
     val repo = remember { GitaRepository(context.applicationContext) }
@@ -66,6 +73,11 @@ fun GitaChapterListScreen(
                 navigationIcon = {
                     IconButton(onClick = onBack) {
                         Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = stringResource(R.string.back))
+                    }
+                },
+                actions = {
+                    IconButton(onClick = onOpenSearch) {
+                        Icon(Icons.Filled.Search, contentDescription = stringResource(R.string.gita_search_cd))
                     }
                 },
             )
@@ -168,6 +180,7 @@ fun GitaVerseScreen(
     verseId: Int,
     onBack: () -> Unit,
     onOpenPassage: (chapterId: Int, verseId: Int) -> Unit,
+    onOpenSearch: () -> Unit,
 ) {
     val context = LocalContext.current
     val repo = remember { GitaRepository(context.applicationContext) }
@@ -206,6 +219,11 @@ fun GitaVerseScreen(
                 navigationIcon = {
                     IconButton(onClick = onBack) {
                         Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = stringResource(R.string.back))
+                    }
+                },
+                actions = {
+                    IconButton(onClick = onOpenSearch) {
+                        Icon(Icons.Filled.Search, contentDescription = stringResource(R.string.gita_search_cd))
                     }
                 },
             )
@@ -293,6 +311,100 @@ fun GitaVerseScreen(
                             val russian = verse.translationRu.ifBlank { verse.translationEn }
                             if (russian.isNotBlank()) {
                                 Text(russian, style = MaterialTheme.typography.bodyMedium)
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun GitaSearchScreen(
+    onBack: () -> Unit,
+    onOpenHit: (chapterId: Int, verseId: Int) -> Unit,
+) {
+    val context = LocalContext.current
+    val repo = remember { GitaRepository(context.applicationContext) }
+    var query by remember { mutableStateOf("") }
+    var hits by remember { mutableStateOf<List<GitaSearchHit>>(emptyList()) }
+    var busy by remember { mutableStateOf(false) }
+    LaunchedEffect(query) {
+        val text = query.trim()
+        if (text.length < 2) {
+            hits = emptyList()
+            busy = false
+            return@LaunchedEffect
+        }
+        busy = true
+        delay(250)
+        hits = withContext(Dispatchers.IO) { repo.search(text) }
+        busy = false
+    }
+    Scaffold(
+        topBar = {
+            TopAppBar(
+                title = { Text(stringResource(R.string.gita_search_title)) },
+                navigationIcon = {
+                    IconButton(onClick = onBack) {
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = stringResource(R.string.back))
+                    }
+                },
+            )
+        },
+    ) { padding ->
+        Column(
+            Modifier
+                .fillMaxSize()
+                .padding(padding)
+                .padding(horizontal = 16.dp, vertical = 12.dp),
+        ) {
+            OutlinedTextField(
+                value = query,
+                onValueChange = { query = it },
+                modifier = Modifier.fillMaxWidth(),
+                label = { Text(stringResource(R.string.gita_search_hint)) },
+                singleLine = true,
+            )
+            Spacer(Modifier.height(12.dp))
+            when {
+                query.trim().length < 2 -> Text(
+                    stringResource(R.string.gita_search_intro),
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    style = MaterialTheme.typography.bodyMedium,
+                )
+                busy && hits.isEmpty() -> CircularProgressIndicator()
+                hits.isEmpty() -> Text(
+                    stringResource(R.string.gita_search_empty),
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+                else -> LazyColumn(
+                    verticalArrangement = Arrangement.spacedBy(8.dp),
+                    contentPadding = PaddingValues(bottom = 16.dp),
+                ) {
+                    items(hits, key = { "${it.chapterId}:${it.verseId}" }) { hit ->
+                        Card(
+                            onClick = { onOpenHit(hit.chapterId, hit.verseId) },
+                            modifier = Modifier.fillMaxWidth(),
+                        ) {
+                            Column(Modifier.padding(14.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                                Text(
+                                    "Глава ${hit.chapterId} · стих ${hit.verseId}",
+                                    style = MaterialTheme.typography.labelLarge,
+                                    color = MaterialTheme.colorScheme.tertiary,
+                                )
+                                Text(
+                                    hit.chapterTitle,
+                                    style = MaterialTheme.typography.titleSmall,
+                                )
+                                Text(
+                                    hit.text,
+                                    style = MaterialTheme.typography.bodyMedium,
+                                    maxLines = 4,
+                                    overflow = TextOverflow.Ellipsis,
+                                )
                             }
                         }
                     }

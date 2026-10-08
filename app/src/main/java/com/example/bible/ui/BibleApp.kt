@@ -1937,6 +1937,7 @@ private fun BibleNavHost(
             GitaChapterListScreen(
                 onBack = { navController.navigateUp() },
                 onOpenChapter = { chapter -> navController.navigate("gita/$chapter") },
+                onOpenSearch = { navController.navigate("gita_search") },
             )
         }
         composable(
@@ -1968,6 +1969,13 @@ private fun BibleNavHost(
                         popUpTo("gita/{chapter}/v/{verse}") { inclusive = true }
                     }
                 },
+                onOpenSearch = { navController.navigate("gita_search") },
+            )
+        }
+        composable("gita_search") {
+            GitaSearchScreen(
+                onBack = { navController.navigateUp() },
+                onOpenHit = { chapter, verse -> navController.navigate("gita/$chapter/v/$verse") },
             )
         }
         composable("quran") { navEntry ->

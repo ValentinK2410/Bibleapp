@@ -24,6 +24,13 @@ data class GitaChapter(
     val verses: List<GitaVerse>,
 )
 
+data class GitaSearchHit(
+    val chapterId: Int,
+    val chapterTitle: String,
+    val verseId: Int,
+    val text: String,
+)
+
 class GitaRepository(private val context: Context) {
     fun loadIndex(): List<GitaChapterSummary> =
         try {
@@ -66,6 +73,43 @@ class GitaRepository(private val context: Context) {
         }
     }
 
+    fun search(query: String, minLength: Int = 2, limit: Int = 80): List<GitaSearchHit> {
+        val needle = normalize(query)
+        if (needle.length < minLength) return emptyList()
+        val out = ArrayList<GitaSearchHit>()
+        for (chapter in allChapters()) {
+            val title = chapter.summary.translation.ifBlank { chapter.summary.transliteration }
+            for (verse in chapter.verses) {
+                val russian = verse.translationRu.ifBlank { verse.translationEn }
+                val haystack = normalize(russian + "\n" + verse.transliteration + "\n" + verse.sanskrit)
+                if (!haystack.contains(needle)) continue
+                out.add(
+                    GitaSearchHit(
+                        chapterId = chapter.summary.id,
+                        chapterTitle = title,
+                        verseId = verse.id,
+                        text = russian,
+                    ),
+                )
+                if (out.size >= limit) return out
+            }
+        }
+        return out
+    }
+
+    private fun allChapters(): List<GitaChapter> {
+        cache?.let { return it }
+        val loaded = (1..18).mapNotNull { loadChapter(it) }
+        cache = loaded
+        return loaded
+    }
+
+    private fun normalize(s: String): String =
+        s.lowercase()
+            .replace('ё', 'е')
+            .replace(Regex("\\s+"), " ")
+            .trim()
+
     private fun loadRussian(chapterId: Int): List<String> =
         try {
             val text = context.assets.open("$RU/$chapterId.json").bufferedReader().use { it.readText() }
@@ -83,6 +127,8 @@ class GitaRepository(private val context: Context) {
         translation = o.optString("translation"),
         totalVerses = o.optInt("total_verses"),
     )
+
+    private var cache: List<GitaChapter>? = null
 
     private companion object {
         const val INDEX = "gita/index.json"
