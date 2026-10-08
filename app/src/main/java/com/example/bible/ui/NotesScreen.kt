@@ -87,6 +87,13 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.drawBehind
+import androidx.compose.ui.graphics.Brush
+import androidx.compose.material.icons.automirrored.filled.HelpOutline
+import androidx.compose.material.icons.filled.Bookmark
+import androidx.compose.material.icons.filled.Lightbulb
+import androidx.compose.material.icons.filled.AutoAwesome
+import androidx.compose.material.icons.automirrored.filled.MenuBook
 import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.graphics.Color
@@ -153,13 +160,13 @@ fun NotesListScreen(
         notes.filter { it.matchesFilter(listFilter) }.sortedByDescending { it.updatedAt }
     }
     val dateFormat = remember {
-        java.text.SimpleDateFormat("dd.MM.yyyy HH:mm", java.util.Locale.getDefault())
+        java.text.SimpleDateFormat("d MMM, HH:mm", java.util.Locale("ru"))
     }
 
     Scaffold(
         topBar = {
             CenterAlignedTopAppBar(
-                title = { Text("Заметки") },
+                title = { Text("Заметки", fontWeight = FontWeight.ExtraBold) },
                 navigationIcon = {
                     IconButton(onClick = onBack) {
                         Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Назад")
@@ -168,37 +175,37 @@ fun NotesListScreen(
             )
         },
         floatingActionButton = {
-            FloatingActionButton(onClick = onCreateNote) {
-                Icon(Icons.Default.Add, contentDescription = "Новая заметка")
+            Row(
+                modifier = Modifier
+                    .clip(RoundedCornerShape(20.dp))
+                    .background(Brush.linearGradient(NotesGradient))
+                    .clickable(onClick = onCreateNote)
+                    .padding(horizontal = 20.dp, vertical = 15.dp),
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                Icon(Icons.Default.Add, contentDescription = null, tint = Color.White)
+                Spacer(Modifier.width(8.dp))
+                Text("Новая", color = Color.White, fontWeight = FontWeight.ExtraBold)
             }
         },
     ) { padding ->
-        if (sorted.isEmpty()) {
-            Box(
-                modifier = Modifier
-                    .padding(padding)
-                    .fillMaxSize(),
-                contentAlignment = Alignment.Center,
-            ) {
-                Text(
-                    "Заметок пока нет.\nНажмите + чтобы создать.",
-                    style = MaterialTheme.typography.bodyLarge,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    modifier = Modifier.padding(24.dp),
-                )
+        LazyColumn(
+            modifier = Modifier
+                .padding(padding)
+                .fillMaxSize(),
+            contentPadding = PaddingValues(start = 16.dp, end = 16.dp, top = 8.dp, bottom = 96.dp),
+            verticalArrangement = Arrangement.spacedBy(10.dp),
+        ) {
+            item(key = "hero") {
+                NotesHeroCard(notes = notes)
             }
-        } else {
-            Column(
-                modifier = Modifier
-                    .padding(padding)
-                    .fillMaxSize(),
-            ) {
+            item(key = "filters") {
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
                         .horizontalScroll(rememberScrollState())
-                        .padding(horizontal = 8.dp, vertical = 8.dp),
-                    horizontalArrangement = Arrangement.spacedBy(6.dp),
+                        .padding(vertical = 2.dp),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
                 ) {
                     listOf(
                         NotesListFilter.ALL to "Все",
@@ -207,17 +214,24 @@ fun NotesListScreen(
                         NotesListFilter.REFLECTIONS to "Размышления",
                         NotesListFilter.WITH_JOURNAL to "Хронология",
                     ).forEach { (f, label) ->
-                        FilterChip(
+                        val count = notes.count { it.matchesFilter(f) }
+                        TmGradientPill(
+                            text = "$label  $count",
                             selected = listFilter == f,
+                            gradient = NotesGradient,
                             onClick = { listFilter = f },
-                            label = { Text(label, style = MaterialTheme.typography.labelMedium) },
                         )
                     }
                 }
-                LazyColumn(
-                    modifier = Modifier.fillMaxSize(),
-                    contentPadding = PaddingValues(bottom = 8.dp),
-                ) {
+            }
+            if (sorted.isEmpty()) {
+                item(key = "empty") {
+                    NotesEmptyState(
+                        hasAny = notes.isNotEmpty(),
+                        onCreateNote = onCreateNote,
+                    )
+                }
+            } else {
                 items(sorted, key = { it.id }) { note ->
                     NoteListItem(
                         note = note,
@@ -225,8 +239,6 @@ fun NotesListScreen(
                         onClick = { onOpenNote(note.id) },
                         onDelete = { deleteTarget = note },
                     )
-                    HorizontalDivider()
-                }
                 }
             }
         }
@@ -254,6 +266,166 @@ fun NotesListScreen(
     }
 }
 
+private val NotesGradient = listOf(Color(0xFF6366F1), Color(0xFFEC4899))
+private val NotesHeroGradient = listOf(Color(0xFF1E1B4B), Color(0xFF4C1D95), Color(0xFF0F766E))
+
+private fun noteKindGradient(kind: UserNoteKind): List<Color> = when (kind) {
+    UserNoteKind.NOTE -> listOf(Color(0xFF6366F1), Color(0xFF8B5CF6))
+    UserNoteKind.QUESTION -> listOf(Color(0xFFF59E0B), Color(0xFFEF4444))
+    UserNoteKind.ANSWER -> listOf(Color(0xFF10B981), Color(0xFF06B6D4))
+    UserNoteKind.REFLECTION -> listOf(Color(0xFFEC4899), Color(0xFFD946EF))
+    UserNoteKind.CUSTOM -> listOf(Color(0xFF0EA5E9), Color(0xFF6366F1))
+}
+
+private fun noteKindIcon(kind: UserNoteKind): androidx.compose.ui.graphics.vector.ImageVector = when (kind) {
+    UserNoteKind.NOTE -> Icons.Default.Edit
+    UserNoteKind.QUESTION -> Icons.AutoMirrored.Filled.HelpOutline
+    UserNoteKind.ANSWER -> Icons.Default.Check
+    UserNoteKind.REFLECTION -> Icons.Default.Lightbulb
+    UserNoteKind.CUSTOM -> Icons.Default.Bookmark
+}
+
+@Composable
+private fun NotesHeroCard(notes: List<UserNote>) {
+    val linked = notes.count { it.hasVerseRef() }
+    val questions = notes.count { it.kind == UserNoteKind.QUESTION }
+    val weekAgo = System.currentTimeMillis() - 7L * 86_400_000L
+    val thisWeek = notes.count { it.updatedAt >= weekAgo }
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clip(RoundedCornerShape(26.dp))
+            .background(Brush.linearGradient(NotesHeroGradient))
+            .padding(18.dp),
+        verticalArrangement = Arrangement.spacedBy(12.dp),
+    ) {
+        Text(
+            "МОИ ЗАПИСИ",
+            color = Color.White.copy(alpha = 0.7f),
+            fontSize = 11.sp,
+            fontWeight = FontWeight.Bold,
+            letterSpacing = 2.sp,
+        )
+        Row(verticalAlignment = Alignment.Bottom) {
+            Text("${notes.size}", color = Color.White, fontSize = 40.sp, fontWeight = FontWeight.Black)
+            Spacer(Modifier.width(8.dp))
+            Text(
+                notesCountWord(notes.size),
+                color = Color.White.copy(alpha = 0.8f),
+                fontSize = 16.sp,
+                fontWeight = FontWeight.SemiBold,
+                modifier = Modifier.padding(bottom = 8.dp),
+            )
+        }
+        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+            NotesHeroStat("$linked", "к стихам", Modifier.weight(1f))
+            NotesHeroStat("$questions", "вопросов", Modifier.weight(1f))
+            NotesHeroStat("$thisWeek", "за неделю", Modifier.weight(1f))
+        }
+    }
+}
+
+@Composable
+private fun NotesHeroStat(value: String, label: String, modifier: Modifier = Modifier) {
+    Column(
+        modifier = modifier
+            .clip(RoundedCornerShape(16.dp))
+            .background(Color.White.copy(alpha = 0.10f))
+            .border(1.dp, Color.White.copy(alpha = 0.16f), RoundedCornerShape(16.dp))
+            .padding(horizontal = 10.dp, vertical = 9.dp),
+    ) {
+        Text(value, color = Color.White, fontSize = 19.sp, fontWeight = FontWeight.ExtraBold, maxLines = 1)
+        Text(label, color = Color.White.copy(alpha = 0.7f), fontSize = 11.sp, maxLines = 1)
+    }
+}
+
+@Composable
+private fun NotesEmptyState(hasAny: Boolean, onCreateNote: () -> Unit) {
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(top = 24.dp),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.spacedBy(12.dp),
+    ) {
+        Box(
+            Modifier
+                .size(72.dp)
+                .clip(RoundedCornerShape(24.dp))
+                .background(Brush.linearGradient(NotesGradient)),
+            contentAlignment = Alignment.Center,
+        ) {
+            Icon(Icons.Default.Edit, contentDescription = null, tint = Color.White, modifier = Modifier.size(34.dp))
+        }
+        Text(
+            if (hasAny) "Нет заметок с таким фильтром" else "Заметок пока нет",
+            fontWeight = FontWeight.ExtraBold,
+            style = MaterialTheme.typography.titleMedium,
+        )
+        Text(
+            if (hasAny) "Выберите другой фильтр выше." else "Запишите мысль, вопрос к тексту или размышление.",
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            style = MaterialTheme.typography.bodyMedium,
+        )
+        if (!hasAny) {
+            TmGradientPill(text = "Создать заметку", selected = true, gradient = NotesGradient, onClick = onCreateNote)
+        }
+    }
+}
+
+private val NoteVerseColor = Color(0xFF0EA5E9)
+
+@Composable
+private fun NoteAiPill(text: String, enabled: Boolean, onClick: () -> Unit) {
+    val accent = Color(0xFF8B5CF6)
+    val shape = RoundedCornerShape(999.dp)
+    Row(
+        modifier = Modifier
+            .clip(shape)
+            .background(accent.copy(alpha = if (enabled) 0.10f else 0.04f))
+            .border(1.dp, accent.copy(alpha = if (enabled) 0.35f else 0.15f), shape)
+            .clickable(enabled = enabled, onClick = onClick)
+            .padding(horizontal = 10.dp, vertical = 4.dp),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        Icon(
+            Icons.Default.AutoAwesome,
+            contentDescription = null,
+            tint = accent.copy(alpha = if (enabled) 1f else 0.4f),
+            modifier = Modifier.size(14.dp),
+        )
+        Spacer(Modifier.width(5.dp))
+        Text(
+            text,
+            color = accent.copy(alpha = if (enabled) 1f else 0.4f),
+            fontWeight = FontWeight.Bold,
+            fontSize = 12.sp,
+            maxLines = 1,
+        )
+    }
+}
+
+private fun notesCountWord(n: Int): String {
+    val mod10 = n % 10
+    val mod100 = n % 100
+    return when {
+        mod10 == 1 && mod100 != 11 -> "заметка"
+        mod10 in 2..4 && mod100 !in 12..14 -> "заметки"
+        else -> "заметок"
+    }
+}
+
+private fun noteRelativeTime(timestamp: Long, dateFormat: java.text.SimpleDateFormat): String {
+    val diff = System.currentTimeMillis() - timestamp
+    return when {
+        diff < 60_000L -> "только что"
+        diff < 3_600_000L -> "${diff / 60_000L} мин назад"
+        diff < 86_400_000L -> "${diff / 3_600_000L} ч назад"
+        diff < 2 * 86_400_000L -> "вчера"
+        else -> dateFormat.format(java.util.Date(timestamp))
+    }
+}
+
 @Composable
 private fun NoteListItem(
     note: UserNote,
@@ -261,63 +433,100 @@ private fun NoteListItem(
     onClick: () -> Unit,
     onDelete: () -> Unit,
 ) {
+    val scheme = MaterialTheme.colorScheme
+    val gradient = noteKindGradient(note.kind)
+    val shape = RoundedCornerShape(22.dp)
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .clickable(onClick = onClick)
-            .padding(horizontal = 16.dp, vertical = 12.dp),
-        verticalAlignment = Alignment.Top,
+            .clip(shape)
+            .background(scheme.surfaceContainerLow)
+            .border(1.dp, gradient.first().copy(alpha = 0.18f), shape)
+            .drawBehind {
+                drawRect(
+                    brush = Brush.verticalGradient(gradient),
+                    size = androidx.compose.ui.geometry.Size(5.dp.toPx(), size.height),
+                )
+            }
+            .clickable(onClick = onClick),
     ) {
-        Column(modifier = Modifier.weight(1f)) {
+        Column(
+            modifier = Modifier
+                .weight(1f)
+                .padding(start = 17.dp, top = 12.dp, bottom = 12.dp),
+            verticalArrangement = Arrangement.spacedBy(6.dp),
+        ) {
             Row(verticalAlignment = Alignment.CenterVertically) {
+                Box(
+                    Modifier
+                        .size(30.dp)
+                        .clip(RoundedCornerShape(10.dp))
+                        .background(Brush.linearGradient(gradient)),
+                    contentAlignment = Alignment.Center,
+                ) {
+                    Icon(noteKindIcon(note.kind), contentDescription = null, tint = Color.White, modifier = Modifier.size(17.dp))
+                }
+                Spacer(Modifier.width(10.dp))
                 Text(
                     text = note.title.ifEmpty { "Без названия" },
+                    fontWeight = FontWeight.ExtraBold,
                     style = MaterialTheme.typography.titleMedium,
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis,
                     modifier = Modifier.weight(1f),
                 )
             }
-            Text(
-                text = buildString {
-                    append(note.kindDisplayShort())
-                    note.displayVerseLabel()?.let { append(" · "); append(it) }
-                    if (note.journalEntries.isNotEmpty()) {
-                        append(" · хронология: ")
-                        append(note.journalEntries.size)
-                    }
-                },
-                style = MaterialTheme.typography.labelSmall,
-                color = MaterialTheme.colorScheme.primary,
-                modifier = Modifier.padding(top = 2.dp),
-            )
             val pv = note.previewText()
             if (pv.isNotEmpty()) {
                 Text(
-                    text = pv.take(120),
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    maxLines = 2,
+                    text = pv.take(160),
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = scheme.onSurfaceVariant,
+                    maxLines = 3,
                     overflow = TextOverflow.Ellipsis,
-                    modifier = Modifier.padding(top = 2.dp),
                 )
             }
-            Text(
-                text = dateFormat.format(java.util.Date(note.updatedAt)),
-                style = MaterialTheme.typography.labelSmall,
-                color = MaterialTheme.colorScheme.outline,
-                modifier = Modifier.padding(top = 4.dp),
-            )
+            Row(
+                horizontalArrangement = Arrangement.spacedBy(6.dp),
+                verticalAlignment = Alignment.CenterVertically,
+                modifier = Modifier.horizontalScroll(rememberScrollState()),
+            ) {
+                NoteTag(note.kindDisplayShort(), gradient.first())
+                note.displayVerseLabel()?.let { NoteTag(it, Color(0xFF0EA5E9)) }
+                if (note.journalEntries.isNotEmpty()) {
+                    NoteTag("хронология ${note.journalEntries.size}", Color(0xFF10B981))
+                }
+                Text(
+                    noteRelativeTime(note.updatedAt, dateFormat),
+                    fontSize = 11.sp,
+                    color = scheme.outline,
+                )
+            }
         }
-        IconButton(onClick = onDelete, modifier = Modifier.size(36.dp)) {
+        IconButton(onClick = onDelete, modifier = Modifier.padding(top = 4.dp)) {
             Icon(
                 Icons.Default.Delete,
                 contentDescription = "Удалить",
-                tint = MaterialTheme.colorScheme.outline,
+                tint = scheme.outline,
                 modifier = Modifier.size(20.dp),
             )
         }
     }
+}
+
+@Composable
+private fun NoteTag(text: String, color: Color) {
+    Text(
+        text,
+        color = color,
+        fontSize = 11.sp,
+        fontWeight = FontWeight.Bold,
+        maxLines = 1,
+        modifier = Modifier
+            .clip(RoundedCornerShape(999.dp))
+            .background(color.copy(alpha = 0.12f))
+            .padding(horizontal = 9.dp, vertical = 4.dp),
+    )
 }
 
 private val textColors = listOf(
@@ -749,15 +958,32 @@ fun NoteEditorScreen(
                                     else -> Modifier
                                 },
                             ),
-                        shape = RoundedCornerShape(12.dp),
-                        color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.55f),
+                        shape = RoundedCornerShape(18.dp),
+                        color = NoteVerseColor.copy(alpha = 0.10f),
+                        border = androidx.compose.foundation.BorderStroke(1.dp, NoteVerseColor.copy(alpha = 0.30f)),
                     ) {
-                        Column(Modifier.padding(horizontal = 12.dp, vertical = 8.dp)) {
+                        Column(Modifier.padding(horizontal = 12.dp, vertical = 9.dp)) {
                             Row(verticalAlignment = Alignment.CenterVertically) {
+                            Box(
+                                Modifier
+                                    .size(26.dp)
+                                    .clip(RoundedCornerShape(9.dp))
+                                    .background(Brush.linearGradient(listOf(NoteVerseColor, Color(0xFF6366F1)))),
+                                contentAlignment = Alignment.Center,
+                            ) {
+                                Icon(
+                                    Icons.AutoMirrored.Filled.MenuBook,
+                                    contentDescription = null,
+                                    tint = Color.White,
+                                    modifier = Modifier.size(15.dp),
+                                )
+                            }
+                            Spacer(Modifier.width(10.dp))
                             Text(
-                                text = if (vLabel.isNotEmpty()) "Стих: $vLabel" else "Стих",
-                                style = MaterialTheme.typography.labelLarge,
-                                color = MaterialTheme.colorScheme.primary,
+                                text = if (vLabel.isNotEmpty()) vLabel else "Стих",
+                                style = MaterialTheme.typography.titleSmall,
+                                fontWeight = FontWeight.ExtraBold,
+                                color = NoteVerseColor,
                                     modifier = Modifier.weight(1f),
                                     maxLines = 1,
                                     overflow = TextOverflow.Ellipsis,
@@ -859,26 +1085,36 @@ fun NoteEditorScreen(
                     verticalAlignment = Alignment.CenterVertically,
                         ) {
                             Box {
-                                AssistChip(
-                                    onClick = { kindMenuExpanded = true },
-                                    label = {
-                                        Text(
-                                            editKindLabel,
-                                            maxLines = 1,
-                                            overflow = TextOverflow.Ellipsis,
-                                        )
-                                    },
-                                    trailingIcon = {
-                                        Icon(
-                                            Icons.Default.ExpandMore,
-                                            contentDescription = "Тип записи",
-                                            modifier = Modifier.size(18.dp),
-                                        )
-                                    },
-                                    colors = AssistChipDefaults.assistChipColors(
-                                        containerColor = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.55f),
-                                    ),
-                                )
+                                Row(
+                                    modifier = Modifier
+                                        .clip(RoundedCornerShape(999.dp))
+                                        .background(Brush.linearGradient(noteKindGradient(kind)))
+                                        .clickable { kindMenuExpanded = true }
+                                        .padding(start = 10.dp, end = 8.dp, top = 7.dp, bottom = 7.dp),
+                                    verticalAlignment = Alignment.CenterVertically,
+                                ) {
+                                    Icon(
+                                        noteKindIcon(kind),
+                                        contentDescription = null,
+                                        tint = Color.White,
+                                        modifier = Modifier.size(16.dp),
+                                    )
+                                    Spacer(Modifier.width(6.dp))
+                                    Text(
+                                        editKindLabel,
+                                        color = Color.White,
+                                        fontWeight = FontWeight.Bold,
+                                        fontSize = 13.sp,
+                                        maxLines = 1,
+                                        overflow = TextOverflow.Ellipsis,
+                                    )
+                                    Icon(
+                                        Icons.Default.ExpandMore,
+                                        contentDescription = "Тип записи",
+                                        tint = Color.White,
+                                        modifier = Modifier.size(18.dp),
+                                    )
+                                }
                                 DropdownMenu(
                                     expanded = kindMenuExpanded,
                                     onDismissRequest = { kindMenuExpanded = false },
@@ -1042,48 +1278,28 @@ fun NoteEditorScreen(
                     visualTransformation = spanVisualTransformation,
                             colors = editorFieldColors,
                         )
-                        FlowRow(
+                        Row(
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .padding(horizontal = 4.dp),
-                            horizontalArrangement = Arrangement.spacedBy(0.dp),
-                            verticalArrangement = Arrangement.spacedBy(0.dp),
+                                .horizontalScroll(rememberScrollState())
+                                .padding(horizontal = 12.dp, vertical = 3.dp),
+                            horizontalArrangement = Arrangement.spacedBy(6.dp),
                         ) {
-                            val aiButtonPadding = PaddingValues(horizontal = 6.dp, vertical = 0.dp)
-                            val aiButtonMod = Modifier.defaultMinSize(minWidth = 1.dp, minHeight = 28.dp)
-                            TextButton(
+                            NoteAiPill(
+                                text = stringResource(R.string.note_ai_correct),
+                                enabled = !noteAssist.loading,
                                 onClick = { requestNoteAssist(DeepSeekNoteAssistKind.CORRECT) },
+                            )
+                            NoteAiPill(
+                                text = stringResource(R.string.note_ai_improve),
                                 enabled = !noteAssist.loading,
-                                modifier = aiButtonMod,
-                                contentPadding = aiButtonPadding,
-                            ) {
-                                Text(
-                                    stringResource(R.string.note_ai_correct),
-                                    style = MaterialTheme.typography.labelLarge,
-                                )
-                            }
-                            TextButton(
                                 onClick = { requestNoteAssist(DeepSeekNoteAssistKind.IMPROVE) },
+                            )
+                            NoteAiPill(
+                                text = stringResource(R.string.note_ai_simplify),
                                 enabled = !noteAssist.loading,
-                                modifier = aiButtonMod,
-                                contentPadding = aiButtonPadding,
-                            ) {
-                                Text(
-                                    stringResource(R.string.note_ai_improve),
-                                    style = MaterialTheme.typography.labelLarge,
-                                )
-                            }
-                            TextButton(
                                 onClick = { requestNoteAssist(DeepSeekNoteAssistKind.SIMPLIFY) },
-                                enabled = !noteAssist.loading,
-                                modifier = aiButtonMod,
-                                contentPadding = aiButtonPadding,
-                            ) {
-                                Text(
-                                    stringResource(R.string.note_ai_simplify),
-                                    style = MaterialTheme.typography.labelLarge,
-                                )
-                            }
+                            )
                         }
                         Surface(tonalElevation = 2.dp) {
             FormatToolbar(
