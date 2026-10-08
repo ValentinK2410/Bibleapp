@@ -1560,14 +1560,14 @@ private fun TimemarkVersesHeightSplitter(
 
 private fun timemarkProjectSuffix(translation: TranslationId): String = when (translation) {
     TranslationId.SYNODAL -> "син"
-    TranslationId.BTI -> "клаков"
+    TranslationId.BTI -> "кулаков"
     TranslationId.RBO -> "рбо"
     TranslationId.NRT -> "нрп"
     TranslationId.WEB -> "web"
     TranslationId.INTERLINEAR -> "подстр"
 }
 
-private val timemarkProjectSuffixes = listOf("син", "клаков", "рбо", "нрп", "web", "подстр")
+private val timemarkProjectSuffixes = listOf("син", "кулаков", "клаков", "рбо", "нрп", "web", "подстр")
 
 private fun stripTimemarkProjectSuffix(title: String): String {
     val trimmed = title.trim()
