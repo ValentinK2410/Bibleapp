@@ -153,7 +153,9 @@ fun InterlinearVerseContent(
             if (words.size > 1) {
                 Row(horizontalArrangement = Arrangement.spacedBy(0.dp)) {
                     TextButton(
-                        onClick = { interlinearTts.speakSequence(words, bookId) },
+                        onClick = {
+                            interlinearTts.speakSequence(words, bookId, interlinearChapterWordOffset)
+                        },
                         contentPadding = PaddingValues(horizontal = 4.dp, vertical = 0.dp),
                     ) {
                         Text(

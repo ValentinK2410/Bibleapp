@@ -36,6 +36,8 @@ class InterlinearTts(context: Context) {
     /** Очередь «вся глава» / «весь стих» — индекс следующего к произнесению. */
     private var sequenceWords: List<InterlinearWord>? = null
     private var sequenceBookId: String? = null
+    /** Сдвиг подсветки в плоском списке слов главы (0 для всей главы, начало стиха для «стих по словам»). */
+    private var sequenceHighlightBase = 0
 
     /** Очередь слов арабского аята (озвучка по словам). */
     private var arabicWordSequence: List<String>? = null
@@ -148,8 +150,12 @@ class InterlinearTts(context: Context) {
         speakWordWithId(word, "single_${word.strong}_${System.nanoTime()}", bookId)
     }
 
-    /** Все слова подряд (стих или глава). */
-    fun speakSequence(words: List<InterlinearWord>, bookId: String? = null) {
+    /** Все слова подряд (стих или глава). [highlightBaseIndex] — место первого слова в главе. */
+    fun speakSequence(
+        words: List<InterlinearWord>,
+        bookId: String? = null,
+        highlightBaseIndex: Int = 0,
+    ) {
         if (words.isEmpty()) return
         if (!ready) return
         tts?.stop()
@@ -159,12 +165,14 @@ class InterlinearTts(context: Context) {
         sequenceGeneration++
         sequenceWords = words
         sequenceBookId = bookId
+        sequenceHighlightBase = highlightBaseIndex.coerceAtLeast(0)
         speakSequenceIndex(0)
     }
 
     fun stopSequence() {
         sequenceWords = null
         sequenceBookId = null
+        sequenceHighlightBase = 0
         arabicWordSequence = null
         arabicLetterSequence = null
         hebrewLetterSequence = null
@@ -181,7 +189,10 @@ class InterlinearTts(context: Context) {
             clearSequenceHighlight()
             return
         }
-        _sequenceHighlight.value = InterlinearWordSequenceHighlight(sequenceGeneration, index)
+        _sequenceHighlight.value = InterlinearWordSequenceHighlight(
+            sequenceGeneration,
+            sequenceHighlightBase + index,
+        )
         speakWordWithId(list[index], "seq_$index", sequenceBookId)
     }
 
