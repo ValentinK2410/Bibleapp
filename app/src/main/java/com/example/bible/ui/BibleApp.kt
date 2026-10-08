@@ -1946,6 +1946,23 @@ private fun BibleNavHost(
             GitaChapterScreen(
                 chapterId = entry.arguments?.getInt("chapter") ?: 1,
                 onBack = { navController.navigateUp() },
+                onOpenVerse = { verse ->
+                    val chapter = entry.arguments?.getInt("chapter") ?: 1
+                    navController.navigate("gita/$chapter/v/$verse")
+                },
+            )
+        }
+        composable(
+            "gita/{chapter}/v/{verse}",
+            arguments = listOf(
+                navArgument("chapter") { type = NavType.IntType },
+                navArgument("verse") { type = NavType.IntType },
+            ),
+        ) { entry ->
+            GitaVerseScreen(
+                chapterId = entry.arguments?.getInt("chapter") ?: 1,
+                verseId = entry.arguments?.getInt("verse") ?: 1,
+                onBack = { navController.navigateUp() },
             )
         }
         composable("quran") { navEntry ->
@@ -1978,22 +1995,11 @@ private fun BibleNavHost(
         composable("quran/{surah}") { entry ->
             val n = entry.arguments?.getString("surah")?.toIntOrNull() ?: return@composable
             val quranRepo = rememberQuranRepository()
-            QuranSurahReaderScreen(
+            QuranAyahPickerScreen(
                 repository = quranRepo,
-                preferences = preferences,
                 surahNumber = n,
-                scrollToVerseNumber = null,
                 onBack = { navController.navigateUp() },
-                onOpenArabicSandbox = { verse ->
-                    navController.navigate("quran_arabic_sandbox/$n/v/$verse")
-                },
-                onBeginReadingSession = { surah, name, ayah ->
-                    viewModel.beginQuranReadingSession(surah, name, ayah)
-                },
-                onVisibleAyah = { surah, name, ayah ->
-                    viewModel.onQuranVisibleAyah(surah, name, ayah)
-                },
-                onFlushReadingDwell = { viewModel.flushQuranReadingDwell() },
+                onOpenAyah = { ayah -> navController.navigate("quran/$n/v/$ayah") },
             )
         }
         composable("quran/{surah}/v/{verse}") { entry ->

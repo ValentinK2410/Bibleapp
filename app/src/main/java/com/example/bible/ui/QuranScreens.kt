@@ -19,6 +19,10 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.grid.GridCells
+import androidx.compose.foundation.lazy.grid.GridItemSpan
+import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
+import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material.icons.Icons
@@ -197,6 +201,7 @@ fun QuranSurahListScreen(
     var offlineContentCacheTick by remember { mutableStateOf(0) }
     var downloadingSurahNumber by remember { mutableStateOf<Int?>(null) }
     var downloadingTafsirSurahNumber by remember { mutableStateOf<Int?>(null) }
+    var downloadMenu by remember { mutableStateOf<QuranSurahSummary?>(null) }
     val lifecycleOwner = LocalLifecycleOwner.current
     DisposableEffect(lifecycleOwner) {
         val observer = LifecycleEventObserver { _, event ->
@@ -254,14 +259,17 @@ fun QuranSurahListScreen(
             )
             return@Scaffold
         }
-        LazyColumn(
+        val quranAccent = MaterialTheme.colorScheme.primary
+        LazyVerticalGrid(
+            columns = GridCells.Fixed(5),
             modifier = Modifier
                 .fillMaxSize()
                 .padding(padding),
-            contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp),
-            verticalArrangement = Arrangement.spacedBy(8.dp),
+            contentPadding = PaddingValues(start = 6.dp, end = 6.dp, top = 8.dp, bottom = 14.dp),
+            horizontalArrangement = Arrangement.spacedBy(6.dp),
+            verticalArrangement = Arrangement.spacedBy(6.dp),
         ) {
-            item {
+            item(span = { GridItemSpan(maxLineSpan) }) {
                 Text(
                     text = stringResource(R.string.quran_attribution_short),
                     style = MaterialTheme.typography.bodySmall,
@@ -270,7 +278,7 @@ fun QuranSurahListScreen(
                 )
             }
             if (lastReading != null && onContinueReading != null) {
-                item {
+                item(span = { GridItemSpan(maxLineSpan) }) {
                     Card(
                         onClick = { onContinueReading(lastReading.surahNumber, lastReading.ayahNumber) },
                         modifier = Modifier.fillMaxWidth(),
@@ -313,224 +321,172 @@ fun QuranSurahListScreen(
                         }
                     }
                 }
-                QuranSurahListItem(
-                    summary = s,
+                ScriptureChapterCell(
+                    number = s.number.toString(),
+                    caption = s.nameRussian,
+                    accent = quranAccent,
+                    marked = fullyCached || tafsirFullyCached,
+                    icon = if (fullyCached) Icons.Default.Headphones else null,
                     onClick = { onOpenSurah(s.number) },
-                    fullyCached = fullyCached,
-                    tafsirFullyCached = tafsirFullyCached,
-                    isDownloading = downloadingSurahNumber == s.number,
-                    isDownloadingTafsir = downloadingTafsirSurahNumber == s.number,
-                    onDownloadSurahMp3 = {
-                        if (downloadingSurahNumber != null) return@QuranSurahListItem
-                        downloadingSurahNumber = s.number
-                        val surahNum = s.number
-                        listScope.launch(Dispatchers.IO) {
-                            val loaded = repository.loadSurah(surahNum)
-                            if (loaded == null || loaded.verses.isEmpty()) {
-                                withContext(Dispatchers.Main) {
-                                    downloadingSurahNumber = null
-                                    Toast.makeText(
-                                        context,
-                                        context.getString(R.string.quran_surah_not_found),
-                                        Toast.LENGTH_SHORT,
-                                    ).show()
-                                }
-                                return@launch
-                            }
-                            var ok = 0
-                            for (v in loaded.verses) {
-                                if (QuranAyahAudioStorage.downloadAyah(appCtx, surahNum, v.number)) {
-                                    ok++
-                                }
-                            }
-                            withContext(Dispatchers.Main) {
-                                downloadingSurahNumber = null
-                                offlineContentCacheTick++
-                                Toast.makeText(
-                                    context,
-                                    context.getString(
-                                        R.string.quran_surah_list_download_done,
-                                        loaded.summary.nameRussian,
-                                        ok,
-                                        loaded.verses.size,
-                                    ),
-                                    Toast.LENGTH_LONG,
-                                ).show()
-                            }
-                        }
-                    },
-                    onDownloadSurahTafsir = {
-                        if (downloadingTafsirSurahNumber != null || downloadingSurahNumber != null) {
-                            return@QuranSurahListItem
-                        }
-                        downloadingTafsirSurahNumber = s.number
-                        val surahNum = s.number
-                        listScope.launch(Dispatchers.IO) {
-                            val loaded = repository.loadSurah(surahNum)
-                            if (loaded == null || loaded.verses.isEmpty()) {
-                                withContext(Dispatchers.Main) {
-                                    downloadingTafsirSurahNumber = null
-                                    Toast.makeText(
-                                        context,
-                                        context.getString(R.string.quran_surah_not_found),
-                                        Toast.LENGTH_SHORT,
-                                    ).show()
-                                }
-                                return@launch
-                            }
-                            val ok = QuranTafsirStorage.downloadSurahCommentaries(
-                                appCtx,
-                                surahNum,
-                                loaded.verses,
-                            )
-                            withContext(Dispatchers.Main) {
-                                downloadingTafsirSurahNumber = null
-                                offlineContentCacheTick++
-                                Toast.makeText(
-                                    context,
-                                    context.getString(
-                                        R.string.quran_surah_list_tafsir_download_done,
-                                        loaded.summary.nameRussian,
-                                        ok,
-                                        loaded.verses.size,
-                                    ),
-                                    Toast.LENGTH_LONG,
-                                ).show()
-                            }
-                        }
-                    },
+                    onLongClick = { downloadMenu = s },
                 )
             }
+        }
+        val appCtx = context.applicationContext
+        downloadMenu?.let { s ->
+            AlertDialog(
+                onDismissRequest = { downloadMenu = null },
+                title = { Text("${s.number}. ${s.nameRussian}") },
+                text = {
+                    Text(stringResource(R.string.quran_ayah_count, s.totalVerses))
+                },
+                confirmButton = {
+                    TextButton(
+                        onClick = {
+                            downloadMenu = null
+                            if (downloadingSurahNumber != null) return@TextButton
+                            downloadingSurahNumber = s.number
+                            val surahNum = s.number
+                            listScope.launch(Dispatchers.IO) {
+                                val loaded = repository.loadSurah(surahNum)
+                                if (loaded == null || loaded.verses.isEmpty()) {
+                                    withContext(Dispatchers.Main) {
+                                        downloadingSurahNumber = null
+                                        Toast.makeText(
+                                            context,
+                                            context.getString(R.string.quran_surah_not_found),
+                                            Toast.LENGTH_SHORT,
+                                        ).show()
+                                    }
+                                    return@launch
+                                }
+                                var ok = 0
+                                for (v in loaded.verses) {
+                                    if (QuranAyahAudioStorage.downloadAyah(appCtx, surahNum, v.number)) {
+                                        ok++
+                                    }
+                                }
+                                withContext(Dispatchers.Main) {
+                                    downloadingSurahNumber = null
+                                    offlineContentCacheTick++
+                                    Toast.makeText(
+                                        context,
+                                        context.getString(
+                                            R.string.quran_surah_list_download_done,
+                                            loaded.summary.nameRussian,
+                                            ok,
+                                            loaded.verses.size,
+                                        ),
+                                        Toast.LENGTH_LONG,
+                                    ).show()
+                                }
+                            }
+                        },
+                        enabled = downloadingSurahNumber == null && downloadingTafsirSurahNumber == null,
+                    ) {
+                        Text(stringResource(R.string.quran_surah_list_download_cd))
+                    }
+                },
+                dismissButton = {
+                    TextButton(
+                        onClick = {
+                            downloadMenu = null
+                            if (downloadingTafsirSurahNumber != null || downloadingSurahNumber != null) return@TextButton
+                            downloadingTafsirSurahNumber = s.number
+                            val surahNum = s.number
+                            listScope.launch(Dispatchers.IO) {
+                                val loaded = repository.loadSurah(surahNum)
+                                if (loaded == null || loaded.verses.isEmpty()) {
+                                    withContext(Dispatchers.Main) {
+                                        downloadingTafsirSurahNumber = null
+                                        Toast.makeText(
+                                            context,
+                                            context.getString(R.string.quran_surah_not_found),
+                                            Toast.LENGTH_SHORT,
+                                        ).show()
+                                    }
+                                    return@launch
+                                }
+                                val ok = QuranTafsirStorage.downloadSurahCommentaries(
+                                    appCtx,
+                                    surahNum,
+                                    loaded.verses,
+                                )
+                                withContext(Dispatchers.Main) {
+                                    downloadingTafsirSurahNumber = null
+                                    offlineContentCacheTick++
+                                    Toast.makeText(
+                                        context,
+                                        context.getString(
+                                            R.string.quran_surah_list_tafsir_download_done,
+                                            loaded.summary.nameRussian,
+                                            ok,
+                                            loaded.verses.size,
+                                        ),
+                                        Toast.LENGTH_LONG,
+                                    ).show()
+                                }
+                            }
+                        },
+                        enabled = downloadingTafsirSurahNumber == null && downloadingSurahNumber == null,
+                    ) {
+                        Text(stringResource(R.string.quran_surah_list_tafsir_download_cd))
+                    }
+                },
+            )
         }
     }
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
-private fun QuranSurahListItem(
-    summary: QuranSurahSummary,
-    onClick: () -> Unit,
-    fullyCached: Boolean,
-    tafsirFullyCached: Boolean,
-    isDownloading: Boolean,
-    isDownloadingTafsir: Boolean,
-    onDownloadSurahMp3: () -> Unit,
-    onDownloadSurahTafsir: () -> Unit,
+fun QuranAyahPickerScreen(
+    repository: QuranRepository,
+    surahNumber: Int,
+    onBack: () -> Unit,
+    onOpenAyah: (Int) -> Unit,
 ) {
-    val context = LocalContext.current
-    val translitCyrillic = remember(summary.nameTransliteration) {
-        QuranTanzilLatinToCyrillic.convert(summary.nameTransliteration)
-    }
-    Card(
-        modifier = Modifier.fillMaxWidth(),
-        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.45f)),
-    ) {
-        Row(
-            modifier = Modifier
-                .padding(16.dp)
-                .fillMaxWidth(),
-            verticalAlignment = Alignment.CenterVertically,
-        ) {
-            Column(
-                Modifier
-                    .weight(1f)
-                    .clickable(onClick = onClick),
-            ) {
-                Text(
-                    "${summary.number}. ${summary.nameRussian}",
-                    style = MaterialTheme.typography.titleMedium,
-                    color = MaterialTheme.colorScheme.onSurface,
-                )
-                CompositionLocalProvider(LocalLayoutDirection provides LayoutDirection.Rtl) {
+    val summary = repository.loadIndex()?.firstOrNull { it.number == surahNumber }
+    val accent = MaterialTheme.colorScheme.primary
+    Scaffold(
+        topBar = {
+            TopAppBar(
+                title = {
                     Text(
-                        summary.nameArabic,
-                        style = MaterialTheme.typography.titleMedium,
-                        modifier = Modifier.fillMaxWidth(),
-                        textAlign = TextAlign.End,
-                        color = MaterialTheme.colorScheme.primary,
+                        summary?.let { "${it.number}. ${it.nameRussian}" } ?: surahNumber.toString(),
+                        maxLines = 1,
                     )
-                }
-                Text(
-                    summary.nameTransliteration,
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                )
-                if (translitCyrillic.isNotBlank()) {
-                    Text(
-                        translitCyrillic,
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.secondary,
-                    )
-                }
-                Text(
-                    stringResource(R.string.quran_ayah_count, summary.totalVerses),
-                    style = MaterialTheme.typography.labelMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                )
-            }
-            if (fullyCached) {
-                Icon(
-                    Icons.Default.Headphones,
-                    contentDescription = stringResource(R.string.quran_surah_list_all_saved_cd),
-                    tint = MaterialTheme.colorScheme.primary,
-                    modifier = Modifier.padding(start = 8.dp),
-                )
-            }
-            if (tafsirFullyCached) {
-                Icon(
-                    Icons.AutoMirrored.Filled.MenuBook,
-                    contentDescription = stringResource(R.string.quran_surah_list_tafsir_all_saved_cd),
-                    tint = MaterialTheme.colorScheme.primary,
-                    modifier = Modifier.padding(start = 4.dp),
-                )
-            }
-            IconButton(
-                onClick = onDownloadSurahMp3,
-                enabled = !isDownloading && !isDownloadingTafsir,
-            ) {
-                if (isDownloading) {
-                    CircularProgressIndicator(
-                        modifier = Modifier.size(24.dp),
-                        strokeWidth = 2.dp,
-                    )
-                } else {
-                    Icon(
-                        Icons.Default.Download,
-                        contentDescription = stringResource(R.string.quran_surah_list_download_cd),
-                    )
-                }
-            }
-            IconButton(
-                onClick = {
-                    if (tafsirFullyCached) {
-                        Toast.makeText(
-                            context,
-                            context.getString(R.string.quran_tafsir_already_cached),
-                            Toast.LENGTH_SHORT,
-                        ).show()
-                        return@IconButton
-                    }
-                    onDownloadSurahTafsir()
                 },
-                enabled = !isDownloadingTafsir && !isDownloading,
-            ) {
-                if (isDownloadingTafsir) {
-                    CircularProgressIndicator(
-                        modifier = Modifier.size(24.dp),
-                        strokeWidth = 2.dp,
-                    )
-                } else if (tafsirFullyCached) {
-                    Icon(
-                        Icons.Filled.CheckCircle,
-                        contentDescription = stringResource(R.string.quran_tafsir_already_cached),
-                        tint = MaterialTheme.colorScheme.secondary,
-                    )
-                } else {
-                    Icon(
-                        Icons.AutoMirrored.Filled.MenuBook,
-                        contentDescription = stringResource(R.string.quran_surah_list_tafsir_download_cd),
-                        tint = MaterialTheme.colorScheme.onSurfaceVariant,
-                    )
-                }
+                navigationIcon = {
+                    IconButton(onClick = onBack) {
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = stringResource(R.string.back))
+                    }
+                },
+            )
+        },
+    ) { padding ->
+        if (summary == null || summary.totalVerses <= 0) {
+            Text(
+                stringResource(R.string.quran_surah_not_found),
+                modifier = Modifier.padding(padding).padding(20.dp),
+                style = MaterialTheme.typography.bodyLarge,
+            )
+            return@Scaffold
+        }
+        LazyVerticalGrid(
+            columns = GridCells.Fixed(5),
+            modifier = Modifier.fillMaxSize().padding(padding),
+            contentPadding = PaddingValues(start = 6.dp, end = 6.dp, top = 8.dp, bottom = 14.dp),
+            horizontalArrangement = Arrangement.spacedBy(6.dp),
+            verticalArrangement = Arrangement.spacedBy(6.dp),
+        ) {
+            items(summary.totalVerses, key = { it }) { index ->
+                val ayah = index + 1
+                ScriptureVerseCell(
+                    number = ayah.toString(),
+                    accent = accent,
+                    onClick = { onOpenAyah(ayah) },
+                )
             }
         }
     }

@@ -125,52 +125,26 @@ fun OtherBooksScreen(
                 .fillMaxSize()
                 .verticalScroll(rememberScrollState()),
         ) {
-            Card(
-                onClick = onOpenQuran,
+            Row(
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(bottom = 16.dp),
-                colors = CardDefaults.cardColors(
-                    containerColor = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.55f),
-                ),
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
             ) {
-                Column(Modifier.padding(16.dp)) {
-                    Text(
-                        stringResource(R.string.other_books_quran_card_title),
-                        style = MaterialTheme.typography.titleMedium,
-                        color = MaterialTheme.colorScheme.onPrimaryContainer,
-                    )
-                    Text(
-                        stringResource(R.string.other_books_quran_card_subtitle),
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.9f),
-                        modifier = Modifier.padding(top = 6.dp),
-                    )
-                }
-            }
-
-            Card(
-                onClick = onOpenGita,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(bottom = 16.dp),
-                colors = CardDefaults.cardColors(
-                    containerColor = MaterialTheme.colorScheme.tertiaryContainer.copy(alpha = 0.7f),
-                ),
-            ) {
-                Column(Modifier.padding(16.dp)) {
-                    Text(
-                        stringResource(R.string.library_gita_card_title),
-                        style = MaterialTheme.typography.titleMedium,
-                        color = MaterialTheme.colorScheme.onTertiaryContainer,
-                    )
-                    Text(
-                        stringResource(R.string.library_gita_card_subtitle),
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.onTertiaryContainer.copy(alpha = 0.9f),
-                        modifier = Modifier.padding(top = 6.dp),
-                    )
-                }
+                ScriptureBookCell(
+                    title = stringResource(R.string.other_books_quran_card_title),
+                    caption = stringResource(R.string.other_books_quran_card_subtitle),
+                    accent = MaterialTheme.colorScheme.primary,
+                    onClick = onOpenQuran,
+                    modifier = Modifier.weight(1f),
+                )
+                ScriptureBookCell(
+                    title = stringResource(R.string.library_gita_card_title),
+                    caption = stringResource(R.string.library_gita_card_subtitle),
+                    accent = MaterialTheme.colorScheme.tertiary,
+                    onClick = onOpenGita,
+                    modifier = Modifier.weight(1f),
+                )
             }
 
             Text(
