@@ -859,23 +859,24 @@ private fun CoverageMiniBar(
         Box(
             modifier = Modifier
                 .weight(1f)
-                .padding(horizontal = 2.dp)
-                .height(3.dp)
+                .padding(horizontal = 3.dp)
+                .height(4.dp)
                 .clip(CircleShape)
-                .background(color.copy(alpha = 0.14f)),
+                .background(color.copy(alpha = 0.16f)),
         ) {
             Box(
                 modifier = Modifier
                     .fillMaxHeight()
                     .fillMaxWidth(fraction.coerceIn(0f, 1f))
+                    .clip(CircleShape)
                     .background(tint),
             )
         }
         Text(
             text = caption ?: "$pct",
-            color = if (pct == 100 && caption == null) color else tint,
+            color = if (active) color else tint,
             fontSize = 9.sp,
-            fontWeight = if (pct == 100) FontWeight.Bold else FontWeight.Medium,
+            fontWeight = if (pct == 100 || caption != null) FontWeight.Bold else FontWeight.Medium,
             maxLines = 1,
         )
     }
@@ -900,19 +901,8 @@ private fun BookCell(
 ) {
     val textColor = groupTextColor(entry.group)
     val scheme = MaterialTheme.colorScheme
-    val shape = RoundedCornerShape(14.dp)
-    val borderColor = if (selected) {
-        textColor.copy(alpha = 0.75f)
-    } else {
-        textColor.copy(alpha = 0.22f)
-    }
-    val tintBrush = Brush.verticalGradient(
-        colors = if (selected) {
-            listOf(textColor.copy(alpha = 0.26f), textColor.copy(alpha = 0.12f))
-        } else {
-            listOf(textColor.copy(alpha = 0.12f), textColor.copy(alpha = 0.04f))
-        },
-    )
+    val shape = RoundedCornerShape(16.dp)
+    val borderColor = if (selected) textColor else textColor.copy(alpha = 0.28f)
     Surface(
         modifier = Modifier
             .fillMaxWidth()
@@ -923,58 +913,93 @@ private fun BookCell(
             )
             .border(width = if (selected) 1.5.dp else 1.dp, color = borderColor, shape = shape),
         shape = shape,
-        color = scheme.surfaceContainerLow,
-        shadowElevation = if (selected) 3.dp else 1.dp,
+        color = scheme.surface,
+        shadowElevation = if (selected) 4.dp else 1.dp,
     ) {
-        Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .background(tintBrush)
-                .padding(top = 4.dp, bottom = 3.dp, start = 3.dp, end = 3.dp),
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.spacedBy(1.dp),
-        ) {
-            Text(
-                text = entry.abbrRu,
-                color = textColor,
-                fontSize = 14.sp,
-                lineHeight = 16.sp,
-                fontFamily = FontFamily.SansSerif,
-                fontWeight = FontWeight.Bold,
-                textAlign = TextAlign.Center,
-                maxLines = 1,
-                overflow = TextOverflow.Ellipsis,
+        Column(Modifier.fillMaxWidth()) {
+            Box(
+                Modifier
+                    .fillMaxWidth()
+                    .height(3.dp)
+                    .background(
+                        Brush.horizontalGradient(
+                            listOf(
+                                textColor.copy(alpha = 0.35f),
+                                textColor,
+                                textColor.copy(alpha = 0.35f),
+                            ),
+                        ),
+                    ),
             )
-            CoverageMiniMarks(
-                read = readChapters,
-                listened = listenedChapters,
-                listenedVerses = listenedVerses,
-                listenedOpenChapters = listenedOpenChapters,
-                listenRepeats = listenRepeats,
-                chapters = entry.chapters,
-                readColor = readProgressColor,
-            )
-            Row(
+            Column(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(11.dp),
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.Center,
-            ) {
-                if (hasAudio) {
-                    Icon(
-                        Icons.Default.Headphones,
-                        contentDescription = null,
-                        tint = scheme.primary,
-                        modifier = Modifier.size(11.dp),
+                    .background(
+                        Brush.verticalGradient(
+                            listOf(
+                                textColor.copy(alpha = if (selected) 0.16f else 0.08f),
+                                scheme.surface,
+                            ),
+                        ),
                     )
-                    if (timemarkCodes.isNotEmpty()) Spacer(Modifier.width(4.dp))
-                }
-                TimemarkPresenceDots(
-                    translationCodes = timemarkCodes,
-                    tabColors = tabColors,
-                    size = 6.dp,
+                    .padding(start = 5.dp, end = 5.dp, top = 5.dp, bottom = 4.dp),
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.spacedBy(4.dp),
+            ) {
+                Text(
+                    text = entry.abbrRu,
+                    color = textColor,
+                    fontSize = 13.sp,
+                    lineHeight = 15.sp,
+                    fontFamily = FontFamily.SansSerif,
+                    fontWeight = FontWeight.Bold,
+                    textAlign = TextAlign.Center,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
+                    modifier = Modifier
+                        .clip(RoundedCornerShape(8.dp))
+                        .background(textColor.copy(alpha = 0.12f))
+                        .padding(horizontal = 6.dp, vertical = 1.dp),
                 )
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clip(RoundedCornerShape(8.dp))
+                        .background(scheme.surfaceContainerLow.copy(alpha = 0.9f))
+                        .padding(horizontal = 4.dp, vertical = 3.dp),
+                ) {
+                    CoverageMiniMarks(
+                        read = readChapters,
+                        listened = listenedChapters,
+                        listenedVerses = listenedVerses,
+                        listenedOpenChapters = listenedOpenChapters,
+                        listenRepeats = listenRepeats,
+                        chapters = entry.chapters,
+                        readColor = readProgressColor,
+                    )
+                }
+                if (hasAudio || timemarkCodes.isNotEmpty()) {
+                    Row(
+                        modifier = Modifier.height(12.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.Center,
+                    ) {
+                        if (hasAudio) {
+                            Icon(
+                                Icons.Default.Headphones,
+                                contentDescription = null,
+                                tint = textColor.copy(alpha = 0.8f),
+                                modifier = Modifier.size(12.dp),
+                            )
+                            if (timemarkCodes.isNotEmpty()) Spacer(Modifier.width(4.dp))
+                        }
+                        TimemarkPresenceDots(
+                            translationCodes = timemarkCodes,
+                            tabColors = tabColors,
+                            size = 6.dp,
+                        )
+                    }
+                }
             }
         }
     }
