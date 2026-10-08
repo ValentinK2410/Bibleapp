@@ -1013,6 +1013,12 @@ class BibleViewModel(
         emptySet(),
     )
 
+    val passageActivity: StateFlow<String> = preferences.passageActivity.stateIn(
+        viewModelScope,
+        SharingStarted.WhileSubscribed(5000),
+        "",
+    )
+
     fun setBookCoverage(listen: Boolean, trackId: String, bookId: String, chapterCount: Int, marked: Boolean) {
         viewModelScope.launch {
             preferences.setBookCoverage(listen, trackId, bookId, chapterCount, marked)
@@ -1069,7 +1075,29 @@ class BibleViewModel(
                     }
                 }
                 if (verses.isNotEmpty()) {
+                    val visitKey = "$mapped|${snap.bookId}|${snap.chapter}"
+                    if (visitKey != listenVisitKey) {
+                        listenVisitKey = visitKey
+                        listenVisitVerses.clear()
+                        listenVisitAlready = BibleCoverage.versesInBook(
+                            preferences.coverageListenVerses.first(),
+                            mapped,
+                            snap.bookId,
+                        )[snap.chapter].orEmpty()
+                    }
+                    listenVisitVerses += verses
                     preferences.markVersesListened(mapped, snap.bookId, snap.chapter, verses)
+                }
+                if (snap.closed && listenVisitVerses.isNotEmpty()) {
+                    preferences.noteListenVisit(
+                        mapped,
+                        snap.bookId,
+                        snap.chapter,
+                        listenVisitVerses.toList(),
+                        listenVisitAlready,
+                    )
+                    listenVisitVerses.clear()
+                    listenVisitKey = ""
                 }
             }
         }
@@ -2835,6 +2863,10 @@ class BibleViewModel(
             preferences.clearHistory()
         }
     }
+
+    private var listenVisitKey: String = ""
+    private val listenVisitVerses = LinkedHashSet<Int>()
+    private var listenVisitAlready: Set<Int> = emptySet()
 
     private val readingDwellMutex = Mutex()
     private var dwellTransCode: String = ""

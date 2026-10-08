@@ -655,6 +655,8 @@ private fun BibleNavHost(
     val coverageRead by viewModel.coverageReadChapters.collectAsStateWithLifecycle()
     val coverageListen by viewModel.coverageListenChapters.collectAsStateWithLifecycle()
     val coverageListenVerses by viewModel.coverageListenVerses.collectAsStateWithLifecycle()
+    val coverageReadVerses by viewModel.coverageReadVerses.collectAsStateWithLifecycle()
+    val passageActivity by viewModel.passageActivity.collectAsStateWithLifecycle()
     val readingTrace by viewModel.readingTrace.collectAsStateWithLifecycle()
     val narratorId by viewModel.audioNarratorId.collectAsStateWithLifecycle()
     val downloadTick by com.example.bible.data.BibleAudioPlayer.downloadTick.collectAsState()
@@ -923,6 +925,10 @@ private fun BibleNavHost(
                             booksWithAudio = booksWithAudio,
                             coverageByBook = tileCoverage,
                             readProgressColor = coverageMarkColor(translation.code, translationTabColors),
+                            translation = translation,
+                            passageActivity = passageActivity,
+                            readVerseKeys = coverageReadVerses,
+                            listenVerseKeys = coverageListenVerses,
                             onBookClick = { bookId ->
                                 com.example.bible.data.BibleAudioPlayer.stopForNavigation()
                                 viewModel.passagePickerSelectBook(bookId)

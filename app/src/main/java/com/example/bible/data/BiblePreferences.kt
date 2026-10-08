@@ -56,6 +56,8 @@ private object Keys {
     /** Стихи главы, чья озвучка доиграла до конца. Тот же формат, что у прочитанных. */
     val COVERAGE_LISTEN_VERSES = stringSetPreferencesKey("coverage_listen_verses")
     val COVERAGE_VERSES_IMPORTED = booleanPreferencesKey("coverage_verses_imported")
+    /** Сколько раз стих читали или слушали и когда в последний раз. */
+    val PASSAGE_ACTIVITY_JSON = stringPreferencesKey("passage_activity_json")
     /** Хронология: какие стихи открывались и сколько на них задерживались (порядок по времени). */
     val READING_TRACE_JSON = stringPreferencesKey("reading_trace_json")
     /** Сколько раз копировали каждый стих. */
@@ -1273,6 +1275,10 @@ class BiblePreferences(
         prefs[Keys.COVERAGE_LISTEN_VERSES] ?: emptySet()
     }
 
+    val passageActivity: Flow<String> = appContext.bibleDataStore.data.map { prefs ->
+        prefs[Keys.PASSAGE_ACTIVITY_JSON].orEmpty()
+    }
+
     /** Один раз переносит уже открытые главы из истории и журнала чтения. */
     suspend fun importCoverageFromHistoryIfNeeded() {
         appContext.bibleDataStore.edit { prefs ->
@@ -1317,28 +1323,82 @@ class BiblePreferences(
         if (verse <= 0) return
         appContext.bibleDataStore.edit { prefs ->
             val verses = (prefs[Keys.COVERAGE_READ_VERSES] ?: emptySet()).toMutableSet()
+            val already = BibleCoverage.versesInBook(verses, trackId, bookId)[chapter].orEmpty()
+            val now = System.currentTimeMillis()
             if (BibleCoverage.mergeVerseRecord(verses, trackId, bookId, chapter, listOf(verse))) {
                 prefs[Keys.COVERAGE_READ_VERSES] = verses
                 appendUsageEventLocked(
                     prefs,
                     AppUsageEvents.Event(
-                        timestamp = System.currentTimeMillis(),
+                        timestamp = now,
                         type = AppUsageEvents.TYPE_READ,
                         sectionId = "reading",
                         detail = "$trackId|$bookId|$chapter|$verse",
                     ),
                 )
             }
+            prefs[Keys.PASSAGE_ACTIVITY_JSON] = PassageActivity.bump(
+                json = prefs[Keys.PASSAGE_ACTIVITY_JSON].orEmpty(),
+                kind = PassageActivity.READ,
+                trackId = trackId,
+                bookId = bookId,
+                chapter = chapter,
+                verses = listOf(verse),
+                now = now,
+                alreadyMarked = already,
+            )
         }
     }
 
-    suspend fun markVersesListened(trackId: String, bookId: String, chapter: Int, verses: Collection<Int>) {
+    suspend fun markVersesListened(
+        trackId: String,
+        bookId: String,
+        chapter: Int,
+        verses: Collection<Int>,
+        countVisit: Boolean = false,
+    ) {
         if (verses.isEmpty()) return
         appContext.bibleDataStore.edit { prefs ->
             val marked = (prefs[Keys.COVERAGE_LISTEN_VERSES] ?: emptySet()).toMutableSet()
+            val already = BibleCoverage.versesInBook(marked, trackId, bookId)[chapter].orEmpty()
             if (BibleCoverage.mergeVerseRecord(marked, trackId, bookId, chapter, verses)) {
                 prefs[Keys.COVERAGE_LISTEN_VERSES] = marked
             }
+            if (countVisit) {
+                prefs[Keys.PASSAGE_ACTIVITY_JSON] = PassageActivity.bump(
+                    json = prefs[Keys.PASSAGE_ACTIVITY_JSON].orEmpty(),
+                    kind = PassageActivity.LISTEN,
+                    trackId = trackId,
+                    bookId = bookId,
+                    chapter = chapter,
+                    verses = verses,
+                    now = System.currentTimeMillis(),
+                    alreadyMarked = already,
+                )
+            }
+        }
+    }
+
+    /** Одно прослушивание: плюс один ко всем стихам сессии, без повторной отметки покрытия. */
+    suspend fun noteListenVisit(
+        trackId: String,
+        bookId: String,
+        chapter: Int,
+        verses: Collection<Int>,
+        alreadyMarked: Set<Int>,
+    ) {
+        if (verses.isEmpty()) return
+        appContext.bibleDataStore.edit { prefs ->
+            prefs[Keys.PASSAGE_ACTIVITY_JSON] = PassageActivity.bump(
+                json = prefs[Keys.PASSAGE_ACTIVITY_JSON].orEmpty(),
+                kind = PassageActivity.LISTEN,
+                trackId = trackId,
+                bookId = bookId,
+                chapter = chapter,
+                verses = verses,
+                now = System.currentTimeMillis(),
+                alreadyMarked = alreadyMarked,
+            )
         }
     }
 

@@ -359,6 +359,8 @@ data class ChapterListenProgress(
     val listenedMs: Long,
     val ranges: List<Pair<Long, Long>>,
     val durationMs: Int,
+    /** Пауза, смена главы или конец файла. Промежуточные отметки счётчик раз не увеличивают. */
+    val closed: Boolean = false,
 )
 
 data class BiblePlayerState(
@@ -728,7 +730,7 @@ object BibleAudioPlayer {
             }
             flushed
         }
-        if (pending != null) _listenProgress.tryEmit(pending)
+        if (pending != null) _listenProgress.tryEmit(pending.copy(closed = true))
     }
 
     private fun noteListenDiscontinuity(pos: Int) {
@@ -761,14 +763,14 @@ object BibleAudioPlayer {
             }
             snap
         }
-        if (pending != null) _listenProgress.tryEmit(pending)
+        if (pending != null) _listenProgress.tryEmit(pending.copy(closed = false))
     }
 
     /** Сохранить уже прослушанный кусок: пауза, уход с главы, конец файла. */
     fun flushListenProgress() {
         stopListenTick()
         val pending = synchronized(listenLock) { takeListenSnapshotLocked() }
-        if (pending != null) _listenProgress.tryEmit(pending)
+        if (pending != null) _listenProgress.tryEmit(pending.copy(closed = true))
     }
 
     private fun emitChapterStarted(st: BiblePlayerState) {

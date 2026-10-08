@@ -1,6 +1,7 @@
 package com.example.bible
 
 import com.example.bible.data.BibleCoverage
+import com.example.bible.data.PassageActivity
 import com.example.bible.data.TranslationId
 import com.example.bible.data.TimemarkCue
 import com.example.bible.data.versesHeardByEstimate
@@ -62,5 +63,38 @@ class VersesHeardTest {
         assertEquals(0, titus.listenedChapters)
         assertEquals(3, titus.listenedVerses)
         assertEquals(1, titus.listenedOpenChapters)
+    }
+
+    @Test
+    fun secondListen_countsAsTwoAndKeepsTheLastTime() {
+        val first = PassageActivity.bump(
+            json = "",
+            kind = PassageActivity.LISTEN,
+            trackId = "SYN",
+            bookId = "titus",
+            chapter = 1,
+            verses = listOf(3, 4),
+            now = 1_000L,
+        )
+        val second = PassageActivity.bump(
+            json = first,
+            kind = PassageActivity.LISTEN,
+            trackId = "SYN",
+            bookId = "titus",
+            chapter = 1,
+            verses = listOf(3, 4),
+            now = 5_000L,
+            alreadyMarked = setOf(3, 4),
+        )
+        val lines = PassageActivity.linesForBook(
+            json = second,
+            kind = PassageActivity.LISTEN,
+            trackId = "SYN",
+            bookId = "titus",
+            coveredVerses = mapOf(1 to setOf(3, 4)),
+        )
+        assertEquals(1, lines.size)
+        assertEquals(true, lines[0].contains("гл. 1, стихи 3–4"))
+        assertEquals(true, lines[0].contains("2 раза"))
     }
 }

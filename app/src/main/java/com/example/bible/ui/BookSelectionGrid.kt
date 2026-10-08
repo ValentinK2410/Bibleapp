@@ -4,6 +4,8 @@ import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.combinedClickable
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -16,6 +18,7 @@ import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.Spacer
@@ -70,6 +73,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.bible.data.BibleCanon
 import com.example.bible.data.BibleCoverage
 import com.example.bible.data.BiblePreferences
+import com.example.bible.data.PassageActivity
 import com.example.bible.data.CanonBookEntry
 import com.example.bible.data.CanonBookGroup
 import com.example.bible.data.TimemarkPresenceIndex
@@ -108,13 +112,20 @@ fun TimemarkTranslationsDialog(
     tabColors: Map<String, Int>,
     onDismiss: () -> Unit,
     subtitle: String? = null,
+    readLines: List<String> = emptyList(),
+    listenLines: List<String> = emptyList(),
 ) {
     val codes = remember(translationCodes) { orderedTimemarkTranslationCodes(translationCodes) }
     AlertDialog(
         onDismissRequest = onDismiss,
         title = { Text(title) },
         text = {
-            Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
+            Column(
+                modifier = Modifier
+                    .heightIn(max = 420.dp)
+                    .verticalScroll(rememberScrollState()),
+                verticalArrangement = Arrangement.spacedBy(10.dp),
+            ) {
                 if (!subtitle.isNullOrBlank()) {
                     Text(
                         subtitle,
@@ -150,12 +161,36 @@ fun TimemarkTranslationsDialog(
                         }
                     }
                 }
+                PassageVisitBlock(title = "Прочитано", lines = readLines, emptyText = "Ещё не читали")
+                PassageVisitBlock(title = "Прослушано", lines = listenLines, emptyText = "Ещё не слушали")
             }
         },
         confirmButton = {
             TextButton(onClick = onDismiss) { Text("ОК") }
         },
     )
+}
+
+@Composable
+private fun PassageVisitBlock(
+    title: String,
+    lines: List<String>,
+    emptyText: String,
+) {
+    Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
+        Text(title, style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.SemiBold)
+        if (lines.isEmpty()) {
+            Text(
+                emptyText,
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+        } else {
+            lines.forEach { line ->
+                Text(line, style = MaterialTheme.typography.bodyMedium)
+            }
+        }
+    }
 }
 
 @Composable
@@ -430,6 +465,10 @@ fun BookSelectionContent(
     booksWithAudio: Set<String> = emptySet(),
     coverageByBook: Map<String, BibleCoverage.BookTileCoverage> = emptyMap(),
     readProgressColor: Color? = null,
+    translation: TranslationId? = null,
+    passageActivity: String = "",
+    readVerseKeys: Set<String> = emptySet(),
+    listenVerseKeys: Set<String> = emptySet(),
     onBookClick: (String) -> Unit,
     onBookLongPress: (CanonBookEntry) -> Unit = {},
 ) {
@@ -439,6 +478,10 @@ fun BookSelectionContent(
             booksWithAudio = booksWithAudio,
             coverageByBook = coverageByBook,
             readProgressColor = readProgressColor,
+            translation = translation,
+            passageActivity = passageActivity,
+            readVerseKeys = readVerseKeys,
+            listenVerseKeys = listenVerseKeys,
             onBookClick = onBookClick,
             onBookLongPress = onBookLongPress,
         )
@@ -447,6 +490,10 @@ fun BookSelectionContent(
             booksWithAudio = booksWithAudio,
             coverageByBook = coverageByBook,
             readProgressColor = readProgressColor,
+            translation = translation,
+            passageActivity = passageActivity,
+            readVerseKeys = readVerseKeys,
+            listenVerseKeys = listenVerseKeys,
             onBookClick = onBookClick,
             onBookLongPress = onBookLongPress,
         )
@@ -459,6 +506,10 @@ fun BookSelectionGrid(
     booksWithAudio: Set<String> = emptySet(),
     coverageByBook: Map<String, BibleCoverage.BookTileCoverage> = emptyMap(),
     readProgressColor: Color? = null,
+    translation: TranslationId? = null,
+    passageActivity: String = "",
+    readVerseKeys: Set<String> = emptySet(),
+    listenVerseKeys: Set<String> = emptySet(),
     onBookClick: (String) -> Unit,
     onBookLongPress: (CanonBookEntry) -> Unit = {},
 ) {
@@ -509,6 +560,7 @@ fun BookSelectionGrid(
                             listenedChapters = coverageByBook[entry.id]?.listenedChapters ?: 0,
                             listenedVerses = coverageByBook[entry.id]?.listenedVerses ?: 0,
                             listenedOpenChapters = coverageByBook[entry.id]?.listenedOpenChapters ?: 0,
+                            listenRepeats = listenRepeatCount(passageActivity, translation, entry.id),
                             readProgressColor = readProgressColor,
                             timemarkCodes = presence.forBook(entry.id),
                             tabColors = tabColors,
@@ -525,11 +577,16 @@ fun BookSelectionGrid(
                 }
             }
             infoBook?.let { entry ->
+                val visits = remember(passageActivity, readVerseKeys, listenVerseKeys, translation, entry.id) {
+                    passageVisitLines(passageActivity, readVerseKeys, listenVerseKeys, translation, entry.id)
+                }
                 TimemarkTranslationsDialog(
                     title = entry.nameRu,
                     subtitle = entry.abbrRu,
                     translationCodes = presence.forBook(entry.id),
                     tabColors = tabColors,
+                    readLines = visits.first,
+                    listenLines = visits.second,
                     onDismiss = { infoBook = null },
                 )
             }
@@ -544,6 +601,10 @@ private fun BookSelectionList(
     booksWithAudio: Set<String> = emptySet(),
     coverageByBook: Map<String, BibleCoverage.BookTileCoverage> = emptyMap(),
     readProgressColor: Color? = null,
+    translation: TranslationId? = null,
+    passageActivity: String = "",
+    readVerseKeys: Set<String> = emptySet(),
+    listenVerseKeys: Set<String> = emptySet(),
     onBookClick: (String) -> Unit,
     onBookLongPress: (CanonBookEntry) -> Unit = {},
 ) {
@@ -652,15 +713,61 @@ private fun BookSelectionList(
         }
     }
         infoBook?.let { entry ->
+            val visits = remember(passageActivity, readVerseKeys, listenVerseKeys, translation, entry.id) {
+                passageVisitLines(passageActivity, readVerseKeys, listenVerseKeys, translation, entry.id)
+            }
             TimemarkTranslationsDialog(
                 title = entry.nameRu,
                 subtitle = entry.abbrRu,
                 translationCodes = presence.forBook(entry.id),
                 tabColors = tabColors,
+                readLines = visits.first,
+                listenLines = visits.second,
                 onDismiss = { infoBook = null },
             )
         }
     }
+}
+
+private fun listenRepeatCount(
+    activity: String,
+    translation: TranslationId?,
+    bookId: String,
+): Int {
+    if (translation == null || activity.isBlank()) return 0
+    return PassageActivity.maxCount(
+        activity,
+        PassageActivity.LISTEN,
+        BibleCoverage.listenTrackFor(translation, bookId),
+        bookId,
+    )
+}
+
+private fun passageVisitLines(
+    activity: String,
+    readKeys: Set<String>,
+    listenKeys: Set<String>,
+    translation: TranslationId?,
+    bookId: String,
+): Pair<List<String>, List<String>> {
+    if (translation == null) return emptyList<String>() to emptyList()
+    val readTrack = translation.code
+    val listenTrack = BibleCoverage.listenTrackFor(translation, bookId)
+    val read = PassageActivity.linesForBook(
+        activity,
+        PassageActivity.READ,
+        readTrack,
+        bookId,
+        BibleCoverage.versesInBook(readKeys, readTrack, bookId),
+    )
+    val listen = PassageActivity.linesForBook(
+        activity,
+        PassageActivity.LISTEN,
+        listenTrack,
+        bookId,
+        BibleCoverage.versesInBook(listenKeys, listenTrack, bookId),
+    )
+    return read to listen
 }
 
 @Composable
@@ -672,6 +779,7 @@ private fun CoverageMiniMarks(
     compact: Boolean = true,
     listenedVerses: Int = 0,
     listenedOpenChapters: Int = 0,
+    listenRepeats: Int = 0,
 ) {
     val readTint = readColor ?: MaterialTheme.colorScheme.primary
     val listenTint = MaterialTheme.colorScheme.tertiary
@@ -702,14 +810,26 @@ private fun CoverageMiniMarks(
             } else {
                 null
             },
-            caption = listenTileCaption(listened, chapters, listenedVerses, compact),
+            caption = listenTileCaption(listened, chapters, listenedVerses, compact, listenRepeats),
         )
     }
 }
 
-private fun listenTileCaption(chaptersDone: Int, chapters: Int, verses: Int, compact: Boolean): String? {
-    if (verses <= 0 || chapters <= 0 || chaptersDone >= chapters) return null
-    return if (compact) "${verses}ст" else "$chaptersDone/$chapters · ${verses}ст"
+private fun listenTileCaption(
+    chaptersDone: Int,
+    chapters: Int,
+    verses: Int,
+    compact: Boolean,
+    repeats: Int = 0,
+): String? {
+    val repeat = if (repeats > 1) "·${repeats}×" else ""
+    if (verses > 0 && chapters > 0 && chaptersDone < chapters) {
+        return if (compact) "${verses}ст$repeat" else "$chaptersDone/$chapters · ${verses}ст$repeat"
+    }
+    if (repeat.isNotEmpty() && chapters > 0 && chaptersDone >= chapters) {
+        return "${BibleCoverage.percent(chaptersDone, chapters)}$repeat"
+    }
+    return null
 }
 
 @Composable
@@ -771,6 +891,7 @@ private fun BookCell(
     listenedChapters: Int = 0,
     listenedVerses: Int = 0,
     listenedOpenChapters: Int = 0,
+    listenRepeats: Int = 0,
     readProgressColor: Color? = null,
     timemarkCodes: Set<String> = emptySet(),
     tabColors: Map<String, Int> = emptyMap(),
@@ -809,28 +930,17 @@ private fun BookCell(
             modifier = Modifier
                 .fillMaxWidth()
                 .background(tintBrush)
-                .padding(top = 6.dp, bottom = 4.dp, start = 4.dp, end = 4.dp),
+                .padding(top = 4.dp, bottom = 3.dp, start = 3.dp, end = 3.dp),
             horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.spacedBy(2.dp),
+            verticalArrangement = Arrangement.spacedBy(1.dp),
         ) {
             Text(
                 text = entry.abbrRu,
                 color = textColor,
-                fontSize = 15.sp,
-                lineHeight = 17.sp,
+                fontSize = 14.sp,
+                lineHeight = 16.sp,
                 fontFamily = FontFamily.SansSerif,
                 fontWeight = FontWeight.Bold,
-                textAlign = TextAlign.Center,
-                maxLines = 1,
-                overflow = TextOverflow.Ellipsis,
-            )
-            Text(
-                text = entry.nameRu,
-                color = textColor.copy(alpha = 0.78f),
-                fontSize = 9.sp,
-                lineHeight = 11.sp,
-                fontFamily = FontFamily.SansSerif,
-                fontWeight = FontWeight.Medium,
                 textAlign = TextAlign.Center,
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis,
@@ -840,13 +950,14 @@ private fun BookCell(
                 listened = listenedChapters,
                 listenedVerses = listenedVerses,
                 listenedOpenChapters = listenedOpenChapters,
+                listenRepeats = listenRepeats,
                 chapters = entry.chapters,
                 readColor = readProgressColor,
             )
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(14.dp),
+                    .height(11.dp),
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.Center,
             ) {
@@ -855,7 +966,7 @@ private fun BookCell(
                         Icons.Default.Headphones,
                         contentDescription = null,
                         tint = scheme.primary,
-                        modifier = Modifier.size(13.dp),
+                        modifier = Modifier.size(11.dp),
                     )
                     if (timemarkCodes.isNotEmpty()) Spacer(Modifier.width(4.dp))
                 }
