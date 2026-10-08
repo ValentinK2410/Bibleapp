@@ -37,6 +37,12 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.automirrored.filled.MenuBook
+import androidx.compose.material.icons.filled.GraphicEq
+import androidx.compose.material.icons.filled.Timer
+import androidx.compose.material3.SliderDefaults
+import androidx.compose.ui.text.font.FontFamily
+import androidx.compose.ui.unit.sp
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Image
 import androidx.compose.material.icons.filled.Pause
@@ -554,7 +560,7 @@ fun TimemarkEditorScreen(
     Scaffold(
         topBar = {
             CenterAlignedTopAppBar(
-                title = { Text(stringResource(R.string.timemark_editor_title)) },
+                title = {},
                 navigationIcon = {
                     IconButton(onClick = onBack) {
                         Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = null)
@@ -690,20 +696,31 @@ fun TimemarkEditorScreen(
                     .fillMaxWidth()
                     .verticalScroll(formScrollState),
             ) {
-                Text(
-                    stringResource(R.string.timemark_editor_hint),
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                val heroMarks = remember(cuesVersion) { cues.size }
+                TmHeroCard(
+                    title = title.ifBlank { "${canon?.abbrRu ?: bookId} $chapterNum" },
+                    subtitle = "${canon?.nameRu ?: bookId} · глава $chapterNum · ${translationPick.labelRu}",
+                    stats = listOf(
+                        "$heroMarks" to "меток",
+                        "${verses.size}" to "стихов",
+                        (if (audioPath.isNullOrBlank()) "нет" else "есть") to "аудио",
+                    ),
+                    hint = stringResource(R.string.timemark_editor_hint),
                 )
-                Spacer(Modifier.height(8.dp))
+                Spacer(Modifier.height(10.dp))
                 TimemarkLayoutCard(
                     layout = editorLayout,
                     resizeOn = resizeFields,
                     onResizeOn = { resizeFields = it },
                     onChange = { editorLayout.update(it) },
                 )
-                Spacer(Modifier.height(8.dp))
+                Spacer(Modifier.height(10.dp))
 
+                TmSectionCard(
+                    icon = Icons.Default.Tune,
+                    title = "Проект",
+                    gradient = TmProjectGradient,
+                ) {
                 ResizableTextSlot(
                     enabled = resizeFields,
                     size = editorLayout.sizeOf("title", editorLayout.widthFraction, editorLayout.fieldHeightDp),
@@ -764,14 +781,19 @@ fun TimemarkEditorScreen(
                 horizontalArrangement = Arrangement.spacedBy(8.dp),
                 verticalAlignment = Alignment.CenterVertically,
             ) {
-                Text(stringResource(R.string.timemark_chapter_label), style = MaterialTheme.typography.labelMedium)
+                Text(
+                    stringResource(R.string.timemark_chapter_label),
+                    style = MaterialTheme.typography.labelLarge,
+                    fontWeight = FontWeight.Bold,
+                )
                 val maxCh = canon?.chapters ?: 1
-                Row(horizontalArrangement = Arrangement.spacedBy(4.dp), modifier = Modifier.horizontalScroll(rememberScrollState())) {
+                Row(horizontalArrangement = Arrangement.spacedBy(6.dp), modifier = Modifier.horizontalScroll(rememberScrollState())) {
                     (1..maxCh).forEach { ch ->
-                        FilterChip(
+                        TmGradientPill(
+                            text = "$ch",
                             selected = chapterNum == ch,
+                            gradient = TmProjectGradient,
                             onClick = { chapterNum = ch },
-                            label = { Text("$ch") },
                         )
                     }
                 }
@@ -813,9 +835,14 @@ fun TimemarkEditorScreen(
                     }
                 }
             }
+                }
 
             Spacer(Modifier.height(12.dp))
-            Text(stringResource(R.string.timemark_audio_section), style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.Bold)
+            TmSectionCard(
+                icon = Icons.Default.GraphicEq,
+                title = stringResource(R.string.timemark_audio_section),
+                gradient = TmAudioGradient,
+            ) {
             val narrator = narratorForTranslation(translationPick, effectiveNarratorId)
             val downloaded = remember(bookId, chapterNum, narrator.id, effectiveNarratorId) {
                 localAudioFile(context, narrator.id, bookId, chapterNum)
@@ -825,29 +852,42 @@ fun TimemarkEditorScreen(
                 horizontalArrangement = Arrangement.spacedBy(8.dp),
                 verticalAlignment = Alignment.CenterVertically,
             ) {
-                Button(onClick = { audioPickLauncher.launch("audio/*") }) {
-                    Text(stringResource(R.string.timemark_pick_file))
-                }
+                TmGradientPill(
+                    text = stringResource(R.string.timemark_pick_file),
+                    selected = true,
+                    gradient = TmAudioGradient,
+                    onClick = { audioPickLauncher.launch("audio/*") },
+                )
                 if (downloaded.exists() && downloaded.length() > 1024) {
-                    TextButton(onClick = { audioPath = downloaded.absolutePath }) {
-                        Text(stringResource(R.string.timemark_downloaded_narration))
-                    }
+                    TmGradientPill(
+                        text = stringResource(R.string.timemark_downloaded_narration),
+                        selected = audioPath == downloaded.absolutePath,
+                        gradient = TmAudioGradient,
+                        onClick = { audioPath = downloaded.absolutePath },
+                    )
                 }
             }
             Text(
                 audioPath?.let { File(it).name } ?: stringResource(R.string.timemark_audio_not_chosen),
                 style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.primary,
+                fontWeight = FontWeight.SemiBold,
+                color = if (audioPath.isNullOrBlank()) MaterialTheme.colorScheme.onSurfaceVariant else TmAudioGradient.first(),
+                maxLines = 1,
             )
 
-            Spacer(Modifier.height(16.dp))
             Row(
-                modifier = Modifier.fillMaxWidth(),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clip(RoundedCornerShape(20.dp))
+                    .background(TmAudioGradient.first().copy(alpha = 0.07f))
+                    .padding(10.dp),
                 verticalAlignment = Alignment.CenterVertically,
             ) {
-                IconButton(
+                TmPlayButton(
+                    playing = isPlaying,
+                    enabled = player != null,
                     onClick = {
-                        val p = player ?: return@IconButton
+                        val p = player ?: return@TmPlayButton
                         if (p.isPlaying) {
                             p.pause()
                             isPlaying = false
@@ -856,14 +896,24 @@ fun TimemarkEditorScreen(
                             isPlaying = true
                         }
                     },
-                    enabled = player != null,
-                ) {
-                    Icon(
-                        if (isPlaying) Icons.Default.Pause else Icons.Default.PlayArrow,
-                        contentDescription = null,
-                    )
-                }
+                )
+                Spacer(Modifier.width(12.dp))
                 Column(Modifier.weight(1f)) {
+                    Row(verticalAlignment = Alignment.Bottom) {
+                        Text(
+                            formatMs(positionMs),
+                            fontWeight = FontWeight.ExtraBold,
+                            fontSize = 22.sp,
+                            fontFamily = FontFamily.Monospace,
+                        )
+                        Text(
+                            " / ${formatMs(durationMs)}",
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            fontFamily = FontFamily.Monospace,
+                            fontSize = 14.sp,
+                            modifier = Modifier.padding(bottom = 2.dp),
+                        )
+                    }
                     if (durationMs > 0) {
                         Slider(
                             value = positionMs.toFloat(),
@@ -872,15 +922,16 @@ fun TimemarkEditorScreen(
                                 positionMs = v.toLong()
                             },
                             valueRange = 0f..durationMs.toFloat(),
+                            colors = SliderDefaults.colors(
+                                thumbColor = TmAudioGradient.last(),
+                                activeTrackColor = TmAudioGradient.first(),
+                                inactiveTrackColor = TmAudioGradient.first().copy(alpha = 0.18f),
+                            ),
                         )
                     }
-                    Text(
-                        "${formatMs(positionMs)} / ${formatMs(durationMs)}",
-                        style = MaterialTheme.typography.labelSmall,
-                    )
                 }
             }
-            Text("Скорость озвучки", style = MaterialTheme.typography.labelMedium)
+            Text("Скорость озвучки", style = MaterialTheme.typography.labelLarge, fontWeight = FontWeight.Bold)
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -888,8 +939,10 @@ fun TimemarkEditorScreen(
                 horizontalArrangement = Arrangement.spacedBy(6.dp),
             ) {
                 speedChoices.forEach { speed ->
-                    FilterChip(
+                    TmGradientPill(
+                        text = if (speed % 1f == 0f) "${speed.toInt()}×" else "${speed}×",
                         selected = playbackSpeed == speed,
+                        gradient = TmAudioGradient,
                         onClick = {
                             playbackSpeed = speed
                             context.getSharedPreferences(
@@ -898,32 +951,54 @@ fun TimemarkEditorScreen(
                             ).edit().putFloat("speed", speed).apply()
                             player?.let { applyPlaybackSpeed(it, speed) }
                         },
-                        label = {
-                            Text(if (speed % 1f == 0f) "${speed.toInt()}×" else "${speed}×")
-                        },
                     )
                 }
             }
+            }
 
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(4.dp),
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(top = 6.dp),
             ) {
                 TextButton(onClick = { showDeleteChapterDialog = true }) {
-                    Text(stringResource(R.string.timemark_delete_chapter), style = MaterialTheme.typography.labelMedium)
+                    Icon(Icons.Default.Delete, null, modifier = Modifier.size(16.dp), tint = MaterialTheme.colorScheme.error)
+                    Spacer(Modifier.width(4.dp))
+                    Text(
+                        stringResource(R.string.timemark_delete_chapter),
+                        style = MaterialTheme.typography.labelMedium,
+                        color = MaterialTheme.colorScheme.error,
+                    )
                 }
                 TextButton(onClick = { showDeleteBookDialog = true }) {
-                    Text(stringResource(R.string.timemark_delete_book), style = MaterialTheme.typography.labelMedium)
+                    Icon(Icons.Default.Delete, null, modifier = Modifier.size(16.dp), tint = MaterialTheme.colorScheme.error)
+                    Spacer(Modifier.width(4.dp))
+                    Text(
+                        stringResource(R.string.timemark_delete_book),
+                        style = MaterialTheme.typography.labelMedium,
+                        color = MaterialTheme.colorScheme.error,
+                    )
                 }
             }
             }
 
-            Spacer(Modifier.height(8.dp))
-            Text(
-                stringResource(R.string.timemark_verses_section_title),
-                style = MaterialTheme.typography.titleSmall,
-                fontWeight = FontWeight.Bold,
-            )
+            Spacer(Modifier.height(10.dp))
+            val markedVerses = remember(cuesVersion) { cues.map { it.verseStart }.toSet() }
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                TmIconBadge(Icons.AutoMirrored.Filled.MenuBook, TmVersesGradient, size = 30)
+                Spacer(Modifier.width(10.dp))
+                Text(
+                    stringResource(R.string.timemark_verses_section_title),
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.ExtraBold,
+                    modifier = Modifier.weight(1f),
+                )
+                Text(
+                    "${markedVerses.size}/${verses.size}",
+                    color = TmVersesGradient.first(),
+                    fontWeight = FontWeight.ExtraBold,
+                )
+            }
             if (verses.isEmpty()) {
                 Text(
                     stringResource(R.string.timemark_no_text_for_book),
@@ -936,35 +1011,17 @@ fun TimemarkEditorScreen(
                         .height(versesPaneHeight)
                         .fillMaxWidth()
                         .padding(top = 8.dp),
-                    verticalArrangement = Arrangement.spacedBy(4.dp),
+                    verticalArrangement = Arrangement.spacedBy(6.dp),
                 ) {
                     items(verses, key = { it.number }) { verse ->
-                        val bg = if (selectedVerse == verse.number) {
-                            MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.45f)
-                        } else {
-                            MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.35f)
-                        }
-                        Row(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .clip(RoundedCornerShape(8.dp))
-                                .background(bg)
-                                .clickable { addMarkCue(verse.number) }
-                                .padding(horizontal = 10.dp, vertical = 8.dp),
-                            horizontalArrangement = Arrangement.spacedBy(8.dp),
-                        ) {
-                            Text(
-                                "${verse.number}",
-                                style = MaterialTheme.typography.labelSmall,
-                                color = MaterialTheme.colorScheme.primary,
-                                fontWeight = FontWeight.Bold,
-                            )
-                            Text(
-                                verse.text,
-                                style = fieldText,
-                                modifier = Modifier.weight(1f),
-                            )
-                        }
+                        TmVerseRow(
+                            number = verse.number,
+                            text = verse.text,
+                            selected = selectedVerse == verse.number,
+                            marked = verse.number in markedVerses,
+                            textStyle = fieldText,
+                            onClick = { addMarkCue(verse.number) },
+                        )
                     }
                 }
                 TimemarkVersesHeightSplitter(
@@ -1014,9 +1071,20 @@ fun TimemarkEditorScreen(
             }
 
             Spacer(Modifier.height(8.dp))
-            Text(stringResource(R.string.timemark_marks_hint), style = MaterialTheme.typography.labelSmall)
-
             val sortedCues = remember(cuesVersion) { cues.sortedBy { it.timeMs } }
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                TmIconBadge(Icons.Default.Timer, TmMarksGradient, size = 30)
+                Spacer(Modifier.width(10.dp))
+                Column(Modifier.weight(1f)) {
+                    Text("Метки", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.ExtraBold)
+                    Text(
+                        stringResource(R.string.timemark_marks_hint),
+                        style = MaterialTheme.typography.labelSmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                }
+                Text("${sortedCues.size}", color = TmMarksGradient.first(), fontWeight = FontWeight.Black, fontSize = 20.sp)
+            }
             LazyColumn(
                 modifier = Modifier
                     .weight(1f)
@@ -1024,39 +1092,20 @@ fun TimemarkEditorScreen(
             ) {
                 items(sortedCues.size, key = { i -> "${sortedCues[i].timeMs}-${sortedCues[i].verseStart}-$i" }) { idx ->
                     val cue = sortedCues[idx]
-                    Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(vertical = 4.dp),
-                        horizontalArrangement = Arrangement.SpaceBetween,
-                        verticalAlignment = Alignment.CenterVertically,
-                    ) {
-                        Column(Modifier.weight(1f)) {
-                            Text(
-                                "${formatMs(cue.timeMs)} — ст. ${cue.verseStart}${cue.note?.let { ": $it" } ?: ""}",
-                                style = MaterialTheme.typography.bodySmall,
-                            )
-                            if (cue.attachments.isNotEmpty()) {
-                                Text(
-                                    cue.attachments.joinToString {
-                                        if (it.kind == "image") {
-                                            context.getString(R.string.timemark_attachment_image)
-                                        } else {
-                                            context.getString(R.string.timemark_attachment_text)
-                                        }
-                                    },
-                                    style = MaterialTheme.typography.labelSmall,
-                                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                                )
-                            }
-                        }
-                        IconButton(onClick = {
+                    TmCueRow(
+                        time = formatMs(cue.timeMs),
+                        verse = cue.verseStart,
+                        note = cue.note,
+                        attachments = cue.attachments
+                            .filter { it.kind != "image" }
+                            .takeIf { it.isNotEmpty() }
+                            ?.joinToString { context.getString(R.string.timemark_attachment_text) },
+                        hasImage = cue.attachments.any { it.kind == "image" },
+                        onDelete = {
                             cues.remove(cue)
                             refreshCues()
-                        }) {
-                            Icon(Icons.Default.Delete, contentDescription = stringResource(R.string.timemark_delete_cd))
-                        }
-                    }
+                        },
+                    )
                 }
             }
             }
