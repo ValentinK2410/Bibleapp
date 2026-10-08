@@ -1264,6 +1264,12 @@
     <string name="gita_search_intro">Введите текст на русском. Ищутся перевод, транслитерация и санскрит.</string>
     <string name="gita_search_empty">Ничего не найдено</string>
     <string name="gita_search_cd">Поиск по тексту</string>
+    <string name="gita_download_audio">Скачать озвучку</string>
+    <string name="gita_download_audio_progress">Скачано %1$d из %2$d</string>
+    <string name="gita_download_audio_done">Озвучка скачана</string>
+    <string name="gita_download_audio_failed">Не удалось скачать озвучку. Проверьте интернет.</string>
+    <string name="gita_play_audio">Слушать главу</string>
+    <string name="gita_stop_audio">Остановить</string>
     <string name="other_books_quran_card_title">Коран</string>
     <string name="other_books_quran_card_subtitle">Арабский текст, кириллическая транслитерация, смысловой перевод по Э. Кулиеву</string>
     <string name="other_books_reader_settings_title">Настройки чтения (Коран)</string>
