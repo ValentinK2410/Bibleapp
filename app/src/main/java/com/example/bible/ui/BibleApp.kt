@@ -4930,6 +4930,7 @@ internal fun ChapterGrid(
     verseCounts: Map<Int, Int> = emptyMap(),
     readChapters: Set<Int> = emptySet(),
     listenedChapters: Set<Int> = emptySet(),
+    listenedVerseCounts: Map<Int, Int> = emptyMap(),
     onChapterClick: (Int) -> Unit,
 ) {
     val presence = rememberTimemarkPresenceIndex()
@@ -4947,10 +4948,27 @@ internal fun ChapterGrid(
             verticalArrangement = Arrangement.spacedBy(6.dp),
         ) {
             item(key = "chapter_progress", span = { GridItemSpan(maxLineSpan) }) {
+                val listenedVerseTotal = listenedVerseCounts.values.sum()
+                val listenFraction = if (book.chapters.isEmpty()) {
+                    0f
+                } else {
+                    book.chapters.sumOf { chapter ->
+                        val heard = listenedVerseCounts[chapter.number] ?: 0
+                        val verses = verseCounts[chapter.number] ?: chapter.verses.size
+                        when {
+                            chapter.number in listenedChapters -> 1.0
+                            verses > 0 -> (heard.toDouble() / verses).coerceIn(0.0, 1.0)
+                            heard > 0 -> 0.15
+                            else -> 0.0
+                        }
+                    }.toFloat() / book.chapters.size
+                }
                 ChapterCoverageBanner(
                     read = readChapters.size,
                     listened = listenedChapters.size,
                     total = book.chapters.size,
+                    listenedVerseCount = listenedVerseTotal,
+                    listenFraction = listenFraction,
                     readColor = translation?.let { coverageMarkColor(it.code, tabColors) }
                         ?: scheme.primary,
                     listenColor = scheme.tertiary,
@@ -4960,6 +4978,8 @@ internal fun ChapterGrid(
                 val hasAudio = chapter.number in chaptersWithAudio
                 val isRead = chapter.number in readChapters
                 val isListened = chapter.number in listenedChapters
+                val heardVerses = listenedVerseCounts[chapter.number] ?: 0
+                val partialListen = heardVerses > 0 && !isListened
                 val chapterCodes = presence.forChapter(bookId, chapter.number)
                 val verseCount = verseCounts[chapter.number] ?: chapter.verses.size
                 Surface(
@@ -4971,11 +4991,11 @@ internal fun ChapterGrid(
                             onLongClick = { infoChapter = chapter.number },
                         )
                         .border(
-                            width = if (isRead || isListened) 1.5.dp else 1.dp,
+                            width = if (isRead || isListened || partialListen) 1.5.dp else 1.dp,
                             color = when {
-                                isRead && isListened -> accent.copy(alpha = 0.85f)
+                                isRead && (isListened || partialListen) -> accent.copy(alpha = 0.85f)
                                 isRead -> scheme.primary.copy(alpha = 0.7f)
-                                isListened -> scheme.tertiary.copy(alpha = 0.75f)
+                                isListened || partialListen -> scheme.tertiary.copy(alpha = 0.75f)
                                 else -> accent.copy(alpha = 0.22f)
                             },
                             shape = shape,
@@ -5008,9 +5028,13 @@ internal fun ChapterGrid(
                             fontWeight = FontWeight.Bold,
                         )
                         Text(
-                            text = if (verseCount > 0) "$verseCount ст." else "—",
+                            text = when {
+                                partialListen && verseCount > 0 -> "$heardVerses/$verseCount"
+                                verseCount > 0 -> "$verseCount ст."
+                                else -> "—"
+                            },
                             style = MaterialTheme.typography.labelSmall,
-                            color = scheme.onSurfaceVariant,
+                            color = if (partialListen || isListened) scheme.tertiary else scheme.onSurfaceVariant,
                             maxLines = 1,
                         )
                         Spacer(Modifier.weight(1f))
@@ -5029,10 +5053,10 @@ internal fun ChapterGrid(
                                     modifier = Modifier.size(12.dp),
                                 )
                             }
-                            if (isListened) {
+                            if (isListened || partialListen) {
                                 Icon(
                                     Icons.Filled.GraphicEq,
-                                    contentDescription = "Прослушана",
+                                    contentDescription = if (isListened) "Прослушана" else "Слушал $heardVerses ст.",
                                     tint = scheme.tertiary,
                                     modifier = Modifier.size(12.dp),
                                 )
@@ -5074,9 +5098,20 @@ private fun ChapterCoverageBanner(
     total: Int,
     readColor: Color,
     listenColor: Color,
+    listenedVerseCount: Int = 0,
+    listenFraction: Float = 0f,
 ) {
     val readPct = BibleCoverage.percent(read, total)
-    val listenPct = BibleCoverage.percent(listened, total)
+    val listenPct = if (listenedVerseCount > 0) {
+        (listenFraction.coerceIn(0f, 1f) * 100).toInt().coerceIn(0, 100)
+    } else {
+        BibleCoverage.percent(listened, total)
+    }
+    val listenTrailing = if (listenedVerseCount > 0 && listened < total) {
+        "$listened из $total · $listenedVerseCount ст."
+    } else {
+        null
+    }
     val scheme = MaterialTheme.colorScheme
     val shape = RoundedCornerShape(16.dp)
     val caption = when {
@@ -5110,6 +5145,8 @@ private fun ChapterCoverageBanner(
             total = total,
             percent = listenPct,
             color = listenColor,
+            fraction = if (listenedVerseCount > 0) listenFraction else null,
+            trailing = listenTrailing,
         )
         if (caption != null) {
             Text(
@@ -5130,7 +5167,11 @@ private fun ChapterCoverageMeter(
     total: Int,
     percent: Int,
     color: Color,
+    fraction: Float? = null,
+    trailing: String? = null,
 ) {
+    val progress = fraction?.coerceIn(0f, 1f)
+        ?: if (total <= 0) 0f else done.coerceAtLeast(0).toFloat() / total
     Row(verticalAlignment = Alignment.CenterVertically) {
         Icon(icon, contentDescription = null, tint = color, modifier = Modifier.size(16.dp))
         Spacer(Modifier.width(8.dp))
@@ -5144,14 +5185,14 @@ private fun ChapterCoverageMeter(
                     modifier = Modifier.weight(1f),
                 )
                 Text(
-                    text = "$done из $total · $percent%",
+                    text = trailing ?: "$done из $total · $percent%",
                     color = if (percent == 100) color else MaterialTheme.colorScheme.onSurfaceVariant,
                     fontSize = 12.sp,
                     fontWeight = if (percent == 100) FontWeight.Bold else FontWeight.Medium,
                 )
             }
             LinearProgressIndicator(
-                progress = { if (total <= 0) 0f else done.coerceAtLeast(0).toFloat() / total },
+                progress = { progress },
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(6.dp)
@@ -6690,6 +6731,7 @@ private fun ChaptersRouteContent(
                     translation = translation,
                     bookId = bookId,
                 )
+                val listenedVerseCounts = rememberListenedVerseCounts(viewModel, translation, bookId)
                 ChapterGrid(
                     modifier = Modifier.fillMaxSize(),
                     book = book,
@@ -6699,6 +6741,7 @@ private fun ChaptersRouteContent(
                     verseCounts = verseCounts,
                     readChapters = readChapters,
                     listenedChapters = listenedChapters,
+                    listenedVerseCounts = listenedVerseCounts,
                     onChapterClick = { chapter ->
                         navController.navigate("verses/$bookId/$chapter")
                     },

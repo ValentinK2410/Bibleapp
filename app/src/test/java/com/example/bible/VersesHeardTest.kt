@@ -1,5 +1,6 @@
 package com.example.bible
 
+import com.example.bible.data.BibleCoverage
 import com.example.bible.data.TimemarkCue
 import com.example.bible.data.versesHeardByEstimate
 import com.example.bible.data.versesHeardInRanges
@@ -39,5 +40,11 @@ class VersesHeardTest {
             ranges = listOf(0L to 10_000L),
         )
         assertEquals(listOf(1), heard)
+    }
+
+    @Test
+    fun partialChapter_countsVersesForTheBookGrid() {
+        val keys = setOf("SYN|titus|1|3-5")
+        assertEquals(mapOf(1 to 3), BibleCoverage.listenedVersesByChapter(keys, "SYN", "titus"))
     }
 }

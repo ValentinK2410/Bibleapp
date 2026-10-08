@@ -169,6 +169,24 @@ object BibleCoverage {
         }
     }
 
+    /** Сколько стихов прослушано в каждой главе книги на одной дорожке. */
+    fun listenedVersesByChapter(keys: Set<String>, trackId: String, bookId: String): Map<Int, Int> {
+        if (keys.isEmpty() || trackId.isBlank() || bookId.isBlank()) return emptyMap()
+        val prefix = "$trackId|$bookId|"
+        val counts = HashMap<Int, Int>()
+        for (key in keys) {
+            if (!key.startsWith(prefix)) continue
+            val rest = key.substring(prefix.length)
+            val bar = rest.indexOf('|')
+            if (bar <= 0) continue
+            val chapter = rest.substring(0, bar).toIntOrNull() ?: continue
+            val verses = decodeVerseSpans(rest.substring(bar + 1))
+            if (verses.isEmpty()) continue
+            counts[chapter] = (counts[chapter] ?: 0) + verses.size
+        }
+        return counts
+    }
+
     private fun versesByTrack(keys: Set<String>, bookId: String, chapter: Int): Map<String, Set<Int>> {
         if (keys.isEmpty()) return emptyMap()
         val needle = "|$bookId|$chapter|"

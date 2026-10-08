@@ -79,6 +79,7 @@ internal fun BiblePassagePickerChapterStep(
             translation = translation,
             bookId = bookId,
         )
+        val listenedVerseCounts = rememberListenedVerseCounts(viewModel, translation, bookId)
         ChapterGrid(
             modifier = modifier.fillMaxSize(),
             book = book,
@@ -88,6 +89,7 @@ internal fun BiblePassagePickerChapterStep(
             verseCounts = verseCounts,
             readChapters = readChapters,
             listenedChapters = listenedChapters,
+            listenedVerseCounts = listenedVerseCounts,
             onChapterClick = onChapterSelected,
         )
     }
@@ -264,6 +266,20 @@ internal fun rememberPassageCoverageChapters(
         BibleCoverage.chaptersMarked(listenKeys, listenTrack, bookId)
     }
     return readChapters to listenedChapters
+}
+
+/** Сколько стихов уже прослушано в каждой главе этой книги. */
+@Composable
+internal fun rememberListenedVerseCounts(
+    viewModel: BibleViewModel,
+    translation: TranslationId,
+    bookId: String,
+): Map<Int, Int> {
+    val listenKeys by viewModel.coverageListenVerses.collectAsStateWithLifecycle()
+    val listenTrack = BibleCoverage.listenTrackFor(translation, bookId)
+    return remember(listenKeys, listenTrack, bookId) {
+        BibleCoverage.listenedVersesByChapter(listenKeys, listenTrack, bookId)
+    }
 }
 
 @Composable

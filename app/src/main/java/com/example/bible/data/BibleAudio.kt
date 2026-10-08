@@ -458,6 +458,7 @@ object BibleAudioPlayer {
                 player?.let { noteListenPosition(it.currentPosition) }
             } catch (_: Exception) {
             }
+            checkpointListenProgress()
             if (_state.value.isPlaying) {
                 mainHandler.postDelayed(this, 500)
             }
@@ -740,6 +741,29 @@ object BibleAudioPlayer {
         }
     }
 
+    /**
+     * Пока глава играет, раз в несколько секунд отдаём уже прослушанный кусок,
+     * чтобы стихи появились в сетке книги до паузы.
+     */
+    private fun checkpointListenProgress() {
+        val pos = runCatching { player?.currentPosition }.getOrNull() ?: return
+        val pending = synchronized(listenLock) {
+            if (listenAccumulatedMs < 5_000L) return
+            val snap = takeListenSnapshotLocked()
+            val st = _state.value
+            if (st.bookId.isNotBlank() && st.chapter > 0 && st.narratorId.isNotBlank()) {
+                listenBook = st.bookId
+                listenChapter = st.chapter
+                listenNarrator = st.narratorId
+                if (st.durationMs > 0) listenDurationMs = st.durationMs
+                listenLastPos = pos
+                listenRangeStart = pos.toLong()
+            }
+            snap
+        }
+        if (pending != null) _listenProgress.tryEmit(pending)
+    }
+
     /** Сохранить уже прослушанный кусок: пауза, уход с главы, конец файла. */
     fun flushListenProgress() {
         stopListenTick()
@@ -784,6 +808,9 @@ object BibleAudioPlayer {
         bookId: String,
         chapter: Int,
         startPositionMs: Int? = null,
+        /** Если точной метки нет, после подготовки файла встать на этот стих. */
+        startVerse: Int = 0,
+        chapterVerseCount: Int = 0,
         stopAtPositionMs: Int? = null,
         /** true после [applySegmentStop] — не сбрасывать сегмент при перезапуске MediaPlayer */
         preserveSegmentStop: Boolean = false,
@@ -803,11 +830,13 @@ object BibleAudioPlayer {
         if (key == currentKey && player != null) {
             appContext = context.applicationContext
             try {
-                val seekMs = startPositionMs?.coerceAtLeast(0)
-                if (seekMs != null) {
-                    noteListenDiscontinuity(seekMs)
-                    player!!.seekTo(seekMs)
-                    _state.value = _state.value.copy(positionMs = seekMs)
+                val seekMs = startPositionMs
+                    ?: estimatedPlaybackStartMs(startVerse, chapterVerseCount, _state.value.durationMs)
+                if (seekMs != null && (startPositionMs != null || startVerse > 1)) {
+                    val at = seekMs.coerceAtLeast(0)
+                    noteListenDiscontinuity(at)
+                    player!!.seekTo(at)
+                    _state.value = _state.value.copy(positionMs = at)
                 }
                 applyPlaybackSpeed(player!!)
                 player!!.start()
@@ -874,7 +903,13 @@ object BibleAudioPlayer {
                     return@setOnPreparedListener
                 }
                 applyPlaybackSpeed(prepared)
-                val seekMs = startPositionMs?.coerceIn(0, prepared.duration.coerceAtLeast(0)) ?: 0
+                val duration = prepared.duration.coerceAtLeast(0)
+                val estimated = if (startPositionMs == null && startVerse > 1) {
+                    estimatedPlaybackStartMs(startVerse, chapterVerseCount, duration)
+                } else {
+                    null
+                }
+                val seekMs = (startPositionMs ?: estimated)?.coerceIn(0, duration) ?: 0
                 if (seekMs > 0) {
                     prepared.seekTo(seekMs)
                 }

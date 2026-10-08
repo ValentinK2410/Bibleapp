@@ -142,6 +142,8 @@ fun playReaderChapterAudio(
             bookId,
             chapter,
             startPositionMs = startMs,
+            startVerse = visibleVerse,
+            chapterVerseCount = chapterVerseCount,
             preserveSegmentStop = preserveSegmentStop,
         )
         return
@@ -149,8 +151,9 @@ fun playReaderChapterAudio(
     when {
         isThisChapter && st.isPlaying -> BibleAudioPlayer.togglePlay()
         isThisChapter -> {
-            if (startMs != null) {
-                BibleAudioPlayer.seekTo(startMs)
+            val seek = startMs ?: estimatedPlaybackStartMs(visibleVerse, chapterVerseCount, st.durationMs)
+            if (seek != null && visibleVerse > 1) {
+                BibleAudioPlayer.seekTo(seek)
             }
             BibleAudioPlayer.togglePlay()
         }
@@ -160,6 +163,8 @@ fun playReaderChapterAudio(
             bookId,
             chapter,
             startPositionMs = startMs,
+            startVerse = visibleVerse,
+            chapterVerseCount = chapterVerseCount,
             preserveSegmentStop = preserveSegmentStop,
         )
     }
