@@ -2,6 +2,8 @@ package com.example.bible.ui
 
 import android.content.Intent
 import android.media.MediaPlayer
+import android.media.PlaybackParams
+import android.os.Build
 import android.net.Uri
 import android.util.Log
 import android.widget.Toast
@@ -68,6 +70,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.runtime.mutableStateListOf
@@ -203,6 +206,26 @@ fun TimemarkEditorScreen(
     var positionMs by remember { mutableLongStateOf(0L) }
     var durationMs by remember { mutableLongStateOf(0L) }
     var isPlaying by remember { mutableStateOf(false) }
+    var playbackSpeed by remember {
+        val saved = context.getSharedPreferences("timemark_editor_layout", android.content.Context.MODE_PRIVATE)
+            .getFloat("speed", 1f)
+        mutableFloatStateOf(saved)
+    }
+    val speedChoices = listOf(1f, 1.25f, 1.5f, 2f, 2.5f, 3f)
+
+    fun applyPlaybackSpeed(mp: MediaPlayer, speed: Float) {
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.M) return
+        val playing = try {
+            mp.isPlaying
+        } catch (_: Exception) {
+            false
+        }
+        try {
+            mp.playbackParams = PlaybackParams().setSpeed(speed)
+            if (!playing && mp.isPlaying) mp.pause()
+        } catch (_: Exception) {
+        }
+    }
 
     val canon = BibleCanon.byId(bookId)
     val chapterLoad = rememberLoadedChapter(library, translationPick, bookId, chapterNum)
@@ -328,6 +351,7 @@ fun TimemarkEditorScreen(
                 player = mp
                 durationMs = mp.duration.toLong()
                 positionMs = 0L
+                applyPlaybackSpeed(mp, playbackSpeed)
                 prepared = true
             } catch (e: Exception) {
                 Log.e(TAG, "prepare", e)
@@ -845,6 +869,30 @@ fun TimemarkEditorScreen(
                     Text(
                         "${formatMs(positionMs)} / ${formatMs(durationMs)}",
                         style = MaterialTheme.typography.labelSmall,
+                    )
+                }
+            }
+            Text("Скорость озвучки", style = MaterialTheme.typography.labelMedium)
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .horizontalScroll(rememberScrollState()),
+                horizontalArrangement = Arrangement.spacedBy(6.dp),
+            ) {
+                speedChoices.forEach { speed ->
+                    FilterChip(
+                        selected = playbackSpeed == speed,
+                        onClick = {
+                            playbackSpeed = speed
+                            context.getSharedPreferences(
+                                "timemark_editor_layout",
+                                android.content.Context.MODE_PRIVATE,
+                            ).edit().putFloat("speed", speed).apply()
+                            player?.let { applyPlaybackSpeed(it, speed) }
+                        },
+                        label = {
+                            Text(if (speed % 1f == 0f) "${speed.toInt()}×" else "${speed}×")
+                        },
                     )
                 }
             }

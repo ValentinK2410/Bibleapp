@@ -1038,6 +1038,16 @@ class BibleViewModel(
             preferences.importVerseCoverageFromHistoryIfNeeded()
         }
         viewModelScope.launch {
+            BibleAudioPlayer.chapterStarted.collect { started ->
+                val track = BibleCoverage.trackForNarrator(started.narratorId) ?: started.narratorId
+                preferences.recordUsageEvent(
+                    AppUsageEvents.TYPE_LISTEN,
+                    "reading",
+                    "start|$track|${started.bookId}|${started.chapter}",
+                )
+            }
+        }
+        viewModelScope.launch {
             BibleAudioPlayer.chapterFinished.collect { finished ->
                 val track = BibleCoverage.trackForNarrator(finished.narratorId) ?: return@collect
                 preferences.markChapterListened(track, finished.bookId, finished.chapter)

@@ -423,6 +423,10 @@ object BibleAudioPlayer {
     /** Глава доиграла до конца или до неё осталось меньше 10%, и включили другую. */
     val chapterFinished: SharedFlow<ChapterAudioFinished> = _chapterFinished.asSharedFlow()
 
+    private val _chapterStarted = MutableSharedFlow<ChapterAudioFinished>(extraBufferCapacity = 16)
+    /** Озвучка главы запущена — пишется в статистику, даже если главу не дослушали. */
+    val chapterStarted: SharedFlow<ChapterAudioFinished> = _chapterStarted.asSharedFlow()
+
     private val _playbackSpeed = MutableStateFlow(1f)
     val playbackSpeed: StateFlow<Float> = _playbackSpeed.asStateFlow()
 
@@ -604,6 +608,17 @@ object BibleAudioPlayer {
         }
     }
 
+    private fun emitChapterStarted(st: BiblePlayerState) {
+        if (st.bookId.isBlank() || st.narratorId.isBlank() || st.chapter <= 0) return
+        _chapterStarted.tryEmit(
+            ChapterAudioFinished(
+                narratorId = st.narratorId,
+                bookId = st.bookId,
+                chapter = st.chapter,
+            ),
+        )
+    }
+
     private fun emitChapterFinished(st: BiblePlayerState) {
         if (st.bookId.isBlank() || st.narratorId.isBlank() || st.chapter <= 0) return
         _chapterFinished.tryEmit(
@@ -723,6 +738,7 @@ object BibleAudioPlayer {
                     prepared.seekTo(seekMs)
                 }
                 prepared.start()
+                emitChapterStarted(_state.value)
                 _state.value = _state.value.copy(
                     isPlaying = true,
                     isLoading = false,
