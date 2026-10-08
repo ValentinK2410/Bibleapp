@@ -574,63 +574,77 @@ private fun seedScheme(
     val p = Color(primary)
     val s = Color(secondary)
     val t = Color(tertiary)
-    val bg = Color(background)
-    val sf = Color(surface)
-    val on = Color(ink)
+    val bg = Color(background).opaque()
+    val sf = Color(surface).opaque()
+    val on = Color(ink).opaque()
     return if (dark) {
         darkColorScheme(
-            primary = p,
+            primary = p.opaque(),
             onPrimary = Color(0xFF1A1020),
-            primaryContainer = p.copy(alpha = 0.28f),
+            primaryContainer = p.over(bg),
             onPrimaryContainer = on,
-            secondary = s,
+            secondary = s.opaque(),
             onSecondary = on,
-            secondaryContainer = s.copy(alpha = 0.45f),
-            tertiary = t,
+            secondaryContainer = s.over(bg),
+            tertiary = t.opaque(),
             onTertiary = Color(0xFF1A1020),
-            tertiaryContainer = t.copy(alpha = 0.28f),
+            tertiaryContainer = t.over(bg),
             background = bg,
             onBackground = on,
             surface = sf,
             onSurface = on,
-            surfaceVariant = sf.copy(alpha = 0.92f),
-            onSurfaceVariant = on.copy(alpha = 0.78f),
-            outline = p.copy(alpha = 0.55f),
-            outlineVariant = on.copy(alpha = 0.2f),
+            surfaceVariant = p.over(sf),
+            onSurfaceVariant = on,
+            outline = p.over(sf),
+            outlineVariant = on.over(sf),
             surfaceContainerLowest = bg,
             surfaceContainerLow = sf,
-            surfaceContainer = sf,
-            surfaceContainerHigh = p.copy(alpha = 0.16f),
-            surfaceContainerHighest = p.copy(alpha = 0.24f),
+            surfaceContainer = p.over(sf),
+            surfaceContainerHigh = p.over(sf),
+            surfaceContainerHighest = t.over(sf),
         )
     } else {
         lightColorScheme(
-            primary = p,
+            primary = p.opaque(),
             onPrimary = Color.White,
-            primaryContainer = s,
+            primaryContainer = s.opaque(),
             onPrimaryContainer = on,
-            secondary = t,
+            secondary = t.opaque(),
             onSecondary = Color.White,
-            secondaryContainer = s,
-            tertiary = t,
+            secondaryContainer = s.opaque(),
+            tertiary = t.opaque(),
             onTertiary = Color.White,
-            tertiaryContainer = s,
+            tertiaryContainer = s.opaque(),
             background = bg,
             onBackground = on,
             surface = sf,
             onSurface = on,
-            surfaceVariant = s.copy(alpha = 0.55f),
-            onSurfaceVariant = on.copy(alpha = 0.75f),
-            outline = p.copy(alpha = 0.35f),
-            outlineVariant = on.copy(alpha = 0.12f),
+            surfaceVariant = s.over(sf),
+            onSurfaceVariant = on,
+            outline = p.over(sf),
+            outlineVariant = on.over(Color.White),
             surfaceContainerLowest = Color.White,
             surfaceContainerLow = sf,
-            surfaceContainer = s.copy(alpha = 0.35f),
-            surfaceContainerHigh = s.copy(alpha = 0.55f),
-            surfaceContainerHighest = s,
+            surfaceContainer = s.over(sf),
+            surfaceContainerHigh = s.over(sf),
+            surfaceContainerHighest = s.opaque(),
         )
     }
 }
+
+/** Смешивает цвет с подложкой, чтобы панели и меню не просвечивали. */
+private fun Color.over(base: Color): Color {
+    val src = opaque()
+    val dst = base.opaque()
+    return Color(
+        red = src.red * 0.22f + dst.red * 0.78f,
+        green = src.green * 0.22f + dst.green * 0.78f,
+        blue = src.blue * 0.22f + dst.blue * 0.78f,
+        alpha = 1f,
+    )
+}
+
+private fun Color.opaque(): Color = if (alpha >= 0.999f) this else copy(alpha = 1f)
 
 /** Стандартные палитры для экранов с собственной оболочкой (например песнопение). */
 val PesnopenieLightColorScheme: ColorScheme = StandardLight

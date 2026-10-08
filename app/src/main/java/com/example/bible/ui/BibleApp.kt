@@ -814,6 +814,7 @@ private fun BibleNavHost(
                                     expanded = menuOpen,
                                     onDismissRequest = { menuOpen = false },
                                     modifier = Modifier.heightIn(max = booksMenuMaxH),
+                                    containerColor = MaterialTheme.colorScheme.surface.copy(alpha = 1f),
                                 ) {
                                     DropdownMenuItem(
                                         text = { Text(stringResource(R.string.main_settings_title)) },
@@ -2544,6 +2545,7 @@ private fun BibleNavHost(
                                     expanded = showMoreMenu,
                                     onDismissRequest = { showMoreMenu = false },
                                     modifier = Modifier.heightIn(max = readerMenuMaxH),
+                                    containerColor = MaterialTheme.colorScheme.surface.copy(alpha = 1f),
                                 ) {
                                     DropdownMenuItem(
                                         text = { Text(stringResource(R.string.main_settings_title)) },

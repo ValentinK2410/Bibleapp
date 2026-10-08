@@ -402,6 +402,7 @@ private fun DualPaneChapterHeader(
                         expanded = showMoreMenu,
                         onDismissRequest = { showMoreMenu = false },
                         modifier = Modifier.heightIn(max = readerMenuMaxH),
+                        containerColor = MaterialTheme.colorScheme.surface.copy(alpha = 1f),
                     ) {
                         if (showSyncInMenu) {
                             DropdownMenuItem(
@@ -1249,7 +1250,11 @@ private fun PaneTopBar(
                     modifier = Modifier.size(24.dp),
                 )
             }
-            DropdownMenu(expanded = menuOpen, onDismissRequest = { menuOpen = false }) {
+            DropdownMenu(
+                expanded = menuOpen,
+                onDismissRequest = { menuOpen = false },
+                containerColor = MaterialTheme.colorScheme.surface.copy(alpha = 1f),
+            ) {
                 TranslationId.entries.forEach { tid ->
                     DropdownMenuItem(
                         text = { Text(tid.labelRu) },
