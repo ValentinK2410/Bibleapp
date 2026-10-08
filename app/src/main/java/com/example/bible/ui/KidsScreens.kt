@@ -421,6 +421,14 @@ private val KIDS_HUB_DEFAULT_ROWS: List<KidsHubRow> = listOf(
         emojiThumb = "🔤",
     ),
     KidsHubRow(
+        title = "Библейские истории",
+        subtitle = "Ной, Давид, Иона и другие — с озвучкой",
+        route = "kids_stories",
+        icon = Icons.AutoMirrored.Filled.MenuBook,
+        cardStyle = KidsHubCardVisual.Audios,
+        emojiThumb = "📖",
+    ),
+    KidsHubRow(
         title = "Цифры",
         subtitle = "Счёт, фигуры и задачки",
         route = "cifry",
@@ -1219,198 +1227,6 @@ fun KidsPicturedGridScreen(
     }
 }
 
-@Composable
-private fun KidsHubThumbnail(
-    imageRes: Int?,
-    emojiThumb: String?,
-    icon: ImageVector,
-    iconBrush: Brush,
-    iconTint: Color,
-) {
-    val context = LocalContext.current
-    val thumbShape = RoundedCornerShape(16.dp)
-    val mod = Modifier.size(72.dp)
-    when {
-        imageRes != null -> {
-            AsyncImage(
-                model = ImageRequest.Builder(context)
-                    .data(imageRes)
-                    .size(216)
-                    .crossfade(true)
-                    .build(),
-                contentDescription = null,
-                modifier = mod.clip(thumbShape),
-                contentScale = ContentScale.Crop,
-            )
-        }
-        emojiThumb != null -> {
-            Box(
-                modifier = mod
-                    .clip(thumbShape)
-                    .background(iconBrush),
-                contentAlignment = Alignment.Center,
-            ) {
-                Text(emojiThumb, style = MaterialTheme.typography.headlineMedium)
-            }
-        }
-        else -> {
-            Box(
-                modifier = mod
-                    .clip(thumbShape)
-                    .background(iconBrush),
-                contentAlignment = Alignment.Center,
-            ) {
-                Icon(icon, contentDescription = null, tint = iconTint, modifier = Modifier.size(32.dp))
-            }
-        }
-    }
-}
-
-@OptIn(ExperimentalMaterial3Api::class)
-@Composable
-private fun KidsHubSectionCard(
-    row: KidsHubRow,
-    onClick: () -> Unit,
-) {
-    val brushes = rememberKidsHubCardBrushes(row.cardStyle)
-    ElevatedCard(
-        onClick = onClick,
-        modifier = Modifier.fillMaxWidth(),
-        shape = RoundedCornerShape(22.dp),
-        elevation = CardDefaults.elevatedCardElevation(
-            defaultElevation = 4.dp,
-            pressedElevation = 8.dp,
-        ),
-        colors = CardDefaults.elevatedCardColors(containerColor = MaterialTheme.colorScheme.surface),
-    ) {
-        Box(
-            modifier = Modifier
-                .fillMaxWidth()
-                .background(brushes.cardBrush),
-        ) {
-            Row(
-                Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 16.dp, vertical = 18.dp),
-                verticalAlignment = Alignment.CenterVertically,
-            ) {
-                KidsHubThumbnail(
-                    imageRes = row.imageRes,
-                    emojiThumb = row.emojiThumb,
-                    icon = row.icon,
-                    iconBrush = brushes.iconBrush,
-                    iconTint = brushes.iconTint,
-                )
-                Column(
-                    Modifier
-                        .weight(1f)
-                        .padding(horizontal = 14.dp),
-                ) {
-                    Text(
-                        row.title,
-                        style = MaterialTheme.typography.titleMedium,
-                        fontWeight = FontWeight.SemiBold,
-                        color = MaterialTheme.colorScheme.onSurface,
-                    )
-                    Spacer(Modifier.height(6.dp))
-                    Text(
-                        row.subtitle,
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        lineHeight = 18.sp,
-                    )
-                }
-                Surface(
-                    modifier = Modifier.size(40.dp),
-                    shape = CircleShape,
-                    color = MaterialTheme.colorScheme.surface.copy(alpha = 0.92f),
-                    shadowElevation = 1.dp,
-                ) {
-                    Box(
-                        modifier = Modifier.fillMaxSize(),
-                        contentAlignment = Alignment.Center,
-                    ) {
-                        Icon(
-                            Icons.AutoMirrored.Filled.ArrowForward,
-                            contentDescription = null,
-                            modifier = Modifier.size(20.dp),
-                            tint = MaterialTheme.colorScheme.primary,
-                        )
-                    }
-                }
-            }
-        }
-    }
-}
-
-@OptIn(ExperimentalMaterial3Api::class)
-@Composable
-fun KidsHubScreen(
-    navController: NavHostController,
-    onBack: () -> Unit,
-    hubState: KidsUserSectionsState? = null,
-    onEditSections: (() -> Unit)? = null,
-) {
-    val rows = remember(hubState) {
-        mergeKidsHubRows(KIDS_HUB_DEFAULT_ROWS, hubState)
-    }
-    var menuOpen by remember { mutableStateOf(false) }
-    Scaffold(
-        topBar = {
-            CenterAlignedTopAppBar(
-                title = { Text("Детям", style = MaterialTheme.typography.titleLarge) },
-                navigationIcon = {
-                    IconButton(onClick = onBack) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Назад")
-                    }
-                },
-                actions = {
-                    if (onEditSections != null) {
-                        IconButton(onClick = { menuOpen = true }) {
-                            Icon(Icons.Filled.MoreVert, contentDescription = stringResource(R.string.kids_hub_menu_cd))
-                        }
-                        DropdownMenu(expanded = menuOpen, onDismissRequest = { menuOpen = false }) {
-                            DropdownMenuItem(
-                                text = { Text(stringResource(R.string.kids_edit_sections_menu)) },
-                                onClick = {
-                                    menuOpen = false
-                                    onEditSections()
-                                },
-                            )
-                        }
-                    }
-                },
-            )
-        },
-    ) { padding ->
-        LazyVerticalGrid(
-            columns = GridCells.Adaptive(minSize = 280.dp),
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(padding),
-            contentPadding = PaddingValues(16.dp),
-            horizontalArrangement = Arrangement.spacedBy(12.dp),
-            verticalArrangement = Arrangement.spacedBy(12.dp),
-        ) {
-            items(rows, key = { it.route }) { row ->
-                KidsHubSectionCard(
-                    row = row,
-                    onClick = {
-                        if (KidsPicturedRoutes.isPicturedRoute(row.route)) {
-                            navController.navigate("kids_album?r=${android.net.Uri.encode(row.route)}") {
-                                launchSingleTop = true
-                            }
-                        } else {
-                            navController.navigate(row.route) {
-                                launchSingleTop = row.route == "azbuka" || row.route == "cifry"
-                            }
-                        }
-                    },
-                )
-            }
-        }
-    }
-}
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable

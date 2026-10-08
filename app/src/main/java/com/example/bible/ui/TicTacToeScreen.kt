@@ -147,6 +147,11 @@ fun TicTacToeScreen(
     val win = winLine?.let { boardArr[it[0]].takeIf { mark -> mark != TicMark.Empty } }
     val draw = engine.isDraw(boardArr)
     val over = win != null || draw
+    KidsGameWinReward(
+        game = com.example.bible.data.KidsGames.TIC_TAC_TOE,
+        won = (mode == TicGameMode.HUMAN_VS_AI && win == TicMark.X) ||
+            (mode == TicGameMode.TWO_HUMANS && win != null && win != TicMark.Empty),
+    )
 
     val statusLine =
         when {

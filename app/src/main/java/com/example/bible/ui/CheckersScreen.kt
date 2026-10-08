@@ -96,6 +96,11 @@ fun CheckersScreen(onBack: () -> Unit) {
     }
 
     val gameOver = finished != null
+    KidsGameWinReward(
+        game = com.example.bible.data.KidsGames.CHECKERS,
+        won = (mode == CheckersGameMode.HUMAN_VS_AI && finished == CheckersSide.Light) ||
+            (mode == CheckersGameMode.TWO_HUMANS && finished != null),
+    )
 
     fun applyHumanPath(path: CheckersPath) {
         board = CheckersEngine.applyPath(board, path)

@@ -141,6 +141,7 @@ import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
+import kotlinx.coroutines.flow.firstOrNull
 import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.AnnotatedString
@@ -698,6 +699,13 @@ private fun BibleNavHost(
         if (sectionId != null) viewModel.recordSectionOpen(sectionId)
     }
 
+    val kidsLockContext = LocalContext.current
+    LaunchedEffect(Unit) {
+        val locked = com.example.bible.data.AzbukaProgressRepository(kidsLockContext.applicationContext)
+            .kidsLock.firstOrNull() == true
+        if (locked) navController.navigate("kids") { launchSingleTop = true }
+    }
+
     NavHost(
         navController = navController,
         startDestination = "books",
@@ -1165,6 +1173,23 @@ private fun BibleNavHost(
                 onEditSections = {
                     navController.navigate("kids_edit_sections") {
                         launchSingleTop = true
+                    }
+                },
+            )
+        }
+        composable("kids_stories") {
+            KidsStoriesScreen(
+                onBack = { navController.navigateUp() },
+                onOpenStory = { id -> navController.navigate("kids_story/$id") },
+            )
+        }
+        composable("kids_story/{id}") { entry ->
+            KidsStoryScreen(
+                storyId = entry.arguments?.getString("id").orEmpty(),
+                onBack = { navController.navigateUp() },
+                onOpenStory = { id ->
+                    navController.navigate("kids_story/$id") {
+                        popUpTo("kids_story/{id}") { inclusive = true }
                     }
                 },
             )

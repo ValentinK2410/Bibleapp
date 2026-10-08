@@ -110,6 +110,7 @@ fun PipePuzzleScreen(
         }
     }
     val solved = status.isSolved
+    KidsGameWinReward(game = com.example.bible.data.KidsGames.PIPES, won = solved)
 
     LaunchedEffect(solved, soundEnabled, victoryPlayed) {
         if (solved && soundEnabled && !victoryPlayed) {

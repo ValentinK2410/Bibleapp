@@ -109,6 +109,12 @@ fun GoScreen(onBack: () -> Unit) {
         stateRevision++
     }
 
+    KidsGameWinReward(
+        game = com.example.bible.data.KidsGames.GO,
+        won = game.gameOver,
+        points = 10,
+    )
+
     val status =
         when {
             game.gameOver ->
