@@ -282,6 +282,7 @@ fun AzbukaScreen(
                     }
                 },
                 actions = {
+                    KidsAudioToggles()
                     IconButton(onClick = { tts?.stop() }) {
                         Icon(Icons.Filled.Stop, contentDescription = stringResource(R.string.audio_stop))
                     }
@@ -1210,72 +1211,56 @@ private fun LessonsTab(
 
 @Composable
 private fun LessonCard(index: Int, lesson: AzbukaLesson, onClick: () -> Unit) {
-    ElevatedCard(
+    Row(
         modifier = Modifier
             .fillMaxWidth()
-            .clickable(onClick = onClick),
-        shape = RoundedCornerShape(16.dp),
+            .clip(RoundedCornerShape(24.dp))
+            .background(Brush.linearGradient(kidsGradient(index)))
+            .clickable(onClick = onClick)
+            .padding(14.dp),
+        verticalAlignment = Alignment.CenterVertically,
     ) {
-        Row(
-            modifier = Modifier.padding(16.dp),
-            verticalAlignment = Alignment.CenterVertically,
+        Box(
+            modifier = Modifier
+                .size(56.dp)
+                .clip(RoundedCornerShape(18.dp))
+                .background(Color.White.copy(alpha = 0.25f)),
+            contentAlignment = Alignment.Center,
         ) {
-            Box(
-                modifier = Modifier
-                    .size(48.dp)
-                    .clip(CircleShape)
-                    .background(MaterialTheme.colorScheme.primaryContainer),
-                contentAlignment = Alignment.Center,
-            ) {
-                Text(
-                    "${index + 1}",
-                    style = MaterialTheme.typography.titleMedium,
-                    fontWeight = FontWeight.Bold,
-                    color = MaterialTheme.colorScheme.onPrimaryContainer,
-                )
-            }
-            Spacer(Modifier.width(16.dp))
-            Column(modifier = Modifier.weight(1f)) {
-                Text(
-                    lesson.title,
-                    style = MaterialTheme.typography.titleMedium,
-                    fontWeight = FontWeight.Bold,
-                )
-                Text(
-                    lesson.description,
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                )
-                Spacer(Modifier.height(4.dp))
-                Row {
+            Text("${index + 1}", fontSize = 26.sp, fontWeight = FontWeight.Black, color = Color.White)
+        }
+        Spacer(Modifier.width(14.dp))
+        Column(modifier = Modifier.weight(1f)) {
+            Text(lesson.title, fontSize = 18.sp, fontWeight = FontWeight.Black, color = Color.White)
+            Text(
+                lesson.description,
+                fontSize = 13.sp,
+                lineHeight = 17.sp,
+                color = Color.White.copy(alpha = 0.85f),
+            )
+            Spacer(Modifier.height(6.dp))
+            Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                listOf(
+                    "🔤 ${lesson.letters.size}",
+                    "🗣 ${lesson.syllables.size}",
+                    "⭐ ${lesson.exercises.size}",
+                ).forEach { chip ->
                     Text(
-                        "${lesson.letters.size} букв",
-                        style = MaterialTheme.typography.labelSmall,
-                        color = MaterialTheme.colorScheme.primary,
-                    )
-                    Text(" · ", color = MaterialTheme.colorScheme.onSurfaceVariant)
-                    Text(
-                        "${lesson.syllables.size} слогов",
-                        style = MaterialTheme.typography.labelSmall,
-                        color = MaterialTheme.colorScheme.primary,
-                    )
-                    Text(" · ", color = MaterialTheme.colorScheme.onSurfaceVariant)
-                    Text(
-                        "${lesson.exercises.size} заданий",
-                        style = MaterialTheme.typography.labelSmall,
-                        color = MaterialTheme.colorScheme.primary,
+                        chip,
+                        color = Color.White,
+                        fontSize = 12.sp,
+                        fontWeight = FontWeight.Bold,
+                        modifier = Modifier
+                            .clip(RoundedCornerShape(999.dp))
+                            .background(Color.White.copy(alpha = 0.22f))
+                            .padding(horizontal = 9.dp, vertical = 3.dp),
                     )
                 }
             }
-            Icon(
-                Icons.AutoMirrored.Filled.ArrowForward,
-                contentDescription = null,
-                tint = MaterialTheme.colorScheme.onSurfaceVariant,
-            )
         }
+        Text("›", color = Color.White, fontSize = 30.sp, fontWeight = FontWeight.Light)
     }
 }
-
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
 private fun LessonScreen(
@@ -1289,6 +1274,7 @@ private fun LessonScreen(
     var step by remember { mutableIntStateOf(0) }
     // 0 = letters, 1 = syllables, 2 = words, 3 = exercises
     val totalSteps = 4
+    androidx.activity.compose.BackHandler { if (step > 0) step-- else onBack() }
 
     Column(
         modifier = Modifier
@@ -1301,33 +1287,44 @@ private fun LessonScreen(
             }) {
                 Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Назад")
             }
-            Column(modifier = Modifier.weight(1f)) {
-                Text(
-                    "Урок ${lesson.id}: ${lesson.title}",
-                    style = MaterialTheme.typography.titleMedium,
-                    fontWeight = FontWeight.Bold,
-                )
-                Text(
-                    listOf("Буквы", "Слоги", "Слова", "Задания")[step],
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.primary,
-                )
-            }
             Text(
-                "${step + 1}/$totalSteps",
-                style = MaterialTheme.typography.labelMedium,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                "Урок ${lesson.id}: ${lesson.title}",
+                fontSize = 18.sp,
+                fontWeight = FontWeight.Black,
+                modifier = Modifier.weight(1f),
             )
         }
-        LinearProgressIndicator(
-            progress = { (step + 1f) / totalSteps },
-            modifier = Modifier
+        Row(
+            Modifier
                 .fillMaxWidth()
-                .padding(vertical = 8.dp)
-                .height(6.dp)
-                .clip(RoundedCornerShape(3.dp)),
-        )
-        Spacer(Modifier.height(8.dp))
+                .padding(vertical = 6.dp),
+            horizontalArrangement = Arrangement.spacedBy(6.dp),
+        ) {
+            listOf("🔤 Буквы", "🗣 Слоги", "📚 Слова", "⭐ Задания").forEachIndexed { i, label ->
+                val active = i <= step
+                Box(
+                    Modifier
+                        .weight(1f)
+                        .clip(RoundedCornerShape(999.dp))
+                        .background(
+                            if (active) Brush.linearGradient(kidsGradient(i))
+                            else Brush.linearGradient(listOf(MaterialTheme.colorScheme.surfaceContainerHigh, MaterialTheme.colorScheme.surfaceContainerHigh)),
+                        )
+                        .clickable { step = i }
+                        .padding(vertical = 7.dp),
+                    contentAlignment = Alignment.Center,
+                ) {
+                    Text(
+                        label,
+                        fontSize = 11.sp,
+                        fontWeight = FontWeight.Black,
+                        color = if (active) Color.White else MaterialTheme.colorScheme.onSurfaceVariant,
+                        maxLines = 1,
+                    )
+                }
+            }
+        }
+        Spacer(Modifier.height(6.dp))
 
         Column(
             modifier = Modifier
@@ -1336,7 +1333,7 @@ private fun LessonScreen(
         ) {
             when (step) {
                 0 -> {
-                    Text("Знакомимся с буквами", style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.Bold)
+                    Text("Знакомимся с буквами", fontSize = 20.sp, fontWeight = FontWeight.Black)
                     Spacer(Modifier.height(12.dp))
                     lesson.letters.forEach { letter ->
                         LessonLetterRow(
@@ -1348,7 +1345,7 @@ private fun LessonScreen(
                     }
                 }
                 1 -> {
-                    Text("Читаем слоги", style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.Bold)
+                    Text("Читаем слоги", fontSize = 20.sp, fontWeight = FontWeight.Black)
                     Spacer(Modifier.height(4.dp))
                     Text(
                         "Нажимай на слог, чтобы услышать произношение",
@@ -1374,7 +1371,7 @@ private fun LessonScreen(
                     }
                 }
                 2 -> {
-                    Text("Читаем слова", style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.Bold)
+                    Text("Читаем слова", fontSize = 20.sp, fontWeight = FontWeight.Black)
                     Spacer(Modifier.height(12.dp))
                     lesson.words.forEach { (word, meaning) ->
                         WordCard(word = word, meaning = meaning, speak = speak)
@@ -1382,7 +1379,7 @@ private fun LessonScreen(
                     }
                 }
                 3 -> {
-                    Text("Проверим знания!", style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.Bold)
+                    Text("Проверим знания!", fontSize = 20.sp, fontWeight = FontWeight.Black)
                     Spacer(Modifier.height(12.dp))
                     ExerciseBlock(
                         exercises = lesson.exercises,
@@ -1396,17 +1393,13 @@ private fun LessonScreen(
         }
 
         if (step < totalSteps - 1) {
-            Button(
+            KidsBigButton(
+                text = "Дальше ➜",
                 onClick = { step++ },
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(top = 8.dp),
-                shape = RoundedCornerShape(12.dp),
-            ) {
-                Text("Далее")
-                Spacer(Modifier.width(8.dp))
-                Icon(Icons.AutoMirrored.Filled.ArrowForward, contentDescription = null)
-            }
+            )
         }
     }
 }
@@ -1417,122 +1410,86 @@ private fun LessonLetterRow(
     speak: (String) -> Unit,
     speakLetterThenExample: (String, String) -> Unit,
 ) {
-    val bgColor = when (letter.type) {
-        LetterType.VOWEL -> Color(0x22F44336)
-        LetterType.CONSONANT -> Color(0x222196F3)
-        LetterType.SIGN -> Color(0x229E9E9E)
+    val gradient = when (letter.type) {
+        LetterType.VOWEL -> KidsVowelGradient
+        LetterType.CONSONANT -> KidsConsonantGradient
+        LetterType.SIGN -> KidsSignGradient
     }
-    OutlinedCard(
-        modifier = Modifier.fillMaxWidth(),
-        shape = RoundedCornerShape(12.dp),
-    ) {
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .background(bgColor)
-                .clickable { speakLetterThenExample(letter.name, letter.exampleWord) }
-                .padding(12.dp),
-            verticalAlignment = Alignment.CenterVertically,
-        ) {
-            Box(
-                modifier = Modifier
-                    .size(56.dp)
-                    .clip(RoundedCornerShape(12.dp))
-                    .background(bgColor),
-                contentAlignment = Alignment.Center,
-            ) {
-                Text(
-                    "${letter.upper}${letter.lower}",
-                    fontSize = 28.sp,
-                    fontWeight = FontWeight.Bold,
-                )
-            }
-            Spacer(Modifier.width(12.dp))
-            Column(modifier = Modifier.weight(1f)) {
-                Text(
-                    "Буква «${letter.name}»",
-                    style = MaterialTheme.typography.titleSmall,
-                    fontWeight = FontWeight.Bold,
-                )
-                if (letter.sound != "—") {
-                    Text(
-                        "Звук: [${letter.sound}]",
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.primary,
-                    )
-                }
-                Text(
-                    "${letter.exampleWord} — ${letter.exampleTranslation}",
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                )
-            }
-            IconButton(onClick = { speak(letter.name) }) {
-                Icon(Icons.AutoMirrored.Filled.VolumeUp, contentDescription = "Прослушать")
-            }
-        }
-    }
-}
-
-@Composable
-private fun SyllableChip(syllable: String, onClick: () -> Unit) {
-    OutlinedCard(
-        modifier = Modifier.clickable(onClick = onClick),
-        shape = RoundedCornerShape(12.dp),
-    ) {
-        Row(
-            modifier = Modifier.padding(horizontal = 16.dp, vertical = 10.dp),
-            verticalAlignment = Alignment.CenterVertically,
-        ) {
-            Text(
-                syllable,
-                style = MaterialTheme.typography.titleMedium,
-                fontWeight = FontWeight.Bold,
-                color = MaterialTheme.colorScheme.primary,
-            )
-            Spacer(Modifier.width(4.dp))
-            Icon(
-                Icons.Default.PlayArrow,
-                contentDescription = "Произнести",
-                modifier = Modifier.size(16.dp),
-                tint = MaterialTheme.colorScheme.primary,
-            )
-        }
-    }
-}
-
-@Composable
-private fun WordCard(word: String, meaning: String, speak: (String) -> Unit) {
-    ElevatedCard(
+    Row(
         modifier = Modifier
             .fillMaxWidth()
-            .clickable { speak(word) },
-        shape = RoundedCornerShape(12.dp),
+            .clip(RoundedCornerShape(22.dp))
+            .background(MaterialTheme.colorScheme.surfaceContainerLow)
+            .border(1.dp, gradient.first().copy(alpha = 0.3f), RoundedCornerShape(22.dp))
+            .clickable { speakLetterThenExample(letter.name, letter.exampleWord) }
+            .padding(10.dp),
+        verticalAlignment = Alignment.CenterVertically,
     ) {
-        Row(
-            modifier = Modifier.padding(16.dp),
-            verticalAlignment = Alignment.CenterVertically,
+        Box(
+            modifier = Modifier
+                .size(64.dp)
+                .clip(RoundedCornerShape(18.dp))
+                .background(Brush.linearGradient(gradient)),
+            contentAlignment = Alignment.Center,
         ) {
-            Column(modifier = Modifier.weight(1f)) {
-                Text(
-                    word,
-                    style = MaterialTheme.typography.titleLarge,
-                    fontWeight = FontWeight.Bold,
-                    color = MaterialTheme.colorScheme.primary,
-                )
-                Text(
-                    meaning,
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                )
+            Text("${letter.upper}${letter.lower}", fontSize = 28.sp, fontWeight = FontWeight.Black, color = Color.White)
+        }
+        Spacer(Modifier.width(12.dp))
+        Column(modifier = Modifier.weight(1f)) {
+            Text("Буква «${letter.name}»", fontSize = 17.sp, fontWeight = FontWeight.Black)
+            if (letter.sound != "—") {
+                Text("Звук: [${letter.sound}]", fontSize = 13.sp, fontWeight = FontWeight.Bold, color = gradient.first())
             }
-            IconButton(onClick = { speak(word) }) {
-                Icon(Icons.AutoMirrored.Filled.VolumeUp, contentDescription = "Прослушать")
-            }
+            Text(
+                "${letter.exampleWord} — ${letter.exampleTranslation}",
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+        }
+        IconButton(onClick = { speak(letter.name) }) {
+            Icon(Icons.AutoMirrored.Filled.VolumeUp, contentDescription = "Прослушать", tint = gradient.first())
         }
     }
 }
-
+@Composable
+private fun SyllableChip(syllable: String, onClick: () -> Unit) {
+    val index = syllable.hashCode()
+    Box(
+        modifier = Modifier
+            .clip(RoundedCornerShape(18.dp))
+            .background(Brush.linearGradient(kidsGradient(index)))
+            .clickable(onClick = onClick)
+            .padding(horizontal = 18.dp, vertical = 12.dp),
+    ) {
+        Text(syllable, fontSize = 22.sp, fontWeight = FontWeight.Black, color = Color.White)
+    }
+}
+@Composable
+private fun WordCard(word: String, meaning: String, speak: (String) -> Unit) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clip(RoundedCornerShape(22.dp))
+            .background(Brush.linearGradient(kidsGradient(word.hashCode())))
+            .clickable { speak(word) }
+            .padding(16.dp),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        Column(modifier = Modifier.weight(1f)) {
+            Text(word, fontSize = 24.sp, fontWeight = FontWeight.Black, color = Color.White)
+            Text(meaning, fontSize = 14.sp, color = Color.White.copy(alpha = 0.85f))
+        }
+        Box(
+            Modifier
+                .size(44.dp)
+                .clip(CircleShape)
+                .background(Color.White.copy(alpha = 0.25f)),
+            contentAlignment = Alignment.Center,
+        ) {
+            Icon(Icons.AutoMirrored.Filled.VolumeUp, contentDescription = "Прослушать", tint = Color.White)
+        }
+    }
+}
 // ==================== TAB 3: QUIZ ====================
 
 /** Фразы озвучки при неверном выборе в игре «Найди букву» (нейтральные по полу ребёнка). */
@@ -1624,34 +1581,14 @@ private fun FindLetterGamePane(
             .fillMaxSize()
             .padding(16.dp),
     ) {
-        Text(
-            "Найди букву",
-            style = MaterialTheme.typography.titleMedium,
-            fontWeight = FontWeight.Bold,
+        KidsQuestionCard(
+            emoji = "🔤",
+            label = "Найди букву",
+            prompt = "«${round.target.name}»",
+            promptSize = 40,
+            subtitle = "Послушай, как называется буква, и нажми на неё",
+            actions = listOf("🔊 Повторить" to { speak("Найди букву ${round.target.name}.") }),
         )
-        Spacer(Modifier.height(4.dp))
-        Text(
-            "Послушай задание и нажми на нужную букву.",
-            style = MaterialTheme.typography.bodyMedium,
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
-        )
-        Spacer(Modifier.height(8.dp))
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.End,
-            verticalAlignment = Alignment.CenterVertically,
-        ) {
-            TextButton(onClick = { speak("Найди букву ${round.target.name}.") }) {
-                Icon(
-                    Icons.AutoMirrored.Filled.VolumeUp,
-                    contentDescription = null,
-                    modifier = Modifier
-                        .size(18.dp)
-                        .padding(end = 6.dp),
-                )
-                Text("Повторить задание")
-            }
-        }
         LazyVerticalGrid(
             columns = GridCells.Fixed(2),
             modifier = Modifier
@@ -1667,14 +1604,22 @@ private fun FindLetterGamePane(
                 val wrongShown =
                     (tapFeedback as? FindLetterTapFeedback.Wrong)?.upper == letter.upper
                 val idle = tapFeedback is FindLetterTapFeedback.Idle
-                FindLetterChoiceCard(
-                    letter = letter,
-                    showCorrectCheck = correctShown,
-                    showWrongX = wrongShown,
+                KidsAnswerTile(
+                    text = "${letter.upper}${letter.lower}",
+                    index = round.choices.indexOf(letter),
+                    state = when {
+                        correctShown -> KidsAnswerState.Correct
+                        wrongShown -> KidsAnswerState.Wrong
+                        else -> KidsAnswerState.Idle
+                    },
                     enabled = idle,
+                    height = 104.dp,
+                    fontSize = 40,
+                    appearKey = roundKey,
                     onClick = {
                         if (idle) {
                             if (letter.upper == round.target.upper) {
+                                KidsGameStreak.answered(true)
                                 tapFeedback = FindLetterTapFeedback.Correct(letter.upper)
                                 val praise = FIND_LETTER_CORRECT_PHRASES.random(random)
                                 scope.launch { progressRepo.addPoints(8) }
@@ -1682,6 +1627,7 @@ private fun FindLetterGamePane(
                                     roundKey++
                                 }
                             } else {
+                                KidsGameStreak.answered(false)
                                 tapFeedback = FindLetterTapFeedback.Wrong(letter.upper)
                                 speak(FIND_LETTER_WRONG_PHRASES.random(random))
                                 scope.launch {
@@ -1794,38 +1740,12 @@ private fun QuizTab(
     var subMode by remember { mutableIntStateOf(0) }
 
     Column(Modifier.fillMaxSize()) {
-        ScrollableTabRow(
-            selectedTabIndex = subMode,
-            edgePadding = 8.dp,
-            modifier = Modifier.fillMaxWidth(),
-            divider = {},
-        ) {
-            Tab(
-                selected = subMode == 0,
-                onClick = { subMode = 0 },
-                text = { Text("Уроки", maxLines = 1) },
-            )
-            Tab(
-                selected = subMode == 1,
-                onClick = { subMode = 1 },
-                text = { Text("Библия", maxLines = 1) },
-            )
-            Tab(
-                selected = subMode == 2,
-                onClick = { subMode = 2 },
-                text = { Text("Буквы", maxLines = 1) },
-            )
-            Tab(
-                selected = subMode == 3,
-                onClick = { subMode = 3 },
-                text = { Text("Части речи", maxLines = 1) },
-            )
-            Tab(
-                selected = subMode == 4,
-                onClick = { subMode = 4 },
-                text = { Text("Наоборот", maxLines = 1) },
-            )
-        }
+        KidsGameMusic(com.example.bible.games.KidsMusicTrack.GAMES)
+        KidsTabs(
+            tabs = listOf("📝 Уроки", "📖 Библия", "🔤 Буквы", "🧩 Части речи", "🔁 Наоборот"),
+            selected = subMode,
+            onSelect = { subMode = it },
+        )
         Box(
             modifier = Modifier
                 .weight(1f)
@@ -1858,6 +1778,7 @@ private fun QuizTab(
                     scope = scope,
                 )
             }
+            KidsCorrectBurst()
         }
     }
 }
@@ -1905,36 +1826,13 @@ private fun LessonQuizPane(
                 .fillMaxSize()
                 .padding(16.dp),
         ) {
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically,
-            ) {
-                Text(
-                    "Вопрос ${currentIndex + 1}/${allExercises.size}",
-                    style = MaterialTheme.typography.labelLarge,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                )
-                Row {
-                    Icon(Icons.Default.Star, contentDescription = null, tint = Color(0xFFFFD700), modifier = Modifier.size(20.dp))
-                    Text(" $score", fontWeight = FontWeight.Bold)
-                }
-            }
-            LinearProgressIndicator(
-                progress = { (currentIndex + 1f) / allExercises.size },
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(vertical = 8.dp)
-                    .height(6.dp)
-                    .clip(RoundedCornerShape(3.dp)),
+            KidsQuizProgress(
+                current = currentIndex + 1,
+                total = allExercises.size,
+                score = score,
+                topic = topic,
             )
-            Spacer(Modifier.height(4.dp))
-            Text(
-                topic,
-                style = MaterialTheme.typography.labelMedium,
-                color = MaterialTheme.colorScheme.primary,
-            )
-            Spacer(Modifier.height(16.dp))
+            Spacer(Modifier.height(10.dp))
 
             QuizQuestion(
                 exercise = exercise,
@@ -1966,141 +1864,52 @@ private fun QuizQuestion(
     var showResult by remember(exercise) { mutableStateOf(false) }
     val isCorrect = selectedIndex == exercise.correctIndex
 
-    Column(modifier = Modifier.fillMaxSize()) {
-        Card(
-            modifier = Modifier.fillMaxWidth(),
-            shape = RoundedCornerShape(16.dp),
-            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant),
+    Column(modifier = Modifier.fillMaxSize(), verticalArrangement = Arrangement.spacedBy(10.dp)) {
+        KidsQuestionCard(
+            emoji = "📝",
+            label = "Вопрос",
+            prompt = exercise.question,
+            promptSize = 22,
+            subtitle = exercise.hint.takeIf { it.isNotEmpty() }?.let { "💡 $it" },
+            actions = listOf("🔊 Прочитать" to { speak(exercise.question) }),
+        )
+        Column(
+            Modifier
+                .weight(1f)
+                .verticalScroll(rememberScrollState()),
+            verticalArrangement = Arrangement.spacedBy(10.dp),
         ) {
-            Column(modifier = Modifier.padding(20.dp)) {
-                Text(
-                    exercise.question,
-                    style = MaterialTheme.typography.titleMedium,
-                    fontWeight = FontWeight.Bold,
-                    lineHeight = 24.sp,
-                )
-                if (exercise.hint.isNotEmpty()) {
-                    Spacer(Modifier.height(8.dp))
-                    Row(verticalAlignment = Alignment.CenterVertically) {
-                        Icon(Icons.Default.Lightbulb, contentDescription = null, modifier = Modifier.size(16.dp), tint = Color(0xFFFFD700))
-                        Spacer(Modifier.width(4.dp))
-                        Text(exercise.hint, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
-                    }
-                }
-            }
-        }
-        Spacer(Modifier.height(20.dp))
-
-        exercise.options.forEachIndexed { index, option ->
-            val borderColor by animateColorAsState(
-                when {
-                    !showResult -> if (selectedIndex == index) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.outline
-                    index == exercise.correctIndex -> Color(0xFF4CAF50)
-                    selectedIndex == index -> Color(0xFFF44336)
-                    else -> MaterialTheme.colorScheme.outline
-                },
-                label = "borderColor",
-            )
-            val bgColor by animateColorAsState(
-                when {
-                    !showResult -> if (selectedIndex == index) MaterialTheme.colorScheme.primaryContainer else Color.Transparent
-                    index == exercise.correctIndex -> Color(0x224CAF50)
-                    selectedIndex == index -> Color(0x22F44336)
-                    else -> Color.Transparent
-                },
-                label = "bgColor",
-            )
-
-            OutlinedCard(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(vertical = 4.dp)
-                    .clickable(enabled = !showResult) {
-                        selectedIndex = index
-                        speak(option)
+            exercise.options.forEachIndexed { index, option ->
+                KidsAnswerTile(
+                    text = option,
+                    index = index,
+                    state = when {
+                        !showResult -> KidsAnswerState.Idle
+                        index == exercise.correctIndex -> KidsAnswerState.Correct
+                        index == selectedIndex -> KidsAnswerState.Wrong
+                        else -> KidsAnswerState.Dimmed
                     },
-                shape = RoundedCornerShape(12.dp),
-                border = BorderStroke(2.dp, borderColor),
-                colors = CardDefaults.outlinedCardColors(containerColor = bgColor),
-            ) {
-                Row(
-                    modifier = Modifier.padding(16.dp),
-                    verticalAlignment = Alignment.CenterVertically,
-                ) {
-                    Box(
-                        modifier = Modifier
-                            .size(32.dp)
-                            .clip(CircleShape)
-                            .border(2.dp, borderColor, CircleShape)
-                            .background(if (selectedIndex == index && !showResult) MaterialTheme.colorScheme.primary else Color.Transparent),
-                        contentAlignment = Alignment.Center,
-                    ) {
-                        if (showResult && index == exercise.correctIndex) {
-                            Icon(Icons.Default.Check, contentDescription = null, tint = Color(0xFF4CAF50), modifier = Modifier.size(18.dp))
-                        } else if (showResult && selectedIndex == index && !isCorrect) {
-                            Icon(Icons.Default.Close, contentDescription = null, tint = Color(0xFFF44336), modifier = Modifier.size(18.dp))
-                        } else {
-                            Text(
-                                "${('А'.code + index).toChar()}",
-                                style = MaterialTheme.typography.labelMedium,
-                                color = if (selectedIndex == index && !showResult) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurface,
-                            )
-                        }
-                    }
-                    Spacer(Modifier.width(12.dp))
-                    Text(
-                        option,
-                        style = MaterialTheme.typography.bodyLarge,
-                        fontWeight = if (showResult && index == exercise.correctIndex) FontWeight.Bold else FontWeight.Normal,
-                    )
-                }
-            }
-        }
-
-        Spacer(Modifier.weight(1f))
-
-        AnimatedVisibility(visible = showResult) {
-            val msg = if (isCorrect) "Правильно! ⭐" else "Неверно. Правильный ответ: ${exercise.options[exercise.correctIndex]}"
-            val color = if (isCorrect) Color(0xFF4CAF50) else Color(0xFFF44336)
-            Card(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(bottom = 8.dp),
-                colors = CardDefaults.cardColors(containerColor = color.copy(alpha = 0.15f)),
-                shape = RoundedCornerShape(12.dp),
-            ) {
-                Text(
-                    msg,
-                    modifier = Modifier.padding(16.dp),
-                    style = MaterialTheme.typography.bodyLarge,
-                    fontWeight = FontWeight.Bold,
-                    color = color,
+                    enabled = !showResult,
+                    height = 72.dp,
+                    fontSize = 20,
+                    appearKey = exercise,
+                    onClick = {
+                        selectedIndex = index
+                        showResult = true
+                        val ok = index == exercise.correctIndex
+                        KidsGameStreak.answered(ok)
+                        speak(if (ok) "Правильно! $option" else "Правильный ответ: ${exercise.options[exercise.correctIndex]}")
+                        onAnswer(ok)
+                    },
                 )
-            }
-        }
-
-        if (!showResult && selectedIndex >= 0) {
-            Button(
-                onClick = {
-                    showResult = true
-                    onAnswer(selectedIndex == exercise.correctIndex)
-                },
-                modifier = Modifier.fillMaxWidth(),
-                shape = RoundedCornerShape(12.dp),
-            ) {
-                Text("Проверить")
             }
         }
         if (showResult) {
-            Button(
-                onClick = onNext,
-                modifier = Modifier.fillMaxWidth(),
-                shape = RoundedCornerShape(12.dp),
-            ) {
-                Text("Далее")
-                Spacer(Modifier.width(8.dp))
-                Icon(Icons.AutoMirrored.Filled.ArrowForward, contentDescription = null)
-            }
+            KidsAnswerBanner(
+                correct = isCorrect,
+                text = if (isCorrect) "Правильно! +1 ⭐" else "Правильный ответ: ${exercise.options[exercise.correctIndex]}",
+            )
+            KidsBigButton(text = "Дальше ➜", onClick = onNext, modifier = Modifier.fillMaxWidth())
         }
     }
 }
@@ -2120,50 +1929,37 @@ private fun QuizResultScreen(score: Int, total: Int, onRestart: () -> Unit) {
         pct >= 50 -> "Неплохо! Продолжай учиться!"
         else -> "Не расстраивайся! Повтори уроки и попробуй снова."
     }
-
-    val scale by animateFloatAsState(
-        targetValue = 1f,
-        animationSpec = spring(dampingRatio = Spring.DampingRatioMediumBouncy),
-        label = "scale",
-    )
-
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(32.dp),
-        verticalArrangement = Arrangement.Center,
-        horizontalAlignment = Alignment.CenterHorizontally,
-    ) {
-        Text(
-            emoji,
-            fontSize = 72.sp,
-            modifier = Modifier.scale(scale),
-        )
-        Spacer(Modifier.height(16.dp))
-        Text(
-            "Результат",
-            style = MaterialTheme.typography.headlineMedium,
-            fontWeight = FontWeight.Bold,
-        )
-        Spacer(Modifier.height(8.dp))
-        Text(
-            "$score из $total правильных ($pct%)",
-            style = MaterialTheme.typography.titleLarge,
-            color = MaterialTheme.colorScheme.primary,
-        )
-        Spacer(Modifier.height(12.dp))
-        Text(
-            message,
-            style = MaterialTheme.typography.bodyLarge,
-            textAlign = TextAlign.Center,
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
-        )
-        Spacer(Modifier.height(32.dp))
-        Button(
-            onClick = onRestart,
-            shape = RoundedCornerShape(12.dp),
+    LaunchedEffect(Unit) {
+        com.example.bible.games.KidsGameAudio.play(com.example.bible.games.KidsSfx.WIN)
+    }
+    Box(Modifier.fillMaxSize()) {
+        if (pct >= 50) KidsConfetti(Modifier.fillMaxSize())
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(32.dp),
+            verticalArrangement = Arrangement.Center,
+            horizontalAlignment = Alignment.CenterHorizontally,
         ) {
-            Text("Пройти ещё раз")
+            Text(emoji, fontSize = 96.sp)
+            Spacer(Modifier.height(12.dp))
+            Text("Результат", style = MaterialTheme.typography.headlineMedium, fontWeight = FontWeight.Black)
+            Spacer(Modifier.height(8.dp))
+            Text(
+                "$score из $total правильных",
+                fontSize = 24.sp,
+                fontWeight = FontWeight.Black,
+                color = Color(0xFF10B981),
+            )
+            Spacer(Modifier.height(12.dp))
+            Text(
+                message,
+                style = MaterialTheme.typography.bodyLarge,
+                textAlign = TextAlign.Center,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+            Spacer(Modifier.height(28.dp))
+            KidsBigButton(text = "🔄 Пройти ещё раз", onClick = onRestart, modifier = Modifier.fillMaxWidth())
         }
     }
 }
@@ -2241,36 +2037,21 @@ private fun RulesTab(speak: (String) -> Unit) {
         verticalArrangement = Arrangement.spacedBy(16.dp),
     ) {
         item {
-            Text(
-                "Слоги и чтение",
-                style = MaterialTheme.typography.headlineSmall,
-                fontWeight = FontWeight.Bold,
-                color = MaterialTheme.colorScheme.primary,
-            )
+            KidsBanner("🗣 Слоги и чтение", gradient = listOf(Color(0xFF10B981), Color(0xFF06B6D4)), fontSize = 20)
         }
         items(syllableLessons) { sl ->
             SyllableLessonCard(sl, speak = speak)
         }
         item {
             Spacer(Modifier.height(8.dp))
-            Text(
-                "Правила русского языка",
-                style = MaterialTheme.typography.headlineSmall,
-                fontWeight = FontWeight.Bold,
-                color = MaterialTheme.colorScheme.primary,
-            )
+            KidsBanner("📏 Правила русского языка", gradient = listOf(Color(0xFF6366F1), Color(0xFF8B5CF6)), fontSize = 20)
         }
         items(rules) { rule ->
             RuleCard(rule, speak = speak)
         }
         item {
             Spacer(Modifier.height(8.dp))
-            Text(
-                "Исключения в написании",
-                style = MaterialTheme.typography.headlineSmall,
-                fontWeight = FontWeight.Bold,
-                color = MaterialTheme.colorScheme.primary,
-            )
+            KidsBanner("⚠️ Исключения в написании", gradient = listOf(Color(0xFFF59E0B), Color(0xFFEC4899)), fontSize = 20)
         }
         item {
             Text(
@@ -2317,20 +2098,15 @@ private fun SyllableLessonCard(lesson: com.example.bible.data.SyllableLesson, sp
                 horizontalArrangement = Arrangement.spacedBy(6.dp),
                 verticalArrangement = Arrangement.spacedBy(6.dp),
             ) {
-                lesson.syllables.forEach { syl ->
+                lesson.syllables.forEachIndexed { i, syl ->
                     Box(
                         modifier = Modifier
-                            .clip(RoundedCornerShape(8.dp))
-                            .background(MaterialTheme.colorScheme.primaryContainer)
+                            .clip(RoundedCornerShape(14.dp))
+                            .background(Brush.linearGradient(kidsGradient(i)))
                             .clickable { speak(syl) }
-                            .padding(horizontal = 10.dp, vertical = 4.dp),
+                            .padding(horizontal = 14.dp, vertical = 8.dp),
                     ) {
-                        Text(
-                            syl,
-                            style = MaterialTheme.typography.titleSmall,
-                            fontWeight = FontWeight.Bold,
-                            color = MaterialTheme.colorScheme.onPrimaryContainer,
-                        )
+                        Text(syl, fontSize = 18.sp, fontWeight = FontWeight.Black, color = Color.White)
                     }
                 }
             }
@@ -2376,17 +2152,20 @@ private fun RuleCard(rule: com.example.bible.data.ReadingRule, speak: (String) -
     ) {
         Column(modifier = Modifier.padding(16.dp)) {
             Row(verticalAlignment = Alignment.CenterVertically) {
-                Icon(
-                    Icons.Default.Lightbulb,
-                    contentDescription = null,
-                    tint = Color(0xFFFFD700),
-                    modifier = Modifier.size(24.dp),
-                )
-                Spacer(Modifier.width(8.dp))
+                Box(
+                    Modifier
+                        .size(36.dp)
+                        .clip(RoundedCornerShape(12.dp))
+                        .background(Brush.linearGradient(kidsGradient(rule.title.hashCode()))),
+                    contentAlignment = Alignment.Center,
+                ) {
+                    Text("💡", fontSize = 18.sp)
+                }
+                Spacer(Modifier.width(10.dp))
                 Text(
                     rule.title,
                     style = MaterialTheme.typography.titleMedium,
-                    fontWeight = FontWeight.Bold,
+                    fontWeight = FontWeight.Black,
                     modifier = Modifier.weight(1f),
                 )
                 IconButton(
@@ -2441,5 +2220,37 @@ private fun RuleCard(rule: com.example.bible.data.ReadingRule, speak: (String) -
                 )
             }
         }
+    }
+}
+
+
+@Composable
+private fun KidsQuizProgress(current: Int, total: Int, score: Int, topic: String) {
+    Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            Text(
+                "Вопрос $current из $total",
+                fontWeight = FontWeight.Black,
+                fontSize = 15.sp,
+                modifier = Modifier.weight(1f),
+            )
+            Text("⭐ $score", fontWeight = FontWeight.Black, fontSize = 17.sp, color = Color(0xFFF59E0B))
+        }
+        Box(
+            Modifier
+                .fillMaxWidth()
+                .height(12.dp)
+                .clip(RoundedCornerShape(999.dp))
+                .background(MaterialTheme.colorScheme.surfaceContainerHigh),
+        ) {
+            Box(
+                Modifier
+                    .fillMaxWidth(current.toFloat() / total.coerceAtLeast(1))
+                    .height(12.dp)
+                    .clip(RoundedCornerShape(999.dp))
+                    .background(Brush.linearGradient(listOf(Color(0xFF6366F1), Color(0xFFEC4899)))),
+            )
+        }
+        Text(topic, fontSize = 13.sp, fontWeight = FontWeight.Bold, color = Color(0xFF8B5CF6))
     }
 }

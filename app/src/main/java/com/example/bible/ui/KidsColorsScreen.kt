@@ -460,7 +460,7 @@ private fun ColorBlob(
 private fun ColorGameFinish(firstTry: Int, onAgain: () -> Unit) {
     val stars = (firstTry * 3) / 10
     Box(Modifier.fillMaxSize()) {
-        Confetti(Modifier.fillMaxSize())
+        KidsConfetti(Modifier.fillMaxSize())
         Column(
             Modifier
                 .fillMaxSize()
@@ -492,7 +492,7 @@ private fun ColorGameFinish(firstTry: Int, onAgain: () -> Unit) {
 }
 
 @Composable
-private fun Confetti(modifier: Modifier = Modifier) {
+internal fun KidsConfetti(modifier: Modifier = Modifier) {
     val pieces = remember {
         List(42) {
             Triple(Random.nextFloat(), Random.nextFloat(), KidsTopicsRepository.colors.random().color())

@@ -105,36 +105,15 @@ internal fun PartsOfSpeechGamePane(
             .fillMaxSize()
             .padding(16.dp),
     ) {
-        Text(
-            "Найди часть речи",
-            style = MaterialTheme.typography.titleMedium,
-            fontWeight = FontWeight.Bold,
+        KidsQuestionCard(
+            emoji = "🧩",
+            label = "Найди часть речи",
+            prompt = round.targetKind.labelRu,
+            promptSize = 32,
+            subtitle = "Послушай, что нужно найти, и нажми на слово",
+            actions = listOf("🔊 Повторить" to { speak(round.targetKind.taskSpeakRu) }),
         )
         Spacer(Modifier.height(4.dp))
-        Text(
-            "Послушай, какую часть речи нужно найти, и нажми на слово.",
-            style = MaterialTheme.typography.bodyMedium,
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
-        )
-        Spacer(Modifier.height(8.dp))
-        SurfaceHint(kind = round.targetKind)
-        Spacer(Modifier.height(8.dp))
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.End,
-            verticalAlignment = Alignment.CenterVertically,
-        ) {
-            TextButton(onClick = { speak(round.targetKind.taskSpeakRu) }) {
-                Icon(
-                    Icons.AutoMirrored.Filled.VolumeUp,
-                    contentDescription = null,
-                    modifier = Modifier
-                        .size(18.dp)
-                        .padding(end = 6.dp),
-                )
-                Text("Повторить задание")
-            }
-        }
         LazyVerticalGrid(
             columns = GridCells.Fixed(2),
             modifier = Modifier
@@ -150,14 +129,20 @@ internal fun PartsOfSpeechGamePane(
                 val wrongShown =
                     (tapFeedback as? PosTapFeedback.Wrong)?.word == item.word
                 val idle = tapFeedback is PosTapFeedback.Idle
-                PartsOfSpeechWordCard(
-                    word = item.word,
-                    showCorrectCheck = correctShown,
-                    showWrongX = wrongShown,
+                KidsAnswerTile(
+                    text = item.word.replaceFirstChar { if (it.isLowerCase()) it.titlecase() else it.toString() },
+                    index = round.choices.indexOf(item),
+                    state = when {
+                        correctShown -> KidsAnswerState.Correct
+                        wrongShown -> KidsAnswerState.Wrong
+                        else -> KidsAnswerState.Idle
+                    },
                     enabled = idle,
+                    appearKey = roundKey,
                     onClick = {
                         if (idle) {
                             if (item.word == round.correct.word) {
+                                KidsGameStreak.answered(true)
                                 tapFeedback = PosTapFeedback.Correct(item.word)
                                 val praise = POS_CORRECT_PHRASES.random(random)
                                 scope.launch { progressRepo.addPoints(8) }
@@ -165,6 +150,7 @@ internal fun PartsOfSpeechGamePane(
                                     roundKey++
                                 }
                             } else {
+                                KidsGameStreak.answered(false)
                                 tapFeedback = PosTapFeedback.Wrong(item.word)
                                 speak(POS_WRONG_PHRASES.random(random))
                                 scope.launch {

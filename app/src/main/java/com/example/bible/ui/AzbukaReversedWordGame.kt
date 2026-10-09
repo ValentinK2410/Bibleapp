@@ -112,69 +112,19 @@ internal fun ReversedWordGamePane(
             .fillMaxSize()
             .padding(16.dp),
     ) {
-        Text(
-            "Слово наоборот",
-            style = MaterialTheme.typography.titleMedium,
-            fontWeight = FontWeight.Bold,
+        KidsQuestionCard(
+            emoji = "🔁",
+            label = "Прочитай наоборот",
+            prompt = reversedShown,
+            promptSize = 30,
+            subtitle = "Это слово записано с конца. Какое слово получится?",
+            gradient = listOf(Color(0xFF6366F1), Color(0xFFEC4899)),
+            actions = listOf(
+                "🔊 Задание" to { speak(REV_TASK_TTS) },
+                "🔁 Прочитать наоборот" to { speak(reversedLettersSpacedForTts(round.answerForward)) },
+            ),
         )
         Spacer(Modifier.height(4.dp))
-        Text(
-            "Вверху — то же слово, записанное с конца. Сначала звучит подсказка, потом буквы по порядку от конца слова. Ещё можно нажать «Прочитать наоборот».",
-            style = MaterialTheme.typography.bodyMedium,
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
-        )
-        Spacer(Modifier.height(12.dp))
-        Card(
-            modifier = Modifier.fillMaxWidth(),
-            colors = CardDefaults.cardColors(
-                containerColor = MaterialTheme.colorScheme.secondaryContainer.copy(alpha = 0.6f),
-            ),
-            shape = RoundedCornerShape(16.dp),
-        ) {
-            Text(
-                reversedShown,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(vertical = 20.dp, horizontal = 16.dp),
-                style = MaterialTheme.typography.headlineSmall,
-                fontWeight = FontWeight.Bold,
-                textAlign = TextAlign.Center,
-                lineHeight = 34.sp,
-            )
-        }
-        Spacer(Modifier.height(8.dp))
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically,
-        ) {
-            TextButton(
-                onClick = { speak(REV_TASK_TTS) },
-                modifier = Modifier.weight(1f),
-            ) {
-                Icon(
-                    Icons.AutoMirrored.Filled.VolumeUp,
-                    contentDescription = null,
-                    modifier = Modifier
-                        .size(18.dp)
-                        .padding(end = 6.dp),
-                )
-                Text("Задание", maxLines = 1)
-            }
-            TextButton(
-                onClick = { speak(reversedLettersSpacedForTts(round.answerForward)) },
-                modifier = Modifier.weight(1f),
-            ) {
-                Icon(
-                    Icons.AutoMirrored.Filled.VolumeUp,
-                    contentDescription = null,
-                    modifier = Modifier
-                        .size(18.dp)
-                        .padding(end = 6.dp),
-                )
-                Text("Прочитать наоборот", maxLines = 1)
-            }
-        }
         LazyVerticalGrid(
             columns = GridCells.Fixed(2),
             modifier = Modifier
@@ -190,14 +140,20 @@ internal fun ReversedWordGamePane(
                 val wrongShown =
                     (tapFeedback as? RevTapFeedback.Wrong)?.word == word
                 val idle = tapFeedback is RevTapFeedback.Idle
-                ReversedWordChoiceCard(
-                    word = word,
-                    showCorrectCheck = correctShown,
-                    showWrongX = wrongShown,
+                KidsAnswerTile(
+                    text = word.replaceFirstChar { if (it.isLowerCase()) it.titlecase() else it.toString() },
+                    index = round.choices.indexOf(word),
+                    state = when {
+                        correctShown -> KidsAnswerState.Correct
+                        wrongShown -> KidsAnswerState.Wrong
+                        else -> KidsAnswerState.Idle
+                    },
                     enabled = idle,
+                    appearKey = roundKey,
                     onClick = {
                         if (idle) {
                             if (word == round.answerForward) {
+                                KidsGameStreak.answered(true)
                                 tapFeedback = RevTapFeedback.Correct(word)
                                 val praise = REV_CORRECT_PHRASES.random(random)
                                 scope.launch { progressRepo.addPoints(8) }
@@ -205,6 +161,7 @@ internal fun ReversedWordGamePane(
                                     roundKey++
                                 }
                             } else {
+                                KidsGameStreak.answered(false)
                                 tapFeedback = RevTapFeedback.Wrong(word)
                                 speak(REV_WRONG_PHRASES.random(random))
                                 scope.launch {

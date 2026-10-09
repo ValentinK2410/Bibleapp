@@ -5,6 +5,17 @@ import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.lazy.grid.GridCells
+import androidx.compose.foundation.lazy.grid.GridItemSpan
+import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
+import androidx.compose.foundation.lazy.grid.itemsIndexed
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.unit.sp
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
@@ -138,6 +149,7 @@ fun BibleGamesSection(
         }
         else -> {
             val game = activeGame!!
+            androidx.activity.compose.BackHandler { activeGame = null }
             Column(Modifier.fillMaxSize()) {
                 Row(
                     Modifier
@@ -222,93 +234,124 @@ fun BibleGamesSection(
 @Composable
 private fun BibleGamePicker(onPick: (BibleGameId) -> Unit) {
     val items = listOf(
-        GameCardInfo(
-            BibleGameId.SCRAMBLE,
-            "Перемешанные буквы",
-            "Собери слово из библейского текста по перемешанным буквам.",
-        ),
-        GameCardInfo(
-            BibleGameId.MISSING_WORD,
-            "Пропущенное слово",
-            "Восстанови слово, которое выпало из стиха.",
-        ),
-        GameCardInfo(
-            BibleGameId.CHUNKS,
-            "Части слова",
-            "Соедини части в правильном порядке (слоги/куски из слова).",
-        ),
-        GameCardInfo(
-            BibleGameId.FIRST_LETTER,
-            "Первая буква",
-            "Угадай, с какой буквы начинается слово из Писания.",
-        ),
-        GameCardInfo(
-            BibleGameId.SYLLABLE_IN_WORD,
-            "Где слог?",
-            "Выбери слово из Библии, в котором есть этот слог.",
-        ),
-        GameCardInfo(
-            BibleGameId.LONGEST_WORD,
-            "Самое длинное",
-            "Какое из четырёх библейских слов самое длинное?",
-        ),
-        GameCardInfo(
-            BibleGameId.SYLLABLE_COUNT,
-            "Сколько слогов?",
-            "Угадай число слогов в слове из стиха (по гласным).",
-        ),
+        GameCardInfo(BibleGameId.SCRAMBLE, "🔀 Перемешанные буквы", "Собери слово по перемешанным буквам"),
+        GameCardInfo(BibleGameId.MISSING_WORD, "🕳️ Пропущенное слово", "Какое слово выпало из стиха?"),
+        GameCardInfo(BibleGameId.CHUNKS, "🧱 Части слова", "Сложи кусочки в правильном порядке"),
+        GameCardInfo(BibleGameId.FIRST_LETTER, "🅰️ Первая буква", "С какой буквы начинается слово?"),
+        GameCardInfo(BibleGameId.SYLLABLE_IN_WORD, "🔎 Где слог?", "Найди слово с этим слогом"),
+        GameCardInfo(BibleGameId.LONGEST_WORD, "📏 Самое длинное", "Какое слово самое длинное?"),
+        GameCardInfo(BibleGameId.SYLLABLE_COUNT, "👏 Сколько слогов?", "Похлопай и посчитай слоги"),
     )
-    LazyColumn(
+    LazyVerticalGrid(
+        columns = GridCells.Fixed(2),
         contentPadding = PaddingValues(12.dp),
+        horizontalArrangement = Arrangement.spacedBy(10.dp),
         verticalArrangement = Arrangement.spacedBy(10.dp),
     ) {
-        item {
-            Text(
-                "Игры по словам и слогам из русского текста Библии",
-                style = MaterialTheme.typography.titleSmall,
-                fontWeight = FontWeight.Bold,
-                modifier = Modifier.padding(bottom = 4.dp),
-            )
+        item(span = { GridItemSpan(maxLineSpan) }) {
+            KidsBanner("📖 Игры со словами из Библии. Выбери любую!", fontSize = 16)
         }
-        items(items) { info ->
-            val icon = when (info.id) {
-                BibleGameId.SCRAMBLE -> Icons.Default.TextFields
-                BibleGameId.MISSING_WORD -> Icons.Default.QuestionMark
-                BibleGameId.CHUNKS -> Icons.Default.Extension
-                BibleGameId.FIRST_LETTER -> Icons.Default.Spellcheck
-                BibleGameId.SYLLABLE_IN_WORD -> Icons.Default.AutoAwesome
-                BibleGameId.LONGEST_WORD -> Icons.Default.Star
-                BibleGameId.SYLLABLE_COUNT -> Icons.Default.Lightbulb
-            }
-            OutlinedCard(
-                modifier = Modifier
+        itemsIndexed(items) { index, info ->
+            Column(
+                Modifier
                     .fillMaxWidth()
-                    .clickable { onPick(info.id) },
-                shape = RoundedCornerShape(14.dp),
+                    .clip(RoundedCornerShape(24.dp))
+                    .background(Brush.linearGradient(kidsGradient(index)))
+                    .clickable { onPick(info.id) }
+                    .padding(14.dp),
             ) {
-                Row(
-                    Modifier.padding(14.dp),
-                    verticalAlignment = Alignment.CenterVertically,
-                ) {
-                    Icon(icon, contentDescription = null, tint = MaterialTheme.colorScheme.primary)
-                    Spacer(Modifier.padding(8.dp))
-                    Column(Modifier.weight(1f)) {
-                        Text(info.title, fontWeight = FontWeight.SemiBold)
-                        Text(
-                            info.subtitle,
-                            style = MaterialTheme.typography.bodySmall,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        )
-                    }
-                }
+                Text(info.title.substringBefore(' '), fontSize = 34.sp)
+                Spacer(Modifier.height(6.dp))
+                Text(
+                    info.title.substringAfter(' '),
+                    color = Color.White,
+                    fontWeight = FontWeight.Black,
+                    fontSize = 16.sp,
+                    lineHeight = 19.sp,
+                    minLines = 2,
+                    maxLines = 2,
+                )
+                Text(
+                    info.subtitle,
+                    color = Color.White.copy(alpha = 0.85f),
+                    fontSize = 12.sp,
+                    lineHeight = 15.sp,
+                    minLines = 2,
+                    maxLines = 2,
+                )
             }
         }
     }
 }
 
 private fun award(scope: CoroutineScope, progressRepo: AzbukaProgressRepository, correct: Boolean) {
+    KidsGameStreak.answered(correct)
     scope.launch {
         progressRepo.addPoints(if (correct) 12 else 4)
+    }
+}
+
+private fun <T> answerState(done: Boolean, option: T, picked: T?, isRight: (T) -> Boolean): KidsAnswerState = when {
+    !done -> KidsAnswerState.Idle
+    isRight(option) -> KidsAnswerState.Correct
+    option == picked -> KidsAnswerState.Wrong
+    else -> KidsAnswerState.Dimmed
+}
+
+/** Общая раскладка библейской игры: вопрос, ответы, итог и кнопка «Дальше». */
+@Composable
+private fun BibleGameLayout(
+    emoji: String,
+    label: String,
+    prompt: String,
+    promptSize: Int = 28,
+    subtitle: String? = null,
+    actions: List<Pair<String, () -> Unit>> = emptyList(),
+    done: Boolean,
+    correct: Boolean,
+    resultText: String,
+    onNext: () -> Unit,
+    answers: @Composable () -> Unit,
+) {
+    Column(
+        Modifier
+            .fillMaxSize()
+            .verticalScroll(rememberScrollState())
+            .padding(horizontal = 14.dp, vertical = 8.dp),
+        verticalArrangement = Arrangement.spacedBy(10.dp),
+    ) {
+        KidsQuestionCard(
+            emoji = emoji,
+            label = label,
+            prompt = prompt,
+            promptSize = promptSize,
+            subtitle = subtitle,
+            actions = actions,
+        )
+        answers()
+        if (done) {
+            KidsAnswerBanner(correct = correct, text = resultText)
+        }
+        KidsBigButton(
+            text = if (done) "Дальше ➜" else "Другой вопрос",
+            onClick = onNext,
+            modifier = Modifier.fillMaxWidth(),
+            gradient = if (done) listOf(Color(0xFFF59E0B), Color(0xFFEC4899)) else listOf(Color(0xFF94A3B8), Color(0xFF64748B)),
+        )
+    }
+}
+
+@Composable
+private fun AnswerGrid(options: List<String>, columns: Int, tile: @Composable (Int, String) -> Unit) {
+    Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
+        options.chunked(columns).forEachIndexed { rowIndex, row ->
+            Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+                row.forEachIndexed { i, opt ->
+                    Box(Modifier.weight(1f)) { tile(rowIndex * columns + i, opt) }
+                }
+                repeat(columns - row.size) { Spacer(Modifier.weight(1f)) }
+            }
+        }
     }
 }
 
@@ -331,50 +374,31 @@ private fun BibleGameScramble(
     val done = picked != null
     val correct = picked?.equals(item.word, ignoreCase = true) == true
 
-    Column(Modifier.padding(16.dp)) {
-        Text("Подсказка: ${item.reference}", style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.primary)
-        Spacer(Modifier.height(8.dp))
-        Text(
-            scrambled,
-            style = MaterialTheme.typography.displaySmall,
-            fontWeight = FontWeight.Bold,
-            textAlign = TextAlign.Center,
-            modifier = Modifier.fillMaxWidth(),
-        )
-        Spacer(Modifier.height(16.dp))
-        options.forEach { opt ->
-            OutlinedCard(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(vertical = 4.dp)
-                    .clickable(enabled = !done) {
-                        picked = opt
-                        speak(opt)
-                        award(scope, progressRepo, opt.equals(item.word, ignoreCase = true))
-                    },
-                border = BorderStroke(
-                    2.dp,
-                    when {
-                        !done -> MaterialTheme.colorScheme.outline
-                        opt.equals(item.word, ignoreCase = true) -> Color(0xFF4CAF50)
-                        picked == opt -> Color(0xFFF44336)
-                        else -> MaterialTheme.colorScheme.outline.copy(alpha = 0.3f)
-                    },
-                ),
-            ) {
-                Text(opt, Modifier.padding(16.dp), style = MaterialTheme.typography.titleMedium)
-            }
-        }
-        AnimatedVisibility(done) {
-            Text(
-                if (correct) "Верно! Слово из: «${item.verseText.take(80)}…»" else "Правильно: ${item.word}",
-                style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                modifier = Modifier.padding(top = 8.dp),
+    BibleGameLayout(
+        emoji = "🔀",
+        label = "Собери слово · ${item.reference}",
+        prompt = scrambled.uppercase().toCharArray().joinToString(" "),
+        promptSize = 30,
+        done = done,
+        correct = correct,
+        resultText = if (correct) "Верно! «${item.verseText.take(70)}…»" else "Правильно: ${item.word}",
+        onNext = { round++ },
+    ) {
+        AnswerGrid(options, 2) { i, opt ->
+            KidsAnswerTile(
+                text = opt,
+                index = i,
+                state = answerState(done, opt, picked) { it.equals(item.word, ignoreCase = true) },
+                enabled = !done,
+                fontSize = 18,
+                appearKey = round,
+                onClick = {
+                    picked = opt
+                    speak(opt)
+                    award(scope, progressRepo, opt.equals(item.word, ignoreCase = true))
+                },
             )
         }
-        Spacer(Modifier.height(8.dp))
-        TextButton(onClick = { round++ }) { Text("Другой вопрос") }
     }
 }
 
@@ -402,32 +426,32 @@ private fun BibleGameMissingWord(
     val done = picked != null
     val correct = picked?.equals(item.word, ignoreCase = true) == true
 
-    Column(Modifier.padding(16.dp)) {
-        Text(item.reference, style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.primary)
-        Spacer(Modifier.height(8.dp))
-        Text(masked, style = MaterialTheme.typography.bodyLarge)
-        Spacer(Modifier.height(16.dp))
-        options.forEach { opt ->
-            OutlinedCard(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(vertical = 4.dp)
-                    .clickable(enabled = !done) {
-                        picked = opt
-                        speak(opt)
-                        award(scope, progressRepo, opt.equals(item.word, ignoreCase = true))
-                    },
-            ) {
-                Text(opt, Modifier.padding(16.dp), style = MaterialTheme.typography.titleMedium)
-            }
-        }
-        AnimatedVisibility(done) {
-            Text(
-                if (correct) "Так и есть!" else "Было: ${item.word}",
-                modifier = Modifier.padding(top = 8.dp),
+    BibleGameLayout(
+        emoji = "🕳️",
+        label = "Какое слово пропало? · ${item.reference}",
+        prompt = masked,
+        promptSize = 19,
+        actions = listOf("🔊 Прочитать" to { speak(masked.replace("______", "пропуск")) }),
+        done = done,
+        correct = correct,
+        resultText = if (correct) "Так и есть!" else "Было: ${item.word}",
+        onNext = { round++ },
+    ) {
+        AnswerGrid(options, 2) { i, opt ->
+            KidsAnswerTile(
+                text = opt,
+                index = i,
+                state = answerState(done, opt, picked) { it.equals(item.word, ignoreCase = true) },
+                enabled = !done,
+                fontSize = 18,
+                appearKey = round,
+                onClick = {
+                    picked = opt
+                    speak(opt)
+                    award(scope, progressRepo, opt.equals(item.word, ignoreCase = true))
+                },
             )
         }
-        TextButton(onClick = { round++ }) { Text("Дальше") }
     }
 }
 
@@ -462,31 +486,31 @@ private fun BibleGameChunks(
     val done = picked != null
     val correct = picked == correctOrder
 
-    Column(Modifier.padding(16.dp)) {
-        Text("Части: ${parts.joinToString(" · ")}", style = MaterialTheme.typography.titleSmall)
-        Text(item.reference, style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
-        Spacer(Modifier.height(12.dp))
-        options.forEach { opt ->
-            OutlinedCard(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(vertical = 4.dp)
-                    .clickable(enabled = !done) {
-                        picked = opt
-                        speak(opt)
-                        award(scope, progressRepo, opt == correctOrder)
-                    },
-            ) {
-                Text(opt, Modifier.padding(14.dp), maxLines = 2, overflow = TextOverflow.Ellipsis)
-            }
-        }
-        AnimatedVisibility(done) {
-            Text(
-                if (correct) "Верно: ${item.word}" else "Слово: ${item.word}",
-                modifier = Modifier.padding(top = 8.dp),
+    BibleGameLayout(
+        emoji = "🧱",
+        label = "Сложи кусочки · ${item.reference}",
+        prompt = parts.joinToString("  +  "),
+        promptSize = 28,
+        done = done,
+        correct = correct,
+        resultText = if (correct) "Верно: ${item.word}" else "Слово: ${item.word}",
+        onNext = { round++ },
+    ) {
+        AnswerGrid(options, 2) { i, opt ->
+            KidsAnswerTile(
+                text = opt,
+                index = i,
+                state = answerState(done, opt, picked) { it == correctOrder },
+                enabled = !done,
+                fontSize = 17,
+                appearKey = round,
+                onClick = {
+                    picked = opt
+                    speak(opt)
+                    award(scope, progressRepo, opt == correctOrder)
+                },
             )
         }
-        TextButton(onClick = { round++ }) { Text("Дальше") }
     }
 }
 
@@ -504,7 +528,7 @@ private fun BibleGameFirstLetter(
     }
     val w = item.word
     val first = w.first().uppercaseChar()
-    val mask = "·" + w.drop(1)
+    val mask = "?" + w.drop(1)
     val letters = remember(first, random) {
         val alphabet = ('А'..'Я').toList() + listOf('Ё')
         val wrong = alphabet.filter { it != first }.shuffled(random).take(3)
@@ -514,28 +538,32 @@ private fun BibleGameFirstLetter(
     val done = picked != null
     val correct = picked == first
 
-    Column(Modifier.padding(16.dp)) {
-        Text(mask, style = MaterialTheme.typography.displaySmall, fontWeight = FontWeight.Bold)
-        Text(item.reference, style = MaterialTheme.typography.labelSmall)
-        Spacer(Modifier.height(16.dp))
-        Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceEvenly) {
-            letters.forEach { ch ->
-                FilterChip(
-                    selected = picked == ch,
-                    onClick = {
-                        if (done) return@FilterChip
-                        picked = ch
-                        speak(ch.toString())
-                        award(scope, progressRepo, ch == first)
-                    },
-                    label = { Text(ch.toString(), fontWeight = FontWeight.Bold) },
-                )
-            }
+    BibleGameLayout(
+        emoji = "🅰️",
+        label = "С какой буквы? · ${item.reference}",
+        prompt = mask,
+        promptSize = 34,
+        done = done,
+        correct = correct,
+        resultText = if (correct) "Верно: $w" else "Это слово: $w",
+        onNext = { round++ },
+    ) {
+        AnswerGrid(letters.map { it.toString() }, 4) { i, opt ->
+            KidsAnswerTile(
+                text = opt,
+                index = i,
+                state = answerState(done, opt.first(), picked) { it == first },
+                enabled = !done,
+                height = 84.dp,
+                fontSize = 34,
+                appearKey = round,
+                onClick = {
+                    picked = opt.first()
+                    speak(opt)
+                    award(scope, progressRepo, opt.first() == first)
+                },
+            )
         }
-        AnimatedVisibility(done) {
-            Text(if (correct) "Верно: $w" else "Это слово: $w", modifier = Modifier.padding(top = 12.dp))
-        }
-        TextButton(onClick = { round++ }) { Text("Дальше") }
     }
 }
 
@@ -572,30 +600,32 @@ private fun BibleGameSyllableInWord(
     val done = picked != null
     val correct = picked?.equals(item.word, ignoreCase = true) == true
 
-    Column(Modifier.padding(16.dp)) {
-        Text("Найди слово, где есть слог «$syllable»", style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.Bold)
-        Spacer(Modifier.height(8.dp))
-        options.forEach { opt ->
-            OutlinedCard(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(vertical = 4.dp)
-                    .clickable(enabled = !done) {
-                        picked = opt
-                        speak(opt)
-                        award(scope, progressRepo, opt.equals(item.word, ignoreCase = true))
-                    },
-            ) {
-                Text(opt, Modifier.padding(14.dp))
-            }
-        }
-        AnimatedVisibility(done) {
-            Text(
-                if (correct) "Верно! (${item.reference})" else "Это: ${item.word}",
-                modifier = Modifier.padding(top = 8.dp),
+    BibleGameLayout(
+        emoji = "🔎",
+        label = "В каком слове есть слог?",
+        prompt = "«${syllable.uppercase()}»",
+        promptSize = 40,
+        actions = listOf("🔊 Слог" to { speak(syllable) }),
+        done = done,
+        correct = correct,
+        resultText = if (correct) "Верно! (${item.reference})" else "Это: ${item.word}",
+        onNext = { round++ },
+    ) {
+        AnswerGrid(options, 2) { i, opt ->
+            KidsAnswerTile(
+                text = opt,
+                index = i,
+                state = answerState(done, opt, picked) { it.equals(item.word, ignoreCase = true) },
+                enabled = !done,
+                fontSize = 18,
+                appearKey = round,
+                onClick = {
+                    picked = opt
+                    speak(opt)
+                    award(scope, progressRepo, opt.equals(item.word, ignoreCase = true))
+                },
             )
         }
-        TextButton(onClick = { round++ }) { Text("Дальше") }
     }
 }
 
@@ -618,38 +648,32 @@ private fun BibleGameLongestWord(
     val done = picked != null
     val correct = picked?.equals(longest.word, ignoreCase = true) == true
 
-    Column(Modifier.padding(16.dp)) {
-        Text("Где самое длинное слово?", style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.Bold)
-        Text(
-            "Все слова взяты из русского текста Библии.",
-            style = MaterialTheme.typography.bodySmall,
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
-        )
-        Spacer(Modifier.height(12.dp))
-        four.forEach { item ->
-            OutlinedCard(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(vertical = 4.dp)
-                    .clickable(enabled = !done) {
-                        picked = item.word
-                        speak(item.word)
-                        award(scope, progressRepo, item.word.equals(longest.word, ignoreCase = true))
-                    },
-            ) {
-                Column(Modifier.padding(14.dp)) {
-                    Text(item.word, style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
-                    Text(item.reference, style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
-                }
-            }
-        }
-        AnimatedVisibility(done) {
-            Text(
-                if (correct) "Верно!" else "Самое длинное: ${longest.word}",
-                modifier = Modifier.padding(top = 8.dp),
+    BibleGameLayout(
+        emoji = "📏",
+        label = "Слова из Библии",
+        prompt = "Где самое длинное слово?",
+        promptSize = 24,
+        done = done,
+        correct = correct,
+        resultText = if (correct) "Верно! ${longest.word.length} букв" else "Самое длинное: ${longest.word}",
+        onNext = { round++ },
+    ) {
+        AnswerGrid(four.map { it.word }, 2) { i, word ->
+            KidsAnswerTile(
+                text = word,
+                index = i,
+                state = answerState(done, word, picked) { it.equals(longest.word, ignoreCase = true) },
+                enabled = !done,
+                fontSize = 18,
+                subtitle = four[i].reference,
+                appearKey = round,
+                onClick = {
+                    picked = word
+                    speak(word)
+                    award(scope, progressRepo, word.equals(longest.word, ignoreCase = true))
+                },
             )
         }
-        TextButton(onClick = { round++ }) { Text("Дальше") }
     }
 }
 
@@ -679,35 +703,33 @@ private fun BibleGameSyllableCount(
     val done = picked != null
     val correct = picked == syllables
 
-    Column(Modifier.padding(16.dp)) {
-        Text("Слово: ${item.word}", style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.Bold)
-        Text(item.reference, style = MaterialTheme.typography.labelSmall)
-        Text(
-            "Сколько в нём слогов? (считаем по гласным буквам)",
-            style = MaterialTheme.typography.bodySmall,
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
-        )
-        Spacer(Modifier.height(12.dp))
-        Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceEvenly) {
-            options.forEach { n ->
-                FilterChip(
-                    selected = picked == n,
-                    onClick = {
-                        if (done) return@FilterChip
-                        picked = n
-                        speak(n.toString())
-                        award(scope, progressRepo, n == syllables)
-                    },
-                    label = { Text(n.toString()) },
-                )
-            }
-        }
-        AnimatedVisibility(done) {
-            Text(
-                if (correct) "Верно: $syllables слог(ов)" else "Было: $syllables",
-                modifier = Modifier.padding(top = 12.dp),
+    BibleGameLayout(
+        emoji = "👏",
+        label = "Сколько слогов? · ${item.reference}",
+        prompt = item.word,
+        promptSize = 34,
+        subtitle = "Похлопай в ладоши на каждый слог. Слогов столько, сколько гласных.",
+        actions = listOf("🔊 Слово" to { speak(item.word) }),
+        done = done,
+        correct = correct,
+        resultText = if (correct) "Верно: $syllables" else "Слогов: $syllables",
+        onNext = { round++ },
+    ) {
+        AnswerGrid(options.map { it.toString() }, 4) { i, opt ->
+            KidsAnswerTile(
+                text = opt,
+                index = i,
+                state = answerState(done, opt.toInt(), picked) { it == syllables },
+                enabled = !done,
+                height = 84.dp,
+                fontSize = 34,
+                appearKey = round,
+                onClick = {
+                    picked = opt.toInt()
+                    speak(opt)
+                    award(scope, progressRepo, opt.toInt() == syllables)
+                },
             )
         }
-        TextButton(onClick = { round++ }) { Text("Дальше") }
     }
 }
