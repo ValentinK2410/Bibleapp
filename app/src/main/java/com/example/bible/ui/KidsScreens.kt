@@ -446,7 +446,7 @@ private val KIDS_HUB_DEFAULT_ROWS: List<KidsHubRow> = listOf(
     ),
     KidsHubRow(
         title = "Цвета",
-        subtitle = "Названия цветов и оттенков",
+        subtitle = "Игра «Найди цвет» и названия цветов",
         route = "kids_colors",
         icon = Icons.Filled.Palette,
         cardStyle = KidsHubCardVisual.Pesnopenie,

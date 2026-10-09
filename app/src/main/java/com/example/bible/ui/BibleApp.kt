@@ -1362,11 +1362,7 @@ private fun BibleNavHost(
             )
         }
         composable("kids_colors") {
-            KidsTopicScreen(
-                title = "Цвета",
-                topicItems = KidsTopicsRepository.colors,
-                onBack = { navController.navigateUp() },
-            )
+            KidsColorsScreen(onBack = { navController.navigateUp() })
         }
         composable("kids_seasons") {
             KidsSeasonsScreen(

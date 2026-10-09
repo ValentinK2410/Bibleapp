@@ -19,6 +19,8 @@ enum class KidsSfx(val resId: Int, val volume: Float) {
     PIPE_ROTATE(R.raw.kids_sfx_pipe_rotate, 0.8f),
     PIPE_CONNECT(R.raw.kids_sfx_pipe_connect, 0.7f),
     WATER(R.raw.kids_sfx_water, 0.85f),
+    CORRECT(R.raw.kids_sfx_correct, 0.85f),
+    WRONG(R.raw.kids_sfx_wrong, 0.7f),
 }
 
 enum class KidsMusicTrack(val resId: Int) {
