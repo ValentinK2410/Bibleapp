@@ -1,6 +1,8 @@
 package com.example.bible.ui
 
 import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.material.icons.automirrored.filled.Backspace
 import androidx.compose.material.icons.filled.Delete
@@ -1086,22 +1088,46 @@ private fun CifryMathSection(
     val difficulty by mathRepo.difficulty.collectAsStateWithLifecycle(initialValue = 0)
     val history by mathRepo.solvedHistory.collectAsStateWithLifecycle(initialValue = emptyList())
     val subTabs = remember {
-        listOf("➕ Сложение", "➖ Вычитание", "✖️ Умножение", "➗ Деление", "🏆 Мои достижения")
+        listOf("+" to "Сложение", "−" to "Вычитание", "×" to "Умножение", "÷" to "Деление", "🏆" to "Мои достижения")
     }
     val mathSectionPager = rememberPagerState(pageCount = { subTabs.size })
     val subScope = rememberCoroutineScope()
 
     Column(Modifier.fillMaxSize()) {
-        KidsTabs(
-            tabs = listOf("🌱 Лёгкий", "🌿 Средний", "🔥 Трудный", "🚀 Эксперт"),
-            selected = difficulty,
-            onSelect = { i -> subScope.launch { mathRepo.setDifficulty(i) } },
-        )
-        KidsTabs(
-            tabs = subTabs,
-            selected = mathSectionPager.currentPage,
-            onSelect = { i -> subScope.launch { mathSectionPager.animateScrollToPage(i) } },
-        )
+        Row(
+            Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 10.dp, vertical = 4.dp),
+            horizontalArrangement = Arrangement.spacedBy(6.dp),
+        ) {
+            listOf("🌱" to "Лёгкий", "🌿" to "Средний", "🔥" to "Трудный", "🚀" to "Эксперт").forEachIndexed { i, (emoji, label) ->
+                CifryPictureTab(
+                    symbol = emoji,
+                    caption = label,
+                    description = label,
+                    gradient = kidsGradient(i + 4),
+                    selected = difficulty == i,
+                    onClick = { subScope.launch { mathRepo.setDifficulty(i) } },
+                )
+            }
+        }
+        Row(
+            Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 10.dp, vertical = 4.dp),
+            horizontalArrangement = Arrangement.spacedBy(6.dp),
+        ) {
+            subTabs.forEachIndexed { i, (symbol, label) ->
+                CifryPictureTab(
+                    symbol = symbol,
+                    caption = null,
+                    description = label,
+                    gradient = kidsGradient(i),
+                    selected = mathSectionPager.currentPage == i,
+                    onClick = { subScope.launch { mathSectionPager.animateScrollToPage(i) } },
+                )
+            }
+        }
         HorizontalPager(
             state = mathSectionPager,
             beyondViewportPageCount = 0,
@@ -1192,6 +1218,55 @@ private fun CifryMathSection(
                 }
                 else -> CifryMathAchievementsTab(history = history)
             }
+        }
+    }
+}
+
+/** Вкладка-картинка: крупный знак, без прокрутки — все вкладки делят ширину поровну. */
+@Composable
+private fun RowScope.CifryPictureTab(
+    symbol: String,
+    caption: String?,
+    description: String,
+    gradient: List<Color>,
+    selected: Boolean,
+    onClick: () -> Unit,
+) {
+    val shape = RoundedCornerShape(18.dp)
+    Column(
+        Modifier
+            .weight(1f)
+            .height(if (caption != null) 52.dp else 50.dp)
+            .clip(shape)
+            .then(
+                if (selected) Modifier
+                    .background(Brush.linearGradient(gradient))
+                    .border(2.dp, Color.White.copy(alpha = 0.7f), shape)
+                else Modifier
+                    .background(gradient.first().copy(alpha = 0.12f))
+                    .border(2.dp, gradient.first().copy(alpha = 0.45f), shape),
+            )
+            .semantics { contentDescription = description }
+            .clickable(onClick = onClick),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.Center,
+    ) {
+        Text(
+            symbol,
+            fontSize = if (caption != null) 20.sp else 32.sp,
+            lineHeight = if (caption != null) 22.sp else 34.sp,
+            fontWeight = FontWeight.Black,
+            color = if (selected) Color.White else gradient.first(),
+        )
+        if (caption != null) {
+            Text(
+                caption,
+                fontSize = 10.sp,
+                lineHeight = 11.sp,
+                fontWeight = FontWeight.Bold,
+                maxLines = 1,
+                color = if (selected) Color.White else gradient.first(),
+            )
         }
     }
 }
