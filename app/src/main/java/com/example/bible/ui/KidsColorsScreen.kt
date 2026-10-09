@@ -311,7 +311,10 @@ private fun FindColorGame(speak: (String) -> Unit, ttsReady: Boolean) {
 }
 
 @Composable
-private fun ColorProgress(results: List<Boolean>, current: Int) {
+private fun ColorProgress(results: List<Boolean>, current: Int) = KidsRoundsProgress(results, current, COLOR_ROUNDS)
+
+@Composable
+internal fun KidsRoundsProgress(results: List<Boolean>, current: Int, total: Int) {
     Row(
         Modifier
             .fillMaxWidth()
@@ -321,7 +324,7 @@ private fun ColorProgress(results: List<Boolean>, current: Int) {
         horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically,
     ) {
-        repeat(COLOR_ROUNDS) { i ->
+        repeat(total) { i ->
             val text = when {
                 i < results.size && results[i] -> "⭐"
                 i < results.size -> "✔️"
@@ -457,8 +460,12 @@ private fun ColorBlob(
 }
 
 @Composable
-private fun ColorGameFinish(firstTry: Int, onAgain: () -> Unit) {
-    val stars = (firstTry * 3) / 10
+private fun ColorGameFinish(firstTry: Int, onAgain: () -> Unit) =
+    KidsGameFinish(firstTry = firstTry, total = COLOR_ROUNDS, points = firstTry * 3, onAgain = onAgain)
+
+@Composable
+internal fun KidsGameFinish(firstTry: Int, total: Int, points: Int, onAgain: () -> Unit) {
+    val stars = points / 10
     Box(Modifier.fillMaxSize()) {
         KidsConfetti(Modifier.fillMaxSize())
         Column(
@@ -472,7 +479,7 @@ private fun ColorGameFinish(firstTry: Int, onAgain: () -> Unit) {
             Text("Ура! Молодец!", fontSize = 32.sp, fontWeight = FontWeight.Black, textAlign = TextAlign.Center)
             Spacer(Modifier.height(8.dp))
             Text(
-                "С первого раза: $firstTry из $COLOR_ROUNDS",
+                "С первого раза: $firstTry из $total",
                 fontSize = 20.sp,
                 fontWeight = FontWeight.Bold,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,

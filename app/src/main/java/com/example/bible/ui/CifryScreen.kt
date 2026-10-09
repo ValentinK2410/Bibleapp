@@ -1,6 +1,11 @@
 package com.example.bible.ui
 
 import androidx.compose.ui.graphics.Brush
+import androidx.compose.foundation.gestures.detectTapGestures
+import androidx.compose.material.icons.automirrored.filled.Backspace
+import androidx.compose.material.icons.filled.Delete
+import com.example.bible.games.KidsGameAudio
+import com.example.bible.games.KidsSfx
 import android.content.res.Configuration
 import android.os.Handler
 import android.os.Looper
@@ -20,6 +25,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
@@ -121,7 +127,6 @@ import com.example.bible.data.CifryMathMode
 import com.example.bible.data.CifryMathRepository
 import com.example.bible.data.CifryMathSolvedEntry
 import com.example.bible.data.CifryRepository
-import com.example.bible.data.CifryShapes
 import com.example.bible.data.DigitInfo
 import com.example.bible.data.MathVisualTheme
 import com.example.bible.data.OperandBoundsMode
@@ -146,32 +151,6 @@ import kotlin.math.max
 import kotlin.math.roundToInt
 import kotlin.math.sin
 import kotlin.random.Random
-
-private val CIFRY_GAME_WRONG_PHRASES = listOf(
-    "Неправильно. Попробуй ещё.",
-    "Неверно, попробуй ещё.",
-    "Не та цифра. Ищи дальше.",
-    "Пока не угадано. Подумай ещё раз.",
-    "Мимо! Попробуй другую цифру.",
-    "Не подходит. Ищи нужную.",
-    "Это другая цифра.",
-    "Ещё не то. Ищи дальше.",
-    "Нет, смотри внимательнее.",
-    "Неверно. Попробуй ещё раз.",
-)
-
-private val CIFRY_GAME_CORRECT_PHRASES = listOf(
-    "Отлично! Верно!",
-    "Супер! Угадано!",
-    "Здорово! Так держать!",
-    "Правильно! Очень хорошо!",
-    "Да! Всё получилось!",
-    "Класс! Получилось!",
-    "Ура! Верно!",
-    "Точно! Супер!",
-    "Прекрасно! Так и нужно!",
-    "Чудесно! Верно угадано!",
-)
 
 private val CIFRY_MATH_WRONG = listOf(
     "Пока неверно. Попробуй ещё.",
@@ -211,31 +190,12 @@ internal class CifrySandboxViewModel : ViewModel() {
     val chain = mutableStateListOf<Int>()
 }
 
-private sealed class DigitTapFeedback {
-    data object Idle : DigitTapFeedback()
-    data class Correct(val value: Int) : DigitTapFeedback()
-    data class Wrong(val value: Int) : DigitTapFeedback()
-}
-
-private data class FindDigitRound(
-    val target: DigitInfo,
-    val choices: List<DigitInfo>,
-)
-
-private fun nextFindDigitRound(random: Random): FindDigitRound {
-    val all = CifryRepository.DIGITS
-    val target = all[random.nextInt(all.size)]
-    val wrong = all.filter { it.value != target.value }.shuffled(random).take(3)
-    val choices = (wrong + target).shuffled(random)
-    return FindDigitRound(target, choices)
-}
-
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun CifryScreen(
     onBack: () -> Unit,
 ) {
-    val tabs = listOf("Цифры", "Песочница", "Фигуры", "Игры", "Математика")
+    val tabs = listOf("🔢 Цифры", "🧩 Песочница", "🔺 Фигуры", "🎮 Игры", "➕ Математика")
     val pagerState = rememberPagerState(pageCount = { tabs.size })
     val scope = rememberCoroutineScope()
     val context = LocalContext.current
@@ -327,6 +287,7 @@ fun CifryScreen(
                     }
                 },
                 actions = {
+                    KidsAudioToggles()
                     IconButton(onClick = { tts?.stop() }) {
                         Icon(Icons.Filled.Stop, contentDescription = stringResource(R.string.audio_stop))
                     }
@@ -348,14 +309,8 @@ fun CifryScreen(
                 when (page) {
                     0 -> CifryDigitsTab(speak = speak)
                     1 -> CifrySandboxTab(speak = speak)
-                    2 -> CifryShapesTab(speak = speak)
-                    3 -> CifryFindDigitGameTab(
-                        speak = speak,
-                        speakWhenDone = speakWhenDone,
-                        progressRepo = progressRepo,
-                        scope = scope,
-                        isActive = activePage == 3,
-                    )
+                    2 -> CifryShapesTab(speak = speak, isActive = activePage == 2)
+                    3 -> CifryGamesTab(speak = speak, isActive = activePage == 3)
                     4 -> CifryMathSection(
                         speak = speak,
                         speakWhenDone = speakWhenDone,
@@ -364,76 +319,6 @@ fun CifryScreen(
                         scope = scope,
                         isActive = activePage == 4,
                     )
-                }
-            }
-        }
-    }
-}
-
-@Composable
-private fun CifryShapesTab(
-    speak: (String) -> Unit,
-) {
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(horizontal = 8.dp),
-    ) {
-        Text(
-            "Нажми на фигуру — услышишь название.",
-            style = MaterialTheme.typography.labelSmall,
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
-            modifier = Modifier.padding(bottom = 6.dp),
-        )
-        LazyVerticalGrid(
-            columns = GridCells.Adaptive(minSize = 108.dp),
-            modifier = Modifier.fillMaxSize(),
-            contentPadding = PaddingValues(bottom = 12.dp),
-            horizontalArrangement = Arrangement.spacedBy(8.dp),
-            verticalArrangement = Arrangement.spacedBy(8.dp),
-        ) {
-            items(CifryShapes.all, key = { it.nameRu }) { shape ->
-                Card(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .clickable { speak(shape.speak) },
-                    colors = CardDefaults.cardColors(
-                        containerColor = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.3f),
-                    ),
-                    border = BorderStroke(1.dp, MaterialTheme.colorScheme.primary.copy(alpha = 0.35f)),
-                    shape = RoundedCornerShape(14.dp),
-                ) {
-                    Column(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(horizontal = 8.dp, vertical = 12.dp),
-                        horizontalAlignment = Alignment.CenterHorizontally,
-                    ) {
-                        if (shape.imageRes != null) {
-                            Image(
-                                painter = painterResource(shape.imageRes),
-                                contentDescription = shape.nameRu,
-                                modifier = Modifier.size(40.dp),
-                                colorFilter = ColorFilter.tint(MaterialTheme.colorScheme.onSurface),
-                            )
-                        } else {
-                            Text(
-                                shape.glyph,
-                                fontSize = 34.sp,
-                                lineHeight = 38.sp,
-                                textAlign = TextAlign.Center,
-                            )
-                        }
-                        Spacer(Modifier.height(6.dp))
-                        Text(
-                            shape.nameRu,
-                            style = MaterialTheme.typography.labelLarge,
-                            fontWeight = FontWeight.Medium,
-                            textAlign = TextAlign.Center,
-                            maxLines = 3,
-                            lineHeight = 16.sp,
-                        )
-                    }
                 }
             }
         }
@@ -499,7 +384,10 @@ private fun CifryDigitsLearnGrid(
                                 CifryDigitLearnCell(
                                     digit = info,
                                     compactHints = isLandscape,
-                                    onClick = { speak(info.nameRu) },
+                                    onClick = {
+                                    KidsGameAudio.play(KidsSfx.TAP)
+                                    speak(info.nameRu)
+                                },
                                     modifier = Modifier.fillMaxSize(),
                                 )
                             }
@@ -511,7 +399,10 @@ private fun CifryDigitsLearnGrid(
                             CifryDigitLearnCell(
                                 digit = info,
                                 compactHints = isLandscape,
-                                onClick = { speak(info.nameRu) },
+                                onClick = {
+                                    KidsGameAudio.play(KidsSfx.TAP)
+                                    speak(info.nameRu)
+                                },
                                 modifier = Modifier.fillMaxSize(),
                             )
                         }
@@ -645,64 +536,19 @@ private fun CifrySandboxChainRowScaleToFit(
 private fun CifrySandboxToolbar(
     chainNotEmpty: Boolean,
     onClear: () -> Unit,
+    onBackspace: () -> Unit,
     onListen: () -> Unit,
 ) {
     Row(
-        modifier = Modifier.fillMaxWidth(),
-        horizontalArrangement = Arrangement.SpaceBetween,
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(vertical = 4.dp),
+        horizontalArrangement = Arrangement.spacedBy(8.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
-        TextButton(onClick = onClear, enabled = chainNotEmpty) {
-            Text("Очистить", style = MaterialTheme.typography.labelLarge)
-        }
-        FilledTonalButton(
-            onClick = onListen,
-            enabled = chainNotEmpty,
-            contentPadding = PaddingValues(horizontal = 12.dp, vertical = 6.dp),
-        ) {
-            Icon(
-                Icons.AutoMirrored.Filled.VolumeUp,
-                contentDescription = null,
-                modifier = Modifier.padding(end = 6.dp),
-            )
-            Text("Прослушать число", style = MaterialTheme.typography.labelLarge)
-        }
-    }
-}
-
-@Composable
-private fun CifrySandboxPaletteLazyGrid(
-    modifier: Modifier = Modifier,
-    columns: Int,
-    tapSlopPx: Float,
-    swipeUpPx: Float,
-    workspaceCoordsState: State<LayoutCoordinates?>,
-    paletteCoordsMap: MutableMap<Int, LayoutCoordinates>,
-    paletteGhostDigit: Int?,
-    onAddDigit: (Int) -> Unit,
-    onSpeakPaletteDigit: (Int) -> Unit,
-    onPaletteDragWindow: (Int?, Offset?) -> Unit,
-) {
-    LazyVerticalGrid(
-        columns = GridCells.Fixed(columns),
-        modifier = modifier,
-        contentPadding = PaddingValues(bottom = 4.dp),
-        horizontalArrangement = Arrangement.spacedBy(3.dp),
-        verticalArrangement = Arrangement.spacedBy(3.dp),
-    ) {
-        items(CifryRepository.DIGITS, key = { it.value }) { info ->
-            CifrySandboxPaletteDigit(
-                digit = info.value,
-                tapSlopPx = tapSlopPx,
-                swipeUpPx = swipeUpPx,
-                workspaceCoordsState = workspaceCoordsState,
-                paletteCoordsMap = paletteCoordsMap,
-                onAddToChain = { onAddDigit(info.value) },
-                onSpeakOnTap = { onSpeakPaletteDigit(info.value) },
-                onPaletteDragWindow = onPaletteDragWindow,
-                draggingThis = paletteGhostDigit == info.value,
-            )
-        }
+        SandboxIconButton(Icons.AutoMirrored.Filled.VolumeUp, "Прочитать число", kidsGradient(2), enabled = chainNotEmpty, onClick = onListen)
+        SandboxIconButton(Icons.AutoMirrored.Filled.Backspace, "Стереть", kidsGradient(6), enabled = chainNotEmpty, onClick = onBackspace)
+        SandboxIconButton(Icons.Filled.Delete, "Очистить", kidsGradient(3), enabled = chainNotEmpty, onClick = onClear)
     }
 }
 
@@ -719,19 +565,23 @@ private fun CifrySandboxLandscapePalette(
     onPaletteDragWindow: (Int?, Offset?) -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    val rows = remember(columns) { CifryRepository.DIGITS.chunked(columns) }
+    val rows = remember(columns) { (CifryRepository.DIGITS.drop(1) + CifryRepository.DIGITS.first()).chunked(columns) }
     Column(
         modifier = modifier.fillMaxSize(),
-        verticalArrangement = Arrangement.spacedBy(2.dp),
+        verticalArrangement = Arrangement.spacedBy(6.dp),
     ) {
         rows.forEach { rowDigits ->
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
                     .weight(1f),
-                horizontalArrangement = Arrangement.spacedBy(2.dp),
+                horizontalArrangement = Arrangement.spacedBy(6.dp),
                 verticalAlignment = Alignment.CenterVertically,
             ) {
+                val lead = (columns - rowDigits.size) / 2
+                repeat(lead) {
+                    Spacer(Modifier.weight(1f).fillMaxHeight())
+                }
                 rowDigits.forEach { info ->
                     Box(modifier = Modifier.weight(1f).fillMaxHeight()) {
                         CifrySandboxPaletteDigit(
@@ -748,7 +598,7 @@ private fun CifrySandboxLandscapePalette(
                         )
                     }
                 }
-                repeat(columns - rowDigits.size) {
+                repeat(columns - rowDigits.size - lead) {
                     Spacer(Modifier.weight(1f).fillMaxHeight())
                 }
             }
@@ -769,19 +619,21 @@ private fun CifrySandboxDropZoneBox(
 ) {
     Box(
         modifier = modifier
-            .clip(RoundedCornerShape(14.dp))
+            .clip(RoundedCornerShape(22.dp))
+            .background(Brush.linearGradient(KidsNightGradient))
             .border(
-                BorderStroke(2.dp, MaterialTheme.colorScheme.primary.copy(alpha = 0.45f)),
-                RoundedCornerShape(14.dp),
+                BorderStroke(2.dp, Color.White.copy(alpha = 0.25f)),
+                RoundedCornerShape(22.dp),
             )
-            .background(MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.45f))
             .onGloballyPositioned { onWorkspaceCoords(it) },
     ) {
         if (chain.isEmpty()) {
             Text(
-                "Перетащите цифры сюда",
-                style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                "✨ Нажми на цифру или перетащи её сюда",
+                fontSize = 16.sp,
+                fontWeight = FontWeight.Bold,
+                textAlign = TextAlign.Center,
+                color = Color.White.copy(alpha = 0.85f),
                 modifier = Modifier
                     .align(Alignment.Center)
                     .padding(horizontal = 10.dp, vertical = 8.dp),
@@ -800,7 +652,7 @@ private fun CifrySandboxDropZoneBox(
                                 .width(14.dp)
                                 .height(4.dp)
                                 .clip(RoundedCornerShape(2.dp))
-                                .background(MaterialTheme.colorScheme.primary.copy(alpha = 0.55f)),
+                                .background(Color.White.copy(alpha = 0.6f)),
                         )
                         Spacer(Modifier.width(4.dp))
                     }
@@ -854,19 +706,19 @@ private fun CifrySandboxDragGhostBox(
                 )
             }
             .size(ghostSize)
-            .clip(RoundedCornerShape(16.dp))
-            .background(MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.95f))
+            .clip(RoundedCornerShape(18.dp))
+            .background(Brush.linearGradient(kidsGradient(digit)))
             .border(
-                BorderStroke(2.5.dp, MaterialTheme.colorScheme.primary),
-                RoundedCornerShape(16.dp),
+                BorderStroke(3.dp, Color.White),
+                RoundedCornerShape(18.dp),
             ),
         contentAlignment = Alignment.Center,
     ) {
         Text(
             "$digit",
-            fontSize = 28.sp,
-            fontWeight = FontWeight.Bold,
-            color = MaterialTheme.colorScheme.onPrimaryContainer,
+            fontSize = 34.sp,
+            fontWeight = FontWeight.Black,
+            color = Color.White,
         )
     }
 }
@@ -889,6 +741,14 @@ private fun CifrySandboxPaletteDigit(
         modifier = modifier
             .alpha(if (draggingThis) 0.35f else 1f)
             .onGloballyPositioned { paletteCoordsMap[digit] = it }
+            .pointerInput(digit) {
+                detectTapGestures(
+                    onTap = {
+                        onSpeakOnTapState.value()
+                        onAddToChain()
+                    },
+                )
+            }
             .pointerInput(digit, tapSlopPx, swipeUpPx) {
                 var dragStart = Offset.Zero
                 var dragAccum = Offset.Zero
@@ -935,23 +795,19 @@ private fun CifrySandboxPaletteDigit(
         BoxWithConstraints(Modifier.fillMaxSize()) {
             val side = min(maxWidth.value, maxHeight.value)
             val corner = (side * 0.22f).dp.coerceIn(3.dp, 11.dp)
-            val mainFs = (maxWidth.value * 0.52f).coerceIn(16f, 36f).sp
+            val mainFs = (min(maxWidth.value, maxHeight.value) * 0.6f).coerceIn(16f, 56f).sp
             Box(
                 modifier = Modifier
                     .fillMaxSize()
-                    .clip(RoundedCornerShape(corner))
-                    .background(MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.55f))
-                    .border(
-                        BorderStroke(1.dp, MaterialTheme.colorScheme.primary.copy(alpha = 0.65f)),
-                        RoundedCornerShape(corner),
-                    ),
+                    .clip(RoundedCornerShape(corner * 1.6f))
+                    .background(Brush.linearGradient(kidsGradient(digit))),
                 contentAlignment = Alignment.Center,
             ) {
                 Text(
                     "$digit",
                     fontSize = mainFs,
-                    fontWeight = FontWeight.Bold,
-                    color = MaterialTheme.colorScheme.primary,
+                    fontWeight = FontWeight.Black,
+                    color = Color.White,
                     maxLines = 1,
                 )
             }
@@ -973,17 +829,15 @@ private fun CifrySandboxChainDigitChip(
     Card(
         modifier = Modifier
             .fillMaxHeight()
-            .defaultMinSize(minWidth = 40.dp)
+            .aspectRatio(0.78f, matchHeightConstraintsFirst = true)
             .alpha(if (draggingReorder) 0.38f else 1f),
-        colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.secondaryContainer.copy(alpha = 0.65f),
-        ),
-        border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline.copy(alpha = 0.35f)),
-        shape = RoundedCornerShape(12.dp),
+        colors = CardDefaults.cardColors(containerColor = Color.Transparent),
+        shape = RoundedCornerShape(16.dp),
     ) {
         Box(
             modifier = Modifier
                 .fillMaxSize()
+                .background(Brush.linearGradient(kidsGradient(digit)))
                 .onGloballyPositioned { dragAreaCoords = it }
                 .pointerInput(digit, index) {
                     var dragStart = Offset.Zero
@@ -1029,8 +883,8 @@ private fun CifrySandboxChainDigitChip(
                 Text(
                     "$digit",
                     fontSize = fontSp.sp,
-                    fontWeight = FontWeight.Bold,
-                    color = MaterialTheme.colorScheme.onSurface,
+                    fontWeight = FontWeight.Black,
+                    color = Color.White,
                     maxLines = 1,
                     modifier = Modifier.align(Alignment.Center),
                 )
@@ -1079,7 +933,7 @@ private fun CifrySandboxTab(
 
     val isLandscape =
         LocalConfiguration.current.orientation == Configuration.ORIENTATION_LANDSCAPE
-    val paletteColumnsPortrait = 5
+    val paletteColumnsPortrait = 3
     val paletteColumnsLandscape = 5
     val playNumber: () -> Unit = {
         if (chain.isNotEmpty()) {
@@ -1122,6 +976,7 @@ private fun CifrySandboxTab(
                     CifrySandboxToolbar(
                         chainNotEmpty = chain.isNotEmpty(),
                         onClear = { chain.clear() },
+                        onBackspace = { if (chain.isNotEmpty()) chain.removeAt(chain.lastIndex) },
                         onListen = playNumber,
                     )
                     Spacer(Modifier.height(4.dp))
@@ -1145,22 +1000,17 @@ private fun CifrySandboxTab(
                     .fillMaxSize()
                     .padding(horizontal = 6.dp),
             ) {
-                Text(
-                    "Короткий тап — название цифры; в поле — число. «Прослушать число».",
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    modifier = Modifier.padding(bottom = 4.dp),
-                )
                 CifrySandboxToolbar(
                     chainNotEmpty = chain.isNotEmpty(),
                     onClear = { chain.clear() },
+                    onBackspace = { if (chain.isNotEmpty()) chain.removeAt(chain.lastIndex) },
                     onListen = playNumber,
                 )
                 Spacer(Modifier.height(4.dp))
                 CifrySandboxDropZoneBox(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .height(108.dp),
+                        .height(120.dp),
                     chain = chain,
                     chainGhost = chainGhost,
                     swapThresholdPx = swapThresholdPx,
@@ -1170,10 +1020,11 @@ private fun CifrySandboxTab(
                     clearChainGhost = { chainGhost = null },
                 )
                 Spacer(Modifier.height(4.dp))
-                CifrySandboxPaletteLazyGrid(
+                CifrySandboxLandscapePalette(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .weight(1f),
+                        .weight(1f)
+                        .padding(bottom = 6.dp),
                     columns = paletteColumnsPortrait,
                     tapSlopPx = tapSlopPx,
                     swipeUpPx = swipeUpPx,
@@ -1218,186 +1069,6 @@ private fun MutableList<Int>.swapAt(i: Int, j: Int) {
     this[j] = t
 }
 
-@Composable
-private fun CifryFindDigitGameTab(
-    speak: (String) -> Unit,
-    speakWhenDone: (String, () -> Unit) -> Unit,
-    progressRepo: AzbukaProgressRepository,
-    scope: CoroutineScope,
-    isActive: Boolean,
-) {
-    if (!isActive) {
-        Box(Modifier.fillMaxSize())
-        return
-    }
-    val random = remember { Random(System.currentTimeMillis()) }
-    var roundKey by remember { mutableIntStateOf(0) }
-    val round = remember(roundKey) { nextFindDigitRound(random) }
-    var tapFeedback by remember { mutableStateOf<DigitTapFeedback>(DigitTapFeedback.Idle) }
-
-    LaunchedEffect(roundKey) {
-        tapFeedback = DigitTapFeedback.Idle
-        speak("Найди цифру ${round.target.nameRu}.")
-    }
-
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(16.dp),
-    ) {
-        Text(
-            "Найди цифру",
-            style = MaterialTheme.typography.titleMedium,
-            fontWeight = FontWeight.Bold,
-        )
-        Spacer(Modifier.height(4.dp))
-        Text(
-            "Послушай задание и нажми на нужную цифру.",
-            style = MaterialTheme.typography.bodyMedium,
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
-        )
-        Spacer(Modifier.height(8.dp))
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.End,
-            verticalAlignment = Alignment.CenterVertically,
-        ) {
-            TextButton(onClick = { speak("Найди цифру ${round.target.nameRu}.") }) {
-                Icon(
-                    Icons.AutoMirrored.Filled.VolumeUp,
-                    contentDescription = null,
-                    modifier = Modifier
-                        .size(18.dp)
-                        .padding(end = 6.dp),
-                )
-                Text("Повторить задание")
-            }
-        }
-        LazyVerticalGrid(
-            columns = GridCells.Fixed(2),
-            modifier = Modifier
-                .weight(1f)
-                .fillMaxWidth(),
-            horizontalArrangement = Arrangement.spacedBy(10.dp),
-            verticalArrangement = Arrangement.spacedBy(10.dp),
-            contentPadding = PaddingValues(vertical = 8.dp),
-        ) {
-            items(round.choices, key = { "${it.value}_$roundKey" }) { digit ->
-                val correctShown =
-                    (tapFeedback as? DigitTapFeedback.Correct)?.value == digit.value
-                val wrongShown =
-                    (tapFeedback as? DigitTapFeedback.Wrong)?.value == digit.value
-                val idle = tapFeedback is DigitTapFeedback.Idle
-                CifryGameDigitChoiceCard(
-                    digit = digit,
-                    showCorrectCheck = correctShown,
-                    showWrongX = wrongShown,
-                    enabled = idle,
-                    onClick = {
-                        if (idle) {
-                            if (digit.value == round.target.value) {
-                                tapFeedback = DigitTapFeedback.Correct(digit.value)
-                                val praise = CIFRY_GAME_CORRECT_PHRASES.random(random)
-                                scope.launch { progressRepo.addPoints(8) }
-                                speakWhenDone(praise) {
-                                    roundKey++
-                                }
-                            } else {
-                                tapFeedback = DigitTapFeedback.Wrong(digit.value)
-                                speak(CIFRY_GAME_WRONG_PHRASES.random(random))
-                                scope.launch {
-                                    delay(1200L)
-                                    tapFeedback = DigitTapFeedback.Idle
-                                }
-                            }
-                        }
-                    },
-                )
-            }
-        }
-    }
-}
-
-@Composable
-private fun CifryGameDigitChoiceCard(
-    digit: DigitInfo,
-    showCorrectCheck: Boolean,
-    showWrongX: Boolean,
-    enabled: Boolean,
-    onClick: () -> Unit,
-) {
-    val baseBg = MaterialTheme.colorScheme.secondaryContainer.copy(alpha = 0.4f)
-    val resultBorder = when {
-        showCorrectCheck -> Color(0xFF4CAF50)
-        showWrongX -> Color(0xFFF44336)
-        else -> MaterialTheme.colorScheme.outline.copy(alpha = 0.35f)
-    }
-    val resultBg = when {
-        showCorrectCheck -> Color(0x224CAF50)
-        showWrongX -> Color(0x22F44336)
-        else -> baseBg
-    }
-    Card(
-        modifier = Modifier
-            .fillMaxWidth()
-            .height(88.dp)
-            .clickable(enabled = enabled, onClick = onClick),
-        colors = CardDefaults.cardColors(containerColor = resultBg),
-        border = BorderStroke(2.dp, resultBorder),
-        shape = RoundedCornerShape(16.dp),
-    ) {
-        Box(Modifier.fillMaxSize()) {
-            Column(
-                modifier = Modifier.align(Alignment.Center),
-                horizontalAlignment = Alignment.CenterHorizontally,
-            ) {
-                Text(
-                    "${digit.value}",
-                    style = MaterialTheme.typography.displaySmall,
-                    fontWeight = FontWeight.Bold,
-                    color = MaterialTheme.colorScheme.onSurface,
-                )
-            }
-            if (showCorrectCheck) {
-                Box(
-                    modifier = Modifier
-                        .align(Alignment.TopEnd)
-                        .padding(6.dp)
-                        .size(30.dp)
-                        .clip(CircleShape)
-                        .background(Color(0xFF4CAF50)),
-                    contentAlignment = Alignment.Center,
-                ) {
-                    Icon(
-                        Icons.Default.Check,
-                        contentDescription = null,
-                        tint = Color.White,
-                        modifier = Modifier.size(18.dp),
-                    )
-                }
-            }
-            if (showWrongX) {
-                Box(
-                    modifier = Modifier
-                        .align(Alignment.TopEnd)
-                        .padding(6.dp)
-                        .size(30.dp)
-                        .clip(CircleShape)
-                        .background(Color(0xFFF44336)),
-                    contentAlignment = Alignment.Center,
-                ) {
-                    Icon(
-                        Icons.Default.Close,
-                        contentDescription = null,
-                        tint = Color.White,
-                        modifier = Modifier.size(16.dp),
-                    )
-                }
-            }
-        }
-    }
-}
-
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalLayoutApi::class)
 @Composable
 private fun CifryMathSection(
@@ -1415,33 +1086,17 @@ private fun CifryMathSection(
     val difficulty by mathRepo.difficulty.collectAsStateWithLifecycle(initialValue = 0)
     val history by mathRepo.solvedHistory.collectAsStateWithLifecycle(initialValue = emptyList())
     val subTabs = remember {
-        listOf("Сложение", "Вычитание", "Умножение", "Деление", "Мои достижения")
+        listOf("➕ Сложение", "➖ Вычитание", "✖️ Умножение", "➗ Деление", "🏆 Мои достижения")
     }
     val mathSectionPager = rememberPagerState(pageCount = { subTabs.size })
     val subScope = rememberCoroutineScope()
 
     Column(Modifier.fillMaxSize()) {
-        Text(
-            "Сложность примеров",
-            style = MaterialTheme.typography.labelLarge,
-            modifier = Modifier.padding(start = 12.dp, top = 4.dp),
+        KidsTabs(
+            tabs = listOf("🌱 Лёгкий", "🌿 Средний", "🔥 Трудный", "🚀 Эксперт"),
+            selected = difficulty,
+            onSelect = { i -> subScope.launch { mathRepo.setDifficulty(i) } },
         )
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .horizontalScroll(rememberScrollState())
-                .padding(horizontal = 8.dp, vertical = 4.dp),
-            horizontalArrangement = Arrangement.spacedBy(8.dp),
-        ) {
-            val labels = listOf("Лёгкий", "Средний", "Трудный", "Эксперт")
-            labels.forEachIndexed { i, label ->
-                FilterChip(
-                    selected = difficulty == i,
-                    onClick = { subScope.launch { mathRepo.setDifficulty(i) } },
-                    label = { Text(label) },
-                )
-            }
-        }
         KidsTabs(
             tabs = subTabs,
             selected = mathSectionPager.currentPage,
@@ -1839,42 +1494,45 @@ private fun MathVisualGroups(
     secondCount: Int,
     isPlus: Boolean,
 ) {
-    Card(
-        modifier = Modifier.fillMaxWidth(),
-        colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.tertiaryContainer.copy(alpha = 0.35f),
-        ),
-        border = BorderStroke(1.dp, MaterialTheme.colorScheme.tertiary.copy(alpha = 0.4f)),
-        shape = RoundedCornerShape(14.dp),
+    Column(
+        Modifier
+            .fillMaxWidth()
+            .clip(RoundedCornerShape(24.dp))
+            .background(Brush.linearGradient(listOf(Color(0xFFFEF3C7), Color(0xFFFCE7F3))))
+            .padding(12.dp),
     ) {
-        Column(Modifier.padding(12.dp)) {
-            Text(
-                "Считай по картинкам: ${theme.nameRuPlural}",
-                style = MaterialTheme.typography.labelMedium,
-                color = MaterialTheme.colorScheme.onTertiaryContainer,
-            )
-            Spacer(Modifier.height(6.dp))
-            FlowRow(
-                horizontalArrangement = Arrangement.spacedBy(4.dp),
-                verticalArrangement = Arrangement.spacedBy(4.dp),
-            ) {
-                repeat(firstCount.coerceAtMost(30)) {
-                    Text(theme.emoji, fontSize = 24.sp)
-                }
+        Text(
+            "Считай по картинкам: ${theme.nameRuPlural}",
+            fontSize = 13.sp,
+            fontWeight = FontWeight.Bold,
+            color = Color(0xFF9A3412),
+        )
+        Spacer(Modifier.height(6.dp))
+        FlowRow(
+            horizontalArrangement = Arrangement.spacedBy(4.dp),
+            verticalArrangement = Arrangement.spacedBy(4.dp),
+        ) {
+            repeat(firstCount.coerceAtMost(30)) {
+                Text(theme.emoji, fontSize = 28.sp)
             }
-            Text(
-                if (isPlus) "+" else "−",
-                style = MaterialTheme.typography.headlineSmall,
-                fontWeight = FontWeight.Bold,
-                modifier = Modifier.padding(vertical = 4.dp),
-            )
-            FlowRow(
-                horizontalArrangement = Arrangement.spacedBy(4.dp),
-                verticalArrangement = Arrangement.spacedBy(4.dp),
-            ) {
-                repeat(secondCount.coerceAtMost(30)) {
-                    Text(theme.emoji, fontSize = 24.sp)
-                }
+        }
+        Text(
+            if (isPlus) "+" else "−",
+            fontSize = 30.sp,
+            fontWeight = FontWeight.Black,
+            color = Color(0xFFEC4899),
+            modifier = Modifier.padding(vertical = 2.dp),
+        )
+        FlowRow(
+            horizontalArrangement = Arrangement.spacedBy(4.dp),
+            verticalArrangement = Arrangement.spacedBy(4.dp),
+        ) {
+            repeat(secondCount.coerceAtMost(30)) {
+                Text(
+                    theme.emoji,
+                    fontSize = 28.sp,
+                    modifier = if (isPlus) Modifier else Modifier.alpha(0.35f),
+                )
             }
         }
     }
@@ -2004,82 +1662,65 @@ private fun CifryMathPracticePage(
             )
             Spacer(Modifier.height(12.dp))
         }
-        Text(
-            problem.promptShortRu(),
-            style = MaterialTheme.typography.headlineSmall,
-            fontWeight = FontWeight.Bold,
-            color = MaterialTheme.colorScheme.primary,
+        KidsVoiceQuestionCard(
+            label = "🧮 ${cifryMathModeLabel(mode)}",
+            prompt = "${problem.promptShortRu()} = ?",
+            onRepeat = { speak(problem.promptRu()) },
+            promptSize = if (problem.promptShortRu().length <= 9) 40 else 32,
         )
-        Spacer(Modifier.height(8.dp))
-        TextButton(onClick = { speak(problem.promptRu()) }) {
-            Icon(Icons.AutoMirrored.Filled.VolumeUp, contentDescription = null, modifier = Modifier.size(18.dp))
-            Spacer(Modifier.size(8.dp))
-            Text("Прослушать задание")
-        }
         Spacer(Modifier.height(12.dp))
-        choices.forEach { opt ->
-            val isCorrect = opt == problem.result
-            val showOk = feedback != null && isCorrect
-            val showBad = feedback == opt && !isCorrect
-            val border = when {
-                showOk -> Color(0xFF4CAF50)
-                showBad -> Color(0xFFF44336)
-                else -> MaterialTheme.colorScheme.outline.copy(alpha = 0.4f)
-            }
-            OutlinedCard(
-                modifier = Modifier
+        choices.chunked(2).forEachIndexed { rowIdx, row ->
+            Row(
+                Modifier
                     .fillMaxWidth()
-                    .padding(vertical = 6.dp)
-                    .clickable(enabled = feedback == null) {
-                        feedback = opt
-                        if (opt == problem.result) {
-                            val praise = CIFRY_MATH_CORRECT.random(random)
-                            scope.launch {
-                                mathRepo.appendSolved(
-                                    CifryMathSolvedEntry(
-                                        timestampMs = System.currentTimeMillis(),
-                                        mode = problem.mode,
-                                        a = problem.a,
-                                        b = problem.b,
-                                        result = problem.result,
-                                        difficulty = difficulty,
-                                        visualEmoji = problem.visualTheme?.emoji,
-                                        expressionText = problem.expressionWithResultRu(),
-                                    ),
-                                )
-                                progressRepo.addPoints(10)
-                            }
-                            speakWhenDone(praise) {
-                                genKey++
-                            }
-                        } else {
-                            speak(CIFRY_MATH_WRONG.random(random))
-                            scope.launch {
-                                delay(1400L)
-                                feedback = null
-                            }
-                        }
-                    },
-                border = BorderStroke(2.dp, border),
-                shape = RoundedCornerShape(12.dp),
+                    .padding(vertical = 5.dp),
+                horizontalArrangement = Arrangement.spacedBy(10.dp),
             ) {
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(16.dp),
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                ) {
-                    Text(
-                        "$opt",
-                        style = MaterialTheme.typography.titleLarge,
-                        fontWeight = FontWeight.Bold,
+                row.forEachIndexed { colIdx, opt ->
+                    val isCorrect = opt == problem.result
+                    KidsAnswerTile(
+                        text = "$opt",
+                        index = rowIdx * 2 + colIdx,
+                        state = when {
+                            feedback != null && feedback == problem.result && isCorrect -> KidsAnswerState.Correct
+                            feedback == problem.result -> KidsAnswerState.Dimmed
+                            feedback == opt -> KidsAnswerState.Wrong
+                            else -> KidsAnswerState.Idle
+                        },
+                        enabled = feedback != problem.result,
+                        height = 80.dp,
+                        fontSize = 32,
+                        appearKey = genKey,
+                        modifier = Modifier.weight(1f),
+                        onClick = {
+                            feedback = opt
+                            if (opt == problem.result) {
+                                KidsGameStreak.answered(true)
+                                val praise = CIFRY_MATH_CORRECT.random(random)
+                                scope.launch {
+                                    mathRepo.appendSolved(
+                                        CifryMathSolvedEntry(
+                                            timestampMs = System.currentTimeMillis(),
+                                            mode = problem.mode,
+                                            a = problem.a,
+                                            b = problem.b,
+                                            result = problem.result,
+                                            difficulty = difficulty,
+                                            visualEmoji = problem.visualTheme?.emoji,
+                                            expressionText = problem.expressionWithResultRu(),
+                                        ),
+                                    )
+                                    progressRepo.addPoints(10)
+                                }
+                                speakWhenDone(praise) {
+                                    genKey++
+                                }
+                            } else {
+                                KidsGameStreak.answered(false)
+                                speak(CIFRY_MATH_WRONG.random(random))
+                            }
+                        },
                     )
-                    if (showOk) {
-                        Icon(Icons.Default.Check, contentDescription = null, tint = Color(0xFF4CAF50))
-                    } else if (showBad) {
-                        Icon(Icons.Default.Close, contentDescription = null, tint = Color(0xFFF44336))
-                    }
                 }
             }
         }

@@ -15,6 +15,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.onGloballyPositioned
+import androidx.compose.ui.layout.positionInParent
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -95,20 +97,32 @@ internal fun KidsTabs(
     onSelect: (Int) -> Unit,
     modifier: Modifier = Modifier,
 ) {
+    val scroll = androidx.compose.foundation.rememberScrollState()
+    val tabLefts = androidx.compose.runtime.remember { androidx.compose.runtime.mutableStateMapOf<Int, Int>() }
+    val density = androidx.compose.ui.platform.LocalDensity.current
+    androidx.compose.runtime.LaunchedEffect(selected, tabLefts[selected]) {
+        val left = tabLefts[selected] ?: return@LaunchedEffect
+        val margin = with(density) { 48.dp.roundToPx() }
+        scroll.animateScrollTo((left - margin).coerceAtLeast(0))
+    }
     androidx.compose.foundation.layout.Row(
         modifier = modifier
             .fillMaxWidth()
-            .horizontalScroll(androidx.compose.foundation.rememberScrollState())
+            .horizontalScroll(scroll)
             .padding(horizontal = 10.dp, vertical = 6.dp),
         horizontalArrangement = androidx.compose.foundation.layout.Arrangement.spacedBy(8.dp),
     ) {
         tabs.forEachIndexed { index, title ->
-            TmGradientPill(
-                text = title,
-                selected = index == selected,
-                gradient = kidsGradient(index),
-                onClick = { onSelect(index) },
-            )
+            Box(
+                Modifier.onGloballyPositioned { tabLefts[index] = it.positionInParent().x.toInt() },
+            ) {
+                TmGradientPill(
+                    text = title,
+                    selected = index == selected,
+                    gradient = kidsGradient(index),
+                    onClick = { onSelect(index) },
+                )
+            }
         }
     }
 }

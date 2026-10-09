@@ -594,7 +594,7 @@ private fun SandboxToolbar(
 }
 
 @Composable
-private fun RowScope.SandboxIconButton(
+internal fun RowScope.SandboxIconButton(
     icon: ImageVector,
     description: String,
     gradient: List<Color>,

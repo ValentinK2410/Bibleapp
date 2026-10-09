@@ -1,6 +1,5 @@
 package com.example.bible.data
 
-import com.example.bible.R
 import kotlin.math.abs
 import kotlin.random.Random
 
@@ -393,101 +392,4 @@ fun buildMathChoices(problem: CifryMathProblem, random: Random): List<Int> {
         if (guess != correct) wrong.add(guess)
     }
     return (wrong.take(3) + correct).shuffled(random)
-}
-
-/** Геометрическая фигура для вкладки «Фигуры» (символ + озвучка). */
-data class CifryShapeItem(
-    val nameRu: String,
-    val glyph: String,
-    val speak: String = nameRu,
-    /** Векторная картинка вместо символа Unicode (чёткая геометрия). */
-    val imageRes: Int? = null,
-)
-
-object CifryShapes {
-    val all: List<CifryShapeItem> = listOf(
-        CifryShapeItem("Круг", "\u25CF"),
-        CifryShapeItem("Окружность", "\u25CB"),
-        CifryShapeItem("Кольцо", "\u25CE"),
-        CifryShapeItem("Квадрат", "\u25A0"),
-        CifryShapeItem("Прямоугольник", "\u25AD"),
-        CifryShapeItem(
-            "Обычный треугольник",
-            "",
-            speak = "Обычный треугольник",
-            imageRes = R.drawable.cifry_shape_triangle_equilateral,
-        ),
-        CifryShapeItem(
-            "Прямой треугольник",
-            "",
-            speak = "Прямоугольный треугольник",
-            imageRes = R.drawable.cifry_shape_triangle_right,
-        ),
-        CifryShapeItem("Ромб", "\u25C6"),
-        CifryShapeItem("Трапеция", "\u29E9"),
-        CifryShapeItem("Параллелограмм", "\u25B1"),
-        CifryShapeItem("Пятиугольник", "\u2B1F"),
-        CifryShapeItem("Шестиугольник", "\u2B22"),
-        CifryShapeItem(
-            "Восьмиугольник",
-            "",
-            imageRes = R.drawable.cifry_shape_octagon,
-        ),
-        CifryShapeItem("Овал", "\u2B2D"),
-        CifryShapeItem("Эллипс", "\u2B2E"),
-        CifryShapeItem("Звезда", "\u2605"),
-        CifryShapeItem("Звезда четырёхконечная", "\u2726"),
-        CifryShapeItem("Снежинка", "\u2744"),
-        CifryShapeItem("Полумесяц", "\u263D"),
-        CifryShapeItem("Крест", "\u271A"),
-        CifryShapeItem("Плюс", "\u2715"),
-        CifryShapeItem("Стрелка вправо", "\u2192"),
-        CifryShapeItem("Стрелка влево", "\u2190"),
-        CifryShapeItem("Стрелка вверх", "\u2191"),
-        CifryShapeItem("Стрелка вниз", "\u2193"),
-        CifryShapeItem("Двойная стрелка", "\u2194"),
-        CifryShapeItem("Угол", "\u2220"),
-        CifryShapeItem("Прямой угол", "\u221F"),
-        CifryShapeItem("Параллель", "\u2225"),
-        CifryShapeItem("Перпендикуляр", "\u22A5"),
-        CifryShapeItem("Линия", "\u2500"),
-        CifryShapeItem("Отрезок", "\u2015"),
-        CifryShapeItem("Дуга", "\u2312"),
-        CifryShapeItem("Сектор круга", "\u25D4"),
-        CifryShapeItem("Полукруг", "\u25D6"),
-        CifryShapeItem("Квадрат со скруглением", "\u25A2"),
-        CifryShapeItem("Вписанный квадрат", "\u25A3"),
-        CifryShapeItem("Куб", "\u25A1", speak = "Куб"),
-        CifryShapeItem("Параллелепипед", "\u25A1", speak = "Параллелепипед"),
-        CifryShapeItem("Призма", "\u25B3", speak = "Призма"),
-        CifryShapeItem("Пирамида", "\u25B3", speak = "Пирамида"),
-        CifryShapeItem("Конус", "\u25B3", speak = "Конус"),
-        CifryShapeItem("Цилиндр", "\u2294", speak = "Цилиндр"),
-        CifryShapeItem("Шар", "\u25CB", speak = "Шар"),
-        CifryShapeItem("Сфера", "\u25EF", speak = "Сфера"),
-        CifryShapeItem("Тор", "\u2320", speak = "Тор"),
-        CifryShapeItem("Спираль", "\u2380", speak = "Спираль"),
-        CifryShapeItem("Волна", "\u223F"),
-        CifryShapeItem("Зигзаг", "\u26A9"),
-        CifryShapeItem("Многоугольник", "\u2B23"),
-        CifryShapeItem("Правильный многоугольник", "\u2B24"),
-        CifryShapeItem("Выпуклая фигура", "\u25B2", speak = "Выпуклая фигура"),
-        CifryShapeItem("Вогнутая фигура", "\u2229", speak = "Вогнутая фигура"),
-        CifryShapeItem("Фрактал", "\u2042", speak = "Фрактал"),
-        CifryShapeItem("Точка", "\u2022"),
-        CifryShapeItem("Луч", "\u2192", speak = "Луч"),
-        CifryShapeItem("Сердце", "\u2665"),
-        CifryShapeItem("Бесконечность", "\u221E"),
-        CifryShapeItem("Симметрия", "\u2194", speak = "Симметрия"),
-        CifryShapeItem("Ось симметрии", "\u2225", speak = "Ось симметрии"),
-        CifryShapeItem("Центр", "\u2295", speak = "Центр"),
-        CifryShapeItem("Диагональ", "\u2571", speak = "Диагональ"),
-        CifryShapeItem("Медиана", "\u2225", speak = "Медиана треугольника"),
-        CifryShapeItem("Высота", "\u22A5", speak = "Высота треугольника"),
-        CifryShapeItem("Биссектриса", "\u2220", speak = "Биссектриса"),
-        CifryShapeItem("Касательная", "\u2500", speak = "Касательная"),
-        CifryShapeItem("Хорда", "\u2015", speak = "Хорда"),
-        CifryShapeItem("Диаметр", "\u2500", speak = "Диаметр"),
-        CifryShapeItem("Радиус", "\u2500", speak = "Радиус"),
-    )
 }
