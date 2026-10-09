@@ -133,7 +133,7 @@ fun GoScreen(onBack: () -> Unit) {
     Scaffold(
         topBar = {
             CenterAlignedTopAppBar(
-                title = { Text("Го", style = MaterialTheme.typography.titleLarge) },
+                title = { Text("Го", style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Black) },
                 navigationIcon = {
                     IconButton(onClick = onBack) {
                         Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Назад")
@@ -162,10 +162,11 @@ fun GoScreen(onBack: () -> Unit) {
                 horizontalArrangement = Arrangement.spacedBy(6.dp),
             ) {
                 listOf(9, 13, 19).forEach { sz ->
-                    FilterChip(
+                    TmGradientPill(
+                        text = "${sz}×$sz",
                         selected = boardSize == sz,
+                        gradient = kidsGradient(0),
                         onClick = { boardSize = sz },
-                        label = { Text("${sz}×$sz") },
                     )
                 }
             }
@@ -182,15 +183,17 @@ fun GoScreen(onBack: () -> Unit) {
                     .padding(top = 6.dp),
                 horizontalArrangement = Arrangement.spacedBy(6.dp),
             ) {
-                FilterChip(
+                TmGradientPill(
+                    text = "Вы и компьютер",
                     selected = mode == GoGameMode.HUMAN_VS_AI,
+                    gradient = kidsGradient(1),
                     onClick = { mode = GoGameMode.HUMAN_VS_AI },
-                    label = { Text("Вы и компьютер", maxLines = 1, style = MaterialTheme.typography.labelMedium) },
                 )
-                FilterChip(
+                TmGradientPill(
+                    text = "Два игрока",
                     selected = mode == GoGameMode.TWO_HUMANS,
+                    gradient = kidsGradient(2),
                     onClick = { mode = GoGameMode.TWO_HUMANS },
-                    label = { Text("Два игрока", maxLines = 1, style = MaterialTheme.typography.labelMedium) },
                 )
             }
             Text(
@@ -199,10 +202,8 @@ fun GoScreen(onBack: () -> Unit) {
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                 modifier = Modifier.padding(top = 8.dp),
             )
-            Text(
+            KidsBanner(
                 status,
-                style = MaterialTheme.typography.titleMedium,
-                fontWeight = FontWeight.SemiBold,
                 modifier = Modifier.padding(top = 8.dp),
             )
             BoxWithConstraints(
@@ -286,19 +287,18 @@ fun GoScreen(onBack: () -> Unit) {
                     .padding(bottom = 8.dp),
                 horizontalArrangement = Arrangement.spacedBy(8.dp),
             ) {
-                OutlinedButton(
+                KidsBigButton(
+                    text = "Пас",
                     onClick = { onPass() },
                     modifier = Modifier.weight(1f),
+                    gradient = listOf(Color(0xFF64748B), Color(0xFF334155)),
                     enabled = humanTurn && !game.gameOver,
-                ) {
-                    Text("Пас")
-                }
-                Button(
+                )
+                KidsBigButton(
+                    text = "Новая игра",
                     onClick = { newGameKey++ },
                     modifier = Modifier.weight(1f),
-                ) {
-                    Text("Новая партия")
-                }
+                )
             }
         }
     }

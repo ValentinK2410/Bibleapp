@@ -160,7 +160,7 @@ fun CheckersScreen(onBack: () -> Unit) {
     Scaffold(
         topBar = {
             CenterAlignedTopAppBar(
-                title = { Text("Шашки", style = MaterialTheme.typography.titleLarge) },
+                title = { Text("Шашки", style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Black) },
                 navigationIcon = {
                     IconButton(onClick = onBack) {
                         Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Назад")
@@ -188,15 +188,17 @@ fun CheckersScreen(onBack: () -> Unit) {
                     .padding(top = 6.dp),
                 horizontalArrangement = Arrangement.spacedBy(6.dp),
             ) {
-                FilterChip(
+                TmGradientPill(
+                    text = "Вы и компьютер",
                     selected = mode == CheckersGameMode.HUMAN_VS_AI,
+                    gradient = kidsGradient(0),
                     onClick = { mode = CheckersGameMode.HUMAN_VS_AI },
-                    label = { Text("Вы и компьютер", maxLines = 1, style = MaterialTheme.typography.labelMedium) },
                 )
-                FilterChip(
+                TmGradientPill(
+                    text = "Два игрока",
                     selected = mode == CheckersGameMode.TWO_HUMANS,
+                    gradient = kidsGradient(1),
                     onClick = { mode = CheckersGameMode.TWO_HUMANS },
-                    label = { Text("Два игрока", maxLines = 1, style = MaterialTheme.typography.labelMedium) },
                 )
             }
             Text(
@@ -205,10 +207,8 @@ fun CheckersScreen(onBack: () -> Unit) {
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                 modifier = Modifier.padding(top = 8.dp),
             )
-            Text(
+            KidsBanner(
                 statusLine,
-                style = MaterialTheme.typography.titleMedium,
-                fontWeight = FontWeight.SemiBold,
                 modifier = Modifier.padding(top = 10.dp),
             )
             BoxWithConstraints(
@@ -289,15 +289,13 @@ fun CheckersScreen(onBack: () -> Unit) {
                     }
                 }
             }
-            Button(
+            KidsBigButton(
+                text = "Новая партия",
                 onClick = { restart() },
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(bottom = 12.dp),
-                shape = RoundedCornerShape(12.dp),
-            ) {
-                Text("Новая партия")
-            }
+            )
         }
     }
 }

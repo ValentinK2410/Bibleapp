@@ -1,5 +1,6 @@
 package com.example.bible.ui
 
+import androidx.compose.ui.graphics.Brush
 import android.content.res.Configuration
 import android.os.Handler
 import android.os.Looper
@@ -319,7 +320,7 @@ fun CifryScreen(
     Scaffold(
         topBar = {
             CenterAlignedTopAppBar(
-                title = { Text("Цифры", style = MaterialTheme.typography.titleLarge) },
+                title = { Text("Цифры", style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Black) },
                 navigationIcon = {
                     IconButton(onClick = onBack) {
                         Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Назад")
@@ -334,27 +335,11 @@ fun CifryScreen(
         },
     ) { padding ->
         Column(modifier = Modifier.padding(padding)) {
-            ScrollableTabRow(
-                selectedTabIndex = pagerState.currentPage,
-                edgePadding = 4.dp,
-                containerColor = Color.Transparent,
-                modifier = Modifier.height(44.dp),
-            ) {
-                tabs.forEachIndexed { i, title ->
-                    Tab(
-                        selected = pagerState.currentPage == i,
-                        onClick = { scope.launch { pagerState.animateScrollToPage(i) } },
-                        modifier = Modifier.height(40.dp),
-                        text = {
-                            Text(
-                                title,
-                                style = MaterialTheme.typography.labelMedium,
-                                maxLines = 1,
-                            )
-                        },
-                    )
-                }
-            }
+            KidsTabs(
+                tabs = tabs,
+                selected = pagerState.currentPage,
+                onSelect = { i -> scope.launch { pagerState.animateScrollToPage(i) } },
+            )
             val activePage = pagerState.currentPage
             HorizontalPager(
                 state = pagerState,
@@ -488,10 +473,11 @@ private fun CifryDigitsLearnGrid(
     val gap = 6.dp
     Column(Modifier.fillMaxSize()) {
         Text(
-            "Нажми на цифру — услышишь название.",
-            style = MaterialTheme.typography.labelSmall,
+            "👆 Нажми на цифру — услышишь название",
+            style = MaterialTheme.typography.labelLarge,
+            fontWeight = FontWeight.Bold,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
-            modifier = Modifier.padding(bottom = 4.dp),
+            modifier = Modifier.padding(start = 4.dp, bottom = 6.dp),
         )
         Column(
             modifier = Modifier
@@ -550,15 +536,13 @@ private fun CifryDigitLearnCell(
     }
     Card(
         modifier = modifier.clickable(onClick = onClick),
-        colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.35f),
-        ),
-        border = BorderStroke(1.dp, MaterialTheme.colorScheme.primary.copy(alpha = 0.4f)),
-        shape = RoundedCornerShape(16.dp),
+        colors = CardDefaults.cardColors(containerColor = Color.Transparent),
+        shape = RoundedCornerShape(22.dp),
     ) {
         Column(
             modifier = Modifier
                 .fillMaxSize()
+                .background(Brush.linearGradient(kidsGradient(digit.value)))
                 .padding(horizontal = 4.dp, vertical = 3.dp),
         ) {
             Box(
@@ -592,8 +576,8 @@ private fun CifryDigitLearnCell(
                         text = "${digit.value}",
                         modifier = Modifier.align(Alignment.Center),
                         fontSize = digitSp,
-                        fontWeight = FontWeight.Bold,
-                        color = MaterialTheme.colorScheme.primary,
+                        fontWeight = FontWeight.Black,
+                        color = Color.White,
                         textAlign = TextAlign.Center,
                         maxLines = 1,
                         softWrap = false,
@@ -604,7 +588,8 @@ private fun CifryDigitLearnCell(
             Text(
                 digit.hintRu,
                 style = MaterialTheme.typography.labelSmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                fontWeight = FontWeight.Bold,
+                color = Color.White.copy(alpha = 0.92f),
                 maxLines = hintLines,
                 overflow = TextOverflow.Ellipsis,
                 textAlign = TextAlign.Center,
@@ -1457,29 +1442,11 @@ private fun CifryMathSection(
                 )
             }
         }
-        ScrollableTabRow(
-            selectedTabIndex = mathSectionPager.currentPage,
-            edgePadding = 4.dp,
-            containerColor = Color.Transparent,
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(44.dp),
-        ) {
-            subTabs.forEachIndexed { i, title ->
-                Tab(
-                    selected = mathSectionPager.currentPage == i,
-                    onClick = { subScope.launch { mathSectionPager.animateScrollToPage(i) } },
-                    modifier = Modifier.height(40.dp),
-                    text = {
-                        Text(
-                            title,
-                            style = MaterialTheme.typography.labelSmall,
-                            maxLines = 1,
-                        )
-                    },
-                )
-            }
-        }
+        KidsTabs(
+            tabs = subTabs,
+            selected = mathSectionPager.currentPage,
+            onSelect = { i -> subScope.launch { mathSectionPager.animateScrollToPage(i) } },
+        )
         HorizontalPager(
             state = mathSectionPager,
             beyondViewportPageCount = 0,

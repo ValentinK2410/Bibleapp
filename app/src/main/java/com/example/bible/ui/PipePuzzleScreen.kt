@@ -1,5 +1,8 @@
 package com.example.bible.ui
 
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.horizontalScroll
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
@@ -122,7 +125,7 @@ fun PipePuzzleScreen(
     Scaffold(
         topBar = {
             CenterAlignedTopAppBar(
-                title = { Text("Водопровод", style = MaterialTheme.typography.titleLarge) },
+                title = { Text("Водопровод", style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Black) },
                 navigationIcon = {
                     IconButton(onClick = onBack) {
                         Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Назад")
@@ -146,64 +149,49 @@ fun PipePuzzleScreen(
                 textAlign = TextAlign.Center,
             )
 
-            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                FilterChip(
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .horizontalScroll(rememberScrollState()),
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+            ) {
+                TmGradientPill(
+                    text = "4×4",
                     selected = gridSize == 4,
+                    gradient = kidsGradient(0),
                     onClick = {
                         if (gridSize != 4) gridSize = 4
                     },
-                    label = { Text("4×4") },
                 )
-                FilterChip(
+                TmGradientPill(
+                    text = "5×5",
                     selected = gridSize == 5,
+                    gradient = kidsGradient(1),
                     onClick = {
                         if (gridSize != 5) gridSize = 5
                     },
-                    label = { Text("5×5") },
                 )
-            }
-
-            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                FilterChip(
+                TmGradientPill(
+                    text = if (soundEnabled) "🔊 Звук" else "🔇 Тихо",
                     selected = soundEnabled,
-                    onClick = { soundEnabled = true },
-                    label = { Text("Со звуком") },
-                    leadingIcon = {
-                        Icon(
-                            Icons.AutoMirrored.Filled.VolumeUp,
-                            contentDescription = null,
-                            modifier = Modifier.padding(start = 4.dp),
-                        )
-                    },
-                )
-                FilterChip(
-                    selected = !soundEnabled,
+                    gradient = kidsGradient(2),
                     onClick = {
-                        soundEnabled = false
-                        soundPlayer.stop()
-                    },
-                    label = { Text("Без звука") },
-                    leadingIcon = {
-                        Icon(
-                            Icons.AutoMirrored.Filled.VolumeOff,
-                            contentDescription = null,
-                            modifier = Modifier.padding(start = 4.dp),
-                        )
+                        soundEnabled = !soundEnabled
+                        if (!soundEnabled) soundPlayer.stop()
                     },
                 )
-            }
-
-            if (soundEnabled) {
-                Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                    FilterChip(
+                if (soundEnabled) {
+                    TmGradientPill(
+                        text = "📄 Страница",
                         selected = rotateSound == PipeRotateSound.PAGE_FLIP,
+                        gradient = kidsGradient(4),
                         onClick = { rotateSound = PipeRotateSound.PAGE_FLIP },
-                        label = { Text("Страница") },
                     )
-                    FilterChip(
+                    TmGradientPill(
+                        text = "🕸️ Паутина",
                         selected = rotateSound == PipeRotateSound.SPIDER_WEB,
+                        gradient = kidsGradient(5),
                         onClick = { rotateSound = PipeRotateSound.SPIDER_WEB },
-                        label = { Text("Паутина") },
                     )
                 }
             }
@@ -222,9 +210,7 @@ fun PipePuzzleScreen(
                         gridSize = gridSize,
                         solved = solved,
                         connectedIndices = status.connectedIndices,
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .aspectRatio(1f),
+                        modifier = Modifier.size(minOf(maxWidth, maxHeight)),
                         onTileTap = { index ->
                             if (solved) return@PipePuzzleBoard
                             tiles[index] = tiles[index].rotated()
@@ -235,35 +221,19 @@ fun PipePuzzleScreen(
             }
 
             if (solved) {
-                Text(
-                    "Отлично! Весь водопровод собран!",
-                    style = MaterialTheme.typography.titleMedium,
-                    fontWeight = FontWeight.Bold,
-                    color = MaterialTheme.colorScheme.primary,
-                    textAlign = TextAlign.Center,
+                KidsBanner(
+                    "🎉 Отлично! Весь водопровод собран!",
+                    gradient = listOf(Color(0xFF22C55E), Color(0xFF06B6D4)),
                 )
             } else if (!loading && tiles.isNotEmpty()) {
-                Text(
-                    pipePuzzleStatusText(status),
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    textAlign = TextAlign.Center,
-                )
-                Text(
-                    "Нажми на плитку — она повернётся на 90°.",
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    textAlign = TextAlign.Center,
-                )
+                KidsBanner(pipePuzzleStatusText(status) + "\n👆 Нажми на плитку — она повернётся.", fontSize = 15)
             }
 
-            Button(
+            KidsBigButton(
+                text = "Новая игра",
                 onClick = { reloadNonce++ },
                 modifier = Modifier.fillMaxWidth(),
-                enabled = !loading,
-            ) {
-                Text("Новая игра")
-            }
+            )
         }
     }
 }

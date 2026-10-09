@@ -598,7 +598,7 @@ fun KidsSeasonsScreen(
     Scaffold(
         topBar = {
             CenterAlignedTopAppBar(
-                title = { Text("Времена года", style = MaterialTheme.typography.titleLarge) },
+                title = { Text("Времена года", style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Black) },
                 navigationIcon = {
                     IconButton(onClick = onBack) {
                         Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Назад")
@@ -622,35 +622,42 @@ fun KidsSeasonsScreen(
             verticalArrangement = Arrangement.spacedBy(10.dp),
         ) {
             items(kidsSeasonCards, key = { it.title }) { season ->
-                Card(
+                val seasonGradient = when (kidsSeasonCards.indexOf(season)) {
+                    0 -> listOf(Color(0xFF38BDF8), Color(0xFF6366F1))
+                    1 -> listOf(Color(0xFF22C55E), Color(0xFFA3E635))
+                    2 -> listOf(Color(0xFFF59E0B), Color(0xFF10B981))
+                    else -> listOf(Color(0xFFF97316), Color(0xFFDC2626))
+                }
+                Column(
                     modifier = Modifier
                         .fillMaxWidth()
+                        .clip(RoundedCornerShape(24.dp))
+                        .background(Brush.linearGradient(seasonGradient))
                         .clickable {
                             preview = season
                             speak(season.speak)
-                        },
-                    shape = RoundedCornerShape(16.dp),
-                    elevation = CardDefaults.cardElevation(defaultElevation = 3.dp),
+                        }
+                        .padding(8.dp),
                 ) {
-                    Column {
-                        Image(
-                            painter = painterResource(season.imageRes),
-                            contentDescription = season.title,
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .aspectRatio(1f),
-                            contentScale = ContentScale.Crop,
-                        )
-                        Text(
-                            season.title,
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(12.dp),
-                            style = MaterialTheme.typography.titleMedium,
-                            fontWeight = FontWeight.Bold,
-                            textAlign = TextAlign.Center,
-                        )
-                    }
+                    Image(
+                        painter = painterResource(season.imageRes),
+                        contentDescription = season.title,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .aspectRatio(1f)
+                            .clip(RoundedCornerShape(18.dp)),
+                        contentScale = ContentScale.Crop,
+                    )
+                    Text(
+                        season.title,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(top = 8.dp, bottom = 4.dp),
+                        color = Color.White,
+                        fontSize = 20.sp,
+                        fontWeight = FontWeight.Black,
+                        textAlign = TextAlign.Center,
+                    )
                 }
             }
         }
@@ -767,7 +774,7 @@ fun KidsCountriesScreen(
     Scaffold(
         topBar = {
             CenterAlignedTopAppBar(
-                title = { Text("Страны", style = MaterialTheme.typography.titleLarge) },
+                title = { Text("Страны", style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Black) },
                 navigationIcon = {
                     IconButton(onClick = onBack) {
                         Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Назад")
@@ -797,12 +804,13 @@ fun KidsCountriesScreen(
         ) {
             items(countries, key = { "${it.isoCode}-${it.nameRu}" }) { country ->
                 val flag = isoToFlagEmoji(country.isoCode)
-                Card(
+                Column(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .clickable { speakHello(country) },
-                    shape = cardShape,
-                    elevation = CardDefaults.cardElevation(defaultElevation = if (isLandscape) 2.dp else 3.dp),
+                        .clip(RoundedCornerShape(24.dp))
+                        .background(Brush.linearGradient(kidsGradient(countries.indexOf(country))))
+                        .clickable { speakHello(country) }
+                        .padding(8.dp),
                 ) {
                     Column(
                         horizontalAlignment = Alignment.CenterHorizontally,
@@ -811,7 +819,9 @@ fun KidsCountriesScreen(
                         Box(
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .aspectRatio(1f),
+                                .aspectRatio(1.2f)
+                                .clip(RoundedCornerShape(18.dp))
+                                .background(Color.White.copy(alpha = 0.22f)),
                             contentAlignment = Alignment.Center,
                         ) {
                             Text(
@@ -826,17 +836,19 @@ fun KidsCountriesScreen(
                                 .fillMaxWidth()
                                 .padding(horizontal = namePadding, vertical = namePadding / 2),
                             style = nameStyle,
-                            fontWeight = FontWeight.Bold,
+                            fontWeight = FontWeight.Black,
+                            color = Color.White,
                             textAlign = TextAlign.Center,
                             maxLines = if (isLandscape) 2 else 3,
                         )
                         Text(
-                            country.helloNative,
+                            "👋 " + country.helloNative,
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .padding(start = namePadding, end = namePadding, bottom = namePadding),
+                                .padding(start = namePadding, end = namePadding, bottom = namePadding / 2),
                             style = helloStyle,
-                            color = MaterialTheme.colorScheme.primary,
+                            fontWeight = FontWeight.Bold,
+                            color = Color.White.copy(alpha = 0.9f),
                             textAlign = TextAlign.Center,
                             maxLines = if (isLandscape) 2 else 3,
                         )
@@ -1012,8 +1024,7 @@ fun KidsPicturedGridScreen(
     }
     val gridPadding = if (isLandscape) 6.dp else 12.dp
     val tileSpacing = if (isLandscape) 4.dp else 10.dp
-    val cardShape = if (isLandscape) RoundedCornerShape(10.dp) else RoundedCornerShape(16.dp)
-    val cardElevation = if (isLandscape) 2.dp else 3.dp
+    val cardShape = if (isLandscape) RoundedCornerShape(12.dp) else RoundedCornerShape(24.dp)
     val emojiSize = if (isLandscape) 28.sp else 64.sp
     val labelPadding = if (isLandscape) 3.dp else 12.dp
     val labelStyle = if (isLandscape) {
@@ -1025,7 +1036,7 @@ fun KidsPicturedGridScreen(
     Scaffold(
         topBar = {
             CenterAlignedTopAppBar(
-                title = { Text(title, style = MaterialTheme.typography.titleLarge) },
+                title = { Text(title, style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Black) },
                 navigationIcon = {
                     IconButton(onClick = onBack) {
                         Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Назад")
@@ -1057,9 +1068,11 @@ fun KidsPicturedGridScreen(
                     "${item.itemKey}\u0000${item.customImagePath ?: ""}\u0000${item.customSoundPath ?: ""}\u0000${item.imageRes ?: 0}"
                 },
             ) { item ->
-                Card(
+                Column(
                     modifier = Modifier
                         .fillMaxWidth()
+                        .clip(cardShape)
+                        .background(Brush.linearGradient(kidsGradient(items.indexOf(item))))
                         .clickable {
                             if (showDetailDialog) {
                                 preview = item
@@ -1068,31 +1081,30 @@ fun KidsPicturedGridScreen(
                             if (playRawSoundsOnTap || item.customSoundPath != null) {
                                 playSfx(item)
                             }
-                        },
-                    shape = cardShape,
-                    elevation = CardDefaults.cardElevation(defaultElevation = cardElevation),
+                        }
+                        .padding(if (isLandscape) 4.dp else 8.dp),
                 ) {
-                    Column {
-                        KidsPicturedTileImage(
-                            item = item,
-                            emojiSize = emojiSize,
-                            contentScale = imageContentScale,
-                            imageBackdrop = imageBackdrop,
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .aspectRatio(imageAspectRatio),
-                        )
-                        Text(
-                            item.label,
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(labelPadding),
-                            style = labelStyle,
-                            fontWeight = FontWeight.Bold,
-                            textAlign = TextAlign.Center,
-                            maxLines = if (isLandscape) 2 else 3,
-                        )
-                    }
+                    KidsPicturedTileImage(
+                        item = item,
+                        emojiSize = emojiSize,
+                        contentScale = imageContentScale,
+                        imageBackdrop = imageBackdrop?.let { Color.White.copy(alpha = 0.9f) },
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .aspectRatio(imageAspectRatio)
+                            .clip(RoundedCornerShape(if (isLandscape) 8.dp else 18.dp)),
+                    )
+                    Text(
+                        item.label,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(top = labelPadding * 0.6f, bottom = labelPadding * 0.3f),
+                        style = labelStyle,
+                        color = Color.White,
+                        fontWeight = FontWeight.Black,
+                        textAlign = TextAlign.Center,
+                        maxLines = if (isLandscape) 2 else 3,
+                    )
                 }
             }
         }
@@ -1262,7 +1274,7 @@ fun KidsTopicScreen(
     Scaffold(
         topBar = {
             CenterAlignedTopAppBar(
-                title = { Text(title, style = MaterialTheme.typography.titleLarge) },
+                title = { Text(title, style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Black) },
                 navigationIcon = {
                     IconButton(onClick = onBack) {
                         Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Назад")
@@ -1316,7 +1328,7 @@ fun KidsTopicScreen(
                             } else {
                                 BorderStroke(1.dp, Color.Black.copy(alpha = 0.12f))
                             },
-                            shape = RoundedCornerShape(12.dp),
+                            shape = RoundedCornerShape(26.dp),
                         ) {
                             Box(
                                 modifier = Modifier.fillMaxSize(),
@@ -1325,9 +1337,9 @@ fun KidsTopicScreen(
                                 Text(
                                     item.label,
                                     modifier = Modifier.padding(8.dp),
-                                    style = MaterialTheme.typography.titleMedium,
+                                    style = MaterialTheme.typography.titleLarge,
                                     textAlign = TextAlign.Center,
-                                    fontWeight = FontWeight.Bold,
+                                    fontWeight = FontWeight.Black,
                                     color = onBg,
                                     maxLines = 3,
                                     lineHeight = 18.sp,
@@ -1336,26 +1348,19 @@ fun KidsTopicScreen(
                         }
                     }
                 } else {
-                    Card(
+                    Text(
+                        item.label,
                         modifier = Modifier
                             .fillMaxWidth()
-                            .clickable { speak(item.speak) },
-                        colors = CardDefaults.cardColors(
-                            containerColor = MaterialTheme.colorScheme.secondaryContainer.copy(alpha = 0.45f),
-                        ),
-                        border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline.copy(alpha = 0.25f)),
-                        shape = MaterialTheme.shapes.medium,
-                    ) {
-                        Text(
-                            item.label,
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(horizontal = 12.dp, vertical = 16.dp),
-                            style = MaterialTheme.typography.titleMedium,
-                            textAlign = TextAlign.Center,
-                            fontWeight = FontWeight.Medium,
-                        )
-                    }
+                            .clip(RoundedCornerShape(22.dp))
+                            .background(Brush.linearGradient(kidsGradient(topicItems.indexOf(item))))
+                            .clickable { speak(item.speak) }
+                            .padding(horizontal = 12.dp, vertical = 22.dp),
+                        style = MaterialTheme.typography.titleMedium,
+                        color = Color.White,
+                        textAlign = TextAlign.Center,
+                        fontWeight = FontWeight.Black,
+                    )
                 }
             }
         }

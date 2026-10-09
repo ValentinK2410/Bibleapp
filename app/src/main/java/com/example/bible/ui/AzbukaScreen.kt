@@ -1,5 +1,6 @@
 package com.example.bible.ui
 
+import androidx.compose.ui.graphics.Brush
 import android.content.res.Configuration
 import android.os.Handler
 import android.os.Looper
@@ -274,7 +275,7 @@ fun AzbukaScreen(
     Scaffold(
         topBar = {
             CenterAlignedTopAppBar(
-                title = { Text("Азбука", style = MaterialTheme.typography.titleLarge) },
+                title = { Text("Азбука", style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Black) },
                 navigationIcon = {
                     IconButton(onClick = onBack) {
                         Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Назад")
@@ -289,27 +290,11 @@ fun AzbukaScreen(
         },
     ) { padding ->
         Column(modifier = Modifier.padding(padding)) {
-            ScrollableTabRow(
-                selectedTabIndex = pagerState.currentPage,
-                edgePadding = 4.dp,
-                containerColor = Color.Transparent,
-                modifier = Modifier.height(44.dp),
-            ) {
-                tabs.forEachIndexed { i, title ->
-                    Tab(
-                        selected = pagerState.currentPage == i,
-                        onClick = { scope.launch { pagerState.animateScrollToPage(i) } },
-                        modifier = Modifier.height(40.dp),
-                        text = {
-                            Text(
-                                title,
-                                style = MaterialTheme.typography.labelMedium,
-                                maxLines = 1,
-                            )
-                        },
-                    )
-                }
-            }
+            KidsTabs(
+                tabs = tabs,
+                selected = pagerState.currentPage,
+                onSelect = { i -> scope.launch { pagerState.animateScrollToPage(i) } },
+            )
             HorizontalPager(
                 state = pagerState,
                 modifier = Modifier.fillMaxSize(),
@@ -1054,15 +1039,10 @@ private fun LetterCard(
     cursiveFont: FontFamily,
     onClick: () -> Unit,
 ) {
-    val bgColor = when (letter.type) {
-        LetterType.VOWEL -> Color(0x33F44336)
-        LetterType.CONSONANT -> Color(0x332196F3)
-        LetterType.SIGN -> Color(0x339E9E9E)
-    }
-    val borderColor = when (letter.type) {
-        LetterType.VOWEL -> Color(0xFFF44336)
-        LetterType.CONSONANT -> Color(0xFF2196F3)
-        LetterType.SIGN -> Color(0xFF9E9E9E)
+    val letterGradient = when (letter.type) {
+        LetterType.VOWEL -> KidsVowelGradient
+        LetterType.CONSONANT -> KidsConsonantGradient
+        LetterType.SIGN -> KidsSignGradient
     }
     val interaction = remember { MutableInteractionSource() }
     val pressed by interaction.collectIsPressedAsState()
@@ -1080,24 +1060,28 @@ private fun LetterCard(
                 indication = null,
                 onClick = onClick,
             ),
-        colors = CardDefaults.cardColors(containerColor = bgColor),
-        border = BorderStroke(1.dp, borderColor),
-        shape = RoundedCornerShape(12.dp),
+        colors = CardDefaults.cardColors(containerColor = Color.Transparent),
+        shape = RoundedCornerShape(16.dp),
     ) {
-        Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+        Box(
+            Modifier
+                .fillMaxSize()
+                .background(Brush.linearGradient(letterGradient)),
+            contentAlignment = Alignment.Center,
+        ) {
             Column(horizontalAlignment = Alignment.CenterHorizontally) {
                 Text(
                     "${letter.upper}${letter.lower}",
                     fontSize = 21.sp,
-                    fontWeight = FontWeight.Bold,
-                    color = MaterialTheme.colorScheme.onSurface,
+                    fontWeight = FontWeight.Black,
+                    color = Color.White,
                     lineHeight = 22.sp,
                 )
                 Text(
                     "${letter.upper}${letter.lower}",
                     fontSize = 17.sp,
                     fontFamily = cursiveFont,
-                    color = MaterialTheme.colorScheme.primary,
+                    color = Color.White.copy(alpha = 0.88f),
                     maxLines = 1,
                     lineHeight = 18.sp,
                 )

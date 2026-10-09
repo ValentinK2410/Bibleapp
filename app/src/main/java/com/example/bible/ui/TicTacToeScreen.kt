@@ -185,7 +185,7 @@ fun TicTacToeScreen(
     Scaffold(
         topBar = {
             CenterAlignedTopAppBar(
-                title = { Text("Крестики-нолики", style = MaterialTheme.typography.titleLarge) },
+                title = { Text("Крестики-нолики", style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Black) },
                 navigationIcon = {
                     IconButton(onClick = onBack) {
                         Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Назад")
@@ -213,20 +213,23 @@ fun TicTacToeScreen(
                     .padding(top = 6.dp),
                 horizontalArrangement = Arrangement.spacedBy(6.dp),
             ) {
-                FilterChip(
+                TmGradientPill(
+                    text = "Вы и компьютер",
                     selected = mode == TicGameMode.HUMAN_VS_AI,
+                    gradient = kidsGradient(0),
                     onClick = { mode = TicGameMode.HUMAN_VS_AI },
-                    label = { Text("Вы и компьютер", maxLines = 1, style = MaterialTheme.typography.labelMedium) },
                 )
-                FilterChip(
+                TmGradientPill(
+                    text = "Два игрока",
                     selected = mode == TicGameMode.TWO_HUMANS,
+                    gradient = kidsGradient(1),
                     onClick = { mode = TicGameMode.TWO_HUMANS },
-                    label = { Text("Два игрока", maxLines = 1, style = MaterialTheme.typography.labelMedium) },
                 )
-                FilterChip(
+                TmGradientPill(
+                    text = "Два компьютера",
                     selected = mode == TicGameMode.AI_VS_AI,
+                    gradient = kidsGradient(2),
                     onClick = { mode = TicGameMode.AI_VS_AI },
-                    label = { Text("Два компьютера", maxLines = 1, style = MaterialTheme.typography.labelMedium) },
                 )
             }
             Text(
@@ -240,10 +243,11 @@ fun TicTacToeScreen(
                 horizontalArrangement = Arrangement.spacedBy(6.dp),
             ) {
                 for (n in 3..6) {
-                    FilterChip(
+                    TmGradientPill(
+                        text = "${n}×$n",
                         selected = boardSize == n,
+                        gradient = kidsGradient(3),
                         onClick = { boardSize = n },
-                        label = { Text("${n}×$n") },
                     )
                 }
             }
@@ -253,10 +257,8 @@ fun TicTacToeScreen(
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                 modifier = Modifier.padding(top = 6.dp),
             )
-            Text(
+            KidsBanner(
                 statusLine,
-                style = MaterialTheme.typography.titleSmall,
-                fontWeight = FontWeight.SemiBold,
                 modifier = Modifier.padding(top = 8.dp),
             )
             Box(
@@ -276,16 +278,15 @@ fun TicTacToeScreen(
                     )
                 }
             }
-            Button(
+            KidsBigButton(
+                text = "Новая партия",
                 onClick = {
                     restart()
                 },
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(bottom = 16.dp),
-            ) {
-                Text("Новая партия")
-            }
+            )
         }
     }
 }
