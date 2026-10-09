@@ -119,9 +119,9 @@
 |:---:|:---:|:---:|
 | ![Аудиотреки и загрузки](docs/screenshots/07-audios.png) | ![Сборник песен](docs/screenshots/08-songs.png) | ![Лента и посты](docs/screenshots/26-microblog.png) |
 
-| Для музыканта |
-|:---:|
-| ![Тюнер, метроном, ноты](docs/screenshots/27-musician.png) |
+| Для музыканта | Тюнер | Метроном | Ноты |
+|:---:|:---:|:---:|:---:|
+| ![Карманная студия музыканта](docs/screenshots/27-musician-v2.png) | ![Стрелочный тюнер: гитара, бас, укулеле, смычковые, хроматический](docs/screenshots/27b-tuner.png) | ![Метроном: размеры, акценты, дробление, tap-темп](docs/screenshots/27c-metronome.png) | ![Справочник, определение ноты, песочница](docs/screenshots/27d-notes.png) |
 
 ---
 

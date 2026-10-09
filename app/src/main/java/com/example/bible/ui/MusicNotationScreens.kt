@@ -71,6 +71,12 @@ import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.input.pointer.PointerEventPass
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.graphics.Color
+import androidx.compose.foundation.background
+import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
+import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.unit.sp
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -141,12 +147,12 @@ private data class SandboxNote(val id: Long, val midi: Int, val durationMs: Int)
 @Composable
 fun MusicTheoryNotesScreen(onBack: () -> Unit) {
     var tabIndex by remember { mutableIntStateOf(0) }
-    val tabs = listOf("Справочник", "Определение ноты", "Песочница")
+    val tabs = listOf("Справочник", "Определение", "Песочница")
 
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Ноты") },
+                title = { Text("Ноты", fontWeight = FontWeight.ExtraBold) },
                 navigationIcon = {
                     IconButton(onClick = onBack) {
                         Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Назад")
@@ -160,19 +166,38 @@ fun MusicTheoryNotesScreen(onBack: () -> Unit) {
                 .padding(padding)
                 .fillMaxSize(),
         ) {
-            TabRow(selectedTabIndex = tabIndex) {
-                tabs.forEachIndexed { i, title ->
-                    Tab(
-                        selected = tabIndex == i,
-                        onClick = { tabIndex = i },
-                        text = {
-                            Text(
-                                title,
-                                maxLines = 1,
-                                style = MaterialTheme.typography.labelMedium,
+            Row(
+                Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 12.dp, vertical = 6.dp),
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+            ) {
+                listOf("📖" to tabs[0], "🎤" to tabs[1], "🎹" to tabs[2]).forEachIndexed { i, (emoji, title) ->
+                    val selected = tabIndex == i
+                    val gradient = listOf(MusicNotesGradient, MusicTunerGradient, MusicMetronomeGradient)[i]
+                    Column(
+                        Modifier
+                            .weight(1f)
+                            .clip(RoundedCornerShape(18.dp))
+                            .then(
+                                if (selected) Modifier.background(Brush.linearGradient(gradient))
+                                else Modifier
+                                    .background(gradient.first().copy(alpha = 0.08f))
+                                    .border(1.dp, gradient.first().copy(alpha = 0.3f), RoundedCornerShape(18.dp)),
                             )
-                        },
-                    )
+                            .clickable { tabIndex = i }
+                            .padding(vertical = 8.dp),
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                    ) {
+                        Text(emoji, fontSize = 20.sp)
+                        Text(
+                            title,
+                            fontSize = 11.sp,
+                            fontWeight = FontWeight.ExtraBold,
+                            maxLines = 1,
+                            color = if (selected) Color.White else gradient.first(),
+                        )
+                    }
                 }
             }
             when (tabIndex) {

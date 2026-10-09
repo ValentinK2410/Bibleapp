@@ -9,7 +9,7 @@ object PitchEstimator {
     private const val MIN_HZ = 70.0
     private const val MAX_HZ = 1200.0
 
-    fun estimateHz(samples: ShortArray, sampleRate: Int): Float? {
+    fun estimateHz(samples: ShortArray, sampleRate: Int, minHz: Double = MIN_HZ): Float? {
         val n = samples.size
         if (n < 2048) return null
 
@@ -24,7 +24,7 @@ object PitchEstimator {
         for (i in 0 until n) x[i] -= mean
 
         val minPeriod = (sampleRate / MAX_HZ).toInt().coerceAtLeast(2)
-        val maxPeriod = (sampleRate / MIN_HZ).toInt().coerceAtMost(n / 2)
+        val maxPeriod = (sampleRate / minHz).toInt().coerceAtMost(n / 2)
         if (minPeriod >= maxPeriod) return null
 
         var bestPeriod = minPeriod
@@ -42,7 +42,7 @@ object PitchEstimator {
         }
         if (bestCorr < 1e-8) return null
         val hz = sampleRate.toFloat() / bestPeriod
-        if (hz < MIN_HZ || hz > MAX_HZ) return null
+        if (hz < minHz || hz > MAX_HZ) return null
         return hz
     }
 
