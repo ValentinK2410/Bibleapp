@@ -62,12 +62,49 @@ object MusicSynth {
         }
     }
 
+    /** Нота в примере: [startSec] от начала, длительность [durSec]. */
+    data class NoteEvent(val midi: Int, val startSec: Double, val durSec: Double, val velocity: Double = 1.0)
+
+    fun hzOfMidi(midi: Int): Double = 440.0 * Math.pow(2.0, (midi - 69) / 12.0)
+
+    /** Сводит ноты (аккорды, гаммы, ритмы) в один звук и проигрывает его. Вызывать не из главного потока. */
+    fun playEvents(events: List<NoteEvent>) {
+        if (events.isEmpty()) return
+        val total = events.maxOf { it.startSec + it.durSec } + 0.6
+        val n = (SAMPLE_RATE * total).toInt()
+        val mix = FloatArray(n)
+        for (e in events) {
+            val hz = hzOfMidi(e.midi)
+            val start = (e.startSec * SAMPLE_RATE).toInt()
+            val len = ((e.durSec + 0.35) * SAMPLE_RATE).toInt()
+            val releaseAt = (e.durSec * SAMPLE_RATE).toInt()
+            for (i in 0 until len) {
+                val idx = start + i
+                if (idx >= n) break
+                val t = i.toDouble() / SAMPLE_RATE
+                val attack = (i / (SAMPLE_RATE * 0.008)).coerceAtMost(1.0)
+                val release = if (i > releaseAt) exp(-(i - releaseAt) / (SAMPLE_RATE * 0.06)) else 1.0
+                val env = attack * release * exp(-t * 1.4) * e.velocity
+                val v = 0.62 * sin(2 * PI * hz * t) +
+                    0.25 * sin(2 * PI * hz * 2 * t) * exp(-t * 2.5) +
+                    0.13 * sin(2 * PI * hz * 3 * t) * exp(-t * 3.5)
+                mix[idx] += (v * env).toFloat()
+            }
+        }
+        var peak = 0f
+        for (v in mix) if (kotlin.math.abs(v) > peak) peak = kotlin.math.abs(v)
+        val gain = if (peak > 0f) 0.85f / maxOf(peak, 1f) else 0f
+        val pcm = ShortArray(n) { (mix[it] * gain * Short.MAX_VALUE).toInt().coerceIn(-32767, 32767).toShort() }
+        playPcm(pcm)
+    }
+
     @Volatile
     private var toneTrack: AudioTrack? = null
 
     /** Проигрывает эталонную ноту; новый вызов обрывает предыдущий тон. */
-    fun playReference(hz: Double) {
-        val pcm = pluckTone(hz)
+    fun playReference(hz: Double) = playPcm(pluckTone(hz))
+
+    private fun playPcm(pcm: ShortArray) {
         stopReference()
         val track = AudioTrack.Builder()
             .setAudioAttributes(

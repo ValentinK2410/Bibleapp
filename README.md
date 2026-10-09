@@ -121,7 +121,11 @@
 
 | Для музыканта | Тюнер | Метроном | Ноты |
 |:---:|:---:|:---:|:---:|
-| ![Карманная студия музыканта](docs/screenshots/27-musician-v2.png) | ![Стрелочный тюнер: гитара, бас, укулеле, смычковые, хроматический](docs/screenshots/27b-tuner.png) | ![Метроном: размеры, акценты, дробление, tap-темп](docs/screenshots/27c-metronome.png) | ![Справочник, определение ноты, песочница](docs/screenshots/27d-notes.png) |
+| ![Карманная студия музыканта](docs/screenshots/27-musician-v2.png) | ![Стрелочный тюнер: гитара, бас, укулеле, смычковые, хроматический](docs/screenshots/27b-tuner.png) | ![Метроном: размеры, акценты, дробление, tap-темп](docs/screenshots/27c-metronome.png) | ![Справочник с нотным станом и примерами](docs/screenshots/27d-notes-handbook.png) |
+
+| Ноты: песочница | Ноты: тренажёр | Квинтовый круг |
+|:---:|:---:|:---:|
+| ![Стан со скрипичным ключом и клавиатура](docs/screenshots/27e-notes-sandbox.png) | ![Читаем ноты, ноты и интервалы на слух](docs/screenshots/27f-notes-trainer.png) | ![Нажмите сектор — прозвучит аккорд](docs/screenshots/27g-notes-fifths.png) |
 
 ---
 
