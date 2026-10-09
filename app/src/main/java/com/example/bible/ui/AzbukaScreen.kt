@@ -1,5 +1,8 @@
 package com.example.bible.ui
 
+import androidx.compose.foundation.gestures.detectTapGestures
+import androidx.compose.foundation.horizontalScroll
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.graphics.Brush
 import android.content.res.Configuration
 import android.os.Handler
@@ -529,22 +532,24 @@ private fun SandboxDropZoneBox(
 ) {
     Box(
         modifier = modifier
-            .clip(RoundedCornerShape(14.dp))
+            .clip(RoundedCornerShape(22.dp))
+            .background(Brush.linearGradient(KidsNightGradient))
             .border(
-                BorderStroke(2.dp, MaterialTheme.colorScheme.primary.copy(alpha = 0.45f)),
-                RoundedCornerShape(14.dp),
+                BorderStroke(2.dp, Color.White.copy(alpha = 0.25f)),
+                RoundedCornerShape(22.dp),
             )
-            .background(MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.45f))
             .onGloballyPositioned { onWorkspaceCoords(it) },
     ) {
         if (chain.isEmpty()) {
             Text(
-                "Перетащите буквы сюда",
-                style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                "✨ Нажми на букву или перетащи её сюда",
+                fontSize = 15.sp,
+                fontWeight = FontWeight.Bold,
+                color = Color.White.copy(alpha = 0.8f),
+                textAlign = TextAlign.Center,
                 modifier = Modifier
                     .align(Alignment.Center)
-                    .padding(horizontal = 10.dp, vertical = 8.dp),
+                    .padding(horizontal = 12.dp, vertical = 8.dp),
             )
         } else {
             SandboxChainRowScaleToFit(
@@ -557,10 +562,10 @@ private fun SandboxDropZoneBox(
                         Spacer(Modifier.width(4.dp))
                         Box(
                             modifier = Modifier
-                                .width(18.dp)
+                                .width(14.dp)
                                 .height(5.dp)
-                                .clip(RoundedCornerShape(2.dp))
-                                .background(MaterialTheme.colorScheme.primary.copy(alpha = 0.55f)),
+                                .clip(RoundedCornerShape(3.dp))
+                                .background(Color.White.copy(alpha = 0.55f)),
                         )
                         Spacer(Modifier.width(4.dp))
                     }
@@ -598,28 +603,138 @@ private fun SandboxDropZoneBox(
 @Composable
 private fun SandboxToolbar(
     chainNotEmpty: Boolean,
+    challengeOn: Boolean,
     onClear: () -> Unit,
+    onBackspace: () -> Unit,
     onListen: () -> Unit,
+    onSpell: () -> Unit,
+    onToggleChallenge: () -> Unit,
 ) {
     Row(
-        modifier = Modifier.fillMaxWidth(),
-        horizontalArrangement = Arrangement.SpaceBetween,
+        modifier = Modifier
+            .fillMaxWidth()
+            .horizontalScroll(rememberScrollState())
+            .padding(vertical = 4.dp),
+        horizontalArrangement = Arrangement.spacedBy(8.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
-        TextButton(onClick = onClear, enabled = chainNotEmpty) {
-            Text("Очистить", style = MaterialTheme.typography.labelLarge)
-        }
-        FilledTonalButton(
-            onClick = onListen,
-            enabled = chainNotEmpty,
-            contentPadding = PaddingValues(horizontal = 12.dp, vertical = 6.dp),
-        ) {
-            Icon(
-                Icons.AutoMirrored.Filled.VolumeUp,
-                contentDescription = null,
-                modifier = Modifier.padding(end = 6.dp),
+        SandboxPill("🎯 Задание", kidsGradient(1), enabled = true, selected = challengeOn, onClick = onToggleChallenge)
+        SandboxPill("🔊 Прочитать", kidsGradient(2), enabled = chainNotEmpty, onClick = onListen)
+        SandboxPill("🔤 По буквам", kidsGradient(4), enabled = chainNotEmpty, onClick = onSpell)
+        SandboxPill("⌫ Стереть", kidsGradient(6), enabled = chainNotEmpty, onClick = onBackspace)
+        SandboxPill("🧹 Очистить", kidsGradient(3), enabled = chainNotEmpty, onClick = onClear)
+    }
+}
+
+@Composable
+private fun SandboxPill(
+    text: String,
+    gradient: List<Color>,
+    enabled: Boolean,
+    selected: Boolean = true,
+    onClick: () -> Unit,
+) {
+    val shape = RoundedCornerShape(999.dp)
+    Box(
+        Modifier
+            .alpha(if (enabled) 1f else 0.4f)
+            .clip(shape)
+            .then(
+                if (selected) Modifier.background(Brush.linearGradient(gradient))
+                else Modifier
+                    .background(gradient.first().copy(alpha = 0.1f))
+                    .border(1.dp, gradient.first().copy(alpha = 0.4f), shape),
             )
-            Text("Прослушать", style = MaterialTheme.typography.labelLarge)
+            .clickable(enabled = enabled, onClick = onClick)
+            .padding(horizontal = 14.dp, vertical = 9.dp),
+    ) {
+        Text(
+            text,
+            color = if (selected) Color.White else gradient.first(),
+            fontWeight = FontWeight.Black,
+            fontSize = 14.sp,
+        )
+    }
+}
+
+/** Слова из уроков, которые ребёнок может собрать в песочнице. */
+private val SandboxWords: List<Pair<String, String>> by lazy {
+    val letters = AzbukaRepository.ALPHABET.map { it.upper }.toSet()
+    AzbukaRepository.LESSONS
+        .flatMap { it.words }
+        .map { (w, meaning) -> w.replace("-", "").replace(" ", "").uppercase() to meaning }
+        .filter { (w, _) -> w.length in 2..7 && w.all { it in letters } }
+        .distinctBy { it.first }
+}
+
+/** Карточка задания: слово и клетки, которые загораются по мере сборки. */
+@Composable
+private fun SandboxChallengeCard(
+    target: String,
+    meaning: String,
+    chain: List<RussianLetter>,
+    solved: Boolean,
+    onSpeakWord: () -> Unit,
+    onNext: () -> Unit,
+) {
+    Column(
+        Modifier
+            .fillMaxWidth()
+            .clip(RoundedCornerShape(22.dp))
+            .background(
+                Brush.linearGradient(
+                    if (solved) KidsCorrectGradient else listOf(Color(0xFFF59E0B), Color(0xFFEC4899)),
+                ),
+            )
+            .padding(horizontal = 14.dp, vertical = 10.dp),
+        verticalArrangement = Arrangement.spacedBy(8.dp),
+    ) {
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            Text(
+                if (solved) "🎉 Получилось!" else "🎯 Собери слово",
+                color = Color.White,
+                fontWeight = FontWeight.Black,
+                fontSize = 16.sp,
+                modifier = Modifier.weight(1f),
+            )
+            KidsStreakBadge()
+        }
+        Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+            target.forEachIndexed { i, ch ->
+                val placed = chain.getOrNull(i)?.upper
+                val ok = placed == ch
+                val wrong = placed != null && !ok
+                Box(
+                    Modifier
+                        .size(width = 40.dp, height = 48.dp)
+                        .clip(RoundedCornerShape(12.dp))
+                        .background(
+                            when {
+                                ok -> Color.White
+                                wrong -> Color(0xFF7F1D1D).copy(alpha = 0.5f)
+                                else -> Color.White.copy(alpha = 0.25f)
+                            },
+                        ),
+                    contentAlignment = Alignment.Center,
+                ) {
+                    Text(
+                        ch.toString(),
+                        fontSize = 24.sp,
+                        fontWeight = FontWeight.Black,
+                        color = if (ok) Color(0xFF16A34A) else Color.White,
+                    )
+                }
+            }
+        }
+        Text(meaning, color = Color.White.copy(alpha = 0.9f), fontSize = 13.sp)
+        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+            SandboxPill("🔊 Слово", listOf(Color.White.copy(alpha = 0.3f), Color.White.copy(alpha = 0.2f)), enabled = true, onClick = onSpeakWord)
+            SandboxPill(
+                if (solved) "➜ Следующее" else "🔄 Другое слово",
+                listOf(Color.White.copy(alpha = 0.3f), Color.White.copy(alpha = 0.2f)),
+                enabled = true,
+                onClick = onNext,
+            )
         }
     }
 }
@@ -680,6 +795,49 @@ private fun SandboxTab(
             speak(chain.joinToString("") { it.lower.toString() })
         }
     }
+    val spellChain: () -> Unit = {
+        if (chain.isNotEmpty()) speak(chain.joinToString(", ") { it.name })
+    }
+    var challengeOn by rememberSaveable { mutableStateOf(false) }
+    var targetIndex by rememberSaveable { mutableIntStateOf(0) }
+    var solved by remember { mutableStateOf(false) }
+    val target = SandboxWords.getOrNull(targetIndex % SandboxWords.size.coerceAtLeast(1))
+    val chainWord = chain.joinToString("") { it.upper.toString() }
+    var praisedWord by remember { mutableStateOf("") }
+    val addLetter: (RussianLetter) -> Unit = { letter ->
+        if (!(challengeOn && solved)) {
+            chain.add(letter)
+            com.example.bible.games.KidsGameAudio.play(com.example.bible.games.KidsSfx.TAP)
+        }
+    }
+    val nextTarget: () -> Unit = {
+        chain.clear()
+        solved = false
+        targetIndex = (targetIndex + 1 + kotlin.random.Random.nextInt(SandboxWords.size.coerceAtLeast(1))) %
+            SandboxWords.size.coerceAtLeast(1)
+    }
+    LaunchedEffect(chainWord, challengeOn, targetIndex) {
+        if (chainWord.isEmpty()) {
+            praisedWord = ""
+            return@LaunchedEffect
+        }
+        if (challengeOn && target != null) {
+            if (!solved && chainWord == target.first) {
+                solved = true
+                KidsGameStreak.answered(true)
+                speak("Ура! Получилось слово ${target.first.lowercase()}!")
+            } else if (!solved && !target.first.startsWith(chainWord)) {
+                com.example.bible.games.KidsGameAudio.play(com.example.bible.games.KidsSfx.WRONG)
+            }
+        } else {
+            val known = SandboxWords.firstOrNull { it.first == chainWord }
+            if (known != null && praisedWord != chainWord) {
+                praisedWord = chainWord
+                KidsGameStreak.answered(true)
+                speak("Молодец! Получилось слово ${known.first.lowercase()}!")
+            }
+        }
+    }
 
     Box(
         modifier = Modifier
@@ -703,7 +861,7 @@ private fun SandboxTab(
                     workspaceCoordsState = workspaceCoordsState,
                     paletteCoordsMap = paletteCoordsMap,
                     paletteGhostLetter = paletteGhost?.first,
-                    onAddLetter = { chain.add(it) },
+                    onAddLetter = addLetter,
                     onSpeakPaletteLetter = { speak(it.name) },
                     onPaletteDragWindow = onPaletteDragWindow,
                 )
@@ -714,9 +872,28 @@ private fun SandboxTab(
                 ) {
                     SandboxToolbar(
                         chainNotEmpty = chain.isNotEmpty(),
+                        challengeOn = challengeOn,
                         onClear = { chain.clear() },
+                        onBackspace = { if (chain.isNotEmpty() && !(challengeOn && solved)) chain.removeAt(chain.lastIndex) },
                         onListen = playChain,
+                        onSpell = spellChain,
+                        onToggleChallenge = {
+                            challengeOn = !challengeOn
+                            chain.clear()
+                            solved = false
+                        },
                     )
+                    if (challengeOn && target != null) {
+                        SandboxChallengeCard(
+                            target = target.first,
+                            meaning = target.second,
+                            chain = chain,
+                            solved = solved,
+                            onSpeakWord = { speak(target.first.lowercase()) },
+                            onNext = nextTarget,
+                        )
+                        Spacer(Modifier.height(6.dp))
+                    }
                     Spacer(Modifier.height(4.dp))
                     SandboxDropZoneBox(
                         modifier = Modifier
@@ -740,9 +917,28 @@ private fun SandboxTab(
             ) {
                 SandboxToolbar(
                     chainNotEmpty = chain.isNotEmpty(),
+                    challengeOn = challengeOn,
                     onClear = { chain.clear() },
+                    onBackspace = { if (chain.isNotEmpty() && !(challengeOn && solved)) chain.removeAt(chain.lastIndex) },
                     onListen = playChain,
+                    onSpell = spellChain,
+                    onToggleChallenge = {
+                        challengeOn = !challengeOn
+                        chain.clear()
+                        solved = false
+                    },
                 )
+                if (challengeOn && target != null) {
+                    SandboxChallengeCard(
+                        target = target.first,
+                        meaning = target.second,
+                        chain = chain,
+                        solved = solved,
+                        onSpeakWord = { speak(target.first.lowercase()) },
+                        onNext = nextTarget,
+                    )
+                    Spacer(Modifier.height(6.dp))
+                }
                 Spacer(Modifier.height(4.dp))
                 SandboxDropZoneBox(
                     modifier = Modifier
@@ -767,13 +963,14 @@ private fun SandboxTab(
                     workspaceCoordsState = workspaceCoordsState,
                     paletteCoordsMap = paletteCoordsMap,
                     paletteGhostLetter = paletteGhost?.first,
-                    onAddLetter = { chain.add(it) },
+                    onAddLetter = addLetter,
                     onSpeakPaletteLetter = { speak(it.name) },
                     onPaletteDragWindow = onPaletteDragWindow,
                 )
             }
         }
 
+        KidsCorrectBurst()
         val pg = paletteGhost
         val cg = chainGhost
         when {
@@ -820,23 +1017,25 @@ private fun SandboxDragGhostBox(
             .size(ghostSize)
             .clip(RoundedCornerShape(16.dp))
             .background(
-                when (letter.type) {
-                    LetterType.VOWEL -> Color(0xEEF44336)
-                    LetterType.CONSONANT -> Color(0xEE2196F3)
-                    LetterType.SIGN -> Color(0xEE9E9E9E)
-                },
+                Brush.linearGradient(
+                    when (letter.type) {
+                        LetterType.VOWEL -> KidsVowelGradient
+                        LetterType.CONSONANT -> KidsConsonantGradient
+                        LetterType.SIGN -> KidsSignGradient
+                    },
+                ),
             )
             .border(
-                BorderStroke(2.5.dp, MaterialTheme.colorScheme.onSurface),
+                BorderStroke(3.dp, Color.White),
                 RoundedCornerShape(16.dp),
             ),
         contentAlignment = Alignment.Center,
     ) {
         Text(
             "${letter.upper}${letter.lower}",
-            fontSize = 24.sp,
-            fontWeight = FontWeight.Bold,
-            color = MaterialTheme.colorScheme.onSurface,
+            fontSize = 28.sp,
+            fontWeight = FontWeight.Black,
+            color = Color.White,
         )
     }
 }
@@ -862,20 +1061,23 @@ private fun SandboxPaletteLetter(
     modifier: Modifier = Modifier.size(50.dp),
 ) {
     val onSpeakOnTapState = rememberUpdatedState(onSpeakOnTap)
-    val bgColor = when (letter.type) {
-        LetterType.VOWEL -> Color(0x33F44336)
-        LetterType.CONSONANT -> Color(0x332196F3)
-        LetterType.SIGN -> Color(0x339E9E9E)
-    }
-    val borderColor = when (letter.type) {
-        LetterType.VOWEL -> Color(0xFFF44336)
-        LetterType.CONSONANT -> Color(0xFF2196F3)
-        LetterType.SIGN -> Color(0xFF9E9E9E)
+    val letterGradient = when (letter.type) {
+        LetterType.VOWEL -> KidsVowelGradient
+        LetterType.CONSONANT -> KidsConsonantGradient
+        LetterType.SIGN -> KidsSignGradient
     }
     Box(
         modifier = modifier
             .alpha(if (draggingThis) 0.35f else 1f)
             .onGloballyPositioned { paletteCoordsMap[letter] = it }
+            .pointerInput(letter) {
+                detectTapGestures(
+                    onTap = {
+                        onSpeakOnTapState.value()
+                        onAddToChain()
+                    },
+                )
+            }
             .pointerInput(letter, tapSlopPx, swipeUpPx) {
                 var dragStart = Offset.Zero
                 var dragAccum = Offset.Zero
@@ -928,8 +1130,7 @@ private fun SandboxPaletteLetter(
                 modifier = Modifier
                     .fillMaxSize()
                     .clip(RoundedCornerShape(corner))
-                    .background(bgColor)
-                    .border(BorderStroke(1.dp, borderColor), RoundedCornerShape(corner)),
+                    .background(Brush.linearGradient(letterGradient)),
                 contentAlignment = Alignment.Center,
             ) {
                 Column(
@@ -939,8 +1140,8 @@ private fun SandboxPaletteLetter(
                     Text(
                         "${letter.upper}${letter.lower}",
                         fontSize = mainFs,
-                        fontWeight = FontWeight.Bold,
-                        color = MaterialTheme.colorScheme.onSurface,
+                        fontWeight = FontWeight.Black,
+                        color = Color.White,
                         maxLines = 1,
                     )
                     Text(letter.type.emoji, fontSize = emojiFs, maxLines = 1)
@@ -966,19 +1167,21 @@ private fun SandboxChainChip(
             .fillMaxHeight()
             .defaultMinSize(minWidth = 44.dp)
             .alpha(if (draggingReorder) 0.38f else 1f),
-        colors = CardDefaults.cardColors(
-            containerColor = when (letter.type) {
-                LetterType.VOWEL -> Color(0x44F44336)
-                LetterType.CONSONANT -> Color(0x442196F3)
-                LetterType.SIGN -> Color(0x449E9E9E)
-            },
-        ),
-        border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline.copy(alpha = 0.35f)),
-        shape = RoundedCornerShape(12.dp),
+        colors = CardDefaults.cardColors(containerColor = Color.Transparent),
+        shape = RoundedCornerShape(14.dp),
     ) {
         Box(
             modifier = Modifier
                 .fillMaxSize()
+                .background(
+                    Brush.linearGradient(
+                        when (letter.type) {
+                            LetterType.VOWEL -> KidsVowelGradient
+                            LetterType.CONSONANT -> KidsConsonantGradient
+                            LetterType.SIGN -> KidsSignGradient
+                        },
+                    ),
+                )
                 .onGloballyPositioned { dragAreaCoords = it }
                 .pointerInput(letter, index) {
                     var dragStart = Offset.Zero
@@ -1024,8 +1227,8 @@ private fun SandboxChainChip(
                 Text(
                     "${letter.upper}${letter.lower}",
                     fontSize = fontSp.sp,
-                    fontWeight = FontWeight.Bold,
-                    color = MaterialTheme.colorScheme.onSurface,
+                    fontWeight = FontWeight.Black,
+                    color = Color.White,
                     maxLines = 1,
                     modifier = Modifier.align(Alignment.Center),
                 )
