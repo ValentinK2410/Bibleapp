@@ -547,14 +547,14 @@ fun MediaHomeScreen(
                     )
                     MediaHomeSectionOrder.MUSICIAN -> MediaHomeSectionElevatedCard(
                         title = "Для музыканта",
-                        subtitle = "Тюнеры: гитара и скрипка",
+                        subtitle = "Тюнер, метроном, ноты и тренажёр слуха",
                         icon = Icons.Filled.MusicNote,
                         onClick = onOpenMusician,
                         style = MediaHomeCardVisual.Musician,
                     )
                     MediaHomeSectionOrder.PESNOPENIE -> MediaHomeSectionElevatedCard(
                         title = "Песнопение",
-                        subtitle = "Сборник песен: поиск, теги, добавление своих текстов",
+                        subtitle = "Сборник песен: аккорды над словами, поиск, фильтры и свои тексты",
                         icon = Icons.AutoMirrored.Filled.QueueMusic,
                         onClick = onOpenPesnopenie,
                         style = MediaHomeCardVisual.Pesnopenie,

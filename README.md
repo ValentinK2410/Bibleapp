@@ -117,7 +117,11 @@
 
 | Аудио | Песнопение | Микроблог |
 |:---:|:---:|:---:|
-| ![Аудиотреки и загрузки](docs/screenshots/07-audios.png) | ![Сборник песен](docs/screenshots/08-songs.png) | ![Лента и посты](docs/screenshots/26-microblog.png) |
+| ![Аудиотреки и загрузки](docs/screenshots/07-audios.png) | ![Сборник песен: компактный список и фильтры](docs/screenshots/08-songs-v2.png) | ![Лента и посты](docs/screenshots/26-microblog.png) |
+
+| Песня с аккордами над словами |
+|:---:|
+| ![Аккорды над слогами, части песни, аппликатуры](docs/screenshots/08b-song-chords.png) |
 
 | Для музыканта | Тюнер | Метроном | Ноты |
 |:---:|:---:|:---:|:---:|

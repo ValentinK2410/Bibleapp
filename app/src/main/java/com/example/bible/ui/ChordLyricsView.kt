@@ -1,6 +1,8 @@
 package com.example.bible.ui
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
@@ -59,62 +61,197 @@ fun ChordLyricsView(
     transpose: Int,
     modifier: Modifier = Modifier,
     onSelectedChordChange: (String?) -> Unit = {},
+    header: (@Composable () -> Unit)? = null,
 ) {
     val lines = remember(lyrics, showChords, transpose) {
         SongChordMarkup.displayLines(lyrics, showChords, transpose)
     }
+    val songChords = remember(lyrics, transpose) { SongChordMarkup.uniqueChordNames(lyrics, transpose) }
     var selected by remember { mutableStateOf<SelectedLyricChord?>(null) }
     LaunchedEffect(lyrics, transpose) { selected = null }
-    val selectedName = selected?.let { sel ->
-        val line = lines.getOrNull(sel.lineIndex) ?: return@let null
-        if (!line.isChord) return@let null
-        SongChordMarkup.chordSpans(line.text).firstOrNull { it.start == sel.start }?.name
+    LaunchedEffect(selected, showChords) {
+        onSelectedChordChange(if (showChords) selected?.name else null)
     }
-    LaunchedEffect(selectedName, showChords) {
-        onSelectedChordChange(if (showChords) selectedName else null)
+    fun toggle(sel: SelectedLyricChord) {
+        selected = if (selected == sel) null else sel
     }
 
     Column(modifier.fillMaxWidth()) {
-        if (showChords && selectedName == null && lines.any { it.isChord }) {
-            Text(
-                "Нажмите аккорд — схема внизу, ещё раз — скроется.",
-                style = MaterialTheme.typography.labelSmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-            )
-            Spacer(Modifier.height(6.dp))
+        header?.invoke()
+        if (showChords && songChords.isNotEmpty()) {
+            Row(
+                Modifier
+                    .fillMaxWidth()
+                    .horizontalScroll(rememberScrollState())
+                    .padding(bottom = 10.dp),
+                horizontalArrangement = Arrangement.spacedBy(6.dp),
+            ) {
+                songChords.forEachIndexed { i, name ->
+                    val sel = SelectedLyricChord(-1, i, name)
+                    val isSel = selected?.name == name
+                    Text(
+                        name,
+                        fontWeight = FontWeight.ExtraBold,
+                        fontSize = 15.sp,
+                        color = if (isSel) Color.White else MaterialTheme.colorScheme.primary,
+                        modifier = Modifier
+                            .clip(RoundedCornerShape(12.dp))
+                            .background(
+                                if (isSel) MaterialTheme.colorScheme.primary
+                                else MaterialTheme.colorScheme.primary.copy(alpha = 0.1f),
+                            )
+                            .clickable { toggle(sel) }
+                            .padding(horizontal = 12.dp, vertical = 7.dp),
+                    )
+                }
+            }
+            if (selected == null) {
+                Text(
+                    "Нажмите на аккорд — внизу появится аппликатура.",
+                    style = MaterialTheme.typography.labelSmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    modifier = Modifier.padding(bottom = 6.dp),
+                )
+            }
         }
-        lines.forEachIndexed { index, line ->
-            if (showChords && line.isChord) {
-                ClickableChordLine(
+        var index = 0
+        while (index < lines.size) {
+            val line = lines[index]
+            val next = lines.getOrNull(index + 1)
+            when {
+                showChords && line.isChord && next != null && !next.isChord && next.text.isNotBlank() &&
+                    !SongChordMarkup.isSectionHeader(next.text) -> {
+                    ChordOverWordsLine(
+                        chordLine = line.text,
+                        lyricLine = next.text,
+                        fontSizeSp = fontSizeSp,
+                        lineIndex = index,
+                        selected = selected,
+                        onToggle = ::toggle,
+                    )
+                    index += 2
+                    continue
+                }
+                showChords && line.isChord -> ClickableChordLine(
                     text = line.text,
                     fontSizeSp = fontSizeSp,
                     lineIndex = index,
                     selected = selected,
-                    onToggle = { lineIndex, start ->
-                        selected = if (selected?.lineIndex == lineIndex && selected?.start == start) {
-                            null
-                        } else {
-                            SelectedLyricChord(lineIndex, start)
-                        }
-                    },
+                    onToggle = ::toggle,
                 )
-            } else {
-                Text(
+                SongChordMarkup.isSectionHeader(line.text) -> SongSectionLabel(line.text.trim().trimEnd(':', '.'))
+                else -> Text(
                     text = line.text.ifBlank { " " },
                     fontSize = fontSizeSp.sp,
                     lineHeight = (fontSizeSp * 1.38f).sp,
-                    fontWeight = FontWeight.Normal,
-                    fontFamily = FontFamily.Default,
-                    softWrap = true,
                     color = MaterialTheme.colorScheme.onSurface,
                     modifier = Modifier.fillMaxWidth(),
                 )
             }
+            index++
         }
     }
 }
 
-private data class SelectedLyricChord(val lineIndex: Int, val start: Int)
+private data class SelectedLyricChord(val lineIndex: Int, val start: Int, val name: String)
+
+@Composable
+private fun SongSectionLabel(text: String) {
+    Text(
+        text.replaceFirstChar { it.uppercase() },
+        fontWeight = FontWeight.ExtraBold,
+        fontSize = 13.sp,
+        letterSpacing = 1.sp,
+        color = MaterialTheme.colorScheme.tertiary,
+        modifier = Modifier
+            .padding(top = 14.dp, bottom = 4.dp)
+            .clip(RoundedCornerShape(999.dp))
+            .background(MaterialTheme.colorScheme.tertiary.copy(alpha = 0.12f))
+            .padding(horizontal = 12.dp, vertical = 4.dp),
+    )
+}
+
+private data class ChordPiece(val chord: SongChordMarkup.ChordSpan?, val text: String)
+
+/** Слова строки; аккорд внутри слова делит его на слоги, но слово переносится целиком. */
+private fun chordWordUnits(chordLine: String, lyricLine: String): List<List<ChordPiece>> {
+    val spans = SongChordMarkup.chordSpans(chordLine)
+    val words = Regex("""\S+\s*|\s+""").findAll(lyricLine).toList()
+    val units = ArrayList<List<ChordPiece>>()
+    for (w in words) {
+        val start = w.range.first
+        val end = w.range.last + 1
+        val inside = spans.filter { it.start in start until end }
+        if (inside.isEmpty()) {
+            units.add(listOf(ChordPiece(null, w.value)))
+            continue
+        }
+        val pieces = ArrayList<ChordPiece>()
+        if (inside.first().start > start) pieces.add(ChordPiece(null, lyricLine.substring(start, inside.first().start)))
+        inside.forEachIndexed { k, span ->
+            val to = inside.getOrNull(k + 1)?.start ?: end
+            pieces.add(ChordPiece(span, lyricLine.substring(span.start, to)))
+        }
+        units.add(pieces)
+    }
+    spans.filter { it.start >= lyricLine.length }.forEach { units.add(listOf(ChordPiece(it, ""))) }
+    return units
+}
+
+@OptIn(ExperimentalLayoutApi::class)
+@Composable
+private fun ChordOverWordsLine(
+    chordLine: String,
+    lyricLine: String,
+    fontSizeSp: Float,
+    lineIndex: Int,
+    selected: SelectedLyricChord?,
+    onToggle: (SelectedLyricChord) -> Unit,
+) {
+    val units = remember(chordLine, lyricLine) { chordWordUnits(chordLine, lyricLine) }
+    val chordColor = MaterialTheme.colorScheme.primary
+    val chordSize = (fontSizeSp * 0.8f).sp
+    val chordLine = (fontSizeSp * 1.02f).sp
+    FlowRow(Modifier.fillMaxWidth().padding(top = 2.dp)) {
+        units.forEach { pieces ->
+            Row {
+                pieces.forEach { piece ->
+                    Column {
+                        val c = piece.chord
+                        if (c != null) {
+                            val isSel = selected?.lineIndex == lineIndex && selected.start == c.start
+                            Text(
+                                c.name,
+                                fontSize = chordSize,
+                                lineHeight = chordLine,
+                                fontWeight = FontWeight.ExtraBold,
+                                color = if (isSel) Color.White else chordColor,
+                                maxLines = 1,
+                                softWrap = false,
+                                modifier = Modifier
+                                    .padding(end = 6.dp)
+                                    .clip(RoundedCornerShape(6.dp))
+                                    .background(if (isSel) chordColor else Color.Transparent)
+                                    .clickable { onToggle(SelectedLyricChord(lineIndex, c.start, c.name)) }
+                                    .padding(horizontal = 2.dp),
+                            )
+                        } else {
+                            Text(" ", fontSize = chordSize, lineHeight = chordLine)
+                        }
+                        Text(
+                            piece.text.replace(' ', '\u00A0').ifEmpty { "\u00A0" },
+                            fontSize = fontSizeSp.sp,
+                            lineHeight = (fontSizeSp * 1.3f).sp,
+                            color = MaterialTheme.colorScheme.onSurface,
+                            maxLines = 1,
+                            softWrap = false,
+                        )
+                    }
+                }
+            }
+        }
+    }
+}
 
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
@@ -123,57 +260,34 @@ private fun ClickableChordLine(
     fontSizeSp: Float,
     lineIndex: Int,
     selected: SelectedLyricChord?,
-    onToggle: (lineIndex: Int, start: Int) -> Unit,
+    onToggle: (SelectedLyricChord) -> Unit,
 ) {
-    val parts = remember(text) { SongChordMarkup.chordLineParts(text) }
+    val spans = remember(text) { SongChordMarkup.chordSpans(text) }
     val chordColor = MaterialTheme.colorScheme.primary
-    val selectedBg = MaterialTheme.colorScheme.primaryContainer
-    if (parts.none { it is SongChordMarkup.ChordLinePart.Chord }) {
-        Text(
-            text = text.ifBlank { " " },
-            fontSize = fontSizeSp.sp,
-            color = chordColor,
-            fontWeight = FontWeight.Bold,
-            softWrap = true,
-            modifier = Modifier.fillMaxWidth(),
-        )
+    if (spans.isEmpty()) {
+        Text(text.ifBlank { " " }, fontSize = fontSizeSp.sp, color = chordColor, fontWeight = FontWeight.Bold)
         return
     }
     FlowRow(
-        modifier = Modifier.fillMaxWidth(),
-        horizontalArrangement = Arrangement.Start,
-        verticalArrangement = Arrangement.Center,
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(vertical = 4.dp),
+        horizontalArrangement = Arrangement.spacedBy(6.dp),
+        verticalArrangement = Arrangement.spacedBy(6.dp),
     ) {
-        parts.forEach { part ->
-            when (part) {
-                is SongChordMarkup.ChordLinePart.Gap -> {
-                    Text(
-                        text = part.text,
-                        fontSize = fontSizeSp.sp,
-                        fontFamily = FontFamily.Monospace,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        softWrap = false,
-                        maxLines = 1,
-                    )
-                }
-                is SongChordMarkup.ChordLinePart.Chord -> {
-                    val isSel = selected?.lineIndex == lineIndex && selected.start == part.start
-                    Text(
-                        text = part.name,
-                        fontSize = fontSizeSp.sp,
-                        fontWeight = FontWeight.Bold,
-                        fontFamily = FontFamily.Monospace,
-                        color = chordColor,
-                        textDecoration = if (isSel) TextDecoration.Underline else TextDecoration.None,
-                        modifier = Modifier
-                            .defaultMinSize(minHeight = 40.dp)
-                            .clip(RoundedCornerShape(8.dp))
-                            .background(if (isSel) selectedBg else Color.Transparent)
-                            .clickable { onToggle(lineIndex, part.start) }
-                            .padding(horizontal = 4.dp, vertical = 6.dp),
-                    )
-                }
-            }
+        spans.forEach { span ->
+            val isSel = selected?.lineIndex == lineIndex && selected.start == span.start
+            Text(
+                span.name,
+                fontSize = (fontSizeSp * 0.82f).sp,
+                fontWeight = FontWeight.ExtraBold,
+                color = if (isSel) Color.White else chordColor,
+                modifier = Modifier
+                    .clip(RoundedCornerShape(10.dp))
+                    .background(if (isSel) chordColor else chordColor.copy(alpha = 0.1f))
+                    .clickable { onToggle(SelectedLyricChord(lineIndex, span.start, span.name)) }
+                    .padding(horizontal = 10.dp, vertical = 4.dp),
+            )
         }
     }
 }
@@ -188,47 +302,88 @@ fun SongChordToolbar(
     modifier: Modifier = Modifier,
     showAudioTracks: Boolean? = null,
     onShowAudioTracksChange: ((Boolean) -> Unit)? = null,
+    onFontDown: (() -> Unit)? = null,
+    onFontUp: (() -> Unit)? = null,
 ) {
     Row(
         modifier = modifier
             .fillMaxWidth()
             .horizontalScroll(rememberScrollState()),
         verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.spacedBy(4.dp),
+        horizontalArrangement = Arrangement.spacedBy(8.dp),
     ) {
-        FilterChip(
-            selected = showChords,
-            onClick = { onShowChordsChange(!showChords) },
-            label = { Text(if (hasChords) "Аккорды" else "Аккорды (нет)") },
-            enabled = hasChords || showChords,
-        )
+        if (hasChords) {
+            TmGradientPill("🎸 Аккорды", showChords, MusicMetronomeGradient) { onShowChordsChange(!showChords) }
+        }
         if (showChords && hasChords) {
-            IconButton(onClick = { onTranspose(transpose - 1) }) {
-                Icon(Icons.Default.Remove, contentDescription = "Тоном ниже")
-            }
-            Text(
-                if (transpose == 0) "тон" else {
-                    val sign = if (transpose > 0) "+" else ""
-                    "$sign$transpose"
-                },
-                style = MaterialTheme.typography.labelMedium,
-                fontWeight = FontWeight.Bold,
-                color = MaterialTheme.colorScheme.primary,
+            ToolbarCapsule(
+                label = if (transpose == 0) "Тон" else (if (transpose > 0) "+$transpose" else "$transpose"),
+                onMinus = { onTranspose(transpose - 1) },
+                onPlus = { onTranspose(transpose + 1) },
+                minusDescription = "Тоном ниже",
+                plusDescription = "Тоном выше",
+                onLabelClick = if (transpose != 0) ({ onTranspose(0) }) else null,
             )
-            IconButton(onClick = { onTranspose(transpose + 1) }) {
-                Icon(Icons.Default.Add, contentDescription = "Тоном выше")
-            }
-            if (transpose != 0) {
-                TextButton(onClick = { onTranspose(0) }) { Text("Сброс") }
-            }
+        }
+        if (onFontDown != null && onFontUp != null) {
+            ToolbarCapsule(
+                label = "Aa",
+                onMinus = onFontDown,
+                onPlus = onFontUp,
+                minusDescription = "Уменьшить текст",
+                plusDescription = "Увеличить текст",
+            )
         }
         if (showAudioTracks != null && onShowAudioTracksChange != null) {
-            FilterChip(
-                selected = showAudioTracks,
-                onClick = { onShowAudioTracksChange(!showAudioTracks) },
-                label = { Text("Озвучка") },
-            )
+            TmGradientPill("🎧 Озвучка", showAudioTracks, MusicTunerGradient) { onShowAudioTracksChange(!showAudioTracks) }
         }
+    }
+}
+
+@Composable
+private fun ToolbarCapsule(
+    label: String,
+    onMinus: () -> Unit,
+    onPlus: () -> Unit,
+    minusDescription: String,
+    plusDescription: String,
+    onLabelClick: (() -> Unit)? = null,
+) {
+    val accent = MusicMetronomeGradient.first()
+    Row(
+        Modifier
+            .clip(RoundedCornerShape(999.dp))
+            .background(accent.copy(alpha = 0.08f))
+            .border(1.dp, accent.copy(alpha = 0.28f), RoundedCornerShape(999.dp)),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        Icon(
+            Icons.Default.Remove,
+            contentDescription = minusDescription,
+            tint = accent,
+            modifier = Modifier
+                .clip(RoundedCornerShape(999.dp))
+                .clickable(onClick = onMinus)
+                .padding(horizontal = 10.dp, vertical = 7.dp)
+                .size(18.dp),
+        )
+        Text(
+            label,
+            fontWeight = FontWeight.ExtraBold,
+            fontSize = 13.sp,
+            color = accent,
+            modifier = if (onLabelClick != null) Modifier.clickable(onClick = onLabelClick) else Modifier,
+        )
+        Icon(
+            Icons.Default.Add,
+            contentDescription = plusDescription,
+            tint = accent,
+            modifier = Modifier
+                .clip(RoundedCornerShape(999.dp))
+                .clickable(onClick = onPlus)
+                .padding(horizontal = 10.dp, vertical = 7.dp)
+                .size(18.dp),
+        )
     }
 }
 

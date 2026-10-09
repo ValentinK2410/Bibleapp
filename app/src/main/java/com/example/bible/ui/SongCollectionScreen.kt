@@ -149,7 +149,15 @@ import com.example.bible.data.SongLinkBundle
 import com.example.bible.data.SongShareImportError
 import com.example.bible.data.SongShareImportOutcome
 import com.example.bible.data.SongSharePackage
+import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.combinedClickable
+import androidx.compose.foundation.border
+import androidx.compose.foundation.horizontalScroll
+import androidx.compose.foundation.layout.RowScope
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.ui.graphics.Brush
 import com.example.bible.data.SongChordMarkup
+import com.example.bible.data.decodeHtmlEntities
 import com.example.bible.data.currentLineIndexForSong
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
@@ -429,6 +437,8 @@ fun SongCollectionScreen(
     val playerState by AudioPlayerHolder.state.collectAsState()
     var searchQuery by remember { mutableStateOf("") }
     var activeTagFilter by remember { mutableStateOf<String?>(null) }
+    var quickFilter by rememberSaveable { mutableIntStateOf(0) }
+    var sortAlpha by rememberSaveable { mutableStateOf(false) }
     var pesnopenieNight by rememberSaveable { mutableStateOf(false) }
 
     LaunchedEffect(initialSongId, songs) {
@@ -515,8 +525,13 @@ fun SongCollectionScreen(
         }
     }
 
-    val filteredSongs = remember(songs, searchQuery, activeTagFilter) {
+    val filteredSongs = remember(songs, searchQuery, activeTagFilter, quickFilter, sortAlpha) {
         var list = songs
+        when (quickFilter) {
+            1 -> list = list.filter { SongChordMarkup.hasChords(it.lyrics) }
+            2 -> list = list.filter { s -> s.audioPaths.any { File(it).exists() } }
+        }
+        if (sortAlpha) list = list.sortedBy { it.title.decodeHtmlEntities().lowercase() }
         if (activeTagFilter != null) {
             list = list.filter { activeTagFilter in it.tags }
         }
@@ -745,41 +760,8 @@ fun SongCollectionScreen(
                                         .padding(start = 16.dp, end = 12.dp, bottom = 10.dp),
                                     horizontalArrangement = Arrangement.spacedBy(8.dp),
                                 ) {
-                                    AssistChip(
-                                        onClick = onOpenLists,
-                                        label = { Text("Списки") },
-                                        leadingIcon = {
-                                            Icon(
-                                                Icons.AutoMirrored.Filled.PlaylistPlay,
-                                                contentDescription = null,
-                                                modifier = Modifier.size(18.dp),
-                                            )
-                                        },
-                                        colors = AssistChipDefaults.assistChipColors(
-                                            leadingIconContentColor = MaterialTheme.colorScheme.primary,
-                                        ),
-                                    )
-                                    AssistChip(
-                                        onClick = onOpenPesnVozrozhdeniya,
-                                        modifier = Modifier.weight(1f, fill = false),
-                                        label = {
-                                            Text(
-                                                "Песнь возрождения",
-                                                maxLines = 1,
-                                                overflow = TextOverflow.Ellipsis,
-                                            )
-                                        },
-                                        leadingIcon = {
-                                            Icon(
-                                                Icons.Default.MenuBook,
-                                                contentDescription = null,
-                                                modifier = Modifier.size(18.dp),
-                                            )
-                                        },
-                                        colors = AssistChipDefaults.assistChipColors(
-                                            leadingIconContentColor = MaterialTheme.colorScheme.primary,
-                                        ),
-                                    )
+                                    SongHeaderTile("📋", "Мои списки", MusicTunerGradient, onOpenLists)
+                                    SongHeaderTile("📖", "Песнь возрождения", MusicMetronomeGradient, onOpenPesnVozrozhdeniya)
                                 }
                             }
                         }
@@ -827,31 +809,29 @@ fun SongCollectionScreen(
                 shape = RoundedCornerShape(12.dp),
             )
 
-            if (sortedTags.isNotEmpty()) {
-                FlowRow(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = listH),
-                    horizontalArrangement = Arrangement.spacedBy(6.dp),
-                ) {
-                    sortedTags.forEach { tag ->
-                        FilterChip(
-                            selected = activeTagFilter == tag,
-                            onClick = {
-                                activeTagFilter = if (activeTagFilter == tag) null else tag
-                            },
-                            label = { Text(tag, style = MaterialTheme.typography.labelSmall) },
-                            leadingIcon = if (activeTagFilter == tag) {
-                                {
-                                    Icon(Icons.Default.Check, null, Modifier.size(16.dp))
-                                }
-                            } else null,
-                            modifier = Modifier.height(32.dp),
-                        )
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .horizontalScroll(rememberScrollState())
+                    .padding(horizontal = listH),
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+            ) {
+                TmGradientPill("Все · ${songs.size}", quickFilter == 0, MusicHeroGradient.drop(1)) { quickFilter = 0 }
+                TmGradientPill("🎸 С аккордами", quickFilter == 1, MusicMetronomeGradient) { quickFilter = if (quickFilter == 1) 0 else 1 }
+                TmGradientPill("🎧 С аудио", quickFilter == 2, MusicTunerGradient) { quickFilter = if (quickFilter == 2) 0 else 2 }
+                TmGradientPill("🔤 А–Я", sortAlpha, MusicNotesGradient) { sortAlpha = !sortAlpha }
+                sortedTags.forEach { tag ->
+                    TmGradientPill("🏷 $tag", activeTagFilter == tag, MusicStringsGradient) {
+                        activeTagFilter = if (activeTagFilter == tag) null else tag
                     }
                 }
-                Spacer(Modifier.height(4.dp))
             }
+            Text(
+                "Удерживайте песню, чтобы удалить её",
+                style = MaterialTheme.typography.labelSmall,
+                color = MaterialTheme.colorScheme.outline,
+                modifier = Modifier.padding(horizontal = listH + 4.dp, vertical = 4.dp),
+            )
 
             if (filteredSongs.isEmpty()) {
                 Box(
@@ -1087,7 +1067,25 @@ fun SongCollectionScreen(
     }
 }
 
-@OptIn(ExperimentalLayoutApi::class)
+@Composable
+private fun RowScope.SongHeaderTile(emoji: String, title: String, gradient: List<Color>, onClick: () -> Unit) {
+    Row(
+        Modifier
+            .weight(1f)
+            .height(48.dp)
+            .clip(RoundedCornerShape(16.dp))
+            .background(Brush.linearGradient(gradient))
+            .clickable(onClick = onClick)
+            .padding(horizontal = 12.dp),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        Text(emoji, fontSize = 18.sp)
+        Spacer(Modifier.width(8.dp))
+        Text(title, color = Color.White, fontWeight = FontWeight.ExtraBold, fontSize = 13.sp, lineHeight = 15.sp, maxLines = 2, overflow = TextOverflow.Ellipsis)
+    }
+}
+
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
 private fun SongCard(
     song: SongItem,
@@ -1101,170 +1099,116 @@ private fun SongCard(
 ) {
     val hasAudio = song.audioPaths.any { File(it).exists() }
     val hasVideo = song.videoPath?.let { File(it).exists() } == true
-    val hasText = song.lyrics.isNotBlank()
-    val hasLyricSync = song.hasLyricSync()
-
-    Surface(
+    val hasChords = remember(song.lyrics) { SongChordMarkup.hasChords(song.lyrics) }
+    val title = remember(song.title) { song.title.decodeHtmlEntities() }
+    val artist = remember(song.artist) { song.artist.decodeHtmlEntities() }
+    val gradient = kidsGradient(kotlin.math.abs(title.hashCode()))
+    val shape = RoundedCornerShape(20.dp)
+    Row(
         modifier = Modifier
             .fillMaxWidth()
-            .clickable(onClick = onClick),
-        shape = RoundedCornerShape(12.dp),
-        tonalElevation = 1.dp,
-        shadowElevation = 0.dp,
-        color = MaterialTheme.colorScheme.surfaceContainerHighest.copy(alpha = 0.45f),
+            .clip(shape)
+            .background(MaterialTheme.colorScheme.surfaceContainerLow)
+            .border(
+                if (shareSelected) 2.dp else 1.dp,
+                if (shareSelected) MaterialTheme.colorScheme.primary else gradient.first().copy(alpha = 0.18f),
+                shape,
+            )
+            .combinedClickable(
+                onClick = onClick,
+                onLongClick = if (sharePickMode) null else onDelete,
+            )
+            .padding(horizontal = 10.dp, vertical = 6.dp),
+        verticalAlignment = Alignment.CenterVertically,
     ) {
-        Column(modifier = Modifier.fillMaxWidth()) {
-            Row(
-                modifier = Modifier.padding(horizontal = 12.dp, vertical = 8.dp),
-                verticalAlignment = Alignment.CenterVertically,
-            ) {
-                if (sharePickMode) {
-                    Icon(
-                        if (shareSelected) Icons.Default.Check else Icons.Default.Share,
-                        contentDescription = null,
-                        modifier = Modifier
-                            .size(22.dp)
-                            .padding(end = 6.dp),
-                        tint = if (shareSelectable) {
-                            if (shareSelected) MaterialTheme.colorScheme.primary
-                            else MaterialTheme.colorScheme.onSurfaceVariant
-                        } else {
-                            MaterialTheme.colorScheme.outline.copy(alpha = 0.4f)
-                        },
-                    )
-                }
-                val leadIcon = when {
-                    hasVideo && hasAudio -> Icons.Default.VideoFile
-                    hasVideo -> Icons.Default.Videocam
-                    hasAudio -> Icons.Default.AudioFile
-                    else -> Icons.Default.MusicNote
-                }
-                val leadTint = when {
-                    hasVideo -> Color(0xFFE53935)
-                    hasAudio -> MaterialTheme.colorScheme.primary
-                    else -> MaterialTheme.colorScheme.onSurfaceVariant
-                }
+        Box(
+            Modifier
+                .size(38.dp)
+                .clip(RoundedCornerShape(12.dp))
+                .background(
+                    if (sharePickMode && !shareSelectable) Brush.linearGradient(listOf(Color(0xFF94A3B8), Color(0xFF64748B)))
+                    else Brush.linearGradient(gradient),
+                ),
+            contentAlignment = Alignment.Center,
+        ) {
+            if (sharePickMode) {
                 Icon(
-                    leadIcon,
+                    if (shareSelected) Icons.Default.Check else Icons.Default.Share,
                     contentDescription = null,
-                    modifier = Modifier.size(26.dp),
-                    tint = leadTint,
+                    tint = Color.White,
+                    modifier = Modifier.size(22.dp),
                 )
-                Spacer(Modifier.width(10.dp))
-                Column(modifier = Modifier.weight(1f)) {
+            } else {
+                Text(
+                    title.firstOrNull { it.isLetterOrDigit() }?.uppercase() ?: "♪",
+                    color = Color.White,
+                    fontSize = 17.sp,
+                    fontWeight = FontWeight.Black,
+                )
+            }
+        }
+        Spacer(Modifier.width(10.dp))
+        Column(modifier = Modifier.weight(1f)) {
+            Text(title, fontSize = 15.sp, lineHeight = 18.sp, fontWeight = FontWeight.ExtraBold, maxLines = 1, overflow = TextOverflow.Ellipsis)
+            val badges = buildList {
+                if (hasChords) add("🎸")
+                if (hasAudio) add("🎧")
+                if (hasVideo) add("🎬")
+                if (song.hasLyricSync()) add("🤖")
+            }.joinToString("")
+            Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(4.dp)) {
+                if (badges.isNotEmpty()) Text(badges, fontSize = 11.sp, lineHeight = 14.sp)
+                Text(
+                    artist.ifBlank { if (song.lyrics.isBlank() && !hasAudio && !hasVideo) "пусто" else "" },
+                    fontSize = 12.sp,
+                    lineHeight = 15.sp,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
+                    modifier = Modifier.weight(1f, fill = false),
+                )
+                song.tags.firstOrNull()?.let { tag ->
                     Text(
-                        song.title,
-                        style = MaterialTheme.typography.titleSmall,
-                        fontWeight = FontWeight.SemiBold,
+                        if (song.tags.size > 1) "$tag +${song.tags.size - 1}" else tag,
+                        fontSize = 10.sp,
+                        lineHeight = 13.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = gradient.first(),
                         maxLines = 1,
                         overflow = TextOverflow.Ellipsis,
-                    )
-                    if (song.artist.isNotBlank()) {
-                        Text(
-                            song.artist,
-                            style = MaterialTheme.typography.labelSmall,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant,
-                            maxLines = 1,
-                            overflow = TextOverflow.Ellipsis,
-                        )
-                    }
-                }
-                Row(
-                    horizontalArrangement = Arrangement.spacedBy(2.dp),
-                    verticalAlignment = Alignment.CenterVertically,
-                ) {
-                    if (hasLyricSync) {
-                        Icon(
-                            Icons.Default.SmartToy,
-                            contentDescription = stringResource(R.string.song_lyric_sync_cd),
-                            modifier = Modifier.size(20.dp),
-                            tint = MaterialTheme.colorScheme.tertiary,
-                        )
-                    }
-                    if (hasAudio) {
-                        Icon(
-                            Icons.Default.AudioFile,
-                            contentDescription = "Есть аудио",
-                            modifier = Modifier.size(16.dp),
-                            tint = MaterialTheme.colorScheme.primary,
-                        )
-                    }
-                    if (hasVideo) {
-                        Icon(
-                            Icons.Default.VideoFile,
-                            contentDescription = "Есть видео",
-                            modifier = Modifier.size(16.dp),
-                            tint = Color(0xFFE53935),
-                        )
-                    }
-                    if (!hasAudio && !hasVideo) {
-                        Text(
-                            if (hasText) "текст" else "нет медиа",
-                            style = MaterialTheme.typography.labelSmall,
-                            color = MaterialTheme.colorScheme.outline,
-                        )
-                    }
-                }
-                Spacer(Modifier.width(4.dp))
-                if (hasAudio && !sharePickMode) {
-                    IconButton(
-                        onClick = { onPlayAudio(song) },
-                        modifier = Modifier.size(34.dp),
-                    ) {
-                        Icon(
-                            Icons.Default.PlayArrow,
-                            contentDescription = "Аудио",
-                            modifier = Modifier.size(22.dp),
-                            tint = MaterialTheme.colorScheme.primary,
-                        )
-                    }
-                }
-                if (hasVideo && !sharePickMode && song.videoPath != null) {
-                    IconButton(
-                        onClick = { onPlayVideo(song.videoPath!!) },
-                        modifier = Modifier.size(34.dp),
-                    ) {
-                        Icon(
-                            Icons.Default.PlayArrow,
-                            contentDescription = "Видео",
-                            modifier = Modifier.size(22.dp),
-                            tint = Color(0xFFE53935),
-                        )
-                    }
-                }
-                IconButton(onClick = onDelete, modifier = Modifier.size(32.dp), enabled = !sharePickMode) {
-                    Icon(
-                        Icons.Default.Delete,
-                        contentDescription = "Удалить",
-                        modifier = Modifier.size(18.dp),
-                        tint = MaterialTheme.colorScheme.error.copy(alpha = 0.75f),
+                        modifier = Modifier
+                            .weight(1f, fill = false)
+                            .clip(RoundedCornerShape(999.dp))
+                            .background(gradient.first().copy(alpha = 0.1f))
+                            .padding(horizontal = 6.dp, vertical = 1.dp),
                     )
                 }
             }
-            if (song.tags.isNotEmpty()) {
-                FlowRow(
-                    modifier = Modifier
-                        .padding(horizontal = 12.dp)
-                        .padding(bottom = 8.dp),
-                    horizontalArrangement = Arrangement.spacedBy(4.dp),
-                ) {
-                    song.tags.forEach { tag ->
-                        AssistChip(
-                            onClick = {},
-                            label = {
-                                Text(tag, style = MaterialTheme.typography.labelSmall)
-                            },
-                            leadingIcon = {
-                                Icon(Icons.AutoMirrored.Filled.Label, null, Modifier.size(12.dp))
-                            },
-                            modifier = Modifier.height(22.dp),
-                            colors = AssistChipDefaults.assistChipColors(
-                                containerColor = MaterialTheme.colorScheme.secondaryContainer.copy(alpha = 0.7f),
-                                labelColor = MaterialTheme.colorScheme.onSecondaryContainer,
-                            ),
-                        )
-                    }
-                }
+        }
+        if (hasAudio && !sharePickMode) {
+            Spacer(Modifier.width(6.dp))
+            Box(
+                Modifier
+                    .size(36.dp)
+                    .clip(CircleShape)
+                    .background(Brush.linearGradient(gradient))
+                    .clickable { onPlayAudio(song) },
+                contentAlignment = Alignment.Center,
+            ) {
+                Icon(Icons.Default.PlayArrow, contentDescription = "Аудио", tint = Color.White, modifier = Modifier.size(22.dp))
+            }
+        }
+        if (hasVideo && !sharePickMode && song.videoPath != null) {
+            Spacer(Modifier.width(6.dp))
+            Box(
+                Modifier
+                    .size(36.dp)
+                    .clip(CircleShape)
+                    .background(Brush.linearGradient(listOf(Color(0xFFEF4444), Color(0xFFF97316))))
+                    .clickable { onPlayVideo(song.videoPath!!) },
+                contentAlignment = Alignment.Center,
+            ) {
+                Icon(Icons.Default.Videocam, contentDescription = "Видео", tint = Color.White, modifier = Modifier.size(22.dp))
             }
         }
     }
@@ -2719,7 +2663,7 @@ private fun SongViewScreen(
                                     modifier = Modifier.weight(1f),
                                 )
                             }
-                        } else {
+                        } else if (useKaraoke || isEditing || song.lyrics.isBlank()) {
                             Row(
                                 verticalAlignment = Alignment.CenterVertically,
                                 horizontalArrangement = Arrangement.Center,
@@ -2744,9 +2688,11 @@ private fun SongViewScreen(
                                     )
                                     if (song.artist.isNotBlank()) {
                                         Text(
-                                            song.artist,
+                                            song.artist.decodeHtmlEntities(),
                                             style = MaterialTheme.typography.labelSmall,
                                             color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                            maxLines = 1,
+                                            overflow = TextOverflow.Ellipsis,
                                         )
                                     }
                                 }
@@ -2766,27 +2712,6 @@ private fun SongViewScreen(
                         }
                     },
                     actions = {
-                        if (!hasVideo || song.lyrics.isNotBlank()) {
-                            val iconSz = if (isLandscape) 18.dp else 20.dp
-                            IconButton(
-                                onClick = {
-                                    lyricsFontSize = (lyricsFontSize - 2f).coerceAtLeast(3f)
-                                    onSongFontSizeChange(lyricsFontSize)
-                                },
-                                modifier = if (isLandscape) Modifier.size(40.dp) else Modifier,
-                            ) {
-                                Icon(Icons.Default.TextDecrease, "Уменьшить текст", Modifier.size(iconSz))
-                            }
-                            IconButton(
-                                onClick = {
-                                    lyricsFontSize = (lyricsFontSize + 2f).coerceAtMost(150f)
-                                    onSongFontSizeChange(lyricsFontSize)
-                                },
-                                modifier = if (isLandscape) Modifier.size(40.dp) else Modifier,
-                            ) {
-                                Icon(Icons.Default.TextIncrease, "Увеличить текст", Modifier.size(iconSz))
-                            }
-                        }
                         if (SongSharePackage.canShareSong(song) && !isEditing) {
                             IconButton(
                                 onClick = onSharePortableSong,
@@ -2800,15 +2725,24 @@ private fun SongViewScreen(
                             }
                         }
                         if (!isEditing) {
-                            IconButton(
-                                onClick = { shareAppPlayStoreInvite(context) },
-                                modifier = if (isLandscape) Modifier.size(40.dp) else Modifier,
-                            ) {
-                                Icon(
-                                    Icons.Filled.Link,
-                                    stringResource(R.string.song_share_app_only_cd),
-                                    modifier = if (isLandscape) Modifier.size(22.dp) else Modifier,
-                                )
+                            var showViewMenu by remember { mutableStateOf(false) }
+                            Box {
+                                IconButton(
+                                    onClick = { showViewMenu = true },
+                                    modifier = if (isLandscape) Modifier.size(40.dp) else Modifier,
+                                ) {
+                                    Icon(Icons.Filled.MoreVert, contentDescription = "Ещё")
+                                }
+                                DropdownMenu(expanded = showViewMenu, onDismissRequest = { showViewMenu = false }) {
+                                    DropdownMenuItem(
+                                        text = { Text(stringResource(R.string.song_share_app_only_cd)) },
+                                        leadingIcon = { Icon(Icons.Filled.Link, contentDescription = null) },
+                                        onClick = {
+                                            showViewMenu = false
+                                            shareAppPlayStoreInvite(context)
+                                        },
+                                    )
+                                }
                             }
                         }
                         if (song.hasLyricSync() && hasAudio && !hasVideo && !isEditing) {
@@ -2857,8 +2791,16 @@ private fun SongViewScreen(
                         }
                     },
                 )
-                if (!isEditing && (hasLyricChords || existingAudioPaths.size > 1)) {
+                if (!isEditing && (hasLyricChords || existingAudioPaths.size > 1 || song.lyrics.isNotBlank())) {
                     SongChordToolbar(
+                        onFontDown = {
+                            lyricsFontSize = (lyricsFontSize - 2f).coerceAtLeast(3f)
+                            onSongFontSizeChange(lyricsFontSize)
+                        },
+                        onFontUp = {
+                            lyricsFontSize = (lyricsFontSize + 2f).coerceAtMost(150f)
+                            onSongFontSizeChange(lyricsFontSize)
+                        },
                         hasChords = hasLyricChords,
                         showChords = showChords,
                         onShowChordsChange = onShowChordsChange,
@@ -3095,6 +3037,7 @@ private fun SongViewScreen(
                                 transpose = transpose,
                                 onSelectedChordChange = { selectedChord = it },
                                 modifier = lyricsMod,
+                                header = if (isLandscape) null else ({ SongViewHeader(song) }),
                             )
                         }
                     }
@@ -3221,6 +3164,53 @@ private fun SongViewScreen(
                         null
                     },
                 )
+                }
+            }
+        }
+    }
+}
+
+@OptIn(ExperimentalLayoutApi::class)
+@Composable
+private fun SongViewHeader(song: SongItem) {
+    Column(Modifier.fillMaxWidth().padding(bottom = 12.dp)) {
+        Text(
+            song.title.decodeHtmlEntities(),
+            fontSize = 24.sp,
+            lineHeight = 28.sp,
+            fontWeight = FontWeight.ExtraBold,
+        )
+        if (song.artist.isNotBlank()) {
+            Text(
+                song.artist.decodeHtmlEntities(),
+                fontSize = 15.sp,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                modifier = Modifier.padding(top = 2.dp),
+            )
+        }
+        val badges = buildList {
+            if (SongChordMarkup.hasChords(song.lyrics)) add("🎸 аккорды")
+            if (song.audioPaths.any { File(it).exists() }) add("🎧 аудио")
+            if (song.hasLyricSync()) add("🤖 синхронизация")
+            song.tags.forEach { add("🏷 $it") }
+        }
+        if (badges.isNotEmpty()) {
+            FlowRow(
+                Modifier.padding(top = 8.dp),
+                horizontalArrangement = Arrangement.spacedBy(6.dp),
+                verticalArrangement = Arrangement.spacedBy(6.dp),
+            ) {
+                badges.forEach { b ->
+                    Text(
+                        b,
+                        fontSize = 12.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = MaterialTheme.colorScheme.primary,
+                        modifier = Modifier
+                            .clip(RoundedCornerShape(999.dp))
+                            .background(MaterialTheme.colorScheme.primary.copy(alpha = 0.1f))
+                            .padding(horizontal = 10.dp, vertical = 4.dp),
+                    )
                 }
             }
         }

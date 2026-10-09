@@ -27,7 +27,7 @@ object SongChordMarkup {
         val t = line.replace("[", "").replace("]", "").trim()
         if (t.isEmpty()) return false
         val leftover = CHORD_TOKEN.replace(t, "")
-            .replace(Regex("""[\s|/.\-]+"""), "")
+            .replace(Regex("""[\s|/.\-()]+"""), "")
         return leftover.isEmpty() && CHORD_TOKEN.containsMatchIn(t)
     }
 
@@ -285,4 +285,30 @@ object SongChordMarkup {
     }
 
     data class DisplayLine(val text: String, val isChord: Boolean)
+
+    private val SECTION = Regex(
+        """^\s*(\d+\s*[-.]?\s*)?(куплет|припев|бридж|мост|проигрыш|вступление|вступ|запев|кода|окончание|концовка|предприпев|chorus|verse|bridge|intro|outro|pre-?chorus)\s*\d*\s*(\(?[xх×]\s*\d+\)?)?\s*[:.]?\s*$""",
+        RegexOption.IGNORE_CASE,
+    )
+
+    /** «1 куплет:», «Припев», «Chorus x2» — заголовок части песни. */
+    fun isSectionHeader(line: String): Boolean = line.length <= 40 && SECTION.matches(line)
+}
+
+/** Сущности HTML, которые остаются в названиях после импорта с сайтов. */
+fun String.decodeHtmlEntities(): String {
+    if ('&' !in this) return this
+    var s = this
+        .replace("&nbsp;", " ")
+        .replace("&quot;", "\"")
+        .replace("&apos;", "'")
+        .replace("&lt;", "<")
+        .replace("&gt;", ">")
+        .replace("&laquo;", "«")
+        .replace("&raquo;", "»")
+        .replace("&mdash;", "—")
+        .replace("&ndash;", "–")
+    s = Regex("&#(\\d+);").replace(s) { m -> m.groupValues[1].toIntOrNull()?.let { String(Character.toChars(it)) } ?: m.value }
+    s = Regex("&#x([0-9a-fA-F]+);").replace(s) { m -> m.groupValues[1].toIntOrNull(16)?.let { String(Character.toChars(it)) } ?: m.value }
+    return s.replace("&amp;", "&")
 }
