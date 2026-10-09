@@ -1,9 +1,13 @@
 package com.example.bible.ui
 
 import androidx.compose.foundation.gestures.detectTapGestures
-import androidx.compose.foundation.horizontalScroll
+import androidx.compose.material.icons.automirrored.filled.Backspace
+import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.RecordVoiceOver
+import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.vector.ImageVector
 import android.content.res.Configuration
 import android.os.Handler
 import android.os.Looper
@@ -432,43 +436,7 @@ private fun SandboxChainRowScaleToFit(
     }
 }
 
-@Composable
-private fun SandboxPaletteLazyGrid(
-    modifier: Modifier = Modifier,
-    columns: Int,
-    tapSlopPx: Float,
-    swipeUpPx: Float,
-    workspaceCoordsState: State<LayoutCoordinates?>,
-    paletteCoordsMap: MutableMap<RussianLetter, LayoutCoordinates>,
-    paletteGhostLetter: RussianLetter?,
-    onAddLetter: (RussianLetter) -> Unit,
-    onSpeakPaletteLetter: (RussianLetter) -> Unit,
-    onPaletteDragWindow: (RussianLetter?, Offset?) -> Unit,
-) {
-    LazyVerticalGrid(
-        columns = GridCells.Fixed(columns),
-        modifier = modifier,
-        contentPadding = PaddingValues(bottom = 4.dp),
-        horizontalArrangement = Arrangement.spacedBy(3.dp),
-        verticalArrangement = Arrangement.spacedBy(3.dp),
-    ) {
-        items(AzbukaRepository.ALPHABET) { letter ->
-            SandboxPaletteLetter(
-                letter = letter,
-                tapSlopPx = tapSlopPx,
-                swipeUpPx = swipeUpPx,
-                workspaceCoordsState = workspaceCoordsState,
-                paletteCoordsMap = paletteCoordsMap,
-                onAddToChain = { onAddLetter(letter) },
-                onSpeakOnTap = { onSpeakPaletteLetter(letter) },
-                onPaletteDragWindow = onPaletteDragWindow,
-                draggingThis = paletteGhostLetter == letter,
-            )
-        }
-    }
-}
-
-/** Альбом: все буквы видны без прокрутки — равные строки/столбцы по доступной высоте. */
+/** Все буквы видны без прокрутки — равные строки/столбцы по доступной высоте. */
 @Composable
 private fun SandboxLandscapePalette(
     columns: Int,
@@ -613,46 +581,50 @@ private fun SandboxToolbar(
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .horizontalScroll(rememberScrollState())
             .padding(vertical = 4.dp),
         horizontalArrangement = Arrangement.spacedBy(8.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
-        SandboxPill("🎯 Задание", kidsGradient(1), enabled = true, selected = challengeOn, onClick = onToggleChallenge)
-        SandboxPill("🔊 Прочитать", kidsGradient(2), enabled = chainNotEmpty, onClick = onListen)
-        SandboxPill("🔤 По буквам", kidsGradient(4), enabled = chainNotEmpty, onClick = onSpell)
-        SandboxPill("⌫ Стереть", kidsGradient(6), enabled = chainNotEmpty, onClick = onBackspace)
-        SandboxPill("🧹 Очистить", kidsGradient(3), enabled = chainNotEmpty, onClick = onClear)
+        SandboxIconButton(Icons.Filled.EmojiEvents, "Задание", kidsGradient(1), enabled = true, selected = challengeOn, onClick = onToggleChallenge)
+        SandboxIconButton(Icons.AutoMirrored.Filled.VolumeUp, "Прочитать", kidsGradient(2), enabled = chainNotEmpty, onClick = onListen)
+        SandboxIconButton(Icons.Filled.RecordVoiceOver, "По буквам", kidsGradient(4), enabled = chainNotEmpty, onClick = onSpell)
+        SandboxIconButton(Icons.AutoMirrored.Filled.Backspace, "Стереть", kidsGradient(6), enabled = chainNotEmpty, onClick = onBackspace)
+        SandboxIconButton(Icons.Filled.Delete, "Очистить", kidsGradient(3), enabled = chainNotEmpty, onClick = onClear)
     }
 }
 
 @Composable
-private fun SandboxPill(
-    text: String,
+private fun RowScope.SandboxIconButton(
+    icon: ImageVector,
+    description: String,
     gradient: List<Color>,
     enabled: Boolean,
     selected: Boolean = true,
     onClick: () -> Unit,
 ) {
-    val shape = RoundedCornerShape(999.dp)
+    val shape = RoundedCornerShape(18.dp)
     Box(
         Modifier
-            .alpha(if (enabled) 1f else 0.4f)
+            .weight(1f)
+            .height(54.dp)
+            .alpha(if (enabled) 1f else 0.35f)
             .clip(shape)
             .then(
-                if (selected) Modifier.background(Brush.linearGradient(gradient))
+                if (selected) Modifier
+                    .background(Brush.linearGradient(gradient))
+                    .border(2.dp, Color.White.copy(alpha = 0.7f), shape)
                 else Modifier
-                    .background(gradient.first().copy(alpha = 0.1f))
-                    .border(1.dp, gradient.first().copy(alpha = 0.4f), shape),
+                    .background(gradient.first().copy(alpha = 0.12f))
+                    .border(2.dp, gradient.first().copy(alpha = 0.5f), shape),
             )
-            .clickable(enabled = enabled, onClick = onClick)
-            .padding(horizontal = 14.dp, vertical = 9.dp),
+            .clickable(enabled = enabled, onClick = onClick),
+        contentAlignment = Alignment.Center,
     ) {
-        Text(
-            text,
-            color = if (selected) Color.White else gradient.first(),
-            fontWeight = FontWeight.Black,
-            fontSize = 14.sp,
+        Icon(
+            icon,
+            contentDescription = description,
+            tint = if (selected) Color.White else gradient.first(),
+            modifier = Modifier.size(32.dp),
         )
     }
 }
@@ -727,11 +699,13 @@ private fun SandboxChallengeCard(
             }
         }
         Text(meaning, color = Color.White.copy(alpha = 0.9f), fontSize = 13.sp)
-        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-            SandboxPill("🔊 Слово", listOf(Color.White.copy(alpha = 0.3f), Color.White.copy(alpha = 0.2f)), enabled = true, onClick = onSpeakWord)
-            SandboxPill(
-                if (solved) "➜ Следующее" else "🔄 Другое слово",
-                listOf(Color.White.copy(alpha = 0.3f), Color.White.copy(alpha = 0.2f)),
+        Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+            val glass = listOf(Color.White.copy(alpha = 0.32f), Color.White.copy(alpha = 0.18f))
+            SandboxIconButton(Icons.AutoMirrored.Filled.VolumeUp, "Послушать слово", glass, enabled = true, onClick = onSpeakWord)
+            SandboxIconButton(
+                if (solved) Icons.AutoMirrored.Filled.ArrowForward else Icons.Filled.Refresh,
+                if (solved) "Следующее слово" else "Другое слово",
+                glass,
                 enabled = true,
                 onClick = onNext,
             )
@@ -953,10 +927,11 @@ private fun SandboxTab(
                     clearChainGhost = { chainGhost = null },
                 )
                 Spacer(Modifier.height(4.dp))
-                SandboxPaletteLazyGrid(
+                SandboxLandscapePalette(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .weight(1f),
+                        .weight(1f)
+                        .padding(bottom = 4.dp),
                     columns = paletteColumnsPortrait,
                     tapSlopPx = tapSlopPx,
                     swipeUpPx = swipeUpPx,
@@ -1126,6 +1101,7 @@ private fun SandboxPaletteLetter(
             val corner = (side * 0.22f).dp.coerceIn(3.dp, 11.dp)
             val mainFs = (maxWidth.value * 0.38f).coerceIn(7f, 17f).sp
             val emojiFs = (maxWidth.value * 0.12f).coerceIn(3f, 8f).sp
+            val showTypeDot = maxHeight >= 46.dp
             Box(
                 modifier = Modifier
                     .fillMaxSize()
@@ -1144,7 +1120,7 @@ private fun SandboxPaletteLetter(
                         color = Color.White,
                         maxLines = 1,
                     )
-                    Text(letter.type.emoji, fontSize = emojiFs, maxLines = 1)
+                    if (showTypeDot) Text(letter.type.emoji, fontSize = emojiFs, maxLines = 1)
                 }
             }
         }
