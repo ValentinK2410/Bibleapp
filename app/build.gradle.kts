@@ -31,8 +31,8 @@ android {
         applicationId = "com.example.bible.sqlite"
         minSdk = 30
         targetSdk = 36
-        versionCode = 8
-        versionName = "1.8"
+        versionCode = 9
+        versionName = "1.9"
 
         val mapkitKey = localProperties.getProperty("MAPKIT_API_KEY", "")
         buildConfigField("String", "MAPKIT_API_KEY", "\"${mapkitKey.replace("\"", "\\\"")}\"")
