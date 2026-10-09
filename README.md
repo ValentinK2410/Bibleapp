@@ -113,7 +113,7 @@
 
 | Каталог | Видео | Плейлисты |
 |:---:|:---:|:---:|
-| ![Медиа — всё в одном месте](docs/screenshots/04-media.png) | ![Библиотека видео](docs/screenshots/05-videos.png) | ![Плейлисты с обложкой и темой](docs/screenshots/06-playlists.png) |
+| ![Медиа — всё в одном месте](docs/screenshots/04-media-v2.png) | ![Библиотека видео](docs/screenshots/05-videos.png) | ![Плейлисты с обложкой и темой](docs/screenshots/06-playlists.png) |
 
 | Аудио | Песнопение | Микроблог |
 |:---:|:---:|:---:|

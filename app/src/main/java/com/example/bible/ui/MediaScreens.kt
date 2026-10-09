@@ -1,5 +1,7 @@
 package com.example.bible.ui
 
+import androidx.compose.foundation.border
+import androidx.compose.ui.text.style.TextOverflow
 import android.Manifest
 import android.content.pm.PackageManager
 import android.content.Intent
@@ -521,60 +523,78 @@ fun MediaHomeScreen(
             )
         },
     ) { padding ->
+        val images by viewModel.bibleUserImages.collectAsStateWithLifecycle()
+        val videos by viewModel.bibleUserVideos.collectAsStateWithLifecycle()
+        val audios by viewModel.bibleUserAudios.collectAsStateWithLifecycle()
+        val songs by viewModel.userSongs.collectAsStateWithLifecycle()
+        val pictureCount = remember(images) { images.count { MediaCatalogPaths.isLikelyImageFileName(it.fileName) } }
+        val videoCount = remember(videos) { videos.count { MediaCatalogPaths.isLikelyVideoFileName(it.fileName) } }
+        val audioCount = remember(audios) { audios.count { MediaCatalogPaths.isLikelyAudioFileName(it.fileName) } }
+        val tiles = sectionOrder.mapNotNull { id ->
+            when (id) {
+                MediaHomeSectionOrder.MICROBLOG -> MediaHubTile(blogTitle, "Посты, ссылки и картинки", "📝", listOf(Color(0xFFF97316), Color(0xFFEC4899)), null, onOpenMicroblog)
+                MediaHomeSectionOrder.PICTURES -> MediaHubTile("Картинки", "Галерея, камера и поиск в интернете", "🖼️", listOf(Color(0xFF06B6D4), Color(0xFF3B82F6)), pictureCount, onOpenPictures)
+                MediaHomeSectionOrder.VIDEOS -> MediaHubTile("Видео", "Ролики из галереи, с камеры и по ссылке", "🎬", listOf(Color(0xFFEF4444), Color(0xFFF59E0B)), videoCount, onOpenVideos)
+                MediaHomeSectionOrder.AUDIOS -> MediaHubTile("Аудио", "Треки, запись с микрофона и ссылки", "🎧", listOf(Color(0xFF8B5CF6), Color(0xFF6366F1)), audioCount, onOpenAudios)
+                MediaHomeSectionOrder.PESNOPENIE -> MediaHubTile("Песнопение", "Песни с аккордами и свои тексты", "🎶", listOf(Color(0xFFEC4899), Color(0xFF8B5CF6)), songs.size, onOpenPesnopenie)
+                MediaHomeSectionOrder.MUSICIAN -> MediaHubTile("Для музыканта", "Тюнер, метроном, ноты и слух", "🎸", listOf(Color(0xFF10B981), Color(0xFF14B8A6)), null, onOpenMusician)
+                else -> null
+            }
+        }
         Column(
             Modifier
                 .padding(padding)
-                .padding(16.dp)
                 .fillMaxSize()
-                .verticalScroll(rememberScrollState()),
+                .verticalScroll(rememberScrollState())
+                .padding(horizontal = 14.dp, vertical = 6.dp),
             verticalArrangement = Arrangement.spacedBy(12.dp),
         ) {
-            sectionOrder.forEach { id ->
-                when (id) {
-                    MediaHomeSectionOrder.MICROBLOG -> MediaHomeSectionElevatedCard(
-                        title = blogTitle,
-                        subtitle = "Посты: текст со стилями, ссылки и картинки",
-                        icon = Icons.Filled.Forum,
-                        onClick = onOpenMicroblog,
-                        style = MediaHomeCardVisual.Microblog,
-                    )
-                    MediaHomeSectionOrder.PICTURES -> MediaHomeSectionElevatedCard(
-                        title = "Картинки",
-                        subtitle = "Каталог: картинки — галерея, камера или поиск в Google и Яндекс (офлайн)",
-                        icon = Icons.Filled.PhotoLibrary,
-                        onClick = onOpenPictures,
-                        style = MediaHomeCardVisual.Pictures,
-                    )
-                    MediaHomeSectionOrder.MUSICIAN -> MediaHomeSectionElevatedCard(
-                        title = "Для музыканта",
-                        subtitle = "Тюнер, метроном, ноты и тренажёр слуха",
-                        icon = Icons.Filled.MusicNote,
-                        onClick = onOpenMusician,
-                        style = MediaHomeCardVisual.Musician,
-                    )
-                    MediaHomeSectionOrder.PESNOPENIE -> MediaHomeSectionElevatedCard(
-                        title = "Песнопение",
-                        subtitle = "Сборник песен: аккорды над словами, поиск, фильтры и свои тексты",
-                        icon = Icons.AutoMirrored.Filled.QueueMusic,
-                        onClick = onOpenPesnopenie,
-                        style = MediaHomeCardVisual.Pesnopenie,
-                    )
-                    MediaHomeSectionOrder.VIDEOS -> MediaHomeSectionElevatedCard(
-                        title = "Видео",
-                        subtitle = "Каталог: видео — только ролики; галерея, камера или загрузка по ссылке",
-                        icon = Icons.Filled.VideoLibrary,
-                        onClick = onOpenVideos,
-                        style = MediaHomeCardVisual.Videos,
-                    )
-                    MediaHomeSectionOrder.AUDIOS -> MediaHomeSectionElevatedCard(
-                        title = "Аудио",
-                        subtitle = "Каталог: аудио — только треки; файлы, запись или загрузка по ссылке",
-                        icon = Icons.Filled.MusicNote,
-                        onClick = onOpenAudios,
-                        style = MediaHomeCardVisual.Audios,
-                    )
+            Column(
+                Modifier
+                    .fillMaxWidth()
+                    .clip(RoundedCornerShape(26.dp))
+                    .background(Brush.linearGradient(MusicHeroGradient))
+                    .padding(18.dp),
+                verticalArrangement = Arrangement.spacedBy(10.dp),
+            ) {
+                Text("МЕДИА", color = Color.White.copy(alpha = 0.65f), fontSize = 11.sp, fontWeight = FontWeight.Bold, letterSpacing = 2.sp)
+                Text("Ваша медиатека", color = Color.White, fontSize = 24.sp, fontWeight = FontWeight.ExtraBold)
+                Text(
+                    "Картинки, видео, звук и песни — всё хранится в приложении и работает без интернета.",
+                    color = Color.White.copy(alpha = 0.75f),
+                    fontSize = 13.sp,
+                    lineHeight = 17.sp,
+                )
+                Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    listOf("🖼️" to pictureCount, "🎬" to videoCount, "🎧" to audioCount, "🎤" to songs.size).forEach { (emoji, n) ->
+                        Column(
+                            Modifier
+                                .weight(1f)
+                                .clip(RoundedCornerShape(16.dp))
+                                .background(Color.White.copy(alpha = 0.12f))
+                                .border(1.dp, Color.White.copy(alpha = 0.18f), RoundedCornerShape(16.dp))
+                                .padding(vertical = 8.dp),
+                            horizontalAlignment = Alignment.CenterHorizontally,
+                        ) {
+                            Text(emoji, fontSize = 16.sp)
+                            Text("$n", color = Color.White, fontSize = 18.sp, fontWeight = FontWeight.ExtraBold)
+                        }
+                    }
                 }
             }
+            tiles.chunked(2).forEach { row ->
+                Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+                    row.forEach { tile -> MediaHubTileCard(tile, Modifier.weight(1f)) }
+                    if (row.size == 1) Spacer(Modifier.weight(1f))
+                }
+            }
+            Text(
+                "Порядок разделов можно поменять: ⋮ → Настройка.",
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                modifier = Modifier.padding(horizontal = 4.dp),
+            )
+            Spacer(Modifier.height(8.dp))
         }
     }
 
@@ -587,6 +607,54 @@ fun MediaHomeScreen(
                 showOrderDialog = false
             },
         )
+    }
+}
+
+private class MediaHubTile(
+    val title: String,
+    val subtitle: String,
+    val emoji: String,
+    val gradient: List<Color>,
+    val count: Int?,
+    val onClick: () -> Unit,
+)
+
+@Composable
+private fun MediaHubTileCard(tile: MediaHubTile, modifier: Modifier) {
+    Column(
+        modifier
+            .clip(RoundedCornerShape(26.dp))
+            .background(Brush.linearGradient(tile.gradient))
+            .clickable(onClick = tile.onClick)
+            .padding(14.dp),
+        verticalArrangement = Arrangement.spacedBy(6.dp),
+    ) {
+        Box(
+            Modifier
+                .fillMaxWidth()
+                .aspectRatio(1.5f)
+                .clip(RoundedCornerShape(20.dp))
+                .background(Color.White.copy(alpha = 0.18f)),
+            contentAlignment = Alignment.Center,
+        ) {
+            Text(tile.emoji, fontSize = 46.sp)
+            if (tile.count != null) {
+                Text(
+                    "${tile.count}",
+                    color = tile.gradient.first(),
+                    fontSize = 13.sp,
+                    fontWeight = FontWeight.Black,
+                    modifier = Modifier
+                        .align(Alignment.TopEnd)
+                        .padding(8.dp)
+                        .clip(RoundedCornerShape(999.dp))
+                        .background(Color.White)
+                        .padding(horizontal = 9.dp, vertical = 2.dp),
+                )
+            }
+        }
+        Text(tile.title, color = Color.White, fontSize = if (tile.title.length > 11) 15.sp else 18.sp, lineHeight = 20.sp, fontWeight = FontWeight.ExtraBold, maxLines = 1, overflow = TextOverflow.Ellipsis)
+        Text(tile.subtitle, color = Color.White.copy(alpha = 0.85f), fontSize = 12.sp, lineHeight = 15.sp, minLines = 2, maxLines = 2, overflow = TextOverflow.Ellipsis)
     }
 }
 
