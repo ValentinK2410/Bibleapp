@@ -96,14 +96,28 @@ fun CheckersScreen(onBack: () -> Unit) {
     }
 
     val gameOver = finished != null
+    LaunchedEffect(finished) {
+        val f = finished ?: return@LaunchedEffect
+        if (mode == CheckersGameMode.HUMAN_VS_AI && f == CheckersSide.Dark) com.example.bible.games.KidsGameAudio.play(com.example.bible.games.KidsSfx.LOSE) else com.example.bible.games.KidsGameAudio.play(com.example.bible.games.KidsSfx.WIN)
+    }
     KidsGameWinReward(
         game = com.example.bible.data.KidsGames.CHECKERS,
         won = (mode == CheckersGameMode.HUMAN_VS_AI && finished == CheckersSide.Light) ||
             (mode == CheckersGameMode.TWO_HUMANS && finished != null),
     )
 
+    fun playMoveSound(before: List<CheckersCell>, after: List<CheckersCell>) {
+        val captured = before.count { it != CheckersCell.Empty && it != CheckersCell.Void } >
+            after.count { it != CheckersCell.Empty && it != CheckersCell.Void }
+        com.example.bible.games.KidsGameAudio.play(
+            if (captured) com.example.bible.games.KidsSfx.CAPTURE else com.example.bible.games.KidsSfx.PLACE,
+        )
+    }
+
     fun applyHumanPath(path: CheckersPath) {
+        val before = board.toList()
         board = CheckersEngine.applyPath(board, path)
+        playMoveSound(before, board.toList())
         selected = null
         current = opponent(current)
     }
@@ -117,7 +131,9 @@ fun CheckersScreen(onBack: () -> Unit) {
         if (gameOver) return@LaunchedEffect
         if (current != CheckersSide.Dark) return@LaunchedEffect
         val path = CheckersAi.pickPath(board, CheckersSide.Dark, random) ?: return@LaunchedEffect
+        val before = board.toList()
         board = CheckersEngine.applyPath(board, path)
+        playMoveSound(before, board.toList())
         current = opponent(current)
     }
 
@@ -157,6 +173,8 @@ fun CheckersScreen(onBack: () -> Unit) {
         else -> ""
     }
 
+    KidsGameMusic(com.example.bible.games.KidsMusicTrack.GAMES)
+
     Scaffold(
         topBar = {
             CenterAlignedTopAppBar(
@@ -166,6 +184,7 @@ fun CheckersScreen(onBack: () -> Unit) {
                         Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Назад")
                     }
                 },
+                actions = { KidsAudioToggles() },
             )
         },
     ) { padding ->

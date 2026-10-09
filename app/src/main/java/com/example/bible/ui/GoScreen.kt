@@ -84,7 +84,7 @@ fun GoScreen(onBack: () -> Unit) {
         if (game.toPlay != GoPlayer.White) return@LaunchedEffect
         val move = GoAi.pickMove(game, random)
         if (move != null) {
-            game.play(move)
+            if (game.play(move)) com.example.bible.games.KidsGameAudio.play(com.example.bible.games.KidsSfx.PLACE)
         } else {
             game.pass()
         }
@@ -100,7 +100,10 @@ fun GoScreen(onBack: () -> Unit) {
 
     fun onTapCell(at: Int) {
         if (!humanTurn) return
-        if (game.play(at)) stateRevision++
+        if (game.play(at)) {
+            com.example.bible.games.KidsGameAudio.play(com.example.bible.games.KidsSfx.PLACE)
+            stateRevision++
+        }
     }
 
     fun onPass() {
@@ -109,6 +112,9 @@ fun GoScreen(onBack: () -> Unit) {
         stateRevision++
     }
 
+    LaunchedEffect(game.gameOver) {
+        if (game.gameOver) com.example.bible.games.KidsGameAudio.play(com.example.bible.games.KidsSfx.WIN)
+    }
     KidsGameWinReward(
         game = com.example.bible.data.KidsGames.GO,
         won = game.gameOver,
@@ -130,6 +136,8 @@ fun GoScreen(onBack: () -> Unit) {
             else -> ""
         }
 
+    KidsGameMusic(com.example.bible.games.KidsMusicTrack.GAMES)
+
     Scaffold(
         topBar = {
             CenterAlignedTopAppBar(
@@ -139,6 +147,7 @@ fun GoScreen(onBack: () -> Unit) {
                         Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Назад")
                     }
                 },
+                actions = { KidsAudioToggles() },
             )
         },
     ) { padding ->

@@ -106,6 +106,7 @@ fun TicTacToeScreen(
         val idx = TicTacToeAi.pickMove(engine, toArray(), current, random) ?: return
         if (cells[idx] != TicMark.Empty) return
         cells[idx] = current
+        com.example.bible.games.KidsGameAudio.play(com.example.bible.games.KidsSfx.PLACE)
         if (!gameOver()) current = opponent(current)
     }
 
@@ -126,6 +127,7 @@ fun TicTacToeScreen(
             TicGameMode.HUMAN_VS_AI -> {
                 if (current != TicMark.X) return
                 cells[index] = TicMark.X
+                com.example.bible.games.KidsGameAudio.play(com.example.bible.games.KidsSfx.PLACE)
                 if (gameOver()) return
                 current = TicMark.O
                 scope.launch {
@@ -137,6 +139,7 @@ fun TicTacToeScreen(
             }
             TicGameMode.TWO_HUMANS -> {
                 cells[index] = current
+                com.example.bible.games.KidsGameAudio.play(com.example.bible.games.KidsSfx.PLACE)
                 if (!gameOver()) current = opponent(current)
             }
         }
@@ -147,6 +150,13 @@ fun TicTacToeScreen(
     val win = winLine?.let { boardArr[it[0]].takeIf { mark -> mark != TicMark.Empty } }
     val draw = engine.isDraw(boardArr)
     val over = win != null || draw
+    LaunchedEffect(win, draw) {
+        when {
+            win != null && win != TicMark.Empty ->
+                if (mode == TicGameMode.HUMAN_VS_AI && win == TicMark.O) com.example.bible.games.KidsGameAudio.play(com.example.bible.games.KidsSfx.LOSE) else com.example.bible.games.KidsGameAudio.play(com.example.bible.games.KidsSfx.WIN)
+            draw -> com.example.bible.games.KidsGameAudio.play(com.example.bible.games.KidsSfx.DRAW)
+        }
+    }
     KidsGameWinReward(
         game = com.example.bible.data.KidsGames.TIC_TAC_TOE,
         won = (mode == TicGameMode.HUMAN_VS_AI && win == TicMark.X) ||
@@ -182,6 +192,8 @@ fun TicTacToeScreen(
                 TicGameMode.TWO_HUMANS -> true
             }
 
+    KidsGameMusic(com.example.bible.games.KidsMusicTrack.GAMES)
+
     Scaffold(
         topBar = {
             CenterAlignedTopAppBar(
@@ -191,6 +203,7 @@ fun TicTacToeScreen(
                         Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Назад")
                     }
                 },
+                actions = { KidsAudioToggles() },
             )
         },
     ) { padding ->

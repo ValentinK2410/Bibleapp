@@ -4,6 +4,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Spacer
@@ -80,6 +81,7 @@ fun KidsGamesHubScreen(
             listOf(Color(0xFF0EA5E9), Color(0xFF6366F1)), "решено", onOpenPipePuzzle,
         ),
     )
+    KidsGameMusic(com.example.bible.games.KidsMusicTrack.GAMES)
     Scaffold(
         topBar = {
             CenterAlignedTopAppBar(
@@ -89,6 +91,7 @@ fun KidsGamesHubScreen(
                         Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Назад")
                     }
                 },
+                actions = { KidsAudioToggles() },
             )
         },
     ) { padding ->
@@ -111,7 +114,7 @@ fun KidsGamesHubScreen(
                 ) {
                     Text("🎮 Выбери игру", color = Color.White, fontSize = 22.sp, fontWeight = FontWeight.Black)
                     Text(
-                        "Всего побед: ${wins.values.sum()} · за победу 2 звезды ⭐",
+                        "Всего побед: ${wins.values.sum()} · за победу 2 звезды ⭐\n🎵 Музыку и звуки можно выключить вверху справа",
                         color = Color.White.copy(alpha = 0.82f),
                         fontSize = 14.sp,
                     )
@@ -125,8 +128,22 @@ fun KidsGamesHubScreen(
                         .clickable(onClick = game.open)
                         .padding(14.dp),
                 ) {
-                    Text(game.emoji, fontSize = 40.sp, maxLines = 1)
-                    Spacer(Modifier.height(8.dp))
+                    Box(
+                        Modifier
+                            .fillMaxWidth()
+                            .aspectRatio(1.35f)
+                            .clip(RoundedCornerShape(18.dp))
+                            .background(Color.White.copy(alpha = 0.18f))
+                            .padding(10.dp),
+                    ) {
+                        when (game.key) {
+                            KidsGames.TIC_TAC_TOE -> TicTacToeArt(Modifier.fillMaxSize())
+                            KidsGames.CHECKERS -> CheckersArt(Modifier.fillMaxSize())
+                            KidsGames.GO -> GoArt(Modifier.fillMaxSize())
+                            else -> PipePreviewArt(Modifier.fillMaxSize())
+                        }
+                    }
+                    Spacer(Modifier.height(10.dp))
                     Text(
                         game.title,
                         color = Color.White,
