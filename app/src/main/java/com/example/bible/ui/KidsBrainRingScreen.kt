@@ -8,6 +8,7 @@ import androidx.compose.animation.core.spring
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -68,8 +69,10 @@ import java.util.concurrent.atomic.AtomicInteger
 import kotlin.math.ceil
 
 private const val RING_COUNT = 8
-private const val RING_SECONDS = 5f
 private const val RING_WIN_AT = 5
+private const val RING_SECONDS_MIN = 3
+private const val RING_SECONDS_MAX = 60
+private val RING_SECOND_PRESETS = listOf(5, 10, 15, 20, 30)
 
 private enum class RingPhase { Ready, Play, Done }
 
@@ -83,11 +86,11 @@ private data class RingQuestion(
 private val ringMelodyMutex = Mutex()
 private val ringMelodyToken = AtomicInteger(0)
 
-private suspend fun playRingCountdown(token: Int) {
+private suspend fun playRingCountdown(token: Int, seconds: Int) {
     ringMelodyMutex.withLock {
         if (token != ringMelodyToken.get()) return
         if (!KidsGameAudio.musicOn.value) return
-        MusicSynth.playEvents(ringCountdownMelody())
+        MusicSynth.playEvents(ringCountdownMelody(seconds))
         if (token != ringMelodyToken.get()) runCatching { MusicSynth.stopReference() }
     }
 }
@@ -97,21 +100,23 @@ private fun cutRingCountdown() {
     runCatching { MusicSynth.stopReference() }
 }
 
-/** Короткая мелодия на 5 секунд: каждый удар выше, в конце торопливые ноты. */
-private fun ringCountdownMelody(): List<MusicSynth.NoteEvent> = listOf(
-    MusicSynth.NoteEvent(72, 0.00, 0.22, 0.55),
-    MusicSynth.NoteEvent(64, 0.00, 0.28, 0.28),
-    MusicSynth.NoteEvent(76, 1.00, 0.20, 0.62),
-    MusicSynth.NoteEvent(67, 1.00, 0.26, 0.30),
-    MusicSynth.NoteEvent(79, 2.00, 0.18, 0.72),
-    MusicSynth.NoteEvent(71, 2.00, 0.24, 0.32),
-    MusicSynth.NoteEvent(84, 3.00, 0.14, 0.82),
-    MusicSynth.NoteEvent(76, 3.00, 0.20, 0.36),
-    MusicSynth.NoteEvent(88, 4.00, 0.10, 0.95),
-    MusicSynth.NoteEvent(84, 4.28, 0.10, 0.9),
-    MusicSynth.NoteEvent(91, 4.52, 0.10, 1.0),
-    MusicSynth.NoteEvent(96, 4.74, 0.16, 1.0),
-)
+/** Мелодия на всё время вопроса: каждый удар выше, в последнюю секунду торопливые ноты. */
+private fun ringCountdownMelody(seconds: Int): List<MusicSynth.NoteEvent> {
+    val total = seconds.coerceIn(RING_SECONDS_MIN, RING_SECONDS_MAX)
+    val notes = ArrayList<MusicSynth.NoteEvent>(total * 2 + 4)
+    for (beat in 0 until total) {
+        val midi = (60 + beat * 28 / total).coerceAtMost(91)
+        val velocity = 0.45 + 0.45 * beat / total
+        val dur = if (total - beat <= 2) 0.12 else 0.18
+        notes += MusicSynth.NoteEvent(midi, beat.toDouble(), dur, velocity)
+        notes += MusicSynth.NoteEvent((midi - 12).coerceAtLeast(48), beat.toDouble(), dur + 0.04, velocity * 0.4)
+    }
+    val last = (total - 1).toDouble()
+    notes += MusicSynth.NoteEvent(88, last + 0.28, 0.1, 0.9)
+    notes += MusicSynth.NoteEvent(91, last + 0.5, 0.1, 1.0)
+    notes += MusicSynth.NoteEvent(96, last + 0.72, 0.16, 1.0)
+    return notes
+}
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -119,12 +124,13 @@ fun KidsBrainRingScreen(onBack: () -> Unit) {
     val context = LocalContext.current
     val view = LocalView.current
     var match by remember { mutableIntStateOf(0) }
+    var roundSeconds by remember { mutableIntStateOf(5) }
     val questions = remember(match) { dealRingQuestions() }
     var index by remember(match) { mutableIntStateOf(0) }
     var phase by remember(match) { mutableStateOf(RingPhase.Ready) }
     var correctCount by remember(match) { mutableIntStateOf(0) }
     var marks by remember(match) { mutableStateOf(List(RING_COUNT) { null as Boolean? }) }
-    var remaining by remember { mutableFloatStateOf(RING_SECONDS) }
+    var remaining by remember { mutableFloatStateOf(roundSeconds.toFloat()) }
     var clockQuestion by remember { mutableIntStateOf(-1) }
     var picked by remember { mutableStateOf<String?>(null) }
     var pickedIndex by remember { mutableIntStateOf(-1) }
@@ -137,8 +143,9 @@ fun KidsBrainRingScreen(onBack: () -> Unit) {
 
     val showResult = phase == RingPhase.Play && pickedIndex == index
     val liveClock = phase == RingPhase.Play && clockQuestion == index
-    val shownRemaining = if (liveClock) remaining else RING_SECONDS
-    val urgent = phase == RingPhase.Play && !showResult && liveClock && shownRemaining <= 1.6f
+    val shownRemaining = if (liveClock) remaining else roundSeconds.toFloat()
+    val urgent = phase == RingPhase.Play && !showResult && liveClock &&
+        shownRemaining <= (roundSeconds * 0.34f).coerceIn(0.8f, 2f)
     val backdrop by animateColorAsState(
         targetValue = if (urgent) Color(0xFF7F1D1D) else Color(0xFF1E1B4B),
         animationSpec = tween(240),
@@ -158,13 +165,14 @@ fun KidsBrainRingScreen(onBack: () -> Unit) {
         val qIndex = index
         val question = questions[qIndex]
         clockQuestion = qIndex
-        remaining = RING_SECONDS
+        val limit = roundSeconds.toFloat()
+        remaining = limit
         val token = ringMelodyToken.incrementAndGet()
-        val melody = launch(Dispatchers.Default) { playRingCountdown(token) }
+        val melody = launch(Dispatchers.Default) { playRingCountdown(token, roundSeconds) }
         val start = SystemClock.elapsedRealtime()
         var timedOut = false
         while (pickedIndex != qIndex) {
-            val left = RING_SECONDS - (SystemClock.elapsedRealtime() - start) / 1000f
+            val left = limit - (SystemClock.elapsedRealtime() - start) / 1000f
             if (left <= 0f) {
                 remaining = 0f
                 timedOut = true
@@ -187,7 +195,7 @@ fun KidsBrainRingScreen(onBack: () -> Unit) {
         if (qIndex + 1 >= questions.size) phase = RingPhase.Done else index = qIndex + 1
     }
 
-    val second = ceil(shownRemaining.toDouble()).toInt().coerceIn(0, RING_SECONDS.toInt())
+    val second = ceil(shownRemaining.toDouble()).toInt().coerceIn(0, roundSeconds)
     val pulse = remember { Animatable(1f) }
     LaunchedEffect(second, index, phase, showResult) {
         if (phase != RingPhase.Play || showResult) return@LaunchedEffect
@@ -222,6 +230,8 @@ fun KidsBrainRingScreen(onBack: () -> Unit) {
         ) {
             when (phase) {
                 RingPhase.Ready -> RingReady(
+                    seconds = roundSeconds,
+                    onSeconds = { roundSeconds = it.coerceIn(RING_SECONDS_MIN, RING_SECONDS_MAX) },
                     onStart = {
                         KidsGameStreak.reset()
                         phase = RingPhase.Play
@@ -234,6 +244,7 @@ fun KidsBrainRingScreen(onBack: () -> Unit) {
                         index = index,
                         marks = marks,
                         correctCount = correctCount,
+                        totalSeconds = roundSeconds.toFloat(),
                         shownRemaining = shownRemaining,
                         second = second,
                         pulse = pulse.value,
@@ -267,7 +278,7 @@ fun KidsBrainRingScreen(onBack: () -> Unit) {
 }
 
 @Composable
-private fun RingReady(onStart: () -> Unit) {
+private fun RingReady(seconds: Int, onSeconds: (Int) -> Unit, onStart: () -> Unit) {
     Column(
         Modifier
             .fillMaxSize()
@@ -276,7 +287,7 @@ private fun RingReady(onStart: () -> Unit) {
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center,
     ) {
-        Text("⏱️", fontSize = 78.sp)
+        Text("⏱️", fontSize = 72.sp)
         Spacer(Modifier.height(8.dp))
         Text(
             "Восемь вопросов из Библии",
@@ -286,15 +297,51 @@ private fun RingReady(onStart: () -> Unit) {
             textAlign = TextAlign.Center,
             lineHeight = 32.sp,
         )
-        Spacer(Modifier.height(10.dp))
+        Spacer(Modifier.height(8.dp))
         Text(
-            "На каждый ответ даётся 5 секунд. Слушай мелодию — она торопит. Жми, пока кольцо не погасло.",
+            "Слушай мелодию и жми, пока кольцо не погасло.",
             color = Color.White.copy(alpha = 0.84f),
             fontSize = 16.sp,
             textAlign = TextAlign.Center,
             lineHeight = 22.sp,
         )
-        Spacer(Modifier.height(22.dp))
+        Spacer(Modifier.height(16.dp))
+        Text(
+            "Время на ответ",
+            color = Color.White.copy(alpha = 0.8f),
+            fontWeight = FontWeight.Bold,
+            fontSize = 14.sp,
+        )
+        Spacer(Modifier.height(8.dp))
+        Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(14.dp)) {
+            RingTimeButton("−", seconds > RING_SECONDS_MIN) { onSeconds(seconds - 1) }
+            Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                Text("$seconds", color = Color.White, fontSize = 54.sp, fontWeight = FontWeight.Black)
+                Text(secondsLabel(seconds), color = Color(0xFFFDE68A), fontWeight = FontWeight.Bold, fontSize = 16.sp)
+            }
+            RingTimeButton("+", seconds < RING_SECONDS_MAX) { onSeconds(seconds + 1) }
+        }
+        Spacer(Modifier.height(12.dp))
+        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+            RING_SECOND_PRESETS.forEach { preset ->
+                val selected = preset == seconds
+                Box(
+                    Modifier
+                        .clip(RoundedCornerShape(999.dp))
+                        .background(if (selected) Color.White else Color.White.copy(alpha = 0.16f))
+                        .clickable { onSeconds(preset) }
+                        .padding(horizontal = 12.dp, vertical = 8.dp),
+                ) {
+                    Text(
+                        "$preset",
+                        color = if (selected) Color(0xFF1E1B4B) else Color.White,
+                        fontWeight = FontWeight.Black,
+                        fontSize = 16.sp,
+                    )
+                }
+            }
+        }
+        Spacer(Modifier.height(18.dp))
         Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
             listOf("А", "Б", "В").forEachIndexed { i, letter ->
                 Box(
@@ -318,11 +365,37 @@ private fun RingReady(onStart: () -> Unit) {
 }
 
 @Composable
+private fun RingTimeButton(label: String, enabled: Boolean, onClick: () -> Unit) {
+    Box(
+        Modifier
+            .size(56.dp)
+            .clip(CircleShape)
+            .background(if (enabled) Color.White.copy(alpha = 0.2f) else Color.White.copy(alpha = 0.08f))
+            .clickable(enabled = enabled, onClick = onClick),
+        contentAlignment = Alignment.Center,
+    ) {
+        Text(label, color = Color.White, fontSize = 32.sp, fontWeight = FontWeight.Black)
+    }
+}
+
+private fun secondsLabel(seconds: Int): String {
+    val mod10 = seconds % 10
+    val mod100 = seconds % 100
+    val word = when {
+        mod10 == 1 && mod100 != 11 -> "секунда"
+        mod10 in 2..4 && mod100 !in 12..14 -> "секунды"
+        else -> "секунд"
+    }
+    return word
+}
+
+@Composable
 private fun RingPlay(
     question: RingQuestion,
     index: Int,
     marks: List<Boolean?>,
     correctCount: Int,
+    totalSeconds: Float,
     shownRemaining: Float,
     second: Int,
     pulse: Float,
@@ -377,7 +450,7 @@ private fun RingPlay(
             }
         }
         Spacer(Modifier.height(6.dp))
-        CountdownRing(remaining = shownRemaining, second = second, pulse = pulse)
+        CountdownRing(remaining = shownRemaining, total = totalSeconds, second = second, pulse = pulse)
         Column(Modifier.graphicsLayer { scaleX = cardPop.value; scaleY = cardPop.value }) {
             KidsQuestionCard(
                 emoji = question.emoji,
@@ -423,13 +496,14 @@ private fun RingPlay(
 }
 
 @Composable
-private fun CountdownRing(remaining: Float, second: Int, pulse: Float) {
-    val fraction = (remaining / RING_SECONDS).coerceIn(0f, 1f)
+private fun CountdownRing(remaining: Float, total: Float, second: Int, pulse: Float) {
+    val fraction = (remaining / total.coerceAtLeast(1f)).coerceIn(0f, 1f)
     val color = when {
-        remaining > 3.2f -> Color(0xFF4ADE80)
-        remaining > 1.6f -> Color(0xFFFBBF24)
+        fraction > 0.55f -> Color(0xFF4ADE80)
+        fraction > 0.28f -> Color(0xFFFBBF24)
         else -> Color(0xFFF87171)
     }
+    val numberSize = if (second >= 10) 44 else 52
     Box(
         Modifier
             .size(132.dp)
@@ -461,7 +535,7 @@ private fun CountdownRing(remaining: Float, second: Int, pulse: Float) {
         Text(
             "$second",
             color = Color.White,
-            fontSize = 52.sp,
+            fontSize = numberSize.sp,
             fontWeight = FontWeight.Black,
         )
     }
