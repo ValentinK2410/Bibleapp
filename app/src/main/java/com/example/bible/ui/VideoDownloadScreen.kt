@@ -1156,6 +1156,14 @@ private fun MediaDownloadScreen(
             onResume = { MediaDownloadService.resumeItem(context, it) },
             onRemove = { MediaDownloadService.cancelItem(context, it) },
             onClearFinished = { MediaDownloadQueue.clearFinished() },
+            onRetryFailed = {
+                val failed = MediaDownloadQueue.state.value.items.filter { it.status == MediaDownloadItemStatus.FAILED }
+                failed.forEach { MediaDownloadQueue.removeItem(it.id) }
+                MediaDownloadService.enqueue(
+                    context,
+                    failed.map { it.task.copy(id = java.util.UUID.randomUUID().toString()) },
+                )
+            },
             onDismiss = { queueSheetOpen = false },
         )
     }
@@ -1419,6 +1427,7 @@ private fun MediaDownloadQueueSheet(
     onRemove: (String) -> Unit,
     onClearFinished: () -> Unit,
     onDismiss: () -> Unit,
+    onRetryFailed: () -> Unit = {},
 ) {
     ModalBottomSheet(onDismissRequest = onDismiss) {
         Column(
@@ -1434,6 +1443,13 @@ private fun MediaDownloadQueueSheet(
                     fontWeight = FontWeight.Bold,
                 )
                 Spacer(Modifier.weight(1f))
+            }
+            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                if (state.items.any { it.status == MediaDownloadItemStatus.FAILED }) {
+                    Button(onClick = onRetryFailed) {
+                        Text("↻ Повторить ошибки")
+                    }
+                }
                 if (state.items.any { it.status.terminal }) {
                     TextButton(onClick = onClearFinished) {
                         Text(stringResource(R.string.media_download_clear_finished))

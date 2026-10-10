@@ -210,6 +210,7 @@ class MediaDownloadService : Service() {
     private suspend fun ensureReady() = readyLock.withLock {
         if (ready) return@withLock
         VideoExtractor.init(applicationContext)
+        runCatching { VideoExtractor.ensureUpdated(applicationContext) }
         knownStems.addAll(loadKnownStems())
         ready = true
     }
@@ -231,6 +232,10 @@ class MediaDownloadService : Service() {
         try {
             if (FonkiExtractor.isFonkiUrl(task.url)) {
                 downloadFonki(item)
+                return
+            }
+            if (VideoExtractor.isPlaylistUrl(task.url)) {
+                expandPlaylist(item)
                 return
             }
             if (label.isBlank()) {
@@ -259,6 +264,21 @@ class MediaDownloadService : Service() {
         } catch (e: Throwable) {
             handleTaskFailure(item, label, e)
         }
+    }
+
+    /** Ссылку на плейлист раскрываем в отдельные ролики: так каждый качается и повторяется сам по себе. */
+    private suspend fun expandPlaylist(item: MediaDownloadItem) {
+        val task = item.task
+        val inspection = VideoExtractor.inspectPlaylist(task.url)
+        if (inspection.items.isEmpty()) throw RuntimeException("Список пуст или недоступен")
+        val tasks = inspection.items.map { entry ->
+            task.copy(url = entry.pageUrl, title = entry.title, id = java.util.UUID.randomUUID().toString())
+        }
+        val name = inspection.playlistTitle ?: task.title.ifBlank { "Список" }
+        MediaDownloadQueue.updateItem(item.id) { it.copy(title = name) }
+        finishItem(item.id, MediaDownloadItemStatus.DONE, "Добавлено в очередь: ${tasks.size}")
+        addTasks(tasks)
+        ensureWorkers()
     }
 
     private suspend fun downloadFonki(item: MediaDownloadItem) {

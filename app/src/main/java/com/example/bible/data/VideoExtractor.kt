@@ -46,12 +46,46 @@ object VideoExtractor {
     }
 
     /**
-     * Веб-клиент YouTube часто получает «Sign in to confirm you're not a bot»;
-     * клиент android обычно проходит без cookies (см. FAQ yt-dlp).
+     * Клиенты плеера YouTube по очереди: сначала выбор самого yt-dlp, затем запасные.
+     * YouTube регулярно перестаёт отдавать форматы то одному, то другому клиенту.
      */
-    private fun YoutubeDLRequest.addYoutubeBotWorkaroundsIfNeeded(url: String) {
-        if (!isYouTubeUrl(url)) return
-        addOption("--extractor-args", "youtube:player_client=android")
+    private val YoutubeClientStrategies: List<String?> = listOf(
+        null,
+        "youtube:player_client=default,mweb",
+        "youtube:player_client=tv,web_safari",
+        "youtube:player_client=android_vr",
+        "youtube:player_client=android",
+    )
+
+    private fun YoutubeDLRequest.addYoutubeClient(url: String, strategy: String?) {
+        if (!isYouTubeUrl(url) || strategy == null) return
+        addOption("--extractor-args", strategy)
+    }
+
+    private fun YoutubeDLRequest.addYoutubeBotWorkaroundsIfNeeded(url: String) = addYoutubeClient(url, null)
+
+    /** Ошибка, при которой стоит попробовать другой клиент YouTube. */
+    private fun isClientProblem(msg: String): Boolean {
+        val m = msg.lowercase()
+        return "requested format is not available" in m ||
+            "sign in to confirm" in m || "not a bot" in m ||
+            "unable to extract" in m || "failed to extract any player response" in m ||
+            "http error 403" in m || "po token" in m || "only images are available" in m ||
+            "this video is not available" in m && "playlist" !in m
+    }
+
+    /** Обрыв связи: повторяем ту же попытку через IPv4. */
+    private fun isNetworkGlitch(msg: String): Boolean {
+        val m = msg.lowercase()
+        return "unexpected_eof" in m || "eof occurred" in m || "ssl" in m ||
+            "timed out" in m || "connection reset" in m || "remote end closed" in m ||
+            "incompleteread" in m || "broken pipe" in m
+    }
+
+    fun isPlaylistUrl(url: String): Boolean {
+        val l = url.lowercase()
+        if (!isYouTubeUrl(l)) return false
+        return "/playlist" in l || ("list=" in l && "v=" !in l && "youtu.be/" !in l)
     }
 
     @Volatile
@@ -60,7 +94,14 @@ object VideoExtractor {
     @Volatile
     private var updated = false
 
+    @Volatile
+    private var appContext: Context? = null
+
+    @Volatile
+    private var retriedAfterUpdate = false
+
     fun init(context: Context) {
+        appContext = context.applicationContext
         if (initialized) return
         synchronized(this) {
             if (initialized) return
@@ -74,35 +115,56 @@ object VideoExtractor {
         }
     }
 
+    private const val UPDATE_INTERVAL_MS = 20L * 60 * 60 * 1000
+
+    /** Обновляет yt-dlp не чаще раза в сутки: YouTube часто ломает старые версии. */
     suspend fun ensureUpdated(context: Context) = withContext(Dispatchers.IO) {
         if (updated) return@withContext
         init(context)
-        try {
-            YoutubeDL.getInstance().updateYoutubeDL(
-                context,
-                YoutubeDL.UpdateChannel.STABLE,
-            )
-        } catch (_: Exception) {
-            // Если нет интернета, продолжаем с текущей версией
+        val prefs = context.applicationContext.getSharedPreferences("ytdlp", Context.MODE_PRIVATE)
+        val last = prefs.getLong("last_update", 0L)
+        if (System.currentTimeMillis() - last > UPDATE_INTERVAL_MS) {
+            runCatching { updateWithFallback(context) }
+                .onSuccess { prefs.edit().putLong("last_update", System.currentTimeMillis()).apply() }
+                .onFailure { Log.w(TAG, "yt-dlp update failed: ${it.message}") }
         }
         updated = true
     }
 
+    /** Ночная сборка yt-dlp быстрее получает исправления для YouTube; если не вышло — стабильная. */
+    private fun updateWithFallback(context: Context): YoutubeDL.UpdateStatus? =
+        try {
+            YoutubeDL.getInstance().updateYoutubeDL(context, YoutubeDL.UpdateChannel.NIGHTLY)
+        } catch (e: Exception) {
+            Log.w(TAG, "nightly update failed, trying stable: ${e.message}")
+            YoutubeDL.getInstance().updateYoutubeDL(context, YoutubeDL.UpdateChannel.STABLE)
+        }
+
     suspend fun updateYtDlp(context: Context): YoutubeDL.UpdateStatus? = withContext(Dispatchers.IO) {
         init(context)
-        val result = YoutubeDL.getInstance().updateYoutubeDL(
-            context,
-            YoutubeDL.UpdateChannel.STABLE,
-        )
+        val result = updateWithFallback(context)
+        context.applicationContext.getSharedPreferences("ytdlp", Context.MODE_PRIVATE)
+            .edit().putLong("last_update", System.currentTimeMillis()).apply()
         updated = true
         result
     }
 
     suspend fun fetchInfo(url: String): VideoInfo = withContext(Dispatchers.IO) {
         val info: YtVideoInfo = if (isYouTubeUrl(url)) {
-            val req = YoutubeDLRequest(url)
-            req.addYoutubeBotWorkaroundsIfNeeded(url)
-            YoutubeDL.getInstance().getInfo(req)
+            var lastError: Exception? = null
+            var found: YtVideoInfo? = null
+            for (strategy in YoutubeClientStrategies) {
+                try {
+                    val req = YoutubeDLRequest(url)
+                    req.addYoutubeClient(url, strategy)
+                    found = YoutubeDL.getInstance().getInfo(req)
+                    break
+                } catch (e: Exception) {
+                    lastError = e
+                    if (!isClientProblem(e.message.orEmpty())) break
+                }
+            }
+            found ?: throw (lastError ?: RuntimeException("Не удалось получить сведения о ролике"))
         } else {
             YoutubeDL.getInstance().getInfo(url)
         }
@@ -141,6 +203,12 @@ object VideoExtractor {
                 YoutubeDL.getInstance().execute(req, null, null)
             } catch (e: YoutubeDLException) {
                 Log.e(TAG, "inspectPlaylist YoutubeDLException", e)
+                val ctx = appContext
+                if (ctx != null && !retriedAfterUpdate && isClientProblem(e.message.orEmpty())) {
+                    retriedAfterUpdate = true
+                    runCatching { updateYtDlp(ctx) }
+                    return@withContext inspectPlaylist(url, flatPlaylist)
+                }
                 throw RuntimeException(e.message ?: "Не удалось прочитать список", e)
             } catch (e: InterruptedException) {
                 Log.e(TAG, "inspectPlaylist interrupted", e)
@@ -306,55 +374,73 @@ object VideoExtractor {
         )
         dir.mkdirs()
 
-        val request = YoutubeDLRequest(url)
-        request.addYoutubeBotWorkaroundsIfNeeded(url)
-        request.addOption("-o", dir.absolutePath + "/%(title).100s.%(ext)s")
-        if (skipIfFileExists) {
-            request.addOption("--no-overwrites")
+        fun buildRequest(strategy: String?, forceIpv4: Boolean): YoutubeDLRequest {
+            val request = YoutubeDLRequest(url)
+            request.addYoutubeClient(url, strategy)
+            request.addOption("-o", dir.absolutePath + "/%(title).100s.%(ext)s")
+            if (skipIfFileExists) {
+                request.addOption("--no-overwrites")
+            }
+            request.addOption("--no-mtime")
+            request.addOption("--no-check-certificates")
+            request.addOption("--no-warnings")
+            request.addOption("--no-playlist")
+            if (forceIpv4 || !isYouTubeUrl(url)) {
+                request.addOption("--force-ipv4")
+            }
+            request.addOption("--socket-timeout", "30")
+            request.addOption("--retries", "10")
+            request.addOption("--fragment-retries", "10")
+            request.addOption("--extractor-retries", "3")
+            request.addOption("--retry-sleep", "3")
+            // Докачиваем прерванный файл вместо повторного скачивания с нуля — нужно для паузы.
+            request.addOption("--continue")
+            if (audioOnly) {
+                request.addOption("-f", "ba/b")
+                request.addOption("-x")
+                request.addOption("--audio-format", "mp3")
+                request.addOption("--audio-quality", "0")
+            } else {
+                val q = videoQuality
+                request.addOption("-f", "bv*[height<=$q]+ba/b[height<=$q]/bv*+ba/b")
+                request.addOption("-S", "res:$q,ext:mp4:m4a")
+                request.addOption("--merge-output-format", "mp4")
+            }
+            return request
         }
-        request.addOption("--no-mtime")
-        request.addOption("--no-check-certificates")
-        request.addOption("--no-warnings")
-        if (!isYouTubeUrl(url)) {
-            request.addOption("--force-ipv4")
-        }
-        request.addOption("--socket-timeout", "30")
-        request.addOption("--retries", "3")
-        // Докачиваем прерванный файл вместо повторного скачивания с нуля — нужно для паузы.
-        request.addOption("--continue")
 
-        if (audioOnly) {
-            request.addOption("-x")
-            request.addOption("--audio-format", "mp3")
-            request.addOption("--audio-quality", "0")
-        } else {
-            val q = videoQuality
-            request.addOption(
-                "-f",
-                "bestvideo[height<=$q][ext=mp4]+bestaudio[ext=m4a]/best[height<=$q][ext=mp4]/best[height<=$q]/best",
-            )
-            request.addOption("--merge-output-format", "mp4")
-        }
-
-        Log.d(TAG, "Executing yt-dlp for: $url audioOnly=$audioOnly q=$videoQuality")
-        val response = try {
-            YoutubeDL.getInstance().execute(request, processId) { progress, etaInSeconds, line ->
+        val strategies = if (isYouTubeUrl(url)) YoutubeClientStrategies else listOf(null)
+        var attempt: com.yausername.youtubedl_android.YoutubeDLResponse? = null
+        var lastError: Throwable? = null
+        loop@ for (strategy in strategies) {
+            for (forceIpv4 in listOf(false, true)) {
+                Log.d(TAG, "yt-dlp: $url audioOnly=$audioOnly q=$videoQuality client=$strategy ipv4=$forceIpv4")
                 try {
-                    onProgress(progress, etaInSeconds)
-                } catch (t: Throwable) {
-                    Log.w(TAG, "onProgress error: ${t.message}")
+                    attempt = YoutubeDL.getInstance().execute(buildRequest(strategy, forceIpv4), processId) { progress, etaInSeconds, _ ->
+                        try {
+                            onProgress(progress, etaInSeconds)
+                        } catch (t: Throwable) {
+                            Log.w(TAG, "onProgress error: ${t.message}")
+                        }
+                    }
+                    break@loop
+                } catch (e: InterruptedException) {
+                    throw RuntimeException("Скачивание прервано", e)
+                } catch (e: YoutubeDL.CanceledException) {
+                    throw RuntimeException("Скачивание прервано", e)
+                } catch (e: Throwable) {
+                    Log.w(TAG, "yt-dlp attempt failed: ${e.message?.take(300)}")
+                    lastError = e
+                    val msg = e.message.orEmpty()
+                    when {
+                        isNetworkGlitch(msg) && !forceIpv4 -> continue
+                        isClientProblem(msg) -> continue@loop
+                        else -> break@loop
+                    }
                 }
             }
-        } catch (e: YoutubeDLException) {
-            Log.e(TAG, "YoutubeDLException", e)
-            throw RuntimeException(e.message ?: "Ошибка yt-dlp", e)
-        } catch (e: InterruptedException) {
-            Log.e(TAG, "InterruptedException", e)
-            throw RuntimeException("Скачивание прервано", e)
-        } catch (e: Throwable) {
-            Log.e(TAG, "Unexpected error in execute", e)
-            throw RuntimeException(e.message ?: "Неизвестная ошибка", e)
         }
+        val response = attempt ?: throw RuntimeException(lastError?.message ?: "Ошибка yt-dlp", lastError)
         Log.d(TAG, "yt-dlp finished. exitCode=${response.exitCode} outLen=${response.out.length}")
 
         val outputLine = response.out
@@ -399,6 +485,10 @@ object VideoExtractor {
             "Unable to resolve host" in msg || "DNS" in msg.uppercase() ||
             "Network is unreachable" in msg || "Connection refused" in msg ->
             "Пожалуйста, подключитесь к сети Интернет"
+        "Requested format is not available" in msg ->
+            "YouTube не отдал этот ролик ни в одном формате. Обновите yt-dlp (↻) и повторите — или выберите «Аудио»."
+        "UNEXPECTED_EOF" in msg || "EOF occurred" in msg || "timed out" in msg.lowercase() ->
+            "Связь с сервером оборвалась. Нажмите «Повторить ошибки» — обычно со второго раза получается."
         "HTTP Error 403" in msg ->
             "Доступ запрещён (403). Возможно, ссылка устарела."
         "HTTP Error 404" in msg ->
