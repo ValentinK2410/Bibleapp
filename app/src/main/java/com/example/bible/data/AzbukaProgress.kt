@@ -18,6 +18,8 @@ private object AzbukaKeys {
     val LETTERS_OPENED = stringSetPreferencesKey("letters_opened")
     val STORIES_READ = stringSetPreferencesKey("stories_read")
     val KIDS_LOCK = booleanPreferencesKey("kids_lock")
+    val BRAIN_RING_ANSWERED = stringSetPreferencesKey("brain_ring_answered")
+    val BRAIN_RING_ONLY_NEW = booleanPreferencesKey("brain_ring_only_new")
     fun wins(game: String) = intPreferencesKey("wins_$game")
 }
 
@@ -56,6 +58,27 @@ class AzbukaProgressRepository(private val context: Context) {
 
     suspend fun setKidsLock(enabled: Boolean) {
         context.azbukaDataStore.edit { prefs -> prefs[AzbukaKeys.KIDS_LOCK] = enabled }
+    }
+
+    /** Номера вопросов брейн-ринга, которые уже были в игре. */
+    val brainRingAnswered: Flow<Set<String>> = context.azbukaDataStore.data.map { prefs ->
+        prefs[AzbukaKeys.BRAIN_RING_ANSWERED] ?: emptySet()
+    }
+
+    /** True — в раунд попадают только ещё не сыгранные вопросы. */
+    val brainRingOnlyNew: Flow<Boolean> = context.azbukaDataStore.data.map { prefs ->
+        prefs[AzbukaKeys.BRAIN_RING_ONLY_NEW] ?: true
+    }
+
+    suspend fun markBrainRingAnswered(id: String) {
+        context.azbukaDataStore.edit { prefs ->
+            val set = prefs[AzbukaKeys.BRAIN_RING_ANSWERED] ?: emptySet()
+            if (id !in set) prefs[AzbukaKeys.BRAIN_RING_ANSWERED] = set + id
+        }
+    }
+
+    suspend fun setBrainRingOnlyNew(onlyNew: Boolean) {
+        context.azbukaDataStore.edit { prefs -> prefs[AzbukaKeys.BRAIN_RING_ONLY_NEW] = onlyNew }
     }
 
     suspend fun registerGameWin(game: String, points: Int = 20) {

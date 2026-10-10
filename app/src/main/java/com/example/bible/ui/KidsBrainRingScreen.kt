@@ -39,6 +39,7 @@ import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -57,7 +58,10 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.bible.audio.MusicSynth
+import com.example.bible.data.AzbukaProgressRepository
+import com.example.bible.data.BrainRingBank
 import com.example.bible.data.KidsGames
 import com.example.bible.games.KidsGameAudio
 import com.example.bible.games.KidsMusicTrack
@@ -77,6 +81,7 @@ private val RING_SECOND_PRESETS = listOf(5, 10, 15, 20, 30)
 private enum class RingPhase { Ready, Play, Done }
 
 private data class RingQuestion(
+    val id: String,
     val emoji: String,
     val prompt: String,
     val correct: String,
@@ -123,13 +128,23 @@ private fun ringCountdownMelody(seconds: Int): List<MusicSynth.NoteEvent> {
 fun KidsBrainRingScreen(onBack: () -> Unit) {
     val context = LocalContext.current
     val view = LocalView.current
+    val repo = remember { AzbukaProgressRepository(context) }
+    val scope = rememberCoroutineScope()
+    val storedAnswered by repo.brainRingAnswered.collectAsStateWithLifecycle(initialValue = emptySet())
+    val storedOnlyNew by repo.brainRingOnlyNew.collectAsStateWithLifecycle(initialValue = true)
+    var onlyNewOverride by remember { mutableStateOf<Boolean?>(null) }
+    val onlyNew = onlyNewOverride ?: storedOnlyNew
+    var extraAnswered by remember { mutableStateOf(emptySet<String>()) }
+    val answered = remember(storedAnswered, extraAnswered) { storedAnswered + extraAnswered }
+    val questionIds = remember { BrainRingBank.all.map { it.id }.toSet() }
+    val fresh = (BrainRingBank.SIZE - answered.count { it in questionIds }).coerceAtLeast(0)
     var match by remember { mutableIntStateOf(0) }
     var roundSeconds by remember { mutableIntStateOf(5) }
-    val questions = remember(match) { dealRingQuestions() }
-    var index by remember(match) { mutableIntStateOf(0) }
-    var phase by remember(match) { mutableStateOf(RingPhase.Ready) }
-    var correctCount by remember(match) { mutableIntStateOf(0) }
-    var marks by remember(match) { mutableStateOf(List(RING_COUNT) { null as Boolean? }) }
+    var questions by remember { mutableStateOf(emptyList<RingQuestion>()) }
+    var index by remember { mutableIntStateOf(0) }
+    var phase by remember { mutableStateOf(RingPhase.Ready) }
+    var correctCount by remember { mutableIntStateOf(0) }
+    var marks by remember { mutableStateOf(emptyList<Boolean?>()) }
     var remaining by remember { mutableFloatStateOf(roundSeconds.toFloat()) }
     var clockQuestion by remember { mutableIntStateOf(-1) }
     var picked by remember { mutableStateOf<String?>(null) }
@@ -151,19 +166,27 @@ fun KidsBrainRingScreen(onBack: () -> Unit) {
         animationSpec = tween(240),
         label = "ringBackdrop",
     )
-    val won = phase == RingPhase.Done && correctCount >= RING_WIN_AT
+    val winAt = if (questions.isEmpty()) {
+        RING_WIN_AT
+    } else {
+        ((questions.size * RING_WIN_AT + RING_COUNT - 1) / RING_COUNT).coerceAtLeast(1)
+    }
+    val won = phase == RingPhase.Done && correctCount >= winAt
     KidsGameWinReward(game = KidsGames.BRAIN_RING, won = won, points = 20, round = match)
 
     fun mark(qIndex: Int, ok: Boolean) {
         if (qIndex !in marks.indices || marks[qIndex] != null) return
         marks = marks.toMutableList().also { it[qIndex] = ok }
         if (ok) correctCount += 1
+        val id = questions.getOrNull(qIndex)?.id ?: return
+        extraAnswered = extraAnswered + id
+        scope.launch { repo.markBrainRingAnswered(id) }
     }
 
     LaunchedEffect(match, index, phase) {
         if (phase != RingPhase.Play) return@LaunchedEffect
         val qIndex = index
-        val question = questions[qIndex]
+        val question = questions.getOrNull(qIndex) ?: return@LaunchedEffect
         clockQuestion = qIndex
         val limit = roundSeconds.toFloat()
         remaining = limit
@@ -232,9 +255,25 @@ fun KidsBrainRingScreen(onBack: () -> Unit) {
                 RingPhase.Ready -> RingReady(
                     seconds = roundSeconds,
                     onSeconds = { roundSeconds = it.coerceIn(RING_SECONDS_MIN, RING_SECONDS_MAX) },
+                    onlyNew = onlyNew,
+                    fresh = fresh,
+                    seen = (BrainRingBank.SIZE - fresh).coerceAtLeast(0),
+                    onOnlyNew = { value ->
+                        onlyNewOverride = value
+                        scope.launch { repo.setBrainRingOnlyNew(value) }
+                    },
                     onStart = {
-                        KidsGameStreak.reset()
-                        phase = RingPhase.Play
+                        val dealt = dealRingQuestions(answered, onlyNew)
+                        if (dealt.isNotEmpty()) {
+                            questions = dealt
+                            marks = List(dealt.size) { null }
+                            index = 0
+                            correctCount = 0
+                            picked = null
+                            pickedIndex = -1
+                            KidsGameStreak.reset()
+                            phase = RingPhase.Play
+                        }
                     },
                 )
                 RingPhase.Play -> {
@@ -267,8 +306,13 @@ fun KidsBrainRingScreen(onBack: () -> Unit) {
                 }
                 RingPhase.Done -> RingFinish(
                     correctCount = correctCount,
+                    total = questions.size,
+                    winAt = winAt,
                     won = won,
-                    onAgain = { match += 1 },
+                    onAgain = {
+                        match += 1
+                        phase = RingPhase.Ready
+                    },
                 )
             }
             KidsCorrectBurst()
@@ -278,7 +322,15 @@ fun KidsBrainRingScreen(onBack: () -> Unit) {
 }
 
 @Composable
-private fun RingReady(seconds: Int, onSeconds: (Int) -> Unit, onStart: () -> Unit) {
+private fun RingReady(
+    seconds: Int,
+    onSeconds: (Int) -> Unit,
+    onlyNew: Boolean,
+    fresh: Int,
+    seen: Int,
+    onOnlyNew: (Boolean) -> Unit,
+    onStart: () -> Unit,
+) {
     Column(
         Modifier
             .fillMaxSize()
@@ -290,7 +342,12 @@ private fun RingReady(seconds: Int, onSeconds: (Int) -> Unit, onStart: () -> Uni
         Text("⏱️", fontSize = 72.sp)
         Spacer(Modifier.height(8.dp))
         Text(
-            "Восемь вопросов из Библии",
+            when {
+                !onlyNew -> "Восемь вопросов из Библии"
+                fresh >= RING_COUNT -> "Восемь новых вопросов"
+                fresh > 0 -> "Новых осталось: $fresh"
+                else -> "Новые вопросы кончились"
+            },
             color = Color.White,
             fontSize = 26.sp,
             fontWeight = FontWeight.Black,
@@ -341,6 +398,42 @@ private fun RingReady(seconds: Int, onSeconds: (Int) -> Unit, onStart: () -> Uni
                 }
             }
         }
+        Spacer(Modifier.height(16.dp))
+        Text(
+            "Какие вопросы",
+            color = Color.White.copy(alpha = 0.8f),
+            fontWeight = FontWeight.Bold,
+            fontSize = 14.sp,
+        )
+        Spacer(Modifier.height(8.dp))
+        Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+            RingModeChip("Только новые", selected = onlyNew, modifier = Modifier.weight(1f)) {
+                onOnlyNew(true)
+            }
+            RingModeChip("И отвеченные", selected = !onlyNew, modifier = Modifier.weight(1f)) {
+                onOnlyNew(false)
+            }
+        }
+        Spacer(Modifier.height(8.dp))
+        Text(
+            "Уже были: $seen из ${BrainRingBank.SIZE}",
+            color = Color(0xFFFDE68A),
+            fontWeight = FontWeight.Bold,
+            fontSize = 15.sp,
+        )
+        Text(
+            when {
+                !onlyNew -> "В раунде могут попасться и уже отвеченные"
+                fresh == 0 -> "Включи «И отвеченные», чтобы повторять"
+                fresh < RING_COUNT -> "Раунд будет короче: новых меньше восьми"
+                else -> "В раунде будут только новые вопросы"
+            },
+            color = Color.White.copy(alpha = 0.8f),
+            fontSize = 14.sp,
+            textAlign = TextAlign.Center,
+            lineHeight = 18.sp,
+            modifier = Modifier.padding(top = 4.dp),
+        )
         Spacer(Modifier.height(18.dp))
         Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
             listOf("А", "Б", "В").forEachIndexed { i, letter ->
@@ -356,10 +449,32 @@ private fun RingReady(seconds: Int, onSeconds: (Int) -> Unit, onStart: () -> Uni
             }
         }
         Spacer(Modifier.height(28.dp))
+        val canStart = !onlyNew || fresh > 0
         KidsBigButton(
-            text = "На старт!",
+            text = if (canStart) "На старт!" else "Включи повторы",
             onClick = onStart,
+            enabled = canStart,
             modifier = Modifier.fillMaxWidth(),
+        )
+    }
+}
+
+@Composable
+private fun RingModeChip(label: String, selected: Boolean, modifier: Modifier = Modifier, onClick: () -> Unit) {
+    Box(
+        modifier
+            .clip(RoundedCornerShape(16.dp))
+            .background(if (selected) Color.White else Color.White.copy(alpha = 0.16f))
+            .clickable(onClick = onClick)
+            .padding(horizontal = 10.dp, vertical = 12.dp),
+        contentAlignment = Alignment.Center,
+    ) {
+        Text(
+            label,
+            color = if (selected) Color(0xFF1E1B4B) else Color.White,
+            fontWeight = FontWeight.Black,
+            fontSize = 15.sp,
+            textAlign = TextAlign.Center,
         )
     }
 }
@@ -420,7 +535,7 @@ private fun RingPlay(
             verticalAlignment = Alignment.CenterVertically,
         ) {
             Text(
-                "Вопрос ${index + 1} из $RING_COUNT",
+                "Вопрос ${index + 1} из ${marks.size}",
                 color = Color.White.copy(alpha = 0.86f),
                 fontWeight = FontWeight.Bold,
                 fontSize = 14.sp,
@@ -542,7 +657,7 @@ private fun CountdownRing(remaining: Float, total: Float, second: Int, pulse: Fl
 }
 
 @Composable
-private fun RingFinish(correctCount: Int, won: Boolean, onAgain: () -> Unit) {
+private fun RingFinish(correctCount: Int, total: Int, winAt: Int, won: Boolean, onAgain: () -> Unit) {
     Column(
         Modifier
             .fillMaxSize()
@@ -561,14 +676,14 @@ private fun RingFinish(correctCount: Int, won: Boolean, onAgain: () -> Unit) {
         )
         Spacer(Modifier.height(8.dp))
         Text(
-            "Верных ответов: $correctCount из $RING_COUNT",
+            "Верных ответов: $correctCount из $total",
             color = Color.White.copy(alpha = 0.86f),
             fontSize = 18.sp,
             fontWeight = FontWeight.Bold,
             textAlign = TextAlign.Center,
         )
         Text(
-            if (won) "+2 звезды ⭐" else "Нужно $RING_WIN_AT верных, чтобы забрать звёзды",
+            if (won) "+2 звезды ⭐" else "Нужно $winAt верных, чтобы забрать звёзды",
             color = Color(0xFFFDE68A),
             fontSize = 16.sp,
             fontWeight = FontWeight.Bold,
@@ -611,52 +726,19 @@ internal fun BrainRingArt(modifier: Modifier = Modifier) {
     }
 }
 
-private data class RingRaw(
-    val emoji: String,
-    val prompt: String,
-    val correct: String,
-    val wrong: List<String>,
-)
-
-private fun dealRingQuestions(): List<RingQuestion> =
-    RING_BANK.shuffled().take(RING_COUNT).map { raw ->
+private fun dealRingQuestions(answered: Set<String>, onlyNew: Boolean): List<RingQuestion> {
+    val pool = if (onlyNew) {
+        BrainRingBank.all.filter { it.id !in answered }
+    } else {
+        BrainRingBank.all
+    }
+    return pool.shuffled().take(RING_COUNT).map { fact ->
         RingQuestion(
-            emoji = raw.emoji,
-            prompt = raw.prompt,
-            correct = raw.correct,
-            options = (raw.wrong + raw.correct).shuffled(),
+            id = fact.id,
+            emoji = fact.emoji,
+            prompt = fact.prompt,
+            correct = fact.correct,
+            options = (fact.wrong + fact.correct).shuffled(),
         )
     }
-
-private val RING_BANK = listOf(
-    RingRaw("🌈", "Кто построил ковчег?", "Ной", listOf("Моисей", "Давид")),
-    RingRaw("🪨", "Кто победил великана Голиафа?", "Давид", listOf("Самсон", "Иона")),
-    RingRaw("🐟", "Кого проглотила большая рыба?", "Иона", listOf("Ной", "Пётр")),
-    RingRaw("🍞", "Сколько хлебов было у мальчика?", "Пять", listOf("Два", "Десять")),
-    RingRaw("🦁", "Кто ночевал в яме со львами?", "Даниил", listOf("Иосиф", "Авраам")),
-    RingRaw("🌊", "Кто провёл народ через море?", "Моисей", listOf("Авраам", "Ной")),
-    RingRaw("⭐", "Где родился Иисус?", "В Вифлееме", listOf("В Риме", "В Ниневии")),
-    RingRaw("🌈", "Что появилось после потопа?", "Радуга", listOf("Комета", "Молния")),
-    RingRaw("✨", "Кому Бог обещал потомков, как звёзды?", "Аврааму", listOf("Адаму", "Петру")),
-    RingRaw("🧥", "Какую одежду получил Иосиф?", "Цветную", listOf("Золотую", "Белую")),
-    RingRaw("🌍", "Кто создал небо и землю?", "Бог", listOf("Ной", "Адам")),
-    RingRaw("🐑", "Сколько овец было у пастуха?", "Сто", listOf("Десять", "Семь")),
-    RingRaw("🪨", "Чем Давид победил Голиафа?", "Камнем", listOf("Мечом", "Копьём")),
-    RingRaw("👫", "Как звали первых людей?", "Адам и Ева", listOf("Каин и Авель", "Мария и Иосиф")),
-    RingRaw("💡", "Что Бог создал в первый день?", "Свет", listOf("Рыб", "Ковчег")),
-    RingRaw("👶", "Куда положили малыша Иисуса?", "В ясли", listOf("Во дворец", "На корабль")),
-    RingRaw("🐑", "Кто искал потерянную овечку?", "Пастух", listOf("Царь", "Рыбак")),
-    RingRaw("🕊️", "Какая птица принесла Ною ветку?", "Голубь", listOf("Орёл", "Воробей")),
-    RingRaw("🐍", "Кто уговорил Еву сорвать плод?", "Змей", listOf("Лев", "Птица")),
-    RingRaw("📜", "Сколько заповедей получил Моисей?", "Десять", listOf("Семь", "Две")),
-    RingRaw("🌟", "Что вело волхвов к Иисусу?", "Звезда", listOf("Радуга", "Облако")),
-    RingRaw("👩", "Как звали маму Иисуса?", "Мария", listOf("Ева", "Сарра")),
-    RingRaw("🌊", "По чему шёл Иисус к ученикам?", "По воде", listOf("По огню", "По песку")),
-    RingRaw("🐟", "Кем были Пётр и Андрей?", "Рыбаками", listOf("Царями", "Пастухами")),
-    RingRaw("🍇", "Что Иисус превратил в вино?", "Воду", listOf("Молоко", "Мёд")),
-    RingRaw("🔥", "Что не сгорало, когда Бог звал Моисея?", "Куст", listOf("Дворец", "Ковчег")),
-    RingRaw("🕳️", "Кого братья опустили в ров?", "Иосифа", listOf("Давида", "Иону")),
-    RingRaw("👑", "Кто просил у Бога мудрости?", "Соломон", listOf("Саул", "Ахав")),
-    RingRaw("🧺", "Что собрали после чуда с хлебами?", "Корзины", listOf("Камни", "Сети")),
-    RingRaw("🔨", "Кем был Иосиф, муж Марии?", "Плотником", listOf("Царём", "Рыбаком")),
-)
+}

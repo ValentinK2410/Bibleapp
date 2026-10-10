@@ -66,7 +66,7 @@ fun KidsGamesHubScreen(
     val wins by repo.gameWins.collectAsStateWithLifecycle(initialValue = emptyMap())
     val games = listOf(
         KidsGameTile(
-            KidsGames.BRAIN_RING, "Брейн-ринг", "⏱️", "Вопрос из Библии. Время на ответ выбираешь сам",
+            KidsGames.BRAIN_RING, "Брейн-ринг", "⏱️", "1000 вопросов из Библии. Новые запоминаются",
             listOf(Color(0xFF7C3AED), Color(0xFFF59E0B)), "раундов", onOpenBrainRing,
         ),
         KidsGameTile(
