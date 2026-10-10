@@ -3,6 +3,7 @@ package com.example.bible.ui
 import android.Manifest
 import android.content.Context
 import android.content.pm.PackageManager
+import android.media.AudioAttributes
 import android.media.MediaPlayer
 import android.media.MediaRecorder
 import android.os.Build
@@ -708,6 +709,12 @@ private class StoryAudio(private val context: Context) {
             val mp = MediaPlayer()
             player = mp
             try {
+                mp.setAudioAttributes(
+                    AudioAttributes.Builder()
+                        .setUsage(AudioAttributes.USAGE_MEDIA)
+                        .setContentType(AudioAttributes.CONTENT_TYPE_MUSIC)
+                        .build(),
+                )
                 mp.setDataSource(file.absolutePath)
                 mp.setOnCompletionListener {
                     if (player == it) {
@@ -755,17 +762,12 @@ private class StoryAudio(private val context: Context) {
         val tmp = KidsStoryVoice.tempFile(context, storyId, key)
         if (tmp.exists()) tmp.delete()
         return try {
-            val created = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-                MediaRecorder(context)
-            } else {
-                @Suppress("DEPRECATION")
-                MediaRecorder()
+            // Без явных частоты и битрейта MediaRecorder на этом телефоне пишет ~8 кГц.
+            val created = try {
+                openRecorder(tmp.absolutePath, MediaRecorder.AudioSource.CAMCORDER)
+            } catch (_: Exception) {
+                openRecorder(tmp.absolutePath, MediaRecorder.AudioSource.MIC)
             }
-            created.setAudioSource(MediaRecorder.AudioSource.MIC)
-            created.setOutputFormat(MediaRecorder.OutputFormat.MPEG_4)
-            created.setAudioEncoder(MediaRecorder.AudioEncoder.AAC)
-            created.setOutputFile(tmp.absolutePath)
-            created.prepare()
             created.start()
             recorder = created
             recordingKey = key
@@ -773,6 +775,29 @@ private class StoryAudio(private val context: Context) {
         } catch (_: Exception) {
             recordingKey = null
             false
+        }
+    }
+
+    private fun openRecorder(path: String, source: Int): MediaRecorder {
+        val created = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+            MediaRecorder(context)
+        } else {
+            @Suppress("DEPRECATION")
+            MediaRecorder()
+        }
+        try {
+            created.setAudioSource(source)
+            created.setOutputFormat(MediaRecorder.OutputFormat.MPEG_4)
+            created.setAudioEncoder(MediaRecorder.AudioEncoder.AAC)
+            created.setAudioChannels(1)
+            created.setAudioSamplingRate(48_000)
+            created.setAudioEncodingBitRate(128_000)
+            created.setOutputFile(path)
+            created.prepare()
+            return created
+        } catch (e: Exception) {
+            runCatching { created.release() }
+            throw e
         }
     }
 
