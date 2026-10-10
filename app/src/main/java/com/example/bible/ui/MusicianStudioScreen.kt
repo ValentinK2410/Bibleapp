@@ -15,6 +15,8 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.gestures.awaitEachGesture
+import androidx.compose.foundation.gestures.awaitFirstDown
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -42,6 +44,8 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Switch
+import androidx.compose.material3.SwitchDefaults
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
@@ -56,6 +60,8 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.input.pointer.PointerEventPass
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
@@ -91,6 +97,7 @@ fun MusicianStudioScreen(onBack: () -> Unit) {
     var pendingRecord by remember { mutableStateOf<String?>(null) }
     var startedAt by remember { mutableLongStateOf(0L) }
     var clock by remember { mutableIntStateOf(0) }
+    var editing by remember { mutableStateOf(false) }
 
     engine.onStopped = { key -> playing = playing - key }
 
@@ -151,6 +158,17 @@ fun MusicianStudioScreen(onBack: () -> Unit) {
         else if (!granted) toast("Нужен микрофон, чтобы записать звук")
     }
 
+    fun stopPads() {
+        playing.filter { it.startsWith("p:") }.forEach { engine.stop(it) }
+        playing = playing.filterNot { it.startsWith("p:") }.toSet()
+    }
+
+    fun setEditing(on: Boolean) {
+        if (!on && recording?.startsWith("p:") == true) finish()
+        stopPads()
+        editing = on
+    }
+
     fun request(target: String) {
         when (ContextCompat.checkSelfPermission(context, Manifest.permission.RECORD_AUDIO)) {
             PackageManager.PERMISSION_GRANTED -> begin(target)
@@ -203,11 +221,46 @@ fun MusicianStudioScreen(onBack: () -> Unit) {
                     fontSize = 20.sp,
                 )
                 Text(
-                    "Нажмите пустую плитку и запишите звук — так со всеми восемью. Потом включайте одну или сразу несколько: они играют вместе и повторяются. Крестик стирает плитку.",
+                    "Держите плитку — звук идёт, отпустите — он стихает. Можно держать несколько сразу. Чтобы записать или перезаписать, включите редактирование.",
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                     fontSize = 14.sp,
                     lineHeight = 19.sp,
                 )
+            }
+            item {
+                Row(
+                    Modifier
+                        .fillMaxWidth()
+                        .clip(RoundedCornerShape(18.dp))
+                        .background(
+                            if (editing) Color(0xFF7C3AED) else MaterialTheme.colorScheme.surfaceContainerLow,
+                        )
+                        .padding(start = 14.dp, end = 6.dp, top = 6.dp, bottom = 6.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
+                    Column(Modifier.weight(1f)) {
+                        Text(
+                            if (editing) "Редактирование" else "Только игра",
+                            fontWeight = FontWeight.ExtraBold,
+                            color = if (editing) Color.White else MaterialTheme.colorScheme.onSurface,
+                        )
+                        Text(
+                            if (editing) "Нажмите плитку, чтобы записать звук" else "Нажатие только проигрывает",
+                            color = if (editing) Color.White.copy(alpha = 0.9f) else MaterialTheme.colorScheme.onSurfaceVariant,
+                            fontSize = 13.sp,
+                            lineHeight = 17.sp,
+                        )
+                    }
+                    Switch(
+                        checked = editing,
+                        onCheckedChange = { setEditing(it) },
+                        colors = SwitchDefaults.colors(
+                            checkedThumbColor = Color.White,
+                            checkedTrackColor = Color(0xFFC4B5FD),
+                            checkedBorderColor = Color.White,
+                        ),
+                    )
+                }
             }
             item {
                 Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
@@ -224,21 +277,27 @@ fun MusicianStudioScreen(onBack: () -> Unit) {
                                     index = index,
                                     color = PadColors[index],
                                     hasAudio = has,
+                                    editing = editing,
                                     recording = recording == key,
                                     playing = key in playing,
                                     seconds = if (recording == key) seconds else 0,
+                                    onHoldStart = {
+                                        if (recording == null && has &&
+                                            engine.playWhileHeld(key, StudioLibrary.padFile(context, index))
+                                        ) {
+                                            playing = playing + key
+                                        }
+                                    },
+                                    onHoldEnd = {
+                                        engine.stop(key)
+                                        playing = playing - key
+                                    },
                                     onClick = {
                                         when {
                                             recording == key -> finish()
                                             recording != null -> toast("Сначала остановите запись")
-                                            has -> {
-                                                if (engine.toggle(key, StudioLibrary.padFile(context, index), loop = true)) {
-                                                    playing = playing + key
-                                                } else {
-                                                    playing = playing - key
-                                                }
-                                            }
-                                            else -> request(key)
+                                            editing -> request(key)
+                                            else -> toast("Включите редактирование, чтобы записать плитку")
                                         }
                                     },
                                     onClear = {
@@ -349,9 +408,12 @@ private fun StudioPad(
     index: Int,
     color: Color,
     hasAudio: Boolean,
+    editing: Boolean,
     recording: Boolean,
     playing: Boolean,
     seconds: Int,
+    onHoldStart: () -> Unit,
+    onHoldEnd: () -> Unit,
     onClick: () -> Unit,
     onClear: () -> Unit,
     modifier: Modifier = Modifier,
@@ -360,29 +422,48 @@ private fun StudioPad(
         recording -> Color(0xFFDC2626)
         playing -> color
         hasAudio -> color.copy(alpha = 0.88f)
+        editing -> color.copy(alpha = 0.55f)
         else -> color.copy(alpha = 0.16f)
     }
-    val labelColor = if (hasAudio || recording || playing) Color.White else color
+    val labelColor = if (hasAudio || recording || playing || editing) Color.White else color
+    val gesture = when {
+        editing || recording || !hasAudio -> Modifier.clickable(onClick = onClick)
+        else -> Modifier.pointerInput(hasAudio) {
+            awaitEachGesture {
+                val down = awaitFirstDown(requireUnconsumed = false, pass = PointerEventPass.Initial)
+                down.consume()
+                onHoldStart()
+                try {
+                    while (true) {
+                        val event = awaitPointerEvent(PointerEventPass.Initial)
+                        event.changes.forEach { it.consume() }
+                        if (event.changes.none { it.pressed }) break
+                    }
+                } finally {
+                    onHoldEnd()
+                }
+            }
+        }
+    }
     Box(
         modifier
             .aspectRatio(1f)
             .clip(RoundedCornerShape(18.dp))
             .background(fill)
             .border(
-                width = if (playing) 3.dp else 1.5.dp,
-                color = if (playing) Color.White else color.copy(alpha = if (hasAudio) 0f else 0.7f),
+                width = if (playing || recording) 3.dp else 1.5.dp,
+                color = if (playing || recording) Color.White else color.copy(alpha = if (hasAudio) 0f else 0.7f),
                 shape = RoundedCornerShape(18.dp),
             )
-            .clickable(onClick = onClick),
+            .then(gesture),
         contentAlignment = Alignment.Center,
     ) {
         Column(horizontalAlignment = Alignment.CenterHorizontally) {
-            if (!hasAudio && !recording) {
-                Icon(Icons.Filled.Mic, contentDescription = null, tint = labelColor, modifier = Modifier.size(22.dp))
-            } else {
+            if (recording || editing || hasAudio || playing) {
                 Icon(
                     when {
                         recording -> Icons.Filled.Stop
+                        editing -> Icons.Filled.Mic
                         playing -> Icons.Filled.Stop
                         else -> Icons.Filled.PlayArrow
                     },
@@ -402,7 +483,7 @@ private fun StudioPad(
                 textAlign = TextAlign.Center,
             )
         }
-        if (hasAudio && !recording) {
+        if (editing && hasAudio && !recording) {
             IconButton(
                 onClick = onClear,
                 modifier = Modifier
@@ -473,6 +554,37 @@ private class StudioEngine(private val context: Context) {
     private val players = mutableMapOf<String, MediaPlayer>()
     private var recorder: MediaRecorder? = null
     var onStopped: (String) -> Unit = {}
+
+    /** Звук плитки с начала, пока палец удерживает её. */
+    fun playWhileHeld(key: String, file: File): Boolean {
+        stop(key)
+        if (!file.exists()) return false
+        val player = MediaPlayer()
+        return try {
+            player.setAudioAttributes(
+                AudioAttributes.Builder()
+                    .setUsage(AudioAttributes.USAGE_MEDIA)
+                    .setContentType(AudioAttributes.CONTENT_TYPE_MUSIC)
+                    .build(),
+            )
+            player.setDataSource(file.absolutePath)
+            player.isLooping = false
+            player.setOnCompletionListener {
+                if (players[key] == it) {
+                    it.release()
+                    players.remove(key)
+                    onStopped(key)
+                }
+            }
+            player.prepare()
+            player.start()
+            players[key] = player
+            true
+        } catch (_: Exception) {
+            runCatching { player.release() }
+            false
+        }
+    }
 
     /** Включает или выключает дорожку. true — сейчас играет. */
     fun toggle(key: String, file: File, loop: Boolean): Boolean {

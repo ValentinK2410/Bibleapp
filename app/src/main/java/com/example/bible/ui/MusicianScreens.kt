@@ -286,7 +286,7 @@ private fun MusicianStudioBanner(onClick: () -> Unit) {
         Column(Modifier.weight(1f).padding(start = 12.dp)) {
             Text("Студия", color = Color.White, fontSize = 20.sp, fontWeight = FontWeight.ExtraBold)
             Text(
-                "Дорожки по кругу и 8 плиток, как лупер",
+                "Держи плитку — звучит. Запись только в редактировании",
                 color = Color.White.copy(alpha = 0.88f),
                 fontSize = 13.sp,
                 lineHeight = 17.sp,
