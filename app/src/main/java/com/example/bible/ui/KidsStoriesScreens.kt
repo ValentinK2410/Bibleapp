@@ -1,10 +1,19 @@
 package com.example.bible.ui
 
+import android.Manifest
+import android.content.Context
+import android.content.pm.PackageManager
+import android.media.MediaPlayer
+import android.media.MediaRecorder
+import android.os.Build
 import android.os.Handler
 import android.os.Looper
 import android.speech.tts.TextToSpeech
 import android.speech.tts.UtteranceProgressListener
 import android.widget.Toast
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.core.content.ContextCompat
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -35,6 +44,9 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.filled.VolumeUp
 import androidx.compose.material.icons.filled.CheckCircle
+import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.Mic
+import androidx.compose.material.icons.filled.MicNone
 import androidx.compose.material.icons.filled.Stop
 import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -43,13 +55,16 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -64,29 +79,15 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import com.example.bible.R
 import com.example.bible.data.AzbukaProgressRepository
 import com.example.bible.data.KidsBibleStories
 import com.example.bible.data.KidsBibleStory
+import com.example.bible.data.KidsStoryVoice
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import java.util.Locale
 
 private fun KidsBibleStory.brush(): Brush = Brush.linearGradient(gradient.map { Color(it) })
-
-private fun kidsStoryImage(id: String): Int = when (id) {
-    "creation" -> R.drawable.kids_story_creation
-    "noah" -> R.drawable.kids_story_noah
-    "abraham" -> R.drawable.kids_story_abraham
-    "joseph" -> R.drawable.kids_story_joseph
-    "moses-sea" -> R.drawable.kids_story_moses_sea
-    "david" -> R.drawable.kids_story_david
-    "daniel" -> R.drawable.kids_story_daniel
-    "jonah" -> R.drawable.kids_story_jonah
-    "nativity" -> R.drawable.kids_story_nativity
-    "five-loaves" -> R.drawable.kids_story_five_loaves
-    "lost-sheep" -> R.drawable.kids_story_lost_sheep
-    else -> R.drawable.kids_story_creation
-}
 
 @Composable
 private fun KidsStoryIllustration(story: KidsBibleStory, modifier: Modifier = Modifier) {
@@ -207,10 +208,60 @@ fun KidsStoryScreen(
     val repo = remember { AzbukaProgressRepository(context.applicationContext) }
     val read by repo.storiesRead.collectAsStateWithLifecycle(initialValue = emptySet())
     var speakingIndex by remember(story.id) { mutableIntStateOf(-1) }
-    var tts by remember { mutableStateOf<TextToSpeech?>(null) }
+    var sceneIndex by remember(story.id) { mutableIntStateOf(0) }
+    var playbackActive by remember(story.id) { mutableStateOf(false) }
+    var parentMode by rememberSaveable(story.id) { mutableStateOf(false) }
+    var recordingKey by remember(story.id) { mutableStateOf<String?>(null) }
+    var pendingRecordKey by remember(story.id) { mutableStateOf<String?>(null) }
+    var voiceRevision by remember(story.id) { mutableIntStateOf(0) }
+    val audio = remember(story.id) { StoryAudio(context.applicationContext) }
     val mainHandler = remember { Handler(Looper.getMainLooper()) }
+    audio.onSpeaking = { index ->
+        speakingIndex = index
+        if (index in story.paragraphs.indices) sceneIndex = index
+    }
+    audio.onActive = { playbackActive = it }
 
-    DisposableEffect(context) {
+    fun hasVoice(key: String): Boolean = voiceRevision >= 0 && KidsStoryVoice.has(context, story.id, key)
+
+    fun beginRecord(key: String) {
+        if (audio.startRecording(story.id, key)) {
+            recordingKey = key
+        } else {
+            Toast.makeText(context, "Не удалось начать запись", Toast.LENGTH_SHORT).show()
+        }
+    }
+
+    fun endRecord(save: Boolean) {
+        val key = recordingKey ?: return
+        val ok = audio.stopRecording(story.id, key, save)
+        recordingKey = null
+        if (!save) return
+        voiceRevision++
+        if (!ok) Toast.makeText(context, "Запись слишком короткая", Toast.LENGTH_SHORT).show()
+    }
+
+    val permissionLauncher = rememberLauncherForActivityResult(
+        ActivityResultContracts.RequestPermission(),
+    ) { granted ->
+        val key = pendingRecordKey
+        pendingRecordKey = null
+        if (granted && key != null) beginRecord(key)
+        else if (!granted) Toast.makeText(context, "Нужен микрофон, чтобы записать голос", Toast.LENGTH_SHORT).show()
+    }
+
+    fun requestRecord(key: String) {
+        if (playbackActive) audio.stopPlayback()
+        when (ContextCompat.checkSelfPermission(context, Manifest.permission.RECORD_AUDIO)) {
+            PackageManager.PERMISSION_GRANTED -> beginRecord(key)
+            else -> {
+                pendingRecordKey = key
+                permissionLauncher.launch(Manifest.permission.RECORD_AUDIO)
+            }
+        }
+    }
+
+    DisposableEffect(context, story.id) {
         var engine: TextToSpeech? = null
         engine = TextToSpeech(context) { status ->
             if (status != TextToSpeech.SUCCESS) return@TextToSpeech
@@ -219,42 +270,37 @@ fun KidsStoryScreen(
             e.setSpeechRate(0.88f)
             e.setPitch(1.05f)
             e.setOnUtteranceProgressListener(object : UtteranceProgressListener() {
-                override fun onStart(utteranceId: String?) {
-                    val index = utteranceId?.removePrefix("story_")?.toIntOrNull() ?: return
-                    mainHandler.post { speakingIndex = index }
-                }
+                override fun onStart(utteranceId: String?) = Unit
 
                 override fun onDone(utteranceId: String?) {
-                    if (utteranceId == "story_end") mainHandler.post { speakingIndex = -1 }
+                    mainHandler.post { audio.onTtsDone(utteranceId) }
                 }
 
                 @Deprecated("Deprecated in Java")
                 override fun onError(utteranceId: String?) {
-                    mainHandler.post { speakingIndex = -1 }
+                    mainHandler.post { audio.onTtsError() }
                 }
             })
-            tts = e
+            audio.tts = e
         }
         onDispose {
-            engine?.stop()
-            engine?.shutdown()
-            tts = null
+            val key = recordingKey
+            if (key != null) audio.stopRecording(story.id, key, save = false)
+            audio.release()
         }
     }
 
-    fun readAloud() {
-        val engine = tts ?: return
-        engine.stop()
-        engine.speak(story.title, TextToSpeech.QUEUE_FLUSH, null, "story_title")
-        story.paragraphs.forEachIndexed { index, text ->
-            engine.speak(text, TextToSpeech.QUEUE_ADD, null, "story_$index")
+    LaunchedEffect(story.id, playbackActive, parentMode, recordingKey) {
+        if (playbackActive || parentMode || recordingKey != null) return@LaunchedEffect
+        while (true) {
+            delay(5200)
+            sceneIndex = (sceneIndex + 1) % story.paragraphs.size
         }
-        engine.speak(story.lesson, TextToSpeech.QUEUE_ADD, null, "story_end")
     }
 
     val nextStory = KidsBibleStories.all.getOrNull(KidsBibleStories.all.indexOf(story) + 1)
     val done = story.id in read
-    val playing = speakingIndex >= 0
+    val lessonMode = speakingIndex == story.paragraphs.size
 
     Scaffold(
         topBar = {
@@ -263,6 +309,20 @@ fun KidsStoryScreen(
                 navigationIcon = {
                     IconButton(onClick = onBack) {
                         Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Назад")
+                    }
+                },
+                actions = {
+                    IconButton(
+                        onClick = {
+                            if (recordingKey != null) endRecord(save = false)
+                            parentMode = !parentMode
+                        },
+                    ) {
+                        Icon(
+                            if (parentMode) Icons.Filled.Mic else Icons.Filled.MicNone,
+                            contentDescription = "Запись голоса родителя",
+                            tint = if (parentMode) Color(0xFFDB2777) else MaterialTheme.colorScheme.onSurface,
+                        )
                     }
                 },
             )
@@ -284,13 +344,37 @@ fun KidsStoryScreen(
                         .padding(20.dp),
                     horizontalAlignment = Alignment.CenterHorizontally,
                 ) {
-                    KidsStoryIllustration(
+                    KidsStoryStage(
                         story,
-                        Modifier
+                        sceneIndex = sceneIndex,
+                        lessonMode = lessonMode,
+                        modifier = Modifier
                             .fillMaxWidth()
                             .aspectRatio(4f / 3f)
                             .clip(RoundedCornerShape(20.dp)),
                     )
+                    Spacer(Modifier.height(10.dp))
+                    Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                        story.paragraphs.indices.forEach { i ->
+                            val selected = i == sceneIndex && !lessonMode
+                            Box(
+                                Modifier
+                                    .size(if (selected) 12.dp else 8.dp)
+                                    .clip(CircleShape)
+                                    .background(if (selected) Color.White else Color.White.copy(alpha = 0.45f))
+                                    .clickable { sceneIndex = i },
+                            )
+                        }
+                    }
+                    if (parentMode) {
+                        Spacer(Modifier.height(8.dp))
+                        Text(
+                            "Запишите каждый текст своим голосом — ребёнок услышит вас.",
+                            color = Color.White.copy(alpha = 0.92f),
+                            fontSize = 13.sp,
+                            textAlign = TextAlign.Center,
+                        )
+                    }
                     Spacer(Modifier.height(12.dp))
                     Text(
                         story.title,
@@ -306,11 +390,14 @@ fun KidsStoryScreen(
                             .clip(RoundedCornerShape(999.dp))
                             .background(Color.White)
                             .clickable {
-                                if (playing) {
-                                    tts?.stop()
-                                    speakingIndex = -1
+                                if (recordingKey != null) {
+                                    Toast.makeText(context, "Сначала сохраните запись", Toast.LENGTH_SHORT).show()
+                                } else if (playbackActive) {
+                                    audio.stopPlayback()
+                                } else if (audio.tts == null) {
+                                    Toast.makeText(context, "Голос ещё загружается", Toast.LENGTH_SHORT).show()
                                 } else {
-                                    readAloud()
+                                    audio.playAll(story)
                                 }
                             }
                             .padding(horizontal = 22.dp, vertical = 12.dp),
@@ -318,13 +405,13 @@ fun KidsStoryScreen(
                     ) {
                         val tint = Color(story.gradient.first())
                         Icon(
-                            if (playing) Icons.Filled.Stop else Icons.AutoMirrored.Filled.VolumeUp,
+                            if (playbackActive) Icons.Filled.Stop else Icons.AutoMirrored.Filled.VolumeUp,
                             contentDescription = null,
                             tint = tint,
                         )
                         Spacer(Modifier.width(8.dp))
                         Text(
-                            if (playing) "Стоп" else "Читать вслух",
+                            if (playbackActive) "Стоп" else "Читать вслух",
                             color = tint,
                             fontWeight = FontWeight.ExtraBold,
                             fontSize = 17.sp,
@@ -333,40 +420,97 @@ fun KidsStoryScreen(
                 }
             }
             itemsIndexed(story.paragraphs) { index, text ->
+                val key = KidsStoryVoice.paragraphKey(index)
                 val active = index == speakingIndex
+                val followsScene = !playbackActive && recordingKey == null && index == sceneIndex
                 val bg by animateColorAsState(
-                    if (active) Color(story.gradient.first()).copy(alpha = 0.18f) else MaterialTheme.colorScheme.surfaceContainerLow,
+                    when {
+                        active -> Color(story.gradient.first()).copy(alpha = 0.18f)
+                        followsScene -> Color(story.gradient.first()).copy(alpha = 0.08f)
+                        else -> MaterialTheme.colorScheme.surfaceContainerLow
+                    },
                     label = "para",
                 )
-                Text(
-                    text,
-                    fontSize = 21.sp,
-                    lineHeight = 30.sp,
-                    fontWeight = if (active) FontWeight.SemiBold else FontWeight.Normal,
-                    modifier = Modifier
+                Column(
+                    Modifier
                         .fillMaxWidth()
                         .clip(RoundedCornerShape(20.dp))
                         .background(bg)
                         .border(
-                            width = if (active) 2.dp else 0.dp,
-                            color = if (active) Color(story.gradient.first()) else Color.Transparent,
+                            width = if (active || followsScene) 2.dp else 0.dp,
+                            color = if (active || followsScene) Color(story.gradient.first()) else Color.Transparent,
                             shape = RoundedCornerShape(20.dp),
                         )
-                        .clickable { tts?.speak(text, TextToSpeech.QUEUE_FLUSH, null, "story_$index") }
                         .padding(16.dp),
-                )
+                ) {
+                    Text(
+                        text,
+                        fontSize = 21.sp,
+                        lineHeight = 30.sp,
+                        fontWeight = if (active) FontWeight.SemiBold else FontWeight.Normal,
+                        modifier = Modifier.clickable {
+                            if (recordingKey != null) {
+                                Toast.makeText(context, "Сначала сохраните запись", Toast.LENGTH_SHORT).show()
+                            } else {
+                                sceneIndex = index
+                                audio.playOne(story, key, text, index)
+                            }
+                        },
+                    )
+                    StoryVoiceRow(
+                        saved = hasVoice(key),
+                        recording = recordingKey == key,
+                        parentMode = parentMode,
+                        accent = Color(story.gradient.first()),
+                        onRecord = { if (recordingKey == key) endRecord(save = true) else requestRecord(key) },
+                        onDelete = {
+                            KidsStoryVoice.file(context, story.id, key).delete()
+                            voiceRevision++
+                        },
+                    )
+                }
             }
             item {
+                val lessonKey = KidsStoryVoice.LESSON
+                val lessonActive = lessonMode
                 Column(
                     Modifier
                         .fillMaxWidth()
                         .clip(RoundedCornerShape(22.dp))
                         .background(Color(0xFFFEF3C7))
+                        .border(
+                            width = if (lessonActive) 2.dp else 0.dp,
+                            color = if (lessonActive) Color(0xFFD97706) else Color.Transparent,
+                            shape = RoundedCornerShape(22.dp),
+                        )
                         .padding(16.dp),
                 ) {
                     Text("💡 Чему учит история", fontWeight = FontWeight.ExtraBold, fontSize = 17.sp, color = Color(0xFF92400E))
                     Spacer(Modifier.height(6.dp))
-                    Text(story.lesson, fontSize = 19.sp, lineHeight = 27.sp, color = Color(0xFF78350F))
+                    Text(
+                        story.lesson,
+                        fontSize = 19.sp,
+                        lineHeight = 27.sp,
+                        color = Color(0xFF78350F),
+                        modifier = Modifier.clickable {
+                            if (recordingKey != null) {
+                                Toast.makeText(context, "Сначала сохраните запись", Toast.LENGTH_SHORT).show()
+                            } else {
+                                audio.playOne(story, lessonKey, story.lesson, story.paragraphs.size)
+                            }
+                        },
+                    )
+                    StoryVoiceRow(
+                        saved = hasVoice(lessonKey),
+                        recording = recordingKey == lessonKey,
+                        parentMode = parentMode,
+                        accent = Color(0xFFB45309),
+                        onRecord = { if (recordingKey == lessonKey) endRecord(save = true) else requestRecord(lessonKey) },
+                        onDelete = {
+                            KidsStoryVoice.file(context, story.id, lessonKey).delete()
+                            voiceRevision++
+                        },
+                    )
                 }
             }
             item {
@@ -431,5 +575,248 @@ fun KidsStoryScreen(
                 }
             }
         }
+    }
+}
+
+@Composable
+private fun StoryVoiceRow(
+    saved: Boolean,
+    recording: Boolean,
+    parentMode: Boolean,
+    accent: Color,
+    onRecord: () -> Unit,
+    onDelete: () -> Unit,
+) {
+    if (!parentMode && !saved && !recording) return
+    Row(verticalAlignment = Alignment.CenterVertically) {
+        if (recording) {
+            Text("Идёт запись…", color = Color(0xFFDC2626), fontWeight = FontWeight.Bold, fontSize = 14.sp)
+        } else if (saved) {
+            Text("Голос родителя", color = accent, fontWeight = FontWeight.Bold, fontSize = 14.sp)
+        }
+        Spacer(Modifier.weight(1f))
+        if (parentMode) {
+            TextButton(onClick = onRecord) {
+                Icon(
+                    if (recording) Icons.Filled.Stop else Icons.Filled.Mic,
+                    contentDescription = null,
+                    modifier = Modifier.size(18.dp),
+                    tint = accent,
+                )
+                Spacer(Modifier.width(4.dp))
+                Text(if (recording) "Сохранить" else if (saved) "Заново" else "Записать", color = accent)
+            }
+            if (saved && !recording) {
+                IconButton(onClick = onDelete) {
+                    Icon(Icons.Filled.Delete, contentDescription = "Удалить запись", tint = accent)
+                }
+            }
+        }
+    }
+}
+
+private class StoryAudio(private val context: Context) {
+    var tts: TextToSpeech? = null
+    private var player: MediaPlayer? = null
+    private var recorder: MediaRecorder? = null
+    private var recordingKey: String? = null
+    private var generation = 0
+    private var pendingUtterance: String? = null
+    private var pendingNext: (() -> Unit)? = null
+    var onSpeaking: (Int) -> Unit = {}
+    var onActive: (Boolean) -> Unit = {}
+
+    fun onTtsDone(utteranceId: String?) {
+        val next = pendingNext
+        if (utteranceId != null && utteranceId == pendingUtterance && next != null) {
+            pendingUtterance = null
+            pendingNext = null
+            next()
+        }
+    }
+
+    fun onTtsError() {
+        val next = pendingNext
+        pendingUtterance = null
+        pendingNext = null
+        next?.invoke()
+    }
+
+    fun stopPlayback() {
+        generation++
+        pendingUtterance = null
+        pendingNext = null
+        tts?.stop()
+        player?.let {
+            runCatching { it.setOnCompletionListener(null) }
+            runCatching { it.stop() }
+            runCatching { it.release() }
+        }
+        player = null
+        onSpeaking(-1)
+        onActive(false)
+    }
+
+    fun playAll(story: KidsBibleStory) {
+        stopPlayback()
+        val gen = generation
+        onActive(true)
+        val steps = buildList {
+            add(Triple("title", story.title, -1))
+            story.paragraphs.forEachIndexed { index, text ->
+                add(Triple(KidsStoryVoice.paragraphKey(index), text, index))
+            }
+            add(Triple(KidsStoryVoice.LESSON, story.lesson, story.paragraphs.size))
+        }
+        fun run(index: Int) {
+            if (gen != generation) return
+            if (index >= steps.size) {
+                onSpeaking(-1)
+                onActive(false)
+                return
+            }
+            val (key, text, scene) = steps[index]
+            playClip(story.id, key, text, scene, gen) { run(index + 1) }
+        }
+        run(0)
+    }
+
+    fun playOne(story: KidsBibleStory, key: String, text: String, scene: Int) {
+        stopPlayback()
+        val gen = generation
+        onActive(true)
+        playClip(story.id, key, text, scene, gen) {
+            if (gen == generation) {
+                onSpeaking(-1)
+                onActive(false)
+            }
+        }
+    }
+
+    private fun playClip(
+        storyId: String,
+        key: String,
+        text: String,
+        scene: Int,
+        gen: Int,
+        next: () -> Unit,
+    ) {
+        if (gen != generation) return
+        onSpeaking(scene)
+        val file = KidsStoryVoice.file(context, storyId, key)
+        if (file.exists() && file.length() > 800L) {
+            val mp = MediaPlayer()
+            player = mp
+            try {
+                mp.setDataSource(file.absolutePath)
+                mp.setOnCompletionListener {
+                    if (player == it) {
+                        it.release()
+                        player = null
+                    }
+                    if (gen == generation) next()
+                }
+                mp.setOnErrorListener { failed, _, _ ->
+                    if (player == failed) {
+                        failed.release()
+                        player = null
+                    }
+                    if (gen == generation) speakOrStop(text, key, gen, next)
+                    true
+                }
+                mp.prepare()
+                mp.start()
+            } catch (_: Exception) {
+                runCatching { mp.release() }
+                if (player == mp) player = null
+                speakOrStop(text, key, gen, next)
+            }
+        } else {
+            speakOrStop(text, key, gen, next)
+        }
+    }
+
+    private fun speakOrStop(text: String, key: String, gen: Int, next: () -> Unit) {
+        val engine = tts
+        if (engine == null || gen != generation) {
+            onSpeaking(-1)
+            onActive(false)
+            return
+        }
+        val utterance = "v${gen}_$key"
+        pendingUtterance = utterance
+        pendingNext = next
+        engine.speak(text, TextToSpeech.QUEUE_FLUSH, null, utterance)
+    }
+
+    fun startRecording(storyId: String, key: String): Boolean {
+        stopPlayback()
+        abandonRecorder(storyId)
+        val tmp = KidsStoryVoice.tempFile(context, storyId, key)
+        if (tmp.exists()) tmp.delete()
+        return try {
+            val created = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+                MediaRecorder(context)
+            } else {
+                @Suppress("DEPRECATION")
+                MediaRecorder()
+            }
+            created.setAudioSource(MediaRecorder.AudioSource.MIC)
+            created.setOutputFormat(MediaRecorder.OutputFormat.MPEG_4)
+            created.setAudioEncoder(MediaRecorder.AudioEncoder.AAC)
+            created.setOutputFile(tmp.absolutePath)
+            created.prepare()
+            created.start()
+            recorder = created
+            recordingKey = key
+            true
+        } catch (_: Exception) {
+            recordingKey = null
+            false
+        }
+    }
+
+    fun stopRecording(storyId: String, key: String, save: Boolean): Boolean {
+        val active = recorder
+        recorder = null
+        recordingKey = null
+        if (active != null) {
+            runCatching { active.stop() }
+            runCatching { active.release() }
+        }
+        val tmp = KidsStoryVoice.tempFile(context, storyId, key)
+        val dest = KidsStoryVoice.file(context, storyId, key)
+        if (!save || !tmp.exists() || tmp.length() <= 800L) {
+            if (tmp.exists()) tmp.delete()
+            return false
+        }
+        if (dest.exists()) dest.delete()
+        return tmp.renameTo(dest)
+    }
+
+    fun release() {
+        stopPlayback()
+        val active = recorder
+        recorder = null
+        recordingKey = null
+        if (active != null) {
+            runCatching { active.stop() }
+            runCatching { active.release() }
+        }
+        tts?.stop()
+        tts?.shutdown()
+        tts = null
+    }
+
+    private fun abandonRecorder(storyId: String) {
+        val key = recordingKey
+        val active = recorder
+        recorder = null
+        recordingKey = null
+        if (active != null) {
+            runCatching { active.stop() }
+            runCatching { active.release() }
+        }
+        if (key != null) KidsStoryVoice.tempFile(context, storyId, key).delete()
     }
 }
