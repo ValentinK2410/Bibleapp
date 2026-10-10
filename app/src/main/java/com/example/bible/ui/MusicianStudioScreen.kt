@@ -3,8 +3,6 @@ package com.example.bible.ui
 import android.Manifest
 import android.content.Context
 import android.content.pm.PackageManager
-import android.media.AudioAttributes
-import android.media.MediaPlayer
 import android.media.MediaRecorder
 import android.os.Build
 import android.os.SystemClock
@@ -70,6 +68,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.core.content.ContextCompat
+import com.example.bible.audio.StudioMixer
 import com.example.bible.data.StudioLibrary
 import com.example.bible.data.StudioTrack
 import kotlinx.coroutines.delay
@@ -551,85 +550,23 @@ private fun StudioTrackRow(
 private fun formatStudioTime(seconds: Int): String = "%d:%02d".format(seconds / 60, seconds % 60)
 
 private class StudioEngine(private val context: Context) {
-    private val players = mutableMapOf<String, MediaPlayer>()
+    private val mixer = StudioMixer()
     private var recorder: MediaRecorder? = null
     var onStopped: (String) -> Unit = {}
 
-    /** Звук плитки с начала, пока палец удерживает её. */
-    fun playWhileHeld(key: String, file: File): Boolean {
-        stop(key)
-        if (!file.exists()) return false
-        val player = MediaPlayer()
-        return try {
-            player.setAudioAttributes(
-                AudioAttributes.Builder()
-                    .setUsage(AudioAttributes.USAGE_MEDIA)
-                    .setContentType(AudioAttributes.CONTENT_TYPE_MUSIC)
-                    .build(),
-            )
-            player.setDataSource(file.absolutePath)
-            player.isLooping = false
-            player.setOnCompletionListener {
-                if (players[key] == it) {
-                    it.release()
-                    players.remove(key)
-                    onStopped(key)
-                }
-            }
-            player.prepare()
-            player.start()
-            players[key] = player
-            true
-        } catch (_: Exception) {
-            runCatching { player.release() }
-            false
-        }
+    init {
+        mixer.onStopped = { key -> onStopped(key) }
     }
+
+    /** Звук плитки с начала, пока палец удерживает её. */
+    fun playWhileHeld(key: String, file: File): Boolean = mixer.playWhileHeld(key, file)
 
     /** Включает или выключает дорожку. true — сейчас играет. */
-    fun toggle(key: String, file: File, loop: Boolean): Boolean {
-        if (players.containsKey(key)) {
-            stop(key)
-            return false
-        }
-        val player = MediaPlayer()
-        return try {
-            player.setAudioAttributes(
-                AudioAttributes.Builder()
-                    .setUsage(AudioAttributes.USAGE_MEDIA)
-                    .setContentType(AudioAttributes.CONTENT_TYPE_MUSIC)
-                    .build(),
-            )
-            player.setDataSource(file.absolutePath)
-            player.isLooping = loop
-            player.setOnCompletionListener {
-                if (players[key] == it) {
-                    it.release()
-                    players.remove(key)
-                    onStopped(key)
-                }
-            }
-            player.prepare()
-            player.start()
-            players[key] = player
-            true
-        } catch (_: Exception) {
-            runCatching { player.release() }
-            false
-        }
-    }
+    fun toggle(key: String, file: File, loop: Boolean): Boolean = mixer.toggle(key, file, loop)
 
-    fun setLoop(key: String, loop: Boolean) {
-        players[key]?.isLooping = loop
-    }
+    fun setLoop(key: String, loop: Boolean) = mixer.setLoop(key, loop)
 
-    fun stop(key: String) {
-        players.remove(key)?.let { player ->
-            runCatching { player.setOnCompletionListener(null) }
-            runCatching { player.stop() }
-            runCatching { player.release() }
-        }
-    }
+    fun stop(key: String) = mixer.stop(key)
 
     fun startRecording(): Boolean {
         abandonRecording()
@@ -665,7 +602,7 @@ private class StudioEngine(private val context: Context) {
     }
 
     fun release() {
-        players.keys.toList().forEach { stop(it) }
+        mixer.release()
         abandonRecording()
     }
 
