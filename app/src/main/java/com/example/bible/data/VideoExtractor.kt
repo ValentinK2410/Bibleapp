@@ -413,7 +413,8 @@ object VideoExtractor {
         var attempt: com.yausername.youtubedl_android.YoutubeDLResponse? = null
         var lastError: Throwable? = null
         loop@ for (strategy in strategies) {
-            for (forceIpv4 in listOf(false, true)) {
+            for ((attemptNo, forceIpv4) in listOf(false, true, true, true, true).withIndex()) {
+                if (attemptNo > 1) Thread.sleep(attemptNo * 8_000L)
                 Log.d(TAG, "yt-dlp: $url audioOnly=$audioOnly q=$videoQuality client=$strategy ipv4=$forceIpv4")
                 try {
                     attempt = YoutubeDL.getInstance().execute(buildRequest(strategy, forceIpv4), processId) { progress, etaInSeconds, _ ->
@@ -433,7 +434,7 @@ object VideoExtractor {
                     lastError = e
                     val msg = e.message.orEmpty()
                     when {
-                        isNetworkGlitch(msg) && !forceIpv4 -> continue
+                        isNetworkGlitch(msg) -> continue
                         isClientProblem(msg) -> continue@loop
                         else -> break@loop
                     }
@@ -487,8 +488,10 @@ object VideoExtractor {
             "Пожалуйста, подключитесь к сети Интернет"
         "Requested format is not available" in msg ->
             "YouTube не отдал этот ролик ни в одном формате. Обновите yt-dlp (↻) и повторите — или выберите «Аудио»."
-        "UNEXPECTED_EOF" in msg || "EOF occurred" in msg || "timed out" in msg.lowercase() ->
-            "Связь с сервером оборвалась. Нажмите «Повторить ошибки» — обычно со второго раза получается."
+        "UNEXPECTED_EOF" in msg || "EOF occurred" in msg || "timed out" in msg.lowercase() ||
+            "handshake" in msg.lowercase() ->
+            "Связь с YouTube постоянно обрывается — похоже, сеть замедляет YouTube. Нажмите «Повторить ошибки» позже, " +
+                "попробуйте другую сеть (Wi\u2011Fi / мобильный интернет) или включите VPN."
         "HTTP Error 403" in msg ->
             "Доступ запрещён (403). Возможно, ссылка устарела."
         "HTTP Error 404" in msg ->
