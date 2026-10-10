@@ -35,6 +35,12 @@ class StudioMixer {
     private var mixThread: Thread? = null
     private var track: AudioTrack? = null
 
+    /** Всегда запускает запись с начала, даже если она уже звучит. */
+    fun start(key: String, file: File, loop: Boolean) {
+        if (closed || !file.exists()) return
+        begin(key, file, loop)
+    }
+
     fun playWhileHeld(key: String, file: File): Boolean {
         if (closed || !file.exists()) return false
         begin(key, file, loop = false)

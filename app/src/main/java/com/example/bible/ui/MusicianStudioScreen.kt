@@ -18,6 +18,8 @@ import androidx.compose.foundation.gestures.awaitFirstDown
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
+import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.aspectRatio
@@ -37,8 +39,11 @@ import androidx.compose.material.icons.filled.Loop
 import androidx.compose.material.icons.filled.Mic
 import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material.icons.filled.Stop
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.FilterChip
 import androidx.compose.material3.Icon
+import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
@@ -54,6 +59,7 @@ import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -64,6 +70,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -72,6 +79,7 @@ import com.example.bible.audio.StudioMixer
 import com.example.bible.data.StudioLibrary
 import com.example.bible.data.StudioTrack
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.isActive
 
 private val PadColors = listOf(
     Color(0xFFEF4444),
@@ -97,6 +105,13 @@ fun MusicianStudioScreen(onBack: () -> Unit) {
     var startedAt by remember { mutableLongStateOf(0L) }
     var clock by remember { mutableIntStateOf(0) }
     var editing by remember { mutableStateOf(false) }
+    var cue by remember { mutableStateOf<TrackCue?>(null) }
+    var cueRun by remember { mutableIntStateOf(0) }
+    var cueStep by remember { mutableStateOf("") }
+    var pauseText by remember { mutableStateOf("500") }
+    val pauseMs = pauseText.toLongOrNull()?.coerceIn(1L, MAX_TRACK_PAUSE_MS) ?: 500L
+    val pauseHolder = rememberUpdatedState(pauseMs)
+    val trackKeyIds = tracks.joinToString(",") { it.id }
 
     engine.onStopped = { key -> playing = playing - key }
 
@@ -162,6 +177,24 @@ fun MusicianStudioScreen(onBack: () -> Unit) {
         playing = playing.filterNot { it.startsWith("p:") }.toSet()
     }
 
+    fun playTrackAt(index: Int) {
+        val track = tracks.getOrNull(index) ?: return
+        val key = "t:${track.id}"
+        engine.start(key, track.file, track.loop)
+        playing = playing + key
+    }
+
+    fun silenceTrackAt(index: Int) {
+        val track = tracks.getOrNull(index) ?: return
+        val key = "t:${track.id}"
+        engine.stop(key)
+        playing = playing - key
+    }
+
+    fun silenceTracks() {
+        tracks.forEachIndexed { index, _ -> silenceTrackAt(index) }
+    }
+
     fun setEditing(on: Boolean) {
         if (!on && recording?.startsWith("p:") == true) finish()
         stopPads()
@@ -180,6 +213,101 @@ fun MusicianStudioScreen(onBack: () -> Unit) {
 
     DisposableEffect(Unit) {
         onDispose { engine.release() }
+    }
+
+    LaunchedEffect(cue, cueRun, trackKeyIds) {
+        val scheme = cue ?: return@LaunchedEffect
+        if (tracks.isEmpty()) return@LaunchedEffect
+        fun group(evenNumbers: Boolean) {
+            tracks.forEachIndexed { index, _ ->
+                val even = (index + 1) % 2 == 0
+                if (even == evenNumbers) playTrackAt(index) else silenceTrackAt(index)
+            }
+        }
+        when (scheme) {
+            TrackCue.ALL -> {
+                cueStep = "Все сразу"
+                tracks.indices.forEach { playTrackAt(it) }
+            }
+            TrackCue.EVERY_OTHER -> {
+                cueStep = "Дорожки 1, 3, 5…"
+                tracks.forEachIndexed { index, _ ->
+                    if (index % 2 == 0) playTrackAt(index) else silenceTrackAt(index)
+                }
+            }
+            TrackCue.EVENS -> {
+                cueStep = "Чётные: 2, 4, 6…"
+                group(evenNumbers = true)
+            }
+            TrackCue.SWAP -> {
+                var evens = true
+                while (isActive) {
+                    cueStep = if (evens) "Сейчас чётные" else "Сейчас нечётные"
+                    group(evenNumbers = evens)
+                    delay(pauseHolder.value)
+                    evens = !evens
+                }
+            }
+            TrackCue.SEQUENCE -> {
+                var index = 0
+                while (isActive) {
+                    cueStep = "По очереди: ${index + 1}"
+                    tracks.indices.forEach { if (it == index) playTrackAt(it) else silenceTrackAt(it) }
+                    delay(pauseHolder.value)
+                    index = (index + 1) % tracks.size
+                }
+            }
+            TrackCue.REVERSE -> {
+                var index = tracks.lastIndex
+                while (isActive) {
+                    cueStep = "С конца: ${index + 1}"
+                    tracks.indices.forEach { if (it == index) playTrackAt(it) else silenceTrackAt(it) }
+                    delay(pauseHolder.value)
+                    index = if (index == 0) tracks.lastIndex else index - 1
+                }
+            }
+            TrackCue.STACK -> {
+                silenceTracks()
+                var next = 0
+                while (isActive) {
+                    if (next >= tracks.size) {
+                        cueStep = "Все включены, пауза и сначала"
+                        delay(pauseHolder.value)
+                        silenceTracks()
+                        next = 0
+                    }
+                    cueStep = "Подряд до ${next + 1}"
+                    playTrackAt(next)
+                    next++
+                    delay(pauseHolder.value)
+                }
+            }
+            TrackCue.RANDOM -> {
+                while (isActive) {
+                    val index = tracks.indices.random()
+                    cueStep = "Случайная: ${index + 1}"
+                    tracks.indices.forEach { if (it == index) playTrackAt(it) else silenceTrackAt(it) }
+                    delay(pauseHolder.value)
+                }
+            }
+            TrackCue.WAVE -> {
+                while (isActive) {
+                    silenceTracks()
+                    for (index in tracks.indices) {
+                        if (!isActive) return@LaunchedEffect
+                        cueStep = "Волна: включаю ${index + 1}"
+                        playTrackAt(index)
+                        delay(pauseHolder.value)
+                    }
+                    for (index in tracks.indices) {
+                        if (!isActive) return@LaunchedEffect
+                        cueStep = "Волна: выключаю ${index + 1}"
+                        silenceTrackAt(index)
+                        delay(pauseHolder.value)
+                    }
+                }
+            }
+        }
     }
 
     val together = playing.size
@@ -319,7 +447,7 @@ fun MusicianStudioScreen(onBack: () -> Unit) {
             item {
                 Text("Дорожки", fontWeight = FontWeight.ExtraBold, fontSize = 20.sp)
                 Text(
-                    "Запишите дорожку, потом ещё. Включите несколько сразу — они звучат параллельно. Зацикливание крутит дорожку без конца.",
+                    "Запишите дорожку, потом ещё. Ниже можно включить все сразу, через одну или чередовать чётные и нечётные. Пауза схемы задаётся в миллисекундах.",
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                     fontSize = 14.sp,
                     lineHeight = 19.sp,
@@ -353,6 +481,27 @@ fun MusicianStudioScreen(onBack: () -> Unit) {
                         color = Color.White,
                         fontWeight = FontWeight.ExtraBold,
                         fontSize = 18.sp,
+                    )
+                }
+            }
+            if (tracks.isNotEmpty()) {
+                item {
+                    TrackCuePanel(
+                        cue = cue,
+                        step = cueStep,
+                        pauseText = pauseText,
+                        pauseMs = pauseMs,
+                        onPauseText = { pauseText = it.filter(Char::isDigit).take(8) },
+                        onPreset = { pauseText = it.toString() },
+                        onPick = {
+                            cue = it
+                            cueRun++
+                        },
+                        onStop = {
+                            cue = null
+                            cueStep = ""
+                            silenceTracks()
+                        },
                     )
                 }
             }
@@ -547,6 +696,102 @@ private fun StudioTrackRow(
     }
 }
 
+private enum class TrackCue(val title: String) {
+    ALL("Все сразу"),
+    EVERY_OTHER("Через одну"),
+    EVENS("Чётные"),
+    SWAP("Чёт ↔ нечёт"),
+    SEQUENCE("По очереди"),
+    STACK("Подряд"),
+    REVERSE("С конца"),
+    RANDOM("Случайная"),
+    WAVE("Волна"),
+}
+
+private const val MAX_TRACK_PAUSE_MS = 12L * 60L * 60L * 1000L
+
+private val PausePresets = listOf(100L, 500L, 1_000L, 5_000L, 60_000L)
+
+@OptIn(ExperimentalLayoutApi::class)
+@Composable
+private fun TrackCuePanel(
+    cue: TrackCue?,
+    step: String,
+    pauseText: String,
+    pauseMs: Long,
+    onPauseText: (String) -> Unit,
+    onPreset: (Long) -> Unit,
+    onPick: (TrackCue) -> Unit,
+    onStop: () -> Unit,
+) {
+    Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+        Text("Как включать", fontWeight = FontWeight.ExtraBold, fontSize = 16.sp)
+        FlowRow(
+            horizontalArrangement = Arrangement.spacedBy(8.dp),
+            verticalArrangement = Arrangement.spacedBy(8.dp),
+        ) {
+            TrackCue.entries.forEach { item ->
+                FilterChip(
+                    selected = cue == item,
+                    onClick = { onPick(item) },
+                    label = { Text(item.title) },
+                )
+            }
+            FilterChip(
+                selected = false,
+                onClick = onStop,
+                label = { Text(if (cue == null) "Выключить все" else "Стоп") },
+            )
+        }
+        if (step.isNotBlank()) {
+            Text(step, color = Color(0xFF7C3AED), fontWeight = FontWeight.Bold, fontSize = 14.sp)
+        }
+        OutlinedTextField(
+            value = pauseText,
+            onValueChange = onPauseText,
+            modifier = Modifier.fillMaxWidth(),
+            singleLine = true,
+            label = { Text("Пауза, миллисекунды") },
+            supportingText = {
+                Text("Сейчас ${formatTrackPause(pauseMs)} · от 1 мс до 12 часов")
+            },
+            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+        )
+        FlowRow(
+            horizontalArrangement = Arrangement.spacedBy(8.dp),
+            verticalArrangement = Arrangement.spacedBy(8.dp),
+        ) {
+            PausePresets.forEach { preset ->
+                FilterChip(
+                    selected = pauseMs == preset,
+                    onClick = { onPreset(preset) },
+                    label = { Text(formatTrackPause(preset)) },
+                )
+            }
+        }
+        Text(
+            "«Чёт ↔ нечёт» держит чётные дорожки (2, 4, 6…) заданную паузу, выключает их и включает нечётные (1, 3, 5…). «По очереди», «подряд», «с конца», «случайная» и «волна» тоже ждут эту паузу.",
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            fontSize = 12.sp,
+            lineHeight = 16.sp,
+        )
+    }
+}
+
+private fun formatTrackPause(ms: Long): String {
+    if (ms < 1_000L) return "$ms мс"
+    val hours = ms / 3_600_000L
+    val minutes = (ms % 3_600_000L) / 60_000L
+    val seconds = (ms % 60_000L) / 1_000L
+    val rest = ms % 1_000L
+    return buildString {
+        if (hours > 0) append("$hours ч ")
+        if (minutes > 0) append("$minutes мин ")
+        if (seconds > 0) append("$seconds с ")
+        if (rest > 0 && hours == 0L) append("$rest мс")
+    }.trim()
+}
+
 private fun formatStudioTime(seconds: Int): String = "%d:%02d".format(seconds / 60, seconds % 60)
 
 private class StudioEngine(private val context: Context) {
@@ -560,6 +805,8 @@ private class StudioEngine(private val context: Context) {
 
     /** Звук плитки с начала, пока палец удерживает её. */
     fun playWhileHeld(key: String, file: File): Boolean = mixer.playWhileHeld(key, file)
+
+    fun start(key: String, file: File, loop: Boolean) = mixer.start(key, file, loop)
 
     /** Включает или выключает дорожку. true — сейчас играет. */
     fun toggle(key: String, file: File, loop: Boolean): Boolean = mixer.toggle(key, file, loop)
