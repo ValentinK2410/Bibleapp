@@ -109,6 +109,7 @@ object AppSectionUsage {
             head == "song_lists" || head == "songs_pv" -> "songs"
             head == "video_download" || head == "audio_download" -> "downloads"
             head == "media_video_playlists" -> "media_videos"
+            head.startsWith("media_musician") -> "media_musician"
             head == "media_audio_playlists" -> "media_audios"
             head == "kids_tictactoe" || head == "kids_checkers" || head == "kids_go" || head == "kids_pipes" || head == "kids_brainring" -> "kids_games"
             head == "experiment_camera_control" ||

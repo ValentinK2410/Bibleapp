@@ -537,7 +537,7 @@ fun MediaHomeScreen(
                 MediaHomeSectionOrder.VIDEOS -> MediaHubTile("Видео", "Ролики из галереи, с камеры и по ссылке", "🎬", listOf(Color(0xFFEF4444), Color(0xFFF59E0B)), videoCount, onOpenVideos)
                 MediaHomeSectionOrder.AUDIOS -> MediaHubTile("Аудио", "Треки, запись с микрофона и ссылки", "🎧", listOf(Color(0xFF8B5CF6), Color(0xFF6366F1)), audioCount, onOpenAudios)
                 MediaHomeSectionOrder.PESNOPENIE -> MediaHubTile("Песнопение", "Песни с аккордами и свои тексты", "🎶", listOf(Color(0xFFEC4899), Color(0xFF8B5CF6)), songs.size, onOpenPesnopenie)
-                MediaHomeSectionOrder.MUSICIAN -> MediaHubTile("Для музыканта", "Тюнер, метроном, ноты и слух", "🎸", listOf(Color(0xFF10B981), Color(0xFF14B8A6)), null, onOpenMusician)
+                MediaHomeSectionOrder.MUSICIAN -> MediaHubTile("Для музыканта", "Тюнер, метроном, ноты и студия", "🎸", listOf(Color(0xFF10B981), Color(0xFF14B8A6)), null, onOpenMusician)
                 else -> null
             }
         }

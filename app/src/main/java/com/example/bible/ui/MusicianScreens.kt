@@ -159,6 +159,7 @@ fun MusicianSectionScreen(
     onOpenViolinTuner: () -> Unit,
     onOpenMetronome: () -> Unit,
     onOpenMusicNotes: () -> Unit,
+    onOpenStudio: () -> Unit,
 ) {
     val context = LocalContext.current
     val prefs = remember { musicianPrefs(context) }
@@ -185,6 +186,7 @@ fun MusicianSectionScreen(
             verticalArrangement = Arrangement.spacedBy(12.dp),
         ) {
             MusicianHero(bpm = bpm, a4 = a4)
+            MusicianStudioBanner(onClick = onOpenStudio)
             Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
                 MusicianTile(
                     title = "Тюнер",
@@ -218,7 +220,7 @@ fun MusicianSectionScreen(
                 )
             }
             Text(
-                "Тюнеру нужен доступ к микрофону. Метроном и эталонные ноты звучат через динамик.",
+                "Студии и тюнеру нужен микрофон. Метроном и эталонные ноты звучат через динамик.",
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                 modifier = Modifier.padding(horizontal = 4.dp, vertical = 4.dp),
@@ -240,7 +242,7 @@ private fun MusicianHero(bpm: Int, a4: Int) {
         Text("ДЛЯ МУЗЫКАНТА", color = Color.White.copy(alpha = 0.65f), fontSize = 11.sp, fontWeight = FontWeight.Bold, letterSpacing = 2.sp)
         Text("Твоя карманная студия", color = Color.White, fontSize = 24.sp, fontWeight = FontWeight.ExtraBold)
         Text(
-            "Настрой инструмент, держи темп и разбирайся в нотах — всё под рукой.",
+            "Настрой инструмент, держи темп и записывай партии в студии.",
             color = Color.White.copy(alpha = 0.75f),
             fontSize = 13.sp,
             lineHeight = 17.sp,
@@ -266,6 +268,30 @@ private fun RowScope.HeroStat(value: String, label: String) {
     ) {
         Text(value, color = Color.White, fontSize = 17.sp, fontWeight = FontWeight.ExtraBold, maxLines = 1)
         Text(label, color = Color.White.copy(alpha = 0.7f), fontSize = 11.sp, maxLines = 1)
+    }
+}
+
+@Composable
+private fun MusicianStudioBanner(onClick: () -> Unit) {
+    Row(
+        Modifier
+            .fillMaxWidth()
+            .clip(RoundedCornerShape(26.dp))
+            .background(Brush.linearGradient(listOf(Color(0xFF7C3AED), Color(0xFFEC4899))))
+            .clickable(onClick = onClick)
+            .padding(horizontal = 16.dp, vertical = 14.dp),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        Text("🎚️", fontSize = 34.sp)
+        Column(Modifier.weight(1f).padding(start = 12.dp)) {
+            Text("Студия", color = Color.White, fontSize = 20.sp, fontWeight = FontWeight.ExtraBold)
+            Text(
+                "Дорожки по кругу и 8 плиток, как лупер",
+                color = Color.White.copy(alpha = 0.88f),
+                fontSize = 13.sp,
+                lineHeight = 17.sp,
+            )
+        }
     }
 }
 

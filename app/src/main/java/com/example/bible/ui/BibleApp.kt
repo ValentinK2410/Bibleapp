@@ -1854,7 +1854,15 @@ private fun BibleNavHost(
                 onOpenViolinTuner = { navController.navigate("media_musician_violin") },
                 onOpenMetronome = { navController.navigate("media_musician_metronome") },
                 onOpenMusicNotes = { navController.navigate("media_musician_notes") },
+                onOpenStudio = {
+                    navController.navigate("media_musician_studio") {
+                        launchSingleTop = true
+                    }
+                },
             )
+        }
+        composable("media_musician_studio") {
+            MusicianStudioScreen(onBack = { navController.navigateUp() })
         }
         composable("media_musician_notes") {
             MusicTheoryNotesScreen(onBack = { navController.navigateUp() })
