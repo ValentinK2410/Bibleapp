@@ -6,6 +6,7 @@ import android.speech.tts.TextToSpeech
 import android.speech.tts.UtteranceProgressListener
 import android.widget.Toast
 import androidx.compose.animation.animateColorAsState
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -55,12 +56,15 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.example.bible.R
 import com.example.bible.data.AzbukaProgressRepository
 import com.example.bible.data.KidsBibleStories
 import com.example.bible.data.KidsBibleStory
@@ -68,6 +72,31 @@ import kotlinx.coroutines.launch
 import java.util.Locale
 
 private fun KidsBibleStory.brush(): Brush = Brush.linearGradient(gradient.map { Color(it) })
+
+private fun kidsStoryImage(id: String): Int = when (id) {
+    "creation" -> R.drawable.kids_story_creation
+    "noah" -> R.drawable.kids_story_noah
+    "abraham" -> R.drawable.kids_story_abraham
+    "joseph" -> R.drawable.kids_story_joseph
+    "moses-sea" -> R.drawable.kids_story_moses_sea
+    "david" -> R.drawable.kids_story_david
+    "daniel" -> R.drawable.kids_story_daniel
+    "jonah" -> R.drawable.kids_story_jonah
+    "nativity" -> R.drawable.kids_story_nativity
+    "five-loaves" -> R.drawable.kids_story_five_loaves
+    "lost-sheep" -> R.drawable.kids_story_lost_sheep
+    else -> R.drawable.kids_story_creation
+}
+
+@Composable
+private fun KidsStoryIllustration(story: KidsBibleStory, modifier: Modifier = Modifier) {
+    Image(
+        painter = painterResource(kidsStoryImage(story.id)),
+        contentDescription = story.title,
+        modifier = modifier,
+        contentScale = ContentScale.Crop,
+    )
+}
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -127,7 +156,13 @@ fun KidsStoriesScreen(
                         .padding(14.dp),
                 ) {
                     Box(Modifier.fillMaxWidth()) {
-                        Text(story.emoji, fontSize = 48.sp, modifier = Modifier.align(Alignment.CenterStart))
+                        KidsStoryIllustration(
+                            story,
+                            Modifier
+                                .fillMaxWidth()
+                                .aspectRatio(4f / 3f)
+                                .clip(RoundedCornerShape(16.dp)),
+                        )
                         if (done) {
                             Icon(
                                 Icons.Filled.CheckCircle,
@@ -135,7 +170,11 @@ fun KidsStoriesScreen(
                                 tint = Color.White,
                                 modifier = Modifier
                                     .align(Alignment.TopEnd)
-                                    .size(26.dp),
+                                    .padding(6.dp)
+                                    .clip(CircleShape)
+                                    .background(Color(0xCC111827))
+                                    .padding(3.dp)
+                                    .size(20.dp),
                             )
                         }
                     }
@@ -245,7 +284,14 @@ fun KidsStoryScreen(
                         .padding(20.dp),
                     horizontalAlignment = Alignment.CenterHorizontally,
                 ) {
-                    Text(story.emoji, fontSize = 72.sp)
+                    KidsStoryIllustration(
+                        story,
+                        Modifier
+                            .fillMaxWidth()
+                            .aspectRatio(4f / 3f)
+                            .clip(RoundedCornerShape(20.dp)),
+                    )
+                    Spacer(Modifier.height(12.dp))
                     Text(
                         story.title,
                         color = Color.White,
