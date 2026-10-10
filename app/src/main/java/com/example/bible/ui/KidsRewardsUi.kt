@@ -9,10 +9,10 @@ import com.example.bible.data.AzbukaProgressRepository
 
 /** Начисляет очки, когда [won] становится true; каждая новая победа засчитывается заново. */
 @Composable
-internal fun KidsGameWinReward(game: String, won: Boolean, points: Int = 20) {
+internal fun KidsGameWinReward(game: String, won: Boolean, points: Int = 20, round: Int = 0) {
     val context = LocalContext.current
     val repo = remember { AzbukaProgressRepository(context.applicationContext) }
-    LaunchedEffect(won) {
+    LaunchedEffect(won, round) {
         if (!won) return@LaunchedEffect
         repo.registerGameWin(game, points)
         val stars = points / 10

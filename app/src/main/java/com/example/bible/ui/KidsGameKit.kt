@@ -65,6 +65,11 @@ object KidsGameStreak {
     private val _bursts = MutableStateFlow(0)
     val bursts: StateFlow<Int> = _bursts.asStateFlow()
 
+    fun reset() {
+        _streak.value = 0
+        _bursts.value = 0
+    }
+
     /** Звук, серия и салют для одного ответа. */
     fun answered(correct: Boolean) {
         if (correct) {

@@ -59,11 +59,16 @@ fun KidsGamesHubScreen(
     onOpenCheckers: () -> Unit,
     onOpenGo: () -> Unit,
     onOpenPipePuzzle: () -> Unit,
+    onOpenBrainRing: () -> Unit,
 ) {
     val context = LocalContext.current
     val repo = remember { AzbukaProgressRepository(context.applicationContext) }
     val wins by repo.gameWins.collectAsStateWithLifecycle(initialValue = emptyMap())
     val games = listOf(
+        KidsGameTile(
+            KidsGames.BRAIN_RING, "Брейн-ринг", "⏱️", "Вопрос из Библии. Пять секунд — и ответ",
+            listOf(Color(0xFF7C3AED), Color(0xFFF59E0B)), "раундов", onOpenBrainRing,
+        ),
         KidsGameTile(
             KidsGames.TIC_TAC_TOE, "Крестики\nнолики", "⭕", "С компьютером или вдвоём, поле до 6×6",
             listOf(Color(0xFF6366F1), Color(0xFFEC4899)), "побед", onOpenTicTacToe,
@@ -140,6 +145,7 @@ fun KidsGamesHubScreen(
                             KidsGames.TIC_TAC_TOE -> TicTacToeArt(Modifier.fillMaxSize())
                             KidsGames.CHECKERS -> CheckersArt(Modifier.fillMaxSize())
                             KidsGames.GO -> GoArt(Modifier.fillMaxSize())
+                            KidsGames.BRAIN_RING -> BrainRingArt(Modifier.fillMaxSize())
                             else -> PipePreviewArt(Modifier.fillMaxSize())
                         }
                     }

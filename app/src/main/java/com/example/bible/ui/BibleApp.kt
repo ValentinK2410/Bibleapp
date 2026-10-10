@@ -1217,7 +1217,15 @@ private fun BibleNavHost(
                         launchSingleTop = true
                     }
                 },
+                onOpenBrainRing = {
+                    navController.navigate("kids_brainring") {
+                        launchSingleTop = true
+                    }
+                },
             )
+        }
+        composable("kids_brainring") {
+            KidsBrainRingScreen(onBack = { navController.navigateUp() })
         }
         composable("kids_tictactoe") {
             TicTacToeScreen(onBack = { navController.navigateUp() })

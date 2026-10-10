@@ -110,7 +110,7 @@ object AppSectionUsage {
             head == "video_download" || head == "audio_download" -> "downloads"
             head == "media_video_playlists" -> "media_videos"
             head == "media_audio_playlists" -> "media_audios"
-            head == "kids_tictactoe" || head == "kids_checkers" || head == "kids_go" || head == "kids_pipes" -> "kids_games"
+            head == "kids_tictactoe" || head == "kids_checkers" || head == "kids_go" || head == "kids_pipes" || head == "kids_brainring" -> "kids_games"
             head == "experiment_camera_control" ||
                 head == "experiment_camera_4" ||
                 head == "experiment_camera_5_mediapipe" -> "experiment_camera"
