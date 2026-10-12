@@ -92,7 +92,9 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.core.content.ContextCompat
+import com.example.bible.audio.CapturedMelodyNote
 import com.example.bible.audio.InstrumentSamplePlayer
+import com.example.bible.audio.MelodyCapture
 import com.example.bible.audio.MusicSynth
 import com.example.bible.audio.MusicSynth.NoteEvent
 import com.example.bible.audio.NoteTimbre
@@ -947,6 +949,15 @@ private fun RowScope.ListenButton(text: String, gradient: List<Color>, onClick: 
     }
 }
 
+private fun syncCaptured(target: SnapshotStateList<StaffNote>, notes: List<CapturedMelodyNote>) {
+    while (target.size > notes.size) target.removeAt(target.lastIndex)
+    notes.forEachIndexed { i, n ->
+        val staff = StaffNote(n.midi, n.beats)
+        if (i == target.size) target.add(staff)
+        else if (target[i] != staff) target[i] = staff
+    }
+}
+
 @Composable
 private fun PitchListenerTab(onSendToSandbox: (List<StaffNote>) -> Unit) {
     val context = LocalContext.current
@@ -969,9 +980,20 @@ private fun PitchListenerTab(onSendToSandbox: (List<StaffNote>) -> Unit) {
         if (granted) listening = true
     }
 
-    var stableMidi by remember { mutableIntStateOf(-1) }
-    var stableSince by remember { mutableStateOf(0L) }
-    var armed by remember { mutableStateOf(true) }
+    val capture = remember { MelodyCapture() }
+
+    LaunchedEffect(listening) {
+        if (!listening) {
+            capture.finish(System.currentTimeMillis())
+            syncCaptured(captured, capture.notes())
+        }
+    }
+    LaunchedEffect(autoRecord) {
+        if (!autoRecord) {
+            capture.finish(System.currentTimeMillis())
+            syncCaptured(captured, capture.notes())
+        }
+    }
 
     LaunchedEffect(listening, hasPermission) {
         if (!listening || !hasPermission) {
@@ -999,13 +1021,13 @@ private fun PitchListenerTab(onSendToSandbox: (List<StaffNote>) -> Unit) {
                     var sum = 0.0
                     for (i in 0 until read) sum += buffer[i].toDouble() * buffer[i]
                     val rms = sqrt(sum / read)
-                    val est = if (rms > 300) PitchEstimator.estimateHz(buffer.copyOf(read), sampleRate) else null
+                    val est = if (rms > 450) PitchEstimator.estimateHz(buffer.copyOf(read), sampleRate, 65.0) else null
                     val now = System.currentTimeMillis()
                     if (est != null) {
                         val prev = smoothed
-                        smoothed = if (prev != null && abs(1200 * kotlin.math.ln(est / prev) / kotlin.math.ln(2f)) > 70) est else PitchEstimator.smooth(prev, est)
+                        smoothed = if (prev != null && abs(1200 * kotlin.math.ln(est / prev) / kotlin.math.ln(2f)) > 80) est else PitchEstimator.smooth(prev, est, 0.55f)
                         lastSignal = now
-                    } else if (now - lastSignal > 500) {
+                    } else if (now - lastSignal > 240) {
                         smoothed = null
                     }
                     val shown = smoothed
@@ -1013,18 +1035,12 @@ private fun PitchListenerTab(onSendToSandbox: (List<StaffNote>) -> Unit) {
                         if (shown != null) {
                             hz = shown
                             hasSignal = true
-                            val midi = MusicTheoryUtils.midiFromHz(shown.toDouble())
-                            if (midi != stableMidi) {
-                                stableMidi = midi
-                                stableSince = now
-                            } else if (autoRecord && armed && now - stableSince > 320 && playJob?.isActive != true) {
-                                captured.add(StaffNote(midi.coerceIn(55, 88), 1f))
-                                armed = false
-                            }
                         } else {
                             hasSignal = false
-                            stableMidi = -1
-                            armed = true
+                        }
+                        if (autoRecord && playJob?.isActive != true) {
+                            capture.feed(now, shown?.toDouble())
+                            syncCaptured(captured, capture.notes())
                         }
                     }
                 }
@@ -1037,7 +1053,6 @@ private fun PitchListenerTab(onSendToSandbox: (List<StaffNote>) -> Unit) {
             }
         }
     }
-    LaunchedEffect(stableMidi) { if (stableMidi >= 0) armed = armed || captured.lastOrNull()?.midi != stableMidi }
     LaunchedEffect(captured.size) { staffScroll.animateScrollTo(staffScroll.maxValue) }
     DisposableEffect(Unit) { onDispose { playJob?.cancel() } }
 
@@ -1116,7 +1131,10 @@ private fun PitchListenerTab(onSendToSandbox: (List<StaffNote>) -> Unit) {
         Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
             TmGradientPill(if (autoRecord) "✨ Автозапись: вкл" else "✨ Автозапись: выкл", autoRecord, MusicNotesGradient) { autoRecord = !autoRecord }
             TmGradientPill("📌 Записать", false, MusicStringsGradient) {
-                midi?.let { captured.add(StaffNote(it.coerceIn(55, 88), 1f)) }
+                midi?.let {
+                    capture.addQuarter(it)
+                    syncCaptured(captured, capture.notes())
+                }
             }
         }
         Text("Записанная мелодия (${captured.size})", fontWeight = FontWeight.ExtraBold, fontSize = 16.sp)
@@ -1169,12 +1187,15 @@ private fun PitchListenerTab(onSendToSandbox: (List<StaffNote>) -> Unit) {
                         if (playing) {
                             playJob?.cancel()
                         } else {
+                            capture.finish(System.currentTimeMillis())
+                            syncCaptured(captured, capture.notes())
                             playJob = scope.launch {
                                 try {
                                     captured.toList().forEachIndexed { i, n ->
                                         playingIndex = i
-                                        withContext(Dispatchers.IO) { SineTonePlayer.playMidiNoteBlocking(n.midi, 420, timbre = timbre) }
-                                        delay(70)
+                                        val ms = (n.beats * 60_000f / 96f * 0.92f).toInt().coerceIn(40, 4000)
+                                        withContext(Dispatchers.IO) { SineTonePlayer.playMidiNoteBlocking(n.midi, ms, timbre = timbre) }
+                                        delay(40)
                                     }
                                 } finally {
                                     playingIndex = null
@@ -1193,10 +1214,12 @@ private fun PitchListenerTab(onSendToSandbox: (List<StaffNote>) -> Unit) {
                 onSendToSandbox(captured.toList())
             }
             SquareAction(Icons.AutoMirrored.Filled.Backspace, "Удалить последнюю", enabled = captured.isNotEmpty()) {
-                if (captured.isNotEmpty()) captured.removeAt(captured.lastIndex)
+                capture.dropLast()
+                syncCaptured(captured, capture.notes())
             }
             SquareAction(Icons.Filled.Delete, "Очистить", enabled = captured.isNotEmpty()) {
                 playJob?.cancel()
+                capture.reset()
                 captured.clear()
             }
         }
