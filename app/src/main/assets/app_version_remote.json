@@ -1,6 +1,6 @@
 {
-  "versionCode": 10,
-  "versionName": "2.0",
+  "versionCode": 11,
+  "versionName": "2.1",
   "apkUrl": "https://github.com/ValentinK2410/Bibleapp/releases/latest/download/Bible.apk",
-  "notes": "Брейн-ринг на 1000 вопросов с памятью ответов, студия музыканта и картинки к библейским историям"
+  "notes": "Студия: диаграмма записи, масштаб дорожек, разрез и пустой трек. В заметках соседние ссылки на озвучку играются подряд"
 }
