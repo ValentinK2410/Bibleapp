@@ -49,9 +49,16 @@ class StudioMixer {
     private var playhead = 0
 
     /** Всегда запускает запись с начала, даже если она уже звучит. [offsetMs] — пауза до вступления. */
-    fun start(key: String, file: File, loop: Boolean, offsetMs: Long = 0L) {
+    fun start(
+        key: String,
+        file: File,
+        loop: Boolean,
+        offsetMs: Long = 0L,
+        trimStartMs: Long = 0L,
+        trimEndMs: Long = -1L,
+    ) {
         if (closed || !file.exists()) return
-        begin(key, file, loop, offsetMs)
+        begin(key, file, loop, offsetMs, trimStartMs, trimEndMs)
     }
 
     /**
@@ -136,14 +143,21 @@ class StudioMixer {
     }
 
     /** true — запись сейчас включена. */
-    fun toggle(key: String, file: File, loop: Boolean, offsetMs: Long = 0L): Boolean {
+    fun toggle(
+        key: String,
+        file: File,
+        loop: Boolean,
+        offsetMs: Long = 0L,
+        trimStartMs: Long = 0L,
+        trimEndMs: Long = -1L,
+    ): Boolean {
         if (closed || !file.exists()) return false
         val active = synchronized(lock) { key in voices || key in pending }
         if (active) {
             stop(key)
             return false
         }
-        begin(key, file, loop, offsetMs)
+        begin(key, file, loop, offsetMs, trimStartMs, trimEndMs)
         return true
     }
 
@@ -196,12 +210,17 @@ class StudioMixer {
                     if (!key.startsWith("t:") || !voice.timeline) continue
                     voice.timeline = false
                     val at = head - voice.offset
+                    val span = (voice.until - voice.from).coerceAtLeast(1)
                     if (at < 0) {
                         voice.delay = -at
-                        voice.pos = 0
+                        voice.pos = voice.from
                     } else {
                         voice.delay = 0
-                        voice.pos = at.coerceAtMost(voice.pcm.size)
+                        voice.pos = if (voice.loop) {
+                            voice.from + (at % span)
+                        } else {
+                            (voice.from + at).coerceAtMost(voice.until)
+                        }
                     }
                 }
             }
@@ -255,10 +274,22 @@ class StudioMixer {
         releaseTrack()
     }
 
-    private fun begin(key: String, file: File, loop: Boolean, offsetMs: Long = 0L) {
+    private fun begin(
+        key: String,
+        file: File,
+        loop: Boolean,
+        offsetMs: Long = 0L,
+        trimStartMs: Long = 0L,
+        trimEndMs: Long = -1L,
+    ) {
         val delay = offsetSamples(offsetMs)
         val ready = peekCache(file)
         if (ready != null) {
+            val (from, until) = trimRange(ready.size, trimStartMs, trimEndMs)
+            if (from >= until) {
+                main.post { onStopped(key) }
+                return
+            }
             synchronized(lock) {
                 token[key] = (token[key] ?: 0) + 1
                 pending.remove(key)
@@ -267,11 +298,13 @@ class StudioMixer {
                 if (follow && voices.keys.none { it != key && it.startsWith("t:") }) playhead = cycleStart
                 voices[key] = Voice(
                     ready,
-                    0,
+                    from,
                     loop,
                     delay = if (follow) 0 else delay,
                     offset = delay,
                     timeline = follow,
+                    from = from,
+                    until = until,
                 )
             }
             wake()
@@ -296,17 +329,24 @@ class StudioMixer {
                     false
                 } else {
                     pending.remove(key)
-                    val follow = cycleOn
-                    if (follow && voices.keys.none { it != key && it.startsWith("t:") }) playhead = cycleStart
-                    voices[key] = Voice(
-                        pcm,
-                        0,
-                        loopWanted[key] ?: loop,
-                        delay = if (follow) 0 else delay,
-                        offset = delay,
-                        timeline = follow,
-                    )
-                    true
+                    val (from, until) = trimRange(pcm.size, trimStartMs, trimEndMs)
+                    if (from >= until) {
+                        false
+                    } else {
+                        val follow = cycleOn
+                        if (follow && voices.keys.none { it != key && it.startsWith("t:") }) playhead = cycleStart
+                        voices[key] = Voice(
+                            pcm,
+                            from,
+                            loopWanted[key] ?: loop,
+                            delay = if (follow) 0 else delay,
+                            offset = delay,
+                            timeline = follow,
+                            from = from,
+                            until = until,
+                        )
+                        true
+                    }
                 }
             }
             if (started) {
@@ -355,12 +395,13 @@ class StudioMixer {
                     if (cycleOn && voice.timeline) {
                         timeline = true
                         val pcm = voice.pcm
+                        val span = (voice.until - voice.from).coerceAtLeast(1)
                         for (i in 0 until frames) {
                             val head = cycleHead(playhead + i)
                             val at = head - voice.offset
                             if (at < 0 || pcm.isEmpty()) continue
-                            val idx = if (voice.loop) at % pcm.size else at
-                            if (idx in pcm.indices) mix[i] += pcm[idx].toInt()
+                            val idx = if (voice.loop) voice.from + (at % span) else voice.from + at
+                            if (idx in voice.from until voice.until) mix[i] += pcm[idx].toInt()
                         }
                         continue
                     }
@@ -371,8 +412,8 @@ class StudioMixer {
                             voice.delay--
                             continue
                         }
-                        if (voice.pos >= pcm.size) {
-                            if (voice.loop && pcm.isNotEmpty()) voice.pos = 0
+                        if (voice.pos >= voice.until || voice.pos !in pcm.indices) {
+                            if (voice.loop && voice.until > voice.from) voice.pos = voice.from
                             else {
                                 finished = true
                                 break
@@ -739,7 +780,16 @@ class StudioMixer {
         var delay: Int = 0,
         var offset: Int = 0,
         var timeline: Boolean = false,
+        var from: Int = 0,
+        var until: Int = pcm.size,
     )
+
+    private fun trimRange(size: Int, trimStartMs: Long, trimEndMs: Long): Pair<Int, Int> {
+        if (size <= 0) return 0 to 0
+        val from = offsetSamples(trimStartMs).coerceIn(0, size)
+        val until = if (trimEndMs < 0L) size else offsetSamples(trimEndMs).coerceIn(0, size)
+        return if (until <= from) from to from else from to until
+    }
 
     private fun cycleHead(head: Int): Int {
         val span = (cycleEnd - cycleStart).coerceAtLeast(1)

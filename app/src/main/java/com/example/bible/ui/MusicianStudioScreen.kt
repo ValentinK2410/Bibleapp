@@ -61,7 +61,9 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -85,9 +87,10 @@ import androidx.compose.ui.unit.sp
 import kotlin.math.roundToInt
 import androidx.core.content.ContextCompat
 import com.example.bible.audio.StudioMixer
+import com.example.bible.data.StudioBoard
+import com.example.bible.data.StudioClip
 import com.example.bible.data.StudioCycle
 import com.example.bible.data.StudioLibrary
-import com.example.bible.data.StudioTrack
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.isActive
 
@@ -108,7 +111,7 @@ fun MusicianStudioScreen(onBack: () -> Unit) {
     val context = LocalContext.current
     val engine = remember { StudioEngine(context.applicationContext) }
     val padFiles = remember { Array(StudioLibrary.PAD_COUNT) { StudioLibrary.padFile(context, it) } }
-    var tracks by remember { mutableStateOf(StudioLibrary.listTracks(context)) }
+    var board by remember { mutableStateOf(StudioLibrary.loadBoard(context)) }
     var cycle by remember { mutableStateOf(StudioLibrary.loadCycle(context)) }
     var padTick by remember { mutableIntStateOf(0) }
     var playing by remember { mutableStateOf(emptySet<String>()) }
@@ -123,7 +126,11 @@ fun MusicianStudioScreen(onBack: () -> Unit) {
     var pauseText by remember { mutableStateOf("500") }
     val pauseMs = pauseText.toLongOrNull()?.coerceIn(1L, MAX_TRACK_PAUSE_MS) ?: 500L
     val pauseHolder = rememberUpdatedState(pauseMs)
-    val trackKeyIds = tracks.joinToString(",") { it.id }
+    val trackKeyIds = board.lanes.joinToString(",") { lane ->
+        board.clips.filter { it.laneId == lane }.joinToString("+") {
+            "${it.id}:${it.offsetMs}:${it.trimStartMs}:${it.trimEndMs}"
+        }
+    }
 
     engine.onStopped = { key -> playing = playing - key }
 
@@ -133,10 +140,19 @@ fun MusicianStudioScreen(onBack: () -> Unit) {
         ((SystemClock.elapsedRealtime() - startedAt) / 1000L).toInt()
     }
 
+    val recordPeaks = remember { mutableStateListOf<Int>() }
     LaunchedEffect(recording) {
         while (recording != null) {
             delay(250)
             clock++
+        }
+    }
+    LaunchedEffect(recording) {
+        if (recording != "track") return@LaunchedEffect
+        recordPeaks.clear()
+        while (isActive) {
+            recordPeaks.add(engine.recordingPeak())
+            delay(RECORD_PEAK_MS)
         }
     }
     LaunchedEffect(cycle) {
@@ -172,7 +188,7 @@ fun MusicianStudioScreen(onBack: () -> Unit) {
         }
         if (target == "track") {
             if (StudioLibrary.createTrack(context, file) == null) toast("Не удалось сохранить дорожку")
-            tracks = StudioLibrary.listTracks(context)
+            board = StudioLibrary.loadBoard(context)
         } else if (target.startsWith("p:")) {
             val index = target.removePrefix("p:").toIntOrNull()
             if (index == null || !StudioLibrary.savePad(context, index, file)) toast("Не удалось сохранить плитку")
@@ -192,23 +208,45 @@ fun MusicianStudioScreen(onBack: () -> Unit) {
         playing = playing.filterNot { it.startsWith("p:") }.toSet()
     }
 
-    fun playTrackAt(index: Int) {
-        val track = tracks.getOrNull(index) ?: return
-        val key = "t:${track.id}"
+    fun clipsOnLane(index: Int): List<StudioClip> {
+        val lane = board.lanes.getOrNull(index) ?: return emptyList()
+        return board.clips.filter { it.laneId == lane }
+    }
+
+    fun playClip(clip: StudioClip) {
+        val key = "t:${clip.id}"
         engine.setCycle(cycle.enabled, cycle.startMs, cycle.endMs)
-        engine.start(key, track.file, track.loop, track.offsetMs)
+        engine.start(
+            key,
+            StudioLibrary.sourceFile(context, clip.sourceId),
+            clip.loop,
+            clip.offsetMs,
+            clip.trimStartMs,
+            clip.trimEndMs,
+        )
         playing = playing + key
     }
 
+    fun playTrackAt(index: Int) {
+        clipsOnLane(index).forEach(::playClip)
+    }
+
     fun silenceTrackAt(index: Int) {
-        val track = tracks.getOrNull(index) ?: return
-        val key = "t:${track.id}"
-        engine.stop(key)
-        playing = playing - key
+        clipsOnLane(index).forEach { clip ->
+            val key = "t:${clip.id}"
+            engine.stop(key)
+            playing = playing - key
+        }
     }
 
     fun silenceTracks() {
-        tracks.forEachIndexed { index, _ -> silenceTrackAt(index) }
+        board.lanes.indices.forEach(::silenceTrackAt)
+    }
+
+    fun reloadBoard(): StudioBoard {
+        val fresh = StudioLibrary.loadBoard(context)
+        board = fresh
+        return fresh
     }
 
     fun setEditing(on: Boolean) {
@@ -235,9 +273,9 @@ fun MusicianStudioScreen(onBack: () -> Unit) {
 
     LaunchedEffect(cue, cueRun, trackKeyIds) {
         val scheme = cue ?: return@LaunchedEffect
-        if (tracks.isEmpty()) return@LaunchedEffect
+        if (board.lanes.isEmpty()) return@LaunchedEffect
         fun group(evenNumbers: Boolean) {
-            tracks.forEachIndexed { index, _ ->
+            board.lanes.forEachIndexed { index, _ ->
                 val even = (index + 1) % 2 == 0
                 if (even == evenNumbers) playTrackAt(index) else silenceTrackAt(index)
             }
@@ -245,11 +283,11 @@ fun MusicianStudioScreen(onBack: () -> Unit) {
         when (scheme) {
             TrackCue.ALL -> {
                 cueStep = "Все сразу"
-                tracks.indices.forEach { playTrackAt(it) }
+                board.lanes.indices.forEach { playTrackAt(it) }
             }
             TrackCue.EVERY_OTHER -> {
                 cueStep = "Дорожки 1, 3, 5…"
-                tracks.forEachIndexed { index, _ ->
+                board.lanes.forEachIndexed { index, _ ->
                     if (index % 2 == 0) playTrackAt(index) else silenceTrackAt(index)
                 }
             }
@@ -270,25 +308,25 @@ fun MusicianStudioScreen(onBack: () -> Unit) {
                 var index = 0
                 while (isActive) {
                     cueStep = "По очереди: ${index + 1}"
-                    tracks.indices.forEach { if (it == index) playTrackAt(it) else silenceTrackAt(it) }
+                    board.lanes.indices.forEach { if (it == index) playTrackAt(it) else silenceTrackAt(it) }
                     delay(pauseHolder.value)
-                    index = (index + 1) % tracks.size
+                    index = (index + 1) % board.lanes.size
                 }
             }
             TrackCue.REVERSE -> {
-                var index = tracks.lastIndex
+                var index = board.lanes.lastIndex
                 while (isActive) {
                     cueStep = "С конца: ${index + 1}"
-                    tracks.indices.forEach { if (it == index) playTrackAt(it) else silenceTrackAt(it) }
+                    board.lanes.indices.forEach { if (it == index) playTrackAt(it) else silenceTrackAt(it) }
                     delay(pauseHolder.value)
-                    index = if (index == 0) tracks.lastIndex else index - 1
+                    index = if (index == 0) board.lanes.lastIndex else index - 1
                 }
             }
             TrackCue.STACK -> {
                 silenceTracks()
                 var next = 0
                 while (isActive) {
-                    if (next >= tracks.size) {
+                    if (next >= board.lanes.size) {
                         cueStep = "Все включены, пауза и сначала"
                         delay(pauseHolder.value)
                         silenceTracks()
@@ -302,22 +340,22 @@ fun MusicianStudioScreen(onBack: () -> Unit) {
             }
             TrackCue.RANDOM -> {
                 while (isActive) {
-                    val index = tracks.indices.random()
+                    val index = board.lanes.indices.random()
                     cueStep = "Случайная: ${index + 1}"
-                    tracks.indices.forEach { if (it == index) playTrackAt(it) else silenceTrackAt(it) }
+                    board.lanes.indices.forEach { if (it == index) playTrackAt(it) else silenceTrackAt(it) }
                     delay(pauseHolder.value)
                 }
             }
             TrackCue.WAVE -> {
                 while (isActive) {
                     silenceTracks()
-                    for (index in tracks.indices) {
+                    for (index in board.lanes.indices) {
                         if (!isActive) return@LaunchedEffect
                         cueStep = "Волна: включаю ${index + 1}"
                         playTrackAt(index)
                         delay(pauseHolder.value)
                     }
-                    for (index in tracks.indices) {
+                    for (index in board.lanes.indices) {
                         if (!isActive) return@LaunchedEffect
                         cueStep = "Волна: выключаю ${index + 1}"
                         silenceTrackAt(index)
@@ -509,7 +547,7 @@ fun MusicianStudioScreen(onBack: () -> Unit) {
             item {
                 Text("Дорожки", fontWeight = FontWeight.ExtraBold, fontSize = 20.sp)
                 Text(
-                    "Потяните дорожку вправо, чтобы она вступила позже. Жёлтая полоска — цикл: перетащите её в любое место шкалы, края меняют длину. Ниже схемы включают дорожки вместе или по очереди.",
+                    "Потяните кусок вправо, чтобы он вступил позже, и вверх или вниз — на другую дорожку. Ножницы режут в месте нажатия. Ниже и выше меняют высоту, уже и шире — масштаб. Жёлтая полоска — цикл.",
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                     fontSize = 14.sp,
                     lineHeight = 19.sp,
@@ -546,33 +584,57 @@ fun MusicianStudioScreen(onBack: () -> Unit) {
                     )
                 }
             }
-            if (tracks.isNotEmpty() || recording == "track") {
-                item {
+            item {
                     StudioTimeline(
-                        tracks = tracks,
+                        board = board,
                         cycle = cycle,
                         recording = recording == "track",
-                        recordingSeconds = if (recording == "track") seconds else 0,
+                        recordingPeaks = if (recording == "track") recordPeaks.toIntArray() else IntArray(0),
                         onCycle = { next ->
                             cycle = next
                             StudioLibrary.saveCycle(context, next)
                         },
                         onOffset = { id, ms ->
-                            StudioLibrary.setOffset(context, id, ms)
-                            val fresh = StudioLibrary.listTracks(context)
-                            tracks = fresh
-                            val sounding = fresh.filter { "t:${it.id}" in playing }
-                            if (sounding.isNotEmpty()) {
-                                sounding.forEach { track ->
-                                    engine.start("t:${track.id}", track.file, track.loop, track.offsetMs)
+                            StudioLibrary.setClipOffset(context, id, ms)
+                            val fresh = reloadBoard()
+                            fresh.clips.find { it.id == id }?.let { clip ->
+                                if ("t:${clip.id}" in playing) playClip(clip)
+                            }
+                        },
+                        onMove = { id, steps ->
+                            StudioLibrary.moveClip(context, id, steps)
+                            val fresh = reloadBoard()
+                            fresh.clips.find { it.id == id }?.let { clip ->
+                                if ("t:${clip.id}" in playing) playClip(clip)
+                            }
+                        },
+                        onCut = { id, atMs, durationMs ->
+                            val rightId = if (durationMs <= 0L) {
+                                toast("Подождите, дорожка ещё читается")
+                                null
+                            } else {
+                                StudioLibrary.splitClip(context, id, atMs, durationMs)
+                            }
+                            if (durationMs > 0L && rightId == null) {
+                                toast("Слишком близко к краю")
+                            } else if (rightId != null) {
+                                val wasPlaying = "t:$id" in playing
+                                engine.stop("t:$id")
+                                playing = playing - "t:$id"
+                                val fresh = reloadBoard()
+                                if (wasPlaying) {
+                                    fresh.clips.filter { it.id == id || it.id == rightId }.forEach(::playClip)
                                 }
                             }
                         },
+                        onAddLane = {
+                            StudioLibrary.addEmptyLane(context)
+                            board = StudioLibrary.loadBoard(context)
+                        },
                         onLoadWave = { file, onReady -> engine.loadWave(file, onReady) },
                     )
-                }
             }
-            if (tracks.isNotEmpty()) {
+            if (board.clips.isNotEmpty()) {
                 item {
                     TrackCuePanel(
                         cue = cue,
@@ -593,38 +655,58 @@ fun MusicianStudioScreen(onBack: () -> Unit) {
                     )
                 }
             }
-            if (tracks.isEmpty()) {
+            if (board.lanes.isEmpty()) {
                 item {
                     Text(
-                        "Пока нет дорожек. Нажмите «Новая дорожка» и сыграйте или спойте.",
+                        "Пока нет дорожек. Нажмите «Новая дорожка» или «Пустой трек» на шкале.",
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                         fontSize = 14.sp,
                     )
                 }
             }
-            itemsIndexed(tracks, key = { _, track -> track.id }) { index, track ->
-                val key = "t:${track.id}"
+            itemsIndexed(board.lanes, key = { _, lane -> lane }) { index, laneId ->
+                val clips = board.clips.filter { it.laneId == laneId }
+                val keys = clips.map { "t:${it.id}" }
+                val lanePlaying = keys.any { it in playing }
+                val loop = clips.isNotEmpty() && clips.all { it.loop }
+                val detail = when {
+                    clips.isEmpty() -> "Пустая — перетащите сюда кусок"
+                    clips.size == 1 -> formatStudioOffset(clips.first().offsetMs) +
+                        if (loop) " · крутится без конца" else " · один раз"
+                    else -> "${clips.size} куска · " + if (loop) "крутятся" else "один раз"
+                }
                 StudioTrackRow(
-                    title = "Дорожка ${index + 1}",
-                    loop = track.loop,
-                    offsetMs = track.offsetMs,
-                    playing = key in playing,
+                    title = if (clips.isEmpty()) "Пустая ${index + 1}" else "Дорожка ${index + 1}",
+                    detail = detail,
+                    loop = loop,
+                    playing = lanePlaying,
+                    playEnabled = clips.isNotEmpty(),
                     onTogglePlay = {
+                        if (clips.isEmpty()) return@StudioTrackRow
                         engine.setCycle(cycle.enabled, cycle.startMs, cycle.endMs)
-                        if (engine.toggle(key, track.file, track.loop, track.offsetMs)) playing = playing + key
-                        else playing = playing - key
+                        if (lanePlaying) {
+                            clips.forEach { clip ->
+                                engine.stop("t:${clip.id}")
+                                playing = playing - "t:${clip.id}"
+                            }
+                        } else {
+                            clips.forEach(::playClip)
+                        }
                     },
                     onToggleLoop = {
-                        val next = !track.loop
-                        StudioLibrary.setLoop(context, track.id, next)
-                        engine.setLoop(key, next)
-                        tracks = StudioLibrary.listTracks(context)
+                        if (clips.isEmpty()) return@StudioTrackRow
+                        val next = !loop
+                        StudioLibrary.setLaneLoop(context, laneId, next)
+                        clips.forEach { engine.setLoop("t:${it.id}", next) }
+                        board = StudioLibrary.loadBoard(context)
                     },
                     onDelete = {
-                        engine.stop(key)
-                        playing = playing - key
-                        StudioLibrary.deleteTrack(context, track.id)
-                        tracks = StudioLibrary.listTracks(context)
+                        clips.forEach { clip ->
+                            engine.stop("t:${clip.id}")
+                            playing = playing - "t:${clip.id}"
+                        }
+                        StudioLibrary.deleteLane(context, laneId)
+                        board = StudioLibrary.loadBoard(context)
                     },
                 )
             }
@@ -721,9 +803,10 @@ private fun StudioPad(
 @Composable
 private fun StudioTrackRow(
     title: String,
+    detail: String,
     loop: Boolean,
-    offsetMs: Long,
     playing: Boolean,
+    playEnabled: Boolean,
     onTogglePlay: () -> Unit,
     onToggleLoop: () -> Unit,
     onDelete: () -> Unit,
@@ -740,8 +823,8 @@ private fun StudioTrackRow(
             Modifier
                 .size(48.dp)
                 .clip(CircleShape)
-                .background(if (playing) Color(0xFF7C3AED) else Color(0xFF7C3AED).copy(alpha = 0.16f))
-                .clickable(onClick = onTogglePlay),
+                .background(if (playing) Color(0xFF7C3AED) else Color(0xFF7C3AED).copy(alpha = if (playEnabled) 0.16f else 0.06f))
+                .clickable(enabled = playEnabled, onClick = onTogglePlay),
             contentAlignment = Alignment.Center,
         ) {
             Icon(
@@ -753,10 +836,7 @@ private fun StudioTrackRow(
         Column(Modifier.weight(1f).padding(horizontal = 10.dp)) {
             Text(title, fontWeight = FontWeight.ExtraBold, fontSize = 16.sp)
             Text(
-                buildString {
-                    append(formatStudioOffset(offsetMs))
-                    append(if (loop) " · крутится без конца" else " · один раз")
-                },
+                detail,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                 fontSize = 13.sp,
             )
@@ -878,52 +958,109 @@ private fun formatStudioOffset(ms: Long): String {
     return "Старт +${tenths / 10},${tenths % 10} с"
 }
 
-private const val TIMELINE_DP_PER_SEC = 72f
+private val LaneHeights = floatArrayOf(36f, 52f, 76f, 108f, 148f)
+private val TimelineZooms = floatArrayOf(36f, 56f, 72f, 110f, 168f, 240f)
+private const val RECORD_PEAK_MS = 50L
 
-private fun timelineDp(ms: Long) = (ms.coerceAtLeast(0L) * TIMELINE_DP_PER_SEC / 1000f).dp
+private fun timelineDp(ms: Long, dpPerSec: Float) = (ms.coerceAtLeast(0L) * dpPerSec / 1000f).dp
+
+private fun stepZoom(current: Float, options: FloatArray, direction: Int): Float {
+    val index = options.indices.minBy { kotlin.math.abs(options[it] - current) }
+    return options[(index + direction).coerceIn(options.indices)]
+}
+
+private fun clipLengthMs(clip: StudioClip, durationMs: Long): Long {
+    if (durationMs <= 0L) return 3_000L
+    val end = if (clip.trimEndMs < 0L) durationMs else clip.trimEndMs.coerceAtMost(durationMs)
+    return (end - clip.trimStartMs).coerceAtLeast(80L)
+}
+
+private fun slicePeaks(full: IntArray?, clip: StudioClip, durationMs: Long): IntArray? {
+    if (full == null || full.isEmpty() || durationMs <= 0L) return full
+    val end = if (clip.trimEndMs < 0L) durationMs else clip.trimEndMs.coerceAtMost(durationMs)
+    val start = clip.trimStartMs.coerceIn(0L, durationMs)
+    val from = ((start * full.size) / durationMs).toInt().coerceIn(0, full.lastIndex)
+    val to = ((end * full.size) / durationMs).toInt().coerceIn(from + 1, full.size)
+    return full.copyOfRange(from, to)
+}
 
 @Composable
 private fun StudioTimeline(
-    tracks: List<StudioTrack>,
+    board: StudioBoard,
     cycle: StudioCycle,
     recording: Boolean,
-    recordingSeconds: Int,
+    recordingPeaks: IntArray,
     onCycle: (StudioCycle) -> Unit,
     onOffset: (String, Long) -> Unit,
+    onMove: (String, Int) -> Unit,
+    onCut: (String, Long, Long) -> Unit,
+    onAddLane: () -> Unit,
     onLoadWave: (File, (IntArray, Long) -> Unit) -> Unit,
 ) {
+    val context = LocalContext.current
     val scroll = rememberScrollState()
+    var laneDp by remember { mutableFloatStateOf(52f) }
+    var zoomDp by remember { mutableFloatStateOf(72f) }
+    var scissors by remember { mutableStateOf(false) }
     var waves by remember { mutableStateOf(mapOf<String, IntArray>()) }
     var durations by remember { mutableStateOf(mapOf<String, Long>()) }
     var draft by remember { mutableStateOf(mapOf<String, Long>()) }
+    var lift by remember { mutableStateOf<Pair<String, Int>?>(null) }
     var cycleDraft by remember { mutableStateOf<Pair<Long, Long>?>(null) }
     val cycleStart = cycleDraft?.first ?: cycle.startMs
     val cycleEnd = cycleDraft?.second ?: cycle.endMs
-    val signature = tracks.joinToString { "${it.id}:${it.file.length()}:${it.file.lastModified()}" }
+    val sources = board.clips.map { it.sourceId }.distinct()
+    val signature = sources.joinToString { id ->
+        val file = StudioLibrary.sourceFile(context, id)
+        "$id:${file.length()}:${file.lastModified()}"
+    }
     LaunchedEffect(signature) {
-        tracks.forEach { track ->
-            onLoadWave(track.file) { peaks, durationMs ->
-                waves = waves + (track.id to peaks)
-                if (durationMs > 0L) durations = durations + (track.id to durationMs)
+        sources.forEach { id ->
+            onLoadWave(StudioLibrary.sourceFile(context, id)) { peaks, durationMs ->
+                waves = waves + (id to peaks)
+                if (durationMs > 0L) durations = durations + (id to durationMs)
             }
         }
     }
     val spanMs = run {
         var end = 8_000L
-        tracks.forEach { track ->
-            val start = draft[track.id] ?: track.offsetMs
-            val length = durations[track.id] ?: 3_000L
+        board.clips.forEach { clip ->
+            val start = draft[clip.id] ?: clip.offsetMs
+            val length = clipLengthMs(clip, durations[clip.sourceId] ?: 0L)
             if (start + length + 1_500L > end) end = start + length + 1_500L
         }
         if (recording) {
-            val rec = recordingSeconds * 1000L + 1_500L
+            val rec = recordingPeaks.size * RECORD_PEAK_MS + 1_500L
             if (rec > end) end = rec
         }
         if (cycleEnd + 1_500L > end) end = cycleEnd + 1_500L
         end.coerceAtMost(StudioLibrary.MAX_OFFSET_MS + 60_000L)
     }
-    val contentWidth = timelineDp(spanMs)
-    Row(Modifier.fillMaxWidth().padding(top = 8.dp)) {
+    val contentWidth = timelineDp(spanMs, zoomDp)
+    val lane = laneDp.dp
+    Row(
+        Modifier.fillMaxWidth().horizontalScroll(rememberScrollState()).padding(bottom = 6.dp),
+        horizontalArrangement = Arrangement.spacedBy(8.dp),
+    ) {
+        TimelineTool("Ниже", laneDp > LaneHeights.first()) { laneDp = stepZoom(laneDp, LaneHeights, -1) }
+        TimelineTool("Выше", laneDp < LaneHeights.last()) { laneDp = stepZoom(laneDp, LaneHeights, 1) }
+        TimelineTool("Уже", zoomDp > TimelineZooms.first()) { zoomDp = stepZoom(zoomDp, TimelineZooms, -1) }
+        TimelineTool("Шире", zoomDp < TimelineZooms.last()) { zoomDp = stepZoom(zoomDp, TimelineZooms, 1) }
+        TimelineTool(if (scissors) "Ножницы вкл" else "Ножницы", true, selected = scissors) { scissors = !scissors }
+        TimelineTool("Пустой трек", true) { onAddLane() }
+    }
+    Text(
+        if (scissors) {
+            "Нажмите на кусок в том месте, где его разрезать. Правая часть останется на шкале, её можно перетащить на пустую дорожку."
+        } else {
+            "Во время записи снизу растёт её диаграмма — по ней видно, как новая партия ложится на уже записанные."
+        },
+        color = MaterialTheme.colorScheme.onSurfaceVariant,
+        fontSize = 12.sp,
+        lineHeight = 16.sp,
+        modifier = Modifier.padding(bottom = 6.dp),
+    )
+    Row(Modifier.fillMaxWidth()) {
         Column(Modifier.width(92.dp)) {
             Box(Modifier.height(40.dp), contentAlignment = Alignment.CenterStart) {
                 Text(
@@ -940,15 +1077,31 @@ private fun StudioTimeline(
                         .padding(horizontal = 8.dp, vertical = 4.dp),
                 )
             }
-            tracks.forEachIndexed { index, track ->
-                val start = draft[track.id] ?: track.offsetMs
+            board.lanes.forEachIndexed { index, laneId ->
+                val pieces = board.clips.filter { it.laneId == laneId }
+                val start = pieces.minOfOrNull { draft[it.id] ?: it.offsetMs }
+                val landing = lift?.let { (clipId, steps) ->
+                    val fromLane = board.clips.find { it.id == clipId }?.laneId
+                    val from = board.lanes.indexOf(fromLane)
+                    from >= 0 && board.lanes.getOrNull(from + steps) == laneId && laneId != fromLane
+                } == true
                 Column(
-                    Modifier.height(52.dp).padding(end = 6.dp),
+                    Modifier.height(lane).padding(end = 6.dp),
                     verticalArrangement = Arrangement.Center,
                 ) {
-                    Text("Дорожка ${index + 1}", fontWeight = FontWeight.Bold, fontSize = 12.sp, maxLines = 1)
                     Text(
-                        formatStudioOffset(start),
+                        if (pieces.isEmpty()) "Пустая" else "Дорожка ${index + 1}",
+                        fontWeight = FontWeight.Bold,
+                        fontSize = 12.sp,
+                        maxLines = 1,
+                        color = if (landing) Color(0xFF7C3AED) else Color.Unspecified,
+                    )
+                    Text(
+                        when {
+                            pieces.isEmpty() -> "для куска"
+                            pieces.size > 1 -> "${pieces.size} куска"
+                            else -> formatStudioOffset(start ?: 0L)
+                        },
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                         fontSize = 11.sp,
                         maxLines = 1,
@@ -956,7 +1109,7 @@ private fun StudioTimeline(
                 }
             }
             if (recording) {
-                Column(Modifier.height(52.dp), verticalArrangement = Arrangement.Center) {
+                Column(Modifier.height(lane), verticalArrangement = Arrangement.Center) {
                     Text("Новая", fontWeight = FontWeight.Bold, fontSize = 12.sp, color = Color(0xFFDC2626))
                     Text("идёт запись", color = Color(0xFFDC2626), fontSize = 11.sp)
                 }
@@ -966,6 +1119,7 @@ private fun StudioTimeline(
             Column(Modifier.width(contentWidth)) {
                 StudioTimelineRuler(
                     spanMs = spanMs,
+                    dpPerSec = zoomDp,
                     startMs = cycleStart,
                     endMs = cycleEnd,
                     enabled = cycle.enabled,
@@ -978,50 +1132,78 @@ private fun StudioTimeline(
                         }
                     },
                 )
-                tracks.forEach { track ->
-                    val start = draft[track.id] ?: track.offsetMs
-                    val length = (durations[track.id] ?: 3_000L).coerceAtLeast(400L)
+                board.lanes.forEach { laneId ->
+                    val pieces = board.clips.filter { it.laneId == laneId }
+                    val landing = lift?.let { (clipId, steps) ->
+                        val fromLane = board.clips.find { it.id == clipId }?.laneId
+                        val from = board.lanes.indexOf(fromLane)
+                        from >= 0 && board.lanes.getOrNull(from + steps) == laneId && laneId != fromLane
+                    } == true
                     Box(
                         Modifier
                             .fillMaxWidth()
-                            .height(52.dp)
+                            .height(lane)
                             .padding(bottom = 4.dp)
                             .clip(RoundedCornerShape(8.dp))
-                            .background(Color(0xFF052E16)),
+                            .background(if (landing) Color(0xFF4C1D95) else if (pieces.isEmpty()) Color(0xFF1C1917) else Color(0xFF052E16)),
                     ) {
-                        StudioTimelineClip(
-                            offsetMs = start,
-                            durationMs = length,
-                            peaks = waves[track.id],
-                            color = Color(0xFF16A34A),
-                            onDragBy = { deltaMs ->
-                                val base = draft[track.id] ?: track.offsetMs
-                                draft = draft + (track.id to (base + deltaMs).coerceIn(0L, StudioLibrary.MAX_OFFSET_MS))
-                            },
-                            onDragEnd = {
-                                val ms = draft[track.id] ?: return@StudioTimelineClip
-                                draft = draft - track.id
-                                if (ms != track.offsetMs) onOffset(track.id, ms)
-                            },
-                        )
+                        if (pieces.isEmpty()) {
+                            Text(
+                                "Пусто",
+                                color = Color(0xFFA8A29E),
+                                fontSize = 12.sp,
+                                modifier = Modifier.align(Alignment.CenterStart).padding(start = 8.dp),
+                            )
+                        }
+                        pieces.forEach { clip ->
+                            val start = draft[clip.id] ?: clip.offsetMs
+                            val full = durations[clip.sourceId] ?: 0L
+                            val length = clipLengthMs(clip, full)
+                            StudioTimelineClip(
+                                offsetMs = start,
+                                durationMs = length,
+                                height = (laneDp - 4f).dp,
+                                lanePitch = lane,
+                                dpPerSec = zoomDp,
+                                scissors = scissors,
+                                peaks = slicePeaks(waves[clip.sourceId], clip, full),
+                                color = Color(0xFF16A34A),
+                                onDragBy = { deltaMs, steps ->
+                                    val base = draft[clip.id] ?: clip.offsetMs
+                                    draft = draft + (clip.id to (base + deltaMs).coerceIn(0L, StudioLibrary.MAX_OFFSET_MS))
+                                    lift = clip.id to steps
+                                },
+                                onDragEnd = { steps ->
+                                    val ms = draft[clip.id]
+                                    draft = draft - clip.id
+                                    lift = null
+                                    if (ms != null && ms != clip.offsetMs) onOffset(clip.id, ms)
+                                    if (steps != 0) onMove(clip.id, steps)
+                                },
+                                onCut = { atMs -> onCut(clip.id, atMs, full) },
+                            )
+                        }
                     }
                 }
                 if (recording) {
+                    val recMs = (recordingPeaks.size * RECORD_PEAK_MS).coerceAtLeast(RECORD_PEAK_MS)
                     Box(
                         Modifier
                             .fillMaxWidth()
-                            .height(48.dp)
+                            .height(lane)
+                            .padding(bottom = 4.dp)
                             .clip(RoundedCornerShape(8.dp))
                             .background(Color(0xFF3F1212)),
                     ) {
                         Box(
                             Modifier
-                                .offset(x = 0.dp)
-                                .width(timelineDp(recordingSeconds * 1000L).coerceAtLeast(28.dp))
-                                .height(48.dp)
+                                .width(timelineDp(recMs, zoomDp).coerceAtLeast(28.dp))
+                                .height((laneDp - 4f).dp)
                                 .clip(RoundedCornerShape(8.dp))
                                 .background(Color(0xFFDC2626)),
-                        )
+                        ) {
+                            StudioWaveform(recordingPeaks, Modifier.fillMaxSize().padding(vertical = 6.dp))
+                        }
                     }
                 }
             }
@@ -1034,6 +1216,7 @@ private enum class CycleDrag { Start, End, Move }
 @Composable
 private fun StudioTimelineRuler(
     spanMs: Long,
+    dpPerSec: Float,
     startMs: Long,
     endMs: Long,
     enabled: Boolean,
@@ -1044,11 +1227,12 @@ private fun StudioTimelineRuler(
     val finish = rememberUpdatedState(onDragEnd)
     val startState = rememberUpdatedState(startMs)
     val endState = rememberUpdatedState(endMs)
+    val zoom = rememberUpdatedState(dpPerSec)
     Box(Modifier.fillMaxWidth().height(40.dp)) {
         Box(
             Modifier
-                .offset(x = timelineDp(startMs))
-                .width(timelineDp((endMs - startMs).coerceAtLeast(StudioLibrary.MIN_CYCLE_MS)).coerceAtLeast(28.dp))
+                .offset(x = timelineDp(startMs, dpPerSec))
+                .width(timelineDp((endMs - startMs).coerceAtLeast(StudioLibrary.MIN_CYCLE_MS), dpPerSec).coerceAtLeast(28.dp))
                 .height(16.dp)
                 .clip(RoundedCornerShape(4.dp))
                 .background(if (enabled) Color(0xFFFBBF24) else Color(0xFF92400E)),
@@ -1062,7 +1246,7 @@ private fun StudioTimelineRuler(
                 fontSize = 10.sp,
                 modifier = Modifier
                     .align(Alignment.BottomStart)
-                    .offset(x = timelineDp(second * 1000L)),
+                    .offset(x = timelineDp(second * 1000L, dpPerSec)),
             )
             second += 2
         }
@@ -1070,10 +1254,10 @@ private fun StudioTimelineRuler(
             Modifier
                 .fillMaxSize()
                 .pointerInput(spanMs) {
-                    val pxPerMs = TIMELINE_DP_PER_SEC.dp.toPx() / 1000f
                     val edge = 18.dp.toPx()
                     awaitEachGesture {
                         val down = awaitFirstDown(requireUnconsumed = false, pass = PointerEventPass.Initial)
+                        var pxPerMs = zoom.value.dp.toPx() / 1000f
                         val startPx = startState.value * pxPerMs
                         val endPx = endState.value * pxPerMs
                         val mode = when {
@@ -1096,6 +1280,7 @@ private fun StudioTimelineRuler(
                                 val change = event.changes.firstOrNull { it.id == down.id } ?: break
                                 if (!change.pressed) break
                                 change.consume()
+                                pxPerMs = zoom.value.dp.toPx() / 1000f
                                 fraction += (change.position.x - change.previousPosition.x) / pxPerMs
                                 val whole = fraction.toLong()
                                 if (whole == 0L) continue
@@ -1130,64 +1315,126 @@ private fun StudioTimelineRuler(
 private fun StudioTimelineClip(
     offsetMs: Long,
     durationMs: Long,
+    height: androidx.compose.ui.unit.Dp,
+    lanePitch: androidx.compose.ui.unit.Dp,
+    dpPerSec: Float,
+    scissors: Boolean,
     peaks: IntArray?,
     color: Color,
-    onDragBy: (Long) -> Unit,
-    onDragEnd: () -> Unit,
+    onDragBy: (Long, Int) -> Unit,
+    onDragEnd: (Int) -> Unit,
+    onCut: (Long) -> Unit,
 ) {
     val dragBy = rememberUpdatedState(onDragBy)
     val dragEnd = rememberUpdatedState(onDragEnd)
+    val cut = rememberUpdatedState(onCut)
+    val zoom = rememberUpdatedState(dpPerSec)
+    val pitch = rememberUpdatedState(lanePitch)
+    val originMs = rememberUpdatedState(offsetMs)
     Box(
         Modifier
-            .offset(x = timelineDp(offsetMs))
-            .width(timelineDp(durationMs).coerceAtLeast(48.dp))
-            .height(48.dp)
+            .offset(x = timelineDp(offsetMs, dpPerSec))
+            .width(timelineDp(durationMs, dpPerSec).coerceAtLeast(48.dp))
+            .height(height)
             .clip(RoundedCornerShape(8.dp))
             .background(color)
-            .pointerInput(Unit) {
-                val pxPerMs = TIMELINE_DP_PER_SEC.dp.toPx() / 1000f
+            .pointerInput(scissors) {
                 awaitEachGesture {
                     val down = awaitFirstDown(requireUnconsumed = false, pass = PointerEventPass.Initial)
                     down.consume()
+                    if (scissors) {
+                        val start = down.position
+                        var moved = false
+                        while (true) {
+                            val event = awaitPointerEvent(PointerEventPass.Initial)
+                            val change = event.changes.firstOrNull { it.id == down.id } ?: break
+                            if (!change.pressed) break
+                            change.consume()
+                            if ((change.position - start).getDistance() > viewConfiguration.touchSlop) moved = true
+                        }
+                        if (!moved) {
+                            val pxPerMs = zoom.value.dp.toPx() / 1000f
+                            val at = originMs.value + if (pxPerMs > 0f) (start.x / pxPerMs).toLong() else 0L
+                            cut.value(at)
+                        }
+                        return@awaitEachGesture
+                    }
                     var fraction = 0f
+                    var dy = 0f
                     try {
                         while (true) {
                             val event = awaitPointerEvent(PointerEventPass.Initial)
                             val change = event.changes.firstOrNull { it.id == down.id } ?: break
                             if (!change.pressed) break
                             change.consume()
-                            val dx = change.position.x - change.previousPosition.x
-                            fraction += if (pxPerMs > 0f) dx / pxPerMs else 0f
+                            val pxPerMs = zoom.value.dp.toPx() / 1000f
+                            val lanePx = pitch.value.toPx().coerceAtLeast(1f)
+                            fraction += if (pxPerMs > 0f) (change.position.x - change.previousPosition.x) / pxPerMs else 0f
+                            dy += change.position.y - change.previousPosition.y
                             val whole = fraction.toLong()
-                            if (whole != 0L) {
-                                fraction -= whole
-                                dragBy.value(whole)
-                            }
+                            val steps = (dy / lanePx).roundToInt()
+                            if (whole != 0L) fraction -= whole
+                            if (whole != 0L || steps != 0) dragBy.value(whole, steps)
                         }
                     } finally {
-                        dragEnd.value()
+                        val lanePx = pitch.value.toPx().coerceAtLeast(1f)
+                        dragEnd.value((dy / lanePx).roundToInt())
                     }
                 }
             },
     ) {
-        if (peaks != null && peaks.isNotEmpty()) {
-            Canvas(Modifier.fillMaxSize().padding(horizontal = 4.dp, vertical = 8.dp)) {
-                val max = peaks.maxOrNull()?.coerceAtLeast(1) ?: 1
-                val mid = size.height / 2f
-                val step = size.width / peaks.size
-                peaks.forEachIndexed { index, peak ->
-                    val bar = peak / max.toFloat() * size.height
-                    val x = index * step + step / 2f
-                    drawLine(
-                        color = Color.White.copy(alpha = 0.9f),
-                        start = Offset(x, mid - bar / 2f),
-                        end = Offset(x, mid + bar / 2f),
-                        strokeWidth = step.coerceAtLeast(1.5f) * 0.55f,
-                    )
-                }
-            }
+        StudioWaveform(peaks, Modifier.fillMaxSize().padding(horizontal = 4.dp, vertical = 8.dp))
+    }
+}
+
+@Composable
+private fun StudioWaveform(peaks: IntArray?, modifier: Modifier = Modifier) {
+    if (peaks == null || peaks.isEmpty()) return
+    Canvas(modifier) {
+        val max = peaks.maxOrNull()?.coerceAtLeast(1) ?: 1
+        val mid = size.height / 2f
+        val step = size.width / peaks.size
+        peaks.forEachIndexed { index, peak ->
+            val bar = peak / max.toFloat() * size.height
+            val x = index * step + step / 2f
+            drawLine(
+                color = Color.White.copy(alpha = 0.9f),
+                start = Offset(x, mid - bar / 2f),
+                end = Offset(x, mid + bar / 2f),
+                strokeWidth = step.coerceAtLeast(1.5f) * 0.55f,
+            )
         }
     }
+}
+
+@Composable
+private fun TimelineTool(
+    label: String,
+    enabled: Boolean,
+    selected: Boolean = false,
+    onClick: () -> Unit,
+) {
+    Text(
+        label,
+        modifier = Modifier
+            .clip(RoundedCornerShape(10.dp))
+            .background(
+                when {
+                    selected -> Color(0xFF7C3AED)
+                    enabled -> Color(0xFF7C3AED).copy(alpha = 0.14f)
+                    else -> Color(0xFF292524)
+                },
+            )
+            .clickable(enabled = enabled, onClick = onClick)
+            .padding(horizontal = 12.dp, vertical = 6.dp),
+        color = when {
+            selected -> Color.White
+            enabled -> Color(0xFF7C3AED)
+            else -> MaterialTheme.colorScheme.onSurfaceVariant
+        },
+        fontWeight = FontWeight.Bold,
+        fontSize = 13.sp,
+    )
 }
 
 /** Какая плитка под пальцем: сетка 2×4 с зазором [gap]. */
@@ -1218,6 +1465,8 @@ private class StudioEngine(private val context: Context) {
     /** Звук плитки с начала, пока палец удерживает её. */
     fun playWhileHeld(key: String, file: File): Boolean = mixer.playWhileHeld(key, file)
 
+    fun recordingPeak(): Int = runCatching { recorder?.maxAmplitude ?: 0 }.getOrDefault(0)
+
     fun prepare() {
         mixer.warm()
         for (index in 0 until StudioLibrary.PAD_COUNT) {
@@ -1230,11 +1479,24 @@ private class StudioEngine(private val context: Context) {
 
     fun forgetPad(key: String) = mixer.forgetPad(key)
 
-    fun start(key: String, file: File, loop: Boolean, offsetMs: Long = 0L) = mixer.start(key, file, loop, offsetMs)
+    fun start(
+        key: String,
+        file: File,
+        loop: Boolean,
+        offsetMs: Long = 0L,
+        trimStartMs: Long = 0L,
+        trimEndMs: Long = -1L,
+    ) = mixer.start(key, file, loop, offsetMs, trimStartMs, trimEndMs)
 
     /** Включает или выключает дорожку. true — сейчас играет. */
-    fun toggle(key: String, file: File, loop: Boolean, offsetMs: Long = 0L): Boolean =
-        mixer.toggle(key, file, loop, offsetMs)
+    fun toggle(
+        key: String,
+        file: File,
+        loop: Boolean,
+        offsetMs: Long = 0L,
+        trimStartMs: Long = 0L,
+        trimEndMs: Long = -1L,
+    ): Boolean = mixer.toggle(key, file, loop, offsetMs, trimStartMs, trimEndMs)
 
     fun loadWave(file: File, onReady: (IntArray, Long) -> Unit) = mixer.loadWave(file, onReady = onReady)
 
