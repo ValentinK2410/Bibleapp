@@ -10,10 +10,13 @@ import android.widget.Toast
 import java.io.File
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.awaitEachGesture
+import androidx.compose.foundation.gestures.awaitFirstDown
+import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -24,8 +27,12 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.CircleShape
@@ -67,6 +74,7 @@ import androidx.compose.ui.input.pointer.PointerEventPass
 import androidx.compose.ui.input.pointer.PointerId
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
@@ -74,8 +82,10 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import kotlin.math.roundToInt
 import androidx.core.content.ContextCompat
 import com.example.bible.audio.StudioMixer
+import com.example.bible.data.StudioCycle
 import com.example.bible.data.StudioLibrary
 import com.example.bible.data.StudioTrack
 import kotlinx.coroutines.delay
@@ -99,6 +109,7 @@ fun MusicianStudioScreen(onBack: () -> Unit) {
     val engine = remember { StudioEngine(context.applicationContext) }
     val padFiles = remember { Array(StudioLibrary.PAD_COUNT) { StudioLibrary.padFile(context, it) } }
     var tracks by remember { mutableStateOf(StudioLibrary.listTracks(context)) }
+    var cycle by remember { mutableStateOf(StudioLibrary.loadCycle(context)) }
     var padTick by remember { mutableIntStateOf(0) }
     var playing by remember { mutableStateOf(emptySet<String>()) }
     var recording by remember { mutableStateOf<String?>(null) }
@@ -127,6 +138,9 @@ fun MusicianStudioScreen(onBack: () -> Unit) {
             delay(250)
             clock++
         }
+    }
+    LaunchedEffect(cycle) {
+        engine.setCycle(cycle.enabled, cycle.startMs, cycle.endMs)
     }
 
     fun toast(text: String) = Toast.makeText(context, text, Toast.LENGTH_SHORT).show()
@@ -181,7 +195,8 @@ fun MusicianStudioScreen(onBack: () -> Unit) {
     fun playTrackAt(index: Int) {
         val track = tracks.getOrNull(index) ?: return
         val key = "t:${track.id}"
-        engine.start(key, track.file, track.loop)
+        engine.setCycle(cycle.enabled, cycle.startMs, cycle.endMs)
+        engine.start(key, track.file, track.loop, track.offsetMs)
         playing = playing + key
     }
 
@@ -494,7 +509,7 @@ fun MusicianStudioScreen(onBack: () -> Unit) {
             item {
                 Text("Дорожки", fontWeight = FontWeight.ExtraBold, fontSize = 20.sp)
                 Text(
-                    "Запишите дорожку, потом ещё. Ниже можно включить все сразу, через одну или чередовать чётные и нечётные. Пауза схемы задаётся в миллисекундах.",
+                    "Потяните дорожку вправо, чтобы она вступила позже. Жёлтая полоска — цикл: перетащите её в любое место шкалы, края меняют длину. Ниже схемы включают дорожки вместе или по очереди.",
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                     fontSize = 14.sp,
                     lineHeight = 19.sp,
@@ -528,6 +543,32 @@ fun MusicianStudioScreen(onBack: () -> Unit) {
                         color = Color.White,
                         fontWeight = FontWeight.ExtraBold,
                         fontSize = 18.sp,
+                    )
+                }
+            }
+            if (tracks.isNotEmpty() || recording == "track") {
+                item {
+                    StudioTimeline(
+                        tracks = tracks,
+                        cycle = cycle,
+                        recording = recording == "track",
+                        recordingSeconds = if (recording == "track") seconds else 0,
+                        onCycle = { next ->
+                            cycle = next
+                            StudioLibrary.saveCycle(context, next)
+                        },
+                        onOffset = { id, ms ->
+                            StudioLibrary.setOffset(context, id, ms)
+                            val fresh = StudioLibrary.listTracks(context)
+                            tracks = fresh
+                            val sounding = fresh.filter { "t:${it.id}" in playing }
+                            if (sounding.isNotEmpty()) {
+                                sounding.forEach { track ->
+                                    engine.start("t:${track.id}", track.file, track.loop, track.offsetMs)
+                                }
+                            }
+                        },
+                        onLoadWave = { file, onReady -> engine.loadWave(file, onReady) },
                     )
                 }
             }
@@ -566,9 +607,11 @@ fun MusicianStudioScreen(onBack: () -> Unit) {
                 StudioTrackRow(
                     title = "Дорожка ${index + 1}",
                     loop = track.loop,
+                    offsetMs = track.offsetMs,
                     playing = key in playing,
                     onTogglePlay = {
-                        if (engine.toggle(key, track.file, track.loop)) playing = playing + key
+                        engine.setCycle(cycle.enabled, cycle.startMs, cycle.endMs)
+                        if (engine.toggle(key, track.file, track.loop, track.offsetMs)) playing = playing + key
                         else playing = playing - key
                     },
                     onToggleLoop = {
@@ -679,6 +722,7 @@ private fun StudioPad(
 private fun StudioTrackRow(
     title: String,
     loop: Boolean,
+    offsetMs: Long,
     playing: Boolean,
     onTogglePlay: () -> Unit,
     onToggleLoop: () -> Unit,
@@ -709,7 +753,10 @@ private fun StudioTrackRow(
         Column(Modifier.weight(1f).padding(horizontal = 10.dp)) {
             Text(title, fontWeight = FontWeight.ExtraBold, fontSize = 16.sp)
             Text(
-                if (loop) "Крутится без конца" else "Один раз",
+                buildString {
+                    append(formatStudioOffset(offsetMs))
+                    append(if (loop) " · крутится без конца" else " · один раз")
+                },
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                 fontSize = 13.sp,
             )
@@ -825,6 +872,324 @@ private fun formatTrackPause(ms: Long): String {
 
 private fun formatStudioTime(seconds: Int): String = "%d:%02d".format(seconds / 60, seconds % 60)
 
+private fun formatStudioOffset(ms: Long): String {
+    if (ms < 50L) return "Сразу"
+    val tenths = ms / 100L
+    return "Старт +${tenths / 10},${tenths % 10} с"
+}
+
+private const val TIMELINE_DP_PER_SEC = 72f
+
+private fun timelineDp(ms: Long) = (ms.coerceAtLeast(0L) * TIMELINE_DP_PER_SEC / 1000f).dp
+
+@Composable
+private fun StudioTimeline(
+    tracks: List<StudioTrack>,
+    cycle: StudioCycle,
+    recording: Boolean,
+    recordingSeconds: Int,
+    onCycle: (StudioCycle) -> Unit,
+    onOffset: (String, Long) -> Unit,
+    onLoadWave: (File, (IntArray, Long) -> Unit) -> Unit,
+) {
+    val scroll = rememberScrollState()
+    var waves by remember { mutableStateOf(mapOf<String, IntArray>()) }
+    var durations by remember { mutableStateOf(mapOf<String, Long>()) }
+    var draft by remember { mutableStateOf(mapOf<String, Long>()) }
+    var cycleDraft by remember { mutableStateOf<Pair<Long, Long>?>(null) }
+    val cycleStart = cycleDraft?.first ?: cycle.startMs
+    val cycleEnd = cycleDraft?.second ?: cycle.endMs
+    val signature = tracks.joinToString { "${it.id}:${it.file.length()}:${it.file.lastModified()}" }
+    LaunchedEffect(signature) {
+        tracks.forEach { track ->
+            onLoadWave(track.file) { peaks, durationMs ->
+                waves = waves + (track.id to peaks)
+                if (durationMs > 0L) durations = durations + (track.id to durationMs)
+            }
+        }
+    }
+    val spanMs = run {
+        var end = 8_000L
+        tracks.forEach { track ->
+            val start = draft[track.id] ?: track.offsetMs
+            val length = durations[track.id] ?: 3_000L
+            if (start + length + 1_500L > end) end = start + length + 1_500L
+        }
+        if (recording) {
+            val rec = recordingSeconds * 1000L + 1_500L
+            if (rec > end) end = rec
+        }
+        if (cycleEnd + 1_500L > end) end = cycleEnd + 1_500L
+        end.coerceAtMost(StudioLibrary.MAX_OFFSET_MS + 60_000L)
+    }
+    val contentWidth = timelineDp(spanMs)
+    Row(Modifier.fillMaxWidth().padding(top = 8.dp)) {
+        Column(Modifier.width(92.dp)) {
+            Box(Modifier.height(40.dp), contentAlignment = Alignment.CenterStart) {
+                Text(
+                    if (cycle.enabled) "Цикл" else "Без цикла",
+                    color = if (cycle.enabled) Color(0xFF78350F) else MaterialTheme.colorScheme.onSurfaceVariant,
+                    fontWeight = FontWeight.Bold,
+                    fontSize = 12.sp,
+                    modifier = Modifier
+                        .clip(RoundedCornerShape(8.dp))
+                        .background(if (cycle.enabled) Color(0xFFFBBF24) else Color(0xFF292524))
+                        .clickable {
+                            onCycle(cycle.copy(enabled = !cycle.enabled, startMs = cycleStart, endMs = cycleEnd))
+                        }
+                        .padding(horizontal = 8.dp, vertical = 4.dp),
+                )
+            }
+            tracks.forEachIndexed { index, track ->
+                val start = draft[track.id] ?: track.offsetMs
+                Column(
+                    Modifier.height(52.dp).padding(end = 6.dp),
+                    verticalArrangement = Arrangement.Center,
+                ) {
+                    Text("Дорожка ${index + 1}", fontWeight = FontWeight.Bold, fontSize = 12.sp, maxLines = 1)
+                    Text(
+                        formatStudioOffset(start),
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        fontSize = 11.sp,
+                        maxLines = 1,
+                    )
+                }
+            }
+            if (recording) {
+                Column(Modifier.height(52.dp), verticalArrangement = Arrangement.Center) {
+                    Text("Новая", fontWeight = FontWeight.Bold, fontSize = 12.sp, color = Color(0xFFDC2626))
+                    Text("идёт запись", color = Color(0xFFDC2626), fontSize = 11.sp)
+                }
+            }
+        }
+        Box(Modifier.weight(1f).horizontalScroll(scroll)) {
+            Column(Modifier.width(contentWidth)) {
+                StudioTimelineRuler(
+                    spanMs = spanMs,
+                    startMs = cycleStart,
+                    endMs = cycleEnd,
+                    enabled = cycle.enabled,
+                    onDrag = { start, end -> cycleDraft = start to end },
+                    onDragEnd = {
+                        val draftRange = cycleDraft
+                        cycleDraft = null
+                        if (draftRange != null) {
+                            onCycle(cycle.copy(startMs = draftRange.first, endMs = draftRange.second))
+                        }
+                    },
+                )
+                tracks.forEach { track ->
+                    val start = draft[track.id] ?: track.offsetMs
+                    val length = (durations[track.id] ?: 3_000L).coerceAtLeast(400L)
+                    Box(
+                        Modifier
+                            .fillMaxWidth()
+                            .height(52.dp)
+                            .padding(bottom = 4.dp)
+                            .clip(RoundedCornerShape(8.dp))
+                            .background(Color(0xFF052E16)),
+                    ) {
+                        StudioTimelineClip(
+                            offsetMs = start,
+                            durationMs = length,
+                            peaks = waves[track.id],
+                            color = Color(0xFF16A34A),
+                            onDragBy = { deltaMs ->
+                                val base = draft[track.id] ?: track.offsetMs
+                                draft = draft + (track.id to (base + deltaMs).coerceIn(0L, StudioLibrary.MAX_OFFSET_MS))
+                            },
+                            onDragEnd = {
+                                val ms = draft[track.id] ?: return@StudioTimelineClip
+                                draft = draft - track.id
+                                if (ms != track.offsetMs) onOffset(track.id, ms)
+                            },
+                        )
+                    }
+                }
+                if (recording) {
+                    Box(
+                        Modifier
+                            .fillMaxWidth()
+                            .height(48.dp)
+                            .clip(RoundedCornerShape(8.dp))
+                            .background(Color(0xFF3F1212)),
+                    ) {
+                        Box(
+                            Modifier
+                                .offset(x = 0.dp)
+                                .width(timelineDp(recordingSeconds * 1000L).coerceAtLeast(28.dp))
+                                .height(48.dp)
+                                .clip(RoundedCornerShape(8.dp))
+                                .background(Color(0xFFDC2626)),
+                        )
+                    }
+                }
+            }
+        }
+    }
+}
+
+private enum class CycleDrag { Start, End, Move }
+
+@Composable
+private fun StudioTimelineRuler(
+    spanMs: Long,
+    startMs: Long,
+    endMs: Long,
+    enabled: Boolean,
+    onDrag: (Long, Long) -> Unit,
+    onDragEnd: () -> Unit,
+) {
+    val drag = rememberUpdatedState(onDrag)
+    val finish = rememberUpdatedState(onDragEnd)
+    val startState = rememberUpdatedState(startMs)
+    val endState = rememberUpdatedState(endMs)
+    Box(Modifier.fillMaxWidth().height(40.dp)) {
+        Box(
+            Modifier
+                .offset(x = timelineDp(startMs))
+                .width(timelineDp((endMs - startMs).coerceAtLeast(StudioLibrary.MIN_CYCLE_MS)).coerceAtLeast(28.dp))
+                .height(16.dp)
+                .clip(RoundedCornerShape(4.dp))
+                .background(if (enabled) Color(0xFFFBBF24) else Color(0xFF92400E)),
+        )
+        var second = 0
+        val last = (spanMs / 1000L).toInt()
+        while (second <= last) {
+            Text(
+                "$second",
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                fontSize = 10.sp,
+                modifier = Modifier
+                    .align(Alignment.BottomStart)
+                    .offset(x = timelineDp(second * 1000L)),
+            )
+            second += 2
+        }
+        Box(
+            Modifier
+                .fillMaxSize()
+                .pointerInput(spanMs) {
+                    val pxPerMs = TIMELINE_DP_PER_SEC.dp.toPx() / 1000f
+                    val edge = 18.dp.toPx()
+                    awaitEachGesture {
+                        val down = awaitFirstDown(requireUnconsumed = false, pass = PointerEventPass.Initial)
+                        val startPx = startState.value * pxPerMs
+                        val endPx = endState.value * pxPerMs
+                        val mode = when {
+                            down.position.x in (startPx - edge)..(startPx + edge) -> CycleDrag.Start
+                            down.position.x in (endPx - edge)..(endPx + edge) -> CycleDrag.End
+                            down.position.x in startPx..endPx -> CycleDrag.Move
+                            else -> null
+                        }
+                        if (mode == null) return@awaitEachGesture
+                        down.consume()
+                        val originStart = startState.value
+                        val originEnd = endState.value
+                        val length = (originEnd - originStart).coerceAtLeast(StudioLibrary.MIN_CYCLE_MS)
+                        var fraction = 0f
+                        var movedStart = originStart
+                        var movedEnd = originEnd
+                        try {
+                            while (true) {
+                                val event = awaitPointerEvent(PointerEventPass.Initial)
+                                val change = event.changes.firstOrNull { it.id == down.id } ?: break
+                                if (!change.pressed) break
+                                change.consume()
+                                fraction += (change.position.x - change.previousPosition.x) / pxPerMs
+                                val whole = fraction.toLong()
+                                if (whole == 0L) continue
+                                fraction -= whole
+                                val max = StudioLibrary.MAX_OFFSET_MS
+                                when (mode) {
+                                    CycleDrag.Move -> {
+                                        val start = (originStart + (movedStart - originStart) + whole)
+                                            .coerceIn(0L, max - length)
+                                        movedStart = start
+                                        movedEnd = start + length
+                                    }
+                                    CycleDrag.Start -> {
+                                        movedStart = (movedStart + whole).coerceIn(0L, movedEnd - StudioLibrary.MIN_CYCLE_MS)
+                                    }
+                                    CycleDrag.End -> {
+                                        movedEnd = (movedEnd + whole).coerceIn(movedStart + StudioLibrary.MIN_CYCLE_MS, max)
+                                    }
+                                }
+                                drag.value(movedStart, movedEnd)
+                            }
+                        } finally {
+                            finish.value()
+                        }
+                    }
+                },
+        )
+    }
+}
+
+@Composable
+private fun StudioTimelineClip(
+    offsetMs: Long,
+    durationMs: Long,
+    peaks: IntArray?,
+    color: Color,
+    onDragBy: (Long) -> Unit,
+    onDragEnd: () -> Unit,
+) {
+    val dragBy = rememberUpdatedState(onDragBy)
+    val dragEnd = rememberUpdatedState(onDragEnd)
+    Box(
+        Modifier
+            .offset(x = timelineDp(offsetMs))
+            .width(timelineDp(durationMs).coerceAtLeast(48.dp))
+            .height(48.dp)
+            .clip(RoundedCornerShape(8.dp))
+            .background(color)
+            .pointerInput(Unit) {
+                val pxPerMs = TIMELINE_DP_PER_SEC.dp.toPx() / 1000f
+                awaitEachGesture {
+                    val down = awaitFirstDown(requireUnconsumed = false, pass = PointerEventPass.Initial)
+                    down.consume()
+                    var fraction = 0f
+                    try {
+                        while (true) {
+                            val event = awaitPointerEvent(PointerEventPass.Initial)
+                            val change = event.changes.firstOrNull { it.id == down.id } ?: break
+                            if (!change.pressed) break
+                            change.consume()
+                            val dx = change.position.x - change.previousPosition.x
+                            fraction += if (pxPerMs > 0f) dx / pxPerMs else 0f
+                            val whole = fraction.toLong()
+                            if (whole != 0L) {
+                                fraction -= whole
+                                dragBy.value(whole)
+                            }
+                        }
+                    } finally {
+                        dragEnd.value()
+                    }
+                }
+            },
+    ) {
+        if (peaks != null && peaks.isNotEmpty()) {
+            Canvas(Modifier.fillMaxSize().padding(horizontal = 4.dp, vertical = 8.dp)) {
+                val max = peaks.maxOrNull()?.coerceAtLeast(1) ?: 1
+                val mid = size.height / 2f
+                val step = size.width / peaks.size
+                peaks.forEachIndexed { index, peak ->
+                    val bar = peak / max.toFloat() * size.height
+                    val x = index * step + step / 2f
+                    drawLine(
+                        color = Color.White.copy(alpha = 0.9f),
+                        start = Offset(x, mid - bar / 2f),
+                        end = Offset(x, mid + bar / 2f),
+                        strokeWidth = step.coerceAtLeast(1.5f) * 0.55f,
+                    )
+                }
+            }
+        }
+    }
+}
+
 /** Какая плитка под пальцем: сетка 2×4 с зазором [gap]. */
 private fun studioPadAt(x: Float, y: Float, width: Float, gap: Float): Int? {
     if (width <= gap * 3f) return null
@@ -865,10 +1230,15 @@ private class StudioEngine(private val context: Context) {
 
     fun forgetPad(key: String) = mixer.forgetPad(key)
 
-    fun start(key: String, file: File, loop: Boolean) = mixer.start(key, file, loop)
+    fun start(key: String, file: File, loop: Boolean, offsetMs: Long = 0L) = mixer.start(key, file, loop, offsetMs)
 
     /** Включает или выключает дорожку. true — сейчас играет. */
-    fun toggle(key: String, file: File, loop: Boolean): Boolean = mixer.toggle(key, file, loop)
+    fun toggle(key: String, file: File, loop: Boolean, offsetMs: Long = 0L): Boolean =
+        mixer.toggle(key, file, loop, offsetMs)
+
+    fun loadWave(file: File, onReady: (IntArray, Long) -> Unit) = mixer.loadWave(file, onReady = onReady)
+
+    fun setCycle(enabled: Boolean, startMs: Long, endMs: Long) = mixer.setCycle(enabled, startMs, endMs)
 
     fun setLoop(key: String, loop: Boolean) = mixer.setLoop(key, loop)
 

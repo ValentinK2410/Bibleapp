@@ -43,11 +43,15 @@ class StudioMixer {
     @Volatile private var running = false
     private var mixThread: Thread? = null
     private var track: AudioTrack? = null
+    private var cycleOn = false
+    private var cycleStart = 0
+    private var cycleEnd = SAMPLE_RATE * 2
+    private var playhead = 0
 
-    /** Всегда запускает запись с начала, даже если она уже звучит. */
-    fun start(key: String, file: File, loop: Boolean) {
+    /** Всегда запускает запись с начала, даже если она уже звучит. [offsetMs] — пауза до вступления. */
+    fun start(key: String, file: File, loop: Boolean, offsetMs: Long = 0L) {
         if (closed || !file.exists()) return
-        begin(key, file, loop)
+        begin(key, file, loop, offsetMs)
     }
 
     /**
@@ -132,15 +136,76 @@ class StudioMixer {
     }
 
     /** true — запись сейчас включена. */
-    fun toggle(key: String, file: File, loop: Boolean): Boolean {
+    fun toggle(key: String, file: File, loop: Boolean, offsetMs: Long = 0L): Boolean {
         if (closed || !file.exists()) return false
         val active = synchronized(lock) { key in voices || key in pending }
         if (active) {
             stop(key)
             return false
         }
-        begin(key, file, loop)
+        begin(key, file, loop, offsetMs)
         return true
+    }
+
+    /** Грубая форма волны и длина, чтобы нарисовать дорожку на шкале. */
+    fun loadWave(file: File, bars: Int = 96, onReady: (IntArray, Long) -> Unit) {
+        if (closed || !file.exists()) return
+        val count = bars.coerceIn(16, 160)
+        runCatching {
+            decoder.execute {
+                val pcm = if (closed) null else runCatching { cachedPcm(file) }.getOrNull()
+                if (pcm == null || pcm.isEmpty() || closed) return@execute
+                val peaks = IntArray(count)
+                val chunk = (pcm.size / peaks.size).coerceAtLeast(1)
+                for (bar in peaks.indices) {
+                    val from = bar * chunk
+                    val to = (from + chunk).coerceAtMost(pcm.size)
+                    var peak = 0
+                    var i = from
+                    while (i < to) {
+                        val level = abs(pcm[i].toInt())
+                        if (level > peak) peak = level
+                        i += 4
+                    }
+                    peaks[bar] = peak
+                }
+                val durationMs = pcm.size * 1000L / SAMPLE_RATE
+                if (!closed) main.post { onReady(peaks, durationMs) }
+            }
+        }
+    }
+
+    /** Жёлтый отрезок шкалы: пока включён, общее время крутится только внутри него. */
+    fun setCycle(enabled: Boolean, startMs: Long, endMs: Long) {
+        val start = offsetSamples(startMs)
+        val minSpan = SAMPLE_RATE / 5
+        var end = offsetSamples(endMs)
+        if (end < start + minSpan) end = start + minSpan
+        synchronized(lock) {
+            cycleOn = enabled
+            cycleStart = start
+            cycleEnd = end
+            if (enabled) {
+                if (playhead < start || playhead >= end) playhead = start
+                for ((key, voice) in voices) {
+                    if (key.startsWith("t:")) voice.timeline = true
+                }
+            } else {
+                val head = playhead
+                for ((key, voice) in voices) {
+                    if (!key.startsWith("t:") || !voice.timeline) continue
+                    voice.timeline = false
+                    val at = head - voice.offset
+                    if (at < 0) {
+                        voice.delay = -at
+                        voice.pos = 0
+                    } else {
+                        voice.delay = 0
+                        voice.pos = at.coerceAtMost(voice.pcm.size)
+                    }
+                }
+            }
+        }
     }
 
     fun setLoop(key: String, loop: Boolean) {
@@ -190,14 +255,24 @@ class StudioMixer {
         releaseTrack()
     }
 
-    private fun begin(key: String, file: File, loop: Boolean) {
+    private fun begin(key: String, file: File, loop: Boolean, offsetMs: Long = 0L) {
+        val delay = offsetSamples(offsetMs)
         val ready = peekCache(file)
         if (ready != null) {
             synchronized(lock) {
                 token[key] = (token[key] ?: 0) + 1
                 pending.remove(key)
                 loopWanted[key] = loop
-                voices[key] = Voice(ready, 0, loop)
+                val follow = cycleOn
+                if (follow && voices.keys.none { it != key && it.startsWith("t:") }) playhead = cycleStart
+                voices[key] = Voice(
+                    ready,
+                    0,
+                    loop,
+                    delay = if (follow) 0 else delay,
+                    offset = delay,
+                    timeline = follow,
+                )
             }
             wake()
             return
@@ -221,7 +296,16 @@ class StudioMixer {
                     false
                 } else {
                     pending.remove(key)
-                    voices[key] = Voice(pcm, 0, loopWanted[key] ?: loop)
+                    val follow = cycleOn
+                    if (follow && voices.keys.none { it != key && it.startsWith("t:") }) playhead = cycleStart
+                    voices[key] = Voice(
+                        pcm,
+                        0,
+                        loopWanted[key] ?: loop,
+                        delay = if (follow) 0 else delay,
+                        offset = delay,
+                        timeline = follow,
+                    )
                     true
                 }
             }
@@ -264,12 +348,29 @@ class StudioMixer {
                 if (!running || voices.isEmpty()) return@synchronized
                 active = true
                 for (i in mix.indices) mix[i] = 0
+                var timeline = false
                 val iterator = voices.iterator()
                 while (iterator.hasNext()) {
                     val (key, voice) = iterator.next()
+                    if (cycleOn && voice.timeline) {
+                        timeline = true
+                        val pcm = voice.pcm
+                        for (i in 0 until frames) {
+                            val head = cycleHead(playhead + i)
+                            val at = head - voice.offset
+                            if (at < 0 || pcm.isEmpty()) continue
+                            val idx = if (voice.loop) at % pcm.size else at
+                            if (idx in pcm.indices) mix[i] += pcm[idx].toInt()
+                        }
+                        continue
+                    }
                     val pcm = voice.pcm
                     var finished = false
                     for (i in 0 until frames) {
+                        if (voice.delay > 0) {
+                            voice.delay--
+                            continue
+                        }
                         if (voice.pos >= pcm.size) {
                             if (voice.loop && pcm.isNotEmpty()) voice.pos = 0
                             else {
@@ -286,6 +387,7 @@ class StudioMixer {
                         ended.add(key)
                     }
                 }
+                if (timeline) playhead = cycleHead(playhead + frames)
             }
             if (!active) continue
             var peak = 1
@@ -634,7 +736,23 @@ class StudioMixer {
         val pcm: ShortArray,
         var pos: Int,
         var loop: Boolean,
+        var delay: Int = 0,
+        var offset: Int = 0,
+        var timeline: Boolean = false,
     )
+
+    private fun cycleHead(head: Int): Int {
+        val span = (cycleEnd - cycleStart).coerceAtLeast(1)
+        if (head < cycleStart) return cycleStart
+        val rel = head - cycleStart
+        return cycleStart + if (rel >= span) rel % span else rel
+    }
+
+    private fun offsetSamples(ms: Long): Int {
+        if (ms <= 0L) return 0
+        val samples = ms * SAMPLE_RATE / 1000L
+        return samples.coerceIn(0L, SAMPLE_RATE * 60L * 10L).toInt()
+    }
 
     private data class CacheKey(val path: String, val length: Long, val modified: Long)
 
