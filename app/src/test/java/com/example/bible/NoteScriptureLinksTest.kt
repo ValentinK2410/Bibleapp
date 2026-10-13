@@ -285,4 +285,42 @@ class NoteScriptureLinksTest {
         )!!
         assertTrue(NoteScriptureLinks.showFullChapterForAudio(nav))
     }
+
+    @Test
+    fun consecutiveAudioLinks_followOnSameLineAndNextLine() {
+        val text = "🔊 Рим 6:22@RBO 🔊 Рим 6:23@RBO\n🔊 Рим 6:24@RBO"
+        val links = NoteScriptureLinks.findInText(text).filter { it.isAudioLink }
+        assertEquals(3, links.size)
+        val chain = NoteScriptureLinks.consecutiveAudioLinks(text, links[0].start)
+        assertEquals(listOf(22, 23, 24), chain.map { it.verse })
+        val fromSecond = NoteScriptureLinks.consecutiveAudioLinks(text, links[1].start)
+        assertEquals(listOf(23, 24), fromSecond.map { it.verse })
+    }
+
+    @Test
+    fun consecutiveAudioLinks_continueAcrossCopiedVerseLines() {
+        val text = """
+            🔊 Рим 6:22@RBO
+
+            22. Ибо возмездие за грех — смерть
+
+            🔊 Рим 6:23@RBO
+
+            23. дар Божий — жизнь вечная
+        """.trimIndent()
+        val links = NoteScriptureLinks.findInText(text).filter { it.isAudioLink }
+        assertEquals(2, links.size)
+        val chain = NoteScriptureLinks.consecutiveAudioLinks(text, links[0].start)
+        assertEquals(2, chain.size)
+        assertEquals(23, chain[1].verse)
+    }
+
+    @Test
+    fun consecutiveAudioLinks_stopAtOtherText() {
+        val text = "🔊 Рим 6:22@RBO\nмоя заметка\n🔊 Рим 6:23@RBO"
+        val links = NoteScriptureLinks.findInText(text).filter { it.isAudioLink }
+        assertEquals(2, links.size)
+        val chain = NoteScriptureLinks.consecutiveAudioLinks(text, links[0].start)
+        assertEquals(1, chain.size)
+    }
 }

@@ -22,6 +22,13 @@ private data class ReaderAudioSegmentQueue(
 )
 
 private var readerAudioSegmentQueue: ReaderAudioSegmentQueue? = null
+private var onNoteAudioAdvance: (() -> Unit)? = null
+private var noteAdvanceArmed = false
+
+fun setNoteAudioAdvanceListener(listener: (() -> Unit)?) {
+    onNoteAudioAdvance = listener
+    if (listener == null) noteAdvanceArmed = false
+}
 
 fun clearReaderAudioSegmentQueue() {
     readerAudioSegmentQueue = null
@@ -29,8 +36,20 @@ fun clearReaderAudioSegmentQueue() {
 }
 
 fun stopReaderChapterAudio() {
+    onNoteAudioAdvance = null
+    noteAdvanceArmed = false
     clearReaderAudioSegmentQueue()
     BibleAudioPlayer.stopForNavigation()
+}
+
+private fun armNoteAudioAdvance() {
+    noteAdvanceArmed = onNoteAudioAdvance != null
+}
+
+private fun notifyNoteAudioAdvance() {
+    if (!noteAdvanceArmed) return
+    noteAdvanceArmed = false
+    onNoteAudioAdvance?.invoke()
 }
 
 /** Озвучка всех сегментов ссылки подряд (диапазон или 7,9,10) без повторного нажатия. */
@@ -59,7 +78,6 @@ fun playReaderChapterAudioSegments(
         chapterVerseCount = chapterVerseCount,
         index = start,
     )
-    BibleAudioPlayer.setSegmentStopListener { onQueuedAudioSegmentFinished() }
     playQueuedAudioSegment()
 }
 
@@ -68,6 +86,7 @@ private fun onQueuedAudioSegmentFinished() {
     q.index++
     if (q.index >= q.segments.size) {
         clearReaderAudioSegmentQueue()
+        notifyNoteAudioAdvance()
         return
     }
     playQueuedAudioSegment()
@@ -105,9 +124,8 @@ fun playReaderChapterAudio(
     chapterVerseCount: Int = 0,
     fromQueue: Boolean = false,
 ) {
-    if (!fromQueue) {
-        clearReaderAudioSegmentQueue()
-    }
+    if (onNoteAudioAdvance != null) armNoteAudioAdvance()
+    if (!fromQueue) clearReaderAudioSegmentQueue()
     val timemark = TimemarkStore.findProjectMatchingNarration(
         context,
         translation.code,
@@ -146,6 +164,7 @@ fun playReaderChapterAudio(
             chapterVerseCount = chapterVerseCount,
             preserveSegmentStop = preserveSegmentStop,
         )
+        bindPlaybackEnd(fromQueue)
         return
     }
     when {
@@ -167,5 +186,13 @@ fun playReaderChapterAudio(
             chapterVerseCount = chapterVerseCount,
             preserveSegmentStop = preserveSegmentStop,
         )
+    }
+    bindPlaybackEnd(fromQueue)
+}
+
+private fun bindPlaybackEnd(fromQueue: Boolean) {
+    when {
+        fromQueue -> BibleAudioPlayer.setSegmentStopListener { onQueuedAudioSegmentFinished() }
+        onNoteAudioAdvance != null -> BibleAudioPlayer.setSegmentStopListener { notifyNoteAudioAdvance() }
     }
 }

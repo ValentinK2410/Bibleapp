@@ -162,6 +162,36 @@ object NoteScriptureLinks {
     fun shouldAutoPlayAllSegments(mode: ScriptureAudioPlayMode): Boolean =
         mode == ScriptureAudioPlayMode.RANGE || mode == ScriptureAudioPlayMode.SEGMENTS
 
+    /**
+     * Ссылки на озвучку, которые идут сразу за [anchorStart]: в той же строке,
+     * с переноса или через текст стихов, вставленный вместе со ссылкой.
+     * Обычный текст между ними очередь обрывает.
+     */
+    fun consecutiveAudioLinks(text: String, anchorStart: Int): List<ScriptureLinkRange> {
+        val audio = findInText(text).filter { it.isAudioLink }
+        val index = audio.indexOfFirst { it.start == anchorStart }
+        if (index < 0) return emptyList()
+        val run = ArrayList<ScriptureLinkRange>()
+        run += audio[index]
+        var cursor = index
+        while (cursor + 1 < audio.size) {
+            val gap = text.substring(audio[cursor].end, audio[cursor + 1].start)
+            if (!isAdjacentAudioGap(gap)) break
+            run += audio[cursor + 1]
+            cursor++
+        }
+        return run
+    }
+
+    /** Пустой промежуток или строки вида «22. текст стиха» из скопированной ссылки. */
+    private fun isAdjacentAudioGap(gap: String): Boolean =
+        gap.lines().all { line ->
+            val trimmed = line.trim()
+            trimmed.isEmpty() || copiedVerseLine.matches(trimmed)
+        }
+
+    private val copiedVerseLine = Regex("""\d+\.\s+\S.*""")
+
     fun resolveAudioSegment(
         nav: ParsedScriptureNavigation,
         segmentIndex: Int,

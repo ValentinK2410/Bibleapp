@@ -563,6 +563,7 @@ object BibleAudioPlayer {
         stopAtPositionMs = null
         stopSegmentStopPolling()
         val listener = segmentStopListener
+        segmentStopListener = null
         if (listener != null) {
             mainHandler.post(listener)
         }
@@ -937,6 +938,14 @@ object BibleAudioPlayer {
                 emitChapterFinished(_state.value)
                 if (pendingSleepStopAfterChapter) {
                     applySleepStop()
+                    return@setOnCompletionListener
+                }
+                if (segmentStopListener != null) {
+                    val listener = segmentStopListener
+                    segmentStopListener = null
+                    clearStopAtPosition()
+                    _state.value = _state.value.copy(isPlaying = false, positionMs = endPos)
+                    listener?.let { mainHandler.post(it) }
                     return@setOnCompletionListener
                 }
                 val ctx = appContext

@@ -1,5 +1,6 @@
 package com.example.bible.ui
 
+import android.os.SystemClock
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -577,7 +578,51 @@ fun NoteEditorScreen(
     var lastNavShowFullChapter by remember { mutableStateOf(false) }
     var lastAudioLinkKey by remember { mutableStateOf<String?>(null) }
     var lastAudioSegmentIndex by remember { mutableIntStateOf(-1) }
-    fun navigateEmbeddedBible(parsed: ParsedScriptureNavigation) {
+    var audioChain by remember { mutableStateOf<List<ParsedScriptureNavigation>>(emptyList()) }
+    var audioChainIndex by remember { mutableIntStateOf(0) }
+    fun openNoteAudio(parsed: ParsedScriptureNavigation, segmentIndex: Int) {
+        val audio = parsed.audio ?: return
+        lastAudioLinkKey = NoteScriptureLinks.formatNavigationAnnotation(
+            parsed.bookId,
+            parsed.chapter,
+            parsed.verses,
+            audio,
+        )
+        lastAudioSegmentIndex = segmentIndex
+        bibleNavRequest = NoteBibleNavigation(
+            bookId = parsed.bookId,
+            chapter = parsed.chapter,
+            verses = parsed.verses,
+            showFullChapter = NoteScriptureLinks.showFullChapterForAudio(parsed, segmentIndex),
+            playAudio = true,
+            translationCode = audio.translationCode,
+            audioPlayMode = audio.mode,
+            audioSegmentSpec = audio.segmentSpec,
+            audioSegmentIndex = segmentIndex,
+            nonce = SystemClock.elapsedRealtime(),
+        )
+    }
+    fun installAudioChainListener() {
+        if (audioChain.size <= 1) {
+            setNoteAudioAdvanceListener(null)
+            return
+        }
+        setNoteAudioAdvanceListener {
+            val nextIndex = audioChainIndex + 1
+            val next = audioChain.getOrNull(nextIndex)
+            if (next?.audio == null) {
+                setNoteAudioAdvanceListener(null)
+                return@setNoteAudioAdvanceListener
+            }
+            audioChainIndex = nextIndex
+            openNoteAudio(next, segmentIndex = 0)
+        }
+    }
+    fun navigateEmbeddedBible(
+        parsed: ParsedScriptureNavigation,
+        sourceText: String? = null,
+        linkStart: Int = -1,
+    ) {
         if (embeddedBible == null || parsed.verses.isEmpty()) return
         if (parsed.audio != null) {
             val key = NoteScriptureLinks.formatNavigationAnnotation(
@@ -595,19 +640,18 @@ fun NoteEditorScreen(
             } else {
                 0
             }
-            lastAudioLinkKey = key
-            lastAudioSegmentIndex = segmentIndex
-            bibleNavRequest = NoteBibleNavigation(
-                bookId = parsed.bookId,
-                chapter = parsed.chapter,
-                verses = parsed.verses,
-                showFullChapter = NoteScriptureLinks.showFullChapterForAudio(parsed, 0),
-                playAudio = true,
-                translationCode = parsed.audio.translationCode,
-                audioPlayMode = parsed.audio.mode,
-                audioSegmentSpec = parsed.audio.segmentSpec,
-                audioSegmentIndex = segmentIndex,
-            )
+            if (segmentIndex == 0) {
+                audioChain = if (sourceText != null && linkStart >= 0) {
+                    NoteScriptureLinks.consecutiveAudioLinks(sourceText, linkStart)
+                        .map { it.toParsedNavigation() }
+                        .ifEmpty { listOf(parsed) }
+                } else {
+                    listOf(parsed)
+                }
+                audioChainIndex = 0
+                installAudioChainListener()
+            }
+            openNoteAudio(parsed, segmentIndex)
             return
         }
         val key = NoteScriptureLinks.formatNavigationAnnotation(parsed.bookId, parsed.chapter, parsed.verses)
@@ -685,7 +729,10 @@ fun NoteEditorScreen(
     var assistFrom by remember { mutableIntStateOf(0) }
     var assistTo by remember { mutableIntStateOf(0) }
     DisposableEffect(Unit) {
-        onDispose { viewModel.clearDeepSeekNoteAssist() }
+        onDispose {
+            viewModel.clearDeepSeekNoteAssist()
+            setNoteAudioAdvanceListener(null)
+        }
     }
 
     fun requestNoteAssist(kind: DeepSeekNoteAssistKind) {
@@ -1055,7 +1102,9 @@ fun NoteEditorScreen(
                             journalEntries = journalEntries,
                             dateFormat = dateFormat,
                             bibleLinksEnabled = embeddedBible != null,
-                            onScriptureLinkClick = ::navigateEmbeddedBible,
+                            onScriptureLinkClick = { parsed, source, start ->
+                                navigateEmbeddedBible(parsed, source, start)
+                            },
                         )
                     }
                 } else {
@@ -1534,7 +1583,7 @@ private fun NoteViewSection(
     journalEntries: List<NoteJournalEntry>,
     dateFormat: java.text.SimpleDateFormat,
     bibleLinksEnabled: Boolean,
-    onScriptureLinkClick: (ParsedScriptureNavigation) -> Unit,
+    onScriptureLinkClick: (ParsedScriptureNavigation, String, Int) -> Unit,
 ) {
     val kindLabel = remember(kind, customKindLabel) {
         when (kind) {
@@ -1580,12 +1629,8 @@ private fun NoteViewSection(
             .fillMaxWidth()
                 .padding(horizontal = 12.dp, vertical = 8.dp),
             onClick = { offset ->
-                annotated.getStringAnnotations(SCRIPTURE_LINK_TAG, offset, offset)
-                    .firstOrNull()
-                    ?.let { annotation ->
-                        NoteScriptureLinks.parseNavigationAnnotation(annotation.item)
-                            ?.let(onScriptureLinkClick)
-                    }
+                val link = scriptureLinks.firstOrNull { offset in it.start until it.end } ?: return@ClickableText
+                onScriptureLinkClick(link.toParsedNavigation(), body, link.start)
             },
         )
         if (bibleLinksEnabled && scriptureLinks.isNotEmpty()) {
@@ -1641,7 +1686,9 @@ private fun NoteViewSection(
                     NoteViewPlainOrLinkedText(
                         text = entry.text,
                         bibleLinksEnabled = bibleLinksEnabled,
-                        onScriptureLinkClick = onScriptureLinkClick,
+                        onScriptureLinkClick = { parsed, _, start ->
+                            onScriptureLinkClick(parsed, entry.text, start)
+                        },
                     )
                 }
             }
@@ -1653,7 +1700,7 @@ private fun NoteViewSection(
 private fun NoteViewPlainOrLinkedText(
     text: String,
     bibleLinksEnabled: Boolean,
-    onScriptureLinkClick: (ParsedScriptureNavigation) -> Unit,
+    onScriptureLinkClick: (ParsedScriptureNavigation, String, Int) -> Unit,
 ) {
     val scriptureLinks = remember(text, bibleLinksEnabled) {
         if (bibleLinksEnabled) NoteScriptureLinks.findInText(text) else emptyList()
@@ -1677,12 +1724,8 @@ private fun NoteViewPlainOrLinkedText(
         text = annotated,
         style = MaterialTheme.typography.bodyMedium,
         onClick = { offset ->
-            annotated.getStringAnnotations(SCRIPTURE_LINK_TAG, offset, offset)
-                .firstOrNull()
-                ?.let { annotation ->
-                    NoteScriptureLinks.parseNavigationAnnotation(annotation.item)
-                        ?.let(onScriptureLinkClick)
-                }
+            val link = scriptureLinks.firstOrNull { offset in it.start until it.end } ?: return@ClickableText
+            onScriptureLinkClick(link.toParsedNavigation(), text, link.start)
         },
     )
 }
