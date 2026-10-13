@@ -6,6 +6,7 @@ import android.content.pm.PackageManager
 import android.media.MediaRecorder
 import android.os.Build
 import android.os.SystemClock
+import android.view.MotionEvent
 import android.widget.Toast
 import java.io.File
 import androidx.activity.compose.rememberLauncherForActivityResult
@@ -13,8 +14,6 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.gestures.awaitEachGesture
-import androidx.compose.foundation.gestures.awaitFirstDown
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -64,8 +63,8 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.input.pointer.PointerEventPass
-import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.ExperimentalComposeUiApi
+import androidx.compose.ui.input.pointer.pointerInteropFilter
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
@@ -97,6 +96,7 @@ private val PadColors = listOf(
 fun MusicianStudioScreen(onBack: () -> Unit) {
     val context = LocalContext.current
     val engine = remember { StudioEngine(context.applicationContext) }
+    val padFiles = remember { Array(StudioLibrary.PAD_COUNT) { StudioLibrary.padFile(context, it) } }
     var tracks by remember { mutableStateOf(StudioLibrary.listTracks(context)) }
     var padTick by remember { mutableIntStateOf(0) }
     var playing by remember { mutableStateOf(emptySet<String>()) }
@@ -210,6 +210,8 @@ fun MusicianStudioScreen(onBack: () -> Unit) {
             }
         }
     }
+
+    LaunchedEffect(padTick) { engine.prepare() }
 
     DisposableEffect(Unit) {
         onDispose { engine.release() }
@@ -410,7 +412,7 @@ fun MusicianStudioScreen(onBack: () -> Unit) {
                                     seconds = if (recording == key) seconds else 0,
                                     onHoldStart = {
                                         if (recording == null && has &&
-                                            engine.playWhileHeld(key, StudioLibrary.padFile(context, index))
+                                            engine.playWhileHeld(key, padFiles[index])
                                         ) {
                                             playing = playing + key
                                         }
@@ -432,6 +434,7 @@ fun MusicianStudioScreen(onBack: () -> Unit) {
                                             toast("Сначала остановите запись")
                                         } else {
                                             engine.stop(key)
+                                            engine.forgetPad(key)
                                             playing = playing - key
                                             StudioLibrary.deletePad(context, index)
                                             padTick++
@@ -552,6 +555,7 @@ fun MusicianStudioScreen(onBack: () -> Unit) {
 }
 
 @Composable
+@OptIn(ExperimentalComposeUiApi::class)
 private fun StudioPad(
     index: Int,
     color: Color,
@@ -576,21 +580,12 @@ private fun StudioPad(
     val labelColor = if (hasAudio || recording || playing || editing) Color.White else color
     val gesture = when {
         editing || recording || !hasAudio -> Modifier.clickable(onClick = onClick)
-        else -> Modifier.pointerInput(hasAudio) {
-            awaitEachGesture {
-                val down = awaitFirstDown(requireUnconsumed = false, pass = PointerEventPass.Initial)
-                down.consume()
-                onHoldStart()
-                try {
-                    while (true) {
-                        val event = awaitPointerEvent(PointerEventPass.Initial)
-                        event.changes.forEach { it.consume() }
-                        if (event.changes.none { it.pressed }) break
-                    }
-                } finally {
-                    onHoldEnd()
-                }
+        else -> Modifier.pointerInteropFilter { event ->
+            when (event.actionMasked) {
+                MotionEvent.ACTION_DOWN -> onHoldStart()
+                MotionEvent.ACTION_UP, MotionEvent.ACTION_CANCEL -> onHoldEnd()
             }
+            true
         }
     }
     Box(
@@ -801,10 +796,23 @@ private class StudioEngine(private val context: Context) {
 
     init {
         mixer.onStopped = { key -> onStopped(key) }
+        prepare()
     }
 
     /** Звук плитки с начала, пока палец удерживает её. */
     fun playWhileHeld(key: String, file: File): Boolean = mixer.playWhileHeld(key, file)
+
+    fun prepare() {
+        mixer.warm()
+        for (index in 0 until StudioLibrary.PAD_COUNT) {
+            val key = "p:$index"
+            val file = StudioLibrary.padFile(context, index)
+            if (file.exists() && file.length() > 800L) mixer.preloadPad(key, file)
+            else mixer.forgetPad(key)
+        }
+    }
+
+    fun forgetPad(key: String) = mixer.forgetPad(key)
 
     fun start(key: String, file: File, loop: Boolean) = mixer.start(key, file, loop)
 

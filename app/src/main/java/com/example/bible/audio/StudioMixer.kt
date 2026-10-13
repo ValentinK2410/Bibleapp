@@ -21,7 +21,7 @@ class StudioMixer {
     var onStopped: (String) -> Unit = {}
 
     private val main = Handler(Looper.getMainLooper())
-    private val decoder = Executors.newFixedThreadPool(2)
+    private val decoder = Executors.newFixedThreadPool(4)
     private val lock = Object()
     private val voices = LinkedHashMap<String, Voice>()
     private val pending = HashSet<String>()
@@ -29,6 +29,15 @@ class StudioMixer {
     private val loopWanted = HashMap<String, Boolean>()
     private val pcmCache = LinkedHashMap<CacheKey, ShortArray>()
     private var pcmBytes = 0
+    private val padTracks = HashMap<String, AudioTrack>()
+    private val padCache = HashMap<String, CacheKey>()
+    private val padLoading = HashMap<String, CacheKey>()
+    private val padStream = HashMap<String, ShortArray>()
+    private val loadSerial = HashMap<String, Int>()
+    private val playToken = HashMap<String, Int>()
+    private val armOnLoad = HashSet<String>()
+    private var warmer: AudioTrack? = null
+    private val warmGate = java.util.concurrent.atomic.AtomicBoolean(false)
 
     @Volatile private var closed = false
     @Volatile private var running = false
@@ -41,10 +50,85 @@ class StudioMixer {
         begin(key, file, loop)
     }
 
+    /**
+     * Плитка — это инструмент: образец уже лежит в памяти и стартует в момент касания,
+     * без разбора файла и без очереди общего микшера.
+     */
     fun playWhileHeld(key: String, file: File): Boolean {
         if (closed || !file.exists()) return false
-        begin(key, file, loop = false)
+        val cacheKey = CacheKey(file.absolutePath, file.length(), file.lastModified())
+        synchronized(lock) {
+            val ready = if (padCache[key] == cacheKey) padTracks[key] else null
+            if (ready != null) {
+                armOnLoad.remove(key)
+                trigger(ready)
+                return true
+            }
+            val streamed = if (padCache[key] == cacheKey) padStream[key] else null
+            if (streamed != null) {
+                armOnLoad.remove(key)
+                token[key] = (token[key] ?: 0) + 1
+                pending.remove(key)
+                voices[key] = Voice(streamed, 0, false)
+                wake()
+                return true
+            }
+            armOnLoad.add(key)
+            playToken[key] = (playToken[key] ?: 0) + 1
+            if (padLoading[key] != cacheKey) scheduleLoad(key, file, cacheKey)
+        }
         return true
+    }
+
+    /** Открывает звуковой тракт заранее, чтобы первое касание не ждало его запуска. */
+    fun warm() {
+        if (closed || warmer != null || !warmGate.compareAndSet(false, true)) return
+        val queued = runCatching {
+            decoder.execute {
+                if (closed) return@execute
+                val opened = buildStatic(ShortArray(480)) ?: run {
+                    warmGate.set(false)
+                    return@execute
+                }
+                runCatching { opened.setLoopPoints(0, opened.bufferSizeInFrames, -1) }
+                runCatching { opened.play() }
+                val keep = synchronized(lock) {
+                    if (closed || warmer != null) false
+                    else {
+                        warmer = opened
+                        true
+                    }
+                }
+                if (!keep) releaseOne(opened)
+            }
+        }.isSuccess
+        if (!queued) warmGate.set(false)
+    }
+
+    fun preloadPad(key: String, file: File) {
+        if (closed || !file.exists()) return
+        val cacheKey = CacheKey(file.absolutePath, file.length(), file.lastModified())
+        synchronized(lock) {
+            if (padCache[key] == cacheKey && (padTracks[key] != null || padStream[key] != null)) return
+            if (padLoading[key] == cacheKey) return
+            scheduleLoad(key, file, cacheKey)
+        }
+    }
+
+    fun forgetPad(key: String) {
+        val drop = synchronized(lock) {
+            loadSerial[key] = (loadSerial[key] ?: 0) + 1
+            playToken[key] = (playToken[key] ?: 0) + 1
+            token[key] = (token[key] ?: 0) + 1
+            armOnLoad.remove(key)
+            padLoading.remove(key)
+            padCache.remove(key)
+            padStream.remove(key)
+            voices.remove(key)
+            pending.remove(key)
+            padTracks.remove(key)
+        } ?: return
+        releaseOne(drop)
     }
 
     /** true — запись сейчас включена. */
@@ -69,21 +153,37 @@ class StudioMixer {
     fun stop(key: String) {
         synchronized(lock) {
             token[key] = (token[key] ?: 0) + 1
+            playToken[key] = (playToken[key] ?: 0) + 1
+            armOnLoad.remove(key)
             voices.remove(key)
             pending.remove(key)
             lock.notifyAll()
+            padTracks[key]?.let { silence(it) }
         }
     }
 
     fun release() {
         closed = true
         running = false
+        val pads: List<AudioTrack>
+        val warmTrack: AudioTrack?
         synchronized(lock) {
             voices.clear()
             pending.clear()
             token.clear()
+            armOnLoad.clear()
+            padLoading.clear()
+            padCache.clear()
+            padStream.clear()
+            loadSerial.keys.forEach { loadSerial[it] = (loadSerial[it] ?: 0) + 1 }
             lock.notifyAll()
+            pads = padTracks.values.toList()
+            padTracks.clear()
+            warmTrack = warmer
+            warmer = null
         }
+        pads.forEach { releaseOne(it) }
+        warmTrack?.let { releaseOne(it) }
         decoder.shutdownNow()
         mixThread?.join(400)
         mixThread = null
@@ -249,6 +349,124 @@ class StudioMixer {
             runCatching { current.flush() }
             runCatching { current.release() }
         }
+    }
+
+    /** Вызывать, уже держа [lock]. */
+    private fun scheduleLoad(key: String, file: File, cacheKey: CacheKey) {
+        val serial = (loadSerial[key] ?: 0) + 1
+        loadSerial[key] = serial
+        padLoading[key] = cacheKey
+        val submitted = runCatching {
+            decoder.execute {
+                val pcm = if (closed) null else runCatching { cachedPcm(file) }.getOrNull()
+                val built = pcm?.let { buildStatic(it) }
+                var streamNow = false
+                var failed = false
+                synchronized(lock) {
+                    if (closed || loadSerial[key] != serial) {
+                        built?.let { releaseOne(it) }
+                        return@synchronized
+                    }
+                    padLoading.remove(key)
+                    padCache[key] = cacheKey
+                    val armed = armOnLoad.remove(key)
+                    if (built != null) {
+                        padTracks.remove(key)?.let { releaseOne(it) }
+                        padStream.remove(key)
+                        padTracks[key] = built
+                        if (armed) trigger(built)
+                    } else if (pcm != null) {
+                        padTracks.remove(key)?.let { releaseOne(it) }
+                        padStream[key] = pcm
+                        if (armed) {
+                            token[key] = (token[key] ?: 0) + 1
+                            pending.remove(key)
+                            voices[key] = Voice(pcm, 0, false)
+                            streamNow = true
+                        }
+                    } else if (armed) {
+                        failed = true
+                    }
+                }
+                if (streamNow) wake()
+                if (failed) main.post { onStopped(key) }
+            }
+        }.isSuccess
+        if (!submitted && armOnLoad.remove(key)) {
+            padLoading.remove(key)
+            val failedKey = key
+            main.post { onStopped(failedKey) }
+        }
+    }
+
+    private fun buildStatic(pcm: ShortArray): AudioTrack? {
+        if (pcm.isEmpty() || pcm.size > MAX_STATIC_SAMPLES) return null
+        val minBytes = AudioTrack.getMinBufferSize(
+            SAMPLE_RATE,
+            AudioFormat.CHANNEL_OUT_MONO,
+            AudioFormat.ENCODING_PCM_16BIT,
+        )
+        val minSamples = if (minBytes > 0) minBytes / 2 else 0
+        val data = if (pcm.size >= minSamples) pcm else ShortArray(minSamples).also { pcm.copyInto(it) }
+        val created = try {
+            AudioTrack.Builder()
+                .setAudioAttributes(
+                    AudioAttributes.Builder()
+                        .setUsage(AudioAttributes.USAGE_GAME)
+                        .setContentType(AudioAttributes.CONTENT_TYPE_MUSIC)
+                        .build(),
+                )
+                .setAudioFormat(
+                    AudioFormat.Builder()
+                        .setEncoding(AudioFormat.ENCODING_PCM_16BIT)
+                        .setSampleRate(SAMPLE_RATE)
+                        .setChannelMask(AudioFormat.CHANNEL_OUT_MONO)
+                        .build(),
+                )
+                .setTransferMode(AudioTrack.MODE_STATIC)
+                .setBufferSizeInBytes(data.size * 2)
+                .setPerformanceMode(AudioTrack.PERFORMANCE_MODE_LOW_LATENCY)
+                .build()
+        } catch (_: Exception) {
+            return null
+        }
+        if (created.state != AudioTrack.STATE_INITIALIZED) {
+            releaseOne(created)
+            return null
+        }
+        var offset = 0
+        while (offset < data.size) {
+            val wrote = runCatching { created.write(data, offset, data.size - offset) }.getOrDefault(-1)
+            if (wrote <= 0) {
+                releaseOne(created)
+                return null
+            }
+            offset += wrote
+        }
+        return created
+    }
+
+    private fun trigger(track: AudioTrack) {
+        runCatching { if (track.playState == AudioTrack.PLAYSTATE_PLAYING) track.pause() }
+        runCatching { track.flush() }
+        val head = runCatching { track.setPlaybackHeadPosition(0) }.getOrDefault(AudioTrack.ERROR)
+        if (head != AudioTrack.SUCCESS) {
+            runCatching { track.stop() }
+            runCatching { track.reloadStaticData() }
+        }
+        runCatching { track.play() }
+    }
+
+    private fun silence(track: AudioTrack) {
+        runCatching { if (track.playState == AudioTrack.PLAYSTATE_PLAYING) track.pause() }
+        runCatching { track.flush() }
+        runCatching { track.setPlaybackHeadPosition(0) }
+    }
+
+    private fun releaseOne(track: AudioTrack) {
+        runCatching { track.pause() }
+        runCatching { track.flush() }
+        runCatching { track.release() }
     }
 
     private fun peekCache(file: File): ShortArray? {
@@ -424,5 +642,6 @@ class StudioMixer {
         const val SAMPLE_RATE = 48_000
         const val FRAME_COUNT = 960
         const val CACHE_BYTES = 64 * 1024 * 1024
+        const val MAX_STATIC_SAMPLES = 48_000 * 120
     }
 }
