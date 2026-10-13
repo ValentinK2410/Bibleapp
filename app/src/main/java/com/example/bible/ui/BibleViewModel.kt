@@ -4688,6 +4688,7 @@ class BibleViewModel(
     fun deleteMicroblogPost(id: String) {
         viewModelScope.launch {
             microblogRepo.delete(id)
+            preferences.unpinMicroblog(id)
             _microblogPosts.value = microblogRepo.listPosts()
         }
     }
@@ -4701,6 +4702,18 @@ class BibleViewModel(
     fun setMicroblogTitle(title: String) {
         viewModelScope.launch {
             preferences.setMicroblogTitle(title)
+        }
+    }
+
+    val microblogPinnedIds: StateFlow<Set<String>> = preferences.microblogPinnedIds.stateIn(
+        viewModelScope,
+        SharingStarted.WhileSubscribed(5000),
+        emptySet(),
+    )
+
+    fun toggleMicroblogPin(id: String) {
+        viewModelScope.launch {
+            preferences.toggleMicroblogPin(id)
         }
     }
 

@@ -104,6 +104,8 @@ private object Keys {
     val MEDIA_HOME_SECTION_ORDER = stringPreferencesKey("media_home_section_order")
     /** Пользовательское название микроблога. */
     val MICROBLOG_TITLE = stringPreferencesKey("microblog_title")
+    /** Id постов микроблога, которые держатся вверху ленты. */
+    val MICROBLOG_PINNED = stringSetPreferencesKey("microblog_pinned_ids")
     val DAILY_JOURNAL_JSON = stringPreferencesKey("daily_journal_json")
     /** Версии пакетов portableExchange, уже импортированных с сервера (bundleId → version). */
     val PORTABLE_INSTALLED_VERSIONS_JSON = stringPreferencesKey("portable_installed_versions_json")
@@ -454,6 +456,24 @@ class BiblePreferences(
     suspend fun setMicroblogTitle(title: String) {
         appContext.bibleDataStore.edit { prefs ->
             prefs[Keys.MICROBLOG_TITLE] = title.trim()
+        }
+    }
+
+    val microblogPinnedIds: Flow<Set<String>> = appContext.bibleDataStore.data.map { prefs ->
+        prefs[Keys.MICROBLOG_PINNED] ?: emptySet()
+    }
+
+    suspend fun toggleMicroblogPin(id: String) {
+        appContext.bibleDataStore.edit { prefs ->
+            val now = prefs[Keys.MICROBLOG_PINNED] ?: emptySet()
+            prefs[Keys.MICROBLOG_PINNED] = if (id in now) now - id else now + id
+        }
+    }
+
+    suspend fun unpinMicroblog(id: String) {
+        appContext.bibleDataStore.edit { prefs ->
+            val now = prefs[Keys.MICROBLOG_PINNED] ?: return@edit
+            if (id in now) prefs[Keys.MICROBLOG_PINNED] = now - id
         }
     }
 

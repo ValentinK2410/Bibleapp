@@ -1,5 +1,6 @@
 package com.example.bible.ui
 
+import android.content.Intent
 import android.net.Uri
 import android.widget.Toast
 import androidx.activity.compose.BackHandler
@@ -57,12 +58,15 @@ import androidx.compose.material.icons.filled.FormatStrikethrough
 import androidx.compose.material.icons.filled.FormatUnderlined
 import androidx.compose.material.icons.filled.Image
 import androidx.compose.material.icons.filled.Link
+import androidx.compose.material.icons.filled.PushPin
 import androidx.compose.material.icons.filled.Search
+import androidx.compose.material.icons.filled.Share
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ElevatedCard
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.FilterChip
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -132,10 +136,10 @@ import com.example.bible.data.microblogSlotIndex
 import com.example.bible.data.microblogSnapInsertAt
 import java.io.File
 import java.text.SimpleDateFormat
+import java.util.Calendar
 import java.util.Date
 import java.util.Locale
 import kotlin.math.roundToInt
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
 private val UrlRegex = Regex("""(?i)\b((?:https?://|www\.)[^\s<>\[\]()]+)""")
@@ -166,19 +170,24 @@ fun MicroblogFeedScreen(
     onOpenPost: (String) -> Unit,
     onEditPost: (String) -> Unit = onOpenPost,
 ) {
+    val context = LocalContext.current
     val posts by viewModel.microblogPosts.collectAsStateWithLifecycle()
+    val pinned by viewModel.microblogPinnedIds.collectAsStateWithLifecycle()
     val blogTitle by viewModel.microblogTitle.collectAsStateWithLifecycle()
-    val dateFormat = remember { SimpleDateFormat("dd.MM.yyyy HH:mm", Locale.getDefault()) }
     var deleteId by remember { mutableStateOf<String?>(null) }
     var renameOpen by remember { mutableStateOf(false) }
     var renameDraft by remember { mutableStateOf("") }
     var query by remember { mutableStateOf("") }
-    val filtered = remember(posts, query) {
+    var feedFilter by remember { mutableStateOf(MicroblogFeedFilter.ALL) }
+    val filtered = remember(posts, query, feedFilter, pinned) {
         val q = query.trim()
-        if (q.isEmpty()) posts
-        else posts.filter {
-            it.title.contains(q, ignoreCase = true) || it.body.contains(q, ignoreCase = true)
-        }
+        posts.filter { post ->
+            feedFilter.matches(post) &&
+                (q.isEmpty() || post.title.contains(q, ignoreCase = true) || post.body.contains(q, ignoreCase = true))
+        }.sortedWith(
+            compareByDescending<MicroblogPost> { it.id in pinned }
+                .thenByDescending { it.updatedAtMs },
+        )
     }
     LaunchedEffect(Unit) { viewModel.refreshMicroblogPosts() }
     Scaffold(
@@ -228,6 +237,29 @@ fun MicroblogFeedScreen(
                     }
                 },
             )
+            if (posts.isNotEmpty()) {
+                Row(
+                    Modifier
+                        .fillMaxWidth()
+                        .horizontalScroll(rememberScrollState())
+                        .padding(horizontal = 16.dp),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                ) {
+                    MicroblogFeedFilter.entries.forEach { filter ->
+                        FilterChip(
+                            selected = feedFilter == filter,
+                            onClick = { feedFilter = filter },
+                            label = { Text(filter.label) },
+                        )
+                    }
+                }
+                Text(
+                    microblogFeedSummary(posts.size, pinned.count { id -> posts.any { it.id == id } }),
+                    style = MaterialTheme.typography.labelMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    modifier = Modifier.padding(start = 16.dp, end = 16.dp, top = 8.dp, bottom = 4.dp),
+                )
+            }
             when {
                 posts.isEmpty() -> {
                     Box(Modifier.fillMaxSize().padding(24.dp), contentAlignment = Alignment.Center) {
@@ -241,7 +273,11 @@ fun MicroblogFeedScreen(
                 filtered.isEmpty() -> {
                     Box(Modifier.fillMaxSize().padding(24.dp), contentAlignment = Alignment.Center) {
                         Text(
-                            "Ничего не найдено по запросу «$query».",
+                            if (query.isNotBlank()) {
+                                "Ничего не найдено по запросу «$query»."
+                            } else {
+                                "В подборке «${feedFilter.label}» пока пусто."
+                            },
                             style = MaterialTheme.typography.bodyLarge,
                             color = MaterialTheme.colorScheme.onSurfaceVariant,
                         )
@@ -256,10 +292,13 @@ fun MicroblogFeedScreen(
                         items(filtered, key = { it.id }) { post ->
                             MicroblogPostCard(
                                 post = post,
-                                dateLabel = dateFormat.format(Date(post.updatedAtMs)),
+                                dateLabel = microblogDateLabel(post.updatedAtMs),
+                                pinned = post.id in pinned,
                                 onOpen = { onOpenPost(post.id) },
                                 onEdit = { onEditPost(post.id) },
                                 onDelete = { deleteId = post.id },
+                                onPin = { viewModel.toggleMicroblogPin(post.id) },
+                                onShare = { shareMicroblogPost(context, post) },
                             )
                         }
                     }
@@ -311,6 +350,71 @@ fun MicroblogFeedScreen(
     }
 }
 
+private enum class MicroblogFeedFilter(val label: String) {
+    ALL("Все"),
+    TEXT("Текст"),
+    PHOTO("Фото"),
+    AI("ИИ"),
+    ;
+
+    fun matches(post: MicroblogPost): Boolean = when (this) {
+        ALL -> true
+        TEXT -> microblogCardKind(post) == MicroblogCardKind.TEXT
+        PHOTO -> microblogCardKind(post) == MicroblogCardKind.PHOTO
+        AI -> microblogCardKind(post) == MicroblogCardKind.AI
+    }
+}
+
+private fun microblogFeedSummary(total: Int, pinned: Int): String {
+    val base = "${ruCount(total, "запись", "записи", "записей")}"
+    if (pinned <= 0) return base
+    return "$base · ${ruCount(pinned, "закреплена", "закреплены", "закреплено")}"
+}
+
+private fun ruCount(n: Int, one: String, few: String, many: String): String {
+    val n100 = n % 100
+    val n10 = n % 10
+    val word = when {
+        n100 in 11..14 -> many
+        n10 == 1 -> one
+        n10 in 2..4 -> few
+        else -> many
+    }
+    return "$n $word"
+}
+
+private fun microblogDateLabel(updatedAtMs: Long): String {
+    val now = Calendar.getInstance()
+    val then = Calendar.getInstance().apply { timeInMillis = updatedAtMs }
+    val time = SimpleDateFormat("HH:mm", Locale("ru")).format(Date(updatedAtMs))
+    fun sameDay(a: Calendar, b: Calendar) =
+        a.get(Calendar.YEAR) == b.get(Calendar.YEAR) && a.get(Calendar.DAY_OF_YEAR) == b.get(Calendar.DAY_OF_YEAR)
+    if (sameDay(now, then)) return "Сегодня, $time"
+    val yesterday = Calendar.getInstance().apply { add(Calendar.DAY_OF_YEAR, -1) }
+    if (sameDay(yesterday, then)) return "Вчера, $time"
+    val pattern = if (then.get(Calendar.YEAR) == now.get(Calendar.YEAR)) "d MMMM, HH:mm" else "d MMMM yyyy, HH:mm"
+    return SimpleDateFormat(pattern, Locale("ru")).format(Date(updatedAtMs))
+}
+
+private fun microblogReadLabel(post: MicroblogPost): String? {
+    val words = post.body.split(Regex("\\s+")).count { it.isNotBlank() }
+    if (words < 40) return null
+    val minutes = ((words + 179) / 180).coerceAtLeast(1)
+    return "$minutes мин"
+}
+
+private fun shareMicroblogPost(context: android.content.Context, post: MicroblogPost) {
+    val title = microblogHeadline(post)
+    val body = post.body.trim()
+    val text = if (body.isEmpty() || body == title) title else "$title\n\n$body"
+    val send = Intent(Intent.ACTION_SEND).apply {
+        type = "text/plain"
+        putExtra(Intent.EXTRA_SUBJECT, title)
+        putExtra(Intent.EXTRA_TEXT, text)
+    }
+    context.startActivity(Intent.createChooser(send, "Поделиться постом"))
+}
+
 private enum class MicroblogCardKind { AI, PHOTO, TEXT }
 
 private fun microblogCardKind(post: MicroblogPost): MicroblogCardKind = when {
@@ -343,9 +447,12 @@ private fun microblogSnippet(post: MicroblogPost, maxChars: Int = 200): String {
 private fun MicroblogPostCard(
     post: MicroblogPost,
     dateLabel: String,
+    pinned: Boolean,
     onOpen: () -> Unit,
     onEdit: () -> Unit,
     onDelete: () -> Unit,
+    onPin: () -> Unit,
+    onShare: () -> Unit,
 ) {
     val cs = MaterialTheme.colorScheme
     val kind = microblogCardKind(post)
@@ -372,6 +479,7 @@ private fun MicroblogPostCard(
     }
     val headline = remember(post.title, post.body) { microblogHeadline(post) }
     val snippet = remember(post.title, post.body) { microblogSnippet(post) }
+    val readLabel = remember(post.body) { microblogReadLabel(post) }
 
     ElevatedCard(
         onClick = onOpen,
@@ -411,6 +519,17 @@ private fun MicroblogPostCard(
                         style = MaterialTheme.typography.labelMedium,
                         color = cs.onSurfaceVariant,
                     )
+                    if (readLabel != null) {
+                        Text(
+                            " · $readLabel",
+                            style = MaterialTheme.typography.labelMedium,
+                            color = cs.onSurfaceVariant,
+                        )
+                    }
+                    if (pinned) {
+                        Spacer(Modifier.width(6.dp))
+                        Icon(Icons.Filled.PushPin, contentDescription = "Закреплено", tint = cs.primary, modifier = Modifier.size(16.dp))
+                    }
                 }
                 Text(
                     headline,
@@ -430,12 +549,23 @@ private fun MicroblogPostCard(
                 }
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Text(
-                        "Читать полностью",
+                        "Читать",
                         style = MaterialTheme.typography.labelLarge,
                         fontWeight = FontWeight.SemiBold,
                         color = cs.primary,
+                        maxLines = 1,
                         modifier = Modifier.weight(1f),
                     )
+                    IconButton(onClick = onPin, modifier = Modifier.size(38.dp)) {
+                        Icon(
+                            Icons.Filled.PushPin,
+                            contentDescription = if (pinned) "Открепить" else "Закрепить",
+                            tint = if (pinned) cs.primary else cs.onSurfaceVariant,
+                        )
+                    }
+                    IconButton(onClick = onShare, modifier = Modifier.size(38.dp)) {
+                        Icon(Icons.Filled.Share, contentDescription = "Поделиться", tint = cs.primary)
+                    }
                     IconButton(onClick = onEdit, modifier = Modifier.size(38.dp)) {
                         Icon(Icons.Filled.Edit, contentDescription = "Редактировать", tint = cs.primary)
                     }
@@ -456,16 +586,6 @@ private fun MicroblogPreviewSlider(
 ) {
     val context = LocalContext.current
     val state = rememberPagerState(pageCount = { images.size })
-    if (images.size > 1) {
-        LaunchedEffect(state, images.size) {
-            while (true) {
-                delay(3200)
-                if (!state.isScrollInProgress) {
-                    state.animateScrollToPage((state.currentPage + 1) % images.size)
-                }
-            }
-        }
-    }
     Box(
         Modifier
             .fillMaxWidth()
@@ -959,6 +1079,8 @@ fun MicroblogEditorScreen(
     var isViewMode by remember { mutableStateOf(postId != null && !startInEdit) }
     var cropTarget by remember { mutableStateOf<String?>(null) }
     var selectedImageIndex by remember { mutableStateOf<Int?>(null) }
+    val pinnedIds by viewModel.microblogPinnedIds.collectAsStateWithLifecycle()
+    val isPinned = id in pinnedIds
 
     LaunchedEffect(images.size) {
         if (images.isEmpty()) {
@@ -1196,9 +1318,7 @@ fun MicroblogEditorScreen(
         return
     }
 
-    val dateLabel = remember(createdAt) {
-        SimpleDateFormat("dd.MM.yyyy HH:mm", Locale.getDefault()).format(Date(createdAt))
-    }
+    val dateLabel = remember(createdAt) { microblogDateLabel(createdAt) }
 
     Scaffold(
         topBar = {
@@ -1219,6 +1339,26 @@ fun MicroblogEditorScreen(
                 },
                 actions = {
                     if (isViewMode) {
+                        IconButton(onClick = { viewModel.toggleMicroblogPin(id) }) {
+                            Icon(
+                                Icons.Filled.PushPin,
+                                contentDescription = if (isPinned) "Открепить" else "Закрепить",
+                                tint = if (isPinned) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface,
+                            )
+                        }
+                        IconButton(onClick = {
+                            shareMicroblogPost(
+                                context,
+                                MicroblogPost(
+                                    id = id,
+                                    title = postTitle,
+                                    body = textFieldValue.text,
+                                    images = images.toList(),
+                                ),
+                            )
+                        }) {
+                            Icon(Icons.Filled.Share, contentDescription = "Поделиться")
+                        }
                         IconButton(onClick = { isViewMode = false }) {
                             Icon(Icons.Filled.Edit, contentDescription = "Редактировать")
                         }
@@ -1300,6 +1440,10 @@ fun MicroblogEditorScreen(
                             style = MaterialTheme.typography.labelLarge,
                             color = cs.onSurfaceVariant,
                         )
+                        if (isPinned) {
+                            Spacer(Modifier.width(8.dp))
+                            Icon(Icons.Filled.PushPin, contentDescription = "Закреплено", tint = cs.primary, modifier = Modifier.size(16.dp))
+                        }
                     }
                     if (postTitle.isNotBlank()) {
                         Text(
