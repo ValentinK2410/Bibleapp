@@ -6,7 +6,6 @@ import android.content.pm.PackageManager
 import android.media.MediaRecorder
 import android.os.Build
 import android.os.SystemClock
-import android.view.MotionEvent
 import android.widget.Toast
 import java.io.File
 import androidx.activity.compose.rememberLauncherForActivityResult
@@ -14,6 +13,7 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.gestures.awaitEachGesture
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -63,8 +63,9 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.ExperimentalComposeUiApi
-import androidx.compose.ui.input.pointer.pointerInteropFilter
+import androidx.compose.ui.input.pointer.PointerEventPass
+import androidx.compose.ui.input.pointer.PointerId
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
@@ -392,7 +393,61 @@ fun MusicianStudioScreen(onBack: () -> Unit) {
                 }
             }
             item {
-                Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
+                val padDown = rememberUpdatedState<(Int) -> Unit>({ index ->
+                    val key = "p:$index"
+                    if (recording != null || !StudioLibrary.hasPad(context, index)) return@rememberUpdatedState
+                    if (engine.playWhileHeld(key, padFiles[index])) playing = playing + key
+                })
+                val padUp = rememberUpdatedState<(Int) -> Unit>({ index ->
+                    val key = "p:$index"
+                    engine.stop(key)
+                    playing = playing - key
+                })
+                Column(
+                    modifier = Modifier.pointerInput(padTick, editing) {
+                        if (editing) return@pointerInput
+                        awaitEachGesture {
+                            val held = HashMap<PointerId, Int>()
+                            val count = IntArray(StudioLibrary.PAD_COUNT)
+                            try {
+                                while (true) {
+                                    val event = awaitPointerEvent(PointerEventPass.Initial)
+                                    val gap = 10.dp.toPx()
+                                    event.changes.forEach { change ->
+                                        val existing = held[change.id]
+                                        if (existing == null) {
+                                            if (!change.pressed) return@forEach
+                                            val index = studioPadAt(
+                                                change.position.x,
+                                                change.position.y,
+                                                size.width.toFloat(),
+                                                gap,
+                                            ) ?: return@forEach
+                                            if (!StudioLibrary.hasPad(context, index)) return@forEach
+                                            held[change.id] = index
+                                            change.consume()
+                                            padDown.value(index)
+                                            count[index]++
+                                        } else if (!change.pressed) {
+                                            held.remove(change.id)
+                                            count[existing] = (count[existing] - 1).coerceAtLeast(0)
+                                            if (count[existing] == 0) padUp.value(existing)
+                                            change.consume()
+                                        } else {
+                                            change.consume()
+                                        }
+                                    }
+                                    if (held.isEmpty() && event.changes.none { it.pressed }) break
+                                }
+                            } finally {
+                                held.values.distinct().forEach { index ->
+                                    if (count[index] > 0) padUp.value(index)
+                                }
+                            }
+                        }
+                    },
+                    verticalArrangement = Arrangement.spacedBy(10.dp),
+                ) {
                     for (row in 0 until 2) {
                         Row(
                             modifier = Modifier.fillMaxWidth(),
@@ -410,17 +465,6 @@ fun MusicianStudioScreen(onBack: () -> Unit) {
                                     recording = recording == key,
                                     playing = key in playing,
                                     seconds = if (recording == key) seconds else 0,
-                                    onHoldStart = {
-                                        if (recording == null && has &&
-                                            engine.playWhileHeld(key, padFiles[index])
-                                        ) {
-                                            playing = playing + key
-                                        }
-                                    },
-                                    onHoldEnd = {
-                                        engine.stop(key)
-                                        playing = playing - key
-                                    },
                                     onClick = {
                                         when {
                                             recording == key -> finish()
@@ -555,7 +599,6 @@ fun MusicianStudioScreen(onBack: () -> Unit) {
 }
 
 @Composable
-@OptIn(ExperimentalComposeUiApi::class)
 private fun StudioPad(
     index: Int,
     color: Color,
@@ -564,8 +607,6 @@ private fun StudioPad(
     recording: Boolean,
     playing: Boolean,
     seconds: Int,
-    onHoldStart: () -> Unit,
-    onHoldEnd: () -> Unit,
     onClick: () -> Unit,
     onClear: () -> Unit,
     modifier: Modifier = Modifier,
@@ -578,15 +619,10 @@ private fun StudioPad(
         else -> color.copy(alpha = 0.16f)
     }
     val labelColor = if (hasAudio || recording || playing || editing) Color.White else color
-    val gesture = when {
-        editing || recording || !hasAudio -> Modifier.clickable(onClick = onClick)
-        else -> Modifier.pointerInteropFilter { event ->
-            when (event.actionMasked) {
-                MotionEvent.ACTION_DOWN -> onHoldStart()
-                MotionEvent.ACTION_UP, MotionEvent.ACTION_CANCEL -> onHoldEnd()
-            }
-            true
-        }
+    val gesture = if (editing || recording || !hasAudio) {
+        Modifier.clickable(onClick = onClick)
+    } else {
+        Modifier
     }
     Box(
         modifier
@@ -788,6 +824,21 @@ private fun formatTrackPause(ms: Long): String {
 }
 
 private fun formatStudioTime(seconds: Int): String = "%d:%02d".format(seconds / 60, seconds % 60)
+
+/** Какая плитка под пальцем: сетка 2×4 с зазором [gap]. */
+private fun studioPadAt(x: Float, y: Float, width: Float, gap: Float): Int? {
+    if (width <= gap * 3f) return null
+    val pad = (width - 3f * gap) / 4f
+    if (pad <= 0f) return null
+    val pitch = pad + gap
+    val col = (x / pitch).toInt()
+    val row = (y / pitch).toInt()
+    if (row !in 0..1 || col !in 0..3) return null
+    val localX = x - col * pitch
+    val localY = y - row * pitch
+    if (localX < 0f || localY < 0f || localX > pad || localY > pad) return null
+    return row * 4 + col
+}
 
 private class StudioEngine(private val context: Context) {
     private val mixer = StudioMixer()
