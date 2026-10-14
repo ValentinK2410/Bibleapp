@@ -8,6 +8,10 @@ import android.os.Build
 import android.os.SystemClock
 import android.widget.Toast
 import java.io.File
+import androidx.compose.runtime.rememberCoroutineScope
+import com.example.bible.data.AppUsageEvents
+import com.example.bible.data.BiblePreferences
+import kotlinx.coroutines.launch
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.Canvas
@@ -109,6 +113,7 @@ private val PadColors = listOf(
 @Composable
 fun MusicianStudioScreen(onBack: () -> Unit) {
     val context = LocalContext.current
+    val scope = rememberCoroutineScope()
     val engine = remember { StudioEngine(context.applicationContext) }
     val padFiles = remember { Array(StudioLibrary.PAD_COUNT) { StudioLibrary.padFile(context, it) } }
     var board by remember { mutableStateOf(StudioLibrary.loadBoard(context)) }
@@ -213,6 +218,16 @@ fun MusicianStudioScreen(onBack: () -> Unit) {
         return board.clips.filter { it.laneId == lane }
     }
 
+    fun recordStudio(type: String, name: String) {
+        scope.launch {
+            BiblePreferences(context.applicationContext).recordUsageEvent(
+                type,
+                "media_musician",
+                AppUsageEvents.namedDetail("music", name),
+            )
+        }
+    }
+
     fun playClip(clip: StudioClip) {
         val key = "t:${clip.id}"
         engine.setCycle(cycle.enabled, cycle.startMs, cycle.endMs)
@@ -225,6 +240,7 @@ fun MusicianStudioScreen(onBack: () -> Unit) {
             clip.trimEndMs,
         )
         playing = playing + key
+        recordStudio(AppUsageEvents.TYPE_PLAY, "Студия ${clip.sourceId.take(8)}")
     }
 
     fun playTrackAt(index: Int) {
@@ -701,12 +717,14 @@ fun MusicianStudioScreen(onBack: () -> Unit) {
                         board = StudioLibrary.loadBoard(context)
                     },
                     onDelete = {
+                        val removed = clips.firstOrNull()?.let { "Студия ${it.sourceId.take(8)}" } ?: "Дорожка студии"
                         clips.forEach { clip ->
                             engine.stop("t:${clip.id}")
                             playing = playing - "t:${clip.id}"
                         }
                         StudioLibrary.deleteLane(context, laneId)
                         board = StudioLibrary.loadBoard(context)
+                        recordStudio(AppUsageEvents.TYPE_DELETE, removed)
                     },
                 )
             }

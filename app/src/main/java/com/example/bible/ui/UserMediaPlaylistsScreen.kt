@@ -95,6 +95,7 @@ import com.example.bible.data.BibleUserAudio
 import com.example.bible.data.BibleUserVideo
 import com.example.bible.data.MediaCatalogPaths
 import com.example.bible.data.MediaLibrarySort
+import com.example.bible.data.AppUsageEvents
 import com.example.bible.data.UserMediaKind
 import com.example.bible.data.sortedByMediaLibrary
 import com.example.bible.data.UserMediaPlaybackProgress
@@ -996,6 +997,9 @@ fun UserMediaPlaylistDetailScreen(
             onThoughtsSplitChange = { landscape, fraction ->
                 viewModel.setVideoThoughtsSplit(landscape, fraction)
             },
+            onTrackStarted = { video ->
+                viewModel.recordFileActivity(AppUsageEvents.TYPE_FILE, "media_videos", "video", video.title)
+            },
             onDismiss = { videoPlayerPayload = null },
             onOpenInOtherApp = { file ->
                 try {
@@ -1842,6 +1846,9 @@ fun PickLibraryMediaForPlaylistSheet(
                         onMarkFullyWatched = { mediaId, dur ->
                             viewModel.markMediaFullyWatched(mediaId, UserMediaKind.AUDIO, dur)
                         },
+                        onTrackStarted = { audio ->
+                            viewModel.recordFileActivity(AppUsageEvents.TYPE_PLAY, "media_audios", "music", audio.title)
+                        },
                     )
                 }
             }
@@ -1866,6 +1873,9 @@ fun PickLibraryMediaForPlaylistSheet(
             thoughtsSplitPortrait = thoughtsSplitPortrait,
             onThoughtsSplitChange = { landscape, fraction ->
                 viewModel.setVideoThoughtsSplit(landscape, fraction)
+            },
+            onTrackStarted = { video ->
+                viewModel.recordFileActivity(AppUsageEvents.TYPE_FILE, "media_videos", "video", video.title)
             },
             onDismiss = { previewVideo = null },
             onOpenInOtherApp = { file ->

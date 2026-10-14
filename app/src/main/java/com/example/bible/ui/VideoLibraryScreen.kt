@@ -69,6 +69,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.bible.data.BibleUserVideo
 import com.example.bible.data.MediaCatalogPaths
 import com.example.bible.data.MediaLibrarySort
+import com.example.bible.data.AppUsageEvents
 import com.example.bible.data.UserMediaKind
 import com.example.bible.data.UserMediaPlaylistKind
 import com.example.bible.data.sortedByMediaLibrary
@@ -474,6 +475,9 @@ fun VideoLibraryScreen(
             thoughtsSplitPortrait = thoughtsSplitPortrait,
             onThoughtsSplitChange = { landscape, fraction ->
                 viewModel.setVideoThoughtsSplit(landscape, fraction)
+            },
+            onTrackStarted = { video ->
+                viewModel.recordFileActivity(AppUsageEvents.TYPE_FILE, "media_videos", "video", video.title)
             },
             onDismiss = { libraryVideoTracksAndStartIndex = null },
             onOpenInOtherApp = { file ->

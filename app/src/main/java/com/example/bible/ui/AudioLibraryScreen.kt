@@ -64,6 +64,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.bible.data.BibleUserAudio
 import com.example.bible.data.MediaCatalogPaths
 import com.example.bible.data.MediaLibrarySort
+import com.example.bible.data.AppUsageEvents
 import com.example.bible.data.UserMediaKind
 import com.example.bible.data.UserMediaPlaylistKind
 import com.example.bible.data.sortedByMediaLibrary
@@ -412,6 +413,9 @@ fun AudioLibraryScreen(
             },
             onMarkFullyWatched = { mediaId, dur ->
                 viewModel.markMediaFullyWatched(mediaId, UserMediaKind.AUDIO, dur)
+            },
+            onTrackStarted = { audio ->
+                viewModel.recordFileActivity(AppUsageEvents.TYPE_PLAY, "media_audios", "music", audio.title)
             },
             onDismiss = { libraryAudioTracksAndStart = null },
         )

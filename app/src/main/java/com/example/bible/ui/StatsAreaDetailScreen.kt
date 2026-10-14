@@ -18,6 +18,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
@@ -53,6 +54,8 @@ fun StatsAreaDetailScreen(
     val areaEvents = remember(usageEvents, area) { AppUsageEvents.eventsForArea(usageEvents, area) }
     val days = remember(areaEvents) { AppUsageEvents.countsByDay(areaEvents, days = 14) }
     val types = remember(areaEvents) { AppUsageEvents.countsByType(areaEvents) }
+    val named = remember(areaEvents) { AppUsageEvents.namedItems(areaEvents) }
+    val recentNamed = remember(areaEvents) { AppUsageEvents.recentNamed(areaEvents) }
     val sectionMax = rows.maxOfOrNull { it.opens } ?: 0
     val bands = rows.map { AppSectionUsage.band(it.opens, sectionMax) }
     val visible = rows.filter { band == null || AppSectionUsage.band(it.opens, sectionMax) == band }
@@ -107,6 +110,60 @@ fun StatsAreaDetailScreen(
         if (types.isNotEmpty()) {
             item(key = "types") {
                 DetailCard(accent) { StatsTypeBars(types = types, accent = accent) }
+            }
+        }
+        namedGroup(
+            key = "plays",
+            title = "Песни и музыка",
+            items = named.filter { it.type == AppUsageEvents.TYPE_PLAY },
+            accent = accent,
+        )
+        namedGroup(
+            key = "files",
+            title = "Открытые файлы",
+            items = named.filter { it.type == AppUsageEvents.TYPE_FILE },
+            accent = accent,
+        )
+        namedGroup(
+            key = "downloads",
+            title = "Скачано и добавлено",
+            items = named.filter { it.type == AppUsageEvents.TYPE_DOWNLOAD },
+            accent = accent,
+        )
+        namedGroup(
+            key = "deleted",
+            title = "Удалено",
+            items = named.filter { it.type == AppUsageEvents.TYPE_DELETE },
+            accent = accent,
+        )
+        if (recentNamed.isNotEmpty()) {
+            item(key = "journal") {
+                DetailCard(accent) {
+                    Text("Журнал", fontWeight = FontWeight.Bold, fontSize = 16.sp)
+                    Spacer(Modifier.height(8.dp))
+                    recentNamed.forEach { event ->
+                        val parsed = AppUsageEvents.parseNamed(event.detail) ?: return@forEach
+                        Text(
+                            "${AppUsageEvents.typeLabel(event.type)} · ${AppUsageEvents.kindLabel(parsed.first)} · ${parsed.second}",
+                            fontSize = 14.sp,
+                            fontWeight = FontWeight.Medium,
+                        )
+                        Text(
+                            eventWhenRu(event.timestamp),
+                            fontSize = 12.sp,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            modifier = Modifier.padding(bottom = 8.dp),
+                        )
+                    }
+                }
+            }
+        } else if (area == "Медиа") {
+            item(key = "journal-empty") {
+                Text(
+                    "Файлы, песни, музыка, загрузки и удаления появятся здесь, когда вы откроете, включите, скачаете или удалите их.",
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
             }
         }
         item(key = "bands") {
@@ -292,6 +349,36 @@ private fun AreaRowCard(
             Text(detail, fontSize = 11.sp, color = scheme.onSurfaceVariant)
         }
     }
+}
+
+private fun LazyListScope.namedGroup(
+    key: String,
+    title: String,
+    items: List<AppUsageEvents.NamedItem>,
+    accent: Color,
+) {
+    if (items.isEmpty()) return
+    item(key = key) {
+        DetailCard(accent) {
+            Text(title, fontWeight = FontWeight.Bold, fontSize = 16.sp)
+            Spacer(Modifier.height(8.dp))
+            items.take(40).forEach { row ->
+                Text(row.name, fontWeight = FontWeight.Medium, fontSize = 15.sp)
+                Text(
+                    "${AppUsageEvents.kindLabel(row.kind)} · ${row.count} раз · ${eventWhenRu(row.lastAt)}",
+                    fontSize = 12.sp,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    modifier = Modifier.padding(bottom = 8.dp),
+                )
+            }
+        }
+    }
+}
+
+private fun eventWhenRu(timestamp: Long): String {
+    if (timestamp <= 0L) return "без даты"
+    val fmt = java.text.SimpleDateFormat("d MMM, HH:mm", java.util.Locale.forLanguageTag("ru"))
+    return fmt.format(java.util.Date(timestamp))
 }
 
 private fun lastOpenedRu(timestamp: Long): String {

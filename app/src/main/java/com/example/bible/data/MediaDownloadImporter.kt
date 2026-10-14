@@ -55,6 +55,11 @@ object MediaDownloadImporter {
                     )
                 }
                 prefs.addDownloadImportFingerprint(fingerprint)
+                prefs.recordUsageEvent(
+                    AppUsageEvents.TYPE_DOWNLOAD,
+                    "downloads",
+                    AppUsageEvents.namedDetail(if (asAudio) "music" else "video", safeTitle),
+                )
                 null
             },
             onFailure = { e -> e.message ?: "Ошибка импорта" },

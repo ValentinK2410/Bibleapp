@@ -143,6 +143,7 @@ import com.example.bible.data.AudioPlayerHolder
 import com.example.bible.data.FonkiExtractor
 import com.example.bible.data.FonkiSong
 import com.example.bible.data.SongCatalogHit
+import com.example.bible.data.AppUsageEvents
 import com.example.bible.data.SongItem
 import com.example.bible.data.SongLyricCue
 import com.example.bible.data.SongLinkBundle
@@ -445,6 +446,10 @@ fun SongCollectionScreen(
         if (!initialSongId.isNullOrBlank() && selectedSong == null) {
             selectedSong = songs.firstOrNull { it.id == initialSongId }
         }
+    }
+    LaunchedEffect(selectedSong?.id) {
+        val song = selectedSong ?: return@LaunchedEffect
+        viewModel.recordFileActivity(AppUsageEvents.TYPE_FILE, "songs", "song", song.title)
     }
 
     val sortedTags = remember(allTags) { allTags.sorted() }

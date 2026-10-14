@@ -26,6 +26,10 @@ object AudioPlayerHolder {
     @Volatile
     var onSkipToNext: (() -> Unit)? = null
 
+    /** Новое воспроизведение (не продолжение той же дорожки). Для журнала статистики. */
+    @Volatile
+    var onTrackStarted: ((title: String) -> Unit)? = null
+
     private var player: MediaPlayer? = null
     private var currentPath: String = ""
 
@@ -68,6 +72,7 @@ object AudioPlayerHolder {
                 looping = keepLoop,
             )
             AppMediaButtonSession.refreshPlaybackState()
+            onTrackStarted?.invoke(title)
         } catch (e: Exception) {
             Log.e(TAG, "play failed: $audioPath", e)
         }

@@ -79,6 +79,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.bible.data.AppUsageEvents
 import com.example.bible.data.AudioPlayerHolder
 import com.example.bible.data.FonkiExtractor
 import com.example.bible.data.PlayerState
@@ -318,6 +319,15 @@ fun PesnVozrozhdeniyaHymnScreen(
     var draftLyrics by remember { mutableStateOf("") }
     LaunchedEffect(hymnId) {
         editing = false
+    }
+    LaunchedEffect(hymn?.id) {
+        val opened = hymn ?: return@LaunchedEffect
+        viewModel.recordFileActivity(
+            AppUsageEvents.TYPE_FILE,
+            "songs",
+            "song",
+            "${opened.number}. ${opened.title}",
+        )
     }
     LaunchedEffect(hymn?.id, hymn?.audioPaths, playerState.audioPath) {
         val path = playerState.audioPath

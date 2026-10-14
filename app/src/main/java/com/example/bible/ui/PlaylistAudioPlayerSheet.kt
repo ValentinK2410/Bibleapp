@@ -127,6 +127,7 @@ fun PlaylistAudioPlayerSheet(
     initialSeekByMediaId: Map<String, Long> = emptyMap(),
     onPlaybackProgress: (mediaId: String, positionMs: Long, durationMs: Long) -> Unit = { _, _, _ -> },
     onMarkFullyWatched: (mediaId: String, durationMs: Long) -> Unit = { _, _ -> },
+    onTrackStarted: (BibleUserAudio) -> Unit = {},
 ) {
     val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
     LaunchedEffect(sheetState) {
@@ -148,6 +149,7 @@ fun PlaylistAudioPlayerSheet(
             initialSeekByMediaId = initialSeekByMediaId,
             onPlaybackProgress = onPlaybackProgress,
             onMarkFullyWatched = onMarkFullyWatched,
+            onTrackStarted = onTrackStarted,
             modifier = Modifier.padding(horizontal = 8.dp),
         )
     }
@@ -166,6 +168,7 @@ fun PlaylistAudioPlayer(
     initialSeekByMediaId: Map<String, Long> = emptyMap(),
     onPlaybackProgress: (mediaId: String, positionMs: Long, durationMs: Long) -> Unit = { _, _, _ -> },
     onMarkFullyWatched: (mediaId: String, durationMs: Long) -> Unit = { _, _ -> },
+    onTrackStarted: (BibleUserAudio) -> Unit = {},
 ) {
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
@@ -201,6 +204,8 @@ fun PlaylistAudioPlayer(
     val initialSeekRef = rememberUpdatedState(initialSeekByMediaId)
     val onProgressRef = rememberUpdatedState(onPlaybackProgress)
     val onMarkWatchedRef = rememberUpdatedState(onMarkFullyWatched)
+    val onTrackStartedRef = rememberUpdatedState(onTrackStarted)
+    val loggedMediaId = remember { mutableStateOf<String?>(null) }
     val sessionSeekById = remember { initialSeekByMediaId.toMutableMap() }
 
     LaunchedEffect(initialSeekByMediaId) {
@@ -311,6 +316,11 @@ fun PlaylistAudioPlayer(
                     }
                 }
                 if (start) {
+                    val started = pair.first
+                    if (loggedMediaId.value != started.id) {
+                        loggedMediaId.value = started.id
+                        onTrackStartedRef.value(started)
+                    }
                     player.start()
                     if (clamped > 0) {
                         kotlinx.coroutines.delay(90)

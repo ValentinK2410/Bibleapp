@@ -745,7 +745,16 @@ private fun buildStatsAreaCards(
                     else -> "Разделы приложения"
                 },
                 primaryValue = if (opens > 0) "$opens" else "0",
-                secondaryValue = "открытий · ${rows.size} разделов · не открывали $never",
+                secondaryValue = if (area == "Медиа") {
+                    val files = AppUsageEvents.namedItems(areaEvents).size
+                    if (files > 0) {
+                        "открытий · $files в журнале файлов и песен"
+                    } else {
+                        "открытий · ${rows.size} разделов · не открывали $never"
+                    }
+                } else {
+                    "открытий · ${rows.size} разделов · не открывали $never"
+                },
                 sparkline = spark,
                 accent = accent,
                 icon = iconForArea(area),

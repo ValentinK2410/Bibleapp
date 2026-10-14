@@ -118,6 +118,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import coil.compose.AsyncImage
 import coil.imageLoader
 import com.example.bible.data.BibleUserAudio
+import com.example.bible.data.AppUsageEvents
 import com.example.bible.data.BibleUserImage
 import com.example.bible.data.BibleUserVideo
 import com.example.bible.data.MediaCatalogPaths
@@ -943,6 +944,11 @@ fun PictureLibraryScreen(
             }
         }
     }
+    }
+
+    LaunchedEffect(viewingImage?.id) {
+        val img = viewingImage ?: return@LaunchedEffect
+        viewModel.recordFileActivity(AppUsageEvents.TYPE_FILE, "media_pictures", "image", img.title)
     }
 
     viewingImage?.let { img ->

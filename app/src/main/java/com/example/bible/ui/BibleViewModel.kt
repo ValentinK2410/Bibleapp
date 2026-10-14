@@ -33,6 +33,7 @@ import android.net.Uri
 import android.os.Environment
 import java.io.File
 import com.example.bible.data.AudioPlaybackState
+import com.example.bible.data.AudioPlayerHolder
 import com.example.bible.data.CommentaryRepository
 import com.example.bible.data.DeepSeekClient
 import com.example.bible.data.DeepSeekMessage
@@ -1041,7 +1042,12 @@ class BibleViewModel(
         }
     }
 
+    private val songPlayLogger: (String) -> Unit = { title ->
+        recordFileActivity(AppUsageEvents.TYPE_PLAY, "songs", "song", title)
+    }
+
     init {
+        AudioPlayerHolder.onTrackStarted = songPlayLogger
         viewModelScope.launch {
             preferences.importCoverageFromHistoryIfNeeded()
             preferences.importVerseCoverageFromHistoryIfNeeded()
@@ -1424,6 +1430,9 @@ class BibleViewModel(
         flushThread.start()
         flushThread.join(400)
         mediaRepository.stop()
+        if (AudioPlayerHolder.onTrackStarted === songPlayLogger) {
+            AudioPlayerHolder.onTrackStarted = null
+        }
         super.onCleared()
     }
 
@@ -2690,6 +2699,21 @@ class BibleViewModel(
         viewModelScope.launch { preferences.recordUsageEvent(type, sectionId, detail) }
     }
 
+    /** Открытие, прослушивание, скачивание или удаление конкретного файла. */
+    fun recordFileActivity(type: String, sectionId: String, kind: String, name: String) {
+        val title = name.trim()
+        if (title.isEmpty() || sectionId.isBlank() || type.isBlank()) return
+        viewModelScope.launch {
+            preferences.recordUsageEvent(type, sectionId, AppUsageEvents.namedDetail(kind, title))
+        }
+    }
+
+    private suspend fun rememberLibraryEvent(type: String, sectionId: String, kind: String, name: String) {
+        val title = name.trim()
+        if (title.isEmpty()) return
+        preferences.recordUsageEvent(type, sectionId, AppUsageEvents.namedDetail(kind, title))
+    }
+
     val quranReadingHistory: StateFlow<List<QuranReadingHistoryEntry>> = preferences.quranReadingHistory.stateIn(
         viewModelScope,
         SharingStarted.WhileSubscribed(5000),
@@ -3091,7 +3115,9 @@ class BibleViewModel(
 
     fun deleteSong(songId: String) {
         viewModelScope.launch {
+            val title = userSongs.value.firstOrNull { it.id == songId }?.title ?: "Песня"
             preferences.deleteSong(songId)
+            rememberLibraryEvent(AppUsageEvents.TYPE_DELETE, "songs", "song", title)
         }
     }
 
@@ -3265,15 +3291,17 @@ class BibleViewModel(
             result.fold(
                 onSuccess = { fileName ->
                     val normTags = tags.map { it.trim() }.filter { it.isNotEmpty() }
+                    val savedTitle = title.trim().ifBlank { "Без названия" }
                     preferences.saveBibleImage(
                         BibleUserImage(
-                            title = title.trim().ifBlank { "Без названия" },
+                            title = savedTitle,
                             tags = normTags,
                             fileName = fileName,
                             source = source,
                             sourceUrl = sourceUrl,
                         ),
                     )
+                    rememberLibraryEvent(AppUsageEvents.TYPE_DOWNLOAD, "downloads", "image", savedTitle)
                     onDone(null)
                 },
                 onFailure = { e -> onDone(e.message ?: "Ошибка импорта") },
@@ -3301,15 +3329,17 @@ class BibleViewModel(
             result.fold(
                 onSuccess = { fileName ->
                     val normTags = tags.map { it.trim() }.filter { it.isNotEmpty() }
+                    val savedTitle = title.trim().ifBlank { "Без названия" }
                     preferences.saveBibleImage(
                         BibleUserImage(
-                            title = title.trim().ifBlank { "Без названия" },
+                            title = savedTitle,
                             tags = normTags,
                             fileName = fileName,
                             source = imageSource,
                             sourceUrl = sourceUrl,
                         ),
                     )
+                    rememberLibraryEvent(AppUsageEvents.TYPE_DOWNLOAD, "downloads", "image", savedTitle)
                     onDone(null)
                 },
                 onFailure = { e -> onDone(e.message ?: "Ошибка загрузки") },
@@ -3327,6 +3357,7 @@ class BibleViewModel(
         viewModelScope.launch {
             bibleImageLibrary.deleteStoredFile(image.fileName)
             preferences.deleteBibleImage(image.id)
+            rememberLibraryEvent(AppUsageEvents.TYPE_DELETE, "media_pictures", "image", image.title)
         }
     }
 
@@ -4084,15 +4115,17 @@ class BibleViewModel(
             result.fold(
                 onSuccess = { fileName ->
                     val normTags = tags.map { it.trim() }.filter { it.isNotEmpty() }
+                    val savedTitle = title.trim().ifBlank { "Без названия" }
                     preferences.saveBibleVideo(
                         BibleUserVideo(
-                            title = title.trim().ifBlank { "Без названия" },
+                            title = savedTitle,
                             tags = normTags,
                             fileName = fileName,
                             source = source,
                             sourceUrl = sourceUrl,
                         ),
                     )
+                    rememberLibraryEvent(AppUsageEvents.TYPE_DOWNLOAD, "downloads", "video", savedTitle)
                     onDone(null)
                 },
                 onFailure = { e -> onDone(e.message ?: "Ошибка импорта") },
@@ -4144,15 +4177,17 @@ class BibleViewModel(
             result.fold(
                 onSuccess = { fileName ->
                     val normTags = tags.map { it.trim() }.filter { it.isNotEmpty() }
+                    val savedTitle = title.trim().ifBlank { "Без названия" }
                     preferences.saveBibleVideo(
                         BibleUserVideo(
-                            title = title.trim().ifBlank { "Без названия" },
+                            title = savedTitle,
                             tags = normTags,
                             fileName = fileName,
                             source = "commons",
                             sourceUrl = sourceUrl,
                         ),
                     )
+                    rememberLibraryEvent(AppUsageEvents.TYPE_DOWNLOAD, "downloads", "video", savedTitle)
                     onDone(null)
                 },
                 onFailure = { e -> onDone(e.message ?: "Ошибка загрузки") },
@@ -4170,6 +4205,7 @@ class BibleViewModel(
         viewModelScope.launch {
             bibleVideoLibrary.deleteStoredFile(video.fileName)
             preferences.deleteBibleVideo(video.id)
+            rememberLibraryEvent(AppUsageEvents.TYPE_DELETE, "media_videos", "video", video.title)
         }
     }
 
@@ -4188,15 +4224,17 @@ class BibleViewModel(
             result.fold(
                 onSuccess = { fileName ->
                     val normTags = tags.map { it.trim() }.filter { it.isNotEmpty() }
+                    val savedTitle = title.trim().ifBlank { "Без названия" }
                     preferences.saveBibleAudio(
                         BibleUserAudio(
-                            title = title.trim().ifBlank { "Без названия" },
+                            title = savedTitle,
                             tags = normTags,
                             fileName = fileName,
                             source = source,
                             sourceUrl = sourceUrl,
                         ),
                     )
+                    rememberLibraryEvent(AppUsageEvents.TYPE_DOWNLOAD, "downloads", "music", savedTitle)
                     onDone(null)
                 },
                 onFailure = { e -> onDone(e.message ?: "Ошибка импорта") },
@@ -4239,6 +4277,7 @@ class BibleViewModel(
                                 source = source,
                             ),
                         )
+                        rememberLibraryEvent(AppUsageEvents.TYPE_DOWNLOAD, "downloads", "music", title)
                         ok++
                     },
                     onFailure = { fail++ },
@@ -4263,15 +4302,17 @@ class BibleViewModel(
             result.fold(
                 onSuccess = { fileName ->
                     val normTags = tags.map { it.trim() }.filter { it.isNotEmpty() }
+                    val savedTitle = title.trim().ifBlank { "Без названия" }
                     preferences.saveBibleAudio(
                         BibleUserAudio(
-                            title = title.trim().ifBlank { "Без названия" },
+                            title = savedTitle,
                             tags = normTags,
                             fileName = fileName,
                             source = source.ifBlank { "commons" },
                             sourceUrl = sourceUrl,
                         ),
                     )
+                    rememberLibraryEvent(AppUsageEvents.TYPE_DOWNLOAD, "downloads", "music", savedTitle)
                     onDone(null)
                 },
                 onFailure = { e -> onDone(e.message ?: "Ошибка загрузки") },
@@ -4289,6 +4330,7 @@ class BibleViewModel(
         viewModelScope.launch {
             bibleAudioLibrary.deleteStoredFile(audio.fileName)
             preferences.deleteBibleAudio(audio.id)
+            rememberLibraryEvent(AppUsageEvents.TYPE_DELETE, "media_audios", "music", audio.title)
         }
     }
 
@@ -4317,9 +4359,10 @@ class BibleViewModel(
                 }
                 result.fold(
                     onSuccess = { fileName ->
+                        val savedTitle = title.trim().ifBlank { sourceFile.nameWithoutExtension.ifBlank { "Без названия" } }
                         preferences.saveBibleAudio(
                             BibleUserAudio(
-                                title = title.trim().ifBlank { sourceFile.nameWithoutExtension.ifBlank { "Без названия" } },
+                                title = savedTitle,
                                 tags = emptyList(),
                                 fileName = fileName,
                                 source = "download",
@@ -4327,6 +4370,7 @@ class BibleViewModel(
                             ),
                         )
                         preferences.addDownloadImportFingerprint(fp)
+                        rememberLibraryEvent(AppUsageEvents.TYPE_DOWNLOAD, "downloads", "music", savedTitle)
                         onDone(null)
                     },
                     onFailure = { e -> onDone(e.message ?: "Ошибка импорта") },
@@ -4363,9 +4407,10 @@ class BibleViewModel(
                 }
                 result.fold(
                     onSuccess = { fileName ->
+                        val savedTitle = title.trim().ifBlank { sourceFile.nameWithoutExtension.ifBlank { "Без названия" } }
                         preferences.saveBibleVideo(
                             BibleUserVideo(
-                                title = title.trim().ifBlank { sourceFile.nameWithoutExtension.ifBlank { "Без названия" } },
+                                title = savedTitle,
                                 tags = emptyList(),
                                 fileName = fileName,
                                 source = "download",
@@ -4373,6 +4418,7 @@ class BibleViewModel(
                             ),
                         )
                         preferences.addDownloadImportFingerprint(fp)
+                        rememberLibraryEvent(AppUsageEvents.TYPE_DOWNLOAD, "downloads", "video", savedTitle)
                         onDone(null)
                     },
                     onFailure = { e -> onDone(e.message ?: "Ошибка импорта") },

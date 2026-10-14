@@ -16,6 +16,12 @@ object AppUsageEvents {
     const val TYPE_COPY = "copy"
     const val TYPE_LISTEN = "listen"
     const val TYPE_READ = "read"
+    const val TYPE_FILE = "file"
+    const val TYPE_PLAY = "play"
+    const val TYPE_DOWNLOAD = "download"
+    const val TYPE_DELETE = "delete"
+
+    private val namedTypes = setOf(TYPE_FILE, TYPE_PLAY, TYPE_DOWNLOAD, TYPE_DELETE)
 
     data class Event(
         val timestamp: Long,
@@ -41,6 +47,30 @@ object AppUsageEvents {
         val label: String,
         val count: Int,
     )
+
+    /** Один файл, песня или запись: сколько раз и когда в последний раз. */
+    data class NamedItem(
+        val type: String,
+        val kind: String,
+        val name: String,
+        val count: Int,
+        val lastAt: Long,
+    )
+
+    fun namedDetail(kind: String, name: String): String {
+        val safeKind = kind.replace('|', ' ').trim().ifBlank { "file" }
+        val safeName = name.replace('|', ' ').replace('\n', ' ').trim().ifBlank { "Без названия" }
+        return "$safeKind|$safeName"
+    }
+
+    fun parseNamed(detail: String): Pair<String, String>? {
+        val parts = detail.split('|', limit = 2)
+        if (parts.size < 2) return null
+        val kind = parts[0].trim()
+        val name = parts[1].trim()
+        if (kind.isEmpty() || name.isEmpty() || kind == "played") return null
+        return kind to name
+    }
 
     fun parse(json: String): List<Event> {
         if (json.isBlank()) return emptyList()
@@ -114,6 +144,10 @@ object AppUsageEvents {
             TYPE_READ to "Чтение",
             TYPE_LISTEN to "Озвучка",
             TYPE_COPY to "Копии",
+            TYPE_FILE to "Файлы",
+            TYPE_PLAY to "Песни и музыка",
+            TYPE_DOWNLOAD to "Скачано",
+            TYPE_DELETE to "Удалено",
         )
         return map.map { (type, label) ->
             TypeCount(type, label, events.count { it.type == type })
@@ -146,6 +180,44 @@ object AppUsageEvents {
         TYPE_READ -> "Чтение"
         TYPE_LISTEN -> "Озвучка"
         TYPE_COPY -> "Копии"
+        TYPE_FILE -> "Файлы"
+        TYPE_PLAY -> "Песни и музыка"
+        TYPE_DOWNLOAD -> "Скачано"
+        TYPE_DELETE -> "Удалено"
         else -> type
     }
+
+    fun kindLabel(kind: String): String = when (kind) {
+        "song" -> "Песня"
+        "music" -> "Музыка"
+        "image" -> "Картинка"
+        "video" -> "Видео"
+        "audio" -> "Аудио"
+        else -> "Файл"
+    }
+
+    /** Сводка по имени: сколько раз открыли, включили, скачали или удалили. */
+    fun namedItems(events: List<Event>): List<NamedItem> {
+        data class Acc(var count: Int = 0, var lastAt: Long = 0L)
+        val totals = linkedMapOf<String, Acc>()
+        val meta = linkedMapOf<String, Triple<String, String, String>>()
+        for (event in events) {
+            if (event.type !in namedTypes) continue
+            val parsed = parseNamed(event.detail) ?: continue
+            val key = "${event.type}|${parsed.first}|${parsed.second}"
+            val acc = totals.getOrPut(key) { Acc() }
+            acc.count++
+            if (event.timestamp >= acc.lastAt) acc.lastAt = event.timestamp
+            meta[key] = Triple(event.type, parsed.first, parsed.second)
+        }
+        return totals.map { (key, acc) ->
+            val (type, kind, name) = meta.getValue(key)
+            NamedItem(type, kind, name, acc.count, acc.lastAt)
+        }.sortedWith(compareByDescending<NamedItem> { it.count }.thenByDescending { it.lastAt })
+    }
+
+    fun recentNamed(events: List<Event>, limit: Int = 40): List<Event> =
+        events.asReversed().filter { event ->
+            event.type in namedTypes && parseNamed(event.detail) != null
+        }.take(limit)
 }

@@ -233,6 +233,7 @@ fun LibraryVideoPlayerDialog(
     thoughtsSplitLandscape: Float = 0.62f,
     thoughtsSplitPortrait: Float = 0.55f,
     onThoughtsSplitChange: (landscape: Boolean, fraction: Float) -> Unit = { _, _ -> },
+    onTrackStarted: (BibleUserVideo) -> Unit = {},
 ) {
     val context = LocalContext.current
     val videoShareState = rememberLibraryVideoShareState()
@@ -257,6 +258,7 @@ fun LibraryVideoPlayerDialog(
     val player = remember { MediaPlayer() }
 
     var currentIx by remember { mutableIntStateOf(safeStart) }
+    val loggedMediaId = remember { mutableStateOf<String?>(null) }
     var isPlaying by remember { mutableStateOf(false) }
     var speed by remember { mutableFloatStateOf(1f) }
     /** Реверс: сначала нативный (−speed + звук), при отказе кодека — перемотка без звука. */
@@ -313,6 +315,7 @@ fun LibraryVideoPlayerDialog(
     val initialSeekRef = rememberUpdatedState(initialSeekByMediaId)
     val onProgressRef = rememberUpdatedState(onPlaybackProgress)
     val onMarkWatchedRef = rememberUpdatedState(onMarkFullyWatched)
+    val onTrackStartedRef = rememberUpdatedState(onTrackStarted)
     val sessionSeekById = remember { initialSeekByMediaId.toMutableMap() }
     var playbackSessionStarted by remember { mutableStateOf(false) }
     var boundPlaybackKey by remember { mutableStateOf<String?>(null) }
@@ -408,6 +411,11 @@ fun LibraryVideoPlayerDialog(
                 }
                 currentIxAtomic.set(index)
                 currentIx = index
+                val started = pair.first
+                if (loggedMediaId.value != started.id) {
+                    loggedMediaId.value = started.id
+                    onTrackStartedRef.value(started)
+                }
                 player.setOnCompletionListener {
                     val goNext = continueRef.value
                     val lst = tracksRef.value
