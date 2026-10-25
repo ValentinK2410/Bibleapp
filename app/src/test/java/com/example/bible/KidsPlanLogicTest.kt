@@ -13,7 +13,6 @@ import com.example.bible.data.verseChunks
 import com.example.bible.data.verseTokens
 import com.example.bible.data.westernEaster
 import org.junit.Assert.assertEquals
-import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
 import org.junit.Test
 import java.io.File
@@ -81,15 +80,20 @@ class KidsPlanLogicTest {
     }
 
     @Test
-    fun missingFramesStayListedUntilFilesArrive() {
-        assertEquals(86, KidsAssetPlaceholders.missingStoryFrames.size)
+    fun storyFramesArePresentAndSongsStayPlaceholders() {
+        assertTrue(KidsAssetPlaceholders.missingStoryFrames.isEmpty())
         assertEquals(8, KidsAssetPlaceholders.songAudio.size)
         val drawable = listOf(
             File("src/main/res/drawable"),
             File("app/src/main/res/drawable"),
         ).first { it.isDirectory }
-        KidsAssetPlaceholders.missingStoryFrames.forEach { name ->
-            assertFalse(name, File(drawable, name).exists())
+        val fresh = KidsBibleStories.all.filter { it.stage > 0 }
+        assertEquals(30, fresh.size)
+        fresh.forEach { story ->
+            assertTrue(story.id, File(drawable, "kids_story_${story.id}.webp").exists())
+            story.plannedArtFiles().forEach { name ->
+                assertTrue(name, File(drawable, name).exists())
+            }
         }
     }
 
