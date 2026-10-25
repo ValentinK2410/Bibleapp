@@ -1,0 +1,55 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 800" width="800" height="800" data-page="easter_1" data-level="detailed">
+  <title>Пустая гробница</title>
+  <g fill="#FFFFFF" stroke="#1F2937" stroke-width="4" stroke-linejoin="round" stroke-linecap="round">
+    <path id="sky" data-hint="#FDE68A" d="M0,0 L800,0 L800,800 L0,800 Z"/>
+    <path id="sun" data-hint="#FBBF24" d="M68,140 A62,62 0 1 1 192,140 A62,62 0 1 1 68,140 Z"/>
+    <path id="sun_ray1" data-hint="#F59E0B" d="M202,150 L240,140 L202,130 Z"/>
+    <path id="sun_ray2" data-hint="#F59E0B" d="M187.4,184.7 L225.3,195 L197.4,167.3 Z"/>
+    <path id="sun_ray3" data-hint="#F59E0B" d="M157.3,207.4 L185,235.3 L174.7,197.4 Z"/>
+    <path id="sun_ray4" data-hint="#F59E0B" d="M120,212 L130,250 L140,212 Z"/>
+    <path id="sun_ray5" data-hint="#F59E0B" d="M85.3,197.4 L75,235.3 L102.7,207.4 Z"/>
+    <path id="sun_ray6" data-hint="#F59E0B" d="M62.6,167.3 L34.7,195 L72.6,184.7 Z"/>
+    <path id="sun_ray7" data-hint="#F59E0B" d="M58,130 L20,140 L58,150 Z"/>
+    <path id="sun_ray8" data-hint="#F59E0B" d="M72.6,95.3 L34.7,85 L62.6,112.7 Z"/>
+    <path id="sun_ray9" data-hint="#F59E0B" d="M102.7,72.6 L75,44.7 L85.3,82.6 Z"/>
+    <path id="sun_ray10" data-hint="#F59E0B" d="M140,68 L130,30 L120,68 Z"/>
+    <path id="sun_ray11" data-hint="#F59E0B" d="M174.7,82.6 L185,44.7 L157.3,72.6 Z"/>
+    <path id="sun_ray12" data-hint="#F59E0B" d="M197.4,112.7 L225.3,85 L187.4,95.3 Z"/>
+    <path id="cloud1" data-hint="#FFFFFF" d="M500,100 A14,14 0 0 1 481.3,114 A28.4,28.4 0 0 1 433.9,114 A32.3,32.3 0 0 1 380,114 A21.1,21.1 0 0 1 344.8,113.7 A16.4,16.4 0 0 1 344.8,86.3 A24.6,24.6 0 0 1 380,65.4 A32.5,32.5 0 0 1 433.9,60.6 A29.6,29.6 0 0 1 481.3,74.3 A19.1,19.1 0 0 1 500,100 Z"/>
+    <path id="cloud2" data-hint="#FFFFFF" d="M730,180 A12.3,12.3 0 0 1 713.6,192.2 A24.9,24.9 0 0 1 672.2,192.2 A28.3,28.3 0 0 1 625,192.2 A18.5,18.5 0 0 1 594.2,192 A14.4,14.4 0 0 1 594.2,168 A21.5,21.5 0 0 1 625,149.7 A28.4,28.4 0 0 1 672.2,145.5 A25.9,25.9 0 0 1 713.6,157.5 A16.7,16.7 0 0 1 730,180 Z"/>
+    <path id="bird1" data-hint="#8B5CF6" d="M269.2,230 Q284.6,210.4 300,230 Q315.4,210.4 330.8,230 Q315.4,221.6 300,237 Q284.6,221.6 269.2,230 Z"/>
+    <path id="bird2" data-hint="#8B5CF6" d="M309.2,250 Q324.6,230.4 340,250 Q355.4,230.4 370.8,250 Q355.4,241.6 340,257 Q324.6,241.6 309.2,250 Z"/>
+    <path id="hill_back" data-hint="#4ADE80" d="M-100,800 C40,380 124,380 180,380 C264,380 390,380 600,800 Z"/>
+    <path id="hill" data-hint="#86EFAC" d="M200,800 C380,350 488,350 560,350 C628,350 730,350 900,800 Z"/>
+    <path id="tomb_rock" data-hint="#CBD5E1" d="M330,600 C280,571.7 321.7,470 340,430 C358.3,390 396.7,365 440,360 C483.3,355 566.7,360 600,400 C633.3,440 685,566.7 640,600 C595,633.3 380,628.3 330,600 Z"/>
+    <path id="tomb_door" data-hint="#334155" d="M468,470 H468 A48,48 0 0 1 516,518 V552 A48,48 0 0 1 468,600 H468 A48,48 0 0 1 420,552 V518 A48,48 0 0 1 468,470 Z"/>
+    <path id="light_beam" data-hint="#FEF9C3" d="M430,600 L506,600 L560,700 L380,700 Z"/>
+    <path id="stone" data-hint="#94A3B8" d="M606,560 A64,64 0 1 1 734,560 A64,64 0 1 1 606,560 Z"/>
+    <path id="stone_crack" data-hint="#64748B" d="M650,520 L690,560 L660,600 L672,560 Z"/>
+    <path id="path" data-hint="#FDE68A" d="M380,800 L430,700 L510,700 L570,800 Z"/>
+    <path id="tulip1_stem" data-hint="#16A34A" d="M160,600 H160 A3,3 0 0 1 163,603 V657 A3,3 0 0 1 160,660 H160 A3,3 0 0 1 157,657 V603 A3,3 0 0 1 160,600 Z"/>
+    <path id="tulip1_flower" data-hint="#F472B6" d="M142,570 L151,586 L160,568 L169,586 L178,570 L176,604 L144,604 Z"/>
+    <path id="tulip2_stem" data-hint="#16A34A" d="M240,660 H240 A3,3 0 0 1 243,663 V717 A3,3 0 0 1 240,720 H240 A3,3 0 0 1 237,717 V663 A3,3 0 0 1 240,660 Z"/>
+    <path id="tulip2_flower" data-hint="#EF4444" d="M222,630 L231,646 L240,628 L249,646 L258,630 L256,664 L224,664 Z"/>
+    <path id="tulip3_stem" data-hint="#16A34A" d="M90,720 H90 A3,3 0 0 1 93,723 V777 A3,3 0 0 1 90,780 H90 A3,3 0 0 1 87,777 V723 A3,3 0 0 1 90,720 Z"/>
+    <path id="tulip3_flower" data-hint="#FACC15" d="M72,690 L81,706 L90,688 L99,706 L108,690 L106,724 L74,724 Z"/>
+    <path id="tulip4_stem" data-hint="#16A34A" d="M620,700 H620 A3,3 0 0 1 623,703 V757 A3,3 0 0 1 620,760 H620 A3,3 0 0 1 617,757 V703 A3,3 0 0 1 620,700 Z"/>
+    <path id="tulip4_flower" data-hint="#8B5CF6" d="M602,670 L611,686 L620,668 L629,686 L638,670 L636,704 L604,704 Z"/>
+    <path id="tulip5_stem" data-hint="#16A34A" d="M720,740 H720 A3,3 0 0 1 723,743 V797 A3,3 0 0 1 720,800 H720 A3,3 0 0 1 717,797 V743 A3,3 0 0 1 720,740 Z"/>
+    <path id="tulip5_flower" data-hint="#F97316" d="M702,710 L711,726 L720,708 L729,726 L738,710 L736,744 L704,744 Z"/>
+    <path id="daisy_petal1" data-hint="#FFFFFF" d="M302.6,740 A11.7,7.2 0 1 1 326,740 A11.7,7.2 0 1 1 302.6,740 Z"/>
+    <path id="daisy_petal2" data-hint="#FFFFFF" d="M300.8,742.5 A11.7,7.2 72 1 1 308,764.7 A11.7,7.2 72 1 1 300.8,742.5 Z"/>
+    <path id="daisy_petal3" data-hint="#FFFFFF" d="M297.9,741.5 A11.7,7.2 144 1 1 279,755.3 A11.7,7.2 144 1 1 297.9,741.5 Z"/>
+    <path id="daisy_petal4" data-hint="#FFFFFF" d="M297.9,738.5 A11.7,7.2 216 1 1 279,724.7 A11.7,7.2 216 1 1 297.9,738.5 Z"/>
+    <path id="daisy_petal5" data-hint="#FFFFFF" d="M300.8,737.5 A11.7,7.2 288 1 1 308,715.3 A11.7,7.2 288 1 1 300.8,737.5 Z"/>
+    <path id="daisy_center" data-hint="#FACC15" d="M292.2,740 A7.8,7.8 0 1 1 307.8,740 A7.8,7.8 0 1 1 292.2,740 Z"/>
+    <path id="butterfly_wing1" data-hint="#38BDF8" d="M544.4,309 A18,12 -30 1 1 575.6,291 A18,12 -30 1 1 544.4,309 Z"/>
+    <path id="butterfly_wing2" data-hint="#38BDF8" d="M574.4,291 A18,12 30 1 1 605.6,309 A18,12 30 1 1 574.4,291 Z"/>
+    <path id="butterfly_body" data-hint="#1F2937" d="M571,304 A4,14 0 1 1 579,304 A4,14 0 1 1 571,304 Z"/>
+    <path id="palm_trunk" data-hint="#B45309" d="M750,330 H752 A10,10 0 0 1 762,340 V570 A10,10 0 0 1 752,580 H750 A10,10 0 0 1 740,570 V340 A10,10 0 0 1 750,330 Z"/>
+    <path id="palm_leaf1" data-hint="#22C55E" d="M751,336.8 A60,14 200 1 1 638.2,295.8 A60,14 200 1 1 751,336.8 Z"/>
+    <path id="palm_leaf2" data-hint="#22C55E" d="M751,347.3 A60,14 240 1 1 691,243.4 A60,14 240 1 1 751,347.3 Z"/>
+    <path id="palm_leaf3" data-hint="#22C55E" d="M751,348.8 A60,14 290 1 1 792,236 A60,14 290 1 1 751,348.8 Z"/>
+    <path id="palm_leaf4" data-hint="#22C55E" d="M751,340 A60,14 330 1 1 854.9,280 A60,14 330 1 1 751,340 Z"/>
+  </g>
+</svg>

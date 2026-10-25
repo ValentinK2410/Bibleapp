@@ -7,6 +7,7 @@ import android.os.Build
 import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -16,6 +17,8 @@ import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -33,10 +36,13 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -125,26 +131,39 @@ private fun KidsPrayerDetail(
             verticalArrangement = Arrangement.spacedBy(12.dp),
         ) {
             item {
-                Text(
-                    "Фон-заглушка: картинки kids_prayer_${prayer.id}.webp ещё нет. Сейчас цветная карточка.",
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    fontSize = 13.sp,
-                )
-            }
-            item {
-                Column(
+                val art = kidsPrayerImage(prayer.id)
+                Box(
                     Modifier
                         .fillMaxWidth()
-                        .clip(RoundedCornerShape(28.dp))
-                        .background(androidx.compose.ui.graphics.Brush.linearGradient(prayer.gradient.map { Color(it) }))
-                        .padding(20.dp),
+                        .aspectRatio(4f / 3f)
+                        .clip(RoundedCornerShape(28.dp)),
                 ) {
-                    Text(prayer.emoji, fontSize = 42.sp)
-                    Spacer(Modifier.height(8.dp))
-                    Text(phrase.text, color = Color.White, fontSize = 26.sp, fontWeight = FontWeight.Bold, lineHeight = 34.sp)
-                    if (phrase.hint.isNotBlank()) {
-                        Spacer(Modifier.height(8.dp))
-                        Text(phrase.hint, color = Color.White.copy(alpha = 0.9f))
+                    if (art != 0) {
+                        Image(
+                            painter = painterResource(art),
+                            contentDescription = prayer.title,
+                            contentScale = ContentScale.Crop,
+                            modifier = Modifier.fillMaxSize(),
+                        )
+                    } else {
+                        Box(
+                            Modifier
+                                .fillMaxSize()
+                                .background(androidx.compose.ui.graphics.Brush.linearGradient(prayer.gradient.map { Color(it) })),
+                        )
+                    }
+                    Column(
+                        Modifier
+                            .align(Alignment.BottomCenter)
+                            .fillMaxWidth()
+                            .background(Color(0xCC1F2937))
+                            .padding(16.dp),
+                    ) {
+                        Text(phrase.text, color = Color.White, fontSize = 22.sp, fontWeight = FontWeight.Bold, lineHeight = 30.sp)
+                        if (phrase.hint.isNotBlank()) {
+                            Spacer(Modifier.height(6.dp))
+                            Text(phrase.hint, color = Color.White.copy(alpha = 0.9f))
+                        }
                     }
                 }
             }
@@ -312,9 +331,21 @@ fun KidsHeroesScreen(onBack: () -> Unit, onOpenStory: (String) -> Unit, onOpenGe
         KidsSectionScaffold(hero.name, { open = null }) { padding ->
             LazyColumn(Modifier.padding(padding).padding(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
                 item {
-                    Text(hero.emoji, fontSize = 64.sp)
+                    val art = kidsHeroImage(hero.id)
+                    if (art != 0) {
+                        Image(
+                            painter = painterResource(art),
+                            contentDescription = hero.name,
+                            contentScale = ContentScale.Crop,
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .aspectRatio(1.2f)
+                                .clip(RoundedCornerShape(24.dp)),
+                        )
+                    } else {
+                        Text(hero.emoji, fontSize = 64.sp)
+                    }
                     Text(if (unlocked) hero.who else "Карточка откроется после истории", fontSize = 18.sp)
-                    Text("Портрет-заглушка: kids_hero_${hero.id}.webp", fontSize = 13.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
                 }
                 if (unlocked) {
                     items(hero.facts) { Text("• $it", fontSize = 18.sp) }
@@ -347,7 +378,20 @@ fun KidsHeroesScreen(onBack: () -> Unit, onOpenStory: (String) -> Unit, onOpenGe
                         .clickable { open = hero }
                         .padding(16.dp),
                 ) {
-                    Text("${if (unlocked) hero.emoji else "🔒"}  ${hero.name}", color = Color.White, fontWeight = FontWeight.Black, fontSize = 20.sp)
+                    val art = kidsHeroImage(hero.id)
+                    if (art != 0 && unlocked) {
+                        Image(
+                            painter = painterResource(art),
+                            contentDescription = null,
+                            contentScale = ContentScale.Crop,
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .height(96.dp)
+                                .clip(RoundedCornerShape(16.dp)),
+                        )
+                        Spacer(Modifier.height(8.dp))
+                    }
+                    Text("${if (unlocked) "" else "🔒 "}${hero.name}", color = Color.White, fontWeight = FontWeight.Black, fontSize = 20.sp)
                     Text(if (unlocked) hero.who else "Ещё закрыто", color = Color.White.copy(alpha = 0.9f))
                 }
             }

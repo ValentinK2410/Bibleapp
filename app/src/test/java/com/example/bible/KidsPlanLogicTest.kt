@@ -1,6 +1,7 @@
 package com.example.bible
 
 import com.example.bible.data.KidsAgeMode
+import com.example.bible.data.KidsAssetPlaceholders
 import com.example.bible.data.KidsBibleStories
 import com.example.bible.data.KidsMemoryVerses
 import com.example.bible.data.gameIsSubstringOfFull
@@ -12,6 +13,7 @@ import com.example.bible.data.verseChunks
 import com.example.bible.data.verseTokens
 import com.example.bible.data.westernEaster
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
 import org.junit.Test
 import java.io.File
@@ -76,6 +78,43 @@ class KidsPlanLogicTest {
         assertEquals(KidsAgeMode.SMALL, suggestedKidsAgeMode(5))
         assertEquals(KidsAgeMode.BIG, suggestedKidsAgeMode(6))
         assertEquals(KidsAgeMode.BIG, suggestedKidsAgeMode(10))
+    }
+
+    @Test
+    fun missingFramesStayListedUntilFilesArrive() {
+        assertEquals(86, KidsAssetPlaceholders.missingStoryFrames.size)
+        assertEquals(8, KidsAssetPlaceholders.songAudio.size)
+        val drawable = listOf(
+            File("src/main/res/drawable"),
+            File("app/src/main/res/drawable"),
+        ).first { it.isDirectory }
+        KidsAssetPlaceholders.missingStoryFrames.forEach { name ->
+            assertFalse(name, File(drawable, name).exists())
+        }
+    }
+
+    @Test
+    fun coloringOutlinesLoadSmallAndDetailed() {
+        val root = listOf(
+            File("src/main/assets/kids/coloring"),
+            File("app/src/main/assets/kids/coloring"),
+        ).first { it.isDirectory }
+        val files = root.listFiles { file -> file.extension == "json" }!!.sortedBy { it.name }
+        assertEquals(6, files.size)
+        assertEquals(12, root.listFiles { file -> file.extension == "svg" }!!.size)
+        files.forEach { file ->
+            val raw = file.readText()
+            assertTrue(file.name, raw.contains("\"format\": \"kids-coloring/v1\""))
+            val small = raw.substringAfter("\"small\"").substringBefore("\"detailed\"")
+            val detailed = raw.substringAfter("\"detailed\"")
+            val smallRegions = Regex("\"d\"\\s*:").findAll(small).count()
+            val detailedRegions = Regex("\"d\"\\s*:").findAll(detailed).count()
+            assertTrue(file.name, smallRegions > 0)
+            assertTrue("$file detailed=$detailedRegions small=$smallRegions", detailedRegions > smallRegions)
+        }
+        val sheep = files.first { it.name == "kids_coloring_lost_sheep_1.json" }.readText()
+        assertTrue(sheep.contains("\"id\": \"sheep_1\""))
+        assertTrue(sheep.contains("kids_coloring_lost_sheep_1.json"))
     }
 
     @Test

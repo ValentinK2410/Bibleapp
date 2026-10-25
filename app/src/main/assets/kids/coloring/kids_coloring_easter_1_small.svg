@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 800" width="800" height="800" data-page="easter_1" data-level="small">
+  <title>Пустая гробница</title>
+  <g fill="#FFFFFF" stroke="#1F2937" stroke-width="4" stroke-linejoin="round" stroke-linecap="round">
+    <path id="sky" data-hint="#FDE68A" d="M0,0 L800,0 L800,800 L0,800 Z"/>
+    <path id="sun" data-hint="#FBBF24" d="M70,150 A80,80 0 1 1 230,150 A80,80 0 1 1 70,150 Z"/>
+    <path id="cloud" data-hint="#FFFFFF" d="M660,140 A17.3,17.3 0 0 1 636.6,156.8 A35.5,35.5 0 0 1 577.4,156.8 A40.4,40.4 0 0 1 510,156.8 A26.4,26.4 0 0 1 466,156.4 A19.7,19.7 0 0 1 466,123.6 A30.4,30.4 0 0 1 510,98.4 A40.6,40.6 0 0 1 577.4,92.7 A36.9,36.9 0 0 1 636.6,109.1 A23.2,23.2 0 0 1 660,140 Z"/>
+    <path id="hill" data-hint="#86EFAC" d="M-60,800 C180,360 324,360 420,360 C508,360 640,360 860,800 Z"/>
+    <path id="tomb" data-hint="#CBD5E1" d="M320,610 C275,581.7 313.3,478.3 330,440 C346.7,401.7 381.7,383.3 420,380 C458.3,376.7 530,381.7 560,420 C590,458.3 640,578.3 600,610 C560,641.7 365,638.3 320,610 Z"/>
+    <path id="tomb_door" data-hint="#334155" d="M445,480 H445 A45,45 0 0 1 490,525 V565 A45,45 0 0 1 445,610 H445 A45,45 0 0 1 400,565 V525 A45,45 0 0 1 445,480 Z"/>
+    <path id="stone" data-hint="#94A3B8" d="M550,560 A70,70 0 1 1 690,560 A70,70 0 1 1 550,560 Z"/>
+    <path id="path" data-hint="#FDE68A" d="M330,800 L420,612 L480,612 L520,800 Z"/>
+    <path id="flower" data-hint="#F472B6" d="M170,600 L179,624.4 L204.6,620 L188,640 L204.6,660 L179,655.6 L170,680 L161,655.6 L135.4,660 L152,640 L135.4,620 L161,624.4 Z"/>
+    <path id="flower_center" data-hint="#FACC15" d="M156,640 A14,14 0 1 1 184,640 A14,14 0 1 1 156,640 Z"/>
+  </g>
+</svg>

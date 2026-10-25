@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 800" width="800" height="800" data-page="noah_1" data-level="small">
+  <title>Ной и ковчег</title>
+  <g fill="#FFFFFF" stroke="#1F2937" stroke-width="4" stroke-linejoin="round" stroke-linecap="round">
+    <path id="sky" data-hint="#7DD3FC" d="M0,0 L800,0 L800,800 L0,800 Z"/>
+    <path id="rainbow_red" data-hint="#EF4444" d="M100,440 A300,300 0 0 1 700,440 L650,440 A250,250 0 0 0 150,440 Z"/>
+    <path id="rainbow_yellow" data-hint="#FACC15" d="M150,440 A250,250 0 0 1 650,440 L600,440 A200,200 0 0 0 200,440 Z"/>
+    <path id="rainbow_blue" data-hint="#38BDF8" d="M200,440 A200,200 0 0 1 600,440 L550,440 A150,150 0 0 0 250,440 Z"/>
+    <path id="sun" data-hint="#FACC15" d="M50,110 A60,60 0 1 1 170,110 A60,60 0 1 1 50,110 Z"/>
+    <path id="sea" data-hint="#38BDF8" d="M0,800 L0,600 Q40,582 80,600 Q120,618 160,600 Q200,582 240,600 Q280,618 320,600 Q360,582 400,600 Q440,618 480,600 Q520,582 560,600 Q600,618 640,600 Q680,582 720,600 Q760,618 800,600 L800,800 Z"/>
+    <path id="hull" data-hint="#B45309" d="M110,470 L690,470 L610,640 L190,640 Z"/>
+    <path id="cabin" data-hint="#FDE68A" d="M276,350 H524 A6,6 0 0 1 530,356 V468 A6,6 0 0 1 524,474 H276 A6,6 0 0 1 270,468 V356 A6,6 0 0 1 276,350 Z"/>
+    <path id="roof" data-hint="#DC2626" d="M240,358 L400,270 L560,358 Z"/>
+    <path id="window" data-hint="#7DD3FC" d="M370,410 A30,30 0 1 1 430,410 A30,30 0 1 1 370,410 Z"/>
+    <path id="dove" data-hint="#FFFBF5" d="M587.2,180 Q613.6,146.4 640,180 Q666.4,146.4 692.8,180 Q666.4,165.6 640,192 Q613.6,165.6 587.2,180 Z"/>
+  </g>
+</svg>

@@ -20,7 +20,7 @@ data class KidsColorPage(
     val title: String,
     val emoji: String,
     val regions: List<KidsColorRegion>,
-    /** Настоящий контур ещё не нарисован. Имя файла, который можно добавить позже. */
+    /** JSON `kids-coloring/v1` в assets/kids/coloring/. */
     val assetName: String,
 )
 

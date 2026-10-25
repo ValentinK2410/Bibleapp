@@ -40,9 +40,11 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.graphics.Path
+import androidx.compose.ui.graphics.asComposePath
 import androidx.compose.ui.graphics.drawscope.Stroke
+import androidx.compose.ui.graphics.drawscope.scale
+import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
@@ -53,8 +55,10 @@ import com.example.bible.data.KidsAgeMode
 import com.example.bible.data.KidsColorPage
 import com.example.bible.data.KidsColorRegion
 import com.example.bible.data.KidsColorShape
+import com.example.bible.data.KidsColorOutline
 import com.example.bible.data.KidsColoringPages
 import com.example.bible.data.KidsFamilyStore
+import com.example.bible.data.loadColoringOutlines
 import kotlinx.coroutines.launch
 import org.json.JSONObject
 import java.io.File
@@ -79,7 +83,7 @@ fun KidsColoringScreen(onBack: () -> Unit, pageId: String? = null) {
         ) {
             item(span = { androidx.compose.foundation.lazy.grid.GridItemSpan(maxLineSpan) }) {
                 Text(
-                    "Контуры-заглушки из простых фигур. Настоящие раскраски — файлы kids_coloring_<id>.json с областями path.",
+                    "Малышам — крупные части, школьникам — подробный рисунок. Заливка сохраняется на этом телефоне.",
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
             }
@@ -113,24 +117,31 @@ private fun ColoringCanvas(page: KidsColorPage, onBack: () -> Unit) {
     val strokes = remember { mutableStateListOf<Ink>() }
     var current by remember { mutableStateOf<List<Offset>>(emptyList()) }
     var gate by remember { mutableStateOf(false) }
+    val outlines = remember(page.assetName, young) {
+        paintOutlines(loadColoringOutlines(context, page.assetName, small = young))
+    }
     KidsSectionScaffold(page.title, onBack) { padding ->
         Column(Modifier.fillMaxSize().padding(padding).padding(12.dp)) {
-            Text("Заглушка вместо ${page.assetName}", fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
             Canvas(
                 Modifier
                     .fillMaxWidth()
                     .aspectRatio(1f)
                     .clip(RoundedCornerShape(20.dp))
                     .background(Color(0xFFFFFBF5))
-                    .pointerInput(tool, color) {
+                    .pointerInput(tool, color, outlines) {
                         detectDragGestures(
                             onDragStart = { offset ->
                                 if (tool == "fill") {
-                                    val hit = hitRegion(page.regions, offset, size.width.toFloat(), size.height.toFloat())
-                                    if (hit != null) {
-                                        fills.value = fills.value + (hit.id to color)
+                                    val hitId = if (outlines.isNotEmpty()) {
+                                        hitOutline(outlines, offset, size.width.toFloat(), size.height.toFloat())?.id
+                                    } else {
+                                        hitRegion(page.regions, offset, size.width.toFloat(), size.height.toFloat())?.id
+                                    }
+                                    if (hitId != null) {
+                                        fills.value = fills.value + (hitId to color)
                                         saveFills(context, family.bucketId(), page.id, fills.value)
-                                        if (fills.value.size >= page.regions.size) {
+                                        val total = if (outlines.isNotEmpty()) outlines.size else page.regions.size
+                                        if (fills.value.size >= total) {
                                             scope.launch { KidsFamilyStore.recordColoring(context, page.id) }
                                         }
                                     }
@@ -152,10 +163,21 @@ private fun ColoringCanvas(page: KidsColorPage, onBack: () -> Unit) {
                         )
                     },
             ) {
-                page.regions.forEach { region ->
-                    val paint = fills.value[region.id] ?: Color.White
-                    drawShape(region, paint)
-                    drawShape(region, Color(0xFF334155), stroke = true)
+                if (outlines.isNotEmpty()) {
+                    val factor = size.width / 800f
+                    scale(factor, factor, pivot = Offset.Zero) {
+                        outlines.forEach { region ->
+                            val paint = fills.value[region.id] ?: Color.White
+                            drawPath(region.composePath, paint)
+                            drawPath(region.composePath, Color(0xFF1F2937), style = Stroke(width = 4f))
+                        }
+                    }
+                } else {
+                    page.regions.forEach { region ->
+                        val paint = fills.value[region.id] ?: Color.White
+                        drawShape(region, paint)
+                        drawShape(region, Color(0xFF334155), stroke = true)
+                    }
                 }
                 (strokes + Ink(color, current, tool == "erase")).forEach { ink ->
                     if (ink.points.size < 2) return@forEach
@@ -204,7 +226,7 @@ private fun ColoringCanvas(page: KidsColorPage, onBack: () -> Unit) {
             onDismiss = { gate = false },
             onPassed = {
                 gate = false
-                exportColoring(context, page, fills.value)
+                exportColoring(context, page, fills.value, outlines)
             },
         )
     }
@@ -262,24 +284,64 @@ private fun saveFills(context: android.content.Context, bucket: String, pageId: 
     fillsFile(context, bucket, pageId).writeText(json.toString())
 }
 
-private fun exportColoring(context: android.content.Context, page: KidsColorPage, fills: Map<String, Color>) {
+private data class PaintedOutline(
+    val id: String,
+    val path: android.graphics.Path,
+    val composePath: Path,
+)
+
+private fun paintOutlines(outlines: List<KidsColorOutline>): List<PaintedOutline> =
+    outlines.mapNotNull { outline ->
+        val path = androidx.core.graphics.PathParser.createPathFromPathData(outline.d) ?: return@mapNotNull null
+        PaintedOutline(outline.id, path, path.asComposePath())
+    }
+
+private fun hitOutline(regions: List<PaintedOutline>, point: Offset, width: Float, height: Float): PaintedOutline? {
+    if (width <= 0f || height <= 0f) return null
+    val x = (point.x * 800f / width).toInt()
+    val y = (point.y * 800f / height).toInt()
+    val clip = android.graphics.Region(0, 0, 800, 800)
+    return regions.asReversed().firstOrNull { region ->
+        val hit = android.graphics.Region()
+        hit.setPath(region.path, clip)
+        hit.contains(x, y)
+    }
+}
+
+private fun exportColoring(
+    context: android.content.Context,
+    page: KidsColorPage,
+    fills: Map<String, Color>,
+    outlines: List<PaintedOutline>,
+) {
     val bitmap = Bitmap.createBitmap(800, 800, Bitmap.Config.ARGB_8888)
     val canvas = android.graphics.Canvas(bitmap)
     canvas.drawColor(android.graphics.Color.parseColor("#FFFBF5"))
     val paint = android.graphics.Paint(android.graphics.Paint.ANTI_ALIAS_FLAG)
-    page.regions.forEach { region ->
-        val color = fills[region.id]
-        paint.style = android.graphics.Paint.Style.FILL
-        paint.color = color?.value?.toInt() ?: android.graphics.Color.WHITE
-        val cx = region.cx * 800f
-        val cy = region.cy * 800f
-        val w = region.w * 800f
-        val h = region.h * 800f
-        canvas.drawOval(cx - w / 2f, cy - h / 2f, cx + w / 2f, cy + h / 2f, paint)
-        paint.style = android.graphics.Paint.Style.STROKE
-        paint.strokeWidth = 8f
-        paint.color = android.graphics.Color.DKGRAY
-        canvas.drawOval(cx - w / 2f, cy - h / 2f, cx + w / 2f, cy + h / 2f, paint)
+    if (outlines.isNotEmpty()) {
+        outlines.forEach { region ->
+            paint.style = android.graphics.Paint.Style.FILL
+            paint.color = fills[region.id]?.toArgb() ?: android.graphics.Color.WHITE
+            canvas.drawPath(region.path, paint)
+            paint.style = android.graphics.Paint.Style.STROKE
+            paint.strokeWidth = 4f
+            paint.color = android.graphics.Color.parseColor("#1F2937")
+            canvas.drawPath(region.path, paint)
+        }
+    } else {
+        page.regions.forEach { region ->
+            paint.style = android.graphics.Paint.Style.FILL
+            paint.color = fills[region.id]?.toArgb() ?: android.graphics.Color.WHITE
+            val cx = region.cx * 800f
+            val cy = region.cy * 800f
+            val w = region.w * 800f
+            val h = region.h * 800f
+            canvas.drawOval(cx - w / 2f, cy - h / 2f, cx + w / 2f, cy + h / 2f, paint)
+            paint.style = android.graphics.Paint.Style.STROKE
+            paint.strokeWidth = 8f
+            paint.color = android.graphics.Color.DKGRAY
+            canvas.drawOval(cx - w / 2f, cy - h / 2f, cx + w / 2f, cy + h / 2f, paint)
+        }
     }
     val values = ContentValues().apply {
         put(MediaStore.Images.Media.DISPLAY_NAME, "bible_kids_${page.id}.png")

@@ -1,6 +1,7 @@
 package com.example.bible.ui
 
 import androidx.compose.foundation.Canvas
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.gestures.detectTransformGestures
@@ -25,17 +26,46 @@ import androidx.compose.ui.graphics.PathEffect
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.example.bible.R
 import com.example.bible.data.KidsAgeMode
 import com.example.bible.data.KidsBibleMap
 import com.example.bible.data.KidsBibleStories
 import com.example.bible.data.KidsFamilyStore
 import com.example.bible.data.KidsMapPlace
 import kotlin.math.hypot
+
+/** Картинка kids_map_lands — 768×1024. Точки считаются внутри вписанного рисунка, без обрезки краёв. */
+private const val MapImageAspect = 768f / 1024f
+
+private fun mapPicture(width: Float, height: Float): Offset {
+    if (width <= 0f || height <= 0f) return Offset.Zero
+    val box = width / height
+    val drawW: Float
+    val drawH: Float
+    if (box > MapImageAspect) {
+        drawH = height
+        drawW = height * MapImageAspect
+    } else {
+        drawW = width
+        drawH = width / MapImageAspect
+    }
+    return Offset((width - drawW) / 2f, (height - drawH) / 2f)
+}
+
+private fun mapPoint(place: KidsMapPlace, width: Float, height: Float): Offset {
+    val origin = mapPicture(width, height)
+    val box = width / height
+    val drawW = if (box > MapImageAspect) height * MapImageAspect else width
+    val drawH = if (box > MapImageAspect) height else width / MapImageAspect
+    return Offset(origin.x + place.x * drawW, origin.y + place.y * drawH)
+}
 
 @Composable
 fun KidsMapScreen(onBack: () -> Unit, onOpenStory: (String) -> Unit) {
@@ -51,7 +81,7 @@ fun KidsMapScreen(onBack: () -> Unit, onOpenStory: (String) -> Unit) {
     KidsSectionScaffold("Карта библейских земель", onBack) { padding ->
         Column(Modifier.fillMaxSize().padding(padding)) {
             Text(
-                "Карта нарисована фигурами: файла kids_map_lands.webp ещё нет. Можно двигать и увеличивать.",
+                "Можно двигать и увеличивать. Точки стоят рядом с городами, карта примерная.",
                 modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
                 fontSize = 13.sp,
             )
@@ -71,6 +101,19 @@ fun KidsMapScreen(onBack: () -> Unit, onOpenStory: (String) -> Unit) {
                     .clip(RoundedCornerShape(24.dp))
                     .background(Color(0xFFBAE6FD)),
             ) {
+                Image(
+                    painter = painterResource(R.drawable.kids_map_lands),
+                    contentDescription = "Карта библейских земель",
+                    contentScale = ContentScale.Fit,
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .graphicsLayer {
+                            scaleX = scale
+                            scaleY = scale
+                            translationX = pan.x
+                            translationY = pan.y
+                        },
+                )
                 Canvas(
                     Modifier
                         .fillMaxSize()
@@ -89,9 +132,11 @@ fun KidsMapScreen(onBack: () -> Unit, onOpenStory: (String) -> Unit) {
                         .pointerInput(read, young) {
                             detectTapGestures { tap ->
                                 val place = KidsBibleMap.places.minByOrNull { place ->
-                                    hypot(place.x * size.width - tap.x, place.y * size.height - tap.y)
+                                    val point = mapPoint(place, size.width.toFloat(), size.height.toFloat())
+                                    hypot(point.x - tap.x, point.y - tap.y)
                                 }
-                                if (place != null && hypot(place.x * size.width - tap.x, place.y * size.height - tap.y) < 70f) {
+                                val hit = place?.let { mapPoint(it, size.width.toFloat(), size.height.toFloat()) }
+                                if (place != null && hit != null && hypot(hit.x - tap.x, hit.y - tap.y) < 70f) {
                                     selected = place
                                     speak("${place.name}. ${place.blurb}")
                                     if (young) {
@@ -105,16 +150,14 @@ fun KidsMapScreen(onBack: () -> Unit, onOpenStory: (String) -> Unit) {
                             }
                         },
                 ) {
-                    drawOval(Color(0xFFFDE68A), Offset(size.width * 0.18f, size.height * 0.18f), androidx.compose.ui.geometry.Size(size.width * 0.62f, size.height * 0.62f))
-                    drawOval(Color(0xFF86EFAC), Offset(size.width * 0.30f, size.height * 0.28f), androidx.compose.ui.geometry.Size(size.width * 0.28f, size.height * 0.22f))
                     if (!young) {
                         KidsBibleMap.routes.forEach { route ->
                             val pts = route.placeIds.mapNotNull { id -> KidsBibleMap.place(id) }
                             for (i in 0 until pts.size - 1) {
                                 drawLine(
                                     Color(route.color),
-                                    Offset(pts[i].x * size.width, pts[i].y * size.height),
-                                    Offset(pts[i + 1].x * size.width, pts[i + 1].y * size.height),
+                                    mapPoint(pts[i], size.width, size.height),
+                                    mapPoint(pts[i + 1], size.width, size.height),
                                     strokeWidth = 6f,
                                     pathEffect = PathEffect.dashPathEffect(floatArrayOf(18f, 12f)),
                                 )
@@ -123,15 +166,16 @@ fun KidsMapScreen(onBack: () -> Unit, onOpenStory: (String) -> Unit) {
                     }
                     KidsBibleMap.places.forEach { place ->
                         val visited = place.storyIds.any { it in read }
+                        val center = mapPoint(place, size.width, size.height)
                         drawCircle(
                             if (visited) Color(0xFF16A34A) else Color(0xFFEA580C),
                             radius = 16f,
-                            center = Offset(place.x * size.width, place.y * size.height),
+                            center = center,
                         )
                         drawCircle(
                             Color.White,
                             radius = 16f,
-                            center = Offset(place.x * size.width, place.y * size.height),
+                            center = center,
                             style = Stroke(3f),
                         )
                     }

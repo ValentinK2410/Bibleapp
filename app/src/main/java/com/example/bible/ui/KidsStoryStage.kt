@@ -35,12 +35,16 @@ internal fun kidsStoryImage(id: String): Int = when (id) {
     "nativity" -> R.drawable.kids_story_nativity
     "five-loaves" -> R.drawable.kids_story_five_loaves
     "lost-sheep" -> R.drawable.kids_story_lost_sheep
-    else -> 0
+    else -> newStoryCover(id)
 }
 
-/** Картинка конкретного абзаца. У каждой истории пять абзацев, индексы 0–4. */
+/**
+ * Картинка сцены. У старых историй пять кадров, лишний индекс берёт последний.
+ * У новых историй кадра может не быть — тогда 0 и на экране остаётся заглушка.
+ */
 internal fun kidsStoryParagraphImage(id: String, index: Int): Int {
-    val n = index.coerceIn(0, 4)
+    if (index < 0) return 0
+    val n = index
     return when (id) {
         "creation" -> when (n) {
             0 -> R.drawable.kids_story_creation_0
@@ -119,7 +123,7 @@ internal fun kidsStoryParagraphImage(id: String, index: Int): Int {
             3 -> R.drawable.kids_story_lost_sheep_3
             else -> R.drawable.kids_story_lost_sheep_4
         }
-        else -> 0
+        else -> newStoryFrame(id, index)
     }
 }
 
@@ -183,4 +187,227 @@ internal fun KidsStoryPlaceholder(
             )
         }
     }
+}
+internal fun newStoryCover(id: String): Int = when (id) {
+        "adam_eve" -> R.drawable.kids_story_adam_eve
+        "annunciation" -> R.drawable.kids_story_annunciation
+        "babel" -> R.drawable.kids_story_babel
+        "baby_moses" -> R.drawable.kids_story_baby_moses
+        "baptism" -> R.drawable.kids_story_baptism
+        "bartimaeus" -> R.drawable.kids_story_bartimaeus
+        "boy_jesus" -> R.drawable.kids_story_boy_jesus
+        "burning_bush" -> R.drawable.kids_story_burning_bush
+        "cana" -> R.drawable.kids_story_cana
+        "commandments" -> R.drawable.kids_story_commandments
+        "easter" -> R.drawable.kids_story_easter
+        "elijah_ravens" -> R.drawable.kids_story_elijah_ravens
+        "esther" -> R.drawable.kids_story_esther
+        "fishermen" -> R.drawable.kids_story_fishermen
+        "gideon" -> R.drawable.kids_story_gideon
+        "jairus" -> R.drawable.kids_story_jairus
+        "jericho" -> R.drawable.kids_story_jericho
+        "jesus_children" -> R.drawable.kids_story_jesus_children
+        "naaman" -> R.drawable.kids_story_naaman
+        "paralytic" -> R.drawable.kids_story_paralytic
+        "pentecost" -> R.drawable.kids_story_pentecost
+        "peter_prison" -> R.drawable.kids_story_peter_prison
+        "prodigal" -> R.drawable.kids_story_prodigal
+        "ruth" -> R.drawable.kids_story_ruth
+        "samaritan" -> R.drawable.kids_story_samaritan
+        "samuel" -> R.drawable.kids_story_samuel
+        "saul_paul" -> R.drawable.kids_story_saul_paul
+        "storm" -> R.drawable.kids_story_storm
+        "walk_water" -> R.drawable.kids_story_walk_water
+        "zacchaeus" -> R.drawable.kids_story_zacchaeus
+    else -> 0
+}
+
+internal fun newStoryFrame(id: String, index: Int): Int = when (id) {
+        "adam_eve" -> when (index) {
+            0 -> R.drawable.kids_story_adam_eve_0
+            1 -> R.drawable.kids_story_adam_eve_1
+            else -> 0
+        }
+        "annunciation" -> when (index) {
+            0 -> R.drawable.kids_story_annunciation_0
+            1 -> R.drawable.kids_story_annunciation_1
+            else -> 0
+        }
+        "babel" -> when (index) {
+            0 -> R.drawable.kids_story_babel_0
+            1 -> R.drawable.kids_story_babel_1
+            else -> 0
+        }
+        "baby_moses" -> when (index) {
+            0 -> R.drawable.kids_story_baby_moses_0
+            1 -> R.drawable.kids_story_baby_moses_1
+            else -> 0
+        }
+        "baptism" -> when (index) {
+            0 -> R.drawable.kids_story_baptism_0
+            1 -> R.drawable.kids_story_baptism_1
+            else -> 0
+        }
+        "bartimaeus" -> when (index) {
+            0 -> R.drawable.kids_story_bartimaeus_0
+            1 -> R.drawable.kids_story_bartimaeus_1
+            else -> 0
+        }
+        "boy_jesus" -> when (index) {
+            0 -> R.drawable.kids_story_boy_jesus_0
+            1 -> R.drawable.kids_story_boy_jesus_1
+            else -> 0
+        }
+        "burning_bush" -> when (index) {
+            0 -> R.drawable.kids_story_burning_bush_0
+            1 -> R.drawable.kids_story_burning_bush_1
+            else -> 0
+        }
+        "cana" -> when (index) {
+            0 -> R.drawable.kids_story_cana_0
+            1 -> R.drawable.kids_story_cana_1
+            else -> 0
+        }
+        "commandments" -> when (index) {
+            0 -> R.drawable.kids_story_commandments_0
+            1 -> R.drawable.kids_story_commandments_1
+            else -> 0
+        }
+        "easter" -> when (index) {
+            0 -> R.drawable.kids_story_easter_0
+            1 -> R.drawable.kids_story_easter_1
+            2 -> R.drawable.kids_story_easter_2
+            3 -> R.drawable.kids_story_easter_3
+            4 -> R.drawable.kids_story_easter_4
+            5 -> R.drawable.kids_story_easter_5
+            6 -> R.drawable.kids_story_easter_6
+            7 -> R.drawable.kids_story_easter_7
+            8 -> R.drawable.kids_story_easter_8
+            9 -> R.drawable.kids_story_easter_9
+            10 -> R.drawable.kids_story_easter_10
+            11 -> R.drawable.kids_story_easter_11
+            else -> 0
+        }
+        "elijah_ravens" -> when (index) {
+            0 -> R.drawable.kids_story_elijah_ravens_0
+            1 -> R.drawable.kids_story_elijah_ravens_1
+            else -> 0
+        }
+        "esther" -> when (index) {
+            0 -> R.drawable.kids_story_esther_0
+            1 -> R.drawable.kids_story_esther_1
+            else -> 0
+        }
+        "fishermen" -> when (index) {
+            0 -> R.drawable.kids_story_fishermen_0
+            1 -> R.drawable.kids_story_fishermen_1
+            else -> 0
+        }
+        "gideon" -> when (index) {
+            0 -> R.drawable.kids_story_gideon_0
+            1 -> R.drawable.kids_story_gideon_1
+            else -> 0
+        }
+        "jairus" -> when (index) {
+            0 -> R.drawable.kids_story_jairus_0
+            1 -> R.drawable.kids_story_jairus_1
+            else -> 0
+        }
+        "jericho" -> when (index) {
+            0 -> R.drawable.kids_story_jericho_0
+            1 -> R.drawable.kids_story_jericho_1
+            else -> 0
+        }
+        "jesus_children" -> when (index) {
+            0 -> R.drawable.kids_story_jesus_children_0
+            1 -> R.drawable.kids_story_jesus_children_1
+            else -> 0
+        }
+        "naaman" -> when (index) {
+            0 -> R.drawable.kids_story_naaman_0
+            1 -> R.drawable.kids_story_naaman_1
+            else -> 0
+        }
+        "paralytic" -> when (index) {
+            0 -> R.drawable.kids_story_paralytic_0
+            1 -> R.drawable.kids_story_paralytic_1
+            else -> 0
+        }
+        "pentecost" -> when (index) {
+            0 -> R.drawable.kids_story_pentecost_0
+            1 -> R.drawable.kids_story_pentecost_1
+            else -> 0
+        }
+        "peter_prison" -> when (index) {
+            0 -> R.drawable.kids_story_peter_prison_0
+            1 -> R.drawable.kids_story_peter_prison_1
+            else -> 0
+        }
+        "prodigal" -> when (index) {
+            0 -> R.drawable.kids_story_prodigal_0
+            else -> 0
+        }
+        "ruth" -> when (index) {
+            0 -> R.drawable.kids_story_ruth_0
+            1 -> R.drawable.kids_story_ruth_1
+            else -> 0
+        }
+        "samaritan" -> when (index) {
+            0 -> R.drawable.kids_story_samaritan_0
+            else -> 0
+        }
+        "samuel" -> when (index) {
+            0 -> R.drawable.kids_story_samuel_0
+            1 -> R.drawable.kids_story_samuel_1
+            else -> 0
+        }
+        "saul_paul" -> when (index) {
+            0 -> R.drawable.kids_story_saul_paul_0
+            1 -> R.drawable.kids_story_saul_paul_1
+            else -> 0
+        }
+        "storm" -> when (index) {
+            0 -> R.drawable.kids_story_storm_0
+            1 -> R.drawable.kids_story_storm_1
+            else -> 0
+        }
+        "walk_water" -> when (index) {
+            0 -> R.drawable.kids_story_walk_water_0
+            else -> 0
+        }
+        "zacchaeus" -> when (index) {
+            0 -> R.drawable.kids_story_zacchaeus_0
+            1 -> R.drawable.kids_story_zacchaeus_1
+            else -> 0
+        }
+    else -> 0
+}
+
+internal fun kidsHeroImage(id: String): Int = when (id) {
+    "adam" -> R.drawable.kids_hero_adam
+    "noah" -> R.drawable.kids_hero_noah
+    "abraham" -> R.drawable.kids_hero_abraham
+    "joseph" -> R.drawable.kids_hero_joseph
+    "moses" -> R.drawable.kids_hero_moses
+    "ruth" -> R.drawable.kids_hero_ruth
+    "samuel" -> R.drawable.kids_hero_samuel
+    "david" -> R.drawable.kids_hero_david
+    "elijah" -> R.drawable.kids_hero_elijah
+    "esther" -> R.drawable.kids_hero_esther
+    "daniel" -> R.drawable.kids_hero_daniel
+    "jonah" -> R.drawable.kids_hero_jonah
+    "mary" -> R.drawable.kids_hero_mary
+    "peter" -> R.drawable.kids_hero_peter
+    "zacchaeus" -> R.drawable.kids_hero_zacchaeus
+    "paul" -> R.drawable.kids_hero_paul
+    else -> 0
+}
+
+internal fun kidsPrayerImage(id: String): Int = when (id) {
+    "morning" -> R.drawable.kids_prayer_morning
+    "evening" -> R.drawable.kids_prayer_evening
+    "meal" -> R.drawable.kids_prayer_meal
+    "thanks" -> R.drawable.kids_prayer_thanks
+    "our_father" -> R.drawable.kids_prayer_our_father
+    else -> 0
 }
