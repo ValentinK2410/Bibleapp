@@ -4,12 +4,22 @@ import androidx.compose.animation.Crossfade
 import androidx.compose.animation.core.FastOutSlowInEasing
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clipToBounds
+import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.unit.sp
+import androidx.compose.material3.Text
 import com.example.bible.R
 import com.example.bible.data.KidsBibleStory
 
@@ -25,7 +35,7 @@ internal fun kidsStoryImage(id: String): Int = when (id) {
     "nativity" -> R.drawable.kids_story_nativity
     "five-loaves" -> R.drawable.kids_story_five_loaves
     "lost-sheep" -> R.drawable.kids_story_lost_sheep
-    else -> R.drawable.kids_story_creation
+    else -> 0
 }
 
 /** Картинка конкретного абзаца. У каждой истории пять абзацев, индексы 0–4. */
@@ -109,7 +119,7 @@ internal fun kidsStoryParagraphImage(id: String, index: Int): Int {
             3 -> R.drawable.kids_story_lost_sheep_3
             else -> R.drawable.kids_story_lost_sheep_4
         }
-        else -> R.drawable.kids_story_creation
+        else -> 0
     }
 }
 
@@ -121,24 +131,56 @@ internal fun KidsStoryStage(
     story: KidsBibleStory,
     sceneIndex: Int,
     lessonMode: Boolean,
+    sceneCount: Int,
     modifier: Modifier = Modifier,
 ) {
-    val index = if (lessonMode) {
-        story.paragraphs.lastIndex.coerceAtLeast(0)
-    } else {
-        sceneIndex.coerceIn(0, story.paragraphs.lastIndex.coerceAtLeast(0))
-    }
+    val last = (sceneCount - 1).coerceAtLeast(0)
+    val index = if (lessonMode) last else sceneIndex.coerceIn(0, last)
     Crossfade(
         targetState = index,
         animationSpec = tween(durationMillis = 900, easing = FastOutSlowInEasing),
         label = "story-picture",
         modifier = modifier.clipToBounds(),
     ) { frame ->
-        Image(
-            painter = painterResource(kidsStoryParagraphImage(story.id, frame)),
-            contentDescription = story.title,
-            contentScale = ContentScale.Crop,
-            modifier = Modifier.fillMaxSize(),
-        )
+        val image = kidsStoryParagraphImage(story.id, frame)
+        if (image != 0) {
+            Image(
+                painter = painterResource(image),
+                contentDescription = story.title,
+                contentScale = ContentScale.Crop,
+                modifier = Modifier.fillMaxSize(),
+            )
+        } else {
+            KidsStoryPlaceholder(
+                emoji = story.emoji,
+                gradient = story.gradient.map { Color(it) },
+                caption = "Иллюстрация скоро · kids_story_${story.id}_$frame.webp",
+                modifier = Modifier.fillMaxSize(),
+            )
+        }
+    }
+}
+
+@Composable
+internal fun KidsStoryPlaceholder(
+    emoji: String,
+    gradient: List<Color>,
+    caption: String,
+    modifier: Modifier = Modifier,
+) {
+    Box(
+        modifier.background(Brush.linearGradient(gradient)),
+        contentAlignment = Alignment.Center,
+    ) {
+        Column(horizontalAlignment = Alignment.CenterHorizontally) {
+            Text(emoji, fontSize = 64.sp)
+            Text(
+                caption,
+                color = Color.White,
+                fontSize = 12.sp,
+                fontWeight = FontWeight.Bold,
+                textAlign = TextAlign.Center,
+            )
+        }
     }
 }

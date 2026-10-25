@@ -70,6 +70,15 @@ object AppSectionUsage {
         Section(BooksMainMenuOrder.KIDS, "Детям", "Детям", "kids"),
         Section("azbuka", "Азбука", "Детям", "azbuka"),
         Section("cifry", "Цифры", "Детям", "cifry"),
+        Section("kids_stories", "Библейские истории", "Детям", "kids_stories"),
+        Section("kids_prayers", "Молитвы", "Детям", "kids_prayers"),
+        Section("kids_verse", "Стих недели", "Детям", "kids_verse"),
+        Section("kids_songs", "Песни", "Детям", "kids_songs"),
+        Section("kids_coloring", "Раскраски", "Детям", "kids_coloring"),
+        Section("kids_heroes", "Герои", "Детям", "kids_heroes"),
+        Section("kids_map", "Карта", "Детям", "kids_map"),
+        Section("kids_values", "Ценности", "Детям", "kids_values"),
+        Section("kids_parents", "Родителям", "Детям", "kids_parents"),
         Section("kids_games", "Игры", "Детям", "kids_games"),
         Section("kids_colors", "Цвета", "Детям", "kids_colors"),
         Section("kids_seasons", "Времена года", "Детям", "kids_seasons"),
@@ -112,6 +121,8 @@ object AppSectionUsage {
             head.startsWith("media_musician") -> "media_musician"
             head == "media_audio_playlists" -> "media_audios"
             head == "kids_tictactoe" || head == "kids_checkers" || head == "kids_go" || head == "kids_pipes" || head == "kids_brainring" -> "kids_games"
+            head == "kids_story" || head == "kids_story_game" -> "kids_stories"
+            head == "kids_album" || head == "kids_edit_sections" || head == "kids_edit_pictured" -> "kids"
             head == "experiment_camera_control" ||
                 head == "experiment_camera_4" ||
                 head == "experiment_camera_5_mediapipe" -> "experiment_camera"

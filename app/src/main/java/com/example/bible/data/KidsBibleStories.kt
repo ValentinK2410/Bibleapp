@@ -1,5 +1,13 @@
 package com.example.bible.data
 
+data class KidsStoryQuiz(
+    val question: String,
+    val options: List<String>,
+    val answer: Int,
+    /** who — «Кто это?», next — «Что было дальше?» */
+    val kind: String = "who",
+)
+
 data class KidsBibleStory(
     val id: String,
     val title: String,
@@ -8,11 +16,32 @@ data class KidsBibleStory(
     val gradient: List<Long>,
     val paragraphs: List<String>,
     val lesson: String,
+    /** Упрощённый текст для 3–5 лет. Пустой список — берётся [paragraphs]. */
+    val textSmall: List<String> = emptyList(),
+    /** OT или NT. Пусто у старых карточек до разметки. */
+    val testament: String = "",
+    /** small, big или both. */
+    val age: String = "both",
+    /** 0 — история была до плана, 1–3 — этап плана. */
+    val stage: Int = 0,
+    val order: Int = 0,
+    val quiz: List<KidsStoryQuiz> = emptyList(),
+    val heroes: List<String> = emptyList(),
+    val parentTips: List<String> = emptyList(),
+    val bibleBookId: String = "",
+    val bibleChapter: Int = 0,
+    val bibleVerse: Int = 1,
+    /** Индекс сцены полного текста, перед которой нужна подводка родителю. -1 — нет. */
+    val parentNoteBeforeScene: Int = -1,
+    val parentNoteBeforeSceneSmall: Int = -1,
+    val parentNote: String = "",
+    /** Сколько иллюстраций запланировано (kids_story_<id>_0..). 0 — по числу сцен полного текста. */
+    val artCount: Int = 0,
 )
 
 /** Короткие пересказы для детей. Ссылки ведут на место в Библии, где история записана. */
 object KidsBibleStories {
-    val all: List<KidsBibleStory> = listOf(
+    private val legacy: List<KidsBibleStory> = listOf(
         KidsBibleStory(
             id = "creation",
             title = "Бог создал мир",
@@ -180,5 +209,36 @@ object KidsBibleStories {
         ),
     )
 
+    val all: List<KidsBibleStory> = (legacy.map { it.withKidsPlanMeta() } + KidsBibleStoriesNew.all)
+        .sortedWith(compareBy({ it.order }, { it.title }))
+
     fun byId(id: String): KidsBibleStory? = all.firstOrNull { it.id == id }
+}
+
+fun KidsBibleStory.scenesFor(mode: KidsAgeMode): List<String> =
+    if (mode == KidsAgeMode.SMALL && textSmall.isNotEmpty()) textSmall else paragraphs
+
+fun KidsBibleStory.fitsAge(mode: KidsAgeMode): Boolean = when (age) {
+    "big" -> mode == KidsAgeMode.BIG
+    "small" -> mode == KidsAgeMode.SMALL
+    else -> true
+}
+
+fun KidsBibleStory.testamentLabel(): String = when (testament) {
+    "OT" -> "ВЗ"
+    "NT" -> "НЗ"
+    else -> ""
+}
+
+internal fun kidsQuiz(
+    question: String,
+    correct: String,
+    vararg wrong: String,
+    kind: String = "who",
+): KidsStoryQuiz = KidsStoryQuiz(question, listOf(correct, *wrong), 0, kind)
+
+fun KidsBibleStory.plannedArtFiles(): List<String> {
+    if (stage == 0) return emptyList()
+    val n = if (artCount > 0) artCount else paragraphs.size
+    return (0 until n).map { index -> "kids_story_${id}_$index.webp" }
 }

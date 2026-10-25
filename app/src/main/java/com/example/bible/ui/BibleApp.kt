@@ -699,6 +699,17 @@ private fun BibleNavHost(
         val sectionId = com.example.bible.data.AppSectionUsage.sectionIdForRoute(route)
         if (sectionId != null) viewModel.recordSectionOpen(sectionId)
     }
+    val kidsTimeContext = LocalContext.current
+    LaunchedEffect(navBackStackEntry?.destination?.route) {
+        val route = navBackStackEntry?.destination?.route.orEmpty()
+        val head = route.substringBefore("?").substringBefore("/")
+        val tracked = head == "kids" || head.startsWith("kids_") || head == "azbuka" || head == "cifry"
+        if (!tracked) return@LaunchedEffect
+        while (true) {
+            delay(60_000)
+            com.example.bible.data.KidsFamilyStore.addMinutes(kidsTimeContext, 1)
+        }
+    }
 
     val kidsLockContext = LocalContext.current
     LaunchedEffect(Unit) {
@@ -707,9 +718,14 @@ private fun BibleNavHost(
         if (locked) navController.navigate("kids") { launchSingleTop = true }
     }
 
+    val kidsMotion = kidsMotionEnabled()
     NavHost(
         navController = navController,
         startDestination = "books",
+        enterTransition = { kidsRouteEnter(targetState.destination.route, kidsMotion) },
+        exitTransition = { kidsRouteExit(initialState.destination.route, targetState.destination.route, kidsMotion, pop = false) },
+        popEnterTransition = { kidsRouteEnter(targetState.destination.route, kidsMotion) },
+        popExitTransition = { kidsRouteExit(initialState.destination.route, targetState.destination.route, kidsMotion, pop = true) },
     ) {
         composable("books") {
             var menuOpen by remember { mutableStateOf(false) }
@@ -1185,15 +1201,84 @@ private fun BibleNavHost(
             )
         }
         composable("kids_story/{id}") { entry ->
+            val storyId = entry.arguments?.getString("id").orEmpty()
             KidsStoryScreen(
-                storyId = entry.arguments?.getString("id").orEmpty(),
+                storyId = storyId,
                 onBack = { navController.navigateUp() },
                 onOpenStory = { id ->
                     navController.navigate("kids_story/$id") {
                         popUpTo("kids_story/{id}") { inclusive = true }
                     }
                 },
+                onOpenBible = { book, chapter, verse ->
+                    navController.navigate("read/$book/$chapter/$verse")
+                },
+                onPlayGame = { id -> navController.navigate("kids_story_game/$id") },
+                onOpenSong = { id -> navController.navigate("kids_songs/$id") },
+                onOpenColoring = { id -> navController.navigate("kids_coloring/$id") },
             )
+        }
+        composable("kids_story_game/{id}") { entry ->
+            KidsStoryGameScreen(
+                storyId = entry.arguments?.getString("id").orEmpty(),
+                onBack = { navController.navigateUp() },
+            )
+        }
+        composable("kids_prayers") {
+            KidsPrayersScreen(
+                onBack = { navController.navigateUp() },
+                onOpenBible = { book, chapter, verse ->
+                    navController.navigate("read/$book/$chapter/$verse")
+                },
+            )
+        }
+        composable("kids_verse") {
+            KidsVerseScreen(
+                onBack = { navController.navigateUp() },
+                onOpenBible = { book, chapter, verse ->
+                    navController.navigate("read/$book/$chapter/$verse")
+                },
+            )
+        }
+        composable("kids_songs") {
+            KidsSongsScreen(onBack = { navController.navigateUp() })
+        }
+        composable("kids_songs/{id}") { entry ->
+            KidsSongsScreen(
+                onBack = { navController.navigateUp() },
+                initialId = entry.arguments?.getString("id"),
+            )
+        }
+        composable("kids_coloring") {
+            KidsColoringScreen(onBack = { navController.navigateUp() })
+        }
+        composable("kids_coloring/{id}") { entry ->
+            KidsColoringScreen(
+                onBack = { navController.navigateUp() },
+                pageId = entry.arguments?.getString("id"),
+            )
+        }
+        composable("kids_heroes") {
+            KidsHeroesScreen(
+                onBack = { navController.navigateUp() },
+                onOpenStory = { id -> navController.navigate("kids_story/$id") },
+                onOpenGenealogy = { navController.navigate("genealogy") },
+            )
+        }
+        composable("kids_map") {
+            KidsMapScreen(
+                onBack = { navController.navigateUp() },
+                onOpenStory = { id -> navController.navigate("kids_story/$id") },
+            )
+        }
+        composable("kids_values") {
+            KidsValuesScreen(
+                onBack = { navController.navigateUp() },
+                onOpenStory = { id -> navController.navigate("kids_story/$id") },
+            )
+        }
+        composable("kids_parents") {
+            KidsParentsScreen(onBack = { navController.navigateUp() })
         }
         composable("kids_games") {
             KidsGamesHubScreen(

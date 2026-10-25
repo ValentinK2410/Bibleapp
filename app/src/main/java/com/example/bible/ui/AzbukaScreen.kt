@@ -102,6 +102,7 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateMapOf
@@ -140,6 +141,8 @@ import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.bible.R
+import com.example.bible.data.KidsAgeMode
+import com.example.bible.data.KidsFamilyStore
 import com.example.bible.data.AzbukaExercise
 import com.example.bible.data.AzbukaLesson
 import com.example.bible.data.AzbukaProgressRepository
@@ -180,6 +183,8 @@ fun AzbukaScreen(
     val cursiveFont = rememberAzbukaCursiveFont()
     val context = LocalContext.current
     val progressRepo = remember { AzbukaProgressRepository(context) }
+    val family by KidsFamilyStore.state(context).collectAsStateWithLifecycle()
+    val young = family.resolvedMode() == KidsAgeMode.SMALL
     val ttsUtteranceCallbacks = remember { ConcurrentHashMap<String, () -> Unit>() }
     val tts = remember {
         var engine: TextToSpeech? = null
@@ -319,6 +324,7 @@ fun AzbukaScreen(
                         speakLetterThenExample = speakLetterThenExample,
                         progressRepo = progressRepo,
                         scope = scope,
+                        young = young,
                     )
                     2 -> QuizTab(
                         speak = speak,
@@ -327,7 +333,7 @@ fun AzbukaScreen(
                         scope = scope,
                         library = library,
                     )
-                    3 -> RulesTab(speak = speak)
+                    3 -> RulesTab(speak = speak, young = young)
                     4 -> SandboxTab(speak = speak)
                 }
             }
@@ -1363,6 +1369,7 @@ private fun LessonsTab(
     speakLetterThenExample: (String, String) -> Unit,
     progressRepo: AzbukaProgressRepository,
     scope: CoroutineScope,
+    young: Boolean = false,
 ) {
     var openLesson by remember { mutableStateOf<AzbukaLesson?>(null) }
 
@@ -1381,7 +1388,16 @@ private fun LessonsTab(
             contentPadding = PaddingValues(16.dp),
             verticalArrangement = Arrangement.spacedBy(12.dp),
         ) {
-            itemsIndexed(AzbukaRepository.LESSONS) { index, lesson ->
+            val lessons = if (young) AzbukaRepository.LESSONS.filter { it.id <= 8 } else AzbukaRepository.LESSONS
+            if (young) {
+                item {
+                    Text(
+                        "Для 3–5 лет открыты первые уроки. Урок про Ъ и Ь остаётся в режиме 6–10.",
+                        modifier = Modifier.padding(bottom = 4.dp),
+                    )
+                }
+            }
+            itemsIndexed(lessons) { index, lesson ->
                 LessonCard(index = index, lesson = lesson, onClick = { openLesson = lesson })
             }
         }
@@ -2205,7 +2221,23 @@ private fun ExerciseBlock(
 
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
-private fun RulesTab(speak: (String) -> Unit) {
+private fun RulesTab(speak: (String) -> Unit, young: Boolean = false) {
+    if (young) {
+        Box(
+            Modifier
+                .fillMaxSize()
+                .padding(24.dp),
+            contentAlignment = Alignment.Center,
+        ) {
+            Text(
+                "Правила орфографии подождут до 6 лет. Сейчас достаточно букв, слогов и коротких слов.",
+                textAlign = TextAlign.Center,
+                fontWeight = FontWeight.Bold,
+                fontSize = 20.sp,
+            )
+        }
+        return
+    }
     val syllableLessons = AzbukaRepository.SYLLABLE_LESSONS
     val rules = AzbukaRepository.READING_RULES
     val spellingExceptions = AzbukaRepository.SPELLING_EXCEPTIONS

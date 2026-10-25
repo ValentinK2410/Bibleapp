@@ -5,7 +5,11 @@ import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
-import androidx.compose.foundation.combinedClickable
+import androidx.compose.foundation.clickable
+import androidx.compose.material.icons.automirrored.filled.MenuBook
+import androidx.compose.material.icons.filled.SortByAlpha
+import androidx.compose.material.icons.filled.EmojiEvents
+import androidx.compose.material.icons.filled.Star
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -53,6 +57,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.luminance
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
@@ -68,25 +74,21 @@ import coil.compose.AsyncImage
 import coil.request.ImageRequest
 import com.example.bible.R
 import com.example.bible.data.AzbukaProgressRepository
+import com.example.bible.data.KidsAgeMode
 import com.example.bible.data.KidsBibleStories
+import com.example.bible.data.KidsFamilyStore
 import com.example.bible.data.KidsPicturedRoutes
 import com.example.bible.data.KidsUserSectionsState
+import com.example.bible.data.easterSeason
 import com.example.bible.data.kidsStars
+import com.example.bible.data.nextEaster
+import com.example.bible.data.suggestedKidsAgeMode
+import java.time.LocalDate
+import java.time.LocalTime
 import com.example.bible.ui.theme.OutlinedTextField
 import kotlinx.coroutines.launch
 import java.util.Locale
 import kotlin.random.Random
-
-private val KidsTileGradients = listOf(
-    listOf(Color(0xFF6366F1), Color(0xFF8B5CF6)),
-    listOf(Color(0xFFF59E0B), Color(0xFFEC4899)),
-    listOf(Color(0xFF10B981), Color(0xFF06B6D4)),
-    listOf(Color(0xFFEF4444), Color(0xFFF97316)),
-    listOf(Color(0xFF0EA5E9), Color(0xFF6366F1)),
-    listOf(Color(0xFF22C55E), Color(0xFF84CC16)),
-    listOf(Color(0xFFD946EF), Color(0xFF8B5CF6)),
-    listOf(Color(0xFF14B8A6), Color(0xFF3B82F6)),
-)
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -104,7 +106,32 @@ fun KidsHubScreen(
     val wins by repo.gameWins.collectAsStateWithLifecycle(initialValue = emptyMap())
     val stories by repo.storiesRead.collectAsStateWithLifecycle(initialValue = emptySet())
     val locked by repo.kidsLock.collectAsStateWithLifecycle(initialValue = false)
+    val family by KidsFamilyStore.state(context).collectAsStateWithLifecycle()
+    val mode = family.resolvedMode()
+    var showMore by remember { mutableStateOf(false) }
     val rows = remember(hubState) { mergeKidsHubRows(kidsHubDefaultRows(), hubState) }
+    val primaryRows = remember(rows, mode) {
+        rows.filter { row ->
+            when (row.ageBand) {
+                "small" -> mode == KidsAgeMode.SMALL
+                "big" -> mode == KidsAgeMode.BIG
+                else -> true
+            }
+        }
+    }
+    val extraRows = remember(rows, primaryRows) { rows.filter { it !in primaryRows } }
+    val shownRows = if (showMore) primaryRows + extraRows else primaryRows
+    val activeChild = family.activeChild()
+    val activeProgress = family.activeProgress()
+    val easterDate = remember(family.easterCalendar) {
+        nextEaster(LocalDate.now(), family.easterCalendar != "western")
+    }
+    val easterNow = easterSeason(LocalDate.now(), easterDate)
+    val remindEvening = family.eveningReminder &&
+        LocalTime.now().hour >= family.eveningHour &&
+        activeProgress.eveningPrayedOn != LocalDate.now().toString()
+    var restGate by remember { mutableStateOf(false) }
+    var limitLifted by remember { mutableStateOf(false) }
     var menuOpen by remember { mutableStateOf(false) }
     var gateAction by remember { mutableStateOf<(() -> Unit)?>(null) }
 
@@ -135,6 +162,7 @@ fun KidsHubScreen(
     BackHandler(enabled = locked) { gateAction = onBack }
 
     Scaffold(
+        containerColor = MaterialTheme.colorScheme.background,
         topBar = {
             CenterAlignedTopAppBar(
                 title = { Text("Детям", fontWeight = FontWeight.ExtraBold) },
@@ -178,6 +206,7 @@ fun KidsHubScreen(
             )
         },
     ) { padding ->
+        KidsEnter {
         LazyVerticalGrid(
             columns = GridCells.Adaptive(minSize = 150.dp),
             modifier = Modifier
@@ -189,20 +218,104 @@ fun KidsHubScreen(
         ) {
             item(key = "hero", span = { GridItemSpan(maxLineSpan) }) {
                 KidsHeroCard(
-                    stars = kidsStars(points),
+                    stars = if (activeChild != null) kidsStars(activeProgress.points) else kidsStars(points),
                     letters = letters,
-                    wins = wins.values.sum(),
-                    stories = stories.count { KidsBibleStories.byId(it) != null },
+                    wins = if (activeChild != null) activeProgress.gameWins.values.sum() else wins.values.sum(),
+                    stories = if (activeChild != null) {
+                        activeProgress.stories.count { KidsBibleStories.byId(it) != null }
+                    } else {
+                        stories.count { KidsBibleStories.byId(it) != null }
+                    },
                     locked = locked,
+                    who = activeChild?.let { "${it.name}, ${it.age}" } ?: "Семья",
+                    mode = mode,
                 )
             }
-            items(rows.size, key = { rows[it].route }) { index ->
-                val row = rows[index]
+            item(key = "kids", span = { GridItemSpan(maxLineSpan) }) {
+                Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                    Text("Кто играет?", fontWeight = FontWeight.Bold)
+                    Row(horizontalArrangement = Arrangement.spacedBy(8.dp), modifier = Modifier.fillMaxWidth()) {
+                        family.children.forEach { child ->
+                            val selected = child.id == family.activeChildId
+                            Text(
+                                "${child.name} · ${if (suggestedKidsAgeMode(child.age) == KidsAgeMode.SMALL) "3–5" else "6–10"}",
+                                color = if (selected) Color.White else MaterialTheme.colorScheme.onSurface,
+                                fontWeight = FontWeight.Bold,
+                                modifier = Modifier
+                                    .clip(RoundedCornerShape(999.dp))
+                                    .background(if (selected) Color(0xFFEA580C) else Color(0xFFFFEDD5))
+                                    .clickable { scope.launch { KidsFamilyStore.setActiveChild(context, child.id) } }
+                                    .padding(horizontal = 12.dp, vertical = 8.dp),
+                            )
+                        }
+                        Text(
+                            "Родителям",
+                            fontWeight = FontWeight.Bold,
+                            modifier = Modifier
+                                .clip(RoundedCornerShape(999.dp))
+                                .background(Color(0xFFE0E7FF))
+                                .clickable { gateAction = { navController.navigate("kids_parents") } }
+                                .padding(horizontal = 12.dp, vertical = 8.dp),
+                        )
+                    }
+                    Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                        Text(
+                            if (mode == KidsAgeMode.SMALL) "🐣 Малыши" else "Малыши",
+                            modifier = Modifier
+                                .clip(RoundedCornerShape(999.dp))
+                                .background(if (mode == KidsAgeMode.SMALL) Color(0xFFFDE68A) else Color(0xFFF8FAFC))
+                                .clickable { gateAction = { scope.launch { KidsFamilyStore.setAgeMode(context, "small") } } }
+                                .padding(horizontal = 12.dp, vertical = 8.dp),
+                        )
+                        Text(
+                            if (mode == KidsAgeMode.BIG) "🎒 Школьники" else "Школьники",
+                            modifier = Modifier
+                                .clip(RoundedCornerShape(999.dp))
+                                .background(if (mode == KidsAgeMode.BIG) Color(0xFFDBEAFE) else Color(0xFFF8FAFC))
+                                .clickable { gateAction = { scope.launch { KidsFamilyStore.setAgeMode(context, "big") } } }
+                                .padding(horizontal = 12.dp, vertical = 8.dp),
+                        )
+                    }
+                }
+            }
+            if (easterNow) {
+                item(key = "easter", span = { GridItemSpan(maxLineSpan) }) {
+                    Column(
+                        Modifier
+                            .fillMaxWidth()
+                            .clip(RoundedCornerShape(28.dp))
+                            .background(Brush.linearGradient(KidsWarmSunset))
+                            .clickable { navController.navigate("kids_story/easter") }
+                            .padding(18.dp),
+                    ) {
+                        Text("🌅 Пасха близко", color = Color.White, fontWeight = FontWeight.Black, fontSize = 26.sp)
+                        Text("История из шести сцен. Праздник ${easterDate.dayOfMonth}.${easterDate.monthValue}.", color = Color.White)
+                    }
+                }
+            }
+            if (remindEvening) {
+                item(key = "evening", span = { GridItemSpan(maxLineSpan) }) {
+                    Text(
+                        "🌙 Пора вечерней молитвы",
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .clip(RoundedCornerShape(20.dp))
+                            .background(Color(0xFFE0E7FF))
+                            .clickable { navController.navigate("kids_prayers") }
+                            .padding(16.dp),
+                        fontWeight = FontWeight.Bold,
+                    )
+                }
+            }
+            items(shownRows.size, key = { shownRows[it].route }) { index ->
+                val row = shownRows[index]
                 KidsHubTile(
                     row = row,
-                    gradient = KidsTileGradients[index % KidsTileGradients.size],
+                    gradient = kidsTileColors(index),
                     onClick = {
-                        if (KidsPicturedRoutes.isPicturedRoute(row.route)) {
+                        if (row.route == "kids_parents") {
+                            gateAction = { navController.navigate("kids_parents") }
+                        } else if (KidsPicturedRoutes.isPicturedRoute(row.route)) {
                             navController.navigate("kids_album?r=${android.net.Uri.encode(row.route)}") {
                                 launchSingleTop = true
                             }
@@ -215,9 +328,24 @@ fun KidsHubScreen(
                     onLongClick = { speak(row.title) },
                 )
             }
+            if (extraRows.isNotEmpty()) {
+                item(key = "more", span = { GridItemSpan(maxLineSpan) }) {
+                    Text(
+                        if (showMore) "Скрыть «Ещё»" else "Ещё — всё остальное тоже здесь",
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .clip(RoundedCornerShape(18.dp))
+                            .background(Color(0xFFFFF7ED))
+                            .clickable { showMore = !showMore }
+                            .padding(14.dp),
+                        fontWeight = FontWeight.Bold,
+                        textAlign = TextAlign.Center,
+                    )
+                }
+            }
             item(key = "hint", span = { GridItemSpan(maxLineSpan) }) {
                 Text(
-                    "Подержи плитку пальцем — я скажу, что там 🔊",
+                    "Подержи плитку пальцем — я скажу, что там",
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                     fontSize = 13.sp,
                     textAlign = TextAlign.Center,
@@ -227,8 +355,30 @@ fun KidsHubScreen(
                 )
             }
         }
+        }
     }
 
+    val overLimit = family.timeLimitMinutes > 0 && family.todayMinutes() >= family.timeLimitMinutes && !limitLifted
+    if (overLimit && !restGate) {
+        AlertDialog(
+            onDismissRequest = {},
+            title = { Text("Пора отдохнуть!") },
+            text = { Text("На сегодня минут в разделе уже достаточно. Продолжить может взрослый.") },
+            confirmButton = {
+                TextButton(onClick = { restGate = true }) { Text("Взрослый рядом") }
+            },
+        )
+    }
+    if (restGate) {
+        ParentGateDialog(
+            onDismiss = { restGate = false },
+            onPassed = {
+                restGate = false
+                limitLifted = true
+            },
+            hard = mode == KidsAgeMode.BIG,
+        )
+    }
     gateAction?.let { action ->
         ParentGateDialog(
             onDismiss = { gateAction = null },
@@ -236,25 +386,34 @@ fun KidsHubScreen(
                 gateAction = null
                 action()
             },
+            hard = mode == KidsAgeMode.BIG,
         )
     }
 }
 
 @Composable
-private fun KidsHeroCard(stars: Int, letters: Int, wins: Int, stories: Int, locked: Boolean) {
+private fun KidsHeroCard(
+    stars: Int,
+    letters: Int,
+    wins: Int,
+    stories: Int,
+    locked: Boolean,
+    who: String,
+    mode: KidsAgeMode,
+) {
     Column(
         Modifier
             .fillMaxWidth()
             .clip(RoundedCornerShape(28.dp))
-            .background(Brush.linearGradient(listOf(Color(0xFFF59E0B), Color(0xFFEC4899), Color(0xFF8B5CF6))))
+            .background(Brush.linearGradient(if (MaterialTheme.colorScheme.background.luminance() < 0.4f) KidsDusk else KidsWarmSunset))
             .padding(18.dp),
         verticalArrangement = Arrangement.spacedBy(12.dp),
     ) {
         Row(verticalAlignment = Alignment.CenterVertically) {
             Column(Modifier.weight(1f)) {
-                Text("Привет! 👋", color = Color.White, fontSize = 26.sp, fontWeight = FontWeight.Black)
+                Text("Привет, $who", color = Color.White, fontSize = 26.sp, fontWeight = FontWeight.Black)
                 Text(
-                    if (locked) "Детский режим включён 🔒" else "Играй, читай и собирай звёзды",
+                    if (locked) "Детский режим включён · ${mode.title}" else "Играй, читай и собирай звёзды · ${mode.title}",
                     color = Color.White.copy(alpha = 0.88f),
                     fontSize = 14.sp,
                 )
@@ -267,20 +426,21 @@ private fun KidsHeroCard(stars: Int, letters: Int, wins: Int, stories: Int, lock
                     .padding(horizontal = 14.dp, vertical = 8.dp),
                 horizontalAlignment = Alignment.CenterHorizontally,
             ) {
-                Text("⭐ $stars", color = Color.White, fontSize = 26.sp, fontWeight = FontWeight.Black)
+                Icon(Icons.Filled.Star, contentDescription = null, tint = Color(0xFFFFF3D6))
+                Text("$stars", color = Color.White, fontSize = 26.sp, fontWeight = FontWeight.Black)
                 Text(starsWord(stars), color = Color.White.copy(alpha = 0.9f), fontSize = 12.sp)
             }
         }
         Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-            KidsHeroStat("🔤", "$letters/33", "букв", Modifier.weight(1f))
-            KidsHeroStat("🏆", "$wins", "побед", Modifier.weight(1f))
-            KidsHeroStat("📖", "$stories/${KidsBibleStories.all.size}", "историй", Modifier.weight(1f))
+            KidsHeroStat(Icons.Filled.SortByAlpha, "$letters/33", "букв", Modifier.weight(1f))
+            KidsHeroStat(Icons.Filled.EmojiEvents, "$wins", "побед", Modifier.weight(1f))
+            KidsHeroStat(Icons.AutoMirrored.Filled.MenuBook, "$stories/${KidsBibleStories.all.size}", "историй", Modifier.weight(1f))
         }
     }
 }
 
 @Composable
-private fun KidsHeroStat(emoji: String, value: String, label: String, modifier: Modifier = Modifier) {
+private fun KidsHeroStat(icon: ImageVector, value: String, label: String, modifier: Modifier = Modifier) {
     Column(
         modifier
             .clip(RoundedCornerShape(18.dp))
@@ -288,7 +448,7 @@ private fun KidsHeroStat(emoji: String, value: String, label: String, modifier: 
             .padding(vertical = 8.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
-        Text(emoji, fontSize = 20.sp)
+        Icon(icon, contentDescription = null, tint = Color.White, modifier = Modifier.size(20.dp))
         Text(value, color = Color.White, fontWeight = FontWeight.ExtraBold, fontSize = 17.sp)
         Text(label, color = Color.White.copy(alpha = 0.85f), fontSize = 11.sp)
     }
@@ -307,7 +467,7 @@ private fun KidsHubTile(
         Modifier
             .clip(RoundedCornerShape(26.dp))
             .background(Brush.linearGradient(gradient))
-            .combinedClickable(onClick = onClick, onLongClick = onLongClick)
+            .kidsPressable(onClick = onClick, onLongClick = onLongClick)
             .padding(10.dp),
     ) {
         Box(
@@ -323,14 +483,13 @@ private fun KidsHubTile(
                     model = ImageRequest.Builder(context)
                         .data(row.imageRes)
                         .size(420)
-                        .crossfade(true)
+                        .crossfade(kidsMotionEnabled())
                         .build(),
                     contentDescription = null,
                     modifier = Modifier.fillMaxSize(),
                     contentScale = ContentScale.Crop,
                 )
-                row.emojiThumb != null -> Text(row.emojiThumb, fontSize = 56.sp)
-                else -> Icon(row.icon, contentDescription = null, tint = Color.White, modifier = Modifier.size(56.dp))
+                else -> Icon(row.icon, contentDescription = null, tint = Color.White, modifier = Modifier.size(64.dp))
             }
         }
         Spacer(Modifier.height(10.dp))
@@ -351,9 +510,9 @@ private fun KidsHubTile(
 
 /** Простая проверка «для взрослых»: умножение, которое малыш не решит наугад. */
 @Composable
-internal fun ParentGateDialog(onDismiss: () -> Unit, onPassed: () -> Unit) {
-    val a = remember { Random.nextInt(6, 10) }
-    val b = remember { Random.nextInt(4, 10) }
+internal fun ParentGateDialog(onDismiss: () -> Unit, onPassed: () -> Unit, hard: Boolean = false) {
+    val a = remember { if (hard) Random.nextInt(12, 20) else Random.nextInt(6, 10) }
+    val b = remember { if (hard) Random.nextInt(11, 20) else Random.nextInt(4, 10) }
     var answer by remember { mutableStateOf("") }
     var wrong by remember { mutableStateOf(false) }
     AlertDialog(
@@ -362,7 +521,7 @@ internal fun ParentGateDialog(onDismiss: () -> Unit, onPassed: () -> Unit) {
         title = { Text("Для взрослых") },
         text = {
             Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
-                Text("Чтобы выйти из детского режима, решите пример:")
+                Text(if (hard) "Для родителей пример сложнее. Решите:" else "Чтобы продолжить, решите пример:")
                 Text("$a × $b = ?", fontSize = 28.sp, fontWeight = FontWeight.Black)
                 OutlinedTextField(
                     value = answer,

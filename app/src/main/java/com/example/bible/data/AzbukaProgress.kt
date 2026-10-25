@@ -87,9 +87,10 @@ class AzbukaProgressRepository(private val context: Context) {
             prefs[key] = (prefs[key] ?: 0) + 1
             prefs[AzbukaKeys.POINTS] = (prefs[AzbukaKeys.POINTS] ?: 0) + points
         }
+        KidsFamilyStore.recordGameWin(context, game, points)
     }
 
-    /** Первое прочтение истории: +15 очков. Возвращает true, если история была новой. */
+    /** Первое прочтение истории: +15 очков. Возвращает true, если история была новой для семьи или для выбранного ребёнка. */
     suspend fun markStoryRead(id: String): Boolean {
         var isNew = false
         context.azbukaDataStore.edit { prefs ->
@@ -100,7 +101,8 @@ class AzbukaProgressRepository(private val context: Context) {
                 prefs[AzbukaKeys.POINTS] = (prefs[AzbukaKeys.POINTS] ?: 0) + 15
             }
         }
-        return isNew
+        val childNew = KidsFamilyStore.recordStory(context, id)
+        return isNew || childNew
     }
 
     suspend fun addPoints(amount: Int) {
@@ -109,6 +111,7 @@ class AzbukaProgressRepository(private val context: Context) {
             val p = prefs[AzbukaKeys.POINTS] ?: 0
             prefs[AzbukaKeys.POINTS] = p + amount
         }
+        KidsFamilyStore.addPoints(context, amount)
     }
 
     /** Первое открытие буквы в карточке: +5 очков. Возвращает true, если буква была новой. */

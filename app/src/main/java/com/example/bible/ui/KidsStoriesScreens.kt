@@ -81,9 +81,16 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.bible.data.AzbukaProgressRepository
+import com.example.bible.data.KidsAgeMode
 import com.example.bible.data.KidsBibleStories
 import com.example.bible.data.KidsBibleStory
+import com.example.bible.data.KidsColoringPages
+import com.example.bible.data.KidsFamilyStore
+import com.example.bible.data.KidsSongs
 import com.example.bible.data.KidsStoryVoice
+import com.example.bible.data.fitsAge
+import com.example.bible.data.scenesFor
+import com.example.bible.data.testamentLabel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import java.util.Locale
@@ -92,12 +99,22 @@ private fun KidsBibleStory.brush(): Brush = Brush.linearGradient(gradient.map { 
 
 @Composable
 private fun KidsStoryIllustration(story: KidsBibleStory, modifier: Modifier = Modifier) {
-    Image(
-        painter = painterResource(kidsStoryImage(story.id)),
-        contentDescription = story.title,
-        modifier = modifier,
-        contentScale = ContentScale.Crop,
-    )
+    val image = kidsStoryImage(story.id)
+    if (image == 0) {
+        KidsStoryPlaceholder(
+            emoji = story.emoji,
+            gradient = story.gradient.map { Color(it) },
+            caption = "kids_story_${story.id}.webp",
+            modifier = modifier,
+        )
+    } else {
+        Image(
+            painter = painterResource(image),
+            contentDescription = story.title,
+            modifier = modifier,
+            contentScale = ContentScale.Crop,
+        )
+    }
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -109,7 +126,21 @@ fun KidsStoriesScreen(
     val context = LocalContext.current
     val repo = remember { AzbukaProgressRepository(context.applicationContext) }
     val read by repo.storiesRead.collectAsStateWithLifecycle(initialValue = emptySet())
+    val family by KidsFamilyStore.state(context).collectAsStateWithLifecycle()
+    val mode = family.resolvedMode()
+    var filter by rememberSaveable { mutableStateOf("mine") }
+    val readIds = if (family.activeChild() != null) family.activeProgress().stories else read
+    val visible = KidsBibleStories.all.filter { story ->
+        val ageOk = filter != "mine" || story.fitsAge(mode)
+        val testamentOk = when (filter) {
+            "ot" -> story.testament == "OT"
+            "nt" -> story.testament == "NT"
+            else -> true
+        }
+        ageOk && testamentOk
+    }
     Scaffold(
+        containerColor = MaterialTheme.colorScheme.background,
         topBar = {
             CenterAlignedTopAppBar(
                 title = { Text("Библейские истории", fontWeight = FontWeight.ExtraBold) },
@@ -135,21 +166,42 @@ fun KidsStoriesScreen(
                     Modifier
                         .fillMaxWidth()
                         .clip(RoundedCornerShape(26.dp))
-                        .background(Brush.linearGradient(listOf(Color(0xFF1E1B4B), Color(0xFF4C1D95), Color(0xFF0F766E))))
+                        .background(Brush.linearGradient(KidsNightGradient))
                         .padding(18.dp),
                     verticalArrangement = Arrangement.spacedBy(6.dp),
                 ) {
                     Text("📖 Слушай и читай", color = Color.White, fontSize = 22.sp, fontWeight = FontWeight.Black)
                     Text(
-                        "Прочитано ${read.count { id -> KidsBibleStories.byId(id) != null }} из ${KidsBibleStories.all.size}. " +
-                            "За каждую новую историю — звёздочка ⭐",
+                        "Прочитано ${readIds.count { id -> KidsBibleStories.byId(id) != null }} из ${KidsBibleStories.all.size}. " +
+                            "Сейчас: ${mode.title}. «Для меня» прячет истории другого возраста, «Все» показывает каждую.",
                         color = Color.White.copy(alpha = 0.82f),
                         fontSize = 14.sp,
                     )
                 }
             }
-            items(KidsBibleStories.all, key = { it.id }) { story ->
-                val done = story.id in read
+            item(span = { GridItemSpan(maxLineSpan) }) {
+                Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    listOf(
+                        "mine" to "Для меня",
+                        "all" to "Все",
+                        "ot" to "ВЗ",
+                        "nt" to "НЗ",
+                    ).forEach { (key, label) ->
+                        Text(
+                            label,
+                            color = if (filter == key) Color.White else MaterialTheme.colorScheme.onSurface,
+                            fontWeight = FontWeight.Bold,
+                            modifier = Modifier
+                                .clip(RoundedCornerShape(999.dp))
+                                .background(if (filter == key) Color(0xFF7C3AED) else Color(0xFFF5F3FF))
+                                .clickable { filter = key }
+                                .padding(horizontal = 12.dp, vertical = 8.dp),
+                        )
+                    }
+                }
+            }
+            items(visible, key = { it.id }) { story ->
+                val done = story.id in readIds
                 Column(
                     Modifier
                         .clip(RoundedCornerShape(24.dp))
@@ -189,7 +241,17 @@ fun KidsStoriesScreen(
                         lineHeight = 20.sp,
                         maxLines = 2,
                     )
-                    Text(story.reference, color = Color.White.copy(alpha = 0.78f), fontSize = 12.sp)
+                    Text(
+                        listOf(story.reference, story.testamentLabel(), story.age.let {
+                            when (it) {
+                                "small" -> "3–5"
+                                "big" -> "6–10"
+                                else -> "3–10"
+                            }
+                        }).filter { it.isNotBlank() }.joinToString(" · "),
+                        color = Color.White.copy(alpha = 0.78f),
+                        fontSize = 12.sp,
+                    )
                 }
             }
         }
@@ -202,12 +264,25 @@ fun KidsStoryScreen(
     storyId: String,
     onBack: () -> Unit,
     onOpenStory: (String) -> Unit,
+    onOpenBible: (String, Int, Int) -> Unit = { _, _, _ -> },
+    onPlayGame: (String) -> Unit = {},
+    onOpenSong: (String) -> Unit = {},
+    onOpenColoring: (String) -> Unit = {},
 ) {
     val story = KidsBibleStories.byId(storyId) ?: KidsBibleStories.all.first()
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
     val repo = remember { AzbukaProgressRepository(context.applicationContext) }
     val read by repo.storiesRead.collectAsStateWithLifecycle(initialValue = emptySet())
+    val family by KidsFamilyStore.state(context).collectAsStateWithLifecycle()
+    val mode = family.resolvedMode()
+    val scenes = story.scenesFor(mode)
+    val readIds = if (family.activeChild() != null) family.activeProgress().stories else read
+    val noteAt = if (mode == KidsAgeMode.SMALL) story.parentNoteBeforeSceneSmall else story.parentNoteBeforeScene
+    var noteSeen by rememberSaveable(story.id) { mutableStateOf(false) }
+    var palms by remember(story.id) { mutableIntStateOf(0) }
+    var showTips by rememberSaveable(story.id) { mutableStateOf(false) }
+    var celebrated by remember(story.id) { mutableStateOf(false) }
     var speakingIndex by remember(story.id) { mutableIntStateOf(-1) }
     var sceneIndex by remember(story.id) { mutableIntStateOf(0) }
     var playbackActive by remember(story.id) { mutableStateOf(false) }
@@ -219,7 +294,7 @@ fun KidsStoryScreen(
     val mainHandler = remember { Handler(Looper.getMainLooper()) }
     audio.onSpeaking = { index ->
         speakingIndex = index
-        if (index in story.paragraphs.indices) sceneIndex = index
+        if (index in scenes.indices) sceneIndex = index
     }
     audio.onActive = { playbackActive = it }
 
@@ -268,7 +343,7 @@ fun KidsStoryScreen(
             if (status != TextToSpeech.SUCCESS) return@TextToSpeech
             val e = engine ?: return@TextToSpeech
             e.language = Locale.forLanguageTag("ru-RU")
-            e.setSpeechRate(0.88f)
+            e.setSpeechRate(audio.speechRate)
             e.setPitch(1.05f)
             e.setOnUtteranceProgressListener(object : UtteranceProgressListener() {
                 override fun onStart(utteranceId: String?) = Unit
@@ -291,19 +366,29 @@ fun KidsStoryScreen(
         }
     }
 
-    LaunchedEffect(story.id, playbackActive, parentMode, recordingKey) {
+    val speechRate = if (family.ttsRate > 0f) family.ttsRate else if (mode == KidsAgeMode.SMALL) 0.78f else 0.88f
+    LaunchedEffect(speechRate) {
+        audio.speechRate = speechRate
+        audio.tts?.setSpeechRate(speechRate)
+    }
+    val scenePause = if (mode == KidsAgeMode.SMALL) 8_000L else 5_200L
+    LaunchedEffect(story.id, playbackActive, parentMode, recordingKey, scenePause, scenes.size) {
         if (playbackActive || parentMode || recordingKey != null) return@LaunchedEffect
+        val count = scenes.size.coerceAtLeast(1)
         while (true) {
-            delay(5200)
-            sceneIndex = (sceneIndex + 1) % story.paragraphs.size
+            delay(scenePause)
+            sceneIndex = (sceneIndex + 1) % count
         }
     }
 
     val nextStory = KidsBibleStories.all.getOrNull(KidsBibleStories.all.indexOf(story) + 1)
-    val done = story.id in read
-    val lessonMode = speakingIndex == story.paragraphs.size
+    val done = story.id in readIds
+    val lessonMode = speakingIndex == scenes.size
+    val song = KidsSongs.forStory(story.id)
+    val coloring = KidsColoringPages.forStory(story.id).firstOrNull()
 
     Scaffold(
+        containerColor = MaterialTheme.colorScheme.background,
         topBar = {
             CenterAlignedTopAppBar(
                 title = { Text(story.title, fontWeight = FontWeight.ExtraBold, maxLines = 1) },
@@ -349,14 +434,33 @@ fun KidsStoryScreen(
                         story,
                         sceneIndex = sceneIndex,
                         lessonMode = lessonMode,
+                        sceneCount = scenes.size,
                         modifier = Modifier
                             .fillMaxWidth()
                             .aspectRatio(4f / 3f)
                             .clip(RoundedCornerShape(20.dp)),
                     )
+                    if (story.id == "easter" && sceneIndex == 0) {
+                        Spacer(Modifier.height(8.dp))
+                        Text("🌿".repeat(palms.coerceAtMost(8)), fontSize = 22.sp)
+                        Text(
+                            "Помаши пальмовой веткой",
+                            color = Color(0xFF14532D),
+                            fontWeight = FontWeight.Bold,
+                            modifier = Modifier
+                                .clip(RoundedCornerShape(999.dp))
+                                .background(Color.White)
+                                .clickable { palms++ }
+                                .padding(horizontal = 14.dp, vertical = 8.dp),
+                        )
+                    }
+                    if (story.id == "easter" && (lessonMode || sceneIndex == scenes.lastIndex)) {
+                        Spacer(Modifier.height(8.dp))
+                        Text("🎉 ✨ 🕊️ Христос воскрес!", color = Color.White, fontWeight = FontWeight.Black, fontSize = 18.sp)
+                    }
                     Spacer(Modifier.height(10.dp))
                     Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
-                        story.paragraphs.indices.forEach { i ->
+                        scenes.indices.forEach { i ->
                             val selected = i == sceneIndex && !lessonMode
                             Box(
                                 Modifier
@@ -398,7 +502,7 @@ fun KidsStoryScreen(
                                 } else if (audio.tts == null) {
                                     Toast.makeText(context, "Голос ещё загружается", Toast.LENGTH_SHORT).show()
                                 } else {
-                                    audio.playAll(story)
+                                    audio.playAll(story, scenes)
                                 }
                             }
                             .padding(horizontal = 22.dp, vertical = 12.dp),
@@ -420,7 +524,23 @@ fun KidsStoryScreen(
                     }
                 }
             }
-            itemsIndexed(story.paragraphs) { index, text ->
+            if (story.parentNote.isNotBlank() && noteAt >= 0 && sceneIndex == noteAt && !noteSeen) {
+                item {
+                    Column(
+                        Modifier
+                            .fillMaxWidth()
+                            .clip(RoundedCornerShape(20.dp))
+                            .background(Color(0xFFFFF7ED))
+                            .padding(16.dp),
+                    ) {
+                        Text("Для родителя, перед этой сценой", fontWeight = FontWeight.Bold, color = Color(0xFF9A3412))
+                        Spacer(Modifier.height(6.dp))
+                        Text(story.parentNote, fontSize = 16.sp, lineHeight = 22.sp)
+                        TextButton(onClick = { noteSeen = true }) { Text("Можно читать дальше") }
+                    }
+                }
+            }
+            itemsIndexed(scenes) { index, text ->
                 val key = KidsStoryVoice.paragraphKey(index)
                 val active = index == speakingIndex
                 val followsScene = !playbackActive && recordingKey == null && index == sceneIndex
@@ -497,7 +617,7 @@ fun KidsStoryScreen(
                             if (recordingKey != null) {
                                 Toast.makeText(context, "Сначала сохраните запись", Toast.LENGTH_SHORT).show()
                             } else {
-                                audio.playOne(story, lessonKey, story.lesson, story.paragraphs.size)
+                                audio.playOne(story, lessonKey, story.lesson, scenes.size)
                             }
                         },
                     )
@@ -514,6 +634,54 @@ fun KidsStoryScreen(
                     )
                 }
             }
+            if (story.bibleBookId.isNotBlank() && story.bibleChapter > 0) {
+                item {
+                    StoryLinkRow("Прочитать в Библии", story.reference) {
+                        onOpenBible(story.bibleBookId, story.bibleChapter, story.bibleVerse)
+                    }
+                }
+            }
+            if (story.quiz.isNotEmpty()) {
+                item { StoryLinkRow("Играть", "Вопросы, пазл и пары") { onPlayGame(story.id) } }
+            }
+            if (song != null) {
+                item { StoryLinkRow("Песня", song.title) { onOpenSong(song.id) } }
+            }
+            if (coloring != null) {
+                item { StoryLinkRow("Раскраска", coloring.title) { onOpenColoring(coloring.id) } }
+            }
+            if (story.parentTips.isNotEmpty()) {
+                item {
+                    Column(
+                        Modifier
+                            .fillMaxWidth()
+                            .clip(RoundedCornerShape(22.dp))
+                            .background(Color(0xFFECFDF5))
+                            .padding(16.dp),
+                    ) {
+                        Text(
+                            "Как обсудить",
+                            fontWeight = FontWeight.ExtraBold,
+                            color = Color(0xFF065F46),
+                            modifier = Modifier.clickable { showTips = !showTips },
+                        )
+                        if (showTips) {
+                            story.parentTips.forEach { tip ->
+                                Spacer(Modifier.height(6.dp))
+                                Text("• $tip", color = Color(0xFF064E3B), fontSize = 16.sp, lineHeight = 22.sp)
+                            }
+                        }
+                    }
+                }
+            }
+            if (celebrated) {
+                item {
+                    Row(
+                        Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.Center,
+                    ) { KidsRewardStars() }
+                }
+            }
             item {
                 Row(
                     Modifier
@@ -523,13 +691,14 @@ fun KidsStoryScreen(
                             if (done) {
                                 Brush.linearGradient(listOf(Color(0xFF94A3B8), Color(0xFF64748B)))
                             } else {
-                                Brush.linearGradient(listOf(Color(0xFFF59E0B), Color(0xFFEC4899)))
+                                Brush.linearGradient(KidsWarmHoney)
                             },
                         )
                         .clickable(enabled = !done) {
                             scope.launch {
                                 if (repo.markStoryRead(story.id)) {
-                                    Toast.makeText(context, "Ура! +1 звезда ⭐", Toast.LENGTH_SHORT).show()
+                                    celebrated = true
+                                    Toast.makeText(context, "Ура! +1 звезда", Toast.LENGTH_SHORT).show()
                                 }
                             }
                         }
@@ -616,8 +785,28 @@ private fun StoryVoiceRow(
     }
 }
 
+@Composable
+private fun StoryLinkRow(title: String, subtitle: String, onClick: () -> Unit) {
+    Row(
+        Modifier
+            .fillMaxWidth()
+            .clip(RoundedCornerShape(22.dp))
+            .background(MaterialTheme.colorScheme.surfaceContainerLow)
+            .clickable(onClick = onClick)
+            .padding(14.dp),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        Column(Modifier.weight(1f)) {
+            Text(title, fontWeight = FontWeight.ExtraBold, fontSize = 17.sp)
+            Text(subtitle, fontSize = 13.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
+        }
+        Text("›", fontSize = 28.sp)
+    }
+}
+
 private class StoryAudio(private val context: Context) {
     var tts: TextToSpeech? = null
+    var speechRate: Float = 0.88f
     private var player: MediaPlayer? = null
     private var recorder: MediaRecorder? = null
     private var recordingKey: String? = null
@@ -658,16 +847,16 @@ private class StoryAudio(private val context: Context) {
         onActive(false)
     }
 
-    fun playAll(story: KidsBibleStory) {
+    fun playAll(story: KidsBibleStory, scenes: List<String> = story.paragraphs) {
         stopPlayback()
         val gen = generation
         onActive(true)
         val steps = buildList {
             add(Triple("title", story.title, -1))
-            story.paragraphs.forEachIndexed { index, text ->
+            scenes.forEachIndexed { index, text ->
                 add(Triple(KidsStoryVoice.paragraphKey(index), text, index))
             }
-            add(Triple(KidsStoryVoice.LESSON, story.lesson, story.paragraphs.size))
+            add(Triple(KidsStoryVoice.LESSON, story.lesson, scenes.size))
         }
         fun run(index: Int) {
             if (gen != generation) return

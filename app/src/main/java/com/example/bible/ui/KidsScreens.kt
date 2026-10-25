@@ -37,9 +37,20 @@ import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.filled.ArrowForward
 import androidx.compose.material.icons.automirrored.filled.MenuBook
 import androidx.compose.material.icons.automirrored.filled.VolumeUp
+import androidx.compose.material.icons.filled.AutoAwesome
+import androidx.compose.material.icons.filled.SortByAlpha
+import androidx.compose.material.icons.filled.AutoStories
+import androidx.compose.material.icons.filled.Brush
 import androidx.compose.material.icons.filled.BugReport
+import androidx.compose.material.icons.filled.FamilyRestroom
+import androidx.compose.material.icons.filled.VolunteerActivism
+import androidx.compose.material.icons.filled.WbTwilight
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Extension
+import androidx.compose.material.icons.filled.Face
+import androidx.compose.material.icons.filled.Favorite
+import androidx.compose.material.icons.filled.Lock
+import androidx.compose.material.icons.filled.Map
 import androidx.compose.material.icons.filled.LocalFlorist
 import androidx.compose.material.icons.filled.Nature
 import androidx.compose.material.icons.filled.Numbers
@@ -391,6 +402,8 @@ internal data class KidsHubRow(
     val cardStyle: KidsHubCardVisual,
     @DrawableRes val imageRes: Int? = null,
     val emojiThumb: String? = null,
+    /** both — всегда на виду; small — в «Ещё» у школьников; big — в «Ещё» у малышей. */
+    val ageBand: String = "both",
 )
 
 internal fun kidsHubCardVisualFromToken(token: String): KidsHubCardVisual = when (token) {
@@ -416,17 +429,79 @@ private val KIDS_HUB_DEFAULT_ROWS: List<KidsHubRow> = listOf(
         title = "Алфавит",
         subtitle = "Буквы, слоги и примеры слов",
         route = "azbuka",
-        icon = Icons.AutoMirrored.Filled.MenuBook,
+        icon = Icons.Filled.SortByAlpha,
         cardStyle = KidsHubCardVisual.Pictures,
-        emojiThumb = "🔤",
     ),
     KidsHubRow(
         title = "Библейские истории",
         subtitle = "Ной, Давид, Иона и другие — с озвучкой",
         route = "kids_stories",
-        icon = Icons.AutoMirrored.Filled.MenuBook,
+        icon = Icons.Filled.AutoStories,
         cardStyle = KidsHubCardVisual.Audios,
-        emojiThumb = "📖",
+    ),
+    KidsHubRow(
+        title = "Пасха",
+        subtitle = "Иисус жив: шесть сцен от входа в город до встречи с учениками",
+        route = "kids_story/easter",
+        icon = Icons.Filled.WbTwilight,
+        cardStyle = KidsHubCardVisual.Audios,
+    ),
+    KidsHubRow(
+        title = "Молитвы",
+        subtitle = "Утро, вечер, еда и «Отче наш»",
+        route = "kids_prayers",
+        icon = Icons.Filled.Favorite,
+        cardStyle = KidsHubCardVisual.Pesnopenie,
+    ),
+    KidsHubRow(
+        title = "Стих недели",
+        subtitle = "Послушай и собери стих",
+        route = "kids_verse",
+        icon = Icons.Filled.AutoAwesome,
+        cardStyle = KidsHubCardVisual.Audios,
+    ),
+    KidsHubRow(
+        title = "Песни",
+        subtitle = "Короткие песни, которые можно петь семьёй",
+        route = "kids_songs",
+        icon = Icons.Filled.MusicNote,
+        cardStyle = KidsHubCardVisual.Musician,
+    ),
+    KidsHubRow(
+        title = "Раскраски",
+        subtitle = "Закрась историю",
+        route = "kids_coloring",
+        icon = Icons.Filled.Brush,
+        cardStyle = KidsHubCardVisual.Pictures,
+    ),
+    KidsHubRow(
+        title = "Герои",
+        subtitle = "Собери карточки людей Библии",
+        route = "kids_heroes",
+        icon = Icons.Filled.Face,
+        cardStyle = KidsHubCardVisual.Videos,
+        ageBand = "big",
+    ),
+    KidsHubRow(
+        title = "Карта",
+        subtitle = "Где происходили истории",
+        route = "kids_map",
+        icon = Icons.Filled.Map,
+        cardStyle = KidsHubCardVisual.Audios,
+    ),
+    KidsHubRow(
+        title = "Ценности",
+        subtitle = "Доброта, честность, прощение",
+        route = "kids_values",
+        icon = Icons.Filled.VolunteerActivism,
+        cardStyle = KidsHubCardVisual.Pesnopenie,
+    ),
+    KidsHubRow(
+        title = "Родителям",
+        subtitle = "Дети, прогресс и настройки. Нужен пример",
+        route = "kids_parents",
+        icon = Icons.Filled.FamilyRestroom,
+        cardStyle = KidsHubCardVisual.Pictures,
     ),
     KidsHubRow(
         title = "Цифры",
@@ -434,7 +509,6 @@ private val KIDS_HUB_DEFAULT_ROWS: List<KidsHubRow> = listOf(
         route = "cifry",
         icon = Icons.Filled.Numbers,
         cardStyle = KidsHubCardVisual.Musician,
-        emojiThumb = "🔢",
     ),
     KidsHubRow(
         title = "Игры",
@@ -442,7 +516,6 @@ private val KIDS_HUB_DEFAULT_ROWS: List<KidsHubRow> = listOf(
         route = "kids_games",
         icon = Icons.Filled.Extension,
         cardStyle = KidsHubCardVisual.Videos,
-        emojiThumb = "🎮",
     ),
     KidsHubRow(
         title = "Цвета",
@@ -450,7 +523,7 @@ private val KIDS_HUB_DEFAULT_ROWS: List<KidsHubRow> = listOf(
         route = "kids_colors",
         icon = Icons.Filled.Palette,
         cardStyle = KidsHubCardVisual.Pesnopenie,
-        emojiThumb = "🎨",
+        ageBand = "small",
     ),
     KidsHubRow(
         title = "Времена года",
@@ -459,6 +532,7 @@ private val KIDS_HUB_DEFAULT_ROWS: List<KidsHubRow> = listOf(
         icon = Icons.Filled.WbSunny,
         cardStyle = KidsHubCardVisual.Videos,
         imageRes = R.drawable.kids_season_spring,
+        ageBand = "small",
     ),
     KidsHubRow(
         title = "Страны",
@@ -475,6 +549,7 @@ private val KIDS_HUB_DEFAULT_ROWS: List<KidsHubRow> = listOf(
         icon = Icons.Filled.Pets,
         cardStyle = KidsHubCardVisual.Pictures,
         imageRes = R.drawable.kids_anml_medved,
+        ageBand = "small",
     ),
     KidsHubRow(
         title = "Рыбы",
@@ -483,6 +558,7 @@ private val KIDS_HUB_DEFAULT_ROWS: List<KidsHubRow> = listOf(
         icon = Icons.Filled.SetMeal,
         cardStyle = KidsHubCardVisual.Musician,
         imageRes = R.drawable.kids_fish_klovn,
+        ageBand = "small",
     ),
     KidsHubRow(
         title = "Змеи",
@@ -491,6 +567,7 @@ private val KIDS_HUB_DEFAULT_ROWS: List<KidsHubRow> = listOf(
         icon = Icons.Filled.Nature,
         cardStyle = KidsHubCardVisual.Pesnopenie,
         imageRes = R.drawable.kids_snake_kobra,
+        ageBand = "small",
     ),
     KidsHubRow(
         title = "Насекомые",
@@ -499,6 +576,7 @@ private val KIDS_HUB_DEFAULT_ROWS: List<KidsHubRow> = listOf(
         icon = Icons.Filled.BugReport,
         cardStyle = KidsHubCardVisual.Videos,
         imageRes = R.drawable.kids_ins_babochka,
+        ageBand = "small",
     ),
     KidsHubRow(
         title = "Деревья",
@@ -507,6 +585,7 @@ private val KIDS_HUB_DEFAULT_ROWS: List<KidsHubRow> = listOf(
         icon = Icons.Filled.Park,
         cardStyle = KidsHubCardVisual.Audios,
         imageRes = R.drawable.kids_tree_bereza,
+        ageBand = "small",
     ),
     KidsHubRow(
         title = "Растения",
@@ -515,6 +594,7 @@ private val KIDS_HUB_DEFAULT_ROWS: List<KidsHubRow> = listOf(
         icon = Icons.Filled.LocalFlorist,
         cardStyle = KidsHubCardVisual.Pictures,
         imageRes = R.drawable.kids_plant_tulpan,
+        ageBand = "small",
     ),
 )
 

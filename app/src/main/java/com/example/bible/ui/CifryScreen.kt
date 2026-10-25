@@ -124,6 +124,8 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.bible.R
+import com.example.bible.data.KidsAgeMode
+import com.example.bible.data.KidsFamilyStore
 import com.example.bible.data.AzbukaProgressRepository
 import com.example.bible.data.CifryMathMode
 import com.example.bible.data.CifryMathRepository
@@ -202,6 +204,8 @@ fun CifryScreen(
     val scope = rememberCoroutineScope()
     val context = LocalContext.current
     val progressRepo = remember { AzbukaProgressRepository(context) }
+    val family by KidsFamilyStore.state(context).collectAsStateWithLifecycle()
+    val young = family.resolvedMode() == KidsAgeMode.SMALL
     val mathRepo = remember { CifryMathRepository(context) }
     val ttsUtteranceCallbacks = remember { ConcurrentHashMap<String, () -> Unit>() }
     val tts: TextToSpeech? = remember(context) {
@@ -298,6 +302,15 @@ fun CifryScreen(
         },
     ) { padding ->
         Column(modifier = Modifier.padding(padding)) {
+            if (young) {
+                Text(
+                    "Для 3–5 лет здесь цифры, фигуры и простые игры. Вкладка «Математика» остаётся — её можно открыть, когда будет интересно.",
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 16.dp, vertical = 8.dp),
+                    fontWeight = FontWeight.Bold,
+                )
+            }
             KidsTabs(
                 tabs = tabs,
                 selected = pagerState.currentPage,

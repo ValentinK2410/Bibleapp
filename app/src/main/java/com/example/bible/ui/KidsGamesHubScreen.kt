@@ -1,7 +1,6 @@
 package com.example.bible.ui
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.aspectRatio
@@ -20,6 +19,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.CenterAlignedTopAppBar
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -39,6 +39,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.bible.data.AzbukaProgressRepository
+import com.example.bible.data.KidsAgeMode
+import com.example.bible.data.KidsFamilyStore
 import com.example.bible.data.KidsGames
 
 private data class KidsGameTile(
@@ -48,6 +50,7 @@ private data class KidsGameTile(
     val subtitle: String,
     val gradient: List<Color>,
     val winLabel: String,
+    val school: Boolean = false,
     val open: () -> Unit,
 )
 
@@ -64,30 +67,33 @@ fun KidsGamesHubScreen(
     val context = LocalContext.current
     val repo = remember { AzbukaProgressRepository(context.applicationContext) }
     val wins by repo.gameWins.collectAsStateWithLifecycle(initialValue = emptyMap())
+    val family by KidsFamilyStore.state(context).collectAsStateWithLifecycle()
+    val young = family.resolvedMode() == KidsAgeMode.SMALL
     val games = listOf(
         KidsGameTile(
             KidsGames.BRAIN_RING, "Брейн-ринг", "⏱️", "1000 вопросов из Библии. Новые запоминаются",
-            listOf(Color(0xFF7C3AED), Color(0xFFF59E0B)), "раундов", onOpenBrainRing,
+            kidsGradient(0), "раундов", school = true, open = onOpenBrainRing,
         ),
         KidsGameTile(
             KidsGames.TIC_TAC_TOE, "Крестики\nнолики", "⭕", "С компьютером или вдвоём, поле до 6×6",
-            listOf(Color(0xFF6366F1), Color(0xFFEC4899)), "побед", onOpenTicTacToe,
+            kidsGradient(1), "побед", open = onOpenTicTacToe,
         ),
         KidsGameTile(
             KidsGames.CHECKERS, "Шашки", "⚫", "Русские правила, с компьютером или вдвоём",
-            listOf(Color(0xFFF59E0B), Color(0xFFEF4444)), "побед", onOpenCheckers,
+            kidsGradient(2), "побед", school = true, open = onOpenCheckers,
         ),
         KidsGameTile(
             KidsGames.GO, "Го", "🔵", "Окружай камни соперника",
-            listOf(Color(0xFF10B981), Color(0xFF06B6D4)), "партий", onOpenGo,
+            kidsGradient(3), "партий", school = true, open = onOpenGo,
         ),
         KidsGameTile(
             KidsGames.PIPES, "Водопровод", "🚰", "Поверни трубы от крана до стока",
-            listOf(Color(0xFF0EA5E9), Color(0xFF6366F1)), "решено", onOpenPipePuzzle,
+            kidsGradient(4), "решено", open = onOpenPipePuzzle,
         ),
     )
     KidsGameMusic(com.example.bible.games.KidsMusicTrack.GAMES)
     Scaffold(
+        containerColor = MaterialTheme.colorScheme.background,
         topBar = {
             CenterAlignedTopAppBar(
                 title = { Text("Игры", fontWeight = FontWeight.ExtraBold) },
@@ -114,7 +120,7 @@ fun KidsGamesHubScreen(
                     Modifier
                         .fillMaxWidth()
                         .clip(RoundedCornerShape(26.dp))
-                        .background(Brush.linearGradient(listOf(Color(0xFF1E1B4B), Color(0xFF4C1D95), Color(0xFF0F766E))))
+                        .background(Brush.linearGradient(KidsNightGradient))
                         .padding(18.dp),
                 ) {
                     Text("🎮 Выбери игру", color = Color.White, fontSize = 22.sp, fontWeight = FontWeight.Black)
@@ -130,7 +136,7 @@ fun KidsGamesHubScreen(
                     Modifier
                         .clip(RoundedCornerShape(26.dp))
                         .background(Brush.linearGradient(game.gradient))
-                        .clickable(onClick = game.open)
+                        .kidsPressable(onClick = game.open)
                         .padding(14.dp),
                 ) {
                     Box(
@@ -168,6 +174,10 @@ fun KidsGamesHubScreen(
                         minLines = 3,
                         maxLines = 3,
                     )
+                    if (young && game.school) {
+                        Spacer(Modifier.height(6.dp))
+                        Text("Для 6–10, можно открыть", color = Color.White, fontWeight = FontWeight.Bold, fontSize = 12.sp)
+                    }
                     Spacer(Modifier.height(8.dp))
                     Box(
                         Modifier
