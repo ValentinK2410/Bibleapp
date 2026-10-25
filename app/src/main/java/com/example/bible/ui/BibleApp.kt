@@ -232,6 +232,7 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.emptyFlow
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
@@ -2250,6 +2251,14 @@ private fun BibleNavHost(
             val hasPrev = chapterIndex > 0
             val hasNext = chapterIndex < totalChapters - 1
 
+            // Смена перевода на мгновение обнуляет главу (идёт загрузка). Если из-за этого
+            // убрать читалку с экрана, свайп между переводами обрывается и стих сбрасывается.
+            var readerChapter by remember(bookId, chapterNum) { mutableStateOf<BibleChapter?>(null) }
+            if (chapter != null && readerChapter != chapter) {
+                readerChapter = chapter
+            }
+            val chapterShown = readerChapter
+
             var readerVisibleVerse by remember(bookId, chapterNum) {
                 mutableIntStateOf(scrollVerse.coerceAtLeast(1))
             }
@@ -2258,7 +2267,7 @@ private fun BibleNavHost(
             }
             val chapterShortTitle = readerChapterTitle(bookId, chapterNum, readerVisibleVerse)
 
-            if (!isOnline && chapterLoad is BibleChapterLoadState.Loading) {
+            if (chapterShown == null && !isOnline && chapterLoad is BibleChapterLoadState.Loading) {
                 Scaffold(
                     topBar = {
                         ReaderChapterTopBar(
@@ -2294,7 +2303,7 @@ private fun BibleNavHost(
                 }
                 return@composable
             }
-            if (isOnline && onlineLoading) {
+            if (chapterShown == null && isOnline && onlineLoading) {
                 Scaffold(
                     topBar = {
                         ReaderChapterTopBar(
@@ -2334,7 +2343,7 @@ private fun BibleNavHost(
                 }
                 return@composable
             }
-            if (isOnline && onlineError != null) {
+            if (chapterShown == null && isOnline && onlineError != null) {
                 Scaffold(
                     topBar = {
                         ReaderChapterTopBar(
@@ -2370,15 +2379,15 @@ private fun BibleNavHost(
                 }
                 return@composable
             }
-            if (chapter == null) return@composable
+            if (chapterShown == null) return@composable
 
             val book = when (bookShell) {
-                is BibleBookShellState.Ready -> bookShell.book.copy(chapters = listOf(chapter))
-                is BibleBookShellState.Fallback -> bookShell.book.copy(chapters = listOf(chapter))
+                is BibleBookShellState.Ready -> bookShell.book.copy(chapters = listOf(chapterShown))
+                is BibleBookShellState.Fallback -> bookShell.book.copy(chapters = listOf(chapterShown))
                 BibleBookShellState.Loading -> com.example.bible.data.BibleBook(
                     id = bookId,
                     name = bookName,
-                    chapters = listOf(chapter),
+                    chapters = listOf(chapterShown),
                 )
             }
 
@@ -2816,17 +2825,47 @@ private fun BibleNavHost(
                 val initialPage = translations.indexOf(translation).coerceAtLeast(0)
                 val pagerState = rememberPagerState(initialPage = initialPage, pageCount = { translations.size })
 
-                LaunchedEffect(pagerState.currentPage) {
-                    val tid = translations[pagerState.currentPage]
+                LaunchedEffect(pagerState.settledPage) {
+                    val tid = translations[pagerState.settledPage]
                     if (tid != translation) {
                         viewModel.setTranslation(tid)
                     }
                 }
                 LaunchedEffect(translation) {
+                    if (pagerState.isScrollInProgress) return@LaunchedEffect
                     val idx = translations.indexOf(translation)
                     if (idx >= 0 && pagerState.currentPage != idx) {
                         pagerState.scrollToPage(idx)
                     }
+                }
+
+                // Стих, к которому нужно открыть соседний перевод. Пока страница уже на экране,
+                // её не перескролливаем вслед за пальцем — иначе список прыгает при чтении.
+                // Во время свайпа якорь не обновляем: смена раскладки иначе подменяет стих предыдущим.
+                var translationLandingVerse by remember(bookId, chapterNum) {
+                    mutableIntStateOf(scrollVerse)
+                }
+                var translationLandingToken by remember(bookId, chapterNum) { mutableIntStateOf(0) }
+                var translationLandingSettled by remember(bookId, chapterNum) { mutableIntStateOf(-1) }
+                var translationSwipeAnchor by remember(bookId, chapterNum) {
+                    mutableIntStateOf(scrollVerse.coerceAtLeast(1))
+                }
+                var readerFingerDown by remember(bookId, chapterNum) { mutableStateOf(false) }
+                val readerFingerDownNow = rememberUpdatedState(readerFingerDown)
+                val settledTranslationPage = pagerState.settledPage
+                val translationPageJustSettled = translationLandingSettled != settledTranslationPage
+                if (translationPageJustSettled) {
+                    translationLandingVerse = if (translationLandingSettled < 0) {
+                        scrollVerse
+                    } else {
+                        translationSwipeAnchor.coerceAtLeast(1)
+                    }
+                    translationLandingSettled = settledTranslationPage
+                    translationLandingToken++
+                }
+                if (!pagerState.isScrollInProgress && !translationPageJustSettled && !readerFingerDown) {
+                    val anchored = readerVisibleVerse.coerceAtLeast(1)
+                    if (translationSwipeAnchor != anchored) translationSwipeAnchor = anchored
                 }
 
                 var fontButtonsShown by remember { mutableStateOf(true) }
@@ -2844,9 +2883,9 @@ private fun BibleNavHost(
                             awaitPointerEventScope {
                                 while (true) {
                                     val event = awaitPointerEvent(PointerEventPass.Initial)
-                                    if (event.changes.any { it.pressed }) {
-                                        readerTouchTick++
-                                    }
+                                    val down = event.changes.any { it.pressed }
+                                    if (down != readerFingerDownNow.value) readerFingerDown = down
+                                    if (down) readerTouchTick++
                                 }
                             }
                         },
@@ -2972,7 +3011,19 @@ private fun BibleNavHost(
                             val verseNumbersWithNotes = remember(userNotes, bookId, chapterNum) {
                                 userNotes.verseNumbersWithNotesInChapter(bookId, chapterNum)
                             }
-                            val isReaderPagerPageActive = page == pagerState.currentPage
+                            val isSettledTranslationPage = page == settledTranslationPage
+                            val pageScrollVerse = if (isSettledTranslationPage) {
+                                translationLandingVerse
+                            } else {
+                                readerVisibleVerse.coerceAtLeast(1)
+                            }
+                            val pageScrollRequestId = if (isSettledTranslationPage) {
+                                100_000 + translationLandingToken
+                            } else {
+                                readerVisibleVerse.coerceAtLeast(1)
+                            }
+                            val isReaderPagerPageActive =
+                                isSettledTranslationPage && !pagerState.isScrollInProgress
                             val onHebrewSandboxWholeVerse = remember(bookId, pageTrans) {
                                 if (pageTrans != TranslationId.INTERLINEAR ||
                                     !BibleCanon.isOldTestament(bookId)
@@ -2993,7 +3044,8 @@ private fun BibleNavHost(
                                         ReaderContent(
                                         modifier = Modifier.weight(1f),
                                         verses = effectiveVerses,
-                                        scrollToVerse = scrollVerse,
+                                        scrollToVerse = pageScrollVerse,
+                                        scrollRequestId = pageScrollRequestId,
                                         translation = pageTrans,
                                         bookId = bookId,
                                         bookName = effectiveBookName,
@@ -3197,7 +3249,7 @@ private fun BibleNavHost(
                         }
                         navController.navigate("read/$targetBookId/$targetChapter/$targetVerse")
                     },
-                    totalVerses = chapter.verses.size,
+                    totalVerses = chapterShown.verses.size,
                 )
             }
             if (showTextSizeDialog) {
@@ -5864,6 +5916,30 @@ private const val READER_LAZY_HEADER_ITEMS = 1
 private fun readerLazyListIndexForVerse(verseIndex: Int): Int =
     verseIndex + READER_LAZY_HEADER_ITEMS
 
+/** Ставит стих к верхней границе, дождавшись раскладки списка. */
+private suspend fun LazyListState.scrollReaderToVerseNumber(
+    verses: List<BibleVerse>,
+    verseNumber: Int,
+) {
+    if (verses.isEmpty() || verseNumber <= 0) return
+    val exact = verses.indexOfFirst { it.number == verseNumber }
+    val idx = when {
+        exact >= 0 -> exact
+        else -> {
+            val next = verses.indexOfFirst { it.number >= verseNumber }
+            if (next >= 0) next else verses.lastIndex
+        }
+    }
+    if (idx < 0) return
+    val listIndex = readerLazyListIndexForVerse(idx)
+    snapshotFlow { layoutInfo.totalItemsCount }.first { it > listIndex }
+    scrollToItem(listIndex, scrollOffset = 0)
+    val placed = layoutInfo.visibleItemsInfo.firstOrNull { it.index == listIndex }
+    if (placed != null && placed.offset != 0) {
+        scroll { scrollBy(placed.offset.toFloat()) }
+    }
+}
+
 /** Плавно прижимает озвучиваемый стих к верхней границе списка. */
 private suspend fun LazyListState.animateTimemarkVerseToTop(verseIndex: Int) {
     if (verseIndex < 0) return
@@ -5878,14 +5954,19 @@ private fun topVisibleVerseNumber(
     if (verses.isEmpty()) return null
     val info = listState.layoutInfo
     if (info.visibleItemsInfo.isEmpty()) return null
+    var fallback: Int? = null
     for (item in info.visibleItemsInfo.sortedBy { it.index }) {
         val li = item.index
         if (li <= 0) continue
         val vIdx = li - 1
         if (vIdx !in verses.indices) continue
-        return verses[vIdx].number
+        val number = verses[vIdx].number
+        fallback = number
+        // Хвост предыдущего стиха над краем экрана не считаем текущим:
+        // иначе каждый свайп перевода открывает стих на один меньше.
+        if (item.offset >= 0) return number
     }
-    return null
+    return fallback
 }
 
 /** Старт/продолжение озвучки главы с таймкода первого видимого стиха (если есть проект). */
@@ -5935,6 +6016,8 @@ private fun ReaderContent(
     modifier: Modifier = Modifier,
     verses: List<BibleVerse>,
     scrollToVerse: Int,
+    /** Меняется, когда эту страницу перевода нужно заново поставить на [scrollToVerse]. */
+    scrollRequestId: Int,
     translation: TranslationId,
     bookId: String,
     bookName: String,
@@ -6052,7 +6135,14 @@ private fun ReaderContent(
         onDispose { interlinearTts?.shutdown() }
     }
 
-    val listState = rememberLazyListState()
+    val initialListIndex = if (scrollToVerse > 0) {
+        val exact = verses.indexOfFirst { it.number == scrollToVerse }
+        if (exact >= 0) readerLazyListIndexForVerse(exact) else 0
+    } else {
+        0
+    }
+    val listState = rememberLazyListState(initialFirstVisibleItemIndex = initialListIndex)
+    var appliedScrollRequestId by remember { mutableIntStateOf(Int.MIN_VALUE) }
     LaunchedEffect(listState, mimicScrollDy) {
         mimicScrollDy.collect { dy ->
             listState.scroll { scrollBy(dy) }
@@ -6088,15 +6178,25 @@ private fun ReaderContent(
             project.cues,
         )
     }
+    LaunchedEffect(scrollRequestId, verses) {
+        if (verses.isEmpty()) return@LaunchedEffect
+        if (scrollToVerse > 0) {
+            listState.scrollReaderToVerseNumber(verses, scrollToVerse)
+        }
+        appliedScrollRequestId = scrollRequestId
+    }
     LaunchedEffect(
         listState,
         verses,
         onVisibleVerseChanged,
+        appliedScrollRequestId,
+        scrollRequestId,
         timemarkProject?.id,
         timemarkVerseRange?.first,
         bibleChapterAudioState.isPlaying,
     ) {
         if (onVisibleVerseChanged == null || verses.isEmpty()) return@LaunchedEffect
+        if (appliedScrollRequestId != scrollRequestId) return@LaunchedEffect
         val timemarkVerse = timemarkVerseRange?.first
         if (timemarkProject != null && bibleChapterAudioState.isPlaying && timemarkVerse != null) {
             onVisibleVerseChanged(timemarkVerse)
@@ -6108,20 +6208,15 @@ private fun ReaderContent(
                 if (v != null) onVisibleVerseChanged(v)
             }
     }
-    LaunchedEffect(scrollToVerse, verses) {
-        if (scrollToVerse <= 0) return@LaunchedEffect
-        val idx = verses.indexOfFirst { it.number == scrollToVerse }
-        if (idx >= 0) {
-            listState.scrollToItem(readerLazyListIndexForVerse(idx), scrollOffset = 0)
-        }
-    }
     LaunchedEffect(
         timemarkVerseRange?.first,
         timemarkVerseRange?.last,
         verses,
         bibleChapterAudioState.isPlaying,
         timemarkProject?.id,
+        onVisibleVerseChanged,
     ) {
+        if (onVisibleVerseChanged == null) return@LaunchedEffect
         if (timemarkProject == null || !bibleChapterAudioState.isPlaying) return@LaunchedEffect
         val r = timemarkVerseRange ?: return@LaunchedEffect
         val idx = verses.indexOfFirst { it.number == r.first }
