@@ -129,6 +129,7 @@ import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontStyle
+import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.style.TextOverflow
@@ -1077,16 +1078,26 @@ private fun RowScope.SongHeaderTile(emoji: String, title: String, gradient: List
     Row(
         Modifier
             .weight(1f)
-            .height(48.dp)
+            .heightIn(min = 52.dp)
             .clip(RoundedCornerShape(16.dp))
             .background(Brush.linearGradient(gradient))
             .clickable(onClick = onClick)
-            .padding(horizontal = 12.dp),
+            .padding(horizontal = 12.dp, vertical = 8.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
-        Text(emoji, fontSize = 18.sp)
+        Text(emoji, fontSize = 18.sp, lineHeight = 22.sp, maxLines = 1)
         Spacer(Modifier.width(8.dp))
-        Text(title, color = Color.White, fontWeight = FontWeight.ExtraBold, fontSize = 13.sp, lineHeight = 15.sp, maxLines = 2, overflow = TextOverflow.Ellipsis)
+        Text(
+            title,
+            color = Color.White,
+            fontFamily = FontFamily.SansSerif,
+            fontWeight = FontWeight.ExtraBold,
+            fontSize = 13.sp,
+            lineHeight = 17.sp,
+            maxLines = 2,
+            overflow = TextOverflow.Ellipsis,
+            modifier = Modifier.weight(1f),
+        )
     }
 }
 

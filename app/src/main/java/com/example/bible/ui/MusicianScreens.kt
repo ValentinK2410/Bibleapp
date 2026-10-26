@@ -69,7 +69,9 @@ import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalView
+import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -187,7 +189,7 @@ fun MusicianSectionScreen(
         ) {
             MusicianHero(bpm = bpm, a4 = a4)
             MusicianStudioBanner(onClick = onOpenStudio)
-            Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+            Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
                 MusicianTile(
                     title = "Тюнер",
                     subtitle = "Гитара, бас, укулеле и хроматический",
@@ -203,7 +205,7 @@ fun MusicianSectionScreen(
                     onClick = onOpenViolinTuner,
                 )
             }
-            Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+            Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
                 MusicianTile(
                     title = "Метроном",
                     subtitle = "Любой размер, доли, tap-темп",
@@ -239,13 +241,32 @@ private fun MusicianHero(bpm: Int, a4: Int) {
             .padding(18.dp),
         verticalArrangement = Arrangement.spacedBy(10.dp),
     ) {
-        Text("ДЛЯ МУЗЫКАНТА", color = Color.White.copy(alpha = 0.65f), fontSize = 11.sp, fontWeight = FontWeight.Bold, letterSpacing = 2.sp)
-        Text("Твоя карманная студия", color = Color.White, fontSize = 24.sp, fontWeight = FontWeight.ExtraBold)
+        Text(
+            "ДЛЯ МУЗЫКАНТА",
+            color = Color.White.copy(alpha = 0.65f),
+            fontFamily = FontFamily.SansSerif,
+            fontSize = 11.sp,
+            lineHeight = 14.sp,
+            fontWeight = FontWeight.Bold,
+            letterSpacing = 1.2.sp,
+            maxLines = 1,
+        )
+        Text(
+            "Твоя карманная студия",
+            color = Color.White,
+            fontFamily = FontFamily.SansSerif,
+            fontSize = 24.sp,
+            lineHeight = 30.sp,
+            fontWeight = FontWeight.ExtraBold,
+            maxLines = 2,
+            overflow = TextOverflow.Ellipsis,
+        )
         Text(
             "Настрой инструмент, держи темп и записывай партии в студии.",
             color = Color.White.copy(alpha = 0.75f),
+            fontFamily = FontFamily.SansSerif,
             fontSize = 13.sp,
-            lineHeight = 17.sp,
+            lineHeight = 18.sp,
         )
         Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
             HeroStat("♩ = $bpm", "темп")
@@ -266,8 +287,25 @@ private fun RowScope.HeroStat(value: String, label: String) {
             .padding(vertical = 8.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
-        Text(value, color = Color.White, fontSize = 17.sp, fontWeight = FontWeight.ExtraBold, maxLines = 1)
-        Text(label, color = Color.White.copy(alpha = 0.7f), fontSize = 11.sp, maxLines = 1)
+        Text(
+            value,
+            color = Color.White,
+            fontFamily = FontFamily.SansSerif,
+            fontSize = 16.sp,
+            lineHeight = 20.sp,
+            fontWeight = FontWeight.ExtraBold,
+            maxLines = 1,
+            overflow = TextOverflow.Ellipsis,
+        )
+        Text(
+            label,
+            color = Color.White.copy(alpha = 0.7f),
+            fontFamily = FontFamily.SansSerif,
+            fontSize = 11.sp,
+            lineHeight = 14.sp,
+            maxLines = 1,
+            overflow = TextOverflow.Ellipsis,
+        )
     }
 }
 
@@ -282,14 +320,25 @@ private fun MusicianStudioBanner(onClick: () -> Unit) {
             .padding(horizontal = 16.dp, vertical = 14.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
-        Text("🎚️", fontSize = 34.sp)
-        Column(Modifier.weight(1f).padding(start = 12.dp)) {
-            Text("Студия", color = Color.White, fontSize = 20.sp, fontWeight = FontWeight.ExtraBold)
+        Text("🎚️", fontSize = 32.sp, lineHeight = 36.sp, maxLines = 1)
+        Column(Modifier.weight(1f).padding(start = 12.dp), verticalArrangement = Arrangement.spacedBy(2.dp)) {
+            Text(
+                "Студия",
+                color = Color.White,
+                fontFamily = FontFamily.SansSerif,
+                fontSize = 20.sp,
+                lineHeight = 24.sp,
+                fontWeight = FontWeight.ExtraBold,
+                maxLines = 1,
+            )
             Text(
                 "Держи плитку — звучит. Запись только в редактировании",
                 color = Color.White.copy(alpha = 0.88f),
+                fontFamily = FontFamily.SansSerif,
                 fontSize = 13.sp,
                 lineHeight = 17.sp,
+                maxLines = 2,
+                overflow = TextOverflow.Ellipsis,
             )
         }
     }
@@ -322,14 +371,33 @@ private fun RowScope.MusicianTile(
         ) {
             art(Modifier.fillMaxSize().padding(12.dp))
         }
-        Text(title, color = Color.White, fontSize = 19.sp, fontWeight = FontWeight.ExtraBold, maxLines = 1)
-        Text(subtitle, color = Color.White.copy(alpha = 0.85f), fontSize = 12.sp, lineHeight = 15.sp, minLines = 2, maxLines = 2)
+        Text(
+            title,
+            color = Color.White,
+            fontFamily = FontFamily.SansSerif,
+            fontSize = 18.sp,
+            lineHeight = 22.sp,
+            fontWeight = FontWeight.ExtraBold,
+            maxLines = 2,
+            overflow = TextOverflow.Ellipsis,
+        )
+        Text(
+            subtitle,
+            color = Color.White.copy(alpha = 0.85f),
+            fontFamily = FontFamily.SansSerif,
+            fontSize = 12.sp,
+            lineHeight = 16.sp,
+            maxLines = 3,
+            overflow = TextOverflow.Ellipsis,
+        )
     }
 }
 
 @Composable
 private fun EmojiArt(emoji: String, modifier: Modifier) {
-    Box(modifier, contentAlignment = Alignment.Center) { Text(emoji, fontSize = 52.sp) }
+    Box(modifier, contentAlignment = Alignment.Center) {
+        Text(emoji, fontSize = 44.sp, lineHeight = 50.sp, maxLines = 1)
+    }
 }
 
 @Composable

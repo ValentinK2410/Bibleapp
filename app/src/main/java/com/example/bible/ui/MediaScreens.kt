@@ -109,6 +109,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -558,13 +559,32 @@ fun MediaHomeScreen(
                     .padding(18.dp),
                 verticalArrangement = Arrangement.spacedBy(10.dp),
             ) {
-                Text("МЕДИА", color = Color.White.copy(alpha = 0.65f), fontSize = 11.sp, fontWeight = FontWeight.Bold, letterSpacing = 2.sp)
-                Text("Ваша медиатека", color = Color.White, fontSize = 24.sp, fontWeight = FontWeight.ExtraBold)
+                Text(
+                    "МЕДИА",
+                    color = Color.White.copy(alpha = 0.65f),
+                    fontFamily = FontFamily.SansSerif,
+                    fontSize = 11.sp,
+                    lineHeight = 14.sp,
+                    fontWeight = FontWeight.Bold,
+                    letterSpacing = 2.sp,
+                    maxLines = 1,
+                )
+                Text(
+                    "Ваша медиатека",
+                    color = Color.White,
+                    fontFamily = FontFamily.SansSerif,
+                    fontSize = 24.sp,
+                    lineHeight = 30.sp,
+                    fontWeight = FontWeight.ExtraBold,
+                    maxLines = 2,
+                    overflow = TextOverflow.Ellipsis,
+                )
                 Text(
                     "Картинки, видео, звук и песни — всё хранится в приложении и работает без интернета.",
                     color = Color.White.copy(alpha = 0.75f),
+                    fontFamily = FontFamily.SansSerif,
                     fontSize = 13.sp,
-                    lineHeight = 17.sp,
+                    lineHeight = 18.sp,
                 )
                 Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                     listOf("🖼️" to pictureCount, "🎬" to videoCount, "🎧" to audioCount, "🎤" to songs.size).forEach { (emoji, n) ->
@@ -577,14 +597,25 @@ fun MediaHomeScreen(
                                 .padding(vertical = 8.dp),
                             horizontalAlignment = Alignment.CenterHorizontally,
                         ) {
-                            Text(emoji, fontSize = 16.sp)
-                            Text("$n", color = Color.White, fontSize = 18.sp, fontWeight = FontWeight.ExtraBold)
+                            Text(emoji, fontSize = 16.sp, lineHeight = 20.sp, maxLines = 1)
+                            Text(
+                                "$n",
+                                color = Color.White,
+                                fontFamily = FontFamily.SansSerif,
+                                fontSize = 18.sp,
+                                lineHeight = 22.sp,
+                                fontWeight = FontWeight.ExtraBold,
+                                maxLines = 1,
+                            )
                         }
                     }
                 }
             }
             tiles.chunked(2).forEach { row ->
-                Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+                Row(
+                    Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(12.dp),
+                ) {
                     row.forEach { tile -> MediaHubTileCard(tile, Modifier.weight(1f)) }
                     if (row.size == 1) Spacer(Modifier.weight(1f))
                 }
@@ -624,38 +655,68 @@ private class MediaHubTile(
 private fun MediaHubTileCard(tile: MediaHubTile, modifier: Modifier) {
     Column(
         modifier
+            .fillMaxWidth()
             .clip(RoundedCornerShape(26.dp))
             .background(Brush.linearGradient(tile.gradient))
             .clickable(onClick = tile.onClick)
             .padding(14.dp),
-        verticalArrangement = Arrangement.spacedBy(6.dp),
+        verticalArrangement = Arrangement.spacedBy(8.dp),
     ) {
         Box(
             Modifier
                 .fillMaxWidth()
-                .aspectRatio(1.5f)
+                .aspectRatio(1.55f)
                 .clip(RoundedCornerShape(20.dp))
                 .background(Color.White.copy(alpha = 0.18f)),
             contentAlignment = Alignment.Center,
         ) {
-            Text(tile.emoji, fontSize = 46.sp)
+            Text(
+                tile.emoji,
+                fontSize = 40.sp,
+                lineHeight = 46.sp,
+                maxLines = 1,
+            )
+        }
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(6.dp),
+        ) {
+            Text(
+                tile.title,
+                color = Color.White,
+                fontFamily = FontFamily.SansSerif,
+                fontSize = 16.sp,
+                lineHeight = 20.sp,
+                fontWeight = FontWeight.ExtraBold,
+                maxLines = 2,
+                overflow = TextOverflow.Ellipsis,
+                modifier = Modifier.weight(1f),
+            )
             if (tile.count != null) {
                 Text(
                     "${tile.count}",
                     color = tile.gradient.first(),
+                    fontFamily = FontFamily.SansSerif,
                     fontSize = 13.sp,
+                    lineHeight = 16.sp,
                     fontWeight = FontWeight.Black,
+                    maxLines = 1,
                     modifier = Modifier
-                        .align(Alignment.TopEnd)
-                        .padding(8.dp)
                         .clip(RoundedCornerShape(999.dp))
                         .background(Color.White)
-                        .padding(horizontal = 9.dp, vertical = 2.dp),
+                        .padding(horizontal = 8.dp, vertical = 2.dp),
                 )
             }
         }
-        Text(tile.title, color = Color.White, fontSize = if (tile.title.length > 11) 15.sp else 18.sp, lineHeight = 20.sp, fontWeight = FontWeight.ExtraBold, maxLines = 1, overflow = TextOverflow.Ellipsis)
-        Text(tile.subtitle, color = Color.White.copy(alpha = 0.85f), fontSize = 12.sp, lineHeight = 15.sp, minLines = 2, maxLines = 2, overflow = TextOverflow.Ellipsis)
+        Text(
+            tile.subtitle,
+            color = Color.White.copy(alpha = 0.85f),
+            fontFamily = FontFamily.SansSerif,
+            fontSize = 12.sp,
+            lineHeight = 16.sp,
+            maxLines = 3,
+            overflow = TextOverflow.Ellipsis,
+        )
     }
 }
 
