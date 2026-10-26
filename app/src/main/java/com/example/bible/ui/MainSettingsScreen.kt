@@ -29,7 +29,6 @@ import androidx.compose.material.icons.filled.DarkMode
 import androidx.compose.material.icons.filled.ExpandLess
 import androidx.compose.material.icons.filled.ExpandMore
 import androidx.compose.material.icons.filled.Gesture
-import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.LightMode
 import androidx.compose.material.icons.filled.Navigation
 import androidx.compose.material.icons.filled.Public
@@ -91,7 +90,6 @@ fun MainSettingsScreen(
     onOpenOfflineDownload: () -> Unit,
     onOpenNetworkRegion: () -> Unit,
     onOpenMenuOrder: () -> Unit,
-    onOpenAboutApp: () -> Unit,
     ttsUserSettings: TtsUserSettings,
     onTtsSpeechRateChange: (Float) -> Unit,
     onTtsPitchChange: (Float) -> Unit,
@@ -617,20 +615,6 @@ fun MainSettingsScreen(
                 modifier = Modifier
                     .fillMaxWidth()
                     .clickable(onClick = onOpenMenuOrder),
-            )
-            ListItem(
-                headlineContent = { Text(stringResource(R.string.main_settings_about_app)) },
-                supportingContent = if (hintsExpanded) {
-                    { Text(stringResource(R.string.main_settings_about_app_hint)) }
-                } else {
-                    null
-                },
-                leadingContent = {
-                    Icon(Icons.Filled.Info, contentDescription = null, tint = MaterialTheme.colorScheme.primary)
-                },
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .clickable(onClick = onOpenAboutApp),
             )
         }
     }

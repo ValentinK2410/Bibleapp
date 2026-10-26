@@ -70,6 +70,7 @@ import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Headphones
 import androidx.compose.material.icons.filled.GraphicEq
 import androidx.compose.material.icons.filled.History
+import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.Pause
 import androidx.compose.material.icons.automirrored.filled.MenuBook
 import androidx.compose.material.icons.filled.MoreVert
@@ -850,6 +851,17 @@ private fun BibleNavHost(
                                         leadingIcon = {
                                             Icon(
                                                 Icons.Default.Settings,
+                                                contentDescription = null,
+                                                tint = MaterialTheme.colorScheme.primary,
+                                            )
+                                        },
+                                    )
+                                    DropdownMenuItem(
+                                        text = { Text(stringResource(R.string.about_app_title)) },
+                                        onClick = { menuOpen = false; navController.navigate("about_app") },
+                                        leadingIcon = {
+                                            Icon(
+                                                Icons.Filled.Info,
                                                 contentDescription = null,
                                                 tint = MaterialTheme.colorScheme.primary,
                                             )
@@ -1683,7 +1695,6 @@ private fun BibleNavHost(
                 onOpenOfflineDownload = { navController.navigate("offline_download") },
                 onOpenNetworkRegion = { navController.navigate("network_region") },
                 onOpenMenuOrder = { navController.navigate("books_menu_order") },
-                onOpenAboutApp = { navController.navigate("about_app") },
                 ttsUserSettings = ttsUserSettings,
                 onTtsSpeechRateChange = { viewModel.setTtsSpeechRate(it) },
                 onTtsPitchChange = { viewModel.setTtsPitch(it) },
