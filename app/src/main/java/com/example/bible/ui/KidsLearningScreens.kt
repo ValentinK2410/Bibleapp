@@ -348,6 +348,9 @@ fun KidsHeroesScreen(onBack: () -> Unit, onOpenStory: (String) -> Unit, onOpenGe
                         Text(hero.emoji, fontSize = 64.sp, lineHeight = 72.sp)
                     }
                     Text(if (unlocked) hero.who else "Карточка откроется после истории", fontSize = 18.sp)
+                    if (!unlocked) {
+                        HeroUnlockStoryButton(hero, onOpenStory)
+                    }
                 }
                 if (unlocked) {
                     items(hero.facts) { Text("• $it", fontSize = 18.sp) }
@@ -398,9 +401,29 @@ fun KidsHeroesScreen(onBack: () -> Unit, onOpenStory: (String) -> Unit, onOpenGe
                     }
                     Text("${if (unlocked) "" else "🔒 "}${hero.name}", color = Color.White, fontWeight = FontWeight.Black, fontSize = 20.sp)
                     Text(if (unlocked) hero.who else "Ещё закрыто", color = Color.White.copy(alpha = 0.9f))
+                    if (!unlocked) {
+                        HeroUnlockStoryButton(hero, onOpenStory, onDark = true)
+                    }
                 }
             }
         }
+    }
+}
+
+@Composable
+private fun HeroUnlockStoryButton(
+    hero: KidsHero,
+    onOpenStory: (String) -> Unit,
+    onDark: Boolean = false,
+) {
+    val storyId = hero.storyIds.firstOrNull { KidsBibleStories.byId(it) != null } ?: return
+    val title = KidsBibleStories.byId(storyId)?.title ?: return
+    TextButton(onClick = { onOpenStory(storyId) }) {
+        Text(
+            "Читать «$title»",
+            color = if (onDark) Color.White else MaterialTheme.colorScheme.primary,
+            fontWeight = FontWeight.Bold,
+        )
     }
 }
 
