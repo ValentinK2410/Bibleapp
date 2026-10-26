@@ -9,9 +9,13 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Bedtime
+import androidx.compose.material.icons.automirrored.filled.MenuBook
+import androidx.compose.material.icons.filled.AutoStories
 import androidx.compose.material.icons.filled.ChildCare
 import androidx.compose.material.icons.filled.Edit
+import androidx.compose.material.icons.filled.EmojiEvents
+import androidx.compose.material.icons.filled.Lock
+import androidx.compose.material.icons.filled.Mic
 import androidx.compose.material.icons.filled.PersonAdd
 import androidx.compose.material.icons.filled.Schedule
 import androidx.compose.material.icons.filled.WbTwilight
@@ -69,8 +73,11 @@ fun KidsParentsScreen(onBack: () -> Unit) {
                 .padding(16.dp),
             verticalArrangement = Arrangement.spacedBy(12.dp),
         ) {
+            ParentHeading(Icons.Filled.AutoStories, "Что есть в разделе")
+            ParentCard(KidsParentsCopy.about)
+
             ParentHeading(Icons.Filled.ChildCare, "Дети")
-            Text("Можно добавить сколько угодно детей. Имя и возраст хранятся только на этом устройстве. Возраст подсказывает режим 3–5 или 6–10.")
+            ParentCard(KidsParentsCopy.children)
             family.children.forEach { child ->
                 val progress = family.progressOf(child.id)
                 val active = child.id == family.activeChildId
@@ -87,7 +94,7 @@ fun KidsParentsScreen(onBack: () -> Unit) {
                         fontWeight = FontWeight.Bold,
                         fontSize = 18.sp,
                     )
-                    Text("Звёзды: ${kidsStars(progress.points)} · истории: ${progress.stories.size} · игры: ${progress.gameWins.values.sum()} · мини-игры: ${progress.miniStars.size} · стихи: ${progress.versesDone.size}")
+                    Text("Звёзды: ${kidsStars(progress.points)} · истории: ${progress.stories.size} · стихи: ${progress.versesDone.size} · раскраски: ${progress.coloring.size} · игры: ${progress.gameWins.values.sum()}")
                     Text("Сегодня в разделе: ${progress.minutesByDay[LocalDate.now().toString()] ?: 0} мин · всего по дням: ${progress.minutesByDay.values.sum()} мин")
                     Row {
                         TextButton(onClick = { scope.launch { KidsFamilyStore.setActiveChild(context, child.id) } }) { Text("Этот играет") }
@@ -99,23 +106,31 @@ fun KidsParentsScreen(onBack: () -> Unit) {
                 }
             }
             if (family.children.isEmpty()) {
-                Text("Пока никого нет. Прогресс без выбранного ребёнка копится в общей корзине «семья».")
+                Text(KidsParentsCopy.noChildren, color = MaterialTheme.colorScheme.onSurfaceVariant)
             }
             Button(onClick = { creating = true }) {
                 Icon(Icons.Filled.PersonAdd, contentDescription = null)
                 Text("  Добавить ребёнка")
             }
-            Text("Общие звёзды раздела (как раньше): ${kidsStars(azbukaPoints)}. Букв азбуки: $letters. Вопросов брейн-ринга: ${brain.size}.", fontSize = 13.sp)
+            Text(
+                "Общая копилка, когда на главной никто не выбран: ${kidsStars(azbukaPoints)} звёзд. В азбуке открыто букв: $letters. В брейн-ринге отвечено вопросов: ${brain.size}.",
+                fontSize = 13.sp,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
 
-            ParentHeading(Icons.Filled.Edit, "Режим")
+            ParentHeading(Icons.Filled.EmojiEvents, "Прогресс и награды")
+            ParentCard(KidsParentsCopy.progress)
+
+            ParentHeading(Icons.Filled.Edit, "Возраст")
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                 TextButton(onClick = { scope.launch { KidsFamilyStore.setAgeMode(context, "auto") } }) { Text(if (family.ageMode == "auto") "• По возрасту" else "По возрасту") }
                 TextButton(onClick = { scope.launch { KidsFamilyStore.setAgeMode(context, "small") } }) { Text(if (family.ageMode == "small") "• 3–5" else "3–5") }
                 TextButton(onClick = { scope.launch { KidsFamilyStore.setAgeMode(context, "big") } }) { Text(if (family.ageMode == "big") "• 6–10" else "6–10") }
             }
-            Text("Сейчас: ${family.resolvedMode().title}. Смена с детского хаба тоже закрыта примером.")
+            ParentCard("Сейчас: ${family.resolvedMode().title}. ${KidsParentsCopy.age}")
 
             ParentHeading(Icons.Filled.WbTwilight, "Пасха")
+            ParentCard(KidsParentsCopy.easter)
             Row {
                 TextButton(onClick = { scope.launch { KidsFamilyStore.setEasterCalendar(context, "orthodox") } }) {
                     Text(if (family.easterCalendar == "orthodox") "• Православная" else "Православная")
@@ -125,7 +140,9 @@ fun KidsParentsScreen(onBack: () -> Unit) {
                 }
             }
 
-            ParentHeading(Icons.Filled.Schedule, "Время и вечер")
+            ParentHeading(Icons.Filled.Lock, "Родительский контроль")
+            ParentCard(KidsParentsCopy.controls)
+            ParentHeading(Icons.Filled.Schedule, "Время в разделе")
             var limit by remember(family.timeLimitMinutes) { mutableStateOf(family.timeLimitMinutes.toString()) }
             OutlinedTextField(
                 value = limit,
@@ -138,9 +155,10 @@ fun KidsParentsScreen(onBack: () -> Unit) {
             TextButton(onClick = {
                 scope.launch { KidsFamilyStore.setEveningReminder(context, !family.eveningReminder, family.eveningHour) }
             }) { Text(if (family.eveningReminder) "Напоминание о вечерней молитве включено" else "Включить напоминание в разделе") }
-            Text("Напоминание срабатывает внутри раздела «Детям», без фоновой службы.", fontSize = 13.sp)
+            Text(KidsParentsCopy.reminder, fontSize = 13.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
 
-            ParentHeading(Icons.Filled.Bedtime, "Скорость озвучки")
+            ParentHeading(Icons.Filled.Mic, "Озвучка")
+            ParentCard(KidsParentsCopy.voice)
             Row {
                 listOf(0f to "Как в режиме", 0.75f to "Медленно", 0.9f to "Обычно", 1.05f to "Быстрее").forEach { (rate, label) ->
                     TextButton(onClick = { scope.launch { KidsFamilyStore.setTtsRate(context, rate) } }) {
@@ -149,15 +167,12 @@ fun KidsParentsScreen(onBack: () -> Unit) {
                 }
             }
 
-            ParentHeading(Icons.Filled.ChildCare, "Советы к историям")
+            ParentHeading(Icons.AutoMirrored.Filled.MenuBook, "Как обсудить историю")
             KidsBibleStories.all.filter { it.parentTips.isNotEmpty() }.take(8).forEach { story ->
                 Text(story.title, fontWeight = FontWeight.Bold)
                 story.parentTips.forEach { Text("• $it", fontSize = 14.sp) }
             }
-            Text("Остальные советы открываются в карточке истории кнопкой «Как обсудить с ребёнком».", fontSize = 13.sp)
-
-            ParentHeading(Icons.Filled.Edit, "Как устроен раздел")
-            Text("Истории лежат в коде рядом с прежними одиннадцатью. Кадры, обложки, портреты, фоны молитв, карта и контуры раскрасок уже в приложении. Мелодии песен пока заглушки. Прогресс остаётся на устройстве.")
+            Text(KidsParentsCopy.moreTips, fontSize = 13.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
         }
     }
     if (creating || editor != null) {
@@ -227,6 +242,20 @@ private fun ChildEditorDialog(
 }
 
 @Composable
+private fun ParentCard(text: String) {
+    Text(
+        text,
+        modifier = Modifier
+            .fillMaxWidth()
+            .clip(RoundedCornerShape(20.dp))
+            .background(MaterialTheme.colorScheme.surfaceContainerLow)
+            .padding(14.dp),
+        color = MaterialTheme.colorScheme.onSurface,
+        lineHeight = 22.sp,
+    )
+}
+
+@Composable
 private fun ParentHeading(icon: androidx.compose.ui.graphics.vector.ImageVector, title: String) {
     Row(
         verticalAlignment = androidx.compose.ui.Alignment.CenterVertically,
@@ -235,6 +264,29 @@ private fun ParentHeading(icon: androidx.compose.ui.graphics.vector.ImageVector,
         Icon(icon, contentDescription = null, tint = MaterialTheme.colorScheme.primary)
         Text(title, style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.SemiBold)
     }
+}
+
+private object KidsParentsCopy {
+    const val about =
+        "В разделе есть библейские истории с картинками, молитвы, стих недели, песни, раскраски, мини-игры к историям, карточки героев, карта и короткие уроки о ценностях. Рядом — азбука, цифры и игры. Песни пока без мелодии: строки читает голос телефона."
+    const val children =
+        "Добавьте ребёнка: имя и возраст. На главной «Детям» нажмите имя — этот ребёнок сейчас играет. Звёзды, истории, игры и стихи у каждого свои и хранятся на этом телефоне. Если никто не выбран, прогресс идёт в общую копилку семьи."
+    const val noChildren =
+        "Пока никого нет. Пока ребёнок не выбран, прогресс копится в общей копилке семьи."
+    const val age =
+        "Отдельного режима для самых маленьких нет. До 5 лет приложение предлагает «Малыши 3–5», с 6 лет — «Школьники 6–10». «По возрасту» следует за выбранным ребёнком. «3–5» и «6–10» закрепляют режим сами. На главной раздела те же кнопки, и они тоже за примером. Малышам истории короче, озвучка спокойнее, в раскраске только заливка. Школьникам полный текст, карточки героев на виду и в раскраске есть кисть."
+    const val progress =
+        "Одна звезда — это десять очков. Очки дают прочитанная история, стих недели и законченная раскраска. Стих недели идёт семь дней: в седьмой день вы подтверждаете, что он рассказан. Раскраска хранится на телефоне. Готовую картинку можно положить в галерею, папка «BibleKids»; перед сохранением снова нужен пример."
+    const val controls =
+        "Эта страница открывается после примера, чтобы ребёнок не зашёл сам. В меню «Детям» есть детский режим: выйти из раздела тогда можно тоже только с примером. Лимит минут мягкий. Когда время вышло, ребёнок видит «Пора отдохнуть», а вы можете пустить его ещё на сегодня. Напоминание о вечерней молитве показывается внутри раздела после 20:00, если молитва ещё не отмечена. Отдельного будильника нет. На телефоне можно дополнительно включить Google Family Link: он ограничивает приложения и время на уровне устройства. Это приложение его не включает и не заменяет."
+    const val reminder =
+        "Напоминание появится в разделе после 20:00, если вечерняя молитва ещё не отмечена."
+    const val voice =
+        "Истории, молитвы, стихи и строки песен читает голос телефона. «Как в режиме» — чуть медленнее для малышей и обычнее для школьников. Свой голос к истории: откройте историю и нажмите микрофон вверху. Запишите сцены — ребёнок услышит вас. «Заново» записывает поверх, корзина удаляет. Нужно разрешение на микрофон. В молитве тоже есть «Записать голосом». Записи остаются на этом телефоне."
+    const val easter =
+        "Плитка на главной появляется за две недели до Пасхи и в сам день. Выберите календарь вашей семьи."
+    const val moreTips =
+        "Остальные советы — в карточке истории, кнопка «Как обсудить с ребёнком»."
 }
 
 private fun ageWord(age: Int): String {

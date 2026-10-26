@@ -518,10 +518,16 @@ internal fun ParentGateDialog(onDismiss: () -> Unit, onPassed: () -> Unit, hard:
     AlertDialog(
         onDismissRequest = onDismiss,
         icon = { Icon(Icons.Filled.Lock, contentDescription = null) },
-        title = { Text("Для взрослых") },
+        title = { Text("Только для взрослых") },
         text = {
             Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
-                Text(if (hard) "Для родителей пример сложнее. Решите:" else "Чтобы продолжить, решите пример:")
+                Text(
+                    if (hard) {
+                        "Для школьников числа немного больше. Решите пример, чтобы открыть настройки и другие взрослые шаги."
+                    } else {
+                        "Решите пример, чтобы открыть настройки и другие взрослые шаги."
+                    },
+                )
                 Text("$a × $b = ?", fontSize = 28.sp, fontWeight = FontWeight.Black)
                 OutlinedTextField(
                     value = answer,

@@ -498,7 +498,7 @@ private val KIDS_HUB_DEFAULT_ROWS: List<KidsHubRow> = listOf(
     ),
     KidsHubRow(
         title = "Родителям",
-        subtitle = "Дети, прогресс и настройки. Нужен пример",
+        subtitle = "Дети, прогресс и настройки",
         route = "kids_parents",
         icon = Icons.Filled.FamilyRestroom,
         cardStyle = KidsHubCardVisual.Pictures,
