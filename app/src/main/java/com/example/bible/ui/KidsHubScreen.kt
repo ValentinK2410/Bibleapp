@@ -515,37 +515,36 @@ private fun KidsHubTile(
             .kidsPressable(onClick = onClick, onLongClick = onLongClick)
             .padding(12.dp),
     ) {
-        Box(
-            Modifier
-                .fillMaxWidth()
-                .aspectRatio(1.15f)
-                .kidsPhotoMat(),
-            contentAlignment = Alignment.Center,
-        ) {
-            when {
-                row.imageRes != null -> AsyncImage(
-                    model = ImageRequest.Builder(context)
-                        .data(row.imageRes)
-                        .size(420)
-                        .crossfade(kidsMotionEnabled())
-                        .build(),
-                    contentDescription = null,
-                    modifier = Modifier.fillMaxSize(),
-                    contentScale = ContentScale.Crop,
-                )
-                !row.emojiThumb.isNullOrBlank() -> Text(
-                    row.emojiThumb,
-                    fontSize = 52.sp,
-                    lineHeight = 58.sp,
-                )
-                else -> Box(
-                    Modifier
-                        .size(72.dp)
-                        .clip(CircleShape)
-                        .background(Color.White.copy(alpha = 0.28f)),
-                    contentAlignment = Alignment.Center,
-                ) {
-                    Icon(row.icon, contentDescription = null, tint = Color.White, modifier = Modifier.size(36.dp))
+        val art = Modifier
+            .fillMaxWidth()
+            .aspectRatio(1.15f)
+        if (row.imageRes != null) {
+            AsyncImage(
+                model = ImageRequest.Builder(context)
+                    .data(row.imageRes)
+                    .size(420)
+                    .crossfade(kidsMotionEnabled())
+                    .build(),
+                contentDescription = null,
+                modifier = art.kidsPhotoMat(),
+                contentScale = ContentScale.Crop,
+            )
+        } else {
+            Box(
+                art
+                    .clip(KidsPhotoShape)
+                    .background(Color.White.copy(alpha = 0.22f)),
+                contentAlignment = Alignment.Center,
+            ) {
+                if (!row.emojiThumb.isNullOrBlank()) {
+                    Text(row.emojiThumb, fontSize = 56.sp, lineHeight = 64.sp)
+                } else {
+                    Icon(
+                        row.icon,
+                        contentDescription = null,
+                        tint = Color.White,
+                        modifier = Modifier.size(64.dp),
+                    )
                 }
             }
         }
