@@ -111,19 +111,7 @@ fun KidsHubScreen(
     val locked by repo.kidsLock.collectAsStateWithLifecycle(initialValue = false)
     val family by KidsFamilyStore.state(context).collectAsStateWithLifecycle()
     val mode = family.resolvedMode()
-    var showMore by remember { mutableStateOf(false) }
     val rows = remember(hubState) { mergeKidsHubRows(kidsHubDefaultRows(), hubState) }
-    val primaryRows = remember(rows, mode) {
-        rows.filter { row ->
-            when (row.ageBand) {
-                "small" -> mode == KidsAgeMode.SMALL
-                "big" -> mode == KidsAgeMode.BIG
-                else -> true
-            }
-        }
-    }
-    val extraRows = remember(rows, primaryRows) { rows.filter { it !in primaryRows } }
-    val shownRows = if (showMore) primaryRows + extraRows else primaryRows
     val activeChild = family.activeChild()
     val activeProgress = family.activeProgress()
     val easterDate = remember(family.easterCalendar) {
@@ -341,8 +329,8 @@ fun KidsHubScreen(
                     )
                 }
             }
-            items(shownRows.size, key = { shownRows[it].route }) { index ->
-                val row = shownRows[index]
+            items(rows.size, key = { rows[it].route }) { index ->
+                val row = rows[index]
                 KidsHubTile(
                     row = row,
                     gradient = kidsTileColors(index),
@@ -361,21 +349,6 @@ fun KidsHubScreen(
                     },
                     onLongClick = { speak(row.title) },
                 )
-            }
-            if (extraRows.isNotEmpty()) {
-                item(key = "more", span = { GridItemSpan(maxLineSpan) }) {
-                    Text(
-                        if (showMore) "Скрыть «Ещё»" else "Ещё — всё остальное тоже здесь",
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .clip(RoundedCornerShape(18.dp))
-                            .background(Color(0xFFFFF7ED))
-                            .clickable { showMore = !showMore }
-                            .padding(14.dp),
-                        fontWeight = FontWeight.Bold,
-                        textAlign = TextAlign.Center,
-                    )
-                }
             }
             item(key = "hint", span = { GridItemSpan(maxLineSpan) }) {
                 Text(

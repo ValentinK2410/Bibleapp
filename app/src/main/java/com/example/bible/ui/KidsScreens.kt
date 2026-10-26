@@ -403,7 +403,7 @@ internal data class KidsHubRow(
     val cardStyle: KidsHubCardVisual,
     @DrawableRes val imageRes: Int? = null,
     val emojiThumb: String? = null,
-    /** both — всегда на виду; small — в «Ещё» у школьников; big — в «Ещё» у малышей. */
+    /** Возраст, для которого плитка задумана. На хабе показываются все. */
     val ageBand: String = "both",
 )
 
