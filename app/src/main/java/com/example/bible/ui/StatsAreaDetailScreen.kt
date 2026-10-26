@@ -427,18 +427,25 @@ private fun MediaNamedCard(
     }
 }
 
+/** Скобки в классе экранированы: Android ICU не принимает голую `[` внутри `[]`. */
+internal val mediaTitleFeatRegex: Regex? = runCatching {
+    Regex(
+        """(?i)\s*[(\[]?\s*(?:feat\.?|ft\.?|при участии)\s+([^)\]]+?)[)\]]?\s*$""",
+    )
+}.getOrNull()
+
 /** «Название (feat. Исполнитель)» — название и исполнитель на разных строках. */
-private fun splitMediaTitle(raw: String): Pair<String, String?> {
+internal fun splitMediaTitle(raw: String): Pair<String, String?> {
     val name = raw.trim()
-    val feat = Regex(
-        """(?i)\s*[([]?\s*(?:feat\.?|ft\.?|при участии)\s+([^)\]]+?)[)\]]?\s*$""",
-    ).find(name)
-    if (feat != null) {
-        val artist = feat.groupValues[1].trim().trim('(', ')', '[', ']')
+    if (name.isEmpty()) return raw to null
+    return try {
+        val feat = mediaTitleFeatRegex?.find(name) ?: return name to null
+        val artist = feat.groupValues.getOrNull(1).orEmpty().trim().trim('(', ')', '[', ']')
         val title = name.removeRange(feat.range).trim().trim('-', '—', '–', '·', ' ')
-        if (title.isNotEmpty() && artist.isNotEmpty()) return title to artist
+        if (title.isEmpty() || artist.isEmpty()) name to null else title to artist
+    } catch (_: RuntimeException) {
+        name to null
     }
-    return name to null
 }
 
 private fun eventWhenRu(timestamp: Long): String {
