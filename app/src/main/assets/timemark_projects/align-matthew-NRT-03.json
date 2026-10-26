@@ -1,0 +1,96 @@
+{
+  "id": "align-matthew-NRT-03",
+  "translationCode": "NRT",
+  "bookId": "matthew",
+  "chapter": 3,
+  "title": "От Матфея 3 · Новый русский",
+  "audioFilePath": "/data/user/0/com.example.bible.sqlite/files/bible_audio/new-russian/40_03.mp3",
+  "updatedAt": 1761510000000,
+  "cues": [
+    {
+      "timeMs": 5600,
+      "verseStart": 1,
+      "attachments": []
+    },
+    {
+      "timeMs": 12200,
+      "verseStart": 2,
+      "attachments": []
+    },
+    {
+      "timeMs": 19120,
+      "verseStart": 3,
+      "attachments": []
+    },
+    {
+      "timeMs": 30100,
+      "verseStart": 4,
+      "attachments": []
+    },
+    {
+      "timeMs": 39780,
+      "verseStart": 5,
+      "attachments": []
+    },
+    {
+      "timeMs": 47440,
+      "verseStart": 6,
+      "attachments": []
+    },
+    {
+      "timeMs": 51400,
+      "verseStart": 7,
+      "attachments": []
+    },
+    {
+      "timeMs": 66140,
+      "verseStart": 8,
+      "attachments": []
+    },
+    {
+      "timeMs": 68160,
+      "verseStart": 9,
+      "attachments": []
+    },
+    {
+      "timeMs": 78640,
+      "verseStart": 10,
+      "attachments": []
+    },
+    {
+      "timeMs": 88820,
+      "verseStart": 11,
+      "attachments": []
+    },
+    {
+      "timeMs": 102680,
+      "verseStart": 12,
+      "attachments": []
+    },
+    {
+      "timeMs": 118100,
+      "verseStart": 13,
+      "attachments": []
+    },
+    {
+      "timeMs": 125800,
+      "verseStart": 14,
+      "attachments": []
+    },
+    {
+      "timeMs": 133980,
+      "verseStart": 15,
+      "attachments": []
+    },
+    {
+      "timeMs": 144400,
+      "verseStart": 16,
+      "attachments": []
+    },
+    {
+      "timeMs": 157140,
+      "verseStart": 17,
+      "attachments": []
+    }
+  ]
+}

@@ -1,0 +1,111 @@
+{
+  "id": "align-matthew-NRT-28",
+  "translationCode": "NRT",
+  "bookId": "matthew",
+  "chapter": 28,
+  "title": "От Матфея 28 · Новый русский",
+  "audioFilePath": "/data/user/0/com.example.bible.sqlite/files/bible_audio/new-russian/40_28.mp3",
+  "updatedAt": 1761510000000,
+  "cues": [
+    {
+      "timeMs": 8060,
+      "verseStart": 1,
+      "attachments": []
+    },
+    {
+      "timeMs": 16740,
+      "verseStart": 2,
+      "attachments": []
+    },
+    {
+      "timeMs": 27640,
+      "verseStart": 3,
+      "attachments": []
+    },
+    {
+      "timeMs": 34060,
+      "verseStart": 4,
+      "attachments": []
+    },
+    {
+      "timeMs": 39500,
+      "verseStart": 5,
+      "attachments": []
+    },
+    {
+      "timeMs": 46380,
+      "verseStart": 6,
+      "attachments": []
+    },
+    {
+      "timeMs": 53980,
+      "verseStart": 7,
+      "attachments": []
+    },
+    {
+      "timeMs": 71980,
+      "verseStart": 8,
+      "attachments": []
+    },
+    {
+      "timeMs": 82120,
+      "verseStart": 9,
+      "attachments": []
+    },
+    {
+      "timeMs": 92960,
+      "verseStart": 10,
+      "attachments": []
+    },
+    {
+      "timeMs": 109240,
+      "verseStart": 11,
+      "attachments": []
+    },
+    {
+      "timeMs": 118400,
+      "verseStart": 12,
+      "attachments": []
+    },
+    {
+      "timeMs": 125040,
+      "verseStart": 13,
+      "attachments": []
+    },
+    {
+      "timeMs": 132860,
+      "verseStart": 14,
+      "attachments": []
+    },
+    {
+      "timeMs": 139800,
+      "verseStart": 15,
+      "attachments": []
+    },
+    {
+      "timeMs": 152760,
+      "verseStart": 16,
+      "attachments": []
+    },
+    {
+      "timeMs": 161480,
+      "verseStart": 17,
+      "attachments": []
+    },
+    {
+      "timeMs": 168640,
+      "verseStart": 18,
+      "attachments": []
+    },
+    {
+      "timeMs": 176280,
+      "verseStart": 19,
+      "attachments": []
+    },
+    {
+      "timeMs": 186260,
+      "verseStart": 20,
+      "attachments": []
+    }
+  ]
+}

@@ -13,6 +13,21 @@ object TimemarkStore {
     private fun dir(context: Context): File =
         File(context.filesDir, "timemark_projects").also { it.mkdirs() }
 
+    /** Копирует готовые таймкоды из assets, если на телефоне их ещё нет или файл короче. */
+    fun importBundled(context: Context) {
+        val names = context.assets.list("timemark_projects") ?: return
+        val out = dir(context)
+        for (name in names) {
+            if (!name.endsWith(".json")) continue
+            val dest = File(out, name)
+            context.assets.open("timemark_projects/$name").use { input ->
+                val bytes = input.readBytes()
+                if (dest.isFile && dest.length() >= bytes.size) continue
+                dest.writeBytes(bytes)
+            }
+        }
+    }
+
     fun listProjectFiles(context: Context): List<File> =
         dir(context).listFiles()
             ?.filter { it.isFile && it.name.endsWith(".json") }

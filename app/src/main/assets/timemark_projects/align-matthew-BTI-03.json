@@ -1,0 +1,96 @@
+{
+  "id": "align-matthew-BTI-03",
+  "translationCode": "BTI",
+  "bookId": "matthew",
+  "chapter": 3,
+  "title": "От Матфея 3 · Кулаковых",
+  "audioFilePath": "/data/user/0/com.example.bible.sqlite/files/bible_audio/bti/40_03.mp3",
+  "updatedAt": 1761510000000,
+  "cues": [
+    {
+      "timeMs": 1780,
+      "verseStart": 1,
+      "attachments": []
+    },
+    {
+      "timeMs": 11720,
+      "verseStart": 2,
+      "attachments": []
+    },
+    {
+      "timeMs": 18980,
+      "verseStart": 3,
+      "attachments": []
+    },
+    {
+      "timeMs": 36000,
+      "verseStart": 4,
+      "attachments": []
+    },
+    {
+      "timeMs": 49800,
+      "verseStart": 5,
+      "attachments": []
+    },
+    {
+      "timeMs": 58700,
+      "verseStart": 6,
+      "attachments": []
+    },
+    {
+      "timeMs": 65580,
+      "verseStart": 7,
+      "attachments": []
+    },
+    {
+      "timeMs": 88200,
+      "verseStart": 8,
+      "attachments": []
+    },
+    {
+      "timeMs": 93160,
+      "verseStart": 9,
+      "attachments": []
+    },
+    {
+      "timeMs": 108180,
+      "verseStart": 10,
+      "attachments": []
+    },
+    {
+      "timeMs": 121600,
+      "verseStart": 11,
+      "attachments": []
+    },
+    {
+      "timeMs": 144800,
+      "verseStart": 12,
+      "attachments": []
+    },
+    {
+      "timeMs": 159580,
+      "verseStart": 13,
+      "attachments": []
+    },
+    {
+      "timeMs": 172450,
+      "verseStart": 14,
+      "attachments": []
+    },
+    {
+      "timeMs": 183460,
+      "verseStart": 15,
+      "attachments": []
+    },
+    {
+      "timeMs": 201660,
+      "verseStart": 16,
+      "attachments": []
+    },
+    {
+      "timeMs": 218920,
+      "verseStart": 17,
+      "attachments": []
+    }
+  ]
+}

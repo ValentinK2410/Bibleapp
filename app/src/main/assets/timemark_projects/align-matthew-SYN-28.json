@@ -1,0 +1,111 @@
+{
+  "id": "align-matthew-SYN-28",
+  "translationCode": "SYN",
+  "bookId": "matthew",
+  "chapter": 28,
+  "title": "От Матфея 28 · Синодальный · Бондаренко",
+  "audioFilePath": "/data/user/0/com.example.bible.sqlite/files/bible_audio/bondarenko/40_28.mp3",
+  "updatedAt": 1761510000000,
+  "cues": [
+    {
+      "timeMs": 8300,
+      "verseStart": 1,
+      "attachments": []
+    },
+    {
+      "timeMs": 21320,
+      "verseStart": 2,
+      "attachments": []
+    },
+    {
+      "timeMs": 38600,
+      "verseStart": 3,
+      "attachments": []
+    },
+    {
+      "timeMs": 46280,
+      "verseStart": 4,
+      "attachments": []
+    },
+    {
+      "timeMs": 54340,
+      "verseStart": 5,
+      "attachments": []
+    },
+    {
+      "timeMs": 65060,
+      "verseStart": 6,
+      "attachments": []
+    },
+    {
+      "timeMs": 76080,
+      "verseStart": 7,
+      "attachments": []
+    },
+    {
+      "timeMs": 90280,
+      "verseStart": 8,
+      "attachments": []
+    },
+    {
+      "timeMs": 100200,
+      "verseStart": 9,
+      "attachments": []
+    },
+    {
+      "timeMs": 119740,
+      "verseStart": 10,
+      "attachments": []
+    },
+    {
+      "timeMs": 134440,
+      "verseStart": 11,
+      "attachments": []
+    },
+    {
+      "timeMs": 144920,
+      "verseStart": 12,
+      "attachments": []
+    },
+    {
+      "timeMs": 152200,
+      "verseStart": 13,
+      "attachments": []
+    },
+    {
+      "timeMs": 162340,
+      "verseStart": 14,
+      "attachments": []
+    },
+    {
+      "timeMs": 169960,
+      "verseStart": 15,
+      "attachments": []
+    },
+    {
+      "timeMs": 184000,
+      "verseStart": 16,
+      "attachments": []
+    },
+    {
+      "timeMs": 192060,
+      "verseStart": 17,
+      "attachments": []
+    },
+    {
+      "timeMs": 199000,
+      "verseStart": 18,
+      "attachments": []
+    },
+    {
+      "timeMs": 212040,
+      "verseStart": 19,
+      "attachments": []
+    },
+    {
+      "timeMs": 222100,
+      "verseStart": 20,
+      "attachments": []
+    }
+  ]
+}

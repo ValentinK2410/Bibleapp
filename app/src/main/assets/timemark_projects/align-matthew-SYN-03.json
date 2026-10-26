@@ -1,0 +1,96 @@
+{
+  "id": "align-matthew-SYN-03",
+  "translationCode": "SYN",
+  "bookId": "matthew",
+  "chapter": 3,
+  "title": "От Матфея 3 · Синодальный · Бондаренко",
+  "audioFilePath": "/data/user/0/com.example.bible.sqlite/files/bible_audio/bondarenko/40_03.mp3",
+  "updatedAt": 1761510000000,
+  "cues": [
+    {
+      "timeMs": 2260,
+      "verseStart": 1,
+      "attachments": []
+    },
+    {
+      "timeMs": 11620,
+      "verseStart": 2,
+      "attachments": []
+    },
+    {
+      "timeMs": 24380,
+      "verseStart": 3,
+      "attachments": []
+    },
+    {
+      "timeMs": 39940,
+      "verseStart": 4,
+      "attachments": []
+    },
+    {
+      "timeMs": 50520,
+      "verseStart": 5,
+      "attachments": []
+    },
+    {
+      "timeMs": 56160,
+      "verseStart": 6,
+      "attachments": []
+    },
+    {
+      "timeMs": 62400,
+      "verseStart": 7,
+      "attachments": []
+    },
+    {
+      "timeMs": 77640,
+      "verseStart": 8,
+      "attachments": []
+    },
+    {
+      "timeMs": 80880,
+      "verseStart": 9,
+      "attachments": []
+    },
+    {
+      "timeMs": 95520,
+      "verseStart": 10,
+      "attachments": []
+    },
+    {
+      "timeMs": 104860,
+      "verseStart": 11,
+      "attachments": []
+    },
+    {
+      "timeMs": 127600,
+      "verseStart": 12,
+      "attachments": []
+    },
+    {
+      "timeMs": 142280,
+      "verseStart": 13,
+      "attachments": []
+    },
+    {
+      "timeMs": 149700,
+      "verseStart": 14,
+      "attachments": []
+    },
+    {
+      "timeMs": 161080,
+      "verseStart": 15,
+      "attachments": []
+    },
+    {
+      "timeMs": 175340,
+      "verseStart": 16,
+      "attachments": []
+    },
+    {
+      "timeMs": 189960,
+      "verseStart": 17,
+      "attachments": []
+    }
+  ]
+}

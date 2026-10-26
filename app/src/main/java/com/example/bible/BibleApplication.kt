@@ -34,6 +34,7 @@ class BibleApplication : Application(), ImageLoaderFactory {
             LanguageStudyBootstrap.importBundledIfNeeded(app)
         }
         bibleDbWarmExecutor.execute {
+            com.example.bible.data.TimemarkStore.importBundled(app)
             com.example.bible.data.db.BibleDatabase.getInstance(app)
             kotlinx.coroutines.runBlocking {
                 val entries = com.example.bible.data.BiblePreferences(app).dailyJournalEntries.first()

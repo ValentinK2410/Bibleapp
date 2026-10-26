@@ -1,0 +1,181 @@
+{
+  "id": "align-matthew-SYN-08",
+  "translationCode": "SYN",
+  "bookId": "matthew",
+  "chapter": 8,
+  "title": "От Матфея 8 · Синодальный · Бондаренко",
+  "audioFilePath": "/data/user/0/com.example.bible.sqlite/files/bible_audio/bondarenko/40_08.mp3",
+  "updatedAt": 1761510000000,
+  "cues": [
+    {
+      "timeMs": 1080,
+      "verseStart": 1,
+      "attachments": []
+    },
+    {
+      "timeMs": 10980,
+      "verseStart": 2,
+      "attachments": []
+    },
+    {
+      "timeMs": 21520,
+      "verseStart": 3,
+      "attachments": []
+    },
+    {
+      "timeMs": 32320,
+      "verseStart": 4,
+      "attachments": []
+    },
+    {
+      "timeMs": 48100,
+      "verseStart": 5,
+      "attachments": []
+    },
+    {
+      "timeMs": 56060,
+      "verseStart": 6,
+      "attachments": []
+    },
+    {
+      "timeMs": 63500,
+      "verseStart": 7,
+      "attachments": []
+    },
+    {
+      "timeMs": 68900,
+      "verseStart": 8,
+      "attachments": []
+    },
+    {
+      "timeMs": 79820,
+      "verseStart": 9,
+      "attachments": []
+    },
+    {
+      "timeMs": 97420,
+      "verseStart": 10,
+      "attachments": []
+    },
+    {
+      "timeMs": 108680,
+      "verseStart": 11,
+      "attachments": []
+    },
+    {
+      "timeMs": 122800,
+      "verseStart": 12,
+      "attachments": []
+    },
+    {
+      "timeMs": 131920,
+      "verseStart": 13,
+      "attachments": []
+    },
+    {
+      "timeMs": 145680,
+      "verseStart": 14,
+      "attachments": []
+    },
+    {
+      "timeMs": 153080,
+      "verseStart": 15,
+      "attachments": []
+    },
+    {
+      "timeMs": 163760,
+      "verseStart": 16,
+      "attachments": []
+    },
+    {
+      "timeMs": 174100,
+      "verseStart": 17,
+      "attachments": []
+    },
+    {
+      "timeMs": 184220,
+      "verseStart": 18,
+      "attachments": []
+    },
+    {
+      "timeMs": 191700,
+      "verseStart": 19,
+      "attachments": []
+    },
+    {
+      "timeMs": 199400,
+      "verseStart": 20,
+      "attachments": []
+    },
+    {
+      "timeMs": 211280,
+      "verseStart": 21,
+      "attachments": []
+    },
+    {
+      "timeMs": 220160,
+      "verseStart": 22,
+      "attachments": []
+    },
+    {
+      "timeMs": 228980,
+      "verseStart": 23,
+      "attachments": []
+    },
+    {
+      "timeMs": 233440,
+      "verseStart": 24,
+      "attachments": []
+    },
+    {
+      "timeMs": 243740,
+      "verseStart": 25,
+      "attachments": []
+    },
+    {
+      "timeMs": 251460,
+      "verseStart": 26,
+      "attachments": []
+    },
+    {
+      "timeMs": 267680,
+      "verseStart": 27,
+      "attachments": []
+    },
+    {
+      "timeMs": 277380,
+      "verseStart": 28,
+      "attachments": []
+    },
+    {
+      "timeMs": 290300,
+      "verseStart": 29,
+      "attachments": []
+    },
+    {
+      "timeMs": 303100,
+      "verseStart": 30,
+      "attachments": []
+    },
+    {
+      "timeMs": 307100,
+      "verseStart": 31,
+      "attachments": []
+    },
+    {
+      "timeMs": 314000,
+      "verseStart": 32,
+      "attachments": []
+    },
+    {
+      "timeMs": 333340,
+      "verseStart": 33,
+      "attachments": []
+    },
+    {
+      "timeMs": 342100,
+      "verseStart": 34,
+      "attachments": []
+    }
+  ]
+}
