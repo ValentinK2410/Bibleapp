@@ -432,6 +432,7 @@ private val KIDS_HUB_DEFAULT_ROWS: List<KidsHubRow> = listOf(
         route = "azbuka",
         icon = Icons.Filled.SortByAlpha,
         cardStyle = KidsHubCardVisual.Pictures,
+        imageRes = R.drawable.kids_hub_alphabet,
     ),
     KidsHubRow(
         title = "Библейские истории",
@@ -439,6 +440,7 @@ private val KIDS_HUB_DEFAULT_ROWS: List<KidsHubRow> = listOf(
         route = "kids_stories",
         icon = Icons.Filled.AutoStories,
         cardStyle = KidsHubCardVisual.Audios,
+        imageRes = R.drawable.kids_hub_stories,
     ),
     KidsHubRow(
         title = "Пасха",
@@ -446,6 +448,7 @@ private val KIDS_HUB_DEFAULT_ROWS: List<KidsHubRow> = listOf(
         route = "kids_story/easter",
         icon = Icons.Filled.WbTwilight,
         cardStyle = KidsHubCardVisual.Audios,
+        imageRes = R.drawable.kids_hub_easter,
     ),
     KidsHubRow(
         title = "Молитвы",
@@ -453,6 +456,7 @@ private val KIDS_HUB_DEFAULT_ROWS: List<KidsHubRow> = listOf(
         route = "kids_prayers",
         icon = Icons.Filled.Favorite,
         cardStyle = KidsHubCardVisual.Pesnopenie,
+        imageRes = R.drawable.kids_hub_prayers,
     ),
     KidsHubRow(
         title = "Стих недели",
@@ -460,6 +464,7 @@ private val KIDS_HUB_DEFAULT_ROWS: List<KidsHubRow> = listOf(
         route = "kids_verse",
         icon = Icons.Filled.AutoAwesome,
         cardStyle = KidsHubCardVisual.Audios,
+        imageRes = R.drawable.kids_hub_verse,
     ),
     KidsHubRow(
         title = "Песни",
@@ -467,6 +472,7 @@ private val KIDS_HUB_DEFAULT_ROWS: List<KidsHubRow> = listOf(
         route = "kids_songs",
         icon = Icons.Filled.MusicNote,
         cardStyle = KidsHubCardVisual.Musician,
+        imageRes = R.drawable.kids_hub_songs,
     ),
     KidsHubRow(
         title = "Раскраски",
@@ -474,6 +480,7 @@ private val KIDS_HUB_DEFAULT_ROWS: List<KidsHubRow> = listOf(
         route = "kids_coloring",
         icon = Icons.Filled.Brush,
         cardStyle = KidsHubCardVisual.Pictures,
+        imageRes = R.drawable.kids_hub_coloring,
     ),
     KidsHubRow(
         title = "Герои",
@@ -481,6 +488,7 @@ private val KIDS_HUB_DEFAULT_ROWS: List<KidsHubRow> = listOf(
         route = "kids_heroes",
         icon = Icons.Filled.Face,
         cardStyle = KidsHubCardVisual.Videos,
+        imageRes = R.drawable.kids_hub_heroes,
         ageBand = "big",
     ),
     KidsHubRow(
@@ -489,6 +497,7 @@ private val KIDS_HUB_DEFAULT_ROWS: List<KidsHubRow> = listOf(
         route = "kids_map",
         icon = Icons.Filled.Map,
         cardStyle = KidsHubCardVisual.Audios,
+        imageRes = R.drawable.kids_hub_map,
     ),
     KidsHubRow(
         title = "Ценности",
@@ -496,6 +505,7 @@ private val KIDS_HUB_DEFAULT_ROWS: List<KidsHubRow> = listOf(
         route = "kids_values",
         icon = Icons.Filled.VolunteerActivism,
         cardStyle = KidsHubCardVisual.Pesnopenie,
+        imageRes = R.drawable.kids_hub_values,
     ),
     KidsHubRow(
         title = "Родителям",
@@ -503,6 +513,7 @@ private val KIDS_HUB_DEFAULT_ROWS: List<KidsHubRow> = listOf(
         route = "kids_parents",
         icon = Icons.Filled.FamilyRestroom,
         cardStyle = KidsHubCardVisual.Pictures,
+        imageRes = R.drawable.kids_hub_parents,
     ),
     KidsHubRow(
         title = "Цифры",
@@ -510,6 +521,7 @@ private val KIDS_HUB_DEFAULT_ROWS: List<KidsHubRow> = listOf(
         route = "cifry",
         icon = Icons.Filled.Numbers,
         cardStyle = KidsHubCardVisual.Musician,
+        imageRes = R.drawable.kids_hub_numbers,
     ),
     KidsHubRow(
         title = "Игры",
@@ -517,6 +529,7 @@ private val KIDS_HUB_DEFAULT_ROWS: List<KidsHubRow> = listOf(
         route = "kids_games",
         icon = Icons.Filled.Extension,
         cardStyle = KidsHubCardVisual.Videos,
+        imageRes = R.drawable.kids_hub_games,
     ),
     KidsHubRow(
         title = "Цвета",
@@ -524,6 +537,7 @@ private val KIDS_HUB_DEFAULT_ROWS: List<KidsHubRow> = listOf(
         route = "kids_colors",
         icon = Icons.Filled.Palette,
         cardStyle = KidsHubCardVisual.Pesnopenie,
+        imageRes = R.drawable.kids_hub_colors,
         ageBand = "small",
     ),
     KidsHubRow(
@@ -532,7 +546,7 @@ private val KIDS_HUB_DEFAULT_ROWS: List<KidsHubRow> = listOf(
         route = "kids_seasons",
         icon = Icons.Filled.WbSunny,
         cardStyle = KidsHubCardVisual.Videos,
-        imageRes = R.drawable.kids_season_spring,
+        imageRes = R.drawable.kids_hub_seasons,
         ageBand = "small",
     ),
     KidsHubRow(
@@ -541,6 +555,7 @@ private val KIDS_HUB_DEFAULT_ROWS: List<KidsHubRow> = listOf(
         route = "kids_countries",
         icon = Icons.Filled.Public,
         cardStyle = KidsHubCardVisual.Audios,
+        imageRes = R.drawable.kids_hub_countries,
         emojiThumb = "🌍",
     ),
     KidsHubRow(
