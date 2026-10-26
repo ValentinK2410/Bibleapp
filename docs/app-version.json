@@ -1,6 +1,6 @@
 {
-  "versionCode": 12,
-  "versionName": "2.2",
+  "versionCode": 13,
+  "versionName": "2.3",
   "apkUrl": "https://github.com/ValentinK2410/Bibleapp/releases/latest/download/Bible.apk",
-  "notes": "Раздел «Детям»: истории, профили, все плитки на виду, кнопка к истории закрытого героя. В медиа подписи не наезжают"
+  "notes": "Раздел «Детям» с яркими картинками на плитках. «О программе» в главном меню. В «Медиа» подписи не наезжают"
 }

@@ -54,6 +54,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import com.example.bible.BuildConfig
 import com.example.bible.R
 import com.example.bible.data.AppUpdateCatalog
 import com.example.bible.data.RemoteAppVersion
@@ -68,6 +69,11 @@ private data class LocalAppVersion(
 )
 
 private fun readLocalVersion(context: android.content.Context): LocalAppVersion {
+    val fromBuild = LocalAppVersion(
+        versionCode = BuildConfig.VERSION_CODE.toLong(),
+        versionName = BuildConfig.VERSION_NAME,
+    )
+    if (fromBuild.versionName.isNotBlank()) return fromBuild
     val info = context.packageManager.getPackageInfo(context.packageName, 0)
     val code = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
         info.longVersionCode
@@ -270,14 +276,27 @@ fun AboutAppScreen(onBack: () -> Unit) {
 
             HorizontalDivider()
 
-            Text(
-                stringResource(R.string.about_app_whats_new_title),
-                style = MaterialTheme.typography.titleMedium,
-                fontWeight = FontWeight.Bold,
-            )
+            val currentRelease = releases.firstOrNull { it.versionName == local.versionName }
+            val olderReleases = releases.filter { it.versionName != local.versionName }
 
-            releases.forEach { release ->
-                ReleaseCard(release)
+            if (currentRelease != null) {
+                Text(
+                    stringResource(R.string.about_app_whats_new_this_version),
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.Bold,
+                )
+                ReleaseCard(currentRelease)
+            }
+
+            if (olderReleases.isNotEmpty()) {
+                Text(
+                    stringResource(R.string.about_app_whats_new_title),
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.Bold,
+                )
+                olderReleases.forEach { release ->
+                    ReleaseCard(release)
+                }
             }
         }
     }

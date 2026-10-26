@@ -1914,6 +1914,7 @@
     <string name="about_app_offline_notice">%1$s Показана встроенная информация об обновлении.</string>
     <string name="about_app_update_available">Доступна версия %1$s</string>
     <string name="about_app_whats_new_title">Что нового</string>
+    <string name="about_app_whats_new_this_version">Что нового в этой версии</string>
     <string name="about_app_release_version">Версия %1$s</string>
     <string name="about_app_fixes_title">Исправления</string>
     <string name="main_settings_about_app">О программе</string>
