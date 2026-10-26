@@ -20,6 +20,7 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -35,7 +36,9 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.bible.data.AppSectionUsage
@@ -137,25 +140,26 @@ fun StatsAreaDetailScreen(
             accent = accent,
         )
         if (recentNamed.isNotEmpty()) {
-            item(key = "journal") {
-                DetailCard(accent) {
-                    Text("Журнал", fontWeight = FontWeight.Bold, fontSize = 16.sp)
-                    Spacer(Modifier.height(8.dp))
-                    recentNamed.forEach { event ->
-                        val parsed = AppUsageEvents.parseNamed(event.detail) ?: return@forEach
-                        Text(
-                            "${AppUsageEvents.typeLabel(event.type)} · ${AppUsageEvents.kindLabel(parsed.first)} · ${parsed.second}",
-                            fontSize = 14.sp,
-                            fontWeight = FontWeight.Medium,
-                        )
-                        Text(
-                            eventWhenRu(event.timestamp),
-                            fontSize = 12.sp,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant,
-                            modifier = Modifier.padding(bottom = 8.dp),
-                        )
-                    }
-                }
+            item(key = "journal-title") {
+                Text(
+                    "Журнал",
+                    fontWeight = FontWeight.Bold,
+                    fontSize = 16.sp,
+                    lineHeight = 22.sp,
+                    fontFamily = FontFamily.SansSerif,
+                )
+            }
+            itemsIndexed(
+                recentNamed,
+                key = { index, event -> "journal-$index-${event.timestamp}-${event.type}" },
+            ) { _, event ->
+                val parsed = AppUsageEvents.parseNamed(event.detail) ?: return@itemsIndexed
+                MediaNamedCard(
+                    name = parsed.second,
+                    kind = parsed.first,
+                    meta = "${AppUsageEvents.typeLabel(event.type)} · ${eventWhenRu(event.timestamp)}",
+                    accent = accent,
+                )
             }
         } else if (area == "Медиа") {
             item(key = "journal-empty") {
@@ -224,13 +228,14 @@ private fun DetailHeroStat(value: String, label: String, modifier: Modifier = Mo
 
 @Composable
 private fun DetailCard(accent: Color, content: @Composable () -> Unit) {
-    Box(
+    Column(
         Modifier
             .fillMaxWidth()
             .clip(RoundedCornerShape(24.dp))
             .background(MaterialTheme.colorScheme.surfaceContainerLow)
             .border(1.dp, accent.copy(alpha = 0.16f), RoundedCornerShape(24.dp))
             .padding(16.dp),
+        verticalArrangement = Arrangement.spacedBy(4.dp),
     ) {
         content()
     }
@@ -358,21 +363,82 @@ private fun LazyListScope.namedGroup(
     accent: Color,
 ) {
     if (items.isEmpty()) return
-    item(key = key) {
-        DetailCard(accent) {
-            Text(title, fontWeight = FontWeight.Bold, fontSize = 16.sp)
-            Spacer(Modifier.height(8.dp))
-            items.take(40).forEach { row ->
-                Text(row.name, fontWeight = FontWeight.Medium, fontSize = 15.sp)
-                Text(
-                    "${AppUsageEvents.kindLabel(row.kind)} · ${row.count} раз · ${eventWhenRu(row.lastAt)}",
-                    fontSize = 12.sp,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    modifier = Modifier.padding(bottom = 8.dp),
-                )
-            }
-        }
+    item(key = "$key-title") {
+        Text(
+            title,
+            fontWeight = FontWeight.Bold,
+            fontSize = 16.sp,
+            lineHeight = 22.sp,
+            fontFamily = FontFamily.SansSerif,
+        )
     }
+    itemsIndexed(
+        items.take(40),
+        key = { index, row -> "$key-$index-${row.kind}-${row.name}" },
+    ) { _, row ->
+        val times = if (row.count == 1) "1 раз" else "${row.count} раз"
+        MediaNamedCard(
+            name = row.name,
+            kind = row.kind,
+            meta = "$times · ${eventWhenRu(row.lastAt)}",
+            accent = accent,
+        )
+    }
+}
+
+@Composable
+private fun MediaNamedCard(
+    name: String,
+    kind: String,
+    meta: String,
+    accent: Color,
+) {
+    val (title, artist) = splitMediaTitle(name)
+    DetailCard(accent) {
+        Text(
+            title,
+            fontFamily = FontFamily.SansSerif,
+            fontWeight = FontWeight.Bold,
+            fontSize = 16.sp,
+            lineHeight = 22.sp,
+            maxLines = 2,
+            overflow = TextOverflow.Ellipsis,
+        )
+        if (!artist.isNullOrBlank()) {
+            Text(
+                artist,
+                fontFamily = FontFamily.SansSerif,
+                fontSize = 14.sp,
+                lineHeight = 18.sp,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+        }
+        Text(
+            "${AppUsageEvents.kindLabel(kind)} · $meta",
+            fontFamily = FontFamily.SansSerif,
+            fontSize = 13.sp,
+            lineHeight = 18.sp,
+            maxLines = 2,
+            overflow = TextOverflow.Ellipsis,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+        )
+    }
+}
+
+/** «Название (feat. Исполнитель)» — название и исполнитель на разных строках. */
+private fun splitMediaTitle(raw: String): Pair<String, String?> {
+    val name = raw.trim()
+    val feat = Regex(
+        """(?i)\s*[([]?\s*(?:feat\.?|ft\.?|при участии)\s+([^)\]]+?)[)\]]?\s*$""",
+    ).find(name)
+    if (feat != null) {
+        val artist = feat.groupValues[1].trim().trim('(', ')', '[', ']')
+        val title = name.removeRange(feat.range).trim().trim('-', '—', '–', '·', ' ')
+        if (title.isNotEmpty() && artist.isNotEmpty()) return title to artist
+    }
+    return name to null
 }
 
 private fun eventWhenRu(timestamp: Long): String {
