@@ -2,6 +2,7 @@ package com.example.bible.ui
 
 import android.Manifest
 import android.content.pm.PackageManager
+import android.media.MediaPlayer
 import android.media.MediaRecorder
 import android.os.Build
 import android.widget.Toast
@@ -30,6 +31,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
@@ -57,7 +59,10 @@ import com.example.bible.data.KidsMemoryVerses
 import com.example.bible.data.KidsPrayer
 import com.example.bible.data.KidsPrayers
 import com.example.bible.data.KidsSong
+import com.example.bible.data.KidsSongLine
 import com.example.bible.data.KidsSongs
+import com.example.bible.data.KidsUserSongsStore
+import com.example.bible.data.kidsSongLyricLines
 import com.example.bible.data.KidsStoryVoice
 import com.example.bible.data.KidsValueLesson
 import com.example.bible.data.KidsValues
@@ -228,11 +233,46 @@ private fun KidsPrayerDetail(
     }
 }
 
+private data class KidsSongCard(
+    val id: String,
+    val title: String,
+    val emoji: String,
+    val subtitle: String,
+    val lines: List<KidsSongLine>,
+    val audio: List<File>,
+)
+
 @Composable
 fun KidsSongsScreen(onBack: () -> Unit, initialId: String? = null) {
-    var open by remember { mutableStateOf(initialId?.let { KidsSongs.byId(it) }) }
+    val context = LocalContext.current
+    val family by KidsFamilyStore.state(context).collectAsStateWithLifecycle()
+    val stored by KidsUserSongsStore.entries(context).collectAsStateWithLifecycle()
+    val young = family.resolvedMode() == KidsAgeMode.SMALL
+    var openId by remember { mutableStateOf(initialId) }
+    var editorId by remember { mutableStateOf<String?>(null) }
+    var creating by remember { mutableStateOf(false) }
+    var gate by remember { mutableStateOf<(() -> Unit)?>(null) }
+    val cards = remember(stored, young) { kidsSongCards(context, stored, young) }
+
+    if (creating || editorId != null) {
+        KidsSongParentEditor(
+            songId = if (creating) null else editorId,
+            onDone = {
+                creating = false
+                editorId = null
+            },
+        )
+        return
+    }
+    val open = openId?.let { id -> cards.firstOrNull { it.id == id } }
     if (open != null) {
-        KidsSongDetail(open!!, onBack = { open = null })
+        KidsSongDetail(
+            card = open,
+            young = young,
+            hardGate = family.resolvedMode() == KidsAgeMode.BIG,
+            onBack = { openId = null },
+            onParentEdit = { editorId = open.id },
+        )
         return
     }
     KidsSectionScaffold("Песни", onBack) { padding ->
@@ -243,60 +283,152 @@ fun KidsSongsScreen(onBack: () -> Unit, initialId: String? = null) {
         ) {
             item {
                 Text(
-                    "Короткие песни для семьи. Мелодии пока нет — строки читает голос телефона.",
+                    "Короткие песни для семьи. Родитель может загрузить свой текст и фонограммы.",
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
+                Spacer(Modifier.height(8.dp))
+                Button(onClick = {
+                    gate = { creating = true }
+                }) { Text("Родителю: своя песня") }
             }
-            items(KidsSongs.all, key = { it.id }) { song ->
+            items(cards, key = { it.id }) { song ->
                 Column(
                     Modifier
                         .fillMaxWidth()
                         .clip(RoundedCornerShape(22.dp))
                         .background(Color(0xFFDBEAFE))
-                        .clickable { open = song }
+                        .clickable { openId = song.id }
                         .padding(16.dp),
                 ) {
                     Text("${song.emoji}  ${song.title}", fontWeight = FontWeight.Black, fontSize = 20.sp)
-                    Text(song.theme, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    Text(song.subtitle, color = MaterialTheme.colorScheme.onSurfaceVariant)
                 }
             }
         }
     }
+    gate?.let { action ->
+        ParentGateDialog(
+            onDismiss = { gate = null },
+            onPassed = {
+                gate = null
+                action()
+            },
+            hard = family.resolvedMode() == KidsAgeMode.BIG,
+        )
+    }
 }
 
 @Composable
-private fun KidsSongDetail(song: KidsSong, onBack: () -> Unit) {
+private fun KidsSongDetail(
+    card: KidsSongCard,
+    young: Boolean,
+    hardGate: Boolean,
+    onBack: () -> Unit,
+    onParentEdit: () -> Unit,
+) {
     val context = LocalContext.current
-    val family by KidsFamilyStore.state(context).collectAsStateWithLifecycle()
-    val young = family.resolvedMode() == KidsAgeMode.SMALL
     val speak = rememberKidsSpeaker(0.9f)
     val scope = rememberCoroutineScope()
     var line by remember { mutableIntStateOf(-1) }
-    val lines = if (young) song.chorus else song.lines
-    KidsSectionScaffold(song.title, onBack) { padding ->
+    var playing by remember { mutableStateOf<String?>(null) }
+    var gate by remember { mutableStateOf(false) }
+    val player = remember { MediaPlayer() }
+    DisposableEffect(Unit) {
+        onDispose {
+            try {
+                player.release()
+            } catch (_: Exception) {
+            }
+        }
+    }
+    val lines = card.lines
+    KidsSectionScaffold(card.title, onBack) { padding ->
         LazyColumn(
             Modifier.fillMaxSize().padding(padding),
             contentPadding = PaddingValues(16.dp),
             verticalArrangement = Arrangement.spacedBy(8.dp),
         ) {
             item {
-                Text("${song.emoji} ${song.title}", fontWeight = FontWeight.Black, fontSize = 28.sp)
+                Text("${card.emoji} ${card.title}", fontWeight = FontWeight.Black, fontSize = 28.sp)
                 Text(
-                    "Мелодии пока нет — строки читает голос телефона.",
+                    if (card.audio.isNotEmpty()) {
+                        "Фонограмму добавил родитель. Строки можно слушать и голосом телефона."
+                    } else {
+                        "Фонограммы пока нет — строки читает голос телефона. Родитель может добавить запись."
+                    },
                     fontSize = 13.sp,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
                 Spacer(Modifier.height(8.dp))
-                Button(onClick = {
-                    scope.launch {
-                        lines.forEachIndexed { index, item ->
-                            line = index
-                            speak(item.text)
-                            delay(900L + item.text.length * 70L)
+                if (lines.isNotEmpty()) {
+                    Button(onClick = {
+                        if (playing != null) {
+                            try {
+                                player.pause()
+                            } catch (_: Exception) {
+                            }
+                            playing = null
                         }
-                        line = -1
+                        scope.launch {
+                            lines.forEachIndexed { index, item ->
+                                line = index
+                                speak(item.text)
+                                delay(900L + item.text.length * 70L)
+                            }
+                            line = -1
+                        }
+                    }) {
+                        Text(
+                            if (young && card.audio.isEmpty() && "свой текст" !in card.subtitle) {
+                                "Петь припев"
+                            } else {
+                                "Петь"
+                            },
+                        )
                     }
-                }) { Text(if (young) "Петь припев" else "Петь") }
+                }
+                card.audio.forEachIndexed { index, file ->
+                    val active = playing == file.absolutePath
+                    Button(
+                        onClick = {
+                            if (active) {
+                                try {
+                                    player.pause()
+                                } catch (_: Exception) {
+                                }
+                                playing = null
+                            } else {
+                                try {
+                                    player.reset()
+                                    player.setDataSource(file.absolutePath)
+                                    player.setOnCompletionListener { playing = null }
+                                    player.prepare()
+                                    player.start()
+                                    playing = file.absolutePath
+                                } catch (_: Exception) {
+                                    playing = null
+                                    Toast.makeText(context, "Не удалось воспроизвести", Toast.LENGTH_SHORT).show()
+                                }
+                            }
+                        },
+                        modifier = Modifier.padding(top = 8.dp),
+                    ) {
+                        Text(
+                            if (active) "Стоп" else {
+                                if (card.audio.size == 1) "Фонограмма" else "Фонограмма ${index + 1}"
+                            },
+                        )
+                    }
+                }
+                TextButton(onClick = { gate = true }) { Text("Родителю: текст и фонограмма") }
+            }
+            if (lines.isEmpty()) {
+                item {
+                    Text(
+                        "Текста пока нет. Родитель может загрузить его.",
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                }
             }
             items(lines.size) { index ->
                 val item = lines[index]
@@ -319,6 +451,68 @@ private fun KidsSongDetail(song: KidsSong, onBack: () -> Unit) {
             }
         }
     }
+    if (gate) {
+        ParentGateDialog(
+            onDismiss = { gate = false },
+            onPassed = {
+                gate = false
+                onParentEdit()
+            },
+            hard = hardGate,
+        )
+    }
+}
+
+private fun kidsSongCards(
+    context: android.content.Context,
+    stored: List<KidsUserSongsStore.Entry>,
+    young: Boolean,
+): List<KidsSongCard> {
+    val byId = stored.associateBy { it.id }
+    val builtIn = KidsSongs.all.map { song ->
+        song.toCard(byId[song.id], young, context)
+    }
+    val custom = stored.filter { it.userMade }.map { entry ->
+        val lines = kidsSongLyricLines(entry.lyrics.orEmpty())
+        KidsSongCard(
+            id = entry.id,
+            title = entry.title.ifBlank { "Без названия" },
+            emoji = "🎵",
+            subtitle = kidsSongSubtitle("своя песня", lines.isNotEmpty(), entry.audio.isNotEmpty()),
+            lines = lines,
+            audio = entry.audio.map { File(context.filesDir, it) }.filter { it.exists() },
+        )
+    }
+    return builtIn + custom
+}
+
+private fun KidsSong.toCard(
+    extra: KidsUserSongsStore.Entry?,
+    young: Boolean,
+    context: android.content.Context,
+): KidsSongCard {
+    val ownText = extra?.lyrics?.takeIf { it.isNotBlank() }
+    val lines = when {
+        ownText != null -> kidsSongLyricLines(ownText)
+        young -> chorus
+        else -> this.lines
+    }
+    val files = extra?.audio.orEmpty().map { File(context.filesDir, it) }.filter { it.exists() }
+    return KidsSongCard(
+        id = id,
+        title = title,
+        emoji = emoji,
+        subtitle = kidsSongSubtitle(theme, ownText != null, files.isNotEmpty()),
+        lines = lines,
+        audio = files,
+    )
+}
+
+private fun kidsSongSubtitle(theme: String, ownText: Boolean, hasAudio: Boolean): String {
+    val bits = mutableListOf(theme)
+    if (ownText) bits += "свой текст"
+    if (hasAudio) bits += "фонограмма"
+    return bits.joinToString(" · ")
 }
 
 @Composable

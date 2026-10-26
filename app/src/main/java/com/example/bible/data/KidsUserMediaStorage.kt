@@ -10,6 +10,7 @@ import java.util.UUID
 object KidsUserMediaStorage {
     const val IMAGES_SUBDIR = "kids_user_images"
     const val SOUNDS_SUBDIR = "kids_user_sounds"
+    const val SONG_AUDIO_SUBDIR = "kids_song_audio"
 
     /** Путь относительно [Context.getFilesDir] или null при ошибке. */
     fun copyUriIntoFilesDir(
@@ -44,6 +45,9 @@ object KidsUserMediaStorage {
             t.contains("mpeg") || t.contains("mp3") -> "mp3"
             t.contains("ogg") -> "ogg"
             t.contains("wav") -> "wav"
+            t.contains("flac") -> "flac"
+            t.contains("aac") -> "aac"
+            t.contains("3gpp") -> "3gp"
             t.contains("mp4") || t.contains("audio/mp4") -> "m4a"
             else -> null
         }
