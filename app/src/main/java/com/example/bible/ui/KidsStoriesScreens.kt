@@ -112,7 +112,7 @@ private fun KidsStoryIllustration(story: KidsBibleStory, modifier: Modifier = Mo
             painter = painterResource(image),
             contentDescription = story.title,
             modifier = modifier,
-            contentScale = ContentScale.Crop,
+            contentScale = ContentScale.Fit,
         )
     }
 }
@@ -211,12 +211,14 @@ fun KidsStoriesScreen(
             }
             items(visible, key = { it.id }) { story ->
                 val done = story.id in readIds
+                val cardShape = RoundedCornerShape(24.dp)
                 Column(
                     Modifier
-                        .clip(RoundedCornerShape(24.dp))
+                        .kidsLifted(cardShape)
+                        .clip(cardShape)
                         .background(story.brush())
                         .clickable { onOpenStory(story.id) }
-                        .padding(14.dp),
+                        .padding(12.dp),
                 ) {
                     Box(Modifier.fillMaxWidth()) {
                         KidsStoryIllustration(
@@ -224,7 +226,7 @@ fun KidsStoriesScreen(
                             Modifier
                                 .fillMaxWidth()
                                 .aspectRatio(4f / 3f)
-                                .clip(RoundedCornerShape(16.dp)),
+                                .kidsPhotoMat(),
                         )
                         if (done) {
                             Icon(
@@ -245,9 +247,7 @@ fun KidsStoriesScreen(
                     Text(
                         story.title,
                         color = Color.White,
-                        fontWeight = FontWeight.ExtraBold,
-                        fontSize = 17.sp,
-                        lineHeight = 20.sp,
+                        style = KidsTileTitle,
                         maxLines = 2,
                     )
                     Text(
@@ -434,9 +434,10 @@ fun KidsStoryScreen(
                 Column(
                     Modifier
                         .fillMaxWidth()
-                        .clip(RoundedCornerShape(28.dp))
+                        .kidsLifted()
+                        .clip(KidsCardShape)
                         .background(story.brush())
-                        .padding(20.dp),
+                        .padding(16.dp),
                     horizontalAlignment = Alignment.CenterHorizontally,
                 ) {
                     KidsStoryStage(
@@ -447,7 +448,7 @@ fun KidsStoryScreen(
                         modifier = Modifier
                             .fillMaxWidth()
                             .aspectRatio(4f / 3f)
-                            .clip(RoundedCornerShape(20.dp)),
+                            .kidsPhotoMat(),
                     )
                     if (story.id == "easter" && sceneIndex == 0) {
                         Spacer(Modifier.height(8.dp))

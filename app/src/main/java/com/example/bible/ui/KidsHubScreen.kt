@@ -16,7 +16,9 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.aspectRatio
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -27,6 +29,7 @@ import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.GridItemSpan
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
@@ -62,6 +65,7 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
@@ -82,7 +86,6 @@ import com.example.bible.data.KidsUserSectionsState
 import com.example.bible.data.easterSeason
 import com.example.bible.data.kidsStars
 import com.example.bible.data.nextEaster
-import com.example.bible.data.suggestedKidsAgeMode
 import java.time.LocalDate
 import java.time.LocalTime
 import com.example.bible.ui.theme.OutlinedTextField
@@ -234,19 +237,50 @@ fun KidsHubScreen(
             item(key = "kids", span = { GridItemSpan(maxLineSpan) }) {
                 Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                     Text("Кто играет?", fontWeight = FontWeight.Bold)
-                    Row(horizontalArrangement = Arrangement.spacedBy(8.dp), modifier = Modifier.fillMaxWidth()) {
+                    Row(
+                        horizontalArrangement = Arrangement.spacedBy(8.dp),
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .horizontalScroll(rememberScrollState()),
+                    ) {
                         family.children.forEach { child ->
                             val selected = child.id == family.activeChildId
-                            Text(
-                                "${child.name} · ${if (suggestedKidsAgeMode(child.age) == KidsAgeMode.SMALL) "3–5" else "6–10"}",
-                                color = if (selected) Color.White else MaterialTheme.colorScheme.onSurface,
-                                fontWeight = FontWeight.Bold,
+                            val letter = child.name.trim().take(1).uppercase()
+                            Row(
+                                verticalAlignment = Alignment.CenterVertically,
                                 modifier = Modifier
                                     .clip(RoundedCornerShape(999.dp))
                                     .background(if (selected) Color(0xFFEA580C) else Color(0xFFFFEDD5))
                                     .clickable { scope.launch { KidsFamilyStore.setActiveChild(context, child.id) } }
-                                    .padding(horizontal = 12.dp, vertical = 8.dp),
-                            )
+                                    .padding(start = 4.dp, end = 12.dp, top = 4.dp, bottom = 4.dp),
+                            ) {
+                                Box(
+                                    Modifier
+                                        .size(32.dp)
+                                        .clip(CircleShape)
+                                        .background(if (selected) Color.White.copy(alpha = 0.28f) else Color(0xFFE0A15A)),
+                                    contentAlignment = Alignment.Center,
+                                ) {
+                                    Text(
+                                        letter,
+                                        color = Color.White,
+                                        fontFamily = FontFamily.SansSerif,
+                                        fontWeight = FontWeight.ExtraBold,
+                                        fontSize = 15.sp,
+                                        lineHeight = 18.sp,
+                                    )
+                                }
+                                Spacer(Modifier.width(8.dp))
+                                Text(
+                                    child.name,
+                                    color = if (selected) Color.White else MaterialTheme.colorScheme.onSurface,
+                                    fontFamily = FontFamily.SansSerif,
+                                    fontWeight = FontWeight.Bold,
+                                    fontSize = 14.sp,
+                                    lineHeight = 18.sp,
+                                    maxLines = 1,
+                                )
+                            }
                         }
                         Text(
                             "Родителям",
@@ -404,18 +438,28 @@ private fun KidsHeroCard(
     Column(
         Modifier
             .fillMaxWidth()
-            .clip(RoundedCornerShape(28.dp))
+            .kidsLifted()
+            .clip(KidsCardShape)
             .background(Brush.linearGradient(if (MaterialTheme.colorScheme.background.luminance() < 0.4f) KidsDusk else KidsWarmSunset))
             .padding(18.dp),
         verticalArrangement = Arrangement.spacedBy(12.dp),
     ) {
         Row(verticalAlignment = Alignment.CenterVertically) {
             Column(Modifier.weight(1f)) {
-                Text("Привет, $who", color = Color.White, fontSize = 26.sp, fontWeight = FontWeight.Black)
+                Text(
+                    "Привет, $who",
+                    color = Color.White,
+                    fontFamily = FontFamily.SansSerif,
+                    fontSize = 24.sp,
+                    lineHeight = 30.sp,
+                    fontWeight = FontWeight.Black,
+                )
                 Text(
                     if (locked) "Детский режим включён · ${mode.title}" else "Играй, читай и собирай звёзды · ${mode.title}",
                     color = Color.White.copy(alpha = 0.88f),
+                    fontFamily = FontFamily.SansSerif,
                     fontSize = 14.sp,
+                    lineHeight = 18.sp,
                 )
             }
             Column(
@@ -427,8 +471,21 @@ private fun KidsHeroCard(
                 horizontalAlignment = Alignment.CenterHorizontally,
             ) {
                 Icon(Icons.Filled.Star, contentDescription = null, tint = Color(0xFFFFF3D6))
-                Text("$stars", color = Color.White, fontSize = 26.sp, fontWeight = FontWeight.Black)
-                Text(starsWord(stars), color = Color.White.copy(alpha = 0.9f), fontSize = 12.sp)
+                Text(
+                    "$stars",
+                    color = Color.White,
+                    fontFamily = FontFamily.SansSerif,
+                    fontSize = 24.sp,
+                    lineHeight = 28.sp,
+                    fontWeight = FontWeight.Black,
+                )
+                Text(
+                    starsWord(stars),
+                    color = Color.White.copy(alpha = 0.9f),
+                    fontFamily = FontFamily.SansSerif,
+                    fontSize = 12.sp,
+                    lineHeight = 16.sp,
+                )
             }
         }
         Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
@@ -449,8 +506,21 @@ private fun KidsHeroStat(icon: ImageVector, value: String, label: String, modifi
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
         Icon(icon, contentDescription = null, tint = Color.White, modifier = Modifier.size(20.dp))
-        Text(value, color = Color.White, fontWeight = FontWeight.ExtraBold, fontSize = 17.sp)
-        Text(label, color = Color.White.copy(alpha = 0.85f), fontSize = 11.sp)
+        Text(
+            value,
+            color = Color.White,
+            fontFamily = FontFamily.SansSerif,
+            fontWeight = FontWeight.ExtraBold,
+            fontSize = 16.sp,
+            lineHeight = 20.sp,
+        )
+        Text(
+            label,
+            color = Color.White.copy(alpha = 0.85f),
+            fontFamily = FontFamily.SansSerif,
+            fontSize = 12.sp,
+            lineHeight = 16.sp,
+        )
     }
 }
 
@@ -463,19 +533,20 @@ private fun KidsHubTile(
     onLongClick: () -> Unit,
 ) {
     val context = LocalContext.current
+    val shape = RoundedCornerShape(26.dp)
     Column(
         Modifier
-            .clip(RoundedCornerShape(26.dp))
+            .kidsLifted(shape)
+            .clip(shape)
             .background(Brush.linearGradient(gradient))
             .kidsPressable(onClick = onClick, onLongClick = onLongClick)
-            .padding(10.dp),
+            .padding(12.dp),
     ) {
         Box(
             Modifier
                 .fillMaxWidth()
-                .aspectRatio(1.25f)
-                .clip(RoundedCornerShape(20.dp))
-                .background(Color.White.copy(alpha = 0.22f)),
+                .aspectRatio(1.15f)
+                .kidsPhotoMat(),
             contentAlignment = Alignment.Center,
         ) {
             when {
@@ -489,22 +560,31 @@ private fun KidsHubTile(
                     modifier = Modifier.fillMaxSize(),
                     contentScale = ContentScale.Crop,
                 )
-                else -> Icon(row.icon, contentDescription = null, tint = Color.White, modifier = Modifier.size(64.dp))
+                !row.emojiThumb.isNullOrBlank() -> Text(
+                    row.emojiThumb,
+                    fontSize = 52.sp,
+                    lineHeight = 58.sp,
+                )
+                else -> Box(
+                    Modifier
+                        .size(72.dp)
+                        .clip(CircleShape)
+                        .background(Color.White.copy(alpha = 0.28f)),
+                    contentAlignment = Alignment.Center,
+                ) {
+                    Icon(row.icon, contentDescription = null, tint = Color.White, modifier = Modifier.size(36.dp))
+                }
             }
         }
         Spacer(Modifier.height(10.dp))
         Text(
             row.title,
             color = Color.White,
-            fontWeight = FontWeight.Black,
-            fontSize = 18.sp,
-            lineHeight = 21.sp,
-            minLines = 2,
+            style = KidsTileTitle,
             maxLines = 2,
             overflow = TextOverflow.Ellipsis,
-            modifier = Modifier.padding(horizontal = 4.dp),
+            modifier = Modifier.padding(horizontal = 2.dp),
         )
-        Spacer(Modifier.height(4.dp))
     }
 }
 

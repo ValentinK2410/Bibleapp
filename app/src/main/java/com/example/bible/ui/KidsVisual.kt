@@ -16,7 +16,10 @@ import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.LocalIndication
+import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.interaction.collectIsPressedAsState
@@ -35,12 +38,19 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.scale
+import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.luminance
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.font.FontFamily
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 
 /**
  * Тёплая гамма раздела «Детям»: мёд, глина, шалфей и припылённый синий,
@@ -49,6 +59,30 @@ import androidx.compose.ui.unit.dp
 internal val KidsWarmHoney = listOf(Color(0xFFE0A15A), Color(0xFFC46A3A))
 internal val KidsWarmSunset = listOf(Color(0xFFC46A3A), Color(0xFFD4894A), Color(0xFFE7C48A))
 internal val KidsDusk = listOf(Color(0xFF5C3D34), Color(0xFF8C5A3C), Color(0xFFC4895A))
+
+internal val KidsCardShape = RoundedCornerShape(28.dp)
+internal val KidsPhotoShape = RoundedCornerShape(22.dp)
+internal val KidsPaper = Color(0xFFFFF6EA)
+
+internal val KidsTileTitle = TextStyle(
+    fontFamily = FontFamily.SansSerif,
+    fontWeight = FontWeight.ExtraBold,
+    fontSize = 16.sp,
+    lineHeight = 20.sp,
+)
+
+internal fun Modifier.kidsLifted(shape: Shape = KidsCardShape): Modifier = shadow(
+    elevation = 8.dp,
+    shape = shape,
+    ambientColor = Color(0x332E1A12),
+    spotColor = Color(0x442E1A12),
+    clip = false,
+)
+
+internal fun Modifier.kidsPhotoMat(shape: Shape = KidsPhotoShape): Modifier =
+    clip(shape)
+        .background(KidsPaper)
+        .border(2.dp, Color.White.copy(alpha = 0.88f), shape)
 
 @Composable
 internal fun kidsMotionEnabled(): Boolean {

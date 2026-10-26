@@ -709,16 +709,18 @@ fun KidsSeasonsScreen(
                     2 -> listOf(Color(0xFFF59E0B), Color(0xFF10B981))
                     else -> listOf(Color(0xFFF97316), Color(0xFFDC2626))
                 }
+                val seasonShape = RoundedCornerShape(24.dp)
                 Column(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .clip(RoundedCornerShape(24.dp))
+                        .kidsLifted(seasonShape)
+                        .clip(seasonShape)
                         .background(Brush.linearGradient(seasonGradient))
                         .clickable {
                             preview = season
                             speak(season.speak)
                         }
-                        .padding(8.dp),
+                        .padding(10.dp),
                 ) {
                     Image(
                         painter = painterResource(season.imageRes),
@@ -726,17 +728,16 @@ fun KidsSeasonsScreen(
                         modifier = Modifier
                             .fillMaxWidth()
                             .aspectRatio(1f)
-                            .clip(RoundedCornerShape(18.dp)),
+                            .kidsPhotoMat(RoundedCornerShape(18.dp)),
                         contentScale = ContentScale.Crop,
                     )
                     Text(
                         season.title,
                         modifier = Modifier
                             .fillMaxWidth()
-                            .padding(top = 8.dp, bottom = 4.dp),
+                            .padding(top = 8.dp, bottom = 2.dp),
                         color = Color.White,
-                        fontSize = 20.sp,
-                        fontWeight = FontWeight.Black,
+                        style = KidsTileTitle,
                         textAlign = TextAlign.Center,
                     )
                 }
@@ -1161,6 +1162,7 @@ fun KidsPicturedGridScreen(
                 Column(
                     modifier = Modifier
                         .fillMaxWidth()
+                        .kidsLifted(cardShape)
                         .clip(cardShape)
                         .background(Brush.linearGradient(kidsGradient(items.indexOf(item))))
                         .clickable {
@@ -1182,7 +1184,7 @@ fun KidsPicturedGridScreen(
                         modifier = Modifier
                             .fillMaxWidth()
                             .aspectRatio(imageAspectRatio)
-                            .clip(RoundedCornerShape(if (isLandscape) 8.dp else 18.dp)),
+                            .kidsPhotoMat(RoundedCornerShape(if (isLandscape) 12.dp else 18.dp)),
                     )
                     Text(
                         item.label,
@@ -1269,7 +1271,8 @@ fun KidsPicturedGridScreen(
                                     modifier = Modifier
                                         .widthIn(max = 420.dp)
                                         .fillMaxWidth(0.92f)
-                                        .aspectRatio(imageAspectRatio),
+                                        .aspectRatio(imageAspectRatio)
+                                        .kidsPhotoMat(),
                                 )
                             }
                         }

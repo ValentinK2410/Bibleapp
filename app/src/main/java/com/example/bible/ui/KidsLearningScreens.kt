@@ -137,7 +137,9 @@ private fun KidsPrayerDetail(
                     Modifier
                         .fillMaxWidth()
                         .aspectRatio(4f / 3f)
-                        .clip(RoundedCornerShape(28.dp)),
+                        .kidsLifted()
+                        .clip(KidsCardShape)
+                        .border(2.dp, Color.White.copy(alpha = 0.85f), KidsCardShape),
                 ) {
                     if (art != 0) {
                         Image(
@@ -336,14 +338,14 @@ fun KidsHeroesScreen(onBack: () -> Unit, onOpenStory: (String) -> Unit, onOpenGe
                         Image(
                             painter = painterResource(art),
                             contentDescription = hero.name,
-                            contentScale = ContentScale.Crop,
+                            contentScale = ContentScale.Fit,
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .aspectRatio(1.2f)
-                                .clip(RoundedCornerShape(24.dp)),
+                                .aspectRatio(4f / 3f)
+                                .kidsPhotoMat(),
                         )
                     } else {
-                        Text(hero.emoji, fontSize = 64.sp)
+                        Text(hero.emoji, fontSize = 64.sp, lineHeight = 72.sp)
                     }
                     Text(if (unlocked) hero.who else "Карточка откроется после истории", fontSize = 18.sp)
                 }
@@ -371,24 +373,26 @@ fun KidsHeroesScreen(onBack: () -> Unit, onOpenStory: (String) -> Unit, onOpenGe
             item { Text("Собери коллекцию: карточка открывается, когда прочитана хотя бы одна её история.") }
             items(KidsHeroes.all, key = { it.id }) { hero ->
                 val unlocked = hero.storyIds.any { it in read }
+                val heroShape = RoundedCornerShape(24.dp)
                 Column(
                     Modifier
                         .fillMaxWidth()
-                        .clip(RoundedCornerShape(22.dp))
+                        .kidsLifted(heroShape)
+                        .clip(heroShape)
                         .background(androidx.compose.ui.graphics.Brush.linearGradient(hero.gradient.map { Color(it) }))
                         .clickable { open = hero }
-                        .padding(16.dp),
+                        .padding(14.dp),
                 ) {
                     val art = kidsHeroImage(hero.id)
                     if (art != 0 && unlocked) {
                         Image(
                             painter = painterResource(art),
                             contentDescription = null,
-                            contentScale = ContentScale.Crop,
+                            contentScale = ContentScale.Fit,
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .height(96.dp)
-                                .clip(RoundedCornerShape(16.dp)),
+                                .height(148.dp)
+                                .kidsPhotoMat(),
                         )
                         Spacer(Modifier.height(8.dp))
                     }
