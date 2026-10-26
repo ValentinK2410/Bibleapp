@@ -9,7 +9,10 @@ import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
@@ -195,7 +198,12 @@ fun KidsEditHubSectionsScreen(
             onDismissRequest = { addOpen = false },
             title = { Text(stringResource(R.string.kids_edit_add_dialog_title)) },
             text = {
-                Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                Column(
+                    Modifier
+                        .heightIn(max = 420.dp)
+                        .verticalScroll(rememberScrollState()),
+                    verticalArrangement = Arrangement.spacedBy(8.dp),
+                ) {
                     OutlinedTextField(
                         value = newTitle,
                         onValueChange = { newTitle = it },
@@ -217,20 +225,28 @@ fun KidsEditHubSectionsScreen(
                         singleLine = true,
                         modifier = Modifier.fillMaxWidth(),
                     )
-                    OutlinedTextField(
-                        value = newCardStyleToken,
-                        onValueChange = { newCardStyleToken = it },
-                        label = { Text(stringResource(R.string.kids_edit_card_style_hint)) },
-                        singleLine = true,
-                        modifier = Modifier.fillMaxWidth(),
-                    )
-                    OutlinedTextField(
-                        value = newTileStyle,
-                        onValueChange = { newTileStyle = it },
-                        label = { Text(stringResource(R.string.kids_edit_tile_style_hint)) },
-                        singleLine = true,
-                        modifier = Modifier.fillMaxWidth(),
-                    )
+                    Text(stringResource(R.string.kids_edit_card_style_hint), style = MaterialTheme.typography.labelLarge)
+                    Column {
+                        listOf(
+                            "Pictures" to "Картинки",
+                            "Musician" to "Музыка",
+                            "Pesnopenie" to "Песни",
+                            "Videos" to "Видео",
+                            "Audios" to "Звук",
+                        ).forEach { (token, label) ->
+                            TextButton(onClick = { newCardStyleToken = token }) {
+                                Text(if (newCardStyleToken == token) "• $label" else label)
+                            }
+                        }
+                    }
+                    Text(stringResource(R.string.kids_edit_tile_style_hint), style = MaterialTheme.typography.labelLarge)
+                    Row(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
+                        listOf("square" to "Квадратные", "wide" to "Широкие").forEach { (token, label) ->
+                            TextButton(onClick = { newTileStyle = token }) {
+                                Text(if (newTileStyle == token) "• $label" else label)
+                            }
+                        }
+                    }
                 }
             },
             confirmButton = {

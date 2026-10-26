@@ -1903,8 +1903,8 @@
     <string name="kids_edit_new_album_title">Название</string>
     <string name="kids_edit_new_album_subtitle">Подзаголовок в хабе</string>
     <string name="kids_edit_new_album_emoji">Эмодзи превью (необязательно)</string>
-    <string name="kids_edit_card_style_hint">Стиль карточки: Pictures, Musician, …</string>
-    <string name="kids_edit_tile_style_hint">Плитки: square или wide</string>
+    <string name="kids_edit_card_style_hint">Цвет карточки на главной</string>
+    <string name="kids_edit_tile_style_hint">Форма плиток в альбоме</string>
     <string name="about_app_title">О программе</string>
     <string name="about_app_version_line">Версия %1$s (сборка %2$d)</string>
     <string name="about_app_check_update">Проверить обновление</string>

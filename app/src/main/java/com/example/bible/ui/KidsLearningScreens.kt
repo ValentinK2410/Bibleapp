@@ -49,6 +49,7 @@ import androidx.compose.ui.unit.sp
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.bible.data.KidsAgeMode
+import com.example.bible.data.KidsBibleStories
 import com.example.bible.data.KidsFamilyStore
 import com.example.bible.data.KidsHero
 import com.example.bible.data.KidsHeroes
@@ -215,8 +216,8 @@ private fun KidsPrayerDetail(
                         }
                     }) { Text(if (recording) "Сохранить" else "Записать голосом") }
                     if (hasVoice) {
-                        TextButton(onClick = { speak("Запись сохранена. Послушать её можно в плеере устройства позже.") }) {
-                            Text("Запись есть")
+                        TextButton(onClick = { speak("Запись сохранена на этом телефоне.") }) {
+                            Text("Запись сохранена")
                         }
                     }
                 }
@@ -240,7 +241,7 @@ fun KidsSongsScreen(onBack: () -> Unit, initialId: String? = null) {
         ) {
             item {
                 Text(
-                    "Тексты написаны для приложения. Чужие песни не копируются. Мелодий пока нет — строки читает голос телефона. Файлы: kids_song_<id>.m4a",
+                    "Короткие песни для семьи. Мелодии пока нет — строки читает голос телефона.",
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
             }
@@ -254,7 +255,7 @@ fun KidsSongsScreen(onBack: () -> Unit, initialId: String? = null) {
                         .padding(16.dp),
                 ) {
                     Text("${song.emoji}  ${song.title}", fontWeight = FontWeight.Black, fontSize = 20.sp)
-                    Text("${song.theme} · ${song.license}", color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    Text(song.theme, color = MaterialTheme.colorScheme.onSurfaceVariant)
                 }
             }
         }
@@ -278,9 +279,8 @@ private fun KidsSongDetail(song: KidsSong, onBack: () -> Unit) {
         ) {
             item {
                 Text("${song.emoji} ${song.title}", fontWeight = FontWeight.Black, fontSize = 28.sp)
-                Text("Автор: ${song.author}. Лицензия: ${song.license}.", fontSize = 13.sp)
                 Text(
-                    "Аудио-заглушка: файла ${song.audioAsset} нет. Кнопка «Петь» читает строки вслух и подсвечивает их.",
+                    "Мелодии пока нет — строки читает голос телефона.",
                     fontSize = 13.sp,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
@@ -351,7 +351,8 @@ fun KidsHeroesScreen(onBack: () -> Unit, onOpenStory: (String) -> Unit, onOpenGe
                     items(hero.facts) { Text("• $it", fontSize = 18.sp) }
                     item { Text("Учит: ${hero.lesson}", fontWeight = FontWeight.Bold) }
                     items(hero.storyIds) { id ->
-                        TextButton(onClick = { onOpenStory(id) }) { Text("История: $id") }
+                        val title = KidsBibleStories.byId(id)?.title ?: "История"
+                        TextButton(onClick = { onOpenStory(id) }) { Text(title) }
                     }
                     if (family.resolvedMode() == KidsAgeMode.BIG && hero.genealogyId != null) {
                         item { Button(onClick = onOpenGenealogy) { Text("Семья героя") } }
@@ -414,7 +415,10 @@ fun KidsValuesScreen(onBack: () -> Unit, onOpenStory: (String) -> Unit) {
                 Text(lesson.question, fontSize = 22.sp, fontWeight = FontWeight.Bold)
                 Text("Задание на день: ${lesson.task}", fontSize = 18.sp)
                 lesson.storyIds.forEach { id ->
-                    TextButton(onClick = { onOpenStory(id) }) { Text("Открыть историю") }
+                    val title = KidsBibleStories.byId(id)?.title
+                    TextButton(onClick = { onOpenStory(id) }) {
+                        Text(if (title != null) "История: $title" else "Открыть историю")
+                    }
                 }
                 lesson.verseId?.let { id ->
                     KidsMemoryVerses.byId(id)?.let { verse ->

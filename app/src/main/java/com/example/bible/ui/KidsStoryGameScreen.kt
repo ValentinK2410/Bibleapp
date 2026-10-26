@@ -108,7 +108,7 @@ private fun QuizPlay(
     onDone: () -> Unit,
 ) {
     if (questions.isEmpty()) {
-        Text("Для этой истории вопросы ещё готовятся.")
+        Text("К этой истории нет вопросов. Можно просто перечитать её.")
         Button(onClick = onDone) { Text("Дальше") }
         return
     }
@@ -146,7 +146,7 @@ private fun PuzzlePlay(storyId: String, emoji: String, mode: KidsAgeMode, onDone
     var tiles by remember { mutableStateOf((0 until count).toList().shuffled()) }
     var selected by remember { mutableIntStateOf(-1) }
     val image = kidsStoryParagraphImage(storyId, 0)
-    Text(if (image == 0) "Пазл-заглушка: собери цветные части по порядку. Картинки kids_story_${storyId}_0.webp ещё нет." else "Собери картинку.")
+    Text(if (image == 0) "Собери части по порядку." else "Собери картинку.")
     Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
         repeat(grid) { row ->
             Row(horizontalArrangement = Arrangement.spacedBy(4.dp), modifier = Modifier.fillMaxWidth()) {

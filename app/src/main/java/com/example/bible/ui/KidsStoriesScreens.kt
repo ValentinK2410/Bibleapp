@@ -104,7 +104,7 @@ private fun KidsStoryIllustration(story: KidsBibleStory, modifier: Modifier = Mo
         KidsStoryPlaceholder(
             emoji = story.emoji,
             gradient = story.gradient.map { Color(it) },
-            caption = "kids_story_${story.id}.webp",
+            caption = story.title,
             modifier = modifier,
         )
     } else {
@@ -198,6 +198,15 @@ fun KidsStoriesScreen(
                                 .padding(horizontal = 12.dp, vertical = 8.dp),
                         )
                     }
+                }
+            }
+            if (visible.isEmpty()) {
+                item(span = { GridItemSpan(maxLineSpan) }) {
+                    Text(
+                        "В этом списке историй нет. Нажмите «Все», чтобы увидеть остальные.",
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        modifier = Modifier.padding(vertical = 12.dp),
+                    )
                 }
             }
             items(visible, key = { it.id }) { story ->

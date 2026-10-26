@@ -39,11 +39,17 @@ internal fun kidsStoryImage(id: String): Int = when (id) {
 }
 
 /**
- * Картинка сцены. У старых историй пять кадров, лишний индекс берёт последний.
- * У новых историй прописан каждый поставленный кадр. Если файла нет, функция возвращает 0 и остаётся заглушка.
+ * Картинка сцены. Если абзацев больше, чем кадров, показывается последний имеющийся кадр.
+ * Ноль — кадра нет совсем, экран показывает карточку без имени файла.
  */
 internal fun kidsStoryParagraphImage(id: String, index: Int): Int {
     if (index < 0) return 0
+    val frame = storyFrameAt(id, index)
+    if (frame != 0 || index == 0) return frame
+    return kidsStoryParagraphImage(id, index - 1)
+}
+
+private fun storyFrameAt(id: String, index: Int): Int {
     val n = index
     return when (id) {
         "creation" -> when (n) {
@@ -158,7 +164,7 @@ internal fun KidsStoryStage(
             KidsStoryPlaceholder(
                 emoji = story.emoji,
                 gradient = story.gradient.map { Color(it) },
-                caption = "kids_story_${story.id}_$frame.webp",
+                caption = story.title,
                 modifier = Modifier.fillMaxSize(),
             )
         }

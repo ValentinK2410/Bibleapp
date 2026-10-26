@@ -30,6 +30,7 @@ import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.grid.GridCells
+import androidx.compose.foundation.lazy.grid.GridItemSpan
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.material.icons.Icons
@@ -1142,6 +1143,15 @@ fun KidsPicturedGridScreen(
             horizontalArrangement = Arrangement.spacedBy(tileSpacing),
             verticalArrangement = Arrangement.spacedBy(tileSpacing),
         ) {
+            if (items.isEmpty()) {
+                item(span = { GridItemSpan(maxLineSpan) }) {
+                    Text(
+                        "Пока нет карточек. Их добавляет взрослый: меню «Детям», пункт «Редактировать разделы».",
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        modifier = Modifier.padding(12.dp),
+                    )
+                }
+            }
             items(
                 items,
                 key = { item ->

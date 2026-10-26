@@ -81,7 +81,7 @@ fun KidsMapScreen(onBack: () -> Unit, onOpenStory: (String) -> Unit) {
     KidsSectionScaffold("Карта библейских земель", onBack) { padding ->
         Column(Modifier.fillMaxSize().padding(padding)) {
             Text(
-                "Можно двигать и увеличивать. Точки стоят рядом с городами, карта примерная.",
+                "Двигайте карту и увеличивайте. Нажмите на точку — там место истории.",
                 modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
                 fontSize = 13.sp,
             )
