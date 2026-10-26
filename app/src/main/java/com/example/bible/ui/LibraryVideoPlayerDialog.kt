@@ -7,6 +7,7 @@ import android.content.pm.ActivityInfo
 import android.content.res.Configuration
 import android.graphics.SurfaceTexture
 import android.media.AudioManager
+import android.os.SystemClock
 import android.media.MediaPlayer
 import android.media.PlaybackParams
 import android.os.Build
@@ -21,6 +22,8 @@ import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.gestures.awaitEachGesture
+import androidx.compose.foundation.gestures.awaitFirstDown
 import androidx.compose.foundation.gestures.detectDragGestures
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.horizontalScroll
@@ -105,6 +108,8 @@ import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.WindowInsetsControllerCompat
 import com.example.bible.data.BibleUserVideo
 import com.example.bible.data.VideoThought
+import androidx.compose.material.icons.filled.ChildCare
+import androidx.compose.material.icons.filled.Lock
 import androidx.compose.material.icons.filled.Share
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
@@ -276,6 +281,11 @@ fun LibraryVideoPlayerDialog(
     var videoHeightPx by remember { mutableIntStateOf(0) }
     /** Панель управления: показывается по тапу и прячется сама во время воспроизведения. */
     var controlsVisible by remember { mutableStateOf(true) }
+    /** Нажатия не открывают кнопки и не перематывают: видео просто играет. */
+    var kidsMode by remember { mutableStateOf(false) }
+    var kidsGate by remember { mutableStateOf(false) }
+    /** Пример с кнопки «назад» закрывает плеер, удержание экрана только снимает режим. */
+    var kidsGateClosesPlayer by remember { mutableStateOf(false) }
     /** Счётчик касаний — перезапускает таймер автоскрытия. */
     var controlsPoke by remember { mutableIntStateOf(0) }
     /** Панель настроек (скорость, реверс, очередь) поверх видео. */
@@ -766,7 +776,14 @@ fun LibraryVideoPlayerDialog(
     }
 
     Dialog(
-        onDismissRequest = { finishPlayerUi() },
+        onDismissRequest = {
+            if (kidsMode) {
+                kidsGateClosesPlayer = true
+                kidsGate = true
+            } else {
+                finishPlayerUi()
+            }
+        },
         properties = DialogProperties(usePlatformDefaultWidth = false),
     ) {
         val view = LocalView.current
@@ -809,11 +826,36 @@ fun LibraryVideoPlayerDialog(
         }
 
         // Панель прячется сама, как в YouTube: во время игры — через несколько секунд бездействия.
-        LaunchedEffect(controlsVisible, isPlaying, controlsPoke, settingsOpen) {
+        LaunchedEffect(controlsVisible, isPlaying, controlsPoke, settingsOpen, kidsMode) {
+            if (kidsMode) {
+                controlsVisible = false
+                settingsOpen = false
+                return@LaunchedEffect
+            }
             if (controlsVisible && isPlaying && !settingsOpen) {
                 delay(3_500)
                 controlsVisible = false
             }
+        }
+
+        fun enableKidsMode() {
+            kidsMode = true
+            settingsOpen = false
+            thoughtsPanelOpen = false
+            videoShareMenuOpen = false
+            controlsVisible = false
+            try {
+                if (!isPlaying && !reversePlayback) {
+                    player.start()
+                    isPlaying = true
+                }
+            } catch (_: Exception) {
+            }
+            Toast.makeText(
+                context,
+                "Детский режим: нажатия не мешают видео. Удерживайте экран и решите пример, чтобы выключить.",
+                Toast.LENGTH_LONG,
+            ).show()
         }
 
         LaunchedEffect(seekFeedbackSec) {
@@ -927,12 +969,14 @@ fun LibraryVideoPlayerDialog(
                 Box(
                     Modifier
                         .fillMaxSize()
-                        .pointerInput(durationMs) {
+                        .pointerInput(durationMs, kidsMode) {
                             detectTapGestures(
                                 onTap = {
+                                    if (kidsMode) return@detectTapGestures
                                     if (controlsVisible) controlsVisible = false else pokeControls()
                                 },
                                 onDoubleTap = { offset ->
+                                    if (kidsMode) return@detectTapGestures
                                     val back = offset.x < size.width / 2f
                                     applySeekTo(positionMs + if (back) -10_000 else 10_000)
                                     seekFeedbackSec = if (back) -10 else 10
@@ -940,13 +984,34 @@ fun LibraryVideoPlayerDialog(
                                 },
                             )
                         }
-                        .pointerInput(durationMs, maxVolume) {
+                        .pointerInput(kidsMode) {
+                            if (!kidsMode) return@pointerInput
+                            awaitEachGesture {
+                                val down = awaitFirstDown(requireUnconsumed = false)
+                                val startedAt = SystemClock.uptimeMillis()
+                                while (true) {
+                                    val event = awaitPointerEvent()
+                                    val change = event.changes.firstOrNull { it.id == down.id } ?: break
+                                    if (!change.pressed) break
+                                    if (SystemClock.uptimeMillis() - startedAt >= 1_800L) {
+                                        kidsGateClosesPlayer = false
+                                        kidsGate = true
+                                        break
+                                    }
+                                }
+                            }
+                        }
+                        .pointerInput(durationMs, maxVolume, kidsMode) {
                             var mode = 0 // 1 — перемотка, 2 — яркость, 3 — громкость
                             var startX = 0f
                             var accum = 0f
                             var target = 0
                             detectDragGestures(
                                 onDragStart = { offset ->
+                                    if (kidsMode) {
+                                        mode = -1
+                                        return@detectDragGestures
+                                    }
                                     mode = 0
                                     startX = offset.x
                                     accum = 0f
@@ -966,6 +1031,7 @@ fun LibraryVideoPlayerDialog(
                                     gestureHint = null
                                 },
                             ) { change, drag ->
+                                if (mode == -1) return@detectDragGestures
                                 change.consume()
                                 if (mode == 0) {
                                     mode = when {
@@ -1031,7 +1097,19 @@ fun LibraryVideoPlayerDialog(
                                 }
                             }
                         },
-                )
+                ) {
+                    if (kidsMode) {
+                        Icon(
+                            Icons.Filled.Lock,
+                            contentDescription = "Детский режим",
+                            tint = Color.White.copy(alpha = 0.55f),
+                            modifier = Modifier
+                                .align(Alignment.TopEnd)
+                                .padding(top = 14.dp, end = 14.dp)
+                                .size(20.dp),
+                        )
+                    }
+                }
 
                 // Крупная подсказка при двойном тапе
                 androidx.compose.animation.AnimatedVisibility(
@@ -1097,7 +1175,7 @@ fun LibraryVideoPlayerDialog(
                 }
 
                 androidx.compose.animation.AnimatedVisibility(
-                    visible = controlsVisible,
+                    visible = controlsVisible && !kidsMode,
                     enter = fadeIn(),
                     exit = fadeOut(),
                 ) {
@@ -1586,6 +1664,7 @@ fun LibraryVideoPlayerDialog(
                     continueQueue = continueQueue,
                     onContinueQueue = { continueQueue = it },
                     showQueueOption = tracks.size > 1,
+                    onEnableKidsMode = { enableKidsMode() },
                     onMarkWatched = {
                         tracks.getOrNull(currentIx)?.first?.id?.let { id ->
                             onMarkWatchedRef.value(id, durationMs.toLong())
@@ -1602,6 +1681,22 @@ fun LibraryVideoPlayerDialog(
                     },
                 )
             }
+        }
+        if (kidsGate) {
+            ParentGateDialog(
+                onDismiss = { kidsGate = false },
+                onPassed = {
+                    kidsGate = false
+                    if (kidsGateClosesPlayer) {
+                        finishPlayerUi()
+                    } else {
+                        kidsMode = false
+                        controlsVisible = true
+                        controlsPoke++
+                        Toast.makeText(context, "Детский режим выключен", Toast.LENGTH_SHORT).show()
+                    }
+                },
+            )
         }
     }
 }
@@ -1630,6 +1725,7 @@ private fun VideoPlayerSettingsPanel(
     continueQueue: Boolean,
     onContinueQueue: (Boolean) -> Unit,
     showQueueOption: Boolean,
+    onEnableKidsMode: () -> Unit,
     onMarkWatched: () -> Unit,
     onClose: () -> Unit,
 ) {
@@ -1678,6 +1774,23 @@ private fun VideoPlayerSettingsPanel(
                     )
                 }
             }
+
+            Spacer(Modifier.height(12.dp))
+
+            FilterChip(
+                selected = false,
+                onClick = onEnableKidsMode,
+                label = { Text("Детский режим") },
+                leadingIcon = {
+                    Icon(Icons.Filled.ChildCare, contentDescription = null, modifier = Modifier.height(18.dp))
+                },
+            )
+            Spacer(Modifier.height(6.dp))
+            Text(
+                "Нажатия, свайпы и перемотка не останавливают видео и не открывают кнопки. Выключить: удерживайте экран около двух секунд и решите пример. Кнопка «назад» тоже спросит пример и закроет видео.",
+                color = Color.White.copy(alpha = 0.7f),
+                style = MaterialTheme.typography.labelSmall,
+            )
 
             Spacer(Modifier.height(12.dp))
 
