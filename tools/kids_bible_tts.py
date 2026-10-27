@@ -1,16 +1,21 @@
 #!/usr/bin/env python3
-"""Голос «Детской Библии»: facebook/mms-tts-rus, профиль mms-natural-1.
+"""Голос «Детской Библии». Голос задаётся параметром, готовые файлы не перезаписываются.
 
-Темп 0.90, ударения ruaccent (ё звучит как ударное е), паузы после точки,
-двоеточия и запятой, лучшее из пяти семян, подъём до 48 кГц через soxr,
-тёплый эквалайзер, де-эссер, лёгкая комната, громкость около −16 LUFS.
-На выходе моно AAC 80 кбит/с и тайминги абзацев для подсветки.
+Сейчас подключён один движок, mms-natural-1: facebook/mms-tts-rus, темп 0.90,
+ударения ruaccent, паузы после точки, двоеточия и запятой, лучшее из пяти семян,
+48 кГц, тёплый эквалайзер, AAC 80 кбит/с и тайминги абзацев.
 
-  python3 tools/kids_bible_tts.py
-  python3 tools/kids_bible_tts.py gen_creation:5_7 jonah:11_13
+Без --voice скрипт ничего не синтезирует. Уже лежащие m4a и тайминги пропускаются,
+пока нет --force. Так старые 36 дорожек не задеваются случайным запуском.
+
+  python3 tools/kids_bible_tts.py --voice mms-natural-1
+  python3 tools/kids_bible_tts.py --voice mms-natural-1 --dry-run
+  python3 tools/kids_bible_tts.py --voice mms-natural-1 mt_storm:5_7
+  python3 tools/kids_bible_tts.py --voice mms-natural-1 --force gen_creation:8_10
 """
 from __future__ import annotations
 
+import argparse
 import hashlib
 import json
 import re
@@ -21,8 +26,6 @@ from pathlib import Path
 
 import numpy as np
 import torch
-from ruaccent import RUAccent
-from transformers import AutoTokenizer, VitsModel
 
 ROOT = Path(__file__).resolve().parents[1]
 STORIES = ROOT / "app/src/main/assets/kids_bible/stories.json"
@@ -41,6 +44,10 @@ VARIANT = {
 }
 GAP_SEC = 0.22
 BITRATE = "80k"
+VOICES = {
+    "mms-natural-1": "facebook/mms-tts-rus, темп 0.90, ударения, паузы, 48 кГц, AAC 80 кбит/с",
+}
+AGES = ("5_7", "8_10", "11_13")
 
 
 def duration_ms(path: Path) -> int:
@@ -297,12 +304,15 @@ def post(src: Path, dest: Path) -> None:
     )
 
 
-def build_track(model, tokenizer, accent, story: dict, age: str) -> None:
+def build_track(model, tokenizer, accent, story: dict, age: str, force: bool = False) -> None:
     parts = spoken_parts(story, age)
     digest = text_hash(parts)
     m4a = AUDIO / f"{story['id']}_{age}.m4a"
     timings = AUDIO / f"{story['id']}_{age}.timings.json"
     stamp = WORK / f"{story['id']}_{age}.stamp"
+    if m4a.exists() and timings.exists() and not force:
+        print(story["id"], age, "skip existing", flush=True)
+        return
     if stamp.exists() and stamp.read_text(encoding="utf-8").strip() == digest and m4a.exists() and timings.exists():
         print(story["id"], age, "cached", flush=True)
         return
@@ -341,20 +351,60 @@ def build_track(model, tokenizer, accent, story: dict, age: str) -> None:
     print(story["id"], age, f"{m4a.stat().st_size // 1024}K", f"{cues[-1]['endMs'] / 1000:.0f}s", flush=True)
 
 
-def wanted(argv: list[str]) -> set[tuple[str, str]] | None:
-    if not argv:
+def wanted(items: list[str]) -> set[tuple[str, str]] | None:
+    if not items:
         return None
     chosen = set()
-    for item in argv:
+    for item in items:
         story_id, age = item.split(":")
+        if age not in AGES:
+            raise SystemExit(f"Неизвестный возраст {age}. Нужен один из: {', '.join(AGES)}")
         chosen.add((story_id, age))
     return chosen
 
 
+def jobs_for(stories: list[dict], only: set[tuple[str, str]] | None, force: bool) -> list[tuple[dict, str]]:
+    queued = []
+    for story in stories:
+        for age in AGES:
+            if only is not None and (story["id"], age) not in only:
+                continue
+            m4a = AUDIO / f"{story['id']}_{age}.m4a"
+            timings = AUDIO / f"{story['id']}_{age}.timings.json"
+            if m4a.exists() and timings.exists() and not force:
+                continue
+            queued.append((story, age))
+    return queued
+
+
 def main() -> None:
-    only = wanted(sys.argv[1:])
+    parser = argparse.ArgumentParser(description="Озвучка детских историй выбранным голосом.")
+    parser.add_argument("--voice", help="Имя голоса. Сейчас подключён mms-natural-1.")
+    parser.add_argument("--force", action="store_true", help="Перезаписать уже готовые m4a и тайминги.")
+    parser.add_argument("--missing-only", action="store_true", help="Только дорожки без файла. Так скрипт работает и без этого флага, пока нет --force.")
+    parser.add_argument("--dry-run", action="store_true", help="Показать, сколько дорожек будет озвучено, и выйти.")
+    parser.add_argument("tracks", nargs="*", help="Необязательный список storyId:age")
+    args = parser.parse_args()
+    known = ", ".join(VOICES)
+    if not args.voice:
+        print(f"Укажите голос: --voice ИМЯ. Сейчас доступны: {known}", file=sys.stderr)
+        sys.exit(2)
+    if args.voice not in VOICES:
+        print(f"Неизвестный голос {args.voice}. Доступны: {known}", file=sys.stderr)
+        sys.exit(2)
     stories = json.loads(STORIES.read_text(encoding="utf-8"))["stories"]
-    ages = ("5_7", "8_10", "11_13")
+    only = wanted(args.tracks)
+    queued = jobs_for(stories, only, force=args.force and not args.missing_only)
+    print(f"голос {args.voice}: к озвучке {len(queued)}", flush=True)
+    if args.dry_run or not queued:
+        if not queued:
+            print("Нечего озвучивать. Готовые файлы не тронуты.")
+        return
+    import numpy as np
+    import torch
+    from ruaccent import RUAccent
+    from transformers import AutoTokenizer, VitsModel
+    globals().update(np=np, torch=torch, RUAccent=RUAccent, AutoTokenizer=AutoTokenizer, VitsModel=VitsModel)
     CACHE.mkdir(parents=True, exist_ok=True)
     AUDIO.mkdir(parents=True, exist_ok=True)
     accent = RUAccent()
@@ -363,11 +413,8 @@ def main() -> None:
     tokenizer = AutoTokenizer.from_pretrained("facebook/mms-tts-rus")
     model = VitsModel.from_pretrained("facebook/mms-tts-rus")
     model.eval()
-    for story in stories:
-        for age in ages:
-            if only is not None and (story["id"], age) not in only:
-                continue
-            build_track(model, tokenizer, accent, story, age)
+    for story, age in queued:
+        build_track(model, tokenizer, accent, story, age, force=args.force)
 
 
 if __name__ == "__main__":
