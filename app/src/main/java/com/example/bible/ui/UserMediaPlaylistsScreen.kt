@@ -82,7 +82,9 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
+import android.content.res.Configuration
 import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
@@ -181,6 +183,12 @@ fun UserMediaPlaylistsListScreen(
             UserMediaPlaylistKind.VIDEO -> "Видео"
             UserMediaPlaylistKind.AUDIO -> "Аудио"
         }
+    val landscape = LocalConfiguration.current.orientation == Configuration.ORIENTATION_LANDSCAPE
+    val menuTint = if (landscape) {
+        MaterialTheme.colorScheme.onSurface
+    } else {
+        Color.White
+    }
 
     Scaffold(
         topBar = {
@@ -279,7 +287,7 @@ fun UserMediaPlaylistsListScreen(
                                     Icon(
                                         Icons.Filled.MoreVert,
                                         "Меню",
-                                        tint = Color.White,
+                                        tint = menuTint,
                                     )
                                 }
                                 DropdownMenu(

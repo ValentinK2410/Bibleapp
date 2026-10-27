@@ -13,6 +13,7 @@ import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.aspectRatio
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -27,6 +28,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.StickyNote2
+import androidx.compose.material.icons.automirrored.filled.PlaylistPlay
 import androidx.compose.material.icons.filled.Image
 import androidx.compose.material.icons.filled.MusicNote
 import androidx.compose.material.icons.filled.Palette
@@ -50,10 +52,16 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import android.content.res.Configuration
+import java.text.SimpleDateFormat
+import java.util.Date
+import java.util.Locale
 import coil.compose.AsyncImage
 import com.example.bible.data.BibleUserVideo
 import com.example.bible.data.MediaCatalogPaths
@@ -70,6 +78,9 @@ fun PlaylistLook.brush(): Brush = Brush.linearGradient(
 fun PlaylistCoverArt(
     playlist: UserMediaPlaylist,
     modifier: Modifier = Modifier,
+    cornerRadius: Dp = 18.dp,
+    showScrim: Boolean = true,
+    iconSize: Dp = 36.dp,
 ) {
     val context = LocalContext.current
     val coverFile = remember(playlist.coverFileName, playlist.id) {
@@ -80,7 +91,7 @@ fun PlaylistCoverArt(
     val coverModel = remember(coverFile?.absolutePath, coverFile?.lastModified(), playlist.coverFileName) {
         coverFile
     }
-    Box(modifier.clip(RoundedCornerShape(18.dp))) {
+    Box(modifier.clip(RoundedCornerShape(cornerRadius))) {
         when {
             coverModel != null -> {
                 AsyncImage(
@@ -105,23 +116,36 @@ fun PlaylistCoverArt(
                         },
                         contentDescription = null,
                         tint = Color.White.copy(alpha = 0.88f),
-                        modifier = Modifier.size(36.dp),
+                        modifier = Modifier.size(iconSize),
                     )
                 }
             }
         }
-        Box(
-            Modifier
-                .fillMaxSize()
-                .background(
-                    Brush.verticalGradient(
-                        0f to Color.Transparent,
-                        0.45f to Color.Transparent,
-                        1f to Color.Black.copy(alpha = 0.62f),
+        if (showScrim) {
+            Box(
+                Modifier
+                    .fillMaxSize()
+                    .background(
+                        Brush.verticalGradient(
+                            0f to Color.Transparent,
+                            0.45f to Color.Transparent,
+                            1f to Color.Black.copy(alpha = 0.62f),
+                        ),
                     ),
-                ),
-        )
+            )
+        }
     }
+}
+
+private fun playlistFilesLabel(count: Int): String {
+    val n = kotlin.math.abs(count)
+    val word = when {
+        n % 100 in 11..14 -> "файлов"
+        n % 10 == 1 -> "файл"
+        n % 10 in 2..4 -> "файла"
+        else -> "файлов"
+    }
+    return "$count $word"
 }
 
 @Composable
@@ -132,6 +156,17 @@ fun PlaylistLookCard(
     trailing: @Composable () -> Unit,
     hasVideoThoughts: Boolean = false,
 ) {
+    val landscape = LocalConfiguration.current.orientation == Configuration.ORIENTATION_LANDSCAPE
+    if (landscape) {
+        PlaylistLookCardLandscape(
+            playlist = playlist,
+            fileCount = fileCount,
+            onClick = onClick,
+            trailing = trailing,
+            hasVideoThoughts = hasVideoThoughts,
+        )
+        return
+    }
     Box(
         modifier = Modifier
             .fillMaxWidth()
@@ -187,6 +222,137 @@ fun PlaylistLookCard(
                 }
             }
             trailing()
+        }
+    }
+}
+
+@Composable
+private fun PlaylistLookCardLandscape(
+    playlist: UserMediaPlaylist,
+    fileCount: Int,
+    onClick: () -> Unit,
+    trailing: @Composable () -> Unit,
+    hasVideoThoughts: Boolean,
+) {
+    val added = remember(playlist.createdAt) {
+        if (playlist.createdAt <= 0L) ""
+        else SimpleDateFormat("d MMMM yyyy", Locale("ru")).format(Date(playlist.createdAt))
+    }
+    BoxWithConstraints(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable(onClick = onClick),
+    ) {
+        val imageWidth = maxWidth / 2
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            Box(
+                modifier = Modifier
+                    .width(imageWidth)
+                    .aspectRatio(16f / 9f),
+            ) {
+                PlaylistCoverArt(
+                    playlist = playlist,
+                    modifier = Modifier.fillMaxSize(),
+                    cornerRadius = 12.dp,
+                    showScrim = false,
+                    iconSize = 72.dp,
+                )
+                Row(
+                    modifier = Modifier
+                        .align(Alignment.BottomEnd)
+                        .padding(8.dp)
+                        .clip(RoundedCornerShape(4.dp))
+                        .background(Color.Black.copy(alpha = 0.72f))
+                        .padding(horizontal = 8.dp, vertical = 4.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
+                    Icon(
+                        Icons.AutoMirrored.Filled.PlaylistPlay,
+                        contentDescription = null,
+                        tint = Color.White,
+                        modifier = Modifier.size(16.dp),
+                    )
+                    Text(
+                        "$fileCount",
+                        color = Color.White,
+                        style = MaterialTheme.typography.labelLarge,
+                        fontWeight = FontWeight.Medium,
+                        modifier = Modifier.padding(start = 4.dp),
+                    )
+                }
+            }
+            Column(
+                modifier = Modifier
+                    .weight(1f)
+                    .padding(start = 16.dp, end = 4.dp, top = 4.dp, bottom = 4.dp),
+                verticalArrangement = Arrangement.Center,
+            ) {
+                Row(verticalAlignment = Alignment.Top) {
+                    Text(
+                        playlist.name,
+                        modifier = Modifier.weight(1f),
+                        color = MaterialTheme.colorScheme.onSurface,
+                        style = MaterialTheme.typography.headlineSmall,
+                        fontWeight = FontWeight.Bold,
+                        maxLines = 2,
+                        overflow = TextOverflow.Ellipsis,
+                    )
+                    trailing()
+                }
+                if (playlist.subtitle.isNotBlank()) {
+                    Text(
+                        playlist.subtitle,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        style = MaterialTheme.typography.bodyLarge,
+                        maxLines = 2,
+                        overflow = TextOverflow.Ellipsis,
+                        modifier = Modifier.padding(top = 4.dp, end = 8.dp),
+                    )
+                }
+                Text(
+                    "Плейлист",
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    style = MaterialTheme.typography.titleSmall,
+                    fontWeight = FontWeight.Medium,
+                    modifier = Modifier.padding(top = 10.dp),
+                )
+                Text(
+                    playlistFilesLabel(fileCount),
+                    color = MaterialTheme.colorScheme.onSurface,
+                    style = MaterialTheme.typography.titleMedium,
+                    modifier = Modifier.padding(top = 2.dp),
+                )
+                if (added.isNotBlank()) {
+                    Text(
+                        "Добавлен $added",
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        style = MaterialTheme.typography.bodyLarge,
+                        modifier = Modifier.padding(top = 2.dp),
+                    )
+                }
+                if (hasVideoThoughts) {
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        modifier = Modifier.padding(top = 8.dp),
+                    ) {
+                        Icon(
+                            Icons.AutoMirrored.Filled.StickyNote2,
+                            contentDescription = null,
+                            tint = Color(0xFFFFC107),
+                            modifier = Modifier.size(18.dp),
+                        )
+                        Text(
+                            "Есть мысли",
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            style = MaterialTheme.typography.bodyMedium,
+                            modifier = Modifier.padding(start = 6.dp),
+                        )
+                    }
+                }
+            }
         }
     }
 }
