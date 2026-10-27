@@ -1,0 +1,34 @@
+{
+  "cues": [
+    {
+      "part": "p0",
+      "startMs": 0,
+      "endMs": 6922
+    },
+    {
+      "part": "p1",
+      "startMs": 7272,
+      "endMs": 21035
+    },
+    {
+      "part": "verse",
+      "startMs": 21385,
+      "endMs": 25799
+    },
+    {
+      "part": "meaning",
+      "startMs": 26149,
+      "endMs": 34326
+    },
+    {
+      "part": "christ",
+      "startMs": 34676,
+      "endMs": 43480
+    },
+    {
+      "part": "prayer",
+      "startMs": 43830,
+      "endMs": 48557
+    }
+  ]
+}

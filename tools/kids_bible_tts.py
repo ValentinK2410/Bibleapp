@@ -36,46 +36,49 @@ def main() -> None:
     )
     gap = duration_ms(silence)
     AUDIO.mkdir(parents=True, exist_ok=True)
+    ages = ("5_7", "8_10", "11_13")
     for story in stories:
-        parts = [(f"p{i}", text) for i, text in enumerate(story["paragraphs"])]
-        parts += [
-            ("verse", "Ключевой стих. " + story["keyVerse"]),
-            ("meaning", "Что это значит? " + story["meaning"]),
-            ("christ", "Как это связано с Иисусом. " + story["christLink"]),
-            ("prayer", "Молитва. " + story["prayer"]),
-        ]
-        folder = work / story["id"]
-        folder.mkdir(parents=True, exist_ok=True)
-        cues = []
-        cursor = 0
-        lines = []
-        for index, (part, text) in enumerate(parts):
-            wav = folder / f"{index:02d}.wav"
-            subprocess.run(
-                [PIPER, "-m", MODEL, "-f", str(wav), "--length_scale", "1.08", "--sentence_silence", "0.28"],
-                input=text.encode("utf-8"),
-                check=True,
+        for age in ages:
+            track = story["tracks"][age]
+            parts = [(f"p{i}", text) for i, text in enumerate(track["paragraphs"])]
+            parts += [
+                ("verse", "Ключевой стих. " + story["keyVerse"]),
+                ("meaning", "Что это значит? " + track["meaning"]),
+                ("christ", "Как это связано с Иисусом. " + track["christLink"]),
+                ("prayer", "Молитва. " + track["prayer"]),
+            ]
+            folder = work / f"{story['id']}_{age}"
+            folder.mkdir(parents=True, exist_ok=True)
+            cues = []
+            cursor = 0
+            lines = []
+            for index, (part, text) in enumerate(parts):
+                wav = folder / f"{index:02d}.wav"
+                subprocess.run(
+                    [PIPER, "-m", MODEL, "-f", str(wav), "--length_scale", "1.08", "--sentence_silence", "0.28"],
+                    input=text.encode("utf-8"),
+                    check=True,
+                )
+                length = duration_ms(wav)
+                cues.append({"part": part, "startMs": cursor, "endMs": cursor + length})
+                cursor += length
+                lines.append(f"file '{wav}'")
+                if index != len(parts) - 1:
+                    lines.append(f"file '{silence}'")
+                    cursor += gap
+            listing = folder / "list.txt"
+            listing.write_text("\n".join(lines) + "\n", encoding="utf-8")
+            m4a = AUDIO / f"{story['id']}_{age}.m4a"
+            subprocess.check_call(
+                ["ffmpeg", "-y", "-f", "concat", "-safe", "0", "-i", str(listing), "-c:a", "aac", "-b:a", "48k", "-ac", "1", str(m4a)],
+                stdout=subprocess.DEVNULL,
+                stderr=subprocess.DEVNULL,
             )
-            length = duration_ms(wav)
-            cues.append({"part": part, "startMs": cursor, "endMs": cursor + length})
-            cursor += length
-            lines.append(f"file '{wav}'")
-            if index != len(parts) - 1:
-                lines.append(f"file '{silence}'")
-                cursor += gap
-        listing = folder / "list.txt"
-        listing.write_text("\n".join(lines) + "\n", encoding="utf-8")
-        m4a = AUDIO / f"{story['id']}.m4a"
-        subprocess.check_call(
-            ["ffmpeg", "-y", "-f", "concat", "-safe", "0", "-i", str(listing), "-c:a", "aac", "-b:a", "48k", "-ac", "1", str(m4a)],
-            stdout=subprocess.DEVNULL,
-            stderr=subprocess.DEVNULL,
-        )
-        (AUDIO / f"{story['id']}.timings.json").write_text(
-            json.dumps({"cues": cues}, ensure_ascii=False, indent=2) + "\n",
-            encoding="utf-8",
-        )
-        print(story["id"], m4a.stat().st_size)
+            (AUDIO / f"{story['id']}_{age}.timings.json").write_text(
+                json.dumps({"cues": cues}, ensure_ascii=False, indent=2) + "\n",
+                encoding="utf-8",
+            )
+            print(story["id"], age, m4a.stat().st_size)
 
 
 if __name__ == "__main__":

@@ -1,7 +1,9 @@
 package com.example.bible
 
 import com.example.bible.data.BibleCanon
+import com.example.bible.data.KidsBibleAge
 import com.example.bible.data.KidsBibleCatalog
+import com.example.bible.data.KidsBibleNarration
 import com.example.bible.data.KidsBiblePin
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
@@ -27,9 +29,14 @@ class KidsBiblePilotTest {
             listOf(
                 "gen_creation",
                 "gen_fall",
-                "luke_nativity",
+                "gen_noah",
+                "gen_abraham",
+                "exodus_sea",
                 "sam_goliath",
+                "jonah",
+                "luke_nativity",
                 "luke_prodigal",
+                "luke_easter",
                 "psalms_overview",
                 "romans_overview",
             ),
@@ -49,28 +56,50 @@ class KidsBiblePilotTest {
         )
         assertEquals("Господь - Пастырь мой; я ни в чем не буду нуждаться:", byId.getValue("psalms_overview").keyVerse)
         assertTrue(byId.getValue("romans_overview").keyVerse.startsWith("Ибо я не стыжусь благовествования Христова"))
+        assertEquals(
+            "Я полагаю радугу Мою в облаке, чтоб она была знамением [вечного] завета между Мною и между землею.",
+            byId.getValue("gen_noah").keyVerse,
+        )
+        assertEquals(
+            "Авраам сказал: Бог усмотрит Себе агнца для всесожжения, сын мой. И шли далее оба вместе.",
+            byId.getValue("gen_abraham").keyVerse,
+        )
+        assertEquals("Господь будет поборать за вас, а вы будьте спокойны.", byId.getValue("exodus_sea").keyVerse)
+        assertEquals("И сказал Господь киту, и он изверг Иону на сушу.", byId.getValue("jonah").keyVerse)
+        assertTrue(byId.getValue("luke_easter").keyVerse.startsWith("Его нет здесь: Он воскрес"))
         stories.forEach { story ->
-            assertTrue(story.paragraphs.isNotEmpty())
-            assertTrue(story.meaning.isNotBlank())
-            assertTrue(story.christLink.isNotBlank())
-            assertTrue(story.forOlder.isNotBlank())
-            assertTrue(story.questions.isNotEmpty())
-            assertTrue(story.prayer.isNotBlank())
-            assertTrue(story.activity.isNotBlank())
-            val cues = KidsBibleCatalog.parseCues(asset("audio/${story.id}.timings.json"))
-            val parts = cues.map { it.part }
-            story.paragraphs.indices.forEach { index -> assertTrue(parts.contains("p$index")) }
-            assertTrue(parts.containsAll(listOf("verse", "meaning", "christ", "prayer")))
-            cues.zipWithNext().forEach { (a, b) -> assertTrue(a.endMs <= b.startMs) }
-            assertTrue(File("src/main/assets/${story.audioAsset}").exists() || File("app/src/main/assets/${story.audioAsset}").exists())
+            assertEquals(KidsBibleAge.entries.toSet(), story.tracks.keys)
+            KidsBibleAge.entries.forEach { age ->
+                val track = story.track(age)
+                assertTrue(track.paragraphs.isNotEmpty())
+                assertTrue(track.meaning.isNotBlank())
+                assertTrue(track.christLink.isNotBlank())
+                assertTrue(track.questions.isNotEmpty())
+                assertTrue(track.prayer.isNotBlank())
+                assertTrue(track.activity.isNotBlank())
+                val cues = KidsBibleCatalog.parseCues(asset("audio/${story.id}_${age.id}.timings.json"))
+                val parts = cues.map { it.part }
+                track.paragraphs.indices.forEach { index -> assertTrue(parts.contains("p$index")) }
+                assertTrue(parts.containsAll(listOf("verse", "meaning", "christ", "prayer")))
+                cues.zipWithNext().forEach { (a, b) -> assertTrue(a.endMs <= b.startMs) }
+                val audio = story.audioAsset(age)
+                assertTrue(File("src/main/assets/$audio").exists() || File("app/src/main/assets/$audio").exists())
+                assertEquals("kids_bible/audio/family/${story.id}_${age.id}.m4a", story.familyAudioAsset(age))
+                assertEquals(story.audioAsset(age), story.narrationAsset(age, KidsBibleNarration.App))
+            }
+            assertTrue(story.track(KidsBibleAge.Y5_7).paragraphs.sumOf { it.length } < story.track(KidsBibleAge.Y8_10).paragraphs.sumOf { it.length })
         }
         val shelf = KidsBibleCatalog.shelf(stories)
         assertEquals(66, shelf.size)
         assertEquals(BibleCanon.allBooks.map { it.id }, shelf.map { it.book.id })
         assertFalse(shelf.first { it.book.id == "genesis" }.comingSoon)
-        assertEquals(2, shelf.first { it.book.id == "genesis" }.stories.size)
-        assertTrue(shelf.first { it.book.id == "exodus" }.comingSoon)
-        assertEquals(listOf("luke_nativity", "luke_prodigal"), shelf.first { it.book.id == "luke" }.stories.map { it.id })
+        assertEquals(4, shelf.first { it.book.id == "genesis" }.stories.size)
+        assertFalse(shelf.first { it.book.id == "exodus" }.comingSoon)
+        assertTrue(shelf.first { it.book.id == "daniel" }.comingSoon)
+        assertEquals(
+            listOf("luke_nativity", "luke_prodigal", "luke_easter"),
+            shelf.first { it.book.id == "luke" }.stories.map { it.id },
+        )
     }
 
     @Test

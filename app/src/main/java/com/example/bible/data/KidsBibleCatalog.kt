@@ -8,6 +8,30 @@ internal data class KidsBibleCue(
     val endMs: Int,
 )
 
+internal enum class KidsBibleAge(val id: String, val label: String) {
+    Y5_7("5_7", "5–7"),
+    Y8_10("8_10", "8–10"),
+    Y11_13("11_13", "11–13"),
+    ;
+
+    companion object {
+        fun fromId(id: String?): KidsBibleAge = entries.firstOrNull { it.id == id } ?: Y8_10
+    }
+}
+
+/** Голос приложения или будущая запись мамы/папы. Экран выбора пока не нужен. */
+internal enum class KidsBibleNarration { App, Family }
+
+internal data class KidsBibleTrack(
+    val paragraphs: List<String>,
+    val meaning: String,
+    val christLink: String,
+    val questions: List<String>,
+    val prayer: String,
+    val activity: String,
+    val cues: List<KidsBibleCue> = emptyList(),
+)
+
 internal data class KidsBibleReading(
     val id: String,
     val bookId: String,
@@ -15,21 +39,22 @@ internal data class KidsBibleReading(
     val title: String,
     val refs: String,
     val kind: String,
-    val readingSec: Int,
-    val paragraphs: List<String>,
     val keyVerse: String,
     val keyVerseRef: String,
-    val meaning: String,
-    val christLink: String,
-    val forOlder: String,
-    val questions: List<String>,
-    val prayer: String,
-    val activity: String,
     val art: String,
-    val cues: List<KidsBibleCue> = emptyList(),
+    val tracks: Map<KidsBibleAge, KidsBibleTrack>,
 ) {
-    val audioAsset: String get() = "kids_bible/audio/$id.m4a"
     val isOverview: Boolean get() = kind == "overview"
+
+    fun track(age: KidsBibleAge): KidsBibleTrack =
+        tracks[age] ?: tracks.getValue(KidsBibleAge.Y8_10)
+
+    fun audioAsset(age: KidsBibleAge): String = "kids_bible/audio/${id}_${age.id}.m4a"
+
+    fun familyAudioAsset(age: KidsBibleAge): String = "kids_bible/audio/family/${id}_${age.id}.m4a"
+
+    fun narrationAsset(age: KidsBibleAge, narration: KidsBibleNarration): String =
+        if (narration == KidsBibleNarration.Family) familyAudioAsset(age) else audioAsset(age)
 }
 
 internal data class KidsBibleBookRow(
@@ -44,6 +69,11 @@ internal object KidsBibleCatalog {
         val arr = root["stories"] as? List<*> ?: emptyList<Any>()
         return arr.mapNotNull { item ->
             val o = item as? Map<*, *> ?: return@mapNotNull null
+            val trackMap = o["tracks"] as? Map<*, *> ?: error("Нет возрастов у ${o.str("id")}")
+            val tracks = KidsBibleAge.entries.associateWith { age ->
+                val rawTrack = trackMap[age.id] as? Map<*, *> ?: error("Нет текста ${age.id} у ${o.str("id")}")
+                rawTrack.toTrack()
+            }
             KidsBibleReading(
                 id = o.str("id"),
                 bookId = o.str("bookId"),
@@ -51,17 +81,10 @@ internal object KidsBibleCatalog {
                 title = o.str("title"),
                 refs = o.str("refs"),
                 kind = o.str("kind").ifBlank { "story" },
-                readingSec = o.num("readingSec"),
-                paragraphs = o.strings("paragraphs"),
                 keyVerse = o.str("keyVerse"),
                 keyVerseRef = o.str("keyVerseRef"),
-                meaning = o.str("meaning"),
-                christLink = o.str("christLink"),
-                forOlder = o.str("forOlder"),
-                questions = o.strings("questions"),
-                prayer = o.str("prayer"),
-                activity = o.str("activity"),
                 art = o.str("art"),
+                tracks = tracks,
             )
         }
     }
@@ -84,10 +107,16 @@ internal object KidsBibleCatalog {
     fun load(context: Context): List<KidsBibleReading> {
         val raw = context.assets.open("kids_bible/stories.json").bufferedReader().use { it.readText() }
         return parseStories(raw).map { story ->
-            val cues = runCatching {
-                context.assets.open("kids_bible/audio/${story.id}.timings.json").bufferedReader().use { it.readText() }
-            }.map { parseCues(it) }.getOrDefault(emptyList())
-            story.copy(cues = cues)
+            story.copy(
+                tracks = story.tracks.mapValues { (age, track) ->
+                    val cues = runCatching {
+                        context.assets.open("kids_bible/audio/${story.id}_${age.id}.timings.json")
+                            .bufferedReader()
+                            .use { it.readText() }
+                    }.map { parseCues(it) }.getOrDefault(emptyList())
+                    track.copy(cues = cues)
+                },
+            )
         }
     }
 
@@ -118,6 +147,15 @@ private fun Map<*, *>.num(key: String): Int = when (val v = this[key]) {
 
 private fun Map<*, *>.strings(key: String): List<String> =
     (this[key] as? List<*>)?.mapNotNull { it as? String } ?: emptyList()
+
+private fun Map<*, *>.toTrack(): KidsBibleTrack = KidsBibleTrack(
+    paragraphs = strings("paragraphs"),
+    meaning = str("meaning"),
+    christLink = str("christLink"),
+    questions = strings("questions"),
+    prayer = str("prayer"),
+    activity = str("activity"),
+)
 
 /** Небольшой разбор JSON без android.jar, чтобы тесты и телефон читали один файл. */
 private class JsonTok(private val s: String) {

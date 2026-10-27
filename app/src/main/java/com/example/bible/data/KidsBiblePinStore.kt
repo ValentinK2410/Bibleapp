@@ -15,6 +15,9 @@ internal object KidsBiblePinStore {
     private const val FAILS = "fails"
     private const val LOCKED = "locked_until"
     private const val READ = "read_ids"
+    private const val AGE = "default_age"
+    private const val MAY_SWITCH = "child_may_switch"
+    private const val CHOSEN = "chosen_age"
 
     private fun prefs(context: Context): SharedPreferences {
         val app = context.applicationContext
@@ -81,6 +84,30 @@ internal object KidsBiblePinStore {
     fun markRead(context: Context, storyId: String) {
         val next = readIds(context) + storyId
         prefs(context).edit().putString(READ, next.joinToString(",")).apply()
+    }
+
+    /** Пока родитель не выбрал иное, открывается средний текст. */
+    fun defaultAge(context: Context): KidsBibleAge =
+        KidsBibleAge.fromId(prefs(context).getString(AGE, KidsBibleAge.Y8_10.id))
+
+    fun setDefaultAge(context: Context, age: KidsBibleAge) {
+        prefs(context).edit().putString(AGE, age.id).apply()
+    }
+
+    /** Ребёнок может переключить возраст, пока родитель это не запретит. */
+    fun childMaySwitch(context: Context): Boolean = prefs(context).getBoolean(MAY_SWITCH, true)
+
+    fun setChildMaySwitch(context: Context, allowed: Boolean) {
+        prefs(context).edit().putBoolean(MAY_SWITCH, allowed).apply()
+    }
+
+    fun setChosenAge(context: Context, age: KidsBibleAge) {
+        prefs(context).edit().putString(CHOSEN, age.id).apply()
+    }
+
+    fun ageForChild(context: Context): KidsBibleAge {
+        if (!childMaySwitch(context)) return defaultAge(context)
+        return KidsBibleAge.fromId(prefs(context).getString(CHOSEN, null) ?: defaultAge(context).id)
     }
 
     /** Подсказка верна: код и отметки «прочитано» этого раздела стираются. Ребёнок настройки не видит. */

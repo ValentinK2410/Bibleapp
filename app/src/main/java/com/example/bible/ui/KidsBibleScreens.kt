@@ -26,7 +26,6 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.filled.Lock
 import androidx.compose.material.icons.filled.Pause
 import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material.icons.filled.Settings
@@ -41,6 +40,7 @@ import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Slider
+import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
@@ -73,8 +73,10 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.bible.data.CanonBookGroup
+import com.example.bible.data.KidsBibleAge
 import com.example.bible.data.KidsBibleBookRow
 import com.example.bible.data.KidsBibleCatalog
+import com.example.bible.data.KidsBibleNarration
 import com.example.bible.data.KidsBiblePin
 import com.example.bible.data.KidsBiblePinStore
 import com.example.bible.data.KidsBibleReading
@@ -95,12 +97,16 @@ internal fun KidsBibleShelfScreen(
     var pinSet by remember { mutableStateOf(KidsBiblePinStore.isSet(context)) }
     var settings by remember { mutableStateOf(false) }
     var askPin by remember { mutableStateOf(false) }
+    var age by remember { mutableStateOf(KidsBiblePinStore.ageForChild(context)) }
+    var maySwitch by remember { mutableStateOf(KidsBiblePinStore.childMaySwitch(context)) }
     DisposableEffect(lifecycleOwner) {
         val observer = LifecycleEventObserver { _, event ->
             if (event == Lifecycle.Event.ON_RESUME) {
                 val stillSet = KidsBiblePinStore.isSet(context)
                 pinSet = stillSet
                 if (!stillSet) settings = false
+                age = KidsBiblePinStore.ageForChild(context)
+                maySwitch = KidsBiblePinStore.childMaySwitch(context)
             }
         }
         lifecycleOwner.lifecycle.addObserver(observer)
@@ -144,7 +150,11 @@ internal fun KidsBibleShelfScreen(
             )
             settings -> KidsBibleParentSettings(
                 modifier = Modifier.padding(padding),
-                onClose = { settings = false },
+                onClose = {
+                    settings = false
+                    age = KidsBiblePinStore.ageForChild(context)
+                    maySwitch = KidsBiblePinStore.childMaySwitch(context)
+                },
                 onReset = {
                     settings = false
                     pinSet = false
@@ -153,8 +163,14 @@ internal fun KidsBibleShelfScreen(
             else -> KidsBibleShelf(
                 shelf = shelf,
                 read = read,
+                age = age,
+                maySwitch = maySwitch,
                 modifier = Modifier.padding(padding),
                 onOpenBook = onOpenBook,
+                onPickAge = { picked ->
+                    KidsBiblePinStore.setChosenAge(context, picked)
+                    age = picked
+                },
             )
         }
     }
@@ -266,8 +282,11 @@ private fun PinField(label: String, value: String, onChange: (String) -> Unit) {
 private fun KidsBibleShelf(
     shelf: List<KidsBibleBookRow>,
     read: Set<String>,
+    age: KidsBibleAge,
+    maySwitch: Boolean,
     modifier: Modifier,
     onOpenBook: (String) -> Unit,
+    onPickAge: (KidsBibleAge) -> Unit,
 ) {
     val groups = shelf.groupBy { it.book.group }
     LazyVerticalGrid(
@@ -278,13 +297,16 @@ private fun KidsBibleShelf(
         verticalArrangement = Arrangement.spacedBy(8.dp),
     ) {
         item(span = { GridItemSpan(maxLineSpan) }) {
-            Text(
-                "Книги по порядку, как в Библии. Где история уже есть — можно читать и слушать. Остальные помечены «скоро».",
-                fontFamily = FontFamily.SansSerif,
-                fontSize = 15.sp,
-                lineHeight = 21.sp,
-                color = BibleInk,
-            )
+            Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                Text(
+                    "Книги по порядку, как в Библии. Где история уже есть — можно читать и слушать. Остальные помечены «скоро».",
+                    fontFamily = FontFamily.SansSerif,
+                    fontSize = 15.sp,
+                    lineHeight = 21.sp,
+                    color = BibleInk,
+                )
+                KidsBibleAgeRow(age = age, enabled = maySwitch, onPick = onPickAge)
+            }
         }
         CanonBookGroup.entries.forEach { group ->
             val books = groups[group].orEmpty()
@@ -463,8 +485,9 @@ internal fun KidsBibleStoryScreen(storyId: String, onBack: () -> Unit) {
         }
         return
     }
-    var olderOpen by remember { mutableStateOf(false) }
-    var askOlder by remember { mutableStateOf(false) }
+    var age by remember { mutableStateOf(KidsBiblePinStore.ageForChild(context)) }
+    val maySwitch = remember { KidsBiblePinStore.childMaySwitch(context) }
+    val track = story.track(age)
     var activePart by remember { mutableStateOf<String?>(null) }
     var playing by remember { mutableStateOf(false) }
     var ready by remember { mutableStateOf(false) }
@@ -472,33 +495,51 @@ internal fun KidsBibleStoryScreen(storyId: String, onBack: () -> Unit) {
     var duration by remember { mutableIntStateOf(0) }
     var speed by remember { mutableFloatStateOf(1f) }
     var audioError by remember { mutableStateOf(false) }
-    val player = remember { MediaPlayer() }
+    var player by remember { mutableStateOf<MediaPlayer?>(null) }
 
-    DisposableEffect(story.id) {
+    DisposableEffect(story.id, age) {
+        val mp = MediaPlayer()
+        player = mp
+        ready = false
+        playing = false
+        position = 0
+        audioError = false
+        activePart = null
         try {
-            val afd = context.assets.openFd(story.audioAsset)
-            player.setDataSource(afd.fileDescriptor, afd.startOffset, afd.length)
+            val family = story.familyAudioAsset(age)
+            val hasFamily = runCatching {
+                context.assets.openFd(family).use { }
+                true
+            }.getOrDefault(false)
+            val asset = story.narrationAsset(age, if (hasFamily) KidsBibleNarration.Family else KidsBibleNarration.App)
+            val afd = context.assets.openFd(asset)
+            mp.setDataSource(afd.fileDescriptor, afd.startOffset, afd.length)
             afd.close()
-            player.setOnPreparedListener {
+            mp.setOnPreparedListener {
                 ready = true
                 duration = it.duration
+                runCatching { it.playbackParams = PlaybackParams().setSpeed(speed) }
             }
-            player.setOnCompletionListener {
+            mp.setOnCompletionListener {
                 playing = false
                 position = duration
                 KidsBiblePinStore.markRead(context, story.id)
             }
-            player.prepareAsync()
+            mp.prepareAsync()
         } catch (_: Exception) {
             audioError = true
         }
-        onDispose { player.release() }
+        onDispose {
+            player = null
+            mp.release()
+        }
     }
-    LaunchedEffect(playing, ready) {
-        while (playing && ready) {
-            position = player.currentPosition
-            duration = player.duration.coerceAtLeast(duration)
-            activePart = story.cues.firstOrNull { position in it.startMs until it.endMs }?.part
+    LaunchedEffect(playing, ready, player) {
+        val mp = player
+        while (playing && ready && mp != null) {
+            position = mp.currentPosition
+            duration = mp.duration.coerceAtLeast(duration)
+            activePart = track.cues.firstOrNull { position in it.startMs until it.endMs }?.part
             delay(200)
         }
     }
@@ -533,20 +574,22 @@ internal fun KidsBibleStoryScreen(storyId: String, onBack: () -> Unit) {
                 speed = speed,
                 error = audioError,
                 onToggle = {
-                    if (!ready) return@KidsBiblePlayerBar
+                    val mp = player
+                    if (!ready || mp == null) return@KidsBiblePlayerBar
                     if (playing) {
-                        player.pause()
+                        mp.pause()
                         playing = false
                     } else {
-                        player.start()
+                        mp.start()
                         playing = true
                     }
                 },
                 onSeek = { ms ->
-                    if (!ready) return@KidsBiblePlayerBar
-                    player.seekTo(ms)
+                    val mp = player
+                    if (!ready || mp == null) return@KidsBiblePlayerBar
+                    mp.seekTo(ms)
                     position = ms
-                    activePart = story.cues.firstOrNull { ms in it.startMs until it.endMs }?.part
+                    activePart = track.cues.firstOrNull { ms in it.startMs until it.endMs }?.part
                 },
                 onSpeed = {
                     speed = when (speed) {
@@ -555,7 +598,7 @@ internal fun KidsBibleStoryScreen(storyId: String, onBack: () -> Unit) {
                         else -> 0.9f
                     }
                     runCatching {
-                        if (ready) player.playbackParams = PlaybackParams().setSpeed(speed)
+                        if (ready) player?.playbackParams = PlaybackParams().setSpeed(speed)
                     }
                 },
             )
@@ -569,8 +612,16 @@ internal fun KidsBibleStoryScreen(storyId: String, onBack: () -> Unit) {
             verticalArrangement = Arrangement.spacedBy(12.dp),
         ) {
             StoryArt(story)
+            KidsBibleAgeRow(
+                age = age,
+                enabled = maySwitch,
+                onPick = { picked ->
+                    KidsBiblePinStore.setChosenAge(context, picked)
+                    age = picked
+                },
+            )
             Text(
-                "${story.refs} · ${story.kindLabel()} · около ${story.minutesLabel()}",
+                "${story.refs} · ${story.kindLabel()} · около ${minutesLabel(track.cues)}",
                 fontFamily = FontFamily.SansSerif,
                 fontSize = 13.sp,
                 lineHeight = 18.sp,
@@ -584,7 +635,7 @@ internal fun KidsBibleStoryScreen(storyId: String, onBack: () -> Unit) {
                 lineHeight = 32.sp,
                 color = BibleInk,
             )
-            story.paragraphs.forEachIndexed { index, paragraph ->
+            track.paragraphs.forEachIndexed { index, paragraph ->
                 val on = activePart == "p$index"
                 Text(
                     paragraph,
@@ -600,43 +651,18 @@ internal fun KidsBibleStoryScreen(storyId: String, onBack: () -> Unit) {
                 )
             }
             VerseCard(story.keyVerse, story.keyVerseRef, activePart == "verse")
-            Block("Что это значит?", story.meaning, activePart == "meaning")
-            Block("Как это связано с Иисусом", story.christLink, activePart == "christ")
-            OutlinedButton(onClick = { if (olderOpen) olderOpen = false else askOlder = true }) {
-                Icon(Icons.Filled.Lock, contentDescription = null, modifier = Modifier.size(16.dp))
-                Text(
-                    if (olderOpen) "Скрыть «Для старших»" else "Для старших",
-                    modifier = Modifier.padding(start = 8.dp),
-                    fontFamily = FontFamily.SansSerif,
-                    fontSize = 15.sp,
-                    lineHeight = 20.sp,
-                )
-            }
-            if (olderOpen) Block("Для старших", story.forOlder, false)
-            if (story.questions.isNotEmpty()) {
+            Block("Что это значит?", track.meaning, activePart == "meaning")
+            Block("Как это связано с Иисусом", track.christLink, activePart == "christ")
+            if (track.questions.isNotEmpty()) {
                 Text("Вопросы", fontFamily = FontFamily.SansSerif, fontWeight = FontWeight.Bold, fontSize = 16.sp, lineHeight = 22.sp, color = BibleInk)
-                story.questions.forEach { q ->
+                track.questions.forEach { q ->
                     Text("• $q", fontFamily = FontFamily.SansSerif, fontSize = 16.sp, lineHeight = 22.sp, color = BibleInk)
                 }
             }
-            Block("Молитва", story.prayer, activePart == "prayer")
-            Block("Дело", story.activity, false)
+            Block("Молитва", track.prayer, activePart == "prayer")
+            Block("Дело", track.activity, false)
             Spacer(Modifier.height(8.dp))
         }
-    }
-    if (askOlder) {
-        KidsBiblePinDialog(
-            title = "«Для старших» открывает родитель",
-            onDismiss = { askOlder = false },
-            onPassed = {
-                askOlder = false
-                olderOpen = true
-            },
-            onRecovered = {
-                askOlder = false
-                olderOpen = false
-            },
-        )
     }
 }
 
@@ -853,12 +879,40 @@ private fun KidsBibleParentSettings(modifier: Modifier, onClose: () -> Unit, onR
     ) {
         Text("Настройки родителя", fontFamily = FontFamily.SansSerif, fontWeight = FontWeight.ExtraBold, fontSize = 24.sp, lineHeight = 30.sp, color = BibleInk)
         Text(
-            "Пилотные истории, картинки и голос уже лежат в приложении. Ребёнок слушает их без сети. Следующие пакеты книг можно будет скачать отдельно, и только после этого кода.",
+            "Пилотные истории, картинки и голос уже лежат в приложении. Ребёнок слушает их без сети. Следующие пакеты книг можно будет скачать отдельно, и только после этого кода. Позже вместо голоса приложения можно будет положить запись мамы или папы — отдельная дорожка уже предусмотрена.",
             fontFamily = FontFamily.SansSerif,
             fontSize = 16.sp,
             lineHeight = 22.sp,
             color = BibleInk,
         )
+        var defaultAge by remember { mutableStateOf(KidsBiblePinStore.defaultAge(context)) }
+        var maySwitch by remember { mutableStateOf(KidsBiblePinStore.childMaySwitch(context)) }
+        Text("Возраст, с которого открывается история", fontFamily = FontFamily.SansSerif, fontWeight = FontWeight.Bold, fontSize = 16.sp, lineHeight = 22.sp, color = BibleInk)
+        KidsBibleAgeRow(
+            age = defaultAge,
+            enabled = true,
+            onPick = {
+                KidsBiblePinStore.setDefaultAge(context, it)
+                defaultAge = it
+            },
+        )
+        Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+            Text(
+                "Ребёнок может переключить возраст",
+                fontFamily = FontFamily.SansSerif,
+                fontSize = 16.sp,
+                lineHeight = 22.sp,
+                color = BibleInk,
+                modifier = Modifier.weight(1f),
+            )
+            Switch(
+                checked = maySwitch,
+                onCheckedChange = {
+                    KidsBiblePinStore.setChildMaySwitch(context, it)
+                    maySwitch = it
+                },
+            )
+        }
         Text(
             "Подсказка для восстановления: $hint",
             fontFamily = FontFamily.SansSerif,
@@ -897,8 +951,36 @@ private fun KidsBibleParentSettings(modifier: Modifier, onClose: () -> Unit, onR
 
 private fun KidsBibleReading.kindLabel(): String = if (isOverview) "обзор" else "история"
 
-private fun KidsBibleReading.minutesLabel(): String {
-    val sec = cues.lastOrNull()?.endMs?.div(1000) ?: readingSec
+private fun minutesLabel(cues: List<com.example.bible.data.KidsBibleCue>): String {
+    val sec = cues.lastOrNull()?.endMs?.div(1000) ?: 60
     val min = (sec / 60).coerceAtLeast(1)
     return "$min мин"
+}
+
+@Composable
+private fun KidsBibleAgeRow(age: KidsBibleAge, enabled: Boolean, onPick: (KidsBibleAge) -> Unit) {
+    if (!enabled) {
+        Text(
+            "Возраст ${age.label}. Сменить его может родитель.",
+            fontFamily = FontFamily.SansSerif,
+            fontSize = 14.sp,
+            lineHeight = 18.sp,
+            color = Color(0xFF7C5A40),
+        )
+        return
+    }
+    Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+        KidsBibleAge.entries.forEach { option ->
+            val selected = option == age
+            if (selected) {
+                Button(onClick = { onPick(option) }) {
+                    Text(option.label, fontFamily = FontFamily.SansSerif, fontSize = 14.sp, lineHeight = 18.sp)
+                }
+            } else {
+                OutlinedButton(onClick = { onPick(option) }) {
+                    Text(option.label, fontFamily = FontFamily.SansSerif, fontSize = 14.sp, lineHeight = 18.sp)
+                }
+            }
+        }
+    }
 }
