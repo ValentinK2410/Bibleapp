@@ -427,6 +427,14 @@ internal fun kidsHubDefaultRows(): List<KidsHubRow> = KIDS_HUB_DEFAULT_ROWS
 
 private val KIDS_HUB_DEFAULT_ROWS: List<KidsHubRow> = listOf(
     KidsHubRow(
+        title = "Детская Библия",
+        subtitle = "66 книг по порядку, с картинками и голосом",
+        route = "kids_bible",
+        icon = Icons.Filled.AutoStories,
+        cardStyle = KidsHubCardVisual.Audios,
+        imageRes = R.drawable.kids_hub_bible,
+    ),
+    KidsHubRow(
         title = "Алфавит",
         subtitle = "Буквы, слоги и примеры слов",
         route = "azbuka",

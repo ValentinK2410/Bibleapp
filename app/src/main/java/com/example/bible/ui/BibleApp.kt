@@ -1277,6 +1277,33 @@ private fun BibleNavHost(
                 onOpenStory = { id -> navController.navigate("kids_story/$id") },
             )
         }
+        composable("kids_bible") {
+            KidsBibleShelfScreen(
+                onBack = { navController.navigateUp() },
+                onOpenBook = { bookId ->
+                    navController.navigate("kids_bible_book/$bookId")
+                },
+            )
+        }
+        composable(
+            route = "kids_bible_book/{bookId}",
+            arguments = listOf(navArgument("bookId") { type = NavType.StringType }),
+        ) { entry ->
+            KidsBibleBookScreen(
+                bookId = entry.arguments?.getString("bookId").orEmpty(),
+                onBack = { navController.navigateUp() },
+                onOpenStory = { id -> navController.navigate("kids_bible_story/$id") },
+            )
+        }
+        composable(
+            route = "kids_bible_story/{storyId}",
+            arguments = listOf(navArgument("storyId") { type = NavType.StringType }),
+        ) { entry ->
+            KidsBibleStoryScreen(
+                storyId = entry.arguments?.getString("storyId").orEmpty(),
+                onBack = { navController.navigateUp() },
+            )
+        }
         composable("kids_story/{id}") { entry ->
             val storyId = entry.arguments?.getString("id").orEmpty()
             KidsStoryScreen(

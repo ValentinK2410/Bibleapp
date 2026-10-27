@@ -31,8 +31,8 @@ android {
         applicationId = "com.example.bible.sqlite"
         minSdk = 30
         targetSdk = 36
-        versionCode = 13
-        versionName = "2.3"
+        versionCode = 14
+        versionName = "2.4"
 
         val mapkitKey = localProperties.getProperty("MAPKIT_API_KEY", "")
         buildConfigField("String", "MAPKIT_API_KEY", "\"${mapkitKey.replace("\"", "\\\"")}\"")
@@ -80,6 +80,7 @@ android {
     // MediaPipe / ML: .task в assets должны попадать в APK без сжатия — иначе openFd и загрузка модели падают.
     androidResources {
         noCompress += "task"
+        noCompress += "m4a"
     }
 }
 
