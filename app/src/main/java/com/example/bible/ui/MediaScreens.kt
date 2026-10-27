@@ -660,6 +660,7 @@ fun MediaHomeScreen(
                                 Modifier
                                     .weight(1f)
                                     .fillMaxHeight(),
+                                landscape = landscape,
                             )
                         }
                         repeat(tileColumns - row.size) {
@@ -731,67 +732,109 @@ private fun MediaHomeStatRow(
 }
 
 @Composable
-private fun MediaHubTileCard(tile: MediaHubTile, modifier: Modifier) {
-    Column(
-        modifier
-            .clip(RoundedCornerShape(22.dp))
-            .background(Brush.linearGradient(tile.gradient))
-            .clickable(onClick = tile.onClick)
-            .padding(8.dp),
-    ) {
-        Box(
-            Modifier
-                .fillMaxWidth()
-                .weight(1f)
-                .clip(RoundedCornerShape(16.dp))
-                .background(Color.White.copy(alpha = 0.16f)),
+private fun MediaHubTileCard(tile: MediaHubTile, modifier: Modifier, landscape: Boolean) {
+    if (landscape) {
+        Row(
+            modifier
+                .clip(RoundedCornerShape(18.dp))
+                .background(Brush.linearGradient(tile.gradient))
+                .clickable(onClick = tile.onClick)
+                .padding(8.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(8.dp),
         ) {
-            MediaHubArt(
-                sectionId = tile.sectionId,
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(8.dp),
-            )
-            if (tile.count != null) {
+            MediaHubTileArt(tile, Modifier.weight(1f).fillMaxHeight())
+            Column(
+                Modifier.weight(2f).fillMaxHeight(),
+                verticalArrangement = Arrangement.Center,
+            ) {
                 Text(
-                    "${tile.count}",
-                    color = tile.gradient.first(),
+                    tile.title,
+                    color = Color.White,
                     fontFamily = FontFamily.SansSerif,
-                    fontSize = 12.sp,
-                    lineHeight = 14.sp,
-                    fontWeight = FontWeight.Black,
-                    maxLines = 1,
-                    modifier = Modifier
-                        .align(Alignment.TopEnd)
-                        .padding(6.dp)
-                        .clip(RoundedCornerShape(999.dp))
-                        .background(Color.White)
-                        .padding(horizontal = 7.dp, vertical = 2.dp),
+                    fontSize = 14.sp,
+                    lineHeight = 17.sp,
+                    fontWeight = FontWeight.ExtraBold,
+                    maxLines = 2,
+                    overflow = TextOverflow.Ellipsis,
+                )
+                Text(
+                    tile.subtitle,
+                    color = Color.White.copy(alpha = 0.88f),
+                    fontFamily = FontFamily.SansSerif,
+                    fontSize = 11.sp,
+                    lineHeight = 13.sp,
+                    maxLines = 3,
+                    overflow = TextOverflow.Ellipsis,
+                    modifier = Modifier.padding(top = 2.dp),
                 )
             }
         }
-        Text(
-            tile.title,
-            color = Color.White,
-            fontFamily = FontFamily.SansSerif,
-            fontSize = 15.sp,
-            lineHeight = 18.sp,
-            fontWeight = FontWeight.ExtraBold,
-            maxLines = 1,
-            overflow = TextOverflow.Ellipsis,
-            modifier = Modifier.padding(start = 4.dp, top = 8.dp, end = 4.dp),
+    } else {
+        Column(
+            modifier
+                .clip(RoundedCornerShape(22.dp))
+                .background(Brush.linearGradient(tile.gradient))
+                .clickable(onClick = tile.onClick)
+                .padding(8.dp),
+        ) {
+            MediaHubTileArt(tile, Modifier.fillMaxWidth().weight(1f))
+            Text(
+                tile.title,
+                color = Color.White,
+                fontFamily = FontFamily.SansSerif,
+                fontSize = 15.sp,
+                lineHeight = 18.sp,
+                fontWeight = FontWeight.ExtraBold,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
+                modifier = Modifier.padding(start = 4.dp, top = 8.dp, end = 4.dp),
+            )
+            Text(
+                tile.subtitle,
+                color = Color.White.copy(alpha = 0.88f),
+                fontFamily = FontFamily.SansSerif,
+                fontSize = 11.sp,
+                lineHeight = 13.sp,
+                minLines = 2,
+                maxLines = 2,
+                overflow = TextOverflow.Ellipsis,
+                modifier = Modifier.padding(start = 4.dp, top = 2.dp, end = 4.dp, bottom = 4.dp),
+            )
+        }
+    }
+}
+
+@Composable
+private fun MediaHubTileArt(tile: MediaHubTile, modifier: Modifier) {
+    Box(
+        modifier
+            .clip(RoundedCornerShape(14.dp))
+            .background(Color.White.copy(alpha = 0.16f)),
+    ) {
+        MediaHubArt(
+            sectionId = tile.sectionId,
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(6.dp),
         )
-        Text(
-            tile.subtitle,
-            color = Color.White.copy(alpha = 0.88f),
-            fontFamily = FontFamily.SansSerif,
-            fontSize = 11.sp,
-            lineHeight = 13.sp,
-            minLines = 2,
-            maxLines = 2,
-            overflow = TextOverflow.Ellipsis,
-            modifier = Modifier.padding(start = 4.dp, top = 2.dp, end = 4.dp, bottom = 4.dp),
-        )
+        if (tile.count != null) {
+            Text(
+                "${tile.count}",
+                color = tile.gradient.first(),
+                fontFamily = FontFamily.SansSerif,
+                fontSize = 12.sp,
+                lineHeight = 14.sp,
+                fontWeight = FontWeight.Black,
+                maxLines = 1,
+                modifier = Modifier
+                    .align(Alignment.TopEnd)
+                    .padding(4.dp)
+                    .clip(RoundedCornerShape(999.dp))
+                    .background(Color.White)
+                    .padding(horizontal = 7.dp, vertical = 2.dp),
+            )
+        }
     }
 }
 
