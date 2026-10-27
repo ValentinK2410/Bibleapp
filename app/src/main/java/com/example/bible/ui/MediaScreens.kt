@@ -24,6 +24,7 @@ import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.aspectRatio
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -537,27 +538,27 @@ fun MediaHomeScreen(
         val audioCount = remember(audios) { audios.count { MediaCatalogPaths.isLikelyAudioFileName(it.fileName) } }
         val tiles = sectionOrder.mapNotNull { id ->
             when (id) {
-                MediaHomeSectionOrder.MICROBLOG -> MediaHubTile(blogTitle, "Записи, фото, можно закрепить и отправить", "📝", listOf(Color(0xFFF97316), Color(0xFFEC4899)), null, onOpenMicroblog)
-                MediaHomeSectionOrder.PICTURES -> MediaHubTile("Картинки", "Галерея, камера и поиск в интернете", "🖼️", listOf(Color(0xFF06B6D4), Color(0xFF3B82F6)), pictureCount, onOpenPictures)
-                MediaHomeSectionOrder.VIDEOS -> MediaHubTile("Видео", "Ролики из галереи, с камеры и по ссылке", "🎬", listOf(Color(0xFFEF4444), Color(0xFFF59E0B)), videoCount, onOpenVideos)
-                MediaHomeSectionOrder.AUDIOS -> MediaHubTile("Аудио", "Треки, запись с микрофона и ссылки", "🎧", listOf(Color(0xFF8B5CF6), Color(0xFF6366F1)), audioCount, onOpenAudios)
-                MediaHomeSectionOrder.PESNOPENIE -> MediaHubTile("Песнопение", "Песни с аккордами и свои тексты", "🎶", listOf(Color(0xFFEC4899), Color(0xFF8B5CF6)), songs.size, onOpenPesnopenie)
-                MediaHomeSectionOrder.MUSICIAN -> MediaHubTile("Для музыканта", "Тюнер, метроном, ноты и студия", "🎸", listOf(Color(0xFF10B981), Color(0xFF14B8A6)), null, onOpenMusician)
+                MediaHomeSectionOrder.MICROBLOG -> MediaHubTile(MediaHomeSectionOrder.MICROBLOG, blogTitle, "Записи, фото, можно закрепить и отправить", listOf(Color(0xFFF97316), Color(0xFFEC4899)), null, onOpenMicroblog)
+                MediaHomeSectionOrder.PICTURES -> MediaHubTile(MediaHomeSectionOrder.PICTURES, "Картинки", "Галерея, камера и поиск в интернете", listOf(Color(0xFF06B6D4), Color(0xFF3B82F6)), pictureCount, onOpenPictures)
+                MediaHomeSectionOrder.VIDEOS -> MediaHubTile(MediaHomeSectionOrder.VIDEOS, "Видео", "Ролики из галереи, с камеры и по ссылке", listOf(Color(0xFFEF4444), Color(0xFFF59E0B)), videoCount, onOpenVideos)
+                MediaHomeSectionOrder.AUDIOS -> MediaHubTile(MediaHomeSectionOrder.AUDIOS, "Аудио", "Треки, запись с микрофона и ссылки", listOf(Color(0xFF8B5CF6), Color(0xFF6366F1)), audioCount, onOpenAudios)
+                MediaHomeSectionOrder.PESNOPENIE -> MediaHubTile(MediaHomeSectionOrder.PESNOPENIE, "Песнопение", "Песни с аккордами и свои тексты", listOf(Color(0xFFEC4899), Color(0xFF8B5CF6)), songs.size, onOpenPesnopenie)
+                MediaHomeSectionOrder.MUSICIAN -> MediaHubTile(MediaHomeSectionOrder.MUSICIAN, "Для музыканта", "Тюнер, метроном, ноты и студия", listOf(Color(0xFF10B981), Color(0xFF14B8A6)), null, onOpenMusician)
                 else -> null
             }
         }
         val landscape = LocalConfiguration.current.orientation == Configuration.ORIENTATION_LANDSCAPE
         val tileColumns = if (landscape) 3 else 2
+        val tileGap = if (landscape) 8.dp else 10.dp
         Column(
             Modifier
                 .padding(padding)
                 .fillMaxSize()
-                .verticalScroll(rememberScrollState())
                 .padding(
-                    horizontal = if (landscape) 10.dp else 14.dp,
+                    horizontal = if (landscape) 10.dp else 12.dp,
                     vertical = if (landscape) 4.dp else 6.dp,
                 ),
-            verticalArrangement = Arrangement.spacedBy(if (landscape) 8.dp else 12.dp),
+            verticalArrangement = Arrangement.spacedBy(tileGap),
         ) {
             Column(
                 Modifier
@@ -640,26 +641,37 @@ fun MediaHomeScreen(
                     )
                 }
             }
-            tiles.chunked(tileColumns).forEach { row ->
-                Row(
-                    Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.spacedBy(if (landscape) 8.dp else 12.dp),
-                ) {
-                    row.forEach { tile ->
-                        MediaHubTileCard(tile, Modifier.weight(1f), compact = landscape)
-                    }
-                    repeat(tileColumns - row.size) {
-                        Spacer(Modifier.weight(1f))
+            Column(
+                Modifier
+                    .weight(1f)
+                    .fillMaxWidth(),
+                verticalArrangement = Arrangement.spacedBy(tileGap),
+            ) {
+                tiles.chunked(tileColumns).forEach { row ->
+                    Row(
+                        Modifier
+                            .weight(1f)
+                            .fillMaxWidth(),
+                        horizontalArrangement = Arrangement.spacedBy(tileGap),
+                    ) {
+                        row.forEach { tile ->
+                            MediaHubTileCard(
+                                tile,
+                                Modifier
+                                    .weight(1f)
+                                    .fillMaxHeight(),
+                            )
+                        }
+                        repeat(tileColumns - row.size) {
+                            Spacer(
+                                Modifier
+                                    .weight(1f)
+                                    .fillMaxHeight(),
+                            )
+                        }
                     }
                 }
             }
-            Text(
-                "Порядок разделов можно поменять: ⋮ → Настройка.",
-                style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                modifier = Modifier.padding(horizontal = 4.dp),
-            )
-            Spacer(Modifier.height(8.dp))
         }
     }
 
@@ -676,9 +688,9 @@ fun MediaHomeScreen(
 }
 
 private class MediaHubTile(
+    val sectionId: String,
     val title: String,
     val subtitle: String,
-    val emoji: String,
     val gradient: List<Color>,
     val count: Int?,
     val onClick: () -> Unit,
@@ -719,70 +731,66 @@ private fun MediaHomeStatRow(
 }
 
 @Composable
-private fun MediaHubTileCard(tile: MediaHubTile, modifier: Modifier, compact: Boolean = false) {
+private fun MediaHubTileCard(tile: MediaHubTile, modifier: Modifier) {
     Column(
         modifier
-            .fillMaxWidth()
-            .clip(RoundedCornerShape(if (compact) 16.dp else 26.dp))
+            .clip(RoundedCornerShape(22.dp))
             .background(Brush.linearGradient(tile.gradient))
             .clickable(onClick = tile.onClick)
-            .padding(if (compact) 8.dp else 14.dp),
-        verticalArrangement = Arrangement.spacedBy(if (compact) 4.dp else 8.dp),
+            .padding(8.dp),
     ) {
         Box(
             Modifier
                 .fillMaxWidth()
-                .then(if (compact) Modifier.height(44.dp) else Modifier.aspectRatio(1.55f))
-                .clip(RoundedCornerShape(if (compact) 12.dp else 20.dp))
-                .background(Color.White.copy(alpha = 0.18f)),
-            contentAlignment = Alignment.Center,
+                .weight(1f)
+                .clip(RoundedCornerShape(16.dp))
+                .background(Color.White.copy(alpha = 0.16f)),
         ) {
-            Text(
-                tile.emoji,
-                fontSize = if (compact) 22.sp else 40.sp,
-                lineHeight = if (compact) 26.sp else 46.sp,
-                maxLines = 1,
-            )
-        }
-        Row(
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(6.dp),
-        ) {
-            Text(
-                tile.title,
-                color = Color.White,
-                fontFamily = FontFamily.SansSerif,
-                fontSize = if (compact) 14.sp else 16.sp,
-                lineHeight = if (compact) 17.sp else 20.sp,
-                fontWeight = FontWeight.ExtraBold,
-                maxLines = if (compact) 1 else 2,
-                overflow = TextOverflow.Ellipsis,
-                modifier = Modifier.weight(1f),
+            MediaHubArt(
+                sectionId = tile.sectionId,
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(8.dp),
             )
             if (tile.count != null) {
                 Text(
                     "${tile.count}",
                     color = tile.gradient.first(),
                     fontFamily = FontFamily.SansSerif,
-                    fontSize = 13.sp,
-                    lineHeight = 16.sp,
+                    fontSize = 12.sp,
+                    lineHeight = 14.sp,
                     fontWeight = FontWeight.Black,
                     maxLines = 1,
                     modifier = Modifier
+                        .align(Alignment.TopEnd)
+                        .padding(6.dp)
                         .clip(RoundedCornerShape(999.dp))
                         .background(Color.White)
-                        .padding(horizontal = 8.dp, vertical = 2.dp),
+                        .padding(horizontal = 7.dp, vertical = 2.dp),
                 )
             }
         }
         Text(
-            tile.subtitle,
-            color = Color.White.copy(alpha = 0.85f),
+            tile.title,
+            color = Color.White,
             fontFamily = FontFamily.SansSerif,
-            fontSize = if (compact) 11.sp else 12.sp,
-            lineHeight = if (compact) 13.sp else 16.sp,
-            maxLines = if (compact) 2 else 3,
+            fontSize = 15.sp,
+            lineHeight = 18.sp,
+            fontWeight = FontWeight.ExtraBold,
+            maxLines = 1,
             overflow = TextOverflow.Ellipsis,
+            modifier = Modifier.padding(start = 4.dp, top = 8.dp, end = 4.dp),
+        )
+        Text(
+            tile.subtitle,
+            color = Color.White.copy(alpha = 0.88f),
+            fontFamily = FontFamily.SansSerif,
+            fontSize = 11.sp,
+            lineHeight = 13.sp,
+            minLines = 2,
+            maxLines = 2,
+            overflow = TextOverflow.Ellipsis,
+            modifier = Modifier.padding(start = 4.dp, top = 2.dp, end = 4.dp, bottom = 4.dp),
         )
     }
 }
