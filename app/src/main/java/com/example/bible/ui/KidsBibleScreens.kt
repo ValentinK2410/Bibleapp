@@ -660,7 +660,7 @@ internal fun KidsBibleStoryScreen(storyId: String, onBack: () -> Unit) {
                 }
             }
             Block("Молитва", track.prayer, activePart == "prayer")
-            Block("Дело", track.activity, false)
+            Block("Что мы можем сделать", track.activity, activePart == "do")
             Spacer(Modifier.height(8.dp))
         }
     }
