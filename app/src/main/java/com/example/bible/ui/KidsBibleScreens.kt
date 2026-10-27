@@ -518,7 +518,8 @@ internal fun KidsBibleStoryScreen(storyId: String, onBack: () -> Unit) {
             mp.setOnPreparedListener {
                 ready = true
                 duration = it.duration
-                runCatching { it.playbackParams = PlaybackParams().setSpeed(speed) }
+                // Скорость здесь не задаём: setPlaybackParams у готового плеера сам запускает звук,
+                // а флаг playing остаётся false — шкала стоит. Скорость применяется после start().
             }
             mp.setOnCompletionListener {
                 playing = false
@@ -534,13 +535,17 @@ internal fun KidsBibleStoryScreen(storyId: String, onBack: () -> Unit) {
             mp.release()
         }
     }
-    LaunchedEffect(playing, ready, player) {
+    LaunchedEffect(ready, player) {
         val mp = player
-        while (playing && ready && mp != null) {
-            position = mp.currentPosition
-            duration = mp.duration.coerceAtLeast(duration)
+        while (ready && mp != null && player === mp) {
+            val ok = runCatching {
+                playing = mp.isPlaying
+                position = mp.currentPosition
+                duration = mp.duration.coerceAtLeast(duration)
+            }.isSuccess
+            if (!ok) break
             activePart = track.cues.firstOrNull { position in it.startMs until it.endMs }?.part
-            delay(200)
+            delay(if (playing) 100 else 250)
         }
     }
 
@@ -581,6 +586,7 @@ internal fun KidsBibleStoryScreen(storyId: String, onBack: () -> Unit) {
                         playing = false
                     } else {
                         mp.start()
+                        runCatching { mp.playbackParams = mp.playbackParams.setSpeed(speed) }
                         playing = true
                     }
                 },
@@ -591,14 +597,12 @@ internal fun KidsBibleStoryScreen(storyId: String, onBack: () -> Unit) {
                     position = ms
                     activePart = track.cues.firstOrNull { ms in it.startMs until it.endMs }?.part
                 },
-                onSpeed = {
-                    speed = when (speed) {
-                        0.9f -> 1f
-                        1f -> 1.15f
-                        else -> 0.9f
-                    }
-                    runCatching {
-                        if (ready) player?.playbackParams = PlaybackParams().setSpeed(speed)
+                onSpeed = { picked ->
+                    speed = picked
+                    val mp = player
+                    // На паузе только запоминаем: setPlaybackParams запустил бы звук.
+                    if (ready && mp != null) runCatching {
+                        if (mp.isPlaying) mp.playbackParams = mp.playbackParams.setSpeed(picked)
                     }
                 },
             )
@@ -732,6 +736,13 @@ private fun Block(title: String, body: String, active: Boolean) {
     }
 }
 
+internal val KIDS_BIBLE_SPEEDS = listOf(0.5f, 0.75f, 1f, 1.25f, 1.5f, 1.75f, 2f)
+
+internal fun kidsSpeedLabel(speed: Float): String {
+    val text = if (speed % 1f == 0f) speed.toInt().toString() else speed.toString().trimEnd('0')
+    return text.replace('.', ',') + "×"
+}
+
 @Composable
 private fun KidsBiblePlayerBar(
     playing: Boolean,
@@ -742,8 +753,9 @@ private fun KidsBiblePlayerBar(
     error: Boolean,
     onToggle: () -> Unit,
     onSeek: (Int) -> Unit,
-    onSpeed: () -> Unit,
+    onSpeed: (Float) -> Unit,
 ) {
+    var speedMenu by remember { mutableStateOf(false) }
     Column(Modifier.fillMaxWidth().background(BibleCard).padding(horizontal = 12.dp, vertical = 8.dp)) {
         if (error) {
             Text(
@@ -769,8 +781,26 @@ private fun KidsBiblePlayerBar(
                 enabled = ready,
                 modifier = Modifier.weight(1f),
             )
-            TextButton(onClick = onSpeed, enabled = ready) {
-                Text("${speed}×", fontFamily = FontFamily.SansSerif, fontSize = 14.sp, lineHeight = 18.sp)
+            Box {
+                TextButton(onClick = { speedMenu = true }, enabled = ready) {
+                    Text(kidsSpeedLabel(speed), fontFamily = FontFamily.SansSerif, fontSize = 14.sp, lineHeight = 18.sp)
+                }
+                androidx.compose.material3.DropdownMenu(expanded = speedMenu, onDismissRequest = { speedMenu = false }) {
+                    KIDS_BIBLE_SPEEDS.forEach { s ->
+                        androidx.compose.material3.DropdownMenuItem(
+                            text = {
+                                Text(
+                                    kidsSpeedLabel(s),
+                                    fontFamily = FontFamily.SansSerif,
+                                    fontWeight = if (s == speed) FontWeight.Bold else FontWeight.Normal,
+                                    fontSize = 15.sp,
+                                    lineHeight = 20.sp,
+                                )
+                            },
+                            onClick = { speedMenu = false; onSpeed(s) },
+                        )
+                    }
+                }
             }
         }
     }
