@@ -849,7 +849,11 @@ fun UserMediaPlaylistDetailScreen(
                                         },
                                         onRemoveFromPlaylist = {
                                             viewModel.removeItemFromUserMediaPlaylist(playlistId, mediaId)
-                                            Toast.makeText(context, "Убрано из плейлиста", Toast.LENGTH_SHORT).show()
+                                            Toast.makeText(context, "Удалено из плейлиста", Toast.LENGTH_SHORT).show()
+                                        },
+                                        onDeleteFile = {
+                                            viewModel.deleteBibleVideo(vid)
+                                            Toast.makeText(context, "Файл удалён", Toast.LENGTH_SHORT).show()
                                         },
                                     )
                                 }
@@ -965,7 +969,11 @@ fun UserMediaPlaylistDetailScreen(
                                         },
                                         onRemoveFromPlaylist = {
                                             viewModel.removeItemFromUserMediaPlaylist(playlistId, mediaId)
-                                            Toast.makeText(context, "Убрано из плейлиста", Toast.LENGTH_SHORT).show()
+                                            Toast.makeText(context, "Удалено из плейлиста", Toast.LENGTH_SHORT).show()
+                                        },
+                                        onDeleteFile = {
+                                            viewModel.deleteBibleAudio(a)
+                                            Toast.makeText(context, "Файл удалён", Toast.LENGTH_SHORT).show()
                                         },
                                     )
                                 }
@@ -1220,6 +1228,7 @@ private fun PlaylistEntryOverflowMenu(
     onToggleWatched: () -> Unit,
     onShare: () -> Unit,
     onRemove: () -> Unit,
+    onDeleteFile: () -> Unit,
     onPlayExternal: (() -> Unit)? = null,
     onDownload: (() -> Unit)? = null,
 ) {
@@ -1287,13 +1296,23 @@ private fun PlaylistEntryOverflowMenu(
                 },
             )
             DropdownMenuItem(
-                text = { Text("Убрать из плейлиста") },
+                text = { Text("Удалить из плейлиста") },
                 onClick = {
                     expanded = false
                     onRemove()
                 },
                 leadingIcon = {
                     Icon(Icons.Filled.Remove, contentDescription = null, tint = MaterialTheme.colorScheme.error)
+                },
+            )
+            DropdownMenuItem(
+                text = { Text("Удалить файл") },
+                onClick = {
+                    expanded = false
+                    onDeleteFile()
+                },
+                leadingIcon = {
+                    Icon(Icons.Filled.Delete, contentDescription = null, tint = MaterialTheme.colorScheme.error)
                 },
             )
         }
@@ -1379,6 +1398,7 @@ private fun VideoPlaylistEntry(
     onPlay: () -> Unit,
     onShare: () -> Unit,
     onRemoveFromPlaylist: () -> Unit,
+    onDeleteFile: () -> Unit,
     onDownload: (() -> Unit)? = null,
 ) {
     Row(
@@ -1436,6 +1456,7 @@ private fun VideoPlaylistEntry(
             onToggleWatched = onToggleWatched,
             onShare = onShare,
             onRemove = onRemoveFromPlaylist,
+            onDeleteFile = onDeleteFile,
             onDownload = onDownload,
         )
     }
@@ -1454,6 +1475,7 @@ private fun AudioPlaylistEntry(
     onPlayExternally: () -> Unit,
     onShare: () -> Unit,
     onRemoveFromPlaylist: () -> Unit,
+    onDeleteFile: () -> Unit,
     onDownload: (() -> Unit)? = null,
 ) {
     Row(
@@ -1510,6 +1532,7 @@ private fun AudioPlaylistEntry(
             onToggleWatched = onToggleWatched,
             onShare = onShare,
             onRemove = onRemoveFromPlaylist,
+            onDeleteFile = onDeleteFile,
             onPlayExternal = onPlayExternally,
             onDownload = onDownload,
         )

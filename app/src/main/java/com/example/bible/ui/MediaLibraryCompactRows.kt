@@ -22,10 +22,13 @@ import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material.icons.filled.MusicNote
 import androidx.compose.material.icons.filled.PlayArrow
+import androidx.compose.material.icons.filled.Remove
 import androidx.compose.material.icons.filled.Share
 import androidx.compose.material.icons.outlined.CheckCircle
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.FilledTonalIconButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -49,6 +52,40 @@ import com.example.bible.data.UserMediaKind
 import com.example.bible.data.UserMediaPlaybackProgress
 import com.example.bible.data.completedLabelRu
 import java.io.File
+
+@Composable
+internal fun RemoveFromPlaylistsDialog(
+    playlists: List<Pair<String, String>>,
+    onPick: (playlistId: String) -> Unit,
+    onAll: () -> Unit,
+    onDismiss: () -> Unit,
+) {
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = { Text("Удалить из плейлиста") },
+        text = {
+            Column {
+                Text(
+                    "Файл останется в медиатеке.",
+                    style = MaterialTheme.typography.bodyMedium,
+                )
+                playlists.forEach { (id, name) ->
+                    TextButton(onClick = { onPick(id) }) {
+                        Text(name)
+                    }
+                }
+            }
+        },
+        confirmButton = {
+            if (playlists.size > 1) {
+                TextButton(onClick = onAll) { Text("Из всех") }
+            }
+        },
+        dismissButton = {
+            TextButton(onClick = onDismiss) { Text("Отмена") }
+        },
+    )
+}
 
 /** Чтобы FAB «+» не перекрывал последний пункт, даже если список не крутится. */
 internal val MediaLibraryFabListBottomPadding = 88.dp
@@ -97,6 +134,7 @@ internal fun LibraryCompactVideoRow(
     onToggleWatched: () -> Unit,
     onAddToPlaylist: () -> Unit,
     onShare: () -> Unit,
+    onRemoveFromPlaylists: () -> Unit,
     onDelete: () -> Unit,
 ) {
     Row(
@@ -154,6 +192,7 @@ internal fun LibraryCompactVideoRow(
             onEdit = onEdit,
             onAddToPlaylist = onAddToPlaylist,
             onShare = onShare,
+            onRemoveFromPlaylists = onRemoveFromPlaylists,
             onDelete = onDelete,
         )
     }
@@ -172,6 +211,7 @@ internal fun LibraryCompactAudioRow(
     onToggleWatched: () -> Unit,
     onAddToPlaylist: () -> Unit,
     onShare: () -> Unit,
+    onRemoveFromPlaylists: () -> Unit,
     onDelete: () -> Unit,
 ) {
     Row(
@@ -228,6 +268,7 @@ internal fun LibraryCompactAudioRow(
             onEdit = onEdit,
             onAddToPlaylist = onAddToPlaylist,
             onShare = onShare,
+            onRemoveFromPlaylists = onRemoveFromPlaylists,
             onDelete = onDelete,
             onPlayExternal = onPlayExternally,
         )
@@ -307,6 +348,7 @@ private fun LibraryCompactOverflowMenu(
     onEdit: () -> Unit,
     onAddToPlaylist: () -> Unit,
     onShare: () -> Unit,
+    onRemoveFromPlaylists: () -> Unit,
     onDelete: () -> Unit,
     onPlayExternal: (() -> Unit)? = null,
 ) {
@@ -384,7 +426,21 @@ private fun LibraryCompactOverflowMenu(
                 leadingIcon = { Icon(Icons.Filled.Share, contentDescription = null) },
             )
             DropdownMenuItem(
-                text = { Text("Удалить") },
+                text = { Text("Удалить из плейлиста") },
+                onClick = {
+                    expanded = false
+                    onRemoveFromPlaylists()
+                },
+                leadingIcon = {
+                    Icon(
+                        Icons.Filled.Remove,
+                        contentDescription = null,
+                        tint = MaterialTheme.colorScheme.error,
+                    )
+                },
+            )
+            DropdownMenuItem(
+                text = { Text("Удалить файл") },
                 onClick = {
                     expanded = false
                     onDelete()

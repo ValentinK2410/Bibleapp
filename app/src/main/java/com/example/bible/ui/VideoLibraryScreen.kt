@@ -132,8 +132,22 @@ fun VideoLibraryScreen(
     /** Очередь воспроизведения видеобиблиотеки: только записи с существующим файлом, порядок как в списке. */
     var libraryVideoTracksAndStartIndex by remember { mutableStateOf<Pair<List<Pair<BibleUserVideo, File>>, Int>?>(null) }
     var playlistTargetVideo by remember { mutableStateOf<BibleUserVideo?>(null) }
+    var playlistRemovalVideo by remember { mutableStateOf<BibleUserVideo?>(null) }
 
     val dateFmt = remember { SimpleDateFormat("dd.MM.yyyy HH:mm", Locale.getDefault()) }
+
+    fun removeVideoFromPlaylists(item: BibleUserVideo) {
+        val lists = mediaPlaylists.filter { it.kind == UserMediaPlaylistKind.VIDEO && item.id in it.itemIds }
+        when {
+            lists.isEmpty() ->
+                Toast.makeText(context, "Этого файла нет в плейлистах", Toast.LENGTH_SHORT).show()
+            lists.size == 1 -> {
+                viewModel.removeItemFromUserMediaPlaylist(lists[0].id, item.id)
+                Toast.makeText(context, "Удалено из плейлиста «${lists[0].name}»", Toast.LENGTH_SHORT).show()
+            }
+            else -> playlistRemovalVideo = item
+        }
+    }
 
     LaunchedEffect(Unit) {
         viewModel.syncLegacyDownloadsFromPublicFolder()
@@ -446,9 +460,12 @@ fun VideoLibraryScreen(
                                     shareMediaFile(context, f, "video/*")
                                 }
                             },
+                            onRemoveFromPlaylists = {
+                                removeVideoFromPlaylists(vid)
+                            },
                             onDelete = {
                                 viewModel.deleteBibleVideo(vid)
-                                Toast.makeText(context, "Удалено", Toast.LENGTH_SHORT).show()
+                                Toast.makeText(context, "Файл удалён", Toast.LENGTH_SHORT).show()
                             },
                         )
                     }
@@ -500,6 +517,25 @@ fun VideoLibraryScreen(
                     ).show()
                 }
             },
+        )
+    }
+
+    playlistRemovalVideo?.let { vid ->
+        val lists = mediaPlaylists.filter { it.kind == UserMediaPlaylistKind.VIDEO && vid.id in it.itemIds }
+        RemoveFromPlaylistsDialog(
+            playlists = lists.map { it.id to it.name },
+            onPick = { playlistId ->
+                viewModel.removeItemFromUserMediaPlaylist(playlistId, vid.id)
+                val name = lists.firstOrNull { it.id == playlistId }?.name.orEmpty()
+                Toast.makeText(context, "Удалено из плейлиста «$name»", Toast.LENGTH_SHORT).show()
+                playlistRemovalVideo = null
+            },
+            onAll = {
+                lists.forEach { viewModel.removeItemFromUserMediaPlaylist(it.id, vid.id) }
+                Toast.makeText(context, "Удалено из плейлистов", Toast.LENGTH_SHORT).show()
+                playlistRemovalVideo = null
+            },
+            onDismiss = { playlistRemovalVideo = null },
         )
     }
 

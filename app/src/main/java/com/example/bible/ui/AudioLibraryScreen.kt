@@ -96,6 +96,8 @@ fun AudioLibraryScreen(
     val audios by viewModel.bibleUserAudios.collectAsStateWithLifecycle()
     val playbackProgress by viewModel.userMediaPlaybackProgress.collectAsStateWithLifecycle()
     val titleScale by viewModel.videoLibraryTitleScale.collectAsStateWithLifecycle()
+    val mediaPlaylists by viewModel.userMediaPlaylists.collectAsStateWithLifecycle()
+    var playlistRemovalAudio by remember { mutableStateOf<BibleUserAudio?>(null) }
     val audioItems = remember(audios) {
         audios.filter { MediaCatalogPaths.isLikelyAudioFileName(it.fileName) }
     }
@@ -120,6 +122,19 @@ fun AudioLibraryScreen(
     var showInAppRecorder by remember { mutableStateOf(false) }
 
     val dateFmt = remember { SimpleDateFormat("dd.MM.yyyy HH:mm", Locale.getDefault()) }
+
+    fun removeAudioFromPlaylists(item: BibleUserAudio) {
+        val lists = mediaPlaylists.filter { it.kind == UserMediaPlaylistKind.AUDIO && item.id in it.itemIds }
+        when {
+            lists.isEmpty() ->
+                Toast.makeText(context, "Этого файла нет в плейлистах", Toast.LENGTH_SHORT).show()
+            lists.size == 1 -> {
+                viewModel.removeItemFromUserMediaPlaylist(lists[0].id, item.id)
+                Toast.makeText(context, "Удалено из плейлиста «${lists[0].name}»", Toast.LENGTH_SHORT).show()
+            }
+            else -> playlistRemovalAudio = item
+        }
+    }
 
     LaunchedEffect(Unit) {
         viewModel.syncLegacyAudioDownloadsFromPublicFolder()
@@ -253,7 +268,7 @@ fun AudioLibraryScreen(
                 modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp),
             )
             Text(
-                "▶ — в приложении · ⋮ — плейлист, другое приложение, поделиться, удалить · A− / A+ размер названий.",
+                "▶ — в приложении · ⋮ — плейлист, другое приложение, поделиться, удалить из плейлиста или файл · A− / A+ размер названий.",
                 style = MaterialTheme.typography.labelSmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                 modifier = Modifier.padding(horizontal = 16.dp, vertical = 0.dp),
@@ -383,15 +398,37 @@ fun AudioLibraryScreen(
                                     shareMediaFile(context, f, "audio/*")
                                 }
                             },
+                            onRemoveFromPlaylists = {
+                                removeAudioFromPlaylists(item)
+                            },
                             onDelete = {
                                 viewModel.deleteBibleAudio(item)
-                                Toast.makeText(context, "Удалено", Toast.LENGTH_SHORT).show()
+                                Toast.makeText(context, "Файл удалён", Toast.LENGTH_SHORT).show()
                             },
                         )
                     }
                 }
             }
         }
+    }
+
+    playlistRemovalAudio?.let { audio ->
+        val lists = mediaPlaylists.filter { it.kind == UserMediaPlaylistKind.AUDIO && audio.id in it.itemIds }
+        RemoveFromPlaylistsDialog(
+            playlists = lists.map { it.id to it.name },
+            onPick = { playlistId ->
+                viewModel.removeItemFromUserMediaPlaylist(playlistId, audio.id)
+                val name = lists.firstOrNull { it.id == playlistId }?.name.orEmpty()
+                Toast.makeText(context, "Удалено из плейлиста «$name»", Toast.LENGTH_SHORT).show()
+                playlistRemovalAudio = null
+            },
+            onAll = {
+                lists.forEach { viewModel.removeItemFromUserMediaPlaylist(it.id, audio.id) }
+                Toast.makeText(context, "Удалено из плейлистов", Toast.LENGTH_SHORT).show()
+                playlistRemovalAudio = null
+            },
+            onDismiss = { playlistRemovalAudio = null },
+        )
     }
 
     playlistTargetAudio?.let { audio ->
