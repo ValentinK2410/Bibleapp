@@ -42,6 +42,8 @@ internal data class KidsBibleReading(
     val keyVerse: String,
     val keyVerseRef: String,
     val art: String,
+    /** Картинки сцен, одни на все возрасты. Индекс совпадает с абзацем. */
+    val images: List<String> = emptyList(),
     val tracks: Map<KidsBibleAge, KidsBibleTrack>,
 ) {
     val isOverview: Boolean get() = kind == "overview"
@@ -84,6 +86,7 @@ internal object KidsBibleCatalog {
                 keyVerse = o.str("keyVerse"),
                 keyVerseRef = o.str("keyVerseRef"),
                 art = o.str("art"),
+                images = o.strings("images"),
                 tracks = tracks,
             )
         }
