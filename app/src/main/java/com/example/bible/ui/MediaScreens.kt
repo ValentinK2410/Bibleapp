@@ -810,13 +810,11 @@ private fun MediaHubTileArt(tile: MediaHubTile, modifier: Modifier) {
     Box(
         modifier
             .clip(RoundedCornerShape(14.dp))
-            .background(Color.White.copy(alpha = 0.16f)),
+            .border(1.dp, Color.White.copy(alpha = 0.35f), RoundedCornerShape(14.dp)),
     ) {
         MediaHubArt(
             sectionId = tile.sectionId,
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(6.dp),
+            modifier = Modifier.fillMaxSize(),
         )
         if (tile.count != null) {
             Text(
