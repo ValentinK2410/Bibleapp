@@ -3,6 +3,7 @@ package com.example.bible.ui
 import androidx.compose.foundation.border
 import androidx.compose.ui.text.style.TextOverflow
 import android.Manifest
+import android.content.res.Configuration
 import android.content.pm.PackageManager
 import android.content.Intent
 import android.net.Uri
@@ -30,6 +31,7 @@ import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -105,6 +107,7 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
@@ -543,81 +546,111 @@ fun MediaHomeScreen(
                 else -> null
             }
         }
+        val landscape = LocalConfiguration.current.orientation == Configuration.ORIENTATION_LANDSCAPE
+        val tileColumns = if (landscape) 3 else 2
         Column(
             Modifier
                 .padding(padding)
                 .fillMaxSize()
                 .verticalScroll(rememberScrollState())
-                .padding(horizontal = 14.dp, vertical = 6.dp),
-            verticalArrangement = Arrangement.spacedBy(12.dp),
+                .padding(
+                    horizontal = if (landscape) 10.dp else 14.dp,
+                    vertical = if (landscape) 4.dp else 6.dp,
+                ),
+            verticalArrangement = Arrangement.spacedBy(if (landscape) 8.dp else 12.dp),
         ) {
             Column(
                 Modifier
                     .fillMaxWidth()
-                    .clip(RoundedCornerShape(26.dp))
+                    .clip(RoundedCornerShape(if (landscape) 18.dp else 26.dp))
                     .background(Brush.linearGradient(MusicHeroGradient))
-                    .padding(18.dp),
-                verticalArrangement = Arrangement.spacedBy(10.dp),
+                    .padding(if (landscape) 12.dp else 18.dp),
+                verticalArrangement = Arrangement.spacedBy(if (landscape) 6.dp else 10.dp),
             ) {
-                Text(
-                    "МЕДИА",
-                    color = Color.White.copy(alpha = 0.65f),
-                    fontFamily = FontFamily.SansSerif,
-                    fontSize = 11.sp,
-                    lineHeight = 14.sp,
-                    fontWeight = FontWeight.Bold,
-                    letterSpacing = 2.sp,
-                    maxLines = 1,
-                )
-                Text(
-                    "Ваша медиатека",
-                    color = Color.White,
-                    fontFamily = FontFamily.SansSerif,
-                    fontSize = 24.sp,
-                    lineHeight = 30.sp,
-                    fontWeight = FontWeight.ExtraBold,
-                    maxLines = 2,
-                    overflow = TextOverflow.Ellipsis,
-                )
-                Text(
-                    "Картинки, видео, звук и песни — всё хранится в приложении и работает без интернета.",
-                    color = Color.White.copy(alpha = 0.75f),
-                    fontFamily = FontFamily.SansSerif,
-                    fontSize = 13.sp,
-                    lineHeight = 18.sp,
-                )
-                Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                    listOf("🖼️" to pictureCount, "🎬" to videoCount, "🎧" to audioCount, "🎤" to songs.size).forEach { (emoji, n) ->
-                        Column(
-                            Modifier
-                                .weight(1f)
-                                .clip(RoundedCornerShape(16.dp))
-                                .background(Color.White.copy(alpha = 0.12f))
-                                .border(1.dp, Color.White.copy(alpha = 0.18f), RoundedCornerShape(16.dp))
-                                .padding(vertical = 8.dp),
-                            horizontalAlignment = Alignment.CenterHorizontally,
-                        ) {
-                            Text(emoji, fontSize = 16.sp, lineHeight = 20.sp, maxLines = 1)
+                if (landscape) {
+                    Row(
+                        Modifier.fillMaxWidth(),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(12.dp),
+                    ) {
+                        Column(Modifier.weight(1f)) {
                             Text(
-                                "$n",
+                                "МЕДИА",
+                                color = Color.White.copy(alpha = 0.65f),
+                                fontFamily = FontFamily.SansSerif,
+                                fontSize = 11.sp,
+                                lineHeight = 14.sp,
+                                fontWeight = FontWeight.Bold,
+                                letterSpacing = 2.sp,
+                                maxLines = 1,
+                            )
+                            Text(
+                                "Ваша медиатека",
                                 color = Color.White,
                                 fontFamily = FontFamily.SansSerif,
                                 fontSize = 18.sp,
                                 lineHeight = 22.sp,
                                 fontWeight = FontWeight.ExtraBold,
                                 maxLines = 1,
+                                overflow = TextOverflow.Ellipsis,
                             )
                         }
+                        MediaHomeStatRow(
+                            pictureCount = pictureCount,
+                            videoCount = videoCount,
+                            audioCount = audioCount,
+                            songCount = songs.size,
+                            compact = true,
+                        )
                     }
+                } else {
+                    Text(
+                        "МЕДИА",
+                        color = Color.White.copy(alpha = 0.65f),
+                        fontFamily = FontFamily.SansSerif,
+                        fontSize = 11.sp,
+                        lineHeight = 14.sp,
+                        fontWeight = FontWeight.Bold,
+                        letterSpacing = 2.sp,
+                        maxLines = 1,
+                    )
+                    Text(
+                        "Ваша медиатека",
+                        color = Color.White,
+                        fontFamily = FontFamily.SansSerif,
+                        fontSize = 24.sp,
+                        lineHeight = 30.sp,
+                        fontWeight = FontWeight.ExtraBold,
+                        maxLines = 2,
+                        overflow = TextOverflow.Ellipsis,
+                    )
+                    Text(
+                        "Картинки, видео, звук и песни — всё хранится в приложении и работает без интернета.",
+                        color = Color.White.copy(alpha = 0.75f),
+                        fontFamily = FontFamily.SansSerif,
+                        fontSize = 13.sp,
+                        lineHeight = 18.sp,
+                    )
+                    MediaHomeStatRow(
+                        pictureCount = pictureCount,
+                        videoCount = videoCount,
+                        audioCount = audioCount,
+                        songCount = songs.size,
+                        compact = false,
+                    )
                 }
             }
-            tiles.chunked(2).forEach { row ->
+            tiles.chunked(tileColumns).forEach { row ->
                 Row(
                     Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.spacedBy(12.dp),
+                    horizontalArrangement = Arrangement.spacedBy(if (landscape) 8.dp else 12.dp),
                 ) {
-                    row.forEach { tile -> MediaHubTileCard(tile, Modifier.weight(1f)) }
-                    if (row.size == 1) Spacer(Modifier.weight(1f))
+                    row.forEach { tile ->
+                        MediaHubTileCard(tile, Modifier.weight(1f), compact = landscape)
+                    }
+                    repeat(tileColumns - row.size) {
+                        Spacer(Modifier.weight(1f))
+                    }
                 }
             }
             Text(
@@ -652,28 +685,62 @@ private class MediaHubTile(
 )
 
 @Composable
-private fun MediaHubTileCard(tile: MediaHubTile, modifier: Modifier) {
+private fun MediaHomeStatRow(
+    pictureCount: Int,
+    videoCount: Int,
+    audioCount: Int,
+    songCount: Int,
+    compact: Boolean,
+) {
+    Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+        listOf("🖼️" to pictureCount, "🎬" to videoCount, "🎧" to audioCount, "🎤" to songCount).forEach { (emoji, n) ->
+            Column(
+                Modifier
+                    .then(if (compact) Modifier.width(64.dp) else Modifier.weight(1f))
+                    .clip(RoundedCornerShape(16.dp))
+                    .background(Color.White.copy(alpha = 0.12f))
+                    .border(1.dp, Color.White.copy(alpha = 0.18f), RoundedCornerShape(16.dp))
+                    .padding(vertical = if (compact) 4.dp else 8.dp),
+                horizontalAlignment = Alignment.CenterHorizontally,
+            ) {
+                Text(emoji, fontSize = if (compact) 14.sp else 16.sp, lineHeight = 18.sp, maxLines = 1)
+                Text(
+                    "$n",
+                    color = Color.White,
+                    fontFamily = FontFamily.SansSerif,
+                    fontSize = if (compact) 15.sp else 18.sp,
+                    lineHeight = 18.sp,
+                    fontWeight = FontWeight.ExtraBold,
+                    maxLines = 1,
+                )
+            }
+        }
+    }
+}
+
+@Composable
+private fun MediaHubTileCard(tile: MediaHubTile, modifier: Modifier, compact: Boolean = false) {
     Column(
         modifier
             .fillMaxWidth()
-            .clip(RoundedCornerShape(26.dp))
+            .clip(RoundedCornerShape(if (compact) 16.dp else 26.dp))
             .background(Brush.linearGradient(tile.gradient))
             .clickable(onClick = tile.onClick)
-            .padding(14.dp),
-        verticalArrangement = Arrangement.spacedBy(8.dp),
+            .padding(if (compact) 8.dp else 14.dp),
+        verticalArrangement = Arrangement.spacedBy(if (compact) 4.dp else 8.dp),
     ) {
         Box(
             Modifier
                 .fillMaxWidth()
-                .aspectRatio(1.55f)
-                .clip(RoundedCornerShape(20.dp))
+                .then(if (compact) Modifier.height(44.dp) else Modifier.aspectRatio(1.55f))
+                .clip(RoundedCornerShape(if (compact) 12.dp else 20.dp))
                 .background(Color.White.copy(alpha = 0.18f)),
             contentAlignment = Alignment.Center,
         ) {
             Text(
                 tile.emoji,
-                fontSize = 40.sp,
-                lineHeight = 46.sp,
+                fontSize = if (compact) 22.sp else 40.sp,
+                lineHeight = if (compact) 26.sp else 46.sp,
                 maxLines = 1,
             )
         }
@@ -685,10 +752,10 @@ private fun MediaHubTileCard(tile: MediaHubTile, modifier: Modifier) {
                 tile.title,
                 color = Color.White,
                 fontFamily = FontFamily.SansSerif,
-                fontSize = 16.sp,
-                lineHeight = 20.sp,
+                fontSize = if (compact) 14.sp else 16.sp,
+                lineHeight = if (compact) 17.sp else 20.sp,
                 fontWeight = FontWeight.ExtraBold,
-                maxLines = 2,
+                maxLines = if (compact) 1 else 2,
                 overflow = TextOverflow.Ellipsis,
                 modifier = Modifier.weight(1f),
             )
@@ -712,9 +779,9 @@ private fun MediaHubTileCard(tile: MediaHubTile, modifier: Modifier) {
             tile.subtitle,
             color = Color.White.copy(alpha = 0.85f),
             fontFamily = FontFamily.SansSerif,
-            fontSize = 12.sp,
-            lineHeight = 16.sp,
-            maxLines = 3,
+            fontSize = if (compact) 11.sp else 12.sp,
+            lineHeight = if (compact) 13.sp else 16.sp,
+            maxLines = if (compact) 2 else 3,
             overflow = TextOverflow.Ellipsis,
         )
     }

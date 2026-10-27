@@ -2,6 +2,7 @@ package com.example.bible.ui
 
 import android.Manifest
 import android.content.Intent
+import android.content.res.Configuration
 import android.content.pm.PackageManager
 import android.util.Log
 import com.example.bible.BuildConfig
@@ -19,10 +20,12 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -937,15 +940,6 @@ private fun BibleNavHost(
                     },
                 ) {
                     if (pickerBookId == null) {
-                        previewBook?.let { entry ->
-                            BookPickerPreviewBanner(entry = entry)
-                        }
-                        DailyVerseCard(
-                            entry = dailyVerse,
-                            onClick = {
-                                navController.navigate("read/${dailyVerse.bookId}/${dailyVerse.chapter}/${dailyVerse.verse}")
-                            },
-                        )
                         val tileCoverage = remember(coverageRead, coverageListen, coverageListenVerses, translation) {
                             com.example.bible.data.BibleCoverage.homeTiles(
                                 translation,
@@ -954,6 +948,76 @@ private fun BibleNavHost(
                                 coverageListenVerses,
                             )
                         }
+                        val openDailyVerse = {
+                            navController.navigate("read/${dailyVerse.bookId}/${dailyVerse.chapter}/${dailyVerse.verse}")
+                        }
+                        val configuration = LocalConfiguration.current
+                        val landscapeHome = configuration.orientation == Configuration.ORIENTATION_LANDSCAPE
+                        if (landscapeHome) {
+                            val portraitSide = minOf(
+                                configuration.screenWidthDp,
+                                configuration.screenHeightDp,
+                            ).dp
+                            BoxWithConstraints(
+                                Modifier
+                                    .fillMaxWidth()
+                                    .weight(1f),
+                            ) {
+                                val tilesWidth = minOf(portraitSide, maxWidth * 0.62f)
+                                Row(Modifier.fillMaxSize()) {
+                                    Column(
+                                        Modifier
+                                            .width(tilesWidth)
+                                            .fillMaxHeight(),
+                                    ) {
+                                        previewBook?.let { entry ->
+                                            BookPickerPreviewBanner(entry = entry)
+                                        }
+                                        BookSelectionContent(
+                                            layoutMode = bookLayoutMode,
+                                            modifier = Modifier
+                                                .fillMaxSize()
+                                                .weight(1f),
+                                            booksWithAudio = booksWithAudio,
+                                            coverageByBook = tileCoverage,
+                                            readProgressColor = coverageMarkColor(translation.code, translationTabColors),
+                                            translation = translation,
+                                            passageActivity = passageActivity,
+                                            readVerseKeys = coverageReadVerses,
+                                            listenVerseKeys = coverageListenVerses,
+                                            onBookClick = { bookId ->
+                                                com.example.bible.data.BibleAudioPlayer.stopForNavigation()
+                                                viewModel.passagePickerSelectBook(bookId)
+                                            },
+                                            onBookLongPress = { entry ->
+                                                previewBook = entry
+                                                if (bookPickerLongPressTts) {
+                                                    bookNameTts.speak(entry.nameRu)
+                                                } else {
+                                                    bookNameTts.stop()
+                                                }
+                                            },
+                                        )
+                                    }
+                                    DailyVerseCard(
+                                        entry = dailyVerse,
+                                        expanded = true,
+                                        onClick = openDailyVerse,
+                                        modifier = Modifier
+                                            .weight(1f)
+                                            .fillMaxHeight()
+                                            .padding(top = 8.dp, end = 10.dp, bottom = 10.dp, start = 4.dp),
+                                    )
+                                }
+                            }
+                        } else {
+                        previewBook?.let { entry ->
+                            BookPickerPreviewBanner(entry = entry)
+                        }
+                        DailyVerseCard(
+                            entry = dailyVerse,
+                            onClick = openDailyVerse,
+                        )
                         BookSelectionContent(
                             layoutMode = bookLayoutMode,
                             modifier = Modifier
@@ -979,6 +1043,7 @@ private fun BibleNavHost(
                                 }
                             },
                         )
+                        }
                     } else when (val shellState = rememberBookShell(library, translation, pickerBookId!!)) {
                         BibleBookShellState.Loading -> {
                             Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
@@ -5918,6 +5983,8 @@ internal fun TextSizeSettingsDialog(
 private fun DailyVerseCard(
     entry: DailyVerseEntry,
     onClick: () -> Unit,
+    expanded: Boolean = false,
+    modifier: Modifier = Modifier,
 ) {
     val ref = remember(entry) { DailyVerse.referenceLabel(entry) }
     val colors = MaterialTheme.colorScheme
@@ -5929,9 +5996,15 @@ private fun DailyVerseCard(
         ),
     )
     Card(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(horizontal = 10.dp, vertical = 8.dp),
+        modifier = modifier.then(
+            if (expanded) {
+                Modifier.fillMaxSize()
+            } else {
+                Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 10.dp, vertical = 8.dp)
+            },
+        ),
         shape = RoundedCornerShape(22.dp),
         colors = CardDefaults.cardColors(containerColor = Color.Transparent),
         elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
@@ -5939,7 +6012,7 @@ private fun DailyVerseCard(
     ) {
         Box(
             modifier = Modifier
-                .fillMaxWidth()
+                .fillMaxSize()
                 .background(gradientBrush),
         ) {
             Icon(
@@ -5951,7 +6024,11 @@ private fun DailyVerseCard(
                     .size(56.dp),
                 tint = colors.primary.copy(alpha = 0.14f),
             )
-            Column(modifier = Modifier.padding(16.dp)) {
+            Column(
+                modifier = Modifier
+                    .padding(16.dp)
+                    .then(if (expanded) Modifier.verticalScroll(rememberScrollState()) else Modifier),
+            ) {
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Icon(
                         Icons.AutoMirrored.Filled.MenuBook,
@@ -5975,8 +6052,8 @@ private fun DailyVerseCard(
                     color = colors.onSurface,
                     fontWeight = FontWeight.Medium,
                     lineHeight = 22.sp,
-                    maxLines = 3,
-                    overflow = TextOverflow.Ellipsis,
+                    maxLines = if (expanded) Int.MAX_VALUE else 3,
+                    overflow = if (expanded) TextOverflow.Clip else TextOverflow.Ellipsis,
                 )
                 Spacer(Modifier.height(10.dp))
                 Row(verticalAlignment = Alignment.CenterVertically) {
