@@ -19,6 +19,7 @@ import sys
 import wave
 from pathlib import Path
 
+import numpy as np
 import torch
 from ruaccent import RUAccent
 from transformers import AutoTokenizer, VitsModel
@@ -186,7 +187,7 @@ def read_wav(path: Path) -> torch.Tensor:
 
 
 def write_wav(path: Path, audio: torch.Tensor, rate: int = SR) -> None:
-    pcm = (audio.numpy() * 32767).clamp(-32767, 32767).astype("int16")
+    pcm = (audio.clamp(-1, 1).numpy() * 32767).astype("int16")
     path.parent.mkdir(parents=True, exist_ok=True)
     with wave.open(str(path), "wb") as handle:
         handle.setnchannels(1)
@@ -216,8 +217,30 @@ def best_chunk(model, tokenizer, chars, flags) -> torch.Tensor:
     return audio
 
 
+def patch_accent(accent) -> None:
+    """У части слов токенизатор не отдаёт token_type_ids, а модель их ждёт."""
+    session = accent.accent_model.session
+    original = session.run
+
+    def run(output_names, input_feed, *args, **kwargs):
+        if "token_type_ids" not in input_feed and "input_ids" in input_feed:
+            input_feed = dict(input_feed)
+            input_feed["token_type_ids"] = np.zeros_like(input_feed["input_ids"])
+        return original(output_names, input_feed, *args, **kwargs)
+
+    session.run = run
+
+
+def stress_text(accent, text: str) -> str:
+    try:
+        return accent.process_all(text)
+    except Exception as exc:
+        print("accent fallback", exc, flush=True)
+        return text
+
+
 def render_part(model, tokenizer, accent, text: str) -> torch.Tensor:
-    stressed = accent.process_all(text)
+    stressed = stress_text(accent, text)
     units = split_units(stressed)
     pieces = []
     for chunk, mark in units:
@@ -336,6 +359,7 @@ def main() -> None:
     AUDIO.mkdir(parents=True, exist_ok=True)
     accent = RUAccent()
     accent.load(omograph_model_size="turbo3", use_dictionary=True)
+    patch_accent(accent)
     tokenizer = AutoTokenizer.from_pretrained("facebook/mms-tts-rus")
     model = VitsModel.from_pretrained("facebook/mms-tts-rus")
     model.eval()

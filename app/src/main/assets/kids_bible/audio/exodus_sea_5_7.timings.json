@@ -3,32 +3,37 @@
     {
       "part": "p0",
       "startMs": 0,
-      "endMs": 6922
+      "endMs": 14564
     },
     {
       "part": "p1",
-      "startMs": 7272,
-      "endMs": 21035
+      "startMs": 14784,
+      "endMs": 38726
     },
     {
       "part": "verse",
-      "startMs": 21385,
-      "endMs": 25799
+      "startMs": 38946,
+      "endMs": 46624
     },
     {
       "part": "meaning",
-      "startMs": 26149,
-      "endMs": 34326
+      "startMs": 46844,
+      "endMs": 64928
     },
     {
       "part": "christ",
-      "startMs": 34676,
-      "endMs": 43480
+      "startMs": 65148,
+      "endMs": 85936
     },
     {
       "part": "prayer",
-      "startMs": 43830,
-      "endMs": 48557
+      "startMs": 86156,
+      "endMs": 96406
+    },
+    {
+      "part": "do",
+      "startMs": 96626,
+      "endMs": 114242
     }
   ]
 }
