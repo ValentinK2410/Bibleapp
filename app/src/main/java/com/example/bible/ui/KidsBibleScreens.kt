@@ -1,5 +1,6 @@
 package com.example.bible.ui
 
+import android.media.MediaMetadataRetriever
 import android.media.MediaPlayer
 import android.media.PlaybackParams
 import androidx.compose.foundation.background
@@ -80,6 +81,11 @@ import com.example.bible.data.KidsBibleNarration
 import com.example.bible.data.KidsBiblePin
 import com.example.bible.data.KidsBiblePinStore
 import com.example.bible.data.KidsBibleReading
+import com.example.bible.data.KidsBibleVoice
+import com.example.bible.data.KidsVoiceKind
+import com.example.bible.data.KidsVoicePlan
+import com.example.bible.data.kidsClipAt
+import com.example.bible.data.kidsGlobalMs
 import kotlinx.coroutines.delay
 
 private val BibleInk = Color(0xFF3B2418)
@@ -496,55 +502,130 @@ internal fun KidsBibleStoryScreen(storyId: String, onBack: () -> Unit) {
     var speed by remember { mutableFloatStateOf(1f) }
     var audioError by remember { mutableStateOf(false) }
     var player by remember { mutableStateOf<MediaPlayer?>(null) }
+    var voiceToken by remember { mutableIntStateOf(0) }
+    var voiceAsk by remember { mutableStateOf<KidsVoiceTarget?>(null) }
+    var voiceEdit by remember { mutableStateOf<KidsVoiceTarget?>(null) }
+    val voiceRoot = remember { KidsBibleVoice.root(context.filesDir) }
+    val plan = remember(story.id, age, voiceToken, track.paragraphs.size) {
+        val family = story.familyAudioAsset(age)
+        val app = story.audioAsset(age)
+        val bundled = when {
+            assetOpens(context, family) -> family
+            assetOpens(context, app) -> app
+            else -> null
+        }
+        KidsBibleVoice.plan(voiceRoot, story.id, age.id, track.paragraphs.size, bundled)
+    }
+    val soon = plan.kind == KidsVoiceKind.SOON
+    val customVoice = plan.kind == KidsVoiceKind.CUSTOM_WHOLE || plan.kind == KidsVoiceKind.CUSTOM_PARTS
+    val clipIndex = remember(story.id, age, voiceToken) { intArrayOf(0) }
+    val speedBox = remember { floatArrayOf(speed) }
+    val playingBox = remember(story.id, age, voiceToken) { booleanArrayOf(false) }
+    val seekBox = remember(story.id, age, voiceToken) { intArrayOf(-1) }
+    val resumeBox = remember(story.id, age, voiceToken) { booleanArrayOf(false) }
+    var clipDurations by remember(story.id, age, voiceToken) { mutableStateOf(IntArray(0)) }
 
-    DisposableEffect(story.id, age) {
-        val mp = MediaPlayer()
-        player = mp
+    DisposableEffect(story.id, age, voiceToken, plan.kind) {
         ready = false
         playing = false
+        playingBox[0] = false
         position = 0
+        duration = 0
         audioError = false
         activePart = null
-        try {
-            val family = story.familyAudioAsset(age)
-            val hasFamily = runCatching {
-                context.assets.openFd(family).use { }
-                true
-            }.getOrDefault(false)
-            val asset = story.narrationAsset(age, if (hasFamily) KidsBibleNarration.Family else KidsBibleNarration.App)
-            val afd = context.assets.openFd(asset)
-            mp.setDataSource(afd.fileDescriptor, afd.startOffset, afd.length)
-            afd.close()
-            mp.setOnPreparedListener {
-                ready = true
-                duration = it.duration
-                // Скорость здесь не задаём: setPlaybackParams у готового плеера сам запускает звук,
-                // а флаг playing остаётся false — шкала стоит. Скорость применяется после start().
+        clipIndex[0] = 0
+        seekBox[0] = -1
+        resumeBox[0] = false
+        if (plan.kind == KidsVoiceKind.SOON) {
+            player = null
+            clipDurations = IntArray(0)
+            return@DisposableEffect onDispose { }
+        }
+        val lengths = if (plan.kind == KidsVoiceKind.CUSTOM_PARTS) {
+            audioDurations(plan.parts.map { it.file })
+        } else {
+            IntArray(0)
+        }
+        clipDurations = lengths
+        val mp = MediaPlayer()
+        player = mp
+        fun openCurrent() {
+            mp.reset()
+            when (plan.kind) {
+                KidsVoiceKind.CUSTOM_WHOLE -> mp.setDataSource(plan.whole!!.absolutePath)
+                KidsVoiceKind.CUSTOM_PARTS -> mp.setDataSource(plan.parts[clipIndex[0]].file.absolutePath)
+                KidsVoiceKind.BUNDLED -> {
+                    val afd = context.assets.openFd(plan.assetPath!!)
+                    mp.setDataSource(afd.fileDescriptor, afd.startOffset, afd.length)
+                    afd.close()
+                }
+                KidsVoiceKind.SOON -> Unit
             }
-            mp.setOnCompletionListener {
+        }
+        mp.setOnPreparedListener {
+            ready = true
+            val total = if (lengths.isNotEmpty()) lengths.sum().coerceAtLeast(1) else it.duration.coerceAtLeast(1)
+            duration = total
+            if (seekBox[0] >= 0) {
+                it.seekTo(seekBox[0])
+                seekBox[0] = -1
+            }
+            // Скорость здесь не задаём, пока сами не нажмём play: setPlaybackParams запускает звук.
+            if (resumeBox[0]) {
+                it.start()
+                runCatching { it.playbackParams = it.playbackParams.setSpeed(speedBox[0]) }
+                playing = true
+                playingBox[0] = true
+                resumeBox[0] = false
+            }
+        }
+        mp.setOnCompletionListener {
+            if (plan.kind == KidsVoiceKind.CUSTOM_PARTS && clipIndex[0] < plan.parts.lastIndex) {
+                clipIndex[0] += 1
+                activePart = plan.parts[clipIndex[0]].partId
+                resumeBox[0] = true
+                ready = false
+                runCatching { openCurrent(); mp.prepareAsync() }
+                    .onFailure { audioError = true }
+            } else {
                 playing = false
+                playingBox[0] = false
                 position = duration
                 KidsBiblePinStore.markRead(context, story.id)
             }
-            mp.prepareAsync()
-        } catch (_: Exception) {
-            audioError = true
         }
+        val opened = runCatching {
+            openCurrent()
+            mp.prepareAsync()
+        }
+        if (opened.isFailure) audioError = true
         onDispose {
             player = null
             mp.release()
         }
     }
-    LaunchedEffect(ready, player) {
+    LaunchedEffect(ready, player, plan.kind) {
         val mp = player
         while (ready && mp != null && player === mp) {
             val ok = runCatching {
                 playing = mp.isPlaying
-                position = mp.currentPosition
-                duration = mp.duration.coerceAtLeast(duration)
+                playingBox[0] = playing
+                val local = mp.currentPosition
+                position = if (plan.kind == KidsVoiceKind.CUSTOM_PARTS && clipDurations.isNotEmpty()) {
+                    kidsGlobalMs(clipDurations, clipIndex[0], local)
+                } else {
+                    local
+                }
+                if (plan.kind != KidsVoiceKind.CUSTOM_PARTS) {
+                    duration = mp.duration.coerceAtLeast(duration)
+                }
             }.isSuccess
             if (!ok) break
-            activePart = track.cues.firstOrNull { position in it.startMs until it.endMs }?.part
+            activePart = when (plan.kind) {
+                KidsVoiceKind.BUNDLED -> track.cues.firstOrNull { position in it.startMs until it.endMs }?.part
+                KidsVoiceKind.CUSTOM_PARTS -> plan.parts.getOrNull(clipIndex[0])?.partId
+                else -> null
+            }
             delay(if (playing) 100 else 250)
         }
     }
@@ -578,27 +659,53 @@ internal fun KidsBibleStoryScreen(storyId: String, onBack: () -> Unit) {
                 duration = duration,
                 speed = speed,
                 error = audioError,
+                soon = soon,
+                custom = customVoice,
                 onToggle = {
                     val mp = player
                     if (!ready || mp == null) return@KidsBiblePlayerBar
                     if (playing) {
                         mp.pause()
                         playing = false
+                        playingBox[0] = false
                     } else {
                         mp.start()
-                        runCatching { mp.playbackParams = mp.playbackParams.setSpeed(speed) }
+                        runCatching { mp.playbackParams = mp.playbackParams.setSpeed(speedBox[0]) }
                         playing = true
+                        playingBox[0] = true
                     }
                 },
                 onSeek = { ms ->
-                    val mp = player
-                    if (!ready || mp == null) return@KidsBiblePlayerBar
-                    mp.seekTo(ms)
-                    position = ms
-                    activePart = track.cues.firstOrNull { ms in it.startMs until it.endMs }?.part
+                    val mp = player ?: return@KidsBiblePlayerBar
+                    if (plan.kind == KidsVoiceKind.CUSTOM_PARTS && clipDurations.isNotEmpty()) {
+                        val (index, local) = kidsClipAt(clipDurations, ms)
+                        position = kidsGlobalMs(clipDurations, index, local)
+                        activePart = plan.parts.getOrNull(index)?.partId
+                        if (index == clipIndex[0] && ready) {
+                            mp.seekTo(local)
+                        } else {
+                            clipIndex[0] = index
+                            seekBox[0] = local
+                            resumeBox[0] = playingBox[0]
+                            ready = false
+                            runCatching {
+                                mp.reset()
+                                mp.setDataSource(plan.parts[index].file.absolutePath)
+                                mp.prepareAsync()
+                            }.onFailure { audioError = true }
+                        }
+                    } else {
+                        if (!ready) return@KidsBiblePlayerBar
+                        mp.seekTo(ms)
+                        position = ms
+                        if (plan.kind == KidsVoiceKind.BUNDLED) {
+                            activePart = track.cues.firstOrNull { ms in it.startMs until it.endMs }?.part
+                        }
+                    }
                 },
                 onSpeed = { picked ->
                     speed = picked
+                    speedBox[0] = picked
                     val mp = player
                     // На паузе только запоминаем: setPlaybackParams запустил бы звук.
                     if (ready && mp != null) runCatching {
@@ -625,34 +732,50 @@ internal fun KidsBibleStoryScreen(storyId: String, onBack: () -> Unit) {
                 },
             )
             Text(
-                "${story.refs} · ${story.kindLabel()} · около ${minutesLabel(track.cues)}",
+                "${story.refs} · ${story.kindLabel()}" +
+                    if (track.cues.isNotEmpty() && plan.kind == KidsVoiceKind.BUNDLED) " · около ${minutesLabel(track.cues)}" else "",
                 fontFamily = FontFamily.SansSerif,
                 fontSize = 13.sp,
                 lineHeight = 18.sp,
                 color = Color(0xFF9A4E1C),
             )
-            Text(
-                story.title,
-                fontFamily = FontFamily.SansSerif,
-                fontWeight = FontWeight.ExtraBold,
-                fontSize = 26.sp,
-                lineHeight = 32.sp,
-                color = BibleInk,
-            )
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Text(
+                    story.title,
+                    fontFamily = FontFamily.SansSerif,
+                    fontWeight = FontWeight.ExtraBold,
+                    fontSize = 26.sp,
+                    lineHeight = 32.sp,
+                    color = BibleInk,
+                    modifier = Modifier.weight(1f),
+                )
+                TextButton(onClick = { voiceAsk = KidsVoiceTarget.Whole }) {
+                    Text("Своя озвучка", fontFamily = FontFamily.SansSerif, fontSize = 13.sp, lineHeight = 18.sp)
+                }
+            }
             track.paragraphs.forEachIndexed { index, paragraph ->
                 val on = activePart == "p$index"
-                Text(
-                    paragraph,
-                    fontFamily = FontFamily.SansSerif,
-                    fontSize = 17.sp,
-                    lineHeight = 25.sp,
-                    color = BibleInk,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .clip(RoundedCornerShape(12.dp))
-                        .background(if (on) Color(0xFFFFE7C2) else Color.Transparent)
-                        .padding(8.dp),
-                )
+                val image = story.images.getOrNull(index)
+                Row(verticalAlignment = Alignment.Top, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    if (image != null) SceneThumb(image)
+                    Column(Modifier.weight(1f)) {
+                        Text(
+                            paragraph,
+                            fontFamily = FontFamily.SansSerif,
+                            fontSize = 17.sp,
+                            lineHeight = 25.sp,
+                            color = BibleInk,
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .clip(RoundedCornerShape(12.dp))
+                                .background(if (on) Color(0xFFFFE7C2) else Color.Transparent)
+                                .padding(8.dp),
+                        )
+                        TextButton(onClick = { voiceAsk = KidsVoiceTarget.Part(index) }) {
+                            Text("Своя озвучка", fontFamily = FontFamily.SansSerif, fontSize = 13.sp, lineHeight = 18.sp)
+                        }
+                    }
+                }
             }
             VerseCard(story.keyVerse, story.keyVerseRef, activePart == "verse")
             Block("Что это значит?", track.meaning, activePart == "meaning")
@@ -667,6 +790,26 @@ internal fun KidsBibleStoryScreen(storyId: String, onBack: () -> Unit) {
             Block("Что мы можем сделать", track.activity, activePart == "do")
             Spacer(Modifier.height(8.dp))
         }
+    }
+    voiceAsk?.let { target ->
+        KidsBiblePinDialog(
+            title = "Своя озвучка",
+            onDismiss = { voiceAsk = null },
+            onPassed = {
+                voiceEdit = target
+                voiceAsk = null
+            },
+            onRecovered = { voiceAsk = null },
+        )
+    }
+    voiceEdit?.let { target ->
+        KidsBibleVoiceSheet(
+            storyId = story.id,
+            age = age,
+            partId = (target as? KidsVoiceTarget.Part)?.let { "p${it.index}" },
+            onDismiss = { voiceEdit = null },
+            onChanged = { voiceToken += 1 },
+        )
     }
 }
 
@@ -751,12 +894,24 @@ private fun KidsBiblePlayerBar(
     duration: Int,
     speed: Float,
     error: Boolean,
+    soon: Boolean,
+    custom: Boolean,
     onToggle: () -> Unit,
     onSeek: (Int) -> Unit,
     onSpeed: (Float) -> Unit,
 ) {
     var speedMenu by remember { mutableStateOf(false) }
     Column(Modifier.fillMaxWidth().background(BibleCard).padding(horizontal = 12.dp, vertical = 8.dp)) {
+        if (soon) {
+            Text(
+                "Озвучка скоро",
+                fontFamily = FontFamily.SansSerif,
+                fontSize = 15.sp,
+                lineHeight = 20.sp,
+                color = BibleInk,
+            )
+            return@Column
+        }
         if (error) {
             Text(
                 "Голос этой истории не открылся.",
@@ -766,6 +921,15 @@ private fun KidsBiblePlayerBar(
                 color = BibleInk,
             )
             return@Column
+        }
+        if (custom) {
+            Text(
+                "Своя озвучка",
+                fontFamily = FontFamily.SansSerif,
+                fontSize = 13.sp,
+                lineHeight = 18.sp,
+                color = Color(0xFF9A4E1C),
+            )
         }
         if (!ready) {
             LinearProgressIndicator(Modifier.fillMaxWidth())
@@ -975,6 +1139,63 @@ private fun KidsBibleParentSettings(modifier: Modifier, onClose: () -> Unit, onR
         }
         TextButton(onClick = onClose) {
             Text("Назад к полке", fontFamily = FontFamily.SansSerif)
+        }
+    }
+}
+
+private sealed class KidsVoiceTarget {
+    data object Whole : KidsVoiceTarget()
+    data class Part(val index: Int) : KidsVoiceTarget()
+}
+
+private fun assetOpens(context: android.content.Context, path: String): Boolean = runCatching {
+    context.assets.openFd(path).use { }
+    true
+}.getOrDefault(false)
+
+private fun audioDurations(files: List<java.io.File>): IntArray {
+    if (files.isEmpty()) return IntArray(0)
+    val retriever = MediaMetadataRetriever()
+    return try {
+        IntArray(files.size) { index ->
+            runCatching {
+                retriever.setDataSource(files[index].absolutePath)
+                retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_DURATION)?.toIntOrNull() ?: 0
+            }.getOrDefault(0).coerceAtLeast(0)
+        }
+    } finally {
+        runCatching { retriever.release() }
+    }
+}
+
+@Composable
+private fun SceneThumb(name: String) {
+    val context = LocalContext.current
+    val res = remember(name) { context.resources.getIdentifier(name, "drawable", context.packageName) }
+    val shape = RoundedCornerShape(14.dp)
+    if (res != 0) {
+        androidx.compose.foundation.Image(
+            painter = painterResource(res),
+            contentDescription = null,
+            contentScale = ContentScale.Crop,
+            modifier = Modifier.size(88.dp).clip(shape),
+        )
+    } else {
+        Box(
+            Modifier
+                .size(88.dp)
+                .clip(shape)
+                .background(Brush.verticalGradient(listOf(Color(0xFFE7C48A), Color(0xFFC46A3A)))),
+            contentAlignment = Alignment.Center,
+        ) {
+            Text(
+                "Свет",
+                color = Color.White,
+                fontFamily = FontFamily.SansSerif,
+                fontSize = 13.sp,
+                lineHeight = 16.sp,
+                textAlign = TextAlign.Center,
+            )
         }
     }
 }
