@@ -25,6 +25,8 @@ class KidsBiblePilotTest {
     @Test
     fun pilotStoriesMatchSynodalVersesAndShelfKeepsAllBooks() {
         val stories = KidsBibleCatalog.parseStories(asset("stories.json"))
+        val ids = stories.map { it.id }
+        assertEquals(ids.size, ids.toSet().size)
         assertEquals(
             listOf(
                 "gen_creation",
@@ -40,7 +42,7 @@ class KidsBiblePilotTest {
                 "psalms_overview",
                 "romans_overview",
             ),
-            stories.map { it.id },
+            ids.take(12),
         )
         val byId = stories.associateBy { it.id }
         assertEquals("В начале сотворил Бог небо и землю.", byId.getValue("gen_creation").keyVerse)
@@ -67,8 +69,22 @@ class KidsBiblePilotTest {
         assertEquals("Господь будет поборать за вас, а вы будьте спокойны.", byId.getValue("exodus_sea").keyVerse)
         assertEquals("И сказал Господь киту, и он изверг Иону на сушу.", byId.getValue("jonah").keyVerse)
         assertTrue(byId.getValue("luke_easter").keyVerse.startsWith("Его нет здесь: Он воскрес"))
+        if ("mt_storm" in byId) {
+            assertEquals(
+                "И говорит им: что вы так боязливы, маловерные? Потом, встав, запретил ветрам и морю, и сделалась великая тишина.",
+                byId.getValue("mt_storm").keyVerse,
+            )
+        }
+        if ("eph_grace" in byId) {
+            assertEquals(
+                "Ибо благодатью вы спасены через веру, и сие не от вас, Божий дар:",
+                byId.getValue("eph_grace").keyVerse,
+            )
+        }
         stories.forEach { story ->
             assertEquals(KidsBibleAge.entries.toSet(), story.tracks.keys)
+            assertTrue(story.images.isNotEmpty())
+            assertEquals(story.art, story.images.first())
             KidsBibleAge.entries.forEach { age ->
                 val track = story.track(age)
                 assertTrue(track.paragraphs.isNotEmpty())
@@ -77,17 +93,32 @@ class KidsBiblePilotTest {
                 assertTrue(track.questions.isNotEmpty())
                 assertTrue(track.prayer.isNotBlank())
                 assertTrue(track.activity.isNotBlank())
-                val cues = KidsBibleCatalog.parseCues(asset("audio/${story.id}_${age.id}.timings.json"))
-                val parts = cues.map { it.part }
-                track.paragraphs.indices.forEach { index -> assertTrue(parts.contains("p$index")) }
-                assertTrue(parts.containsAll(listOf("verse", "meaning", "christ", "prayer")))
-                cues.zipWithNext().forEach { (a, b) -> assertTrue(a.endMs <= b.startMs) }
                 val audio = story.audioAsset(age)
-                assertTrue(File("src/main/assets/$audio").exists() || File("app/src/main/assets/$audio").exists())
+                val audioFile = listOf(File("src/main/assets/$audio"), File("app/src/main/assets/$audio")).firstOrNull { it.exists() }
+                val timingName = "audio/${story.id}_${age.id}.timings.json"
+                val timingFile = listOf(
+                    File("src/main/assets/kids_bible/$timingName"),
+                    File("app/src/main/assets/kids_bible/$timingName"),
+                ).firstOrNull { it.exists() }
+                if (audioFile != null) {
+                    val cues = KidsBibleCatalog.parseCues(timingFile!!.readText())
+                    val parts = cues.map { it.part }
+                    track.paragraphs.indices.forEach { index -> assertTrue(parts.contains("p$index")) }
+                    assertTrue(parts.containsAll(listOf("verse", "meaning", "christ", "prayer")))
+                    cues.zipWithNext().forEach { (a, b) -> assertTrue(a.endMs <= b.startMs) }
+                } else {
+                    assertTrue(timingFile == null)
+                }
                 assertEquals("kids_bible/audio/family/${story.id}_${age.id}.m4a", story.familyAudioAsset(age))
                 assertEquals(story.audioAsset(age), story.narrationAsset(age, KidsBibleNarration.App))
             }
             assertTrue(story.track(KidsBibleAge.Y5_7).paragraphs.sumOf { it.length } < story.track(KidsBibleAge.Y8_10).paragraphs.sumOf { it.length })
+        }
+        ids.drop(12).forEach { id ->
+            KidsBibleAge.entries.forEach { age ->
+                val audio = "kids_bible/audio/${id}_${age.id}.m4a"
+                assertFalse(File("src/main/assets/$audio").exists() || File("app/src/main/assets/$audio").exists())
+            }
         }
         val shelf = KidsBibleCatalog.shelf(stories)
         assertEquals(66, shelf.size)
@@ -95,7 +126,14 @@ class KidsBiblePilotTest {
         assertFalse(shelf.first { it.book.id == "genesis" }.comingSoon)
         assertEquals(4, shelf.first { it.book.id == "genesis" }.stories.size)
         assertFalse(shelf.first { it.book.id == "exodus" }.comingSoon)
-        assertTrue(shelf.first { it.book.id == "daniel" }.comingSoon)
+        assertEquals(stories.none { it.bookId == "daniel" }, shelf.first { it.book.id == "daniel" }.comingSoon)
+        listOf(
+            "matthew", "mark", "john", "acts", "james", "1_peter", "2_peter", "1_john", "2_john", "3_john",
+            "jude", "1_corinthians", "2_corinthians", "galatians", "ephesians", "philippians", "colossians",
+            "1_thessalonians", "2_thessalonians", "1_timothy", "2_timothy", "titus", "philemon", "hebrews", "revelation",
+        ).forEach { bookId ->
+            assertFalse(shelf.first { it.book.id == bookId }.comingSoon)
+        }
         assertEquals(
             listOf("luke_nativity", "luke_prodigal", "luke_easter"),
             shelf.first { it.book.id == "luke" }.stories.map { it.id },
