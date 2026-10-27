@@ -81,6 +81,14 @@ class KidsBiblePilotTest {
                 byId.getValue("eph_grace").keyVerse,
             )
         }
+        assertEquals(
+            "Не мсти и не имей злобы на сынов народа твоего, но люби ближнего твоего, как самого себя. Я Господь [Бог ваш].",
+            byId.getValue("lev_neighbor").keyVerse,
+        )
+        assertEquals(
+            "Если же и не будет того, то да будет известно тебе, царь, что мы богам твоим служить не будем и золотому истукану, которого ты поставил, не поклонимся.",
+            byId.getValue("dan_furnace").keyVerse,
+        )
         stories.forEach { story ->
             assertEquals(KidsBibleAge.entries.toSet(), story.tracks.keys)
             assertTrue(story.images.isNotEmpty())
@@ -126,7 +134,8 @@ class KidsBiblePilotTest {
         assertFalse(shelf.first { it.book.id == "genesis" }.comingSoon)
         assertEquals(4, shelf.first { it.book.id == "genesis" }.stories.size)
         assertFalse(shelf.first { it.book.id == "exodus" }.comingSoon)
-        assertEquals(stories.none { it.bookId == "daniel" }, shelf.first { it.book.id == "daniel" }.comingSoon)
+        assertFalse(shelf.first { it.book.id == "daniel" }.comingSoon)
+        assertTrue(shelf.none { it.comingSoon })
         listOf(
             "matthew", "mark", "john", "acts", "james", "1_peter", "2_peter", "1_john", "2_john", "3_john",
             "jude", "1_corinthians", "2_corinthians", "galatians", "ephesians", "philippians", "colossians",
