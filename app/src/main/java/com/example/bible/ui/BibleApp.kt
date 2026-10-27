@@ -6012,7 +6012,7 @@ private fun DailyVerseCard(
     ) {
         Box(
             modifier = Modifier
-                .fillMaxSize()
+                .then(if (expanded) Modifier.fillMaxSize() else Modifier.fillMaxWidth())
                 .background(gradientBrush),
         ) {
             Icon(
