@@ -1,6 +1,6 @@
 {
-  "versionCode": 14,
-  "versionName": "2.4",
+  "versionCode": 15,
+  "versionName": "2.5",
   "apkUrl": "https://github.com/ValentinK2410/Bibleapp/releases/latest/download/Bible.apk",
-  "notes": "В «Детям» пилот «Детской Библии»: 12 историй, три возраста, голос без сети, код родителя"
+  "notes": "Детская Библия 2.5: история у каждой книги, своя озвучка родителя, новые тексты пока без голоса"
 }
