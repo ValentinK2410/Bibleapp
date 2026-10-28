@@ -421,7 +421,7 @@ private fun TheoryHandbookTab() {
         itemsIndexed(theoryHandbook, key = { _, s -> s.title }) { index, section ->
             val open = index in expanded
             Column(
-                Modifier
+        Modifier
                     .fillMaxWidth()
                     .clip(RoundedCornerShape(24.dp))
                     .background(MaterialTheme.colorScheme.surfaceContainerLow)
@@ -544,7 +544,7 @@ private fun NotesSandboxTab(notes: SnapshotStateList<StaffNote>) {
                         playingIndex = i
                         keyHighlight = n.midi
                         val started = System.currentTimeMillis()
-                        withContext(Dispatchers.IO) {
+        withContext(Dispatchers.IO) {
                             SineTonePlayer.playMidiNoteBlocking(n.midi, (durMs * 0.92f).toInt().coerceIn(40, 4000), timbre = timbre)
                         }
                         val rest = durMs - (System.currentTimeMillis() - started)
@@ -639,7 +639,7 @@ private fun NotesSandboxTab(notes: SnapshotStateList<StaffNote>) {
                     )
                 }
                 if (notes.isEmpty()) {
-                    Text(
+            Text(
                         "Нажмите на стан или на клавиши ниже",
                         color = Color(0xFF7C3AED),
                         fontWeight = FontWeight.Bold,
@@ -714,7 +714,7 @@ private fun MusicStaffDurationIcon(beats: Float, color: Color) {
         val cy = size.height - headH
         if (beats >= 2f) {
             drawOval(color, Offset(0f, cy - headH / 2), androidx.compose.ui.geometry.Size(headW, headH), style = androidx.compose.ui.graphics.drawscope.Stroke(2.5f))
-        } else {
+                    } else {
             drawOval(color, Offset(0f, cy - headH / 2), androidx.compose.ui.geometry.Size(headW, headH))
         }
         if (beats < 4f) {
@@ -884,7 +884,7 @@ private fun NotesTrainerTab(prefs: SharedPreferences) {
                         fontSize = if (mode == TrainerMode.INTERVAL) 17 else 26,
                         appearKey = roundKey,
                         modifier = Modifier.weight(1f),
-                        onClick = {
+            onClick = {
                             if (solved) return@KidsAnswerTile
                             val firstTry = picked == null
                             picked = opt
@@ -1035,7 +1035,7 @@ private fun PitchListenerTab(onSendToSandbox: (List<StaffNote>) -> Unit) {
                         if (shown != null) {
                             hz = shown
                             hasSignal = true
-                        } else {
+                            } else {
                             hasSignal = false
                         }
                         if (autoRecord && playJob?.isActive != true) {
@@ -1150,7 +1150,7 @@ private fun PitchListenerTab(onSendToSandbox: (List<StaffNote>) -> Unit) {
                         highlight = playingIndex,
                         noteSpacingPx = spacing,
                         accent = MusicTunerGradient.last(),
-                        modifier = Modifier
+        modifier = Modifier
                             .width(widthDp)
                             .fillMaxHeight()
                             .padding(horizontal = 4.dp),
@@ -1186,7 +1186,7 @@ private fun PitchListenerTab(onSendToSandbox: (List<StaffNote>) -> Unit) {
                     .clickable(enabled = captured.isNotEmpty()) {
                         if (playing) {
                             playJob?.cancel()
-                        } else {
+                } else {
                             capture.finish(System.currentTimeMillis())
                             syncCaptured(captured, capture.notes())
                             playJob = scope.launch {
