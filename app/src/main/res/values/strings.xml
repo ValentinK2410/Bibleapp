@@ -949,7 +949,8 @@
     <string name="timemark_chapter_has_cues_cd">У главы есть таймкоды</string>
     <string name="song_lyric_sync_cd">Автоподсветка текста по таймкоду</string>
     <string name="song_lyric_timing_title">Таймкоды строк</string>
-    <string name="song_lyric_timing_hint">Воспроизведите аудио и в нужный момент нажмите на строку текста — для неё сохранится время. Строки совпадают с полем «Текст песни» (каждая с новой строки).</string>
+    <string name="song_lyric_timing_hint">Выберите фонограмму, включите её и в нужный момент нажмите на строку. Метка сохранится только для этой фонограммы.</string>
+    <string name="song_lyric_timing_track">Фонограмма для таймкодов</string>
     <string name="song_lyric_timing_pick_line">Нажмите на строку, чтобы поставить метку в текущей позиции трека</string>
     <string name="song_lyric_timing_marks">Метки времени</string>
     <string name="song_lyric_timing_delete_mark">Удалить метку</string>

@@ -6,6 +6,8 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
+import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -20,6 +22,7 @@ import androidx.compose.material.icons.filled.Pause
 import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.FilterChip
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -38,9 +41,11 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.example.bible.R
 import com.example.bible.data.SongLyricCue
+import com.example.bible.data.lyricCuesForAudio
 import com.example.bible.data.mergeSongLyricCue
 import kotlinx.coroutines.delay
 import java.io.File
@@ -54,15 +59,23 @@ private fun formatMs(ms: Long): String {
     return "%d:%02d".format(m, r)
 }
 
+@OptIn(ExperimentalLayoutApi::class)
 @Composable
 fun SongLyricTimingEditor(
     lyrics: String,
-    audioPath: String,
+    tracks: List<Pair<String, String>>,
+    selectedPath: String,
+    onSelectPath: (String) -> Unit,
     cues: List<SongLyricCue>,
     onCuesChange: (List<SongLyricCue>) -> Unit,
     modifier: Modifier = Modifier,
 ) {
     val lines = remember(lyrics) { lyrics.split("\n") }
+    val audioPath = selectedPath
+    val firstPath = tracks.firstOrNull()?.first
+    val trackCues = remember(cues, audioPath, firstPath) {
+        lyricCuesForAudio(cues, audioPath, firstPath)
+    }
     if (lines.isEmpty() || audioPath.isBlank()) return
 
     var player by remember { mutableStateOf<MediaPlayer?>(null) }
@@ -70,7 +83,7 @@ fun SongLyricTimingEditor(
     var durationMs by remember { mutableLongStateOf(0L) }
     var isPlaying by remember { mutableStateOf(false) }
 
-    val markedLineIndices = remember(cues) { cues.map { it.lineIndex }.toSet() }
+    val markedLineIndices = remember(trackCues) { trackCues.map { it.lineIndex }.toSet() }
 
     DisposableEffect(audioPath) {
         val f = File(audioPath)
@@ -137,6 +150,30 @@ fun SongLyricTimingEditor(
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                 modifier = Modifier.padding(top = 4.dp),
             )
+            if (tracks.size > 1) {
+                Text(
+                    stringResource(R.string.song_lyric_timing_track),
+                    style = MaterialTheme.typography.labelMedium,
+                    modifier = Modifier.padding(top = 8.dp),
+                )
+                FlowRow(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(top = 6.dp),
+                    horizontalArrangement = Arrangement.spacedBy(6.dp),
+                    verticalArrangement = Arrangement.spacedBy(6.dp),
+                ) {
+                    tracks.forEach { (path, label) ->
+                        FilterChip(
+                            selected = path == audioPath,
+                            onClick = { onSelectPath(path) },
+                            label = {
+                                Text(label, maxLines = 1, overflow = TextOverflow.Ellipsis)
+                            },
+                        )
+                    }
+                }
+            }
 
             Row(
                 verticalAlignment = Alignment.CenterVertically,
@@ -212,7 +249,7 @@ fun SongLyricTimingEditor(
                             .clip(RoundedCornerShape(8.dp))
                             .background(bg)
                             .clickable(enabled = player != null) {
-                                onCuesChange(mergeSongLyricCue(cues, positionMs, idx))
+                                onCuesChange(mergeSongLyricCue(cues, positionMs, idx, audioPath, firstPath))
                             }
                             .padding(horizontal = 10.dp, vertical = 10.dp),
                         verticalAlignment = Alignment.Top,
@@ -233,13 +270,13 @@ fun SongLyricTimingEditor(
                 }
             }
 
-            if (cues.isNotEmpty()) {
+            if (trackCues.isNotEmpty()) {
                 Text(
                     stringResource(R.string.song_lyric_timing_marks),
                     style = MaterialTheme.typography.labelSmall,
                     modifier = Modifier.padding(top = 10.dp),
                 )
-                cues.sortedBy { it.timeMs }.forEach { c ->
+                trackCues.sortedBy { it.timeMs }.forEach { c ->
                     Row(
                         modifier = Modifier
                             .fillMaxWidth()

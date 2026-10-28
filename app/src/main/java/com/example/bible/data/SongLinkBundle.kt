@@ -205,6 +205,7 @@ object SongLinkBundle {
                             JSONObject().apply {
                                 put("t", c.timeMs)
                                 put("i", c.lineIndex)
+                                if (c.audioPath.isNotBlank()) put("a", c.audioPath)
                             },
                         )
                     }
@@ -235,7 +236,11 @@ object SongLinkBundle {
             val arr = j.getJSONArray("lyricCues")
             (0 until arr.length()).map { idx ->
                 val o = arr.getJSONObject(idx)
-                SongLyricCue(timeMs = o.getLong("t"), lineIndex = o.getInt("i"))
+                SongLyricCue(
+                    timeMs = o.getLong("t"),
+                    lineIndex = o.getInt("i"),
+                    audioPath = o.optString("a", ""),
+                )
             }
         } else {
             emptyList()

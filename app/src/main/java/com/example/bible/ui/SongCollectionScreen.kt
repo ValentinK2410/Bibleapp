@@ -161,6 +161,9 @@ import androidx.compose.ui.graphics.Brush
 import com.example.bible.data.SongChordMarkup
 import com.example.bible.data.decodeHtmlEntities
 import com.example.bible.data.currentLineIndexForSong
+import com.example.bible.data.dropLyricCuesForAudio
+import com.example.bible.data.lyricCuesForAudio
+import com.example.bible.data.retargetLyricCues
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
@@ -1649,9 +1652,12 @@ private fun AddSongSheet(
 
                     if (pickedAudioPath != null && lyrics.isNotBlank()) {
                         Spacer(Modifier.height(12.dp))
+                        val newTrack = pickedAudioPath!!
                         SongLyricTimingEditor(
                             lyrics = lyrics,
-                            audioPath = pickedAudioPath!!,
+                            tracks = listOf(newTrack to File(newTrack).nameWithoutExtension.ifBlank { File(newTrack).name }),
+                            selectedPath = newTrack,
+                            onSelectPath = {},
                             cues = lyricCues,
                             onCuesChange = { lyricCues = it },
                         )
@@ -2223,6 +2229,8 @@ private fun SongEditAudioSection(
     onLinkUrlChange: (String) -> Unit,
     audioPaths: MutableList<String>,
     audioLabels: MutableList<String>,
+    onAudioReplaced: (oldPath: String, newPath: String, wasFirst: Boolean) -> Unit = { _, _, _ -> },
+    onAudioRemoved: (path: String, wasFirst: Boolean) -> Unit = { _, _ -> },
 ) {
     val context = LocalContext.current
     val clipboard = LocalClipboardManager.current
@@ -2249,6 +2257,8 @@ private fun SongEditAudioSection(
                     val (path, label) = copied
                     val idx = replaceIndex
                     if (idx != null && idx in audioPaths.indices) {
+                        val oldPath = audioPaths[idx]
+                        val wasFirst = idx == 0
                         audioPaths[idx] = path
                         if (idx in audioLabels.indices) {
                             audioLabels[idx] = label
@@ -2256,6 +2266,7 @@ private fun SongEditAudioSection(
                             while (audioLabels.size < idx) audioLabels.add("")
                             audioLabels.add(label)
                         }
+                        onAudioReplaced(oldPath, path, wasFirst)
                     } else {
                         audioPaths.add(path)
                         audioLabels.add(label)
@@ -2320,8 +2331,13 @@ private fun SongEditAudioSection(
                     }
                     IconButton(
                         onClick = {
-                            if (idx in audioPaths.indices) audioPaths.removeAt(idx)
-                            if (idx in audioLabels.indices) audioLabels.removeAt(idx)
+                            if (idx in audioPaths.indices) {
+                                val oldPath = audioPaths[idx]
+                                val wasFirst = idx == 0
+                                audioPaths.removeAt(idx)
+                                if (idx in audioLabels.indices) audioLabels.removeAt(idx)
+                                onAudioRemoved(oldPath, wasFirst)
+                            }
                         },
                         modifier = Modifier.size(36.dp),
                     ) {
@@ -2529,6 +2545,7 @@ private fun SongViewScreen(
     val editAudioPaths = remember(song.id) { mutableStateListOf<String>() }
     val editAudioLabels = remember(song.id) { mutableStateListOf<String>() }
     var lyricsFontSize by remember { mutableFloatStateOf(songFontSize) }
+    var timingPath by remember(song.id) { mutableStateOf(song.audioPaths.firstOrNull { File(it).exists() }) }
     var transpose by remember(song.id) { mutableIntStateOf(0) }
     val context = LocalContext.current
     val hasLyricChords = remember(song.lyrics) { SongChordMarkup.hasChords(song.lyrics) }
@@ -2563,9 +2580,14 @@ private fun SongViewScreen(
     val hasVideo = song.videoPath != null && File(song.videoPath).exists()
     val hasAudio = activeAudioPath != null
     val hasPlayerBar = hasAudio && !hasVideo
+    val trackCues = if (activeAudioPath == null) {
+        emptyList()
+    } else {
+        lyricCuesForAudio(song.lyricCues, activeAudioPath, song.audioPaths.firstOrNull())
+    }
     val useKaraoke =
         highlightLineWhilePlaying &&
-            song.hasLyricSync() &&
+            trackCues.isNotEmpty() &&
             song.lyrics.isNotBlank() &&
             hasAudio &&
             !hasVideo &&
@@ -2979,13 +3001,29 @@ private fun SongViewScreen(
                         onLinkUrlChange = { editLinkUrl = it },
                         audioPaths = editAudioPaths,
                         audioLabels = editAudioLabels,
+                        onAudioReplaced = { oldPath, newPath, wasFirst ->
+                            editLyricCues = retargetLyricCues(editLyricCues, oldPath, newPath, wasFirst)
+                            if (timingPath == oldPath) timingPath = newPath
+                        },
+                        onAudioRemoved = { path, wasFirst ->
+                            editLyricCues = dropLyricCuesForAudio(editLyricCues, path, wasFirst)
+                            if (timingPath == path) timingPath = null
+                        },
                     )
-                    val timingAudioPath = editAudioPaths.firstOrNull { File(it).exists() }
+                    val timingTracks = editAudioPaths.mapIndexed { index, path ->
+                        val label = editAudioLabels.getOrNull(index)?.takeIf { it.isNotBlank() }
+                            ?: File(path).nameWithoutExtension.ifBlank { File(path).name }
+                        path to label
+                    }.filter { File(it.first).exists() }
+                    val timingAudioPath = timingTracks.firstOrNull { it.first == timingPath }?.first
+                        ?: timingTracks.firstOrNull()?.first
                     if (timingAudioPath != null && editLyrics.isNotBlank()) {
                         Spacer(Modifier.height(12.dp))
                         SongLyricTimingEditor(
                             lyrics = editLyrics,
-                            audioPath = timingAudioPath,
+                            tracks = timingTracks,
+                            selectedPath = timingAudioPath,
+                            onSelectPath = { timingPath = it },
                             cues = editLyricCues,
                             onCuesChange = { editLyricCues = it },
                         )
@@ -2996,9 +3034,9 @@ private fun SongViewScreen(
                             val syncPath = activeAudioPath!!
                             val ps by AudioPlayerHolder.state.collectAsState()
                             val lineLines = remember(song.lyrics) { song.lyrics.split("\n") }
-                            val activeLine = remember(ps.positionMs, ps.audioPath, song.lyricCues, syncPath) {
+                            val activeLine = remember(ps.positionMs, ps.audioPath, trackCues, syncPath) {
                                 if (syncPath == ps.audioPath) {
-                                    currentLineIndexForSong(ps.positionMs, song.lyricCues)
+                                    currentLineIndexForSong(ps.positionMs, trackCues)
                                 } else {
                                     null
                                 }
@@ -3322,6 +3360,21 @@ private fun SongLandscapeReadingBar(
                         if (isPlaying) "Пауза" else "Играть",
                         Modifier.size(30.dp),
                         tint = MaterialTheme.colorScheme.primary,
+                    )
+                }
+                IconButton(
+                    onClick = { onShowPlayerChange(!showPlayer) },
+                    modifier = Modifier.size(48.dp),
+                ) {
+                    Icon(
+                        Icons.Default.MusicNote,
+                        if (showPlayer) "Скрыть озвучку" else "Показать озвучку",
+                        Modifier.size(28.dp),
+                        tint = if (showPlayer) {
+                            MaterialTheme.colorScheme.primary
+                        } else {
+                            MaterialTheme.colorScheme.onSurfaceVariant
+                        },
                     )
                 }
             }

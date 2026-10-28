@@ -146,7 +146,7 @@ object SongSharePackage {
             "${mediaPrefix}$zipFileName"
         }
 
-        val songJson = songToPortableJson(song, relativePaths, labels)
+        val songJson = songToPortableJson(song, audioFiles, relativePaths, labels)
         val songEntry = "${prefix}$SONG_JSON_NAME"
         zos.putNextEntry(ZipEntry(songEntry))
         zos.write(songJson.toString().toByteArray(Charsets.UTF_8))
@@ -320,7 +320,7 @@ object SongSharePackage {
             extracted.copyTo(final, overwrite = true)
             final.absolutePath
         }
-        return songFromPortableJson(sj, newAudioPaths, labels)
+        return songFromPortableJson(sj, relList, newAudioPaths, labels)
     }
 
     private fun readAudioLabels(sj: JSONObject, relList: List<String>): List<String> {
@@ -529,9 +529,22 @@ object SongSharePackage {
 
     private fun songToPortableJson(
         song: SongItem,
+        audioFiles: List<File>,
         relativeAudioPaths: List<String>,
         labels: List<String>,
     ): JSONObject {
+        val audioPathToRelative = buildMap {
+            audioFiles.forEachIndexed { i, file ->
+                val rel = relativeAudioPaths.getOrNull(i) ?: return@forEachIndexed
+                put(file.absolutePath, rel)
+                put(file.path, rel)
+            }
+            song.audioPaths.forEach { path ->
+                val rel = this[File(path).absolutePath] ?: this[path]
+                if (rel != null) put(path, rel)
+            }
+        }
+        val firstAudio = audioFiles.firstOrNull()?.absolutePath
         return JSONObject().apply {
             put("title", song.title)
             put("artist", song.artist)
@@ -559,6 +572,9 @@ object SongSharePackage {
                                 JSONObject().apply {
                                     put("t", c.timeMs)
                                     put("i", c.lineIndex)
+                                    val abs = c.audioPath.ifBlank { firstAudio }
+                                    val rel = abs?.let { audioPathToRelative[it] }
+                                    if (!rel.isNullOrBlank()) put("a", rel)
                                 },
                             )
                         }
@@ -572,14 +588,21 @@ object SongSharePackage {
 
     private fun songFromPortableJson(
         j: JSONObject,
+        relativeAudioPaths: List<String>,
         resolvedAudioPaths: List<String>,
         labels: List<String>,
     ): SongItem {
+        val relativeToAbsolute = relativeAudioPaths.zip(resolvedAudioPaths).toMap()
         val lyricCues = if (j.has("lyricCues")) {
             val arr = j.getJSONArray("lyricCues")
             (0 until arr.length()).map { idx ->
                 val o = arr.getJSONObject(idx)
-                SongLyricCue(timeMs = o.getLong("t"), lineIndex = o.getInt("i"))
+                val stored = o.optString("a", "")
+                SongLyricCue(
+                    timeMs = o.getLong("t"),
+                    lineIndex = o.getInt("i"),
+                    audioPath = relativeToAbsolute[stored] ?: "",
+                )
             }
         } else {
             emptyList()

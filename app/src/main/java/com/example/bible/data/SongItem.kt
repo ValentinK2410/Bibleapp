@@ -11,6 +11,8 @@ import java.util.UUID
 data class SongLyricCue(
     val timeMs: Long,
     val lineIndex: Int,
+    /** Путь фонограммы. Пустая строка — старые метки, они относятся к первой дорожке. */
+    val audioPath: String = "",
 )
 
 data class SongItem(
@@ -28,7 +30,7 @@ data class SongItem(
     val sourceUrl: String? = null,
     val tags: List<String> = emptyList(),
     val createdAt: Long = System.currentTimeMillis(),
-    /** Таймкоды строк: синхрон с первым файлом из [audioPaths]. */
+    /** Таймкоды строк. У каждой фонограммы свой набор; старые метки без пути — у первой дорожки. */
     val lyricCues: List<SongLyricCue> = emptyList(),
 ) {
     /** Первая дорожка (совместимость со старым полем `audio`). */
@@ -76,6 +78,7 @@ data class SongItem(
                             JSONObject().apply {
                                 put("t", c.timeMs)
                                 put("i", c.lineIndex)
+                                if (c.audioPath.isNotBlank()) put("a", c.audioPath)
                             },
                         )
                     }
@@ -130,6 +133,7 @@ data class SongItem(
                     SongLyricCue(
                         timeMs = o.getLong("t"),
                         lineIndex = o.getInt("i"),
+                        audioPath = o.optString("a", ""),
                     )
                 }
             } else {
