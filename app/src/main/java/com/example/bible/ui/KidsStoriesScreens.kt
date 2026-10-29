@@ -1078,7 +1078,22 @@ internal class StoryAudio(private val context: Context) {
                 return
             }
             val (key, text, scene) = steps[index]
-            playClip(story.id, key, text, scene, gen) { run(index + 1) }
+            // Для заголовка не вызываем onSpeaking(-1), а сразу переходим к первому тексту
+            if (key == "title") {
+                playClip(story.id, key, text, scene, gen) {
+                    if (gen == generation) {
+                        // После заголовка — сразу первый текст
+                        if (scenes.isNotEmpty()) {
+                            onSpeaking(0)
+                            run(1)
+                        } else {
+                            onActive(false)
+                        }
+                    }
+                }
+            } else {
+                playClip(story.id, key, text, scene, gen) { run(index + 1) }
+            }
         }
         run(0)
     }
