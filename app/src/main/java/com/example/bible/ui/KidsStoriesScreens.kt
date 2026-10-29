@@ -1040,7 +1040,7 @@ internal class StoryAudio(private val context: Context) {
         onActive(false)
     }
 
-    fun playAll(story: KidsBibleStory, scenes: List<String> = story.paragraphs) {
+    fun playAll(story: KidsBibleStory, scenes: List<String> = story.paragraphs, includeTitle: Boolean = true) {
         stopPlayback()
         val gen = generation
         onActive(true)
@@ -1054,7 +1054,9 @@ internal class StoryAudio(private val context: Context) {
             return
         }
         val steps = buildList {
-            add(Triple("title", story.title, -1))
+            if (includeTitle) {
+                add(Triple("title", story.title, -1))
+            }
             scenes.forEachIndexed { index, text ->
                 add(Triple(KidsStoryVoice.paragraphKey(index), text, index))
             }

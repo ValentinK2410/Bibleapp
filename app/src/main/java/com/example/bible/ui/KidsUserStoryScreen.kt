@@ -10,6 +10,8 @@ import android.speech.tts.UtteranceProgressListener
 import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.animation.Crossfade
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -561,12 +563,13 @@ internal fun KidsUserStoryScreen(
     }
 
     // Автоскролл к тексту, который сейчас читается
+    // LazyColumn: item 0 = картинка, item 1+ = текстовые блоки
     LaunchedEffect(speakingIndex, playbackActive) {
         if (playbackActive && speakingIndex >= 0) {
-            val blockIdx = blockIndexForText(speakingIndex)
-            if (blockIdx >= 0 && blockIdx < story.blocks.size) {
-                listState.animateScrollToItem(blockIdx)
-            }
+            // speakingIndex — это индекс текстового блока (0, 1, 2...)
+            // В LazyColumn: item 0 = картинка, item 1 = text 0, item 2 = text 1...
+            val listIndex = 1 + speakingIndex
+            listState.animateScrollToItem(listIndex)
         }
     }
 
@@ -578,7 +581,7 @@ internal fun KidsUserStoryScreen(
             repeat(30) {
                 if (audio.tts != null && !playbackActive) {
                     delay(300) // Дополнительная задержка для уверенности
-                    audio.playAll(bible, texts)
+                    audio.playAll(bible, texts, includeTitle = false)
                     return@LaunchedEffect
                 }
                 delay(100) // Проверяем каждые 100мс, максимум 3сек
@@ -657,7 +660,7 @@ internal fun KidsUserStoryScreen(
                                 } else if (audio.tts == null && !hasVoice(KidsStoryVoice.WHOLE)) {
                                     Toast.makeText(context, "Голос ещё загружается", Toast.LENGTH_SHORT).show()
                                 } else {
-                                    audio.playAll(bible, texts)
+                                    audio.playAll(bible, texts, includeTitle = false)
                                 }
                             }
                             .padding(horizontal = 22.dp, vertical = 12.dp),
@@ -691,23 +694,56 @@ internal fun KidsUserStoryScreen(
                     }
                 }
             }
-            itemsIndexed(story.blocks, key = { index, block -> "$index-${block.kind}-${block.image}-${block.text.take(12)}" }) { index, block ->
-                if (block.isImage) {
-                    // Показываем все картинки всегда
-                    val file = story.imageFile(context, block)
-                    val bitmap = remember(block.image) { file?.let { decodeKidsStoryBitmap(it) } }
-                    if (bitmap != null) {
-                        Image(
-                            bitmap = bitmap,
-                            contentDescription = null,
-                            modifier = Modifier
+            // Область с картинками — слайд-шоу с fade переходом
+            item {
+                val imageBlocks = story.blocks.filter { it.isImage }
+                if (imageBlocks.isNotEmpty()) {
+                    val activeImageKey = if (playbackActive && speakingIndex >= 0) {
+                        // Во время воспроизведения — показываем активную картинку
+                        val currentImage = activeImageForText(speakingIndex)
+                        currentImage?.image
+                    } else {
+                        null
+                    }
+
+                    Crossfade(
+                        targetState = activeImageKey,
+                        animationSpec = tween(durationMillis = 600, easing = androidx.compose.animation.core.LinearOutSlowInEasing),
+                        label = "Image slideshow",
+                    ) { imageKey ->
+                        Box(
+                            Modifier
                                 .fillMaxWidth()
                                 .aspectRatio(4f / 3f)
-                                .clip(RoundedCornerShape(20.dp)),
-                            contentScale = ContentScale.Crop,
-                        )
+                                .clip(RoundedCornerShape(24.dp))
+                                .background(MaterialTheme.colorScheme.surfaceContainerLow),
+                            contentAlignment = Alignment.Center,
+                        ) {
+                            val file = imageBlocks.firstOrNull { it.image == imageKey }?.let { story.imageFile(context, it) }
+                            val bitmap = remember(imageKey) { file?.let { decodeKidsStoryBitmap(it) } }
+                            if (bitmap != null) {
+                                Image(
+                                    bitmap = bitmap,
+                                    contentDescription = null,
+                                    modifier = Modifier
+                                        .fillMaxSize()
+                                        .clip(RoundedCornerShape(24.dp)),
+                                    contentScale = ContentScale.Crop,
+                                )
+                            } else if (imageKey != null) {
+                                Text(
+                                    "📖",
+                                    fontSize = 48.sp,
+                                    modifier = Modifier.padding(16.dp),
+                                )
+                            }
+                        }
                     }
-                } else {
+                }
+            }
+            // Тексты — просто подсвечиваются
+            itemsIndexed(story.blocks, key = { index, block -> "$index-${block.kind}-${block.image}-${block.text.take(12)}" }) { index, block ->
+                if (!block.isImage) {
                     val textIndex = story.blocks.take(index).count { !it.isImage }
                     val key = KidsStoryVoice.paragraphKey(textIndex)
                     val active = speakingIndex == textIndex
@@ -715,14 +751,14 @@ internal fun KidsUserStoryScreen(
                         Modifier
                             .fillMaxWidth()
                             .clip(RoundedCornerShape(20.dp))
-                            .background(if (active) accent.copy(alpha = 0.16f) else MaterialTheme.colorScheme.surfaceContainerLow)
-                            .border(if (active) 2.dp else 0.dp, if (active) accent else Color.Transparent, RoundedCornerShape(20.dp))
-                            .padding(16.dp),
+                            .background(if (active) accent.copy(alpha = 0.12f) else MaterialTheme.colorScheme.surfaceContainerLow)
+                            .padding(14.dp),
                     ) {
                         Text(
                             block.text,
-                            fontSize = 21.sp,
-                            lineHeight = 30.sp,
+                            fontSize = 20.sp,
+                            lineHeight = 28.sp,
+                            color = if (active) accent else MaterialTheme.colorScheme.onSurface,
                             modifier = Modifier.clickable {
                                 if (recordingKey != null) {
                                     Toast.makeText(context, "Сначала сохраните запись", Toast.LENGTH_SHORT).show()
