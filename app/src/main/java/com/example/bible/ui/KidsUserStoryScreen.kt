@@ -699,23 +699,24 @@ internal fun KidsUserStoryScreen(
                 val imageBlocks = story.blocks.filter { it.isImage }
                 if (imageBlocks.isNotEmpty()) {
                     // Определяем какую картинку показывать
-                    val activeImageKey = if (playbackActive && speakingIndex >= 0) {
+                    val activeImageBlock = if (playbackActive && speakingIndex >= 0) {
                         // Во время воспроизведения — активная картинка для текущего текста
-                        val currentImage = activeImageForText(speakingIndex)
-                        currentImage?.image
+                        activeImageForText(speakingIndex)
                     } else if (playbackActive && speakingIndex == -1) {
                         // WHOLE голос или заголовок — показываем cover image
-                        imageBlocks.firstOrNull()?.image
+                        imageBlocks.firstOrNull()
                     } else {
                         // Не воспроизведение — показываем cover image (первую картинку)
-                        imageBlocks.firstOrNull()?.image
+                        imageBlocks.firstOrNull()
                     }
 
                     Crossfade(
-                        targetState = activeImageKey,
+                        targetState = activeImageBlock,
                         animationSpec = tween(durationMillis = 600, easing = androidx.compose.animation.core.LinearOutSlowInEasing),
                         label = "Image slideshow",
-                    ) { imageKey ->
+                    ) { imageBlock ->
+                        val file = imageBlock?.let { story.imageFile(context, it) }
+                        val bitmap = imageBlock?.let { story.imageFile(context, it) }?.let { decodeKidsStoryBitmap(it) }
                         Box(
                             Modifier
                                 .fillMaxWidth()
@@ -724,8 +725,6 @@ internal fun KidsUserStoryScreen(
                                 .background(MaterialTheme.colorScheme.surfaceContainerLow),
                             contentAlignment = Alignment.Center,
                         ) {
-                            val file = imageBlocks.firstOrNull { it.image == imageKey }?.let { story.imageFile(context, it) }
-                            val bitmap = remember(imageKey) { file?.let { decodeKidsStoryBitmap(it) } }
                             if (bitmap != null) {
                                 Image(
                                     bitmap = bitmap,
