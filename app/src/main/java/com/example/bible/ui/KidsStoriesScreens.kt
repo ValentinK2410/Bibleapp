@@ -1157,6 +1157,8 @@ internal class StoryAudio(private val context: Context) {
         if (engine == null || gen != generation) {
             onSpeaking(-1)
             onActive(false)
+            // Не обрываем цепочку — вызываем next для продолжения
+            next()
             return
         }
         val utterance = "v${gen}_$key"
