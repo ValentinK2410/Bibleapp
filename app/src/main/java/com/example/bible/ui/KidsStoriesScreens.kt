@@ -1155,9 +1155,8 @@ internal class StoryAudio(private val context: Context) {
     private fun speakOrStop(text: String, key: String, gen: Int, next: () -> Unit) {
         val engine = tts
         if (engine == null || gen != generation) {
-            onSpeaking(-1)
-            onActive(false)
-            // Не обрываем цепочку — вызываем next для продолжения
+            // НЕ вызываем onSpeaking(-1) — это сбрасывает speakingIndex и ломает автоскролл
+            // Просто вызываем next для продолжения цепочки
             next()
             return
         }
