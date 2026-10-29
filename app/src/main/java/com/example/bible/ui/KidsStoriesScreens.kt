@@ -1050,8 +1050,6 @@ internal class StoryAudio(private val context: Context) {
         val gen = generation
         onActive(true)
         if (KidsStoryVoice.has(context, story.id, KidsStoryVoice.WHOLE)) {
-            // Для WHOLE голоса не вызываем onSpeaking во время воспроизведения
-            // Картинки будут показываться все
             playClip(story.id, KidsStoryVoice.WHOLE, story.title, -1, gen) {
                 if (gen == generation) {
                     onActive(false)
@@ -1060,9 +1058,8 @@ internal class StoryAudio(private val context: Context) {
             return
         }
         val steps = buildList {
-            if (includeTitle) {
-                add(Triple("title", story.title, -1))
-            }
+            // Не добавляем заголовок — он ломает speakingIndex и автоскролл
+            // Начинаем сразу с первого текста
             scenes.forEachIndexed { index, text ->
                 add(Triple(KidsStoryVoice.paragraphKey(index), text, index))
             }
@@ -1078,10 +1075,6 @@ internal class StoryAudio(private val context: Context) {
                 return
             }
             val (key, text, scene) = steps[index]
-            // Для заголовка — сразу устанавливаем speakingIndex=0 чтобы автоскролл работал
-            if (key == "title" && scenes.isNotEmpty()) {
-                onSpeaking(0)
-            }
             playClip(story.id, key, text, scene, gen) { run(index + 1) }
         }
         run(0)
