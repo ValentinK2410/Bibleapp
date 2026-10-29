@@ -1078,22 +1078,11 @@ internal class StoryAudio(private val context: Context) {
                 return
             }
             val (key, text, scene) = steps[index]
-            // Для заголовка не вызываем onSpeaking(-1), а сразу переходим к первому тексту
-            if (key == "title") {
-                playClip(story.id, key, text, scene, gen) {
-                    if (gen == generation) {
-                        // После заголовка — сразу первый текст
-                        if (scenes.isNotEmpty()) {
-                            onSpeaking(0)
-                            run(1)
-                        } else {
-                            onActive(false)
-                        }
-                    }
-                }
-            } else {
-                playClip(story.id, key, text, scene, gen) { run(index + 1) }
+            // Для заголовка — сразу устанавливаем speakingIndex=0 чтобы автоскролл работал
+            if (key == "title" && scenes.isNotEmpty()) {
+                onSpeaking(0)
             }
+            playClip(story.id, key, text, scene, gen) { run(index + 1) }
         }
         run(0)
     }
@@ -1119,7 +1108,11 @@ internal class StoryAudio(private val context: Context) {
         next: () -> Unit,
     ) {
         if (gen != generation) return
-        onSpeaking(scene)
+        // Не вызываем onSpeaking для заголовка (scene == -1)
+        // иначе speakingIndex сбрасывается и ломает автопролистывание
+        if (scene >= 0) {
+            onSpeaking(scene)
+        }
         val file = KidsStoryVoice.file(context, storyId, key)
         if (file.exists() && file.length() > 800L) {
             val mp = MediaPlayer()
