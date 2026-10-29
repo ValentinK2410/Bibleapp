@@ -1275,6 +1275,7 @@ private fun BibleNavHost(
             KidsStoriesScreen(
                 onBack = { navController.navigateUp() },
                 onOpenStory = { id -> navController.navigate("kids_story/$id") },
+                onAddStory = { navController.navigate("kids_user_story/new") },
             )
         }
         composable("kids_bible") {
@@ -1320,6 +1321,19 @@ private fun BibleNavHost(
                 onPlayGame = { id -> navController.navigate("kids_story_game/$id") },
                 onOpenSong = { id -> navController.navigate("kids_songs/$id") },
                 onOpenColoring = { id -> navController.navigate("kids_coloring/$id") },
+                onEditUserStory = { id -> navController.navigate("kids_user_story/$id") },
+            )
+        }
+        composable("kids_user_story/{id}") { entry ->
+            val rawId = entry.arguments?.getString("id").orEmpty()
+            KidsUserStoryEditorScreen(
+                storyId = rawId.takeUnless { it == "new" },
+                onBack = { navController.navigateUp() },
+                onSaved = { savedId ->
+                    navController.navigate("kids_story/$savedId") {
+                        popUpTo("kids_stories")
+                    }
+                },
             )
         }
         composable("kids_story_game/{id}") { entry ->

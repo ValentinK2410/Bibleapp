@@ -16,10 +16,13 @@ import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.content.ContextCompat
 import androidx.compose.animation.animateColorAsState
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.clickable
+
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -84,6 +87,8 @@ import com.example.bible.data.AzbukaProgressRepository
 import com.example.bible.data.KidsAgeMode
 import com.example.bible.data.KidsBibleStories
 import com.example.bible.data.KidsBibleStory
+import com.example.bible.data.KidsUserStoriesStore
+import com.example.bible.data.KidsUserStory
 import com.example.bible.data.KidsColoringPages
 import com.example.bible.data.KidsFamilyStore
 import com.example.bible.data.KidsSongs
@@ -122,15 +127,18 @@ private fun KidsStoryIllustration(story: KidsBibleStory, modifier: Modifier = Mo
 fun KidsStoriesScreen(
     onBack: () -> Unit,
     onOpenStory: (String) -> Unit,
+    onAddStory: () -> Unit = {},
 ) {
     val context = LocalContext.current
     val repo = remember { AzbukaProgressRepository(context.applicationContext) }
     val read by repo.storiesRead.collectAsStateWithLifecycle(initialValue = emptySet())
     val family by KidsFamilyStore.state(context).collectAsStateWithLifecycle()
+    val userStories by KidsUserStoriesStore.stories(context).collectAsStateWithLifecycle()
     val mode = family.resolvedMode()
     var filter by rememberSaveable { mutableStateOf("mine") }
+    var parentGate by remember { mutableStateOf(false) }
     val readIds = if (family.activeChild() != null) family.activeProgress().stories else read
-    val visible = KidsBibleStories.all.filter { story ->
+    val bundled = KidsBibleStories.all.filter { story ->
         val ageOk = filter != "mine" || story.fitsAge(mode)
         val testamentOk = when (filter) {
             "ot" -> story.testament == "OT"
@@ -139,6 +147,8 @@ fun KidsStoriesScreen(
         }
         ageOk && testamentOk
     }
+    val showUser = filter == "mine" || filter == "all"
+    val totalCount = KidsBibleStories.all.size + userStories.size
     Scaffold(
         containerColor = MaterialTheme.colorScheme.background,
         topBar = {
@@ -172,7 +182,7 @@ fun KidsStoriesScreen(
                 ) {
                     Text("📖 Слушай и читай", color = Color.White, fontSize = 22.sp, fontWeight = FontWeight.Black)
                     Text(
-                        "Прочитано ${readIds.count { id -> KidsBibleStories.byId(id) != null }} из ${KidsBibleStories.all.size}. " +
+                        "Прочитано ${readIds.count { id -> KidsBibleStories.byId(id) != null || userStories.any { it.id == id } }} из $totalCount. " +
                             "Сейчас: ${mode.title}. «Для меня» прячет истории другого возраста, «Все» показывает каждую.",
                         color = Color.White.copy(alpha = 0.82f),
                         fontSize = 14.sp,
@@ -200,7 +210,26 @@ fun KidsStoriesScreen(
                     }
                 }
             }
-            if (visible.isEmpty()) {
+            item(span = { GridItemSpan(maxLineSpan) }) {
+                Text(
+                    "Для родителей: добавить историю",
+                    color = Color.White,
+                    fontWeight = FontWeight.Bold,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clip(RoundedCornerShape(18.dp))
+                        .background(Color(0xFF7C3AED))
+                        .clickable { parentGate = true }
+                        .padding(horizontal = 16.dp, vertical = 12.dp),
+                    textAlign = TextAlign.Center,
+                )
+            }
+            if (showUser) {
+                items(userStories, key = { it.id }) { story ->
+                    UserStoryCard(story, done = story.id in readIds, onClick = { onOpenStory(story.id) })
+                }
+            }
+            if (bundled.isEmpty() && (!showUser || userStories.isEmpty())) {
                 item(span = { GridItemSpan(maxLineSpan) }) {
                     Text(
                         "В этом списке историй нет. Нажмите «Все», чтобы увидеть остальные.",
@@ -209,7 +238,7 @@ fun KidsStoriesScreen(
                     )
                 }
             }
-            items(visible, key = { it.id }) { story ->
+            items(bundled, key = { it.id }) { story ->
                 val done = story.id in readIds
                 val cardShape = RoundedCornerShape(24.dp)
                 Column(
@@ -265,6 +294,104 @@ fun KidsStoriesScreen(
             }
         }
     }
+    if (parentGate) {
+        ParentGateDialog(
+            onDismiss = { parentGate = false },
+            onPassed = {
+                parentGate = false
+                onAddStory()
+            },
+        )
+    }
+}
+
+@OptIn(ExperimentalFoundationApi::class)
+@Composable
+private fun UserStoryCard(story: KidsUserStory, done: Boolean, onClick: () -> Unit) {
+    val context = LocalContext.current
+    val scope = rememberCoroutineScope()
+    val cover = story.blocks.firstOrNull { it.isImage }?.let { story.imageFile(context, it) }
+    val cardShape = RoundedCornerShape(24.dp)
+    var showDeleteConfirm by remember { mutableStateOf(false) }
+    Column(
+        Modifier
+            .kidsLifted(cardShape)
+            .clip(cardShape)
+            .background(Brush.linearGradient(listOf(Color(0xFF7C3AED), Color(0xFFEC4899))))
+            .combinedClickable(
+                onClick = onClick,
+                onLongClick = {
+                    showDeleteConfirm = true
+                },
+            )
+            .padding(12.dp),
+    ) {
+        Box(Modifier.fillMaxWidth()) {
+            val bitmap = remember(cover?.absolutePath) { cover?.let { decodeKidsStoryBitmap(it) } }
+            if (bitmap != null) {
+                Image(
+                    bitmap = bitmap,
+                    contentDescription = story.title,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .aspectRatio(4f / 3f)
+                        .kidsPhotoMat(),
+                    contentScale = ContentScale.Crop,
+                )
+            } else {
+                KidsStoryPlaceholder(
+                    emoji = "📖",
+                    gradient = listOf(Color(0xFF7C3AED), Color(0xFFEC4899)),
+                    caption = story.title,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .aspectRatio(4f / 3f)
+                        .kidsPhotoMat(),
+                )
+            }
+            if (done) {
+                Icon(
+                    Icons.Filled.CheckCircle,
+                    contentDescription = "Прочитано",
+                    tint = Color.White,
+                    modifier = Modifier
+                        .align(Alignment.TopEnd)
+                        .padding(6.dp)
+                        .clip(CircleShape)
+                        .background(Color(0xCC111827))
+                        .padding(3.dp)
+                        .size(20.dp),
+                )
+            }
+        }
+        Spacer(Modifier.height(10.dp))
+        Text(story.title, color = Color.White, style = KidsTileTitle, maxLines = 2)
+        Text("Своя история", color = Color.White.copy(alpha = 0.78f), fontSize = 12.sp)
+    }
+    if (showDeleteConfirm) {
+        androidx.compose.material3.AlertDialog(
+            onDismissRequest = { showDeleteConfirm = false },
+            title = { Text("Удалить историю?", fontWeight = FontWeight.Bold) },
+            text = { Text("\"${story.title}\" будет удалена безвозвратно.") },
+            confirmButton = {
+                androidx.compose.material3.TextButton(
+                    onClick = {
+                        showDeleteConfirm = false
+                        scope.launch {
+                            KidsUserStoriesStore.delete(context, story.id)
+                        }
+                    },
+                ) {
+                    Text("Удалить", color = Color(0xFFDC2626))
+                }
+            },
+            dismissButton = {
+                androidx.compose.material3.TextButton(onClick = { showDeleteConfirm = false }) {
+                    Text("Отмена")
+                }
+            },
+        )
+    }
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -277,9 +404,21 @@ fun KidsStoryScreen(
     onPlayGame: (String) -> Unit = {},
     onOpenSong: (String) -> Unit = {},
     onOpenColoring: (String) -> Unit = {},
+    onEditUserStory: (String) -> Unit = {},
 ) {
-    val story = KidsBibleStories.byId(storyId) ?: KidsBibleStories.all.first()
     val context = LocalContext.current
+    val userStories by KidsUserStoriesStore.stories(context).collectAsStateWithLifecycle()
+    val userStory = userStories.firstOrNull { it.id == storyId }
+    if (userStory != null) {
+        KidsUserStoryScreen(
+            story = userStory,
+            onBack = onBack,
+            onEdit = { onEditUserStory(userStory.id) },
+            onOpenStory = onOpenStory,
+        )
+        return
+    }
+    val story = KidsBibleStories.byId(storyId) ?: KidsBibleStories.all.first()
     val scope = rememberCoroutineScope()
     val repo = remember { AzbukaProgressRepository(context.applicationContext) }
     val read by repo.storiesRead.collectAsStateWithLifecycle(initialValue = emptySet())
@@ -326,6 +465,14 @@ fun KidsStoryScreen(
         if (!ok) Toast.makeText(context, "Запись слишком короткая", Toast.LENGTH_SHORT).show()
     }
 
+    var pendingImportKey by remember(story.id) { mutableStateOf<String?>(null) }
+    val importAudio = rememberLauncherForActivityResult(ActivityResultContracts.OpenDocument()) { uri ->
+        val key = pendingImportKey
+        pendingImportKey = null
+        if (uri == null || key == null) return@rememberLauncherForActivityResult
+        if (KidsStoryVoice.importUri(context, story.id, key, uri)) voiceRevision++
+        else Toast.makeText(context, "Не удалось взять файл", Toast.LENGTH_SHORT).show()
+    }
     val permissionLauncher = rememberLauncherForActivityResult(
         ActivityResultContracts.RequestPermission(),
     ) { granted ->
@@ -532,6 +679,30 @@ fun KidsStoryScreen(
                             fontSize = 17.sp,
                         )
                     }
+                    if (parentMode) {
+                        val wholeKey = KidsStoryVoice.WHOLE
+                        StoryVoiceRow(
+                            saved = hasVoice(wholeKey),
+                            recording = recordingKey == wholeKey,
+                            parentMode = true,
+                            accent = Color.White,
+                            onRecord = { if (recordingKey == wholeKey) endRecord(save = true) else requestRecord(wholeKey) },
+                            onDelete = {
+                                KidsStoryVoice.clear(context, story.id, wholeKey)
+                                voiceRevision++
+                            },
+                            onImport = {
+                                pendingImportKey = wholeKey
+                                importAudio.launch(arrayOf("audio/*"))
+                            },
+                        )
+                        Text(
+                            "Это голос на всю историю. Если его нет, каждую часть читает голос телефона или ваша запись.",
+                            color = Color.White.copy(alpha = 0.9f),
+                            fontSize = 13.sp,
+                            textAlign = TextAlign.Center,
+                        )
+                    }
                 }
             }
             if (story.parentNote.isNotBlank() && noteAt >= 0 && sceneIndex == noteAt && !noteSeen) {
@@ -595,8 +766,12 @@ fun KidsStoryScreen(
                         accent = Color(story.gradient.first()),
                         onRecord = { if (recordingKey == key) endRecord(save = true) else requestRecord(key) },
                         onDelete = {
-                            KidsStoryVoice.file(context, story.id, key).delete()
+                            KidsStoryVoice.clear(context, story.id, key)
                             voiceRevision++
+                        },
+                        onImport = {
+                            pendingImportKey = key
+                            importAudio.launch(arrayOf("audio/*"))
                         },
                     )
                 }
@@ -638,8 +813,12 @@ fun KidsStoryScreen(
                         accent = Color(0xFFB45309),
                         onRecord = { if (recordingKey == lessonKey) endRecord(save = true) else requestRecord(lessonKey) },
                         onDelete = {
-                            KidsStoryVoice.file(context, story.id, lessonKey).delete()
+                            KidsStoryVoice.clear(context, story.id, lessonKey)
                             voiceRevision++
+                        },
+                        onImport = {
+                            pendingImportKey = lessonKey
+                            importAudio.launch(arrayOf("audio/*"))
                         },
                     )
                 }
@@ -759,13 +938,14 @@ fun KidsStoryScreen(
 }
 
 @Composable
-private fun StoryVoiceRow(
+internal fun StoryVoiceRow(
     saved: Boolean,
     recording: Boolean,
     parentMode: Boolean,
     accent: Color,
     onRecord: () -> Unit,
     onDelete: () -> Unit,
+    onImport: (() -> Unit)? = null,
 ) {
     if (!parentMode && !saved && !recording) return
     Row(verticalAlignment = Alignment.CenterVertically) {
@@ -785,6 +965,9 @@ private fun StoryVoiceRow(
                 )
                 Spacer(Modifier.width(4.dp))
                 Text(if (recording) "Сохранить" else if (saved) "Заново" else "Записать", color = accent)
+            }
+            if (onImport != null && !recording) {
+                TextButton(onClick = onImport) { Text("С телефона", color = accent) }
             }
             if (saved && !recording) {
                 IconButton(onClick = onDelete) {
@@ -814,7 +997,7 @@ private fun StoryLinkRow(title: String, subtitle: String, onClick: () -> Unit) {
     }
 }
 
-private class StoryAudio(private val context: Context) {
+internal class StoryAudio(private val context: Context) {
     var tts: TextToSpeech? = null
     var speechRate: Float = 0.88f
     private var player: MediaPlayer? = null
@@ -861,12 +1044,23 @@ private class StoryAudio(private val context: Context) {
         stopPlayback()
         val gen = generation
         onActive(true)
+        if (KidsStoryVoice.has(context, story.id, KidsStoryVoice.WHOLE)) {
+            playClip(story.id, KidsStoryVoice.WHOLE, story.title, -1, gen) {
+                if (gen == generation) {
+                    onSpeaking(-1)
+                    onActive(false)
+                }
+            }
+            return
+        }
         val steps = buildList {
             add(Triple("title", story.title, -1))
             scenes.forEachIndexed { index, text ->
                 add(Triple(KidsStoryVoice.paragraphKey(index), text, index))
             }
-            add(Triple(KidsStoryVoice.LESSON, story.lesson, scenes.size))
+            if (story.lesson.isNotBlank()) {
+                add(Triple(KidsStoryVoice.LESSON, story.lesson, scenes.size))
+            }
         }
         fun run(index: Int) {
             if (gen != generation) return
@@ -1009,12 +1203,12 @@ private class StoryAudio(private val context: Context) {
             runCatching { active.release() }
         }
         val tmp = KidsStoryVoice.tempFile(context, storyId, key)
-        val dest = KidsStoryVoice.file(context, storyId, key)
+        val dest = KidsStoryVoice.recordingDestination(context, storyId, key)
         if (!save || !tmp.exists() || tmp.length() <= 800L) {
             if (tmp.exists()) tmp.delete()
             return false
         }
-        if (dest.exists()) dest.delete()
+        KidsStoryVoice.clear(context, storyId, key)
         return tmp.renameTo(dest)
     }
 

@@ -1,6 +1,6 @@
 {
-  "versionCode": 15,
-  "versionName": "2.5",
+  "versionCode": 16,
+  "versionName": "2.5.1",
   "apkUrl": "https://github.com/ValentinK2410/Bibleapp/releases/latest/download/Bible.apk",
-  "notes": "Детская Библия 2.5: история у каждой книги, своя озвучка родителя, новые тексты пока без голоса"
+  "notes": "Детская Библия 2.5.1: свои истории с картинками, автоматическая озвучка и показ картинок при чтении"
 }
