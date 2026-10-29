@@ -10,8 +10,6 @@ import android.speech.tts.UtteranceProgressListener
 import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.compose.animation.Crossfade
-import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -694,60 +692,25 @@ internal fun KidsUserStoryScreen(
                     }
                 }
             }
-            // Область с картинками — слайд-шоу с fade переходом
-            item {
-                val imageBlocks = story.blocks.filter { it.isImage }
-                if (imageBlocks.isNotEmpty()) {
-                    // Определяем какую картинку показывать
-                    val activeImageBlock = if (playbackActive && speakingIndex >= 0) {
-                        // Во время воспроизведения — активная картинка для текущего текста
-                        activeImageForText(speakingIndex)
-                    } else if (playbackActive && speakingIndex == -1) {
-                        // WHOLE голос или заголовок — показываем cover image
-                        imageBlocks.firstOrNull()
-                    } else {
-                        // Не воспроизведение — показываем cover image (первую картинку)
-                        imageBlocks.firstOrNull()
-                    }
-
-                    Crossfade(
-                        targetState = activeImageBlock,
-                        animationSpec = tween(durationMillis = 600, easing = androidx.compose.animation.core.LinearOutSlowInEasing),
-                        label = "Image slideshow",
-                    ) { imageBlock ->
-                        val file = imageBlock?.let { story.imageFile(context, it) }
-                        val bitmap = imageBlock?.let { story.imageFile(context, it) }?.let { decodeKidsStoryBitmap(it) }
-                        Box(
-                            Modifier
+            // Все блоки в правильном порядке: текст → картинка → текст → картинка
+            itemsIndexed(story.blocks, key = { index, block -> "$index-${block.kind}-${block.image}-${block.text.take(12)}" }) { index, block ->
+                if (block.isImage) {
+                    // Картинка с fade — большая, занимает всю ширину
+                    val file = story.imageFile(context, block)
+                    val bitmap = remember(block.image) { file?.let { decodeKidsStoryBitmap(it) } }
+                    if (bitmap != null) {
+                        Image(
+                            bitmap = bitmap,
+                            contentDescription = null,
+                            modifier = Modifier
                                 .fillMaxWidth()
                                 .aspectRatio(4f / 3f)
-                                .clip(RoundedCornerShape(24.dp))
-                                .background(MaterialTheme.colorScheme.surfaceContainerLow),
-                            contentAlignment = Alignment.Center,
-                        ) {
-                            if (bitmap != null) {
-                                Image(
-                                    bitmap = bitmap,
-                                    contentDescription = null,
-                                    modifier = Modifier
-                                        .fillMaxSize()
-                                        .clip(RoundedCornerShape(24.dp)),
-                                    contentScale = ContentScale.Crop,
-                                )
-                            } else {
-                                Text(
-                                    "📖",
-                                    fontSize = 48.sp,
-                                    modifier = Modifier.padding(16.dp),
-                                )
-                            }
-                        }
+                                .clip(RoundedCornerShape(24.dp)),
+                            contentScale = ContentScale.Crop,
+                        )
                     }
-                }
-            }
-            // Тексты — просто подсвечиваются
-            itemsIndexed(story.blocks, key = { index, block -> "$index-${block.kind}-${block.image}-${block.text.take(12)}" }) { index, block ->
-                if (!block.isImage) {
+                } else {
+                    // Текст — просто подсвечивается
                     val textIndex = story.blocks.take(index).count { !it.isImage }
                     val key = KidsStoryVoice.paragraphKey(textIndex)
                     val active = speakingIndex == textIndex
