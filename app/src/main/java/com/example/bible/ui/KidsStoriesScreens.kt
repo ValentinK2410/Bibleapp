@@ -974,6 +974,11 @@ internal fun StoryVoiceRow(
                     Icon(Icons.Filled.Delete, contentDescription = "Удалить запись", tint = accent)
                 }
             }
+        } else if (saved && !recording) {
+            // Обычный режим - только кнопка удаления
+            IconButton(onClick = onDelete) {
+                Icon(Icons.Filled.Delete, contentDescription = "Удалить запись", tint = accent)
+            }
         }
     }
 }
@@ -1045,9 +1050,10 @@ internal class StoryAudio(private val context: Context) {
         val gen = generation
         onActive(true)
         if (KidsStoryVoice.has(context, story.id, KidsStoryVoice.WHOLE)) {
+            // Для WHOLE голоса не вызываем onSpeaking во время воспроизведения
+            // Картинки будут показываться все
             playClip(story.id, KidsStoryVoice.WHOLE, story.title, -1, gen) {
                 if (gen == generation) {
-                    onSpeaking(-1)
                     onActive(false)
                 }
             }

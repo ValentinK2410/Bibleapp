@@ -580,7 +580,7 @@ internal fun KidsUserStoryScreen(
             // Ждём пока TTS инициализируется (обычно 500-1500мс)
             repeat(30) {
                 if (audio.tts != null && !playbackActive) {
-                    delay(300) // Дополнительная задержка для уверенности
+                    delay(500) // Дополнительная задержка для уверенности
                     audio.playAll(bible, texts, includeTitle = false)
                     return@LaunchedEffect
                 }
@@ -698,12 +698,17 @@ internal fun KidsUserStoryScreen(
             item {
                 val imageBlocks = story.blocks.filter { it.isImage }
                 if (imageBlocks.isNotEmpty()) {
+                    // Определяем какую картинку показывать
                     val activeImageKey = if (playbackActive && speakingIndex >= 0) {
-                        // Во время воспроизведения — показываем активную картинку
+                        // Во время воспроизведения — активная картинка для текущего текста
                         val currentImage = activeImageForText(speakingIndex)
                         currentImage?.image
+                    } else if (playbackActive && speakingIndex == -1) {
+                        // WHOLE голос или заголовок — показываем cover image
+                        imageBlocks.firstOrNull()?.image
                     } else {
-                        null
+                        // Не воспроизведение — показываем cover image (первую картинку)
+                        imageBlocks.firstOrNull()?.image
                     }
 
                     Crossfade(
@@ -730,7 +735,7 @@ internal fun KidsUserStoryScreen(
                                         .clip(RoundedCornerShape(24.dp)),
                                     contentScale = ContentScale.Crop,
                                 )
-                            } else if (imageKey != null) {
+                            } else {
                                 Text(
                                     "📖",
                                     fontSize = 48.sp,
