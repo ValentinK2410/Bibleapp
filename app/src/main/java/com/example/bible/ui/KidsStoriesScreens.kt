@@ -1082,7 +1082,7 @@ internal class StoryAudio(private val context: Context) {
     }
 
     /** Воспроизведение слайдов (для своих историй) */
-    fun playAll(slides: List<com.example.bible.ui.StorySlide>, texts: List<String>) {
+    fun playAll(storyId: String, slides: List<com.example.bible.ui.StorySlide>, texts: List<String>) {
         stopPlayback()
         val gen = generation
         onActive(true)
@@ -1102,13 +1102,15 @@ internal class StoryAudio(private val context: Context) {
             // Вызываем onSpeaking для подсветки текущего слайда
             onSpeaking(index)
             
-            // Проверяем есть ли аудиофайл
-            val file = KidsStoryVoice.file(context, "user-story-placeholder", key)
-            if (file.exists() && file.length() > 800L) {
-                // Играем аудиофайл
-                playClip("user-story-placeholder", key, text, index, gen) { run(index + 1) }
+            // Проверяем есть ли аудиофайл или запись голоса
+            val hasVoice = KidsStoryVoice.has(context, storyId, key)
+            val file = KidsStoryVoice.file(context, storyId, key)
+            
+            if (hasVoice && file.exists() && file.length() > 800L) {
+                // Играем аудиофайл родителя
+                playClip(storyId, key, text, index, gen) { run(index + 1) }
             } else {
-                // Используем TTS
+                // Используем TTS для этого слайда
                 playTts(text, index, gen) { run(index + 1) }
             }
         }

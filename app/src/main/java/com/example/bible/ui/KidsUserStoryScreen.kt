@@ -496,7 +496,7 @@ fun KidsUserStoryScreen(
             repeat(30) {
                 if (audio.tts != null && !playbackActive) {
                     delay(500)
-                    audio.playAll(slides, texts)
+                    audio.playAll(story.id, slides, texts)
                     return@LaunchedEffect
                 }
                 delay(100)
