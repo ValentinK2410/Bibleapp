@@ -388,6 +388,23 @@ fun KidsUserStoryScreen(
                                     lineHeight = 26.sp,
                                     color = if (isActive) accent else MaterialTheme.colorScheme.onSurface,
                                 )
+                                Spacer(Modifier.height(8.dp))
+                                val key = KidsStoryVoice.paragraphKey(index)
+                                StoryVoiceRow(
+                                    saved = hasVoice(key),
+                                    recording = recordingKey == key,
+                                    parentMode = parentMode,
+                                    accent = accent,
+                                    onRecord = { if (recordingKey == key) endRecord(save = true) else requestRecord(key) },
+                                    onDelete = {
+                                        KidsStoryVoice.clear(context, story.id, key)
+                                        voiceRevision++
+                                    },
+                                    onImport = {
+                                        pendingImportKey = key
+                                        importAudio.launch(arrayOf("audio/*"))
+                                    },
+                                )
                             }
                         }
                     }
@@ -432,6 +449,23 @@ fun KidsUserStoryScreen(
                                 color = if (isActive) accent else MaterialTheme.colorScheme.onSurface,
                                 textAlign = TextAlign.Center,
                                 modifier = Modifier.fillMaxWidth(),
+                            )
+                            Spacer(Modifier.height(8.dp))
+                            val key = KidsStoryVoice.paragraphKey(index)
+                            StoryVoiceRow(
+                                saved = hasVoice(key),
+                                recording = recordingKey == key,
+                                parentMode = parentMode,
+                                accent = accent,
+                                onRecord = { if (recordingKey == key) endRecord(save = true) else requestRecord(key) },
+                                onDelete = {
+                                    KidsStoryVoice.clear(context, story.id, key)
+                                    voiceRevision++
+                                },
+                                onImport = {
+                                    pendingImportKey = key
+                                    importAudio.launch(arrayOf("audio/*"))
+                                },
                             )
                         }
                     }
