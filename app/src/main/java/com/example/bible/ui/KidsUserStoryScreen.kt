@@ -140,6 +140,242 @@ fun KidsUserStory.buildSlides(): List<StorySlide> {
     return slides
 }
 
+// ======================== Helper Composables ========================
+
+@Composable
+private fun ActiveSlidePortrait(
+    slide: StorySlide,
+    story: KidsUserStory,
+    accent: Color,
+    context: android.content.Context,
+) {
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clip(RoundedCornerShape(24.dp))
+            .background(accent.copy(alpha = 0.12f))
+            .border(2.dp, accent, RoundedCornerShape(24.dp))
+            .padding(12.dp),
+        horizontalAlignment = Alignment.CenterHorizontally,
+    ) {
+        Text(
+            "Сейчас воспроизводится",
+            fontSize = 14.sp,
+            fontWeight = FontWeight.Bold,
+            color = accent,
+            modifier = Modifier.padding(bottom = 8.dp),
+        )
+        slide.imageBlock?.let { ib ->
+            val file = story.imageFile(context, ib)
+            val bitmap = if (file != null) remember(ib.image) { decodeKidsStoryBitmap(file) } else null
+            if (bitmap != null) {
+                Image(
+                    bitmap = bitmap,
+                    contentDescription = null,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .aspectRatio(4f / 3f)
+                        .clip(RoundedCornerShape(18.dp)),
+                    contentScale = ContentScale.Crop,
+                )
+            }
+            Spacer(Modifier.height(10.dp))
+        }
+        slide.textBlock?.let { block ->
+            Text(
+                block.text,
+                fontSize = 20.sp,
+                lineHeight = 28.sp,
+                color = accent,
+                textAlign = TextAlign.Center,
+                modifier = Modifier.fillMaxWidth(),
+            )
+        }
+    }
+}
+
+@Composable
+private fun ActiveSlideLandscape(slide: StorySlide, accent: Color, story: KidsUserStory, context: android.content.Context) {
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .clip(RoundedCornerShape(24.dp))
+            .background(accent.copy(alpha = 0.08f))
+            .padding(16.dp),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.Center,
+    ) {
+        slide.imageBlock?.let { ib ->
+            val file = story.imageFile(context, ib)
+            val bitmap = if (file != null) remember(ib.image) { decodeKidsStoryBitmap(file) } else null
+            if (bitmap != null) {
+                Image(
+                    bitmap = bitmap,
+                    contentDescription = null,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .aspectRatio(4f / 3f)
+                        .clip(RoundedCornerShape(18.dp)),
+                    contentScale = ContentScale.Crop,
+                )
+            } else {
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .aspectRatio(4f / 3f)
+                        .clip(RoundedCornerShape(18.dp))
+                        .background(accent.copy(alpha = 0.2f)),
+                    contentAlignment = Alignment.Center,
+                ) {
+                    Text("📷", fontSize = 48.sp)
+                }
+            }
+        }
+        Spacer(Modifier.height(12.dp))
+        slide.textBlock?.let { block ->
+            Text(
+                block.text,
+                fontSize = 18.sp,
+                lineHeight = 26.sp,
+                color = accent,
+                textAlign = TextAlign.Center,
+                modifier = Modifier.fillMaxWidth(),
+            )
+        }
+    }
+}
+
+@Composable
+private fun StoryVoiceRow(
+    saved: Boolean,
+    recording: Boolean,
+    parentMode: Boolean,
+    accent: Color,
+    onRecord: () -> Unit,
+    onDelete: () -> Unit,
+    onImport: () -> Unit,
+) {
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.spacedBy(6.dp),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        if (recording) {
+            Box(
+                modifier = Modifier
+                    .size(36.dp)
+                    .clip(RoundedCornerShape(18.dp))
+                    .background(Color(0xFFEF4444)),
+                contentAlignment = Alignment.Center,
+            ) {
+                Icon(Icons.Filled.Stop, contentDescription = null, tint = Color.White, modifier = Modifier.size(18.dp))
+            }
+        } else if (saved) {
+            IconButton(onClick = onDelete) {
+                Icon(Icons.Filled.Delete, contentDescription = "Удалить голос", tint = Color(0xFFEF4444))
+            }
+        } else if (parentMode) {
+            IconButton(onClick = onRecord) {
+                Icon(Icons.Filled.Mic, contentDescription = "Записать", tint = accent)
+            }
+        } else {
+            TextButton(onClick = onRecord) {
+                Icon(Icons.Filled.Mic, contentDescription = null, tint = accent)
+                Spacer(Modifier.width(4.dp))
+                Text("Записать", color = accent, fontSize = 13.sp)
+            }
+        }
+
+        if (!recording && !saved) {
+            TextButton(onClick = onImport) {
+                Icon(Icons.Filled.Image, contentDescription = null, tint = accent.copy(alpha = 0.6f))
+                Spacer(Modifier.width(4.dp))
+                Text("Вставить", color = accent.copy(alpha = 0.6f), fontSize = 13.sp)
+            }
+        }
+    }
+}
+
+@Composable
+private fun SlideItem(
+    index: Int,
+    slide: StorySlide,
+    isActive: Boolean,
+    accent: Color,
+    recordingKey: String?,
+    parentMode: Boolean,
+    hasVoice: (String) -> Boolean,
+    endRecord: (Boolean) -> Unit,
+    requestRecord: (String) -> Unit,
+    onDelete: () -> Unit,
+    onImport: () -> Unit,
+    context: android.content.Context,
+    story: KidsUserStory,
+) {
+    val key = KidsStoryVoice.paragraphKey(index)
+    val saved = hasVoice(key)
+    val recording = recordingKey == key
+
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clip(RoundedCornerShape(24.dp))
+            .background(if (isActive) accent.copy(alpha = 0.08f) else MaterialTheme.colorScheme.surfaceContainerLow)
+            .padding(12.dp),
+        horizontalAlignment = Alignment.CenterHorizontally,
+    ) {
+        slide.imageBlock?.let { ib ->
+            val file = story.imageFile(context, ib)
+            val bitmap = if (file != null) {
+                remember(ib.image) { decodeKidsStoryBitmap(file) }
+            } else {
+                null
+            }
+            if (bitmap != null) {
+                Image(
+                    bitmap = bitmap,
+                    contentDescription = null,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .aspectRatio(4f / 3f)
+                        .clip(RoundedCornerShape(18.dp))
+                        .border(
+                            if (isActive) 2.dp else 0.dp,
+                            if (isActive) accent else Color.Transparent,
+                            RoundedCornerShape(18.dp),
+                        ),
+                    contentScale = ContentScale.Crop,
+                )
+            }
+            Spacer(Modifier.height(10.dp))
+        }
+
+        slide.textBlock?.let { block ->
+            Text(
+                block.text,
+                fontSize = 20.sp,
+                lineHeight = 28.sp,
+                color = if (isActive) accent else MaterialTheme.colorScheme.onSurface,
+                textAlign = TextAlign.Center,
+                modifier = Modifier.fillMaxWidth(),
+            )
+        }
+
+        Spacer(Modifier.height(8.dp))
+        StoryVoiceRow(
+            saved = saved,
+            recording = recording,
+            parentMode = parentMode,
+            accent = accent,
+            onRecord = { if (recording) endRecord(true) else requestRecord(key) },
+            onDelete = onDelete,
+            onImport = onImport,
+        )
+    }
+}
+
+// ======================== Main Screen ========================
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun KidsUserStoryScreen(
@@ -271,6 +507,13 @@ fun KidsUserStoryScreen(
     // Определяем ориентацию экрана
     val configuration = LocalConfiguration.current
     val isLandscape = configuration.orientation == Configuration.ORIENTATION_LANDSCAPE
+    
+    // Находим активный слайд для отображения в хедере
+    val activeSlide = if (currentSlideIndex >= 0 && currentSlideIndex < slides.size && playbackActive) {
+        slides[currentSlideIndex]
+    } else {
+        null
+    }
 
     Scaffold(
         containerColor = MaterialTheme.colorScheme.background,
@@ -285,7 +528,7 @@ fun KidsUserStoryScreen(
                 actions = {
                     TextButton(onClick = { editGate = true }) { Text("Изменить") }
                     IconButton(onClick = {
-                        if (recordingKey != null) endRecord(save = false)
+                        if (recordingKey != null) endRecord(false)
                         parentMode = !parentMode
                     }) {
                         Icon(
@@ -298,225 +541,207 @@ fun KidsUserStoryScreen(
             )
         },
     ) { padding ->
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(padding)
-                .verticalScroll(rememberScrollState()),
-            verticalArrangement = Arrangement.spacedBy(12.dp),
-        ) {
-            // Заголовок с кнопкой воспроизведения
-            Column(
-                Modifier
-                    .fillMaxWidth()
-                    .clip(RoundedCornerShape(28.dp))
-                    .background(androidx.compose.ui.graphics.Brush.linearGradient(listOf(accent, Color(0xFFEC4899))))
-                    .padding(16.dp),
-                horizontalAlignment = Alignment.CenterHorizontally,
+        if (isLandscape) {
+            // Горизонтальный режим: левая часть - активный слайд, правая - список
+            Row(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(padding),
+                horizontalArrangement = Arrangement.spacedBy(12.dp),
             ) {
-                Text(story.title, color = Color.White, fontSize = 26.sp, fontWeight = FontWeight.Black, textAlign = TextAlign.Center)
-                Text("Своя история", color = Color.White.copy(alpha = 0.85f))
-                Spacer(Modifier.height(12.dp))
-                Row(
-                    Modifier
-                        .clip(RoundedCornerShape(999.dp))
-                        .background(Color.White)
-                        .clickable {
-                            if (recordingKey != null) {
-                                Toast.makeText(context, "Сначала сохраните запись", Toast.LENGTH_SHORT).show()
-                            } else if (playbackActive) {
-                                audio.stopPlayback()
-                            } else if (audio.tts == null && slides.isEmpty()) {
-                                Toast.makeText(context, "Голос ещё загружается", Toast.LENGTH_SHORT).show()
-                            } else {
-                                audio.playAll(slides, texts)
-                            }
-                        }
-                        .padding(horizontal = 22.dp, vertical = 12.dp),
-                    verticalAlignment = Alignment.CenterVertically,
+                // Левая часть: динамический активный слайд
+                Column(
+                    modifier = Modifier
+                        .weight(1f)
+                        .fillMaxHeight()
+                        .padding(12.dp),
+                    verticalArrangement = Arrangement.Center,
                 ) {
-                    Icon(if (playbackActive) Icons.Filled.Stop else Icons.AutoMirrored.Filled.VolumeUp, contentDescription = null, tint = accent)
-                    Spacer(Modifier.width(8.dp))
-                    Text(if (playbackActive) "Стоп" else "Читать вслух", color = accent, fontWeight = FontWeight.ExtraBold, fontSize = 17.sp)
+                    if (activeSlide != null) {
+                        ActiveSlideLandscape(activeSlide, accent, story, context)
+                    } else {
+                        val firstImageSlide = slides.firstOrNull { it.imageBlock != null }
+                        if (firstImageSlide != null) {
+                            ActiveSlideLandscape(firstImageSlide, accent, story, context)
+                        } else {
+                            Text(
+                                "Нажмите «Читать вслух» для воспроизведения",
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                fontSize = 16.sp,
+                                textAlign = TextAlign.Center,
+                            )
+                        }
+                    }
                 }
-            }
-
-            // Слайды с картинками и текстом
-            slides.forEachIndexed { index, slide ->
-                val isActive = index == currentSlideIndex && playbackActive
                 
-                if (isLandscape) {
-                    // Горизонтальный режим: картинка слева, текст справа
+                // Правая часть: список всех слайдов
+                Column(
+                    modifier = Modifier
+                        .weight(1f)
+                        .fillMaxHeight()
+                        .verticalScroll(rememberScrollState())
+                        .padding(12.dp),
+                    verticalArrangement = Arrangement.spacedBy(12.dp),
+                ) {
+                    slides.forEachIndexed { index, slide ->
+                        val isActive = index == currentSlideIndex && playbackActive
+                        SlideItem(
+                            index = index,
+                            slide = slide,
+                            isActive = isActive,
+                            accent = accent,
+                            recordingKey = recordingKey,
+                            parentMode = parentMode,
+                            hasVoice = { hasVoice(it) },
+                            endRecord = { save -> endRecord(save) },
+                            requestRecord = { requestRecord(it) },
+                            onDelete = {
+                                KidsStoryVoice.clear(context, story.id, KidsStoryVoice.paragraphKey(index))
+                                voiceRevision++
+                            },
+                            onImport = {
+                                pendingImportKey = KidsStoryVoice.paragraphKey(index)
+                                importAudio.launch(arrayOf("audio/*"))
+                            },
+                            context = context,
+                            story = story,
+                        )
+                    }
+
+                    // Кнопка "Я прочитал"
                     Row(
                         Modifier
                             .fillMaxWidth()
-                            .height(200.dp),
-                        verticalAlignment = Alignment.CenterVertically,
+                            .clip(RoundedCornerShape(22.dp))
+                            .background(
+                                if (done) {
+                                    androidx.compose.ui.graphics.Brush.linearGradient(listOf(Color(0xFF94A3B8), Color(0xFF64748B)))
+                                } else {
+                                    androidx.compose.ui.graphics.Brush.linearGradient(listOf(Color(0xFFF59E0B), Color(0xFFD97706)))
+                                },
+                            )
+                            .clickable(enabled = !done) {
+                                scope.launch {
+                                    if (repo.markStoryRead(story.id.toString())) {
+                                        celebrated = true
+                                        Toast.makeText(context, "Ура! +1 звезда", Toast.LENGTH_SHORT).show()
+                                    }
+                                }
+                            }
+                            .padding(18.dp),
+                        horizontalArrangement = Arrangement.Center,
                     ) {
-                        // Картинка слева
-                        if (slide.imageBlock != null) {
-                            val file = story.imageFile(context, slide.imageBlock)
-                            val bitmap = remember(slide.imageBlock.image) { file?.let { decodeKidsStoryBitmap(it) } }
-                            if (bitmap != null) {
-                                Image(
-                                    bitmap = bitmap,
-                                    contentDescription = null,
-                                    modifier = Modifier
-                                        .weight(1f)
-                                        .fillMaxHeight()
-                                        .clip(RoundedCornerShape(20.dp))
-                                        .border(2.dp, if (isActive) accent else Color.Transparent, RoundedCornerShape(20.dp)),
-                                    contentScale = ContentScale.Crop,
-                                )
-                            }
-                        }
-                        
-                        Spacer(Modifier.width(12.dp))
-                        
-                        // Текст справа
-                        if (slide.textBlock != null) {
-                            Column(
-                                Modifier
-                                    .weight(1f)
-                                    .clip(RoundedCornerShape(20.dp))
-                                    .background(if (isActive) accent.copy(alpha = 0.12f) else MaterialTheme.colorScheme.surfaceContainerLow)
-                                    .padding(14.dp),
-                            ) {
-                                Text(
-                                    slide.textBlock.text,
-                                    fontSize = 18.sp,
-                                    lineHeight = 26.sp,
-                                    color = if (isActive) accent else MaterialTheme.colorScheme.onSurface,
-                                )
-                                Spacer(Modifier.height(8.dp))
-                                val key = KidsStoryVoice.paragraphKey(index)
-                                StoryVoiceRow(
-                                    saved = hasVoice(key),
-                                    recording = recordingKey == key,
-                                    parentMode = parentMode,
-                                    accent = accent,
-                                    onRecord = { if (recordingKey == key) endRecord(save = true) else requestRecord(key) },
-                                    onDelete = {
-                                        KidsStoryVoice.clear(context, story.id, key)
-                                        voiceRevision++
-                                    },
-                                    onImport = {
-                                        pendingImportKey = key
-                                        importAudio.launch(arrayOf("audio/*"))
-                                    },
-                                )
-                            }
-                        }
+                        Text(
+                            if (done) "✅ История прочитана" else "⭐ Я прочитал(а)!",
+                            color = Color.White,
+                            fontWeight = FontWeight.Black,
+                            fontSize = 19.sp,
+                        )
                     }
-                } else {
-                    // Вертикальный режим: картинка сверху, текст снизу
-                    Column(
-                        Modifier
-                            .fillMaxWidth()
-                            .clip(RoundedCornerShape(24.dp))
-                            .background(if (isActive) accent.copy(alpha = 0.08f) else MaterialTheme.colorScheme.surfaceContainerLow)
-                            .padding(12.dp),
-                        horizontalAlignment = Alignment.CenterHorizontally,
-                    ) {
-                        // Картинка сверху
-                        slide.imageBlock?.let { ib ->
-                            val file = story.imageFile(context, ib)
-                            val bitmap = if (file != null) {
-                                remember(ib.image) { decodeKidsStoryBitmap(file) }
-                            } else {
-                                null
-                            }
-                            if (bitmap != null) {
-                                Image(
-                                    bitmap = bitmap,
-                                    contentDescription = null,
-                                    modifier = Modifier
-                                        .fillMaxWidth()
-                                        .aspectRatio(4f / 3f)
-                                        .clip(RoundedCornerShape(18.dp)),
-                                    contentScale = ContentScale.Crop,
-                                )
-                            }
-                            Spacer(Modifier.height(10.dp))
-                        }
-                        
-                        // Текст снизу
-                        slide.textBlock?.let { block ->
-                            Text(
-                                block.text,
-                                fontSize = 20.sp,
-                                lineHeight = 28.sp,
-                                color = if (isActive) accent else MaterialTheme.colorScheme.onSurface,
-                                textAlign = TextAlign.Center,
-                                modifier = Modifier.fillMaxWidth(),
-                            )
-                            Spacer(Modifier.height(8.dp))
-                            val key = KidsStoryVoice.paragraphKey(index)
-                            StoryVoiceRow(
-                                saved = hasVoice(key),
-                                recording = recordingKey == key,
-                                parentMode = parentMode,
-                                accent = accent,
-                                onRecord = { if (recordingKey == key) endRecord(save = true) else requestRecord(key) },
-                                onDelete = {
-                                    KidsStoryVoice.clear(context, story.id, key)
-                                    voiceRevision++
-                                },
-                                onImport = {
-                                    pendingImportKey = key
-                                    importAudio.launch(arrayOf("audio/*"))
-                                },
-                            )
-                        }
+                    if (celebrated) {
+                        Box(Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) { KidsRewardStars() }
+                    }
+                    if (next != null) {
+                        Text(
+                            "Дальше: ${next.title}",
+                            fontWeight = FontWeight.Bold,
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .clip(RoundedCornerShape(18.dp))
+                                .background(MaterialTheme.colorScheme.surfaceContainerLow)
+                                .clickable { onOpenStory(next.id) }
+                                .padding(14.dp),
+                            textAlign = TextAlign.Center,
+                        )
                     }
                 }
             }
-
-            // Кнопка "Я прочитал"
-            Row(
-                Modifier
-                    .fillMaxWidth()
-                    .clip(RoundedCornerShape(22.dp))
-                    .background(
-                        if (done) {
-                            androidx.compose.ui.graphics.Brush.linearGradient(listOf(Color(0xFF94A3B8), Color(0xFF64748B)))
-                        } else {
-                            androidx.compose.ui.graphics.Brush.linearGradient(listOf(Color(0xFFF59E0B), Color(0xFFD97706)))
+        } else {
+            // Вертикальный режим: sticky header с активным слайдом
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(padding)
+                    .verticalScroll(rememberScrollState()),
+                verticalArrangement = Arrangement.spacedBy(12.dp),
+            ) {
+                // Sticky header с активным слайдом
+                if (activeSlide != null) {
+                    ActiveSlidePortrait(activeSlide, story, accent, context)
+                }
+                
+                // Список всех слайдов
+                slides.forEachIndexed { index, slide ->
+                    val isActive = index == currentSlideIndex && playbackActive
+                    SlideItem(
+                        index = index,
+                        slide = slide,
+                        isActive = isActive,
+                        accent = accent,
+                        recordingKey = recordingKey,
+                        parentMode = parentMode,
+                        hasVoice = { hasVoice(it) },
+                        endRecord = { save -> endRecord(save) },
+                        requestRecord = { requestRecord(it) },
+                        onDelete = {
+                            KidsStoryVoice.clear(context, story.id, KidsStoryVoice.paragraphKey(index))
+                            voiceRevision++
                         },
+                        onImport = {
+                            pendingImportKey = KidsStoryVoice.paragraphKey(index)
+                            importAudio.launch(arrayOf("audio/*"))
+                        },
+                        context = context,
+                        story = story,
                     )
-                    .clickable(enabled = !done) {
-                        scope.launch {
-                            if (repo.markStoryRead(story.id.toString())) {
-                                celebrated = true
-                                Toast.makeText(context, "Ура! +1 звезда", Toast.LENGTH_SHORT).show()
+                }
+
+                // Кнопка "Я прочитал"
+                Row(
+                    Modifier
+                        .fillMaxWidth()
+                        .clip(RoundedCornerShape(22.dp))
+                        .background(
+                            if (done) {
+                                androidx.compose.ui.graphics.Brush.linearGradient(listOf(Color(0xFF94A3B8), Color(0xFF64748B)))
+                            } else {
+                                androidx.compose.ui.graphics.Brush.linearGradient(listOf(Color(0xFFF59E0B), Color(0xFFD97706)))
+                            },
+                        )
+                        .clickable(enabled = !done) {
+                            scope.launch {
+                                if (repo.markStoryRead(story.id.toString())) {
+                                    celebrated = true
+                                    Toast.makeText(context, "Ура! +1 звезда", Toast.LENGTH_SHORT).show()
+                                }
                             }
                         }
-                    }
-                    .padding(18.dp),
-                horizontalArrangement = Arrangement.Center,
-            ) {
-                Text(
-                    if (done) "✅ История прочитана" else "⭐ Я прочитал(а)!",
-                    color = Color.White,
-                    fontWeight = FontWeight.Black,
-                    fontSize = 19.sp,
-                )
-            }
-            if (celebrated) {
-                Box(Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) { KidsRewardStars() }
-            }
-            if (next != null) {
-                Text(
-                    "Дальше: ${next.title}",
-                    fontWeight = FontWeight.Bold,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .clip(RoundedCornerShape(18.dp))
-                        .background(MaterialTheme.colorScheme.surfaceContainerLow)
-                        .clickable { onOpenStory(next.id) }
-                        .padding(14.dp),
-                    textAlign = TextAlign.Center,
-                )
+                        .padding(18.dp),
+                    horizontalArrangement = Arrangement.Center,
+                ) {
+                    Text(
+                        if (done) "✅ История прочитана" else "⭐ Я прочитал(а)!",
+                        color = Color.White,
+                        fontWeight = FontWeight.Black,
+                        fontSize = 19.sp,
+                    )
+                }
+                if (celebrated) {
+                    Box(Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) { KidsRewardStars() }
+                }
+                if (next != null) {
+                    Text(
+                        "Дальше: ${next.title}",
+                        fontWeight = FontWeight.Bold,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .clip(RoundedCornerShape(18.dp))
+                            .background(MaterialTheme.colorScheme.surfaceContainerLow)
+                            .clickable { onOpenStory(next.id) }
+                            .padding(14.dp),
+                        textAlign = TextAlign.Center,
+                    )
+                }
             }
         }
     }
