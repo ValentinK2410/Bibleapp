@@ -17,10 +17,10 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.aspectRatio
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -28,25 +28,18 @@ import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.LazyListState
-import androidx.compose.foundation.lazy.itemsIndexed
-import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.filled.VolumeUp
-import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Image
-import androidx.compose.material.icons.filled.KeyboardArrowDown
-import androidx.compose.material.icons.filled.KeyboardArrowUp
 import androidx.compose.material.icons.filled.Mic
 import androidx.compose.material.icons.filled.MicNone
 import androidx.compose.material.icons.filled.Stop
-import androidx.compose.material3.Button
+import androidx.compose.material.icons.filled.Timer
 import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
@@ -54,7 +47,6 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
@@ -77,7 +69,9 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
+import android.content.res.Configuration
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -89,6 +83,12 @@ import com.example.bible.data.KidsStoryVoice
 import com.example.bible.data.KidsUserStoriesStore
 import com.example.bible.data.KidsUserStory
 import com.example.bible.data.KidsUserStoryBlock
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.setValue
+import androidx.compose.runtime.LaunchedEffect
+import com.example.bible.ui.KidsWarmHoney
+import com.example.bible.ui.KidsRewardStars
+import androidx.compose.ui.platform.LocalContext
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import java.io.File
@@ -102,6 +102,13 @@ private data class StoryDraftBlock(
     val image: String = "",
 )
 
+/** Слайд истории: картинка + связанный текст/звук */
+data class StorySlide(
+    val imageBlock: KidsUserStoryBlock?,
+    val textBlock: KidsUserStoryBlock?,
+    val durationMs: Long, // сколько показывать слайд (по умолчанию 2000мс)
+)
+
 internal fun decodeKidsStoryBitmap(file: File): ImageBitmap? {
     val bounds = BitmapFactory.Options().apply { inJustDecodeBounds = true }
     BitmapFactory.decodeFile(file.absolutePath, bounds)
@@ -112,317 +119,30 @@ internal fun decodeKidsStoryBitmap(file: File): ImageBitmap? {
     return BitmapFactory.decodeFile(file.absolutePath, opts)?.asImageBitmap()
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
-@Composable
-fun KidsUserStoryEditorScreen(
-    storyId: String?,
-    onBack: () -> Unit,
-    onSaved: (String) -> Unit,
-) {
-    val context = LocalContext.current
-    val scope = rememberCoroutineScope()
-    val existing = storyId?.let { KidsUserStoriesStore.find(context, it) }
-    val draftId = remember { existing?.id ?: KidsUserStoriesStore.newId() }
-    var title by remember { mutableStateOf(existing?.title.orEmpty()) }
-    val blocks = remember {
-        mutableStateListOf<StoryDraftBlock>().apply {
-            val source = existing?.blocks.orEmpty()
-            if (source.isEmpty()) {
-                add(StoryDraftBlock(key = UUID.randomUUID().toString(), kind = KidsUserStoryBlock.TEXT))
-            } else {
-                source.forEach { block ->
-                    add(
-                        StoryDraftBlock(
-                            key = UUID.randomUUID().toString(),
-                            kind = block.kind,
-                            text = block.text,
-                            image = block.image,
-                        ),
-                    )
-                }
-            }
-        }
-    }
-    val addedNow = remember { mutableSetOf<String>() }
-    var insertMenuIndex by remember { mutableStateOf<Int?>(null) }
-    var insertMenuExpanded by remember { mutableStateOf(false) }
-    val imagePicker = rememberLauncherForActivityResult(ActivityResultContracts.GetContent()) { uri ->
-        if (uri == null) return@rememberLauncherForActivityResult
-        val rel = KidsUserStoriesStore.copyImage(context, uri)
-        if (rel == null) {
-            Toast.makeText(context, "Не удалось взять картинку", Toast.LENGTH_SHORT).show()
+/** Создаём массив слайдов из блоков истории */
+fun KidsUserStory.buildSlides(): List<StorySlide> {
+    val slides = mutableListOf<StorySlide>()
+    var currentImage: KidsUserStoryBlock? = null
+    
+    for (block in blocks) {
+        if (block.isImage) {
+            currentImage = block
         } else {
-            addedNow += rel
-            blocks.add(StoryDraftBlock(key = UUID.randomUUID().toString(), kind = KidsUserStoryBlock.IMAGE, image = rel))
+            // Текст - создаём слайд с текущей картинкой
+            slides.add(StorySlide(
+                imageBlock = currentImage,
+                textBlock = block,
+                durationMs = 2000L // по умолчанию 2 секунды
+            ))
         }
     }
-
-    fun discard() {
-        val kept = KidsUserStoriesStore.find(context, draftId)?.blocks?.map { it.image }?.toSet().orEmpty()
-        addedNow.filter { it !in kept }.forEach { File(context.filesDir, it).delete() }
-        onBack()
-    }
-
-    Scaffold(
-        containerColor = MaterialTheme.colorScheme.background,
-        topBar = {
-            CenterAlignedTopAppBar(
-                title = { Text(if (existing == null) "Новая история" else "Изменить историю", fontWeight = FontWeight.ExtraBold) },
-                navigationIcon = {
-                    IconButton(onClick = { discard() }) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Назад")
-                    }
-                },
-            )
-        },
-    ) { padding ->
-        Column(
-            Modifier
-                .fillMaxSize()
-                .padding(padding)
-                .verticalScroll(rememberScrollState())
-                .padding(16.dp),
-            verticalArrangement = Arrangement.spacedBy(10.dp),
-        ) {
-            Text(
-                "Соберите сюжет как хотите: текст, потом картинка, снова текст. Порядок на экране будет таким же.",
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                fontSize = 14.sp,
-            )
-            OutlinedTextField(
-                value = title,
-                onValueChange = { title = it },
-                modifier = Modifier.fillMaxWidth(),
-                label = { Text("Название") },
-                singleLine = true,
-            )
-            blocks.forEachIndexed { index, block ->
-                val isFirst = index == 0
-                val isLast = index == blocks.size - 1
-                Row(
-                    verticalAlignment = Alignment.Top,
-                    modifier = Modifier.fillMaxWidth(),
-                ) {
-                    // Кнопки перемещения
-                    Column(
-                        horizontalAlignment = Alignment.CenterHorizontally,
-                        modifier = Modifier.padding(top = 8.dp),
-                    ) {
-                        IconButton(
-                            enabled = !isFirst,
-                            onClick = {
-                                val prev = blocks[index - 1]
-                                blocks[index - 1] = block
-                                blocks[index] = prev
-                            },
-                        ) {
-                            Icon(
-                                Icons.Filled.KeyboardArrowUp,
-                                contentDescription = "Вверх",
-                                tint = if (isFirst) MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.3f) else MaterialTheme.colorScheme.onSurface,
-                            )
-                        }
-                        IconButton(
-                            enabled = !isLast,
-                            onClick = {
-                                val next = blocks[index + 1]
-                                blocks[index + 1] = block
-                                blocks[index] = next
-                            },
-                        ) {
-                            Icon(
-                                Icons.Filled.KeyboardArrowDown,
-                                contentDescription = "Вниз",
-                                tint = if (isLast) MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.3f) else MaterialTheme.colorScheme.onSurface,
-                            )
-                        }
-                    }
-                    Spacer(Modifier.width(8.dp))
-
-                    // Основной контент блока
-                    Column(Modifier.weight(1f)) {
-                        if (block.kind == KidsUserStoryBlock.IMAGE) {
-                            val file = File(context.filesDir, block.image)
-                            val bitmap = remember(block.image) { decodeKidsStoryBitmap(file) }
-                            Column(
-                                Modifier
-                                    .fillMaxWidth()
-                                    .clip(RoundedCornerShape(18.dp))
-                                    .background(MaterialTheme.colorScheme.surfaceContainerLow)
-                                    .padding(10.dp),
-                            ) {
-                                if (bitmap != null) {
-                                    Image(
-                                        bitmap = bitmap,
-                                        contentDescription = null,
-                                        modifier = Modifier
-                                            .fillMaxWidth()
-                                            .heightIn(max = 220.dp)
-                                            .clip(RoundedCornerShape(14.dp)),
-                                        contentScale = ContentScale.Crop,
-                                    )
-                                }
-                                Row(
-                                    horizontalArrangement = Arrangement.spacedBy(8.dp),
-                                    modifier = Modifier.fillMaxWidth(),
-                                ) {
-                                    OutlinedButton(
-                                        onClick = { blocks.removeAt(index) },
-                                        contentPadding = PaddingValues(horizontal = 12.dp, vertical = 4.dp),
-                                    ) {
-                                        Icon(Icons.Filled.Delete, contentDescription = null, modifier = Modifier.size(14.dp))
-                                        Spacer(Modifier.width(4.dp))
-                                        Text("Удалить")
-                                    }
-                                    DropdownMenu(
-                                        expanded = insertMenuExpanded && insertMenuIndex == index,
-                                        onDismissRequest = { insertMenuExpanded = false },
-                                    ) {
-                                        DropdownMenuItem(
-                                            text = { Text("Вставить текст") },
-                                            onClick = {
-                                                blocks.add(index, StoryDraftBlock(key = UUID.randomUUID().toString(), kind = KidsUserStoryBlock.TEXT))
-                                                insertMenuExpanded = false
-                                            },
-                                        )
-                                        DropdownMenuItem(
-                                            text = { Text("Вставить картинку") },
-                                            onClick = {
-                                                blocks.add(index, StoryDraftBlock(key = UUID.randomUUID().toString(), kind = KidsUserStoryBlock.IMAGE, image = ""))
-                                                insertMenuExpanded = false
-                                            },
-                                        )
-                                    }
-                                    OutlinedButton(
-                                        onClick = {
-                                            insertMenuIndex = index
-                                            insertMenuExpanded = true
-                                        },
-                                        contentPadding = PaddingValues(horizontal = 12.dp, vertical = 4.dp),
-                                    ) {
-                                        Icon(Icons.Filled.Add, contentDescription = null, modifier = Modifier.size(14.dp))
-                                        Spacer(Modifier.width(4.dp))
-                                        Text("Вставить")
-                                    }
-                                }
-                            }
-                        } else {
-                            OutlinedTextField(
-                                value = block.text,
-                                onValueChange = { blocks[index] = block.copy(text = it) },
-                                modifier = Modifier.fillMaxWidth(),
-                                label = { Text(if (index == 0) "Текст" else "Ещё текст") },
-                                minLines = 6,
-                            )
-                            Row(
-                                horizontalArrangement = Arrangement.spacedBy(8.dp),
-                                modifier = Modifier.fillMaxWidth(),
-                            ) {
-                                OutlinedButton(
-                                    onClick = { blocks.removeAt(index) },
-                                    contentPadding = PaddingValues(horizontal = 12.dp, vertical = 4.dp),
-                                ) {
-                                    Icon(Icons.Filled.Delete, contentDescription = null, modifier = Modifier.size(14.dp))
-                                    Spacer(Modifier.width(4.dp))
-                                    Text("Удалить этот текст")
-                                }
-                                DropdownMenu(
-                                    expanded = insertMenuExpanded && insertMenuIndex == index,
-                                    onDismissRequest = { insertMenuExpanded = false },
-                                ) {
-                                    DropdownMenuItem(
-                                        text = { Text("Вставить текст") },
-                                        onClick = {
-                                            blocks.add(index, StoryDraftBlock(key = UUID.randomUUID().toString(), kind = KidsUserStoryBlock.TEXT))
-                                            insertMenuExpanded = false
-                                        },
-                                    )
-                                    DropdownMenuItem(
-                                        text = { Text("Вставить картинку") },
-                                        onClick = {
-                                            blocks.add(index, StoryDraftBlock(key = UUID.randomUUID().toString(), kind = KidsUserStoryBlock.IMAGE, image = ""))
-                                            insertMenuExpanded = false
-                                        },
-                                    )
-                                }
-                                OutlinedButton(
-                                    onClick = {
-                                        insertMenuIndex = index
-                                        insertMenuExpanded = true
-                                    },
-                                    contentPadding = PaddingValues(horizontal = 12.dp, vertical = 4.dp),
-                                ) {
-                                    Icon(Icons.Filled.Add, contentDescription = null, modifier = Modifier.size(14.dp))
-                                    Spacer(Modifier.width(4.dp))
-                                    Text("Вставить")
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-            Row(horizontalArrangement = Arrangement.spacedBy(8.dp), modifier = Modifier.fillMaxWidth()) {
-                OutlinedButton(
-                    onClick = {
-                        blocks.add(StoryDraftBlock(key = UUID.randomUUID().toString(), kind = KidsUserStoryBlock.TEXT))
-                    },
-                    modifier = Modifier.weight(1f),
-                ) {
-                    Icon(Icons.Filled.Add, contentDescription = null, modifier = Modifier.size(18.dp))
-                    Spacer(Modifier.width(4.dp))
-                    Text("Ещё текст")
-                }
-                OutlinedButton(
-                    onClick = { imagePicker.launch("image/*") },
-                    modifier = Modifier.weight(1f),
-                ) {
-                    Icon(Icons.Filled.Image, contentDescription = null, modifier = Modifier.size(18.dp))
-                    Spacer(Modifier.width(4.dp))
-                    Text("Ещё картинку")
-                }
-            }
-            Button(
-                onClick = {
-                    val ready = blocks.map {
-                        if (it.kind == KidsUserStoryBlock.IMAGE) {
-                            KidsUserStoryBlock(KidsUserStoryBlock.IMAGE, image = it.image)
-                        } else {
-                            KidsUserStoryBlock(KidsUserStoryBlock.TEXT, text = it.text.trim())
-                        }
-                    }
-                    if (title.isBlank() || ready.none { it.text.isNotBlank() || it.image.isNotBlank() }) {
-                        Toast.makeText(context, "Нужны название и хотя бы один текст или картинка", Toast.LENGTH_SHORT).show()
-                        return@Button
-                    }
-                    scope.launch {
-                        KidsUserStoriesStore.save(context, KidsUserStory(draftId, title.trim(), ready))
-                        val kept = ready.map { it.image }.filter { it.isNotBlank() }.toSet()
-                        addedNow.filter { it !in kept }.forEach { File(context.filesDir, it).delete() }
-                        addedNow.clear()
-                        onSaved(draftId)
-                    }
-                },
-                modifier = Modifier.fillMaxWidth(),
-            ) { Text("Сохранить") }
-            if (existing != null) {
-                TextButton(
-                    onClick = {
-                        scope.launch {
-                            KidsUserStoriesStore.delete(context, draftId)
-                            onBack()
-                        }
-                    },
-                    modifier = Modifier.fillMaxWidth(),
-                ) { Text("Удалить историю") }
-            }
-            Spacer(Modifier.height(12.dp))
-        }
-    }
+    
+    return slides
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-internal fun KidsUserStoryScreen(
+fun KidsUserStoryScreen(
     story: KidsUserStory,
     onBack: () -> Unit,
     onEdit: () -> Unit,
@@ -430,12 +150,13 @@ internal fun KidsUserStoryScreen(
 ) {
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
-    val bible = remember(story) { story.toBibleStory() }
-    val texts = bible.paragraphs
+    val slides = remember(story.id) { story.buildSlides() }
+    val texts = slides.mapNotNull { it.textBlock?.text }
     val repo = remember { AzbukaProgressRepository(context.applicationContext) }
     val read by repo.storiesRead.collectAsStateWithLifecycle(initialValue = emptySet())
     val others by KidsUserStoriesStore.stories(context).collectAsStateWithLifecycle()
-    var speakingIndex by remember(story.id) { mutableIntStateOf(-1) }
+    
+    var currentSlideIndex by remember(story.id) { mutableIntStateOf(-1) }
     var playbackActive by remember(story.id) { mutableStateOf(false) }
     var parentMode by rememberSaveable(story.id) { mutableStateOf(false) }
     var recordingKey by remember(story.id) { mutableStateOf<String?>(null) }
@@ -448,7 +169,10 @@ internal fun KidsUserStoryScreen(
     val done = story.id in read
     val audio = remember(story.id) { StoryAudio(context.applicationContext) }
     val mainHandler = remember { Handler(Looper.getMainLooper()) }
-    audio.onSpeaking = { speakingIndex = it }
+    
+    audio.onSpeaking = { index ->
+        currentSlideIndex = index
+    }
     audio.onActive = { playbackActive = it }
 
     fun hasVoice(key: String) = voiceRevision >= 0 && KidsStoryVoice.has(context, story.id, key)
@@ -527,66 +251,26 @@ internal fun KidsUserStoryScreen(
 
     val accent = Color(0xFF7C3AED)
     val next = others.getOrNull(others.indexOfFirst { it.id == story.id } + 1)
-    val listState = rememberLazyListState()
-
-    // Определяем индекс элемента в blocks для текстового блока с данным индексом
-    fun blockIndexForText(textIndex: Int): Int {
-        var currentIndex = 0
-        for ((i, block) in story.blocks.withIndex()) {
-            if (!block.isImage) {
-                if (currentIndex == textIndex) return i
-                currentIndex++
-            }
-        }
-        return -1
-    }
-
-    // Определяем, какая картинка "принадлежит" текстовому блоку с данным индексом
-    // (первая картинка ПОСЛЕ него в списке блоков)
-    fun activeImageForText(textIndex: Int): KidsUserStoryBlock? {
-        var currentIndex = textIndex
-        for (block in story.blocks) {
-            if (!block.isImage) {
-                if (currentIndex == 0) {
-                    // Это наш текстовый блок — ищем первую картинку ПОСЛЕ него
-                    for (laterBlock in story.blocks) {
-                        if (laterBlock.isImage) return laterBlock
-                    }
-                    return null
-                }
-                currentIndex--
-            }
-        }
-        return null
-    }
-
-    // Автоскролл к тексту, который сейчас читается
-    // LazyColumn: item 0 = картинка, item 1+ = текстовые блоки
-    LaunchedEffect(speakingIndex, playbackActive) {
-        if (playbackActive && speakingIndex >= 0) {
-            // speakingIndex — это индекс текстового блока (0, 1, 2...)
-            // В LazyColumn: item 0 = картинка, item 1 = text 0, item 2 = text 1...
-            val listIndex = 1 + speakingIndex
-            listState.animateScrollToItem(listIndex)
-        }
-    }
-
+    
     // Автоматический старт чтения при открытии истории
     LaunchedEffect(story.id, autoPlayed) {
         if (!autoPlayed && texts.isNotEmpty()) {
             autoPlayed = true
-            // Ждём пока TTS инициализируется (обычно 500-1500мс)
+            // Ждём пока TTS инициализируется
             repeat(30) {
                 if (audio.tts != null && !playbackActive) {
-                    delay(500) // Дополнительная задержка для уверенности
-                    audio.playAll(bible, texts, includeTitle = false)
+                    delay(500)
+                    audio.playAll(slides, texts)
                     return@LaunchedEffect
                 }
-                delay(100) // Проверяем каждые 100мс, максимум 3сек
+                delay(100)
             }
-            // Если TTS так и не готов — запускаем по кнопке "Читать вслух"
         }
     }
+
+    // Определяем ориентацию экрана
+    val configuration = LocalConfiguration.current
+    val isLandscape = configuration.orientation == Configuration.ORIENTATION_LANDSCAPE
 
     Scaffold(
         containerColor = MaterialTheme.colorScheme.background,
@@ -614,188 +298,191 @@ internal fun KidsUserStoryScreen(
             )
         },
     ) { padding ->
-        LazyColumn(
-            state = listState,
-            modifier = Modifier.fillMaxSize().padding(padding),
-            contentPadding = PaddingValues(16.dp),
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(padding)
+                .verticalScroll(rememberScrollState()),
             verticalArrangement = Arrangement.spacedBy(12.dp),
         ) {
-            item {
-                Column(
+            // Заголовок с кнопкой воспроизведения
+            Column(
+                Modifier
+                    .fillMaxWidth()
+                    .clip(RoundedCornerShape(28.dp))
+                    .background(androidx.compose.ui.graphics.Brush.linearGradient(listOf(accent, Color(0xFFEC4899))))
+                    .padding(16.dp),
+                horizontalAlignment = Alignment.CenterHorizontally,
+            ) {
+                Text(story.title, color = Color.White, fontSize = 26.sp, fontWeight = FontWeight.Black, textAlign = TextAlign.Center)
+                Text("Своя история", color = Color.White.copy(alpha = 0.85f))
+                Spacer(Modifier.height(12.dp))
+                Row(
                     Modifier
-                        .fillMaxWidth()
-                        .clip(RoundedCornerShape(28.dp))
-                        .background(androidx.compose.ui.graphics.Brush.linearGradient(listOf(accent, Color(0xFFEC4899))))
-                        .padding(16.dp),
-                    horizontalAlignment = Alignment.CenterHorizontally,
-                ) {
-                    val cover = story.blocks.firstOrNull { it.isImage }?.let { story.imageFile(context, it) }
-                    val bitmap = remember(cover?.absolutePath) { cover?.let { decodeKidsStoryBitmap(it) } }
-                    if (bitmap != null) {
-                        Image(
-                            bitmap = bitmap,
-                            contentDescription = story.title,
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .aspectRatio(4f / 3f)
-                                .clip(RoundedCornerShape(18.dp)),
-                            contentScale = ContentScale.Crop,
-                        )
-                        Spacer(Modifier.height(10.dp))
-                    }
-                    Text(story.title, color = Color.White, fontSize = 26.sp, fontWeight = FontWeight.Black, textAlign = TextAlign.Center)
-                    Text("Своя история", color = Color.White.copy(alpha = 0.85f))
-                    Spacer(Modifier.height(12.dp))
-                    Row(
-                        Modifier
-                            .clip(RoundedCornerShape(999.dp))
-                            .background(Color.White)
-                            .clickable {
-                                if (recordingKey != null) {
-                                    Toast.makeText(context, "Сначала сохраните запись", Toast.LENGTH_SHORT).show()
-                                } else if (playbackActive) {
-                                    audio.stopPlayback()
-                                } else if (audio.tts == null && !hasVoice(KidsStoryVoice.WHOLE)) {
-                                    Toast.makeText(context, "Голос ещё загружается", Toast.LENGTH_SHORT).show()
-                                } else {
-                                    audio.playAll(bible, texts, includeTitle = false)
-                                }
+                        .clip(RoundedCornerShape(999.dp))
+                        .background(Color.White)
+                        .clickable {
+                            if (recordingKey != null) {
+                                Toast.makeText(context, "Сначала сохраните запись", Toast.LENGTH_SHORT).show()
+                            } else if (playbackActive) {
+                                audio.stopPlayback()
+                            } else if (audio.tts == null && slides.isEmpty()) {
+                                Toast.makeText(context, "Голос ещё загружается", Toast.LENGTH_SHORT).show()
+                            } else {
+                                audio.playAll(slides, texts)
                             }
-                            .padding(horizontal = 22.dp, vertical = 12.dp),
-                        verticalAlignment = Alignment.CenterVertically,
-                    ) {
-                        Icon(if (playbackActive) Icons.Filled.Stop else Icons.AutoMirrored.Filled.VolumeUp, contentDescription = null, tint = accent)
-                        Spacer(Modifier.width(8.dp))
-                        Text(if (playbackActive) "Стоп" else "Читать вслух", color = accent, fontWeight = FontWeight.ExtraBold, fontSize = 17.sp)
-                    }
-                    if (parentMode) {
-                        StoryVoiceRow(
-                            saved = hasVoice(KidsStoryVoice.WHOLE),
-                            recording = recordingKey == KidsStoryVoice.WHOLE,
-                            parentMode = true,
-                            accent = Color.White,
-                            onRecord = {
-                                if (recordingKey == KidsStoryVoice.WHOLE) endRecord(true) else requestRecord(KidsStoryVoice.WHOLE)
-                            },
-                            onDelete = {
-                                KidsStoryVoice.clear(context, story.id, KidsStoryVoice.WHOLE)
-                                voiceRevision++
-                            },
-                            onImport = { import(KidsStoryVoice.WHOLE) },
-                        )
-                        Text(
-                            "Готовая озвучка на всю историю, запись или файл с телефона. Без неё текст читает голос телефона.",
-                            color = Color.White.copy(alpha = 0.9f),
-                            fontSize = 13.sp,
-                            textAlign = TextAlign.Center,
-                        )
-                    }
+                        }
+                        .padding(horizontal = 22.dp, vertical = 12.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
+                    Icon(if (playbackActive) Icons.Filled.Stop else Icons.AutoMirrored.Filled.VolumeUp, contentDescription = null, tint = accent)
+                    Spacer(Modifier.width(8.dp))
+                    Text(if (playbackActive) "Стоп" else "Читать вслух", color = accent, fontWeight = FontWeight.ExtraBold, fontSize = 17.sp)
                 }
             }
-            // Все блоки в правильном порядке: текст → картинка → текст → картинка
-            itemsIndexed(story.blocks, key = { index, block -> "$index-${block.kind}-${block.image}-${block.text.take(12)}" }) { index, block ->
-                if (block.isImage) {
-                    // Картинка с fade — большая, занимает всю ширину
-                    val file = story.imageFile(context, block)
-                    val bitmap = remember(block.image) { file?.let { decodeKidsStoryBitmap(it) } }
-                    if (bitmap != null) {
-                        Image(
-                            bitmap = bitmap,
-                            contentDescription = null,
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .aspectRatio(4f / 3f)
-                                .clip(RoundedCornerShape(24.dp)),
-                            contentScale = ContentScale.Crop,
-                        )
+
+            // Слайды с картинками и текстом
+            slides.forEachIndexed { index, slide ->
+                val isActive = index == currentSlideIndex && playbackActive
+                
+                if (isLandscape) {
+                    // Горизонтальный режим: картинка слева, текст справа
+                    Row(
+                        Modifier
+                            .fillMaxWidth()
+                            .height(200.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                    ) {
+                        // Картинка слева
+                        if (slide.imageBlock != null) {
+                            val file = story.imageFile(context, slide.imageBlock)
+                            val bitmap = remember(slide.imageBlock.image) { file?.let { decodeKidsStoryBitmap(it) } }
+                            if (bitmap != null) {
+                                Image(
+                                    bitmap = bitmap,
+                                    contentDescription = null,
+                                    modifier = Modifier
+                                        .weight(1f)
+                                        .fillMaxHeight()
+                                        .clip(RoundedCornerShape(20.dp))
+                                        .border(2.dp, if (isActive) accent else Color.Transparent, RoundedCornerShape(20.dp)),
+                                    contentScale = ContentScale.Crop,
+                                )
+                            }
+                        }
+                        
+                        Spacer(Modifier.width(12.dp))
+                        
+                        // Текст справа
+                        if (slide.textBlock != null) {
+                            Column(
+                                Modifier
+                                    .weight(1f)
+                                    .clip(RoundedCornerShape(20.dp))
+                                    .background(if (isActive) accent.copy(alpha = 0.12f) else MaterialTheme.colorScheme.surfaceContainerLow)
+                                    .padding(14.dp),
+                            ) {
+                                Text(
+                                    slide.textBlock.text,
+                                    fontSize = 18.sp,
+                                    lineHeight = 26.sp,
+                                    color = if (isActive) accent else MaterialTheme.colorScheme.onSurface,
+                                )
+                            }
+                        }
                     }
                 } else {
-                    // Текст — просто подсвечивается
-                    val textIndex = story.blocks.take(index).count { !it.isImage }
-                    val key = KidsStoryVoice.paragraphKey(textIndex)
-                    val active = speakingIndex == textIndex
+                    // Вертикальный режим: картинка сверху, текст снизу
                     Column(
                         Modifier
                             .fillMaxWidth()
-                            .clip(RoundedCornerShape(20.dp))
-                            .background(if (active) accent.copy(alpha = 0.12f) else MaterialTheme.colorScheme.surfaceContainerLow)
-                            .padding(14.dp),
+                            .clip(RoundedCornerShape(24.dp))
+                            .background(if (isActive) accent.copy(alpha = 0.08f) else MaterialTheme.colorScheme.surfaceContainerLow)
+                            .padding(12.dp),
+                        horizontalAlignment = Alignment.CenterHorizontally,
                     ) {
-                        Text(
-                            block.text,
-                            fontSize = 20.sp,
-                            lineHeight = 28.sp,
-                            color = if (active) accent else MaterialTheme.colorScheme.onSurface,
-                            modifier = Modifier.clickable {
-                                if (recordingKey != null) {
-                                    Toast.makeText(context, "Сначала сохраните запись", Toast.LENGTH_SHORT).show()
-                                } else {
-                                    audio.playOne(bible, key, block.text, textIndex)
-                                }
-                            },
-                        )
-                        StoryVoiceRow(
-                            saved = hasVoice(key),
-                            recording = recordingKey == key,
-                            parentMode = parentMode,
-                            accent = accent,
-                            onRecord = { if (recordingKey == key) endRecord(true) else requestRecord(key) },
-                            onDelete = {
-                                KidsStoryVoice.clear(context, story.id, key)
-                                voiceRevision++
-                            },
-                            onImport = { import(key) },
-                        )
+                        // Картинка сверху
+                        slide.imageBlock?.let { ib ->
+                            val file = story.imageFile(context, ib)
+                            val bitmap = if (file != null) {
+                                remember(ib.image) { decodeKidsStoryBitmap(file) }
+                            } else {
+                                null
+                            }
+                            if (bitmap != null) {
+                                Image(
+                                    bitmap = bitmap,
+                                    contentDescription = null,
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .aspectRatio(4f / 3f)
+                                        .clip(RoundedCornerShape(18.dp)),
+                                    contentScale = ContentScale.Crop,
+                                )
+                            }
+                            Spacer(Modifier.height(10.dp))
+                        }
+                        
+                        // Текст снизу
+                        slide.textBlock?.let { block ->
+                            Text(
+                                block.text,
+                                fontSize = 20.sp,
+                                lineHeight = 28.sp,
+                                color = if (isActive) accent else MaterialTheme.colorScheme.onSurface,
+                                textAlign = TextAlign.Center,
+                                modifier = Modifier.fillMaxWidth(),
+                            )
+                        }
                     }
                 }
             }
-            item {
-                Row(
-                    Modifier
-                        .fillMaxWidth()
-                        .clip(RoundedCornerShape(22.dp))
-                        .background(
-                            if (done) {
-                                androidx.compose.ui.graphics.Brush.linearGradient(listOf(Color(0xFF94A3B8), Color(0xFF64748B)))
-                            } else {
-                                androidx.compose.ui.graphics.Brush.linearGradient(KidsWarmHoney)
-                            },
-                        )
-                        .clickable(enabled = !done) {
-                            scope.launch {
-                                if (repo.markStoryRead(story.id)) {
-                                    celebrated = true
-                                    Toast.makeText(context, "Ура! +1 звезда", Toast.LENGTH_SHORT).show()
-                                }
+
+            // Кнопка "Я прочитал"
+            Row(
+                Modifier
+                    .fillMaxWidth()
+                    .clip(RoundedCornerShape(22.dp))
+                    .background(
+                        if (done) {
+                            androidx.compose.ui.graphics.Brush.linearGradient(listOf(Color(0xFF94A3B8), Color(0xFF64748B)))
+                        } else {
+                            androidx.compose.ui.graphics.Brush.linearGradient(listOf(Color(0xFFF59E0B), Color(0xFFD97706)))
+                        },
+                    )
+                    .clickable(enabled = !done) {
+                        scope.launch {
+                            if (repo.markStoryRead(story.id.toString())) {
+                                celebrated = true
+                                Toast.makeText(context, "Ура! +1 звезда", Toast.LENGTH_SHORT).show()
                             }
                         }
-                        .padding(18.dp),
-                    horizontalArrangement = Arrangement.Center,
-                ) {
-                    Text(
-                        if (done) "✅ История прочитана" else "⭐ Я прочитал(а)!",
-                        color = Color.White,
-                        fontWeight = FontWeight.Black,
-                        fontSize = 19.sp,
-                    )
-                }
+                    }
+                    .padding(18.dp),
+                horizontalArrangement = Arrangement.Center,
+            ) {
+                Text(
+                    if (done) "✅ История прочитана" else "⭐ Я прочитал(а)!",
+                    color = Color.White,
+                    fontWeight = FontWeight.Black,
+                    fontSize = 19.sp,
+                )
             }
             if (celebrated) {
-                item { Box(Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) { KidsRewardStars() } }
+                Box(Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) { KidsRewardStars() }
             }
             if (next != null) {
-                item {
-                    Text(
-                        "Дальше: ${next.title}",
-                        fontWeight = FontWeight.Bold,
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .clip(RoundedCornerShape(18.dp))
-                            .background(MaterialTheme.colorScheme.surfaceContainerLow)
-                            .clickable { onOpenStory(next.id) }
-                            .padding(14.dp),
-                    )
-                }
+                Text(
+                    "Дальше: ${next.title}",
+                    fontWeight = FontWeight.Bold,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clip(RoundedCornerShape(18.dp))
+                        .background(MaterialTheme.colorScheme.surfaceContainerLow)
+                        .clickable { onOpenStory(next.id) }
+                        .padding(14.dp),
+                    textAlign = TextAlign.Center,
+                )
             }
         }
     }

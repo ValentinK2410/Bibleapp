@@ -1016,7 +1016,8 @@ internal class StoryAudio(private val context: Context) {
 
     fun onTtsDone(utteranceId: String?) {
         val next = pendingNext
-        if (utteranceId != null && utteranceId == pendingUtterance && next != null) {
+        // utteranceId может быть null или не совпадать - просто запускаем next если он есть
+        if (next != null) {
             pendingUtterance = null
             pendingNext = null
             next()
@@ -1078,6 +1079,52 @@ internal class StoryAudio(private val context: Context) {
             playClip(story.id, key, text, scene, gen) { run(index + 1) }
         }
         run(0)
+    }
+
+    /** Воспроизведение слайдов (для своих историй) */
+    fun playAll(slides: List<com.example.bible.ui.StorySlide>, texts: List<String>) {
+        stopPlayback()
+        val gen = generation
+        onActive(true)
+        if (slides.isEmpty()) return
+        
+        fun run(index: Int) {
+            if (gen != generation) return
+            if (index >= slides.size) {
+                onSpeaking(-1)
+                onActive(false)
+                return
+            }
+            val slide = slides[index]
+            val text = slide.textBlock?.text ?: ""
+            val key = KidsStoryVoice.paragraphKey(index)
+            
+            // Вызываем onSpeaking для подсветки текущего слайда
+            onSpeaking(index)
+            
+            // Проверяем есть ли аудиофайл
+            val file = KidsStoryVoice.file(context, "user-story-placeholder", key)
+            if (file.exists() && file.length() > 800L) {
+                // Играем аудиофайл
+                playClip("user-story-placeholder", key, text, index, gen) { run(index + 1) }
+            } else {
+                // Используем TTS
+                playTts(text, index, gen) { run(index + 1) }
+            }
+        }
+        run(0)
+    }
+
+    private fun playTts(text: String, scene: Int, gen: Int, next: () -> Unit) {
+        val engine = tts
+        if (engine == null || gen != generation) {
+            next()
+            return
+        }
+        val utterance = "v${gen}_tts_$scene"
+        pendingUtterance = utterance
+        pendingNext = next
+        engine.speak(text, TextToSpeech.QUEUE_FLUSH, null, utterance)
     }
 
     fun playOne(story: KidsBibleStory, key: String, text: String, scene: Int) {
