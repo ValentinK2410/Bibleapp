@@ -11,7 +11,6 @@ import org.json.JSONObject
 import java.io.File
 import java.util.UUID
 
-/** Блок своей истории: текст или картинка, в том порядке, как собрал родитель. */
 data class KidsUserStoryBlock(
     val kind: String,
     val text: String = "",
@@ -29,13 +28,14 @@ data class KidsUserStory(
     val id: String,
     val title: String,
     val blocks: List<KidsUserStoryBlock>,
+    val imageDurations: Map<Int, Long> = emptyMap(),
 ) {
     fun toBibleStory(): KidsBibleStory = KidsBibleStory(
         id = id,
         title = title,
         emoji = "📖",
         reference = "Своя история",
-        gradient = listOf(0xFF7C3AED, 0xFFEC4899),
+        gradient = listOf(0xFF00BFA5, 0xFF00C853),
         paragraphs = blocks.filter { !it.isImage }.map { it.text },
         lesson = "",
         age = "both",
@@ -46,9 +46,14 @@ data class KidsUserStory(
         val file = File(context.filesDir, block.image)
         return file.takeIf { it.isFile }
     }
+
+    companion object {
+        const val DEFAULT_IMAGE_DURATION_MS = 2000L
+        const val MIN_IMAGE_DURATION_MS = 1L
+        const val MAX_IMAGE_DURATION_MS = 3_600_000L
+    }
 }
 
-/** Истории, которые родитель собрал сам. Хранятся только на этом телефоне. */
 object KidsUserStoriesStore {
     private val mutex = Mutex()
     private val flow = MutableStateFlow<List<KidsUserStory>>(emptyList())
@@ -72,22 +77,34 @@ object KidsUserStoriesStore {
         val app = context.applicationContext
         mutex.withLock {
             ensureLoaded(app)
+            val cleanBlocks = story.blocks.mapNotNull { block ->
+                when {
+                    block.isImage && block.image.isNotBlank() && File(app.filesDir, block.image).isFile ->
+                        KidsUserStoryBlock(KidsUserStoryBlock.IMAGE, image = block.image)
+                    !block.isImage && block.text.isNotBlank() ->
+                        KidsUserStoryBlock(KidsUserStoryBlock.TEXT, text = block.text.trim())
+                    else -> null
+                }
+            }
+
+            val validImageIndices = cleanBlocks.indices.filter { cleanBlocks[it].isImage }.toSet()
+            val cleanDurations = story.imageDurations
+                .filterKeys { it in validImageIndices }
+                .mapValues { (_, v) ->
+                    v.coerceIn(KidsUserStory.MIN_IMAGE_DURATION_MS, KidsUserStory.MAX_IMAGE_DURATION_MS)
+                }
+
             val clean = story.copy(
                 title = story.title.trim(),
-                blocks = story.blocks.mapNotNull { block ->
-                    when {
-                        block.isImage && block.image.isNotBlank() && File(app.filesDir, block.image).isFile ->
-                            KidsUserStoryBlock(KidsUserStoryBlock.IMAGE, image = block.image)
-                        !block.isImage && block.text.isNotBlank() ->
-                            KidsUserStoryBlock(KidsUserStoryBlock.TEXT, text = block.text.trim())
-                        else -> null
-                    }
-                },
+                blocks = cleanBlocks,
+                imageDurations = cleanDurations,
             )
+
             val previous = flow.value.firstOrNull { it.id == clean.id }
             val next = flow.value.filterNot { it.id == clean.id } + clean
             write(app, next)
             flow.value = next
+
             val stillUsed = next.flatMap { it.blocks }.map { it.image }.filter { it.isNotBlank() }.toSet()
             previous?.blocks.orEmpty().map { it.image }.filter { it.isNotBlank() && it !in stillUsed }.forEach { rel ->
                 File(app.filesDir, rel).delete()
@@ -136,6 +153,7 @@ object KidsUserStoriesStore {
                     val o = arr.optJSONObject(i) ?: continue
                     val id = o.optString("id")
                     if (id.isBlank()) continue
+
                     val blocksArr = o.optJSONArray("blocks")
                     val blocks = buildList {
                         if (blocksArr != null) {
@@ -152,7 +170,20 @@ object KidsUserStoriesStore {
                             }
                         }
                     }
-                    add(KidsUserStory(id = id, title = o.optString("title"), blocks = blocks))
+
+                    val durationsObj = o.optJSONObject("image_durations")
+                    val durations: Map<Int, Long> = buildMap {
+                        if (durationsObj != null) {
+                            durationsObj.keys().forEach { k ->
+                                val idx = k.toIntOrNull() ?: return@forEach
+                                val ms = durationsObj.optLong(k, KidsUserStory.DEFAULT_IMAGE_DURATION_MS)
+                                    .coerceIn(KidsUserStory.MIN_IMAGE_DURATION_MS, KidsUserStory.MAX_IMAGE_DURATION_MS)
+                                put(idx, ms)
+                            }
+                        }
+                    }
+
+                    add(KidsUserStory(id = id, title = o.optString("title"), blocks = blocks, imageDurations = durations))
                 }
             }
         }.getOrDefault(emptyList())
@@ -178,6 +209,14 @@ object KidsUserStoriesStore {
                             }
                         },
                     )
+                    if (story.imageDurations.isNotEmpty()) {
+                        put(
+                            "image_durations",
+                            JSONObject().apply {
+                                story.imageDurations.forEach { (idx, ms) -> put(idx.toString(), ms) }
+                            },
+                        )
+                    }
                 },
             )
         }

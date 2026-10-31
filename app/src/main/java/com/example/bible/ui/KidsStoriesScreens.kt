@@ -697,7 +697,7 @@ fun KidsStoryScreen(
                             },
                         )
                         Text(
-                            "Это голос на всю историю. Если его нет, каждую часть читает голос телефона или ваша запись.",
+                            "Это голос к заголовку: он прозвучит в начале, а потом история читается дальше — голосом телефона или вашей записью.",
                             color = Color.White.copy(alpha = 0.9f),
                             fontSize = 13.sp,
                             textAlign = TextAlign.Center,
@@ -1050,14 +1050,6 @@ internal class StoryAudio(private val context: Context) {
         stopPlayback()
         val gen = generation
         onActive(true)
-        if (KidsStoryVoice.has(context, story.id, KidsStoryVoice.WHOLE)) {
-            playClip(story.id, KidsStoryVoice.WHOLE, story.title, -1, gen) {
-                if (gen == generation) {
-                    onActive(false)
-                }
-            }
-            return
-        }
         val steps = buildList {
             // Не добавляем заголовок — он ломает speakingIndex и автоскролл
             // Начинаем сразу с первого текста
@@ -1077,6 +1069,11 @@ internal class StoryAudio(private val context: Context) {
             }
             val (key, text, scene) = steps[index]
             playClip(story.id, key, text, scene, gen) { run(index + 1) }
+        }
+        if (KidsStoryVoice.has(context, story.id, KidsStoryVoice.WHOLE)) {
+            // Озвучка заголовка играется как вступление, затем история читается дальше целиком
+            playClip(story.id, KidsStoryVoice.WHOLE, story.title, -1, gen) { run(0) }
+            return
         }
         run(0)
     }

@@ -1,6 +1,12 @@
 package com.example.bible.ui
 
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowForward
 import androidx.compose.material.icons.filled.AccountTree
 import androidx.compose.material.icons.filled.BookmarkBorder
 import androidx.compose.material.icons.filled.CalendarToday
@@ -31,7 +37,13 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
 import com.example.bible.R
 import com.example.bible.data.BooksMainMenuOrder
@@ -188,13 +200,35 @@ fun BooksMainMenuOrderedItems(
                 onClick = { closeMenu(); navController.navigate("network_region") },
                 leadingIcon = { Icon(Icons.Default.Public, contentDescription = null, tint = primary) },
             )
-            BooksMainMenuOrder.KIDS -> DropdownMenuItem(
-                text = { Text("Детям") },
-                onClick = { closeMenu(); navController.navigate("kids") },
-                leadingIcon = {
-                    Icon(Icons.Filled.School, contentDescription = null, tint = primary)
-                },
-            )
+            BooksMainMenuOrder.KIDS -> Box(
+                modifier = Modifier
+                    .padding(horizontal = 10.dp, vertical = 5.dp)
+                    .fillMaxWidth()
+                    .clip(RoundedCornerShape(20.dp))
+                    .background(Brush.horizontalGradient(kidsGradient(0))),
+            ) {
+                DropdownMenuItem(
+                    text = {
+                        Text(
+                            "Детям",
+                            fontWeight = FontWeight.ExtraBold,
+                            color = Color.White,
+                        )
+                    },
+                    onClick = { closeMenu(); navController.navigate("kids") },
+                    leadingIcon = {
+                        Icon(Icons.Filled.School, contentDescription = null, tint = Color.White)
+                    },
+                    trailingIcon = {
+                        Icon(
+                            Icons.AutoMirrored.Filled.ArrowForward,
+                            contentDescription = null,
+                            tint = Color.White.copy(alpha = 0.85f),
+                            modifier = Modifier.padding(end = 8.dp),
+                        )
+                    },
+                )
+            }
             BooksMainMenuOrder.EXPERIMENT -> DropdownMenuItem(
                 text = { Text(stringResource(R.string.experiment_title)) },
                 onClick = { closeMenu(); navController.navigate("experiment") },
