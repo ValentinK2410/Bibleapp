@@ -14,3 +14,13 @@
 .cxx
 local.properties
 scripts/.cache/
+__pycache__/
+/.kotlin/
+/.gigacode/
+/META-INF/
+/androidMain/
+/commonMain/
+/jvmMain/
+/dist/
+/vibe_images/
+/Dummy.txt

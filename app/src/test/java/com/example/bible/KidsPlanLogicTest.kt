@@ -104,8 +104,8 @@ class KidsPlanLogicTest {
             File("app/src/main/assets/kids/coloring"),
         ).first { it.isDirectory }
         val files = root.listFiles { file -> file.extension == "json" }!!.sortedBy { it.name }
-        assertEquals(6, files.size)
-        assertEquals(12, root.listFiles { file -> file.extension == "svg" }!!.size)
+        assertEquals(12, files.size)
+        assertEquals(24, root.listFiles { file -> file.extension == "svg" }!!.size)
         files.forEach { file ->
             val raw = file.readText()
             assertTrue(file.name, raw.contains("\"format\": \"kids-coloring/v1\""))

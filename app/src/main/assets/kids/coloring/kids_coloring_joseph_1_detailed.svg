@@ -1,0 +1,62 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 800" width="800" height="800" data-page="joseph_1" data-level="detailed">
+  <title>Разноцветная одежда Иосифа</title>
+  <g fill="#FFFFFF" stroke="#1F2937" stroke-width="4" stroke-linejoin="round" stroke-linecap="round">
+    <path id="sky" data-hint="#7DD3FC" d="M0,0 L800,0 L800,800 L0,800 Z"/>
+    <path id="sun" data-hint="#FACC15" d="M604,124 A60,60 0 1 1 724,124 A60,60 0 1 1 604,124 Z"/>
+    <path id="sun_core" data-hint="#FDE68A" d="M630,124 A34,34 0 1 1 698,124 A34,34 0 1 1 630,124 Z"/>
+    <path id="ray_1" data-hint="#FBBF24" d="M674.6,56.8 L664,20 L653.4,56.8 Z"/>
+    <path id="ray_2" data-hint="#FBBF24" d="M727.5,99.6 L754.1,72 L716.8,81.2 Z"/>
+    <path id="ray_3" data-hint="#FBBF24" d="M716.8,166.8 L754.1,176 L727.5,148.4 Z"/>
+    <path id="ray_4" data-hint="#FBBF24" d="M653.4,191.2 L664,228 L674.6,191.2 Z"/>
+    <path id="ray_5" data-hint="#FBBF24" d="M600.5,148.4 L573.9,176 L611.2,166.8 Z"/>
+    <path id="ray_6" data-hint="#FBBF24" d="M611.2,81.2 L573.9,72 L600.5,99.6 Z"/>
+    <path id="cloud1" data-hint="#FFFBF5" d="M105,143 A18.4,18.4 0 0 1 153,123.7 A25.8,25.8 0 0 1 210,123.7 A18.4,18.4 0 0 1 255,143 Z"/>
+    <path id="bird1" data-hint="#1F2937" d="M300,190 L326,168 L352,190 L326,178 Z"/>
+    <path id="hill_far" data-hint="#22C55E" d="M-130,600 Q180,340 490,600 Z"/>
+    <path id="ground" data-hint="#A3E635" d="M0,800 L0,598 Q50,582 100,598 Q150,614 200,598 Q250,582 300,598 Q350,614 400,598 Q450,582 500,598 Q550,614 600,598 Q650,582 700,598 Q750,614 800,598 L800,800 Z"/>
+    <path id="path" data-hint="#F5DEB3" d="M352,800 L452,800 L420,600 L386,600 Z"/>
+    <path id="coat_1" data-hint="#EF4444" d="M330,336 L350,336 L310.7,646 L275,646 Z"/>
+    <path id="coat_2" data-hint="#F97316" d="M350,336 L370,336 L346.4,646 L310.7,646 Z"/>
+    <path id="coat_3" data-hint="#FACC15" d="M370,336 L390,336 L382.1,646 L346.4,646 Z"/>
+    <path id="coat_4" data-hint="#22C55E" d="M390,336 L410,336 L417.9,646 L382.1,646 Z"/>
+    <path id="coat_5" data-hint="#38BDF8" d="M410,336 L430,336 L453.6,646 L417.9,646 Z"/>
+    <path id="coat_6" data-hint="#8B5CF6" d="M430,336 L450,336 L489.3,646 L453.6,646 Z"/>
+    <path id="coat_7" data-hint="#F472B6" d="M450,336 L470,336 L525,646 L489.3,646 Z"/>
+    <path id="coat_collar" data-hint="#FDE68A" d="M348,330 L452,330 L430,366 L400,348 L370,366 Z"/>
+    <path id="coat_sleeve_l" data-hint="#22C55E" d="M330,344 L286,366 L262,520 L306,528 Z"/>
+    <path id="coat_sleeve_r" data-hint="#8B5CF6" d="M470,344 L514,366 L538,520 L494,528 Z"/>
+    <path id="belt" data-hint="#92400E" d="M316,468 H486 A10,10 0 0 1 496,478 V484 A10,10 0 0 1 486,494 H316 A10,10 0 0 1 306,484 V478 A10,10 0 0 1 316,468 Z"/>
+    <path id="belt_gem" data-hint="#FBBF24" d="M385,481 A15,15 0 1 1 415,481 A15,15 0 1 1 385,481 Z"/>
+    <path id="joseph_head" data-hint="#F5DEB3" d="M356,286 A44,44 0 1 1 444,286 A44,44 0 1 1 356,286 Z"/>
+    <path id="joseph_hair" data-hint="#1F2937" d="M352,286 A48,48 0 0 1 448,286 L427,286 A27,27 0 0 0 373,286 Z"/>
+    <path id="turban" data-hint="#FDE68A" d="M348,268 A52,52 0 0 1 452,268 L430,268 A30,30 0 0 0 370,268 Z"/>
+    <path id="turban_gem" data-hint="#EF4444" d="M389,246 A11,11 0 1 1 411,246 A11,11 0 1 1 389,246 Z"/>
+    <path id="eye_l" data-hint="#1F2937" d="M379,288 A5,5 0 1 1 389,288 A5,5 0 1 1 379,288 Z"/>
+    <path id="eye_r" data-hint="#1F2937" d="M411,288 A5,5 0 1 1 421,288 A5,5 0 1 1 411,288 Z"/>
+    <path id="smile" data-hint="#1F2937" d="M415,305.5 A16,16 0 0 1 385,305.5 L389.7,303.8 A11,11 0 0 0 410.3,303.8 Z"/>
+    <path id="sandal1" data-hint="#92400E" d="M340,654 A24,10 0 1 1 388,654 A24,10 0 1 1 340,654 Z"/>
+    <path id="sandal2" data-hint="#92400E" d="M414,654 A24,10 0 1 1 462,654 A24,10 0 1 1 414,654 Z"/>
+    <path id="bro1_robe" data-hint="#14B8A6" d="M600,494.2 L672,494.2 L691.2,664 L580.8,664 Z"/>
+    <path id="bro1_sash" data-hint="#B91C1C" d="M591.9,565.5 L680.1,565.5 L680.1,582.3 L591.9,582.3 Z"/>
+    <path id="bro1_arm_l" data-hint="#14B8A6" d="M590.4,503.8 H590.4 A12,12 0 0 1 602.4,515.8 V597.4 A12,12 0 0 1 590.4,609.4 H590.4 A12,12 0 0 1 578.4,597.4 V515.8 A12,12 0 0 1 590.4,503.8 Z"/>
+    <path id="bro1_arm_r" data-hint="#14B8A6" d="M681.6,503.8 H681.6 A12,12 0 0 1 693.6,515.8 V597.4 A12,12 0 0 1 681.6,609.4 H681.6 A12,12 0 0 1 669.6,597.4 V515.8 A12,12 0 0 1 681.6,503.8 Z"/>
+    <path id="bro1_head" data-hint="#F5DEB3" d="M604.8,455.2 A31.2,31.2 0 1 1 667.2,455.2 A31.2,31.2 0 1 1 604.8,455.2 Z"/>
+    <path id="bro1_hair" data-hint="#1F2937" d="M602.9,455.2 A33.1,33.1 0 0 1 669.1,455.2 L655.3,455.2 A19.3,19.3 0 0 0 616.7,455.2 Z"/>
+    <path id="wheat1_stalk" data-hint="#22C55E" d="M744,700 L752,700 L758.2,580 L752.2,580 Z"/>
+    <path id="wheat1_grain1" data-hint="#CA8A04" d="M729,584.6 A11,7 -24.6 1 1 749,575.4 A11,7 -24.6 1 1 729,584.6 Z"/>
+    <path id="wheat1_grain2" data-hint="#CA8A04" d="M747.1,584.3 A11,7 25.4 1 1 766.9,593.7 A11,7 25.4 1 1 747.1,584.3 Z"/>
+    <path id="wheat1_grain3" data-hint="#CA8A04" d="M732.8,608.6 A11,7 -24.6 1 1 752.8,599.4 A11,7 -24.6 1 1 732.8,608.6 Z"/>
+    <path id="wheat1_grain4" data-hint="#CA8A04" d="M750.9,608.3 A11,7 25.4 1 1 770.8,617.7 A11,7 25.4 1 1 750.9,608.3 Z"/>
+    <path id="wheat2_stalk" data-hint="#22C55E" d="M246.2,700 L253.8,700 L247.7,587.2 L242.1,587.2 Z"/>
+    <path id="wheat2_grain1" data-hint="#CA8A04" d="M232.2,591.6 A10.3,6.6 -25.3 1 1 250.9,582.8 A10.3,6.6 -25.3 1 1 232.2,591.6 Z"/>
+    <path id="wheat2_grain2" data-hint="#CA8A04" d="M249.1,591.3 A10.3,6.6 24.7 1 1 267.9,600 A10.3,6.6 24.7 1 1 249.1,591.3 Z"/>
+    <path id="wheat2_grain3" data-hint="#CA8A04" d="M229.5,614.2 A10.3,6.6 -25.3 1 1 248.2,605.3 A10.3,6.6 -25.3 1 1 229.5,614.2 Z"/>
+    <path id="wheat2_grain4" data-hint="#CA8A04" d="M246.4,613.9 A10.3,6.6 24.7 1 1 265.1,622.5 A10.3,6.6 24.7 1 1 246.4,613.9 Z"/>
+    <path id="flower1" data-hint="#F472B6" d="M317,742 A13,13 0 1 1 343,742 A13,13 0 1 1 317,742 Z"/>
+    <path id="flower2" data-hint="#8B5CF6" d="M527,748 A13,13 0 1 1 553,748 A13,13 0 1 1 527,748 Z"/>
+    <path id="sheep_body" data-hint="#FFFBF5" d="M63.2,712 A32.8,21.8 0 1 1 128.8,712 A32.8,21.8 0 1 1 63.2,712 Z"/>
+    <path id="sheep_fluff" data-hint="#CBD5E1" d="M92.3,692.3 A8.6,8.6 0 1 1 109.5,692.3 A8.6,8.6 0 1 1 92.3,692.3 Z"/>
+    <path id="sheep_head" data-hint="#9CA3AF" d="M112.1,707.6 A11.7,11.7 0 1 1 135.5,707.6 A11.7,11.7 0 1 1 112.1,707.6 Z"/>
+    <path id="sheep_legs" data-hint="#1F2937" d="M87.6,724 H101.1 A4.7,4.7 0 0 1 105.8,728.7 V739.6 A4.7,4.7 0 0 1 101.1,744.3 H87.6 A4.7,4.7 0 0 1 82.9,739.6 V728.7 A4.7,4.7 0 0 1 87.6,724 Z"/>
+  </g>
+</svg>

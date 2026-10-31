@@ -164,6 +164,7 @@ data class KidsPicturedItemJson(
     val customImagePath: String?,
     val customSoundPath: String?,
     val detailFullScreen: Boolean,
+    val caption: String? = null,
 ) {
     fun toJson(): JSONObject = JSONObject().apply {
         put("itemKey", itemKey)
@@ -176,6 +177,7 @@ data class KidsPicturedItemJson(
         customImagePath?.let { put("img", it) }
         customSoundPath?.let { put("snd", it) }
         put("full", detailFullScreen)
+        caption?.let { put("cap", it) }
     }
 
     companion object {
@@ -190,6 +192,7 @@ data class KidsPicturedItemJson(
             customImagePath = j.optString("img", "").takeIf { it.isNotBlank() },
             customSoundPath = j.optString("snd", "").takeIf { it.isNotBlank() },
             detailFullScreen = j.optBoolean("full", true),
+            caption = j.optString("cap", "").takeIf { it.isNotBlank() },
         )
     }
 }
@@ -241,6 +244,8 @@ data class KidsPicturedItemPatch(
     val clearCustomImage: Boolean,
     val clearCustomSound: Boolean,
     val detailFullScreen: Boolean?,
+    val caption: String?,
+    val clearCaption: Boolean,
 ) {
     fun toJson(): JSONObject = JSONObject().apply {
         label?.let { put("label", it) }
@@ -251,6 +256,8 @@ data class KidsPicturedItemPatch(
         if (clearCustomImage) put("clearImg", true)
         if (clearCustomSound) put("clearSnd", true)
         detailFullScreen?.let { put("full", it) }
+        caption?.let { put("cap", it) }
+        if (clearCaption) put("clearCap", true)
     }
 
     companion object {
@@ -263,6 +270,8 @@ data class KidsPicturedItemPatch(
             clearCustomImage = j.optBoolean("clearImg", false),
             clearCustomSound = j.optBoolean("clearSnd", false),
             detailFullScreen = if (j.has("full")) j.getBoolean("full") else null,
+            caption = j.optString("cap", "").takeIf { it.isNotBlank() },
+            clearCaption = j.optBoolean("clearCap", false),
         )
     }
 }
@@ -275,6 +284,7 @@ object KidsPicturedRoutes {
         "kids_insects",
         "kids_trees",
         "kids_plants",
+        "kids_space",
     )
 
     fun isPicturedRoute(route: String): Boolean =
@@ -287,6 +297,7 @@ object KidsPicturedRoutes {
         "kids_insects" -> KidsPicturedTopics.insects
         "kids_trees" -> KidsPicturedTopics.trees
         "kids_plants" -> KidsPicturedTopics.plants
+        "kids_space" -> KidsPicturedTopics.space
         else -> null
     }
 }
@@ -336,6 +347,11 @@ object KidsUserSectionsMerge {
                 else -> item.customSoundPath
             },
             detailFullScreen = p.detailFullScreen ?: item.detailFullScreen,
+            caption = when {
+                p.clearCaption -> null
+                p.caption != null -> p.caption
+                else -> item.caption
+            },
         )
     }
 
@@ -359,6 +375,7 @@ object KidsUserSectionsMerge {
             customImagePath = customImagePath,
             customSoundPath = customSoundPath,
             detailFullScreen = detailFullScreen,
+            caption = caption,
         )
     }
 }

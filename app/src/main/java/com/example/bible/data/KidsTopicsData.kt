@@ -18,6 +18,7 @@ data class KidsTopicItem(
  * [itemKey] — ключ для подстановки пользовательских правок (по умолчанию совпадает с [label]).
  * [customImagePath] / [customSoundPath] — пути **относительно** [android.content.Context.getFilesDir].
  * [detailFullScreen] — в диалоге просмотра: на весь экран или компактно «как плитка».
+ * [caption] — короткое пояснение, что на фото; показывается в диалоге просмотра.
  */
 data class KidsPicturedItem(
     val label: String,
@@ -30,6 +31,7 @@ data class KidsPicturedItem(
     val customImagePath: String? = null,
     val customSoundPath: String? = null,
     val detailFullScreen: Boolean = true,
+    val caption: String? = null,
 )
 
 object KidsTopicsRepository {

@@ -14,6 +14,8 @@ import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.gestures.awaitEachGesture
+import androidx.compose.foundation.gestures.awaitFirstDown
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.layout.Arrangement
@@ -41,6 +43,7 @@ import androidx.compose.material.icons.automirrored.filled.VolumeUp
 import androidx.compose.material.icons.filled.AutoAwesome
 import androidx.compose.material.icons.filled.SortByAlpha
 import androidx.compose.material.icons.filled.AutoStories
+import androidx.compose.material.icons.filled.RocketLaunch
 import androidx.compose.material.icons.filled.Brush
 import androidx.compose.material.icons.filled.BugReport
 import androidx.compose.material.icons.filled.FamilyRestroom
@@ -84,12 +87,15 @@ import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.clipToBounds
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.layout.WindowInsets
@@ -101,7 +107,10 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.luminance
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
@@ -112,6 +121,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
@@ -125,12 +135,25 @@ import com.example.bible.data.KidsTopicItem
 import com.example.bible.data.KidsUserSectionsState
 import java.util.LinkedHashSet
 import java.util.Locale
+import kotlin.math.sqrt
 
 /** Раскладка плиток с фото: квадрат или широкая ячейка (рыбы —1 колонка в портрете, 2 в альбоме). */
 enum class KidsPicturedTileStyle {
     Square,
     FishWide,
+
+    /** Фото целиком на чёрном фоне — снимки космоса не обрезаются. */
+    SpaceDark,
 }
+
+private val KidsSpaceGradients = listOf(
+    listOf(Color(0xFF1B1B3A), Color(0xFF0B0B1E)),
+    listOf(Color(0xFF241640), Color(0xFF0D0A22)),
+    listOf(Color(0xFF10233A), Color(0xFF080D1C)),
+)
+
+private fun kidsSpaceGradient(index: Int): List<Color> =
+    KidsSpaceGradients[Math.floorMod(index, KidsSpaceGradients.size)]
 
 internal object KidsPicturedRouteUi {
     fun title(route: String, state: KidsUserSectionsState?): String {
@@ -142,12 +165,14 @@ internal object KidsPicturedRouteUi {
             "kids_insects" -> "Насекомые"
             "kids_trees" -> "Деревья"
             "kids_plants" -> "Растения"
+            "kids_space" -> "Космос"
             else -> "Альбом"
         }
     }
 
     fun tileStyle(route: String, state: KidsUserSectionsState?): KidsPicturedTileStyle {
         if (route == "kids_fish") return KidsPicturedTileStyle.FishWide
+        if (route == "kids_space") return KidsPicturedTileStyle.SpaceDark
         val tile = state?.customHub?.find { it.route == route }?.tileStyle?.lowercase()
             ?: return KidsPicturedTileStyle.Square
         return when (tile) {
@@ -229,6 +254,9 @@ private fun prepareTtsForCountryHello(tts: TextToSpeech, primaryLocaleTag: Strin
 
 /** Пауза между русским названием страны и «привет» на языке страны (мс). */
 private const val KidsCountryHelloPauseMs = 550L
+
+/** Пауза между озвучкой названия картинки и звуком животного (мс). */
+private const val KidsPicturedSoundPauseMs = 450L
 
 /**
  * Озвучка страны: сначала название по-русски, пауза, затем приветствие на родном языке.
@@ -619,6 +647,14 @@ private val KIDS_HUB_DEFAULT_ROWS: List<KidsHubRow> = listOf(
         cardStyle = KidsHubCardVisual.Pictures,
         imageRes = R.drawable.kids_plant_tulpan,
         ageBand = "small",
+    ),
+    KidsHubRow(
+        title = "Космос",
+        subtitle = "Планеты, звёзды и галактики на снимках NASA с пояснениями",
+        route = "kids_space",
+        icon = Icons.Filled.RocketLaunch,
+        cardStyle = KidsHubCardVisual.Pictures,
+        imageRes = R.drawable.kids_space_zemlya,
     ),
 )
 
@@ -1031,6 +1067,146 @@ private fun KidsPicturedTileImage(
     }
 }
 
+private const val KidsSpaceMaxZoom = 5f
+
+/**
+ * Снимок космоса во весь экран с pinch-зумом: двумя пальцами приближают и водят фото,
+ * двойное касание увеличивает втрое либо возвращает обычный вид, одиночное — озвучивает название.
+ */
+@Composable
+private fun KidsZoomableSpacePicture(
+    item: KidsPicturedItem,
+    emojiSize: TextUnit,
+    imageBackdrop: Color?,
+    onTap: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    var scale by remember(item.itemKey) { mutableFloatStateOf(1f) }
+    var shift by remember(item.itemKey) { mutableStateOf(Offset.Zero) }
+    var boxSize by remember(item.itemKey) { mutableStateOf(IntSize.Zero) }
+
+    Box(
+        modifier = modifier
+            .onSizeChanged { boxSize = it }
+            .clipToBounds()
+            .pointerInput(item.itemKey) {
+                var lastTapUp = 0L
+                awaitEachGesture {
+                    val down = awaitFirstDown(requireUnconsumed = false)
+                    var pinching = false
+                    var dragging = false
+                    var moved = false
+                    var prevDist = 0f
+                    var prevCentroid = Offset.Zero
+                    var upTime = down.uptimeMillis
+                    while (true) {
+                        val event = awaitPointerEvent()
+                        upTime = event.changes.first().uptimeMillis
+                        val pressed = event.changes.filter { it.pressed }
+                        if (pressed.isEmpty()) break
+                        if (pressed.size >= 2) {
+                            pinching = true
+                            val a = pressed[0].position
+                            val b = pressed[1].position
+                            val dx = b.x - a.x
+                            val dy = b.y - a.y
+                            val dist = sqrt(dx * dx + dy * dy)
+                            val centroid = Offset((a.x + b.x) / 2f, (a.y + b.y) / 2f)
+                            if (prevDist > 0f && dist > 0f) {
+                                val factor = (scale * (dist / prevDist)).coerceIn(1f, KidsSpaceMaxZoom)
+                                val center = Offset(boxSize.width / 2f, boxSize.height / 2f)
+                                val relative = centroid - center
+                                shift = kidsClampSpaceShift(
+                                    relative + (shift - relative) * (factor / scale),
+                                    factor,
+                                    boxSize,
+                                )
+                                scale = factor
+                            }
+                            if (dragging) {
+                                shift = kidsClampSpaceShift(
+                                    shift + (centroid - prevCentroid),
+                                    scale,
+                                    boxSize,
+                                )
+                            }
+                            prevDist = dist
+                            prevCentroid = centroid
+                            dragging = true
+                            event.changes.forEach { it.consume() }
+                        } else {
+                            val change = pressed.first()
+                            val mx = change.position.x - down.position.x
+                            val my = change.position.y - down.position.y
+                            if (sqrt(mx * mx + my * my) > viewConfiguration.touchSlop) moved = true
+                            if (!change.pressed) break
+                        }
+                    }
+                    if (pinching || moved) return@awaitEachGesture
+                    if (upTime - lastTapUp <= viewConfiguration.doubleTapTimeoutMillis) {
+                        lastTapUp = 0L
+                        if (scale > 1f) {
+                            scale = 1f
+                            shift = Offset.Zero
+                        } else {
+                            scale = 2.5f
+                            shift = kidsClampSpaceShift(shift, scale, boxSize)
+                        }
+                    } else {
+                        lastTapUp = upTime
+                        onTap()
+                    }
+                }
+            },
+        contentAlignment = Alignment.Center,
+    ) {
+        KidsPicturedTileImage(
+            item = item,
+            emojiSize = emojiSize,
+            contentScale = ContentScale.Fit,
+            imageBackdrop = imageBackdrop,
+            modifier = Modifier
+                .fillMaxSize()
+                .graphicsLayer {
+                    scaleX = scale
+                    scaleY = scale
+                    translationX = shift.x
+                    translationY = shift.y
+                },
+        )
+        if (scale > 1f) {
+            TextButton(
+                onClick = {
+                    scale = 1f
+                    shift = Offset.Zero
+                },
+                modifier = Modifier
+                    .align(Alignment.BottomStart)
+                    .padding(8.dp),
+            ) {
+                Text(stringResource(R.string.kids_space_zoom_reset))
+            }
+        } else {
+            Text(
+                stringResource(R.string.kids_space_zoom_hint),
+                modifier = Modifier
+                    .align(Alignment.BottomCenter)
+                    .padding(bottom = 10.dp),
+                style = MaterialTheme.typography.labelMedium,
+                color = Color.White.copy(alpha = 0.7f),
+                textAlign = TextAlign.Center,
+            )
+        }
+    }
+}
+
+private fun kidsClampSpaceShift(offset: Offset, factor: Float, boxSize: IntSize): Offset {
+    if (factor <= 1f) return Offset.Zero
+    val maxX = boxSize.width * (factor - 1f) / 2f
+    val maxY = boxSize.height * (factor - 1f) / 2f
+    return Offset(offset.x.coerceIn(-maxX, maxX), offset.y.coerceIn(-maxY, maxY))
+}
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun KidsPicturedGridScreen(
@@ -1044,7 +1220,16 @@ fun KidsPicturedGridScreen(
     val context = LocalContext.current
     val ttsState = remember { mutableStateOf<TextToSpeech?>(null) }
     var sfxPlayer by remember { mutableStateOf<MediaPlayer?>(null) }
+    val sfxHandler = remember { Handler(Looper.getMainLooper()) }
+    var pendingSfx by remember { mutableStateOf<Runnable?>(null) }
+    var activeSfxUtteranceId by remember { mutableStateOf<String?>(null) }
+    fun cancelPendingSfx() {
+        pendingSfx?.let { sfxHandler.removeCallbacks(it) }
+        pendingSfx = null
+        activeSfxUtteranceId = null
+    }
     fun stopSfx() {
+        cancelPendingSfx()
         sfxPlayer?.let { mp ->
             sfxPlayer = null
             mp.setOnCompletionListener(null)
@@ -1103,10 +1288,57 @@ fun KidsPicturedGridScreen(
         }
     }
     DisposableEffect(Unit) {
-        onDispose { stopSfx() }
+        onDispose {
+            sfxHandler.removeCallbacksAndMessages(null)
+            stopSfx()
+        }
     }
     val speak: (String) -> Unit = { text ->
         ttsState.value?.speak(text, TextToSpeech.QUEUE_FLUSH, null, "kids_pic_${System.nanoTime()}")
+    }
+    /** Озвучивает название, а звук проигрывает после завершения речи (или её отсечки). */
+    val speakThenPlaySfx: (KidsPicturedItem) -> Unit = { item ->
+        cancelPendingSfx()
+        val tts = ttsState.value
+        val playLater = Runnable {
+            if (pendingSfx != null) {
+                pendingSfx = null
+                activeSfxUtteranceId = null
+            }
+            playSfx(item)
+        }
+        if (tts == null || item.speak.isBlank()) {
+            playSfx(item)
+        } else {
+            val seqUtteranceId = "kids_pic_seq_${System.nanoTime()}"
+            activeSfxUtteranceId = seqUtteranceId
+            pendingSfx = playLater
+            tts.setOnUtteranceProgressListener(object : UtteranceProgressListener() {
+                override fun onStart(id: String?) {}
+
+                override fun onDone(id: String?) {
+                    if (id != seqUtteranceId || activeSfxUtteranceId != seqUtteranceId) return
+                    sfxHandler.postDelayed(playLater, KidsPicturedSoundPauseMs)
+                }
+
+                override fun onStop(id: String?, interrupted: Boolean) {
+                    if (id != seqUtteranceId || interrupted || activeSfxUtteranceId != seqUtteranceId) return
+                    sfxHandler.post(playLater)
+                }
+
+                @Suppress("DEPRECATION")
+                @Deprecated("Deprecated in Java")
+                override fun onError(id: String?) {
+                    onError(id, TextToSpeech.ERROR)
+                }
+
+                override fun onError(id: String?, errorCode: Int) {
+                    if (id != seqUtteranceId || activeSfxUtteranceId != seqUtteranceId) return
+                    sfxHandler.post(playLater)
+                }
+            })
+            tts.speak(item.speak, TextToSpeech.QUEUE_FLUSH, null, seqUtteranceId)
+        }
     }
     var preview by remember { mutableStateOf<KidsPicturedItem?>(null) }
     val configuration = LocalConfiguration.current
@@ -1114,19 +1346,24 @@ fun KidsPicturedGridScreen(
     val columnCount = when (tileStyle) {
         KidsPicturedTileStyle.Square -> if (isLandscape) 4 else 2
         KidsPicturedTileStyle.FishWide -> if (isLandscape) 2 else 1
+        KidsPicturedTileStyle.SpaceDark -> if (isLandscape) 3 else 2
     }
     val imageAspectRatio = when (tileStyle) {
         KidsPicturedTileStyle.Square -> 1f
         KidsPicturedTileStyle.FishWide -> 16f / 10f
+        KidsPicturedTileStyle.SpaceDark -> 1f
     }
     val imageContentScale = when (tileStyle) {
         KidsPicturedTileStyle.Square -> ContentScale.Crop
         KidsPicturedTileStyle.FishWide -> ContentScale.Fit
+        KidsPicturedTileStyle.SpaceDark -> ContentScale.Fit
     }
     val imageBackdrop = when (tileStyle) {
         KidsPicturedTileStyle.Square -> null
-        KidsPicturedTileStyle.FishWide -> MaterialTheme.colorScheme.surfaceVariant
+        KidsPicturedTileStyle.FishWide -> Color.White.copy(alpha = 0.9f)
+        KidsPicturedTileStyle.SpaceDark -> Color.Black
     }
+    val spaceDark = tileStyle == KidsPicturedTileStyle.SpaceDark
     val gridPadding = if (isLandscape) 6.dp else 12.dp
     val tileSpacing = if (isLandscape) 4.dp else 10.dp
     val cardShape = if (isLandscape) RoundedCornerShape(12.dp) else RoundedCornerShape(24.dp)
@@ -1149,6 +1386,7 @@ fun KidsPicturedGridScreen(
                 },
                 actions = {
                     IconButton(onClick = {
+                        activeSfxUtteranceId = null
                         ttsState.value?.stop()
                         stopSfx()
                     }) {
@@ -1187,14 +1425,24 @@ fun KidsPicturedGridScreen(
                         .fillMaxWidth()
                         .kidsLifted(cardShape)
                         .clip(cardShape)
-                        .background(Brush.linearGradient(kidsGradient(items.indexOf(item))))
+                        .background(
+                            Brush.linearGradient(
+                                if (spaceDark) {
+                                    kidsSpaceGradient(items.indexOf(item))
+                                } else {
+                                    kidsGradient(items.indexOf(item))
+                                },
+                            ),
+                        )
                         .clickable {
                             if (showDetailDialog) {
                                 preview = item
                             }
-                            speak(item.speak)
-                            if (playRawSoundsOnTap || item.customSoundPath != null) {
-                                playSfx(item)
+                            val hasSound = playRawSoundsOnTap || item.customSoundPath != null
+                            if (hasSound) {
+                                speakThenPlaySfx(item)
+                            } else {
+                                speak(item.speak)
                             }
                         }
                         .padding(if (isLandscape) 4.dp else 8.dp),
@@ -1203,7 +1451,7 @@ fun KidsPicturedGridScreen(
                         item = item,
                         emojiSize = emojiSize,
                         contentScale = imageContentScale,
-                        imageBackdrop = imageBackdrop?.let { Color.White.copy(alpha = 0.9f) },
+                        imageBackdrop = imageBackdrop,
                         modifier = Modifier
                             .fillMaxWidth()
                             .aspectRatio(imageAspectRatio)
@@ -1227,19 +1475,30 @@ fun KidsPicturedGridScreen(
 
     if (showDetailDialog) {
         preview?.let { item ->
+            val dismissPreview: () -> Unit = {
+                activeSfxUtteranceId = null
+                ttsState.value?.stop()
+                cancelPendingSfx()
+                preview = null
+            }
             Dialog(
-                onDismissRequest = { preview = null },
+                onDismissRequest = dismissPreview,
                 properties = DialogProperties(usePlatformDefaultWidth = false),
             ) {
                 Surface(
                     modifier = Modifier.fillMaxSize(),
-                    color = MaterialTheme.colorScheme.surface,
+                    color = if (spaceDark) Color.Black else MaterialTheme.colorScheme.surface,
+                    contentColor = if (spaceDark) Color.White else MaterialTheme.colorScheme.onSurface,
                 ) {
                     val detailScale = ContentScale.Fit
-                    val detailBackdrop = MaterialTheme.colorScheme.surfaceVariant
+                    val detailBackdrop = if (spaceDark) Color.Black else MaterialTheme.colorScheme.surfaceVariant
                     val hasAnimalSound =
                         item.soundRes != null ||
                             item.customSoundPath?.let { File(context.filesDir, it).isFile } == true
+                    val speakNameAndSound: () -> Unit = {
+                        val hasSound = playRawSoundsOnTap || item.customSoundPath != null
+                        if (hasSound) speakThenPlaySfx(item) else speak(item.speak)
+                    }
                     val navBarBottom = WindowInsets.navigationBars.asPaddingValues().calculateBottomPadding()
                     val bottomSafePad = maxOf(navBarBottom, 56.dp)
                     Column(
@@ -1265,7 +1524,7 @@ fun KidsPicturedGridScreen(
                                 fontWeight = FontWeight.Bold,
                                 modifier = Modifier.padding(start = 8.dp),
                             )
-                            IconButton(onClick = { preview = null }) {
+                            IconButton(onClick = dismissPreview) {
                                 Icon(Icons.Filled.Close, contentDescription = "Закрыть")
                             }
                         }
@@ -1278,13 +1537,25 @@ fun KidsPicturedGridScreen(
                             contentAlignment = Alignment.Center,
                         ) {
                             if (item.detailFullScreen) {
-                                KidsPicturedTileImage(
-                                    item = item,
-                                    emojiSize = 120.sp,
-                                    contentScale = detailScale,
-                                    imageBackdrop = detailBackdrop,
-                                    modifier = Modifier.fillMaxSize(),
-                                )
+                                if (spaceDark) {
+                                    KidsZoomableSpacePicture(
+                                        item = item,
+                                        emojiSize = 120.sp,
+                                        imageBackdrop = detailBackdrop,
+                                        onTap = speakNameAndSound,
+                                        modifier = Modifier.fillMaxSize(),
+                                    )
+                                } else {
+                                    KidsPicturedTileImage(
+                                        item = item,
+                                        emojiSize = 120.sp,
+                                        contentScale = detailScale,
+                                        imageBackdrop = detailBackdrop,
+                                        modifier = Modifier
+                                            .fillMaxSize()
+                                            .clickable(onClick = speakNameAndSound),
+                                    )
+                                }
                             } else {
                                 KidsPicturedTileImage(
                                     item = item,
@@ -1295,9 +1566,20 @@ fun KidsPicturedGridScreen(
                                         .widthIn(max = 420.dp)
                                         .fillMaxWidth(0.92f)
                                         .aspectRatio(imageAspectRatio)
-                                        .kidsPhotoMat(),
+                                        .kidsPhotoMat()
+                                        .clickable(onClick = speakNameAndSound),
                                 )
                             }
+                        }
+                        item.caption?.let { text ->
+                            Text(
+                                text,
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(horizontal = 20.dp, vertical = 2.dp),
+                                style = MaterialTheme.typography.bodyLarge,
+                                textAlign = TextAlign.Center,
+                            )
                         }
                         Row(
                             modifier = Modifier
@@ -1307,6 +1589,7 @@ fun KidsPicturedGridScreen(
                         ) {
                             FilledTonalButton(
                                 onClick = {
+                                    activeSfxUtteranceId = null
                                     stopSfx()
                                     speak(item.speak)
                                 },
@@ -1325,26 +1608,52 @@ fun KidsPicturedGridScreen(
                                     textAlign = TextAlign.Center,
                                 )
                             }
-                            FilledTonalButton(
-                                onClick = {
-                                    ttsState.value?.stop()
-                                    playSfx(item)
-                                },
-                                enabled = hasAnimalSound,
-                                modifier = Modifier.weight(1f),
-                            ) {
-                                Icon(
-                                    Icons.Filled.MusicNote,
-                                    contentDescription = null,
-                                    modifier = Modifier.size(18.dp),
-                                )
-                                Spacer(Modifier.width(6.dp))
-                                Text(
-                                    stringResource(R.string.kids_pictured_play_sound),
-                                    style = MaterialTheme.typography.labelLarge,
-                                    maxLines = 2,
-                                    textAlign = TextAlign.Center,
-                                )
+                            val caption = item.caption
+                            if (caption != null) {
+                                FilledTonalButton(
+                                    onClick = {
+                                        activeSfxUtteranceId = null
+                                        stopSfx()
+                                        speak(caption)
+                                    },
+                                    modifier = Modifier.weight(1f),
+                                ) {
+                                    Icon(
+                                        Icons.Filled.AutoStories,
+                                        contentDescription = null,
+                                        modifier = Modifier.size(18.dp),
+                                    )
+                                    Spacer(Modifier.width(6.dp))
+                                    Text(
+                                        stringResource(R.string.kids_pictured_speak_caption),
+                                        style = MaterialTheme.typography.labelLarge,
+                                        maxLines = 2,
+                                        textAlign = TextAlign.Center,
+                                    )
+                                }
+                            } else {
+                                FilledTonalButton(
+                                    onClick = {
+                                        activeSfxUtteranceId = null
+                                        ttsState.value?.stop()
+                                        playSfx(item)
+                                    },
+                                    enabled = hasAnimalSound,
+                                    modifier = Modifier.weight(1f),
+                                ) {
+                                    Icon(
+                                        Icons.Filled.MusicNote,
+                                        contentDescription = null,
+                                        modifier = Modifier.size(18.dp),
+                                    )
+                                    Spacer(Modifier.width(6.dp))
+                                    Text(
+                                        stringResource(R.string.kids_pictured_play_sound),
+                                        style = MaterialTheme.typography.labelLarge,
+                                        maxLines = 2,
+                                        textAlign = TextAlign.Center,
+                                    )
+                                }
                             }
                         }
                         Spacer(Modifier.height(bottomSafePad))

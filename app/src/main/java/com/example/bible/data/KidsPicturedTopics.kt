@@ -5,7 +5,8 @@ import com.example.bible.R
 /**
  * Списки для экранов «Детям»: фото из Wikimedia (`drawable-nodpi/kids_anml_*.jpg`, `kids_snake_*.jpg`,
  * `kids_fish_*`, `kids_tree_*`, `kids_ins_*`, `kids_plant_*`), звуки — `res/raw`
- * (животные: `scripts/fetch_kids_animal_assets.py`; природа: `scripts/fetch_kids_nature_search.py`).
+ * (животные: `scripts/fetch_kids_animal_assets.py`; природа: `scripts/fetch_kids_nature_search.py`;
+ * космос: `scripts/fetch_kids_space_assets.py`, снимки NASA/ESA без звуков).
  */
 object KidsPicturedTopics {
 
@@ -341,5 +342,172 @@ object KidsPicturedTopics {
         KidsPicturedItem("Кинза", emoji = "🌿", imageRes = R.drawable.kids_plant_kinza),
         KidsPicturedItem("Щавель", emoji = "🌿", imageRes = R.drawable.kids_plant_shavel),
         KidsPicturedItem("Клевер луговой", speak = "Клевер", emoji = "🍀", imageRes = R.drawable.kids_plant_klover_lugovoy),
+    )
+
+    /** Фото NASA/ESA (Hubble, JWST, «Вояджер», «Кассини») из `drawable-nodpi/kids_space_*`. */
+    val space: List<KidsPicturedItem> = listOf(
+        KidsPicturedItem(
+            "Солнце",
+            emoji = "🌞",
+            imageRes = R.drawable.kids_space_solntse,
+            caption = "Солнце — это звезда. Оно в 109 раз больше Земли и дарит нам свет, тепло и день. Сняла солнечная обсерватория NASA SDO.",
+        ),
+        KidsPicturedItem(
+            "Меркурий",
+            emoji = "🪨",
+            imageRes = R.drawable.kids_space_merkuriy,
+            caption = "Меркурий — планета ближе всех к Солнцу. Днём там жарко, а ночью очень холодно. Снял аппарат «Мессенджер».",
+        ),
+        KidsPicturedItem(
+            "Венера",
+            emoji = "🌕",
+            imageRes = R.drawable.kids_space_venera,
+            caption = "Венера — самая горячая планета. Её плотные облака держат тепло, как одеяло. Карту составила АМС «Магеллан».",
+        ),
+        KidsPicturedItem(
+            "Земля",
+            emoji = "🌍",
+            imageRes = R.drawable.kids_space_zemlya,
+            caption = "Земля — наш дом. Пока это единственная планета, где есть вода, воздух и жизнь. Сфотографировали астронавты «Аполлона-17».",
+        ),
+        KidsPicturedItem(
+            "Луна",
+            emoji = "🌙",
+            imageRes = R.drawable.kids_space_luna,
+            caption = "Луна — спутник Земли. Она освещает нам ночи и вызывает приливы в море.",
+        ),
+        KidsPicturedItem(
+            "Марс",
+            emoji = "🔴",
+            imageRes = R.drawable.kids_space_mars,
+            caption = "Марс зовут Красной планетой: его песок и камни окрашены ржавчиной. Снял аппарат «Викинг-орбитер».",
+        ),
+        KidsPicturedItem(
+            "Юпитер",
+            emoji = "🟠",
+            imageRes = R.drawable.kids_space_yupiter,
+            caption = "Юпитер — самая большая планета. Его Большое Красное Пятно — шторм больше Земли. Снял аппарат «Кассини».",
+        ),
+        KidsPicturedItem(
+            "Сатурн",
+            emoji = "🪐",
+            imageRes = R.drawable.kids_space_saturn,
+            caption = "Сатурн знаменит кольцами изо льда и камней. Он настолько лёгкий, что плавал бы в воде. Снял аппарат «Кассини».",
+        ),
+        KidsPicturedItem(
+            "Уран",
+            emoji = "🔵",
+            imageRes = R.drawable.kids_space_uran,
+            caption = "Уран вращается, лёжа на боку. Голубой цвет ему даёт газ метан в облаках. Снял «Вояджер-2» в 1986 году.",
+        ),
+        KidsPicturedItem(
+            "Нептун",
+            emoji = "💙",
+            imageRes = R.drawable.kids_space_neptun,
+            caption = "Нептун — самая дальняя планета. Ветры там сильнее любого земного урагана. Снял «Вояджер-2» в 1989 году.",
+        ),
+        KidsPicturedItem(
+            "Плутон",
+            emoji = "❄️",
+            imageRes = R.drawable.kids_space_pluton,
+            caption = "Плутон — карликовая планета на краю Солнечной системы. Светлое пятно похоже на сердце. Снял аппарат «Новые горизонты» в 2015 году.",
+        ),
+        KidsPicturedItem(
+            "Комета",
+            emoji = "☄️",
+            imageRes = R.drawable.kids_space_kometa,
+            caption = "Комета — комок льда и пыли. Пролетая близко к Солнцу, она распускает длинный хвост.",
+        ),
+        KidsPicturedItem(
+            "Восход Земли",
+            emoji = "🌍",
+            imageRes = R.drawable.kids_space_zemlyarize,
+            caption = "Так астронавты «Аполлона-8» в 1968 году увидели Землю, поднявшуюся над Луной.",
+        ),
+        KidsPicturedItem(
+            "Бледно-голубая точка",
+            emoji = "🔹",
+            imageRes = R.drawable.kids_space_pale_blue_dot,
+            caption = "Земля с расстояния 6 миллиардов километров — маленькая голубая точка. Снял аппарат «Вояджер-1».",
+        ),
+        KidsPicturedItem(
+            "Млечный Путь",
+            emoji = "🌌",
+            imageRes = R.drawable.kids_space_milechnyy_put,
+            caption = "Млечный Путь — наша галактика из сотен миллиардов звёзд. Ночью её диск виден светящейся полосой. Снял инфракрасный телескоп «Спитцер».",
+        ),
+        KidsPicturedItem(
+            "Плеяды",
+            emoji = "⭐",
+            imageRes = R.drawable.kids_space_plejadi,
+            caption = "Плеяды — молодое скопление звёзд в голубой пыли. В народе их зовут «Семь сестёр».",
+        ),
+        KidsPicturedItem(
+            "Туманность Ориона",
+            emoji = "✨",
+            imageRes = R.drawable.kids_space_tumannost_oriona,
+            caption = "Туманность Ориона — огромное облако газа, в котором рождаются звёзды. Видна без телескопа. Снимок телескопа «Хаббл».",
+        ),
+        KidsPicturedItem(
+            "Столпы Творения",
+            emoji = "🗼",
+            imageRes = R.drawable.kids_space_stolpy_tvoreniya,
+            caption = "Столбы газа и пыли высотой в световые годы: внутри них загораются новые звёзды. Снял телескоп «Джеймс Уэбб».",
+        ),
+        KidsPicturedItem(
+            "Крабовидная туманность",
+            emoji = "🦀",
+            imageRes = R.drawable.kids_space_krabovodnaya,
+            caption = "Крабовидная туманность — остатки взрыва звезды, который люди наблюдали ещё в 1054 году.",
+        ),
+        KidsPicturedItem(
+            "Туманность Кольцо",
+            emoji = "💍",
+            imageRes = R.drawable.kids_space_tumannost_koltso,
+            caption = "Умирающая звезда сбросила светящиеся оболочки газа — получилась туманность в форме кольца. Снял телескоп «Хаббл».",
+        ),
+        KidsPicturedItem(
+            "Туманность Кошачий Глаз",
+            emoji = "👁️",
+            imageRes = R.drawable.kids_space_glaz_boga,
+            caption = "«Кошачий глаз» — звезда, которая выбросила газ слоями, как луковицу: видны цветные кольца. Снял телескоп «Хаббл».",
+        ),
+        KidsPicturedItem(
+            "Галактика Андромеды",
+            emoji = "🌌",
+            imageRes = R.drawable.kids_space_andromeda,
+            caption = "Андромеда — галактика-соседка, почти как наш Млечный Путь. Через миллиарды лет они встретятся. Снял ультрафиолетовый телескоп NASA GALEX.",
+        ),
+        KidsPicturedItem(
+            "Галактика Вихрь",
+            emoji = "🌀",
+            imageRes = R.drawable.kids_space_vihr,
+            caption = "Вихрь — спиральная галактика: её рукава закручены, как вода в воронке.",
+        ),
+        KidsPicturedItem(
+            "Галактика Сомбреро",
+            emoji = "🎩",
+            imageRes = R.drawable.kids_space_sombrero,
+            caption = "Сомбреро похожа на шляпу: яркий диск галактики перетянут тёмным кольцом пыли. Снял телескоп «Хаббл».",
+        ),
+        KidsPicturedItem(
+            "Магеллановы Облака",
+            emoji = "☁️",
+            imageRes = R.drawable.kids_space_magellanovy_oblaka,
+            caption = "Магеллановы Облака — маленькие галактики-спутники нашего Млечного Пути. Снял инфракрасный телескоп «Спитцер».",
+        ),
+        KidsPicturedItem(
+            "Сверхглубокое поле",
+            speak = "Сверхглубокое поле Хаббла",
+            emoji = "🔭",
+            imageRes = R.drawable.kids_space_glubokoe_pole,
+            caption = "Здесь каждая точка — целая галактика. Тысячи из них дальше всего, что мы видим без телескопа. Снял телескоп «Хаббл».",
+        ),
+        KidsPicturedItem(
+            "Чёрная дыра",
+            emoji = "🕳️",
+            imageRes = R.drawable.kids_space_chornaya_dyra,
+            caption = "Первое фото чёрной дыры в галактике M87: её «тень» сняли телескопы по всей Земле в 2019 году. Фото: EHT Collaboration (CC BY).",
+        ),
     )
 }

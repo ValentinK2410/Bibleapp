@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 800" width="800" height="800" data-page="five_loaves_1" data-level="small">
+  <title>Пять хлебов и две рыбки</title>
+  <g fill="#FFFFFF" stroke="#1F2937" stroke-width="4" stroke-linejoin="round" stroke-linecap="round">
+    <path id="sky" data-hint="#7DD3FC" d="M0,0 L800,0 L800,800 L0,800 Z"/>
+    <path id="sun" data-hint="#FACC15" d="M602,120 A58,58 0 1 1 718,120 A58,58 0 1 1 602,120 Z"/>
+    <path id="grass" data-hint="#A3E635" d="M0,800 L0,560 Q50,542 100,560 Q150,578 200,560 Q250,542 300,560 Q350,578 400,560 Q450,542 500,560 Q550,578 600,560 Q650,542 700,560 Q750,578 800,560 L800,800 Z"/>
+    <path id="basket" data-hint="#B45309" d="M300,560 L500,560 L460,700 L340,700 Z"/>
+    <path id="loaf1" data-hint="#B45309" d="M316,540 A44,28 0 1 1 404,540 A44,28 0 1 1 316,540 Z"/>
+    <path id="loaf2" data-hint="#B45309" d="M396,540 A44,28 0 1 1 484,540 A44,28 0 1 1 396,540 Z"/>
+    <path id="fish1" data-hint="#38BDF8" d="M138,640 A62,26 0 1 1 262,640 A62,26 0 1 1 138,640 Z"/>
+    <path id="boy_robe" data-hint="#14B8A6" d="M120,460 L210,460 L234,660 L96,660 Z"/>
+    <path id="boy_head" data-hint="#F5DEB3" d="M131,424 A34,34 0 1 1 199,424 A34,34 0 1 1 131,424 Z"/>
+  </g>
+</svg>

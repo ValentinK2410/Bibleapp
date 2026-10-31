@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 800" width="800" height="800" data-page="jonah_1" data-level="small">
+  <title>Иона и большая рыба</title>
+  <g fill="#FFFFFF" stroke="#1F2937" stroke-width="4" stroke-linejoin="round" stroke-linecap="round">
+    <path id="sky" data-hint="#7DD3FC" d="M0,0 L800,0 L800,800 L0,800 Z"/>
+    <path id="sun" data-hint="#FACC15" d="M64,120 A56,56 0 1 1 176,120 A56,56 0 1 1 64,120 Z"/>
+    <path id="sea" data-hint="#2563EB" d="M0,800 L0,430 Q45,412 90,430 Q135,448 180,430 Q225,412 270,430 Q315,448 360,430 Q405,412 450,430 Q495,448 540,430 Q585,412 630,430 Q675,448 720,430 Q760,412 800,430 L800,800 Z"/>
+    <path id="boat" data-hint="#B45309" d="M90,370 L280,370 L240,440 L130,440 Z"/>
+    <path id="sail" data-hint="#FDE68A" d="M185,370 L185,220 L280,370 Z"/>
+    <path id="fish_body" data-hint="#14B8A6" d="M245,600 A205,122 0 1 1 655,600 A205,122 0 1 1 245,600 Z"/>
+    <path id="fish_tail" data-hint="#14B8A6" d="M655,600 L765,500 L775,700 Z"/>
+    <path id="fish_fin" data-hint="#14B8A6" d="M420,478 L480,398 L520,488 Z"/>
+    <path id="fish_belly" data-hint="#FFFBF5" d="M270,650 A140,60 0 1 1 550,650 A140,60 0 1 1 270,650 Z"/>
+    <path id="fish_eye" data-hint="#FFFBF5" d="M276,560 A24,24 0 1 1 324,560 A24,24 0 1 1 276,560 Z"/>
+  </g>
+</svg>

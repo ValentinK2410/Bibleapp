@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 800" width="800" height="800" data-page="abraham_1" data-level="small">
+  <title>Звёзды Авраама</title>
+  <g fill="#FFFFFF" stroke="#1F2937" stroke-width="4" stroke-linejoin="round" stroke-linecap="round">
+    <path id="sky" data-hint="#312E81" d="M0,0 L800,0 L800,800 L0,800 Z"/>
+    <path id="moon" data-hint="#FACC15" d="M86,130 A54,54 0 1 1 194,130 A54,54 0 1 1 86,130 Z"/>
+    <path id="big_star" data-hint="#FACC15" d="M430,99 L446.5,142.3 L492.8,144.6 L456.6,173.7 L468.8,218.4 L430,193 L391.2,218.4 L403.4,173.7 L367.2,144.6 L413.5,142.3 Z"/>
+    <path id="hill" data-hint="#1E3A8A" d="M340,620 Q620,360 900,620 Z"/>
+    <path id="ground" data-hint="#78350F" d="M0,800 L0,620 Q50,606 100,620 Q150,634 200,620 Q250,606 300,620 Q350,634 400,620 Q450,606 500,620 Q550,634 600,620 Q650,606 700,620 Q750,634 800,620 L800,800 Z"/>
+    <path id="tent" data-hint="#B45309" d="M470,620 L620,420 L770,620 Z"/>
+    <path id="tent_door" data-hint="#78350F" d="M585,620 L620,520 L655,620 Z"/>
+    <path id="abraham_robe" data-hint="#8B5CF6" d="M250,420 L350,420 L380,640 L220,640 Z"/>
+    <path id="abraham_head" data-hint="#F5DEB3" d="M266,385 A34,34 0 1 1 334,385 A34,34 0 1 1 266,385 Z"/>
+    <path id="sheep_body" data-hint="#FFFBF5" d="M102,655 A48,32 0 1 1 198,655 A48,32 0 1 1 102,655 Z"/>
+  </g>
+</svg>

@@ -304,6 +304,31 @@ fun KidsEditPicturedSectionScreen(
     var addSpeak by remember { mutableStateOf("") }
     var addEmoji by remember { mutableStateOf("🌿") }
     var addFull by remember { mutableStateOf(true) }
+    var addCaption by remember { mutableStateOf("") }
+    var captionKey by remember { mutableStateOf<String?>(null) }
+    var captionDraft by remember { mutableStateOf("") }
+
+    fun savePatch(key: String, patch: KidsPicturedItemPatch) {
+        val cur = state.picturedEdits[route] ?: KidsPicturedSectionEdits(emptyMap(), emptyList())
+        viewModel.setKidsUserSections(
+            state.copy(
+                picturedEdits = state.picturedEdits + (route to cur.copy(byKey = cur.byKey + (key to patch))),
+            ),
+        )
+    }
+
+    fun existingPatch(old: KidsPicturedItemPatch?) = KidsPicturedItemPatch(
+        label = old?.label,
+        speak = old?.speak,
+        emoji = old?.emoji,
+        customImagePath = old?.customImagePath,
+        customSoundPath = old?.customSoundPath,
+        clearCustomImage = old?.clearCustomImage ?: false,
+        clearCustomSound = old?.clearCustomSound ?: false,
+        detailFullScreen = old?.detailFullScreen,
+        caption = old?.caption,
+        clearCaption = old?.clearCaption ?: false,
+    )
 
     val pickImage = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.OpenDocument(),
@@ -328,6 +353,8 @@ fun KidsEditPicturedSectionScreen(
             clearCustomImage = false,
             clearCustomSound = old?.clearCustomSound ?: false,
             detailFullScreen = old?.detailFullScreen,
+            caption = old?.caption,
+            clearCaption = old?.clearCaption ?: false,
         )
         viewModel.setKidsUserSections(
             state.copy(
@@ -358,6 +385,8 @@ fun KidsEditPicturedSectionScreen(
             clearCustomImage = old?.clearCustomImage ?: false,
             clearCustomSound = false,
             detailFullScreen = old?.detailFullScreen,
+            caption = old?.caption,
+            clearCaption = old?.clearCaption ?: false,
         )
         viewModel.setKidsUserSections(
             state.copy(
@@ -401,6 +430,18 @@ fun KidsEditPicturedSectionScreen(
                         verticalArrangement = Arrangement.spacedBy(8.dp),
                     ) {
                         Text(item.label, style = MaterialTheme.typography.titleMedium)
+                        Text(
+                            item.caption?.takeIf { it.isNotBlank() }
+                                ?: stringResource(R.string.kids_edit_caption_none),
+                            style = MaterialTheme.typography.bodySmall,
+                            maxLines = 3,
+                        )
+                        TextButton(onClick = {
+                            captionKey = key
+                            captionDraft = item.caption ?: ""
+                        }) {
+                            Text(stringResource(R.string.kids_edit_caption_button))
+                        }
                         Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                             OutlinedButton(onClick = {
                                 pendingImgKey = key
@@ -434,6 +475,8 @@ fun KidsEditPicturedSectionScreen(
                                         clearCustomImage = old?.clearCustomImage ?: false,
                                         clearCustomSound = old?.clearCustomSound ?: false,
                                         detailFullScreen = on,
+                                        caption = old?.caption,
+                                        clearCaption = old?.clearCaption ?: false,
                                     )
                                     viewModel.setKidsUserSections(
                                         state.copy(
@@ -456,6 +499,8 @@ fun KidsEditPicturedSectionScreen(
                                     clearCustomImage = true,
                                     clearCustomSound = true,
                                     detailFullScreen = old?.detailFullScreen,
+                                    caption = null,
+                                    clearCaption = false,
                                 )
                                 viewModel.setKidsUserSections(
                                     state.copy(
@@ -477,7 +522,12 @@ fun KidsEditPicturedSectionScreen(
             onDismissRequest = { addCardOpen = false },
             title = { Text(stringResource(R.string.kids_add_card)) },
             text = {
-                Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                Column(
+                    Modifier
+                        .heightIn(max = 420.dp)
+                        .verticalScroll(rememberScrollState()),
+                    verticalArrangement = Arrangement.spacedBy(8.dp),
+                ) {
                     OutlinedTextField(
                         value = addLabel,
                         onValueChange = { addLabel = it },
@@ -497,6 +547,12 @@ fun KidsEditPicturedSectionScreen(
                         onValueChange = { addEmoji = it },
                         label = { Text(stringResource(R.string.kids_edit_new_album_emoji)) },
                         singleLine = true,
+                        modifier = Modifier.fillMaxWidth(),
+                    )
+                    OutlinedTextField(
+                        value = addCaption,
+                        onValueChange = { addCaption = it },
+                        label = { Text(stringResource(R.string.kids_edit_caption_label)) },
                         modifier = Modifier.fillMaxWidth(),
                     )
                     Row(verticalAlignment = Alignment.CenterVertically) {
@@ -522,6 +578,7 @@ fun KidsEditPicturedSectionScreen(
                             customImagePath = null,
                             customSoundPath = null,
                             detailFullScreen = addFull,
+                            caption = addCaption.trim().ifEmpty { null },
                         )
                         val cur = state.picturedEdits[route] ?: KidsPicturedSectionEdits(emptyMap(), emptyList())
                         viewModel.setKidsUserSections(
@@ -533,6 +590,7 @@ fun KidsEditPicturedSectionScreen(
                         addSpeak = ""
                         addEmoji = "🌿"
                         addFull = true
+                        addCaption = ""
                         addCardOpen = false
                     },
                 ) {
@@ -542,6 +600,70 @@ fun KidsEditPicturedSectionScreen(
             dismissButton = {
                 TextButton(onClick = { addCardOpen = false }) {
                     Text(stringResource(R.string.travel_cancel))
+                }
+            },
+        )
+    }
+
+    val editingKey = captionKey
+    if (editingKey != null) {
+        AlertDialog(
+            onDismissRequest = { captionKey = null },
+            title = { Text(stringResource(R.string.kids_edit_caption_title)) },
+            text = {
+                Column(
+                    Modifier
+                        .heightIn(max = 420.dp)
+                        .verticalScroll(rememberScrollState()),
+                    verticalArrangement = Arrangement.spacedBy(8.dp),
+                ) {
+                    OutlinedTextField(
+                        value = captionDraft,
+                        onValueChange = { captionDraft = it },
+                        label = { Text(stringResource(R.string.kids_edit_caption_label)) },
+                        modifier = Modifier.fillMaxWidth(),
+                    )
+                    Text(
+                        stringResource(R.string.kids_edit_caption_hint),
+                        style = MaterialTheme.typography.bodySmall,
+                    )
+                }
+            },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        val old = state.picturedEdits[route]?.byKey?.get(editingKey)
+                        val text = captionDraft.trim()
+                        savePatch(
+                            editingKey,
+                            existingPatch(old).copy(
+                                caption = text.ifEmpty { null },
+                                clearCaption = text.isEmpty(),
+                            ),
+                        )
+                        captionKey = null
+                    },
+                ) {
+                    Text(stringResource(R.string.travel_save))
+                }
+            },
+            dismissButton = {
+                Row(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
+                    TextButton(
+                        onClick = {
+                            val old = state.picturedEdits[route]?.byKey?.get(editingKey)
+                            savePatch(
+                                editingKey,
+                                existingPatch(old).copy(caption = null, clearCaption = true),
+                            )
+                            captionKey = null
+                        },
+                    ) {
+                        Text(stringResource(R.string.kids_edit_caption_clear))
+                    }
+                    TextButton(onClick = { captionKey = null }) {
+                        Text(stringResource(R.string.travel_cancel))
+                    }
                 }
             },
         )

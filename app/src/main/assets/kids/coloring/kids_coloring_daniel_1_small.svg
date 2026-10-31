@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 800" width="800" height="800" data-page="daniel_1" data-level="small">
+  <title>Даниил и львы</title>
+  <g fill="#FFFFFF" stroke="#1F2937" stroke-width="4" stroke-linejoin="round" stroke-linecap="round">
+    <path id="night" data-hint="#312E81" d="M0,0 L800,0 L800,800 L0,800 Z"/>
+    <path id="window" data-hint="#FACC15" d="M250,300 A150,150 0 0 1 550,300 L400,300 A0,0 0 0 0 400,300 Z"/>
+    <path id="window_base" data-hint="#FACC15" d="M250,300 L550,300 L550,430 L250,430 Z"/>
+    <path id="floor" data-hint="#92400E" d="M0,620 L800,620 L800,800 L0,800 Z"/>
+    <path id="daniel_robe" data-hint="#14B8A6" d="M350,400 L450,400 L480,640 L320,640 Z"/>
+    <path id="daniel_head" data-hint="#F5DEB3" d="M364,360 A36,36 0 1 1 436,360 A36,36 0 1 1 364,360 Z"/>
+    <path id="lion_body" data-hint="#B45309" d="M544,660 A76,44 0 1 1 696,660 A76,44 0 1 1 544,660 Z"/>
+    <path id="lion_head" data-hint="#FBBF24" d="M650,626 A40,40 0 1 1 730,626 A40,40 0 1 1 650,626 Z"/>
+    <path id="angel_robe" data-hint="#FFFBF5" d="M110,380 L200,380 L230,640 L80,640 Z"/>
+    <path id="angel_wing" data-hint="#CBD5E1" d="M200,430 L280,360 L260,500 Z"/>
+  </g>
+</svg>

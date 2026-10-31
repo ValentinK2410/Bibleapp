@@ -60,6 +60,10 @@ object AppSectionUsage {
         Section(BooksMainMenuOrder.CONTACTS, "Контакты", "Жизнь", "app_contacts"),
         Section("quran", "Коран", "Жизнь", "quran"),
         Section(BooksMainMenuOrder.MY_CHURCH, "Моя церковь", "Церковь", "my_church"),
+        Section(BooksMainMenuOrder.HOUSE_CARE, "Попечительная о доме", "Жизнь", "house_care"),
+        Section("house_cleaning", "Система уборки", "Жизнь", "house_cleaning"),
+        Section("house_clean_settings", "Настройки уборки", "Жизнь", "house_clean_settings"),
+        Section("house_clean_stats", "Статистика уборки", "Жизнь", "house_clean_stats"),
         Section("church_participants", "Участники", "Церковь", "church_participants"),
         Section("church_accounting", "Учёт", "Церковь", "church_accounting"),
         Section("church_orders", "Приказы", "Церковь", "church_orders"),
@@ -89,6 +93,7 @@ object AppSectionUsage {
         Section("kids_insects", "Насекомые", "Детям", "kids_insects"),
         Section("kids_trees", "Деревья", "Детям", "kids_trees"),
         Section("kids_plants", "Растения", "Детям", "kids_plants"),
+        Section("kids_space", "Космос", "Детям", "kids_space"),
         Section(BooksMainMenuOrder.EXPERIMENT, "Эксперимент", "Эксперимент", "experiment"),
         Section("experiment_camera", "Камера", "Эксперимент", "experiment_camera"),
         Section("experiment_calls_sms", "Звонки и SMS", "Эксперимент", "experiment_calls_sms"),
@@ -130,6 +135,8 @@ object AppSectionUsage {
                 head == "experiment_sms_reactions" ||
                 head == "experiment_sms_speech_overrides" -> "experiment_calls_sms"
             head == "quran_search" || head == "quran_arabic_sandbox" -> "quran"
+            head == "house_place_days" || head == "house_place_day" || head == "house_clean_floor" ||
+                head == "house_clean_zone" || head == "house_clean_task" || head == "house_clean_settings" -> BooksMainMenuOrder.HOUSE_CARE
             head == "theme_studio" -> BooksMainMenuOrder.THEME
             head == "books" || head == "books_menu_order" || head == "about_app" -> null
             catalog.any { it.id == head } -> head

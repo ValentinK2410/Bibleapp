@@ -1,0 +1,60 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 800" width="800" height="800" data-page="five_loaves_1" data-level="detailed">
+  <title>Пять хлебов и две рыбки</title>
+  <g fill="#FFFFFF" stroke="#1F2937" stroke-width="4" stroke-linejoin="round" stroke-linecap="round">
+    <path id="sky" data-hint="#7DD3FC" d="M0,0 L800,0 L800,800 L0,800 Z"/>
+    <path id="sun" data-hint="#FACC15" d="M608,118 A56,56 0 1 1 720,118 A56,56 0 1 1 608,118 Z"/>
+    <path id="sun_core" data-hint="#FDE68A" d="M632,118 A32,32 0 1 1 696,118 A32,32 0 1 1 632,118 Z"/>
+    <path id="ray_1" data-hint="#FBBF24" d="M674,54.8 L664,20 L654,54.8 Z"/>
+    <path id="ray_2" data-hint="#FBBF24" d="M723.7,95.1 L748.9,69 L713.7,77.7 Z"/>
+    <path id="ray_3" data-hint="#FBBF24" d="M713.7,158.3 L748.9,167 L723.7,140.9 Z"/>
+    <path id="ray_4" data-hint="#FBBF24" d="M654,181.2 L664,216 L674,181.2 Z"/>
+    <path id="ray_5" data-hint="#FBBF24" d="M604.3,140.9 L579.1,167 L614.3,158.3 Z"/>
+    <path id="ray_6" data-hint="#FBBF24" d="M614.3,77.7 L579.1,69 L604.3,95.1 Z"/>
+    <path id="cloud1" data-hint="#FFFBF5" d="M118.8,131.8 A17.5,17.5 0 0 1 164.3,113.5 A24.5,24.5 0 0 1 218.5,113.5 A17.5,17.5 0 0 1 261.2,131.8 Z"/>
+    <path id="bird1" data-hint="#1F2937" d="M300,176 L324,158 L348,176 L324,166 Z"/>
+    <path id="hill_far" data-hint="#22C55E" d="M-120,560 Q200,300 520,560 Z"/>
+    <path id="tree_crown" data-hint="#15803D" d="M4,430 A56,56 0 1 1 116,430 A56,56 0 1 1 4,430 Z"/>
+    <path id="tree_trunk" data-hint="#92400E" d="M58,460 H62 A8,8 0 0 1 70,468 V568 A8,8 0 0 1 62,576 H58 A8,8 0 0 1 50,568 V468 A8,8 0 0 1 58,460 Z"/>
+    <path id="apple1" data-hint="#EF4444" d="M35,418 A11,11 0 1 1 57,418 A11,11 0 1 1 35,418 Z"/>
+    <path id="grass" data-hint="#A3E635" d="M0,800 L0,558 Q50,540 100,558 Q150,576 200,558 Q250,540 300,558 Q350,576 400,558 Q450,540 500,558 Q550,576 600,558 Q650,540 700,558 Q750,576 800,558 L800,800 Z"/>
+    <path id="blade1" data-hint="#15803D" d="M250,664 L258,620 L266,664 Z"/>
+    <path id="blade2" data-hint="#15803D" d="M480,660 L488,612 L496,660 Z"/>
+    <path id="blanket" data-hint="#EF4444" d="M150,690 L690,690 L730,800 L110,800 Z"/>
+    <path id="blanket_stripe" data-hint="#FDE68A" d="M148,726 L702,726 L708,746 L146,746 Z"/>
+    <path id="basket_band1" data-hint="#B45309" d="M345,610 L495,610 L487.3,642 L352.7,642 Z"/>
+    <path id="basket_band2" data-hint="#92400E" d="M352.7,642 L487.3,642 L479.7,674 L360.3,674 Z"/>
+    <path id="basket_band3" data-hint="#B45309" d="M360.3,674 L479.7,674 L472,706 L368,706 Z"/>
+    <path id="basket_rim" data-hint="#78350F" d="M347,598 H493 A8,8 0 0 1 501,606 V608 A8,8 0 0 1 493,616 H347 A8,8 0 0 1 339,608 V606 A8,8 0 0 1 347,598 Z"/>
+    <path id="basket_handle" data-hint="#78350F" d="M362,598 A58,58 0 0 1 478,598 L466,598 A46,46 0 0 0 374,598 Z"/>
+    <path id="loaf1" data-hint="#B45309" d="M326,592 A40,26 0 1 1 406,592 A40,26 0 1 1 326,592 Z"/>
+    <path id="loaf2" data-hint="#B45309" d="M408,586 A38,25 0 1 1 484,586 A38,25 0 1 1 408,586 Z"/>
+    <path id="loaf3" data-hint="#B45309" d="M372,566 A34,22 0 1 1 440,566 A34,22 0 1 1 372,566 Z"/>
+    <path id="loaf4" data-hint="#F5DEB3" d="M310,616 A30,19 0 1 1 370,616 A30,19 0 1 1 310,616 Z"/>
+    <path id="loaf5" data-hint="#F5DEB3" d="M444,612 A30,19 0 1 1 504,612 A30,19 0 1 1 444,612 Z"/>
+    <path id="fish1_body" data-hint="#38BDF8" d="M205.3,772 A26.7,11.2 0 1 1 258.7,772 A26.7,11.2 0 1 1 205.3,772 Z"/>
+    <path id="fish1_tail" data-hint="#38BDF8" d="M205.3,772 L186.4,756.5 L186.4,787.5 Z"/>
+    <path id="fish1_fin" data-hint="#CA8A04" d="M228.6,760.8 L242.3,747.1 L245.8,762.5 Z"/>
+    <path id="fish1_eye" data-hint="#1F2937" d="M241.5,767.7 A3.4,3.4 0 1 1 248.3,767.7 A3.4,3.4 0 1 1 241.5,767.7 Z"/>
+    <path id="fish2_body" data-hint="#7DD3FC" d="M575.8,778 A24.2,10.1 0 1 1 624.2,778 A24.2,10.1 0 1 1 575.8,778 Z"/>
+    <path id="fish2_tail" data-hint="#7DD3FC" d="M624.2,778 L641.3,764 L641.3,792 Z"/>
+    <path id="fish2_fin" data-hint="#CA8A04" d="M603.1,767.9 L590.6,755.4 L587.5,769.4 Z"/>
+    <path id="fish2_eye" data-hint="#1F2937" d="M585.2,774.1 A3.1,3.1 0 1 1 591.4,774.1 A3.1,3.1 0 1 1 585.2,774.1 Z"/>
+    <path id="boy_robe" data-hint="#14B8A6" d="M112,530.2 L184,530.2 L203.2,700 L92.8,700 Z"/>
+    <path id="boy_sash" data-hint="#FACC15" d="M103.9,601.5 L192.1,601.5 L192.1,618.3 L103.9,618.3 Z"/>
+    <path id="boy_arm_l" data-hint="#14B8A6" d="M102.4,539.8 H102.4 A12,12 0 0 1 114.4,551.8 V633.4 A12,12 0 0 1 102.4,645.4 H102.4 A12,12 0 0 1 90.4,633.4 V551.8 A12,12 0 0 1 102.4,539.8 Z"/>
+    <path id="boy_arm_r" data-hint="#14B8A6" d="M193.6,539.8 H193.6 A12,12 0 0 1 205.6,551.8 V633.4 A12,12 0 0 1 193.6,645.4 H193.6 A12,12 0 0 1 181.6,633.4 V551.8 A12,12 0 0 1 193.6,539.8 Z"/>
+    <path id="boy_head" data-hint="#F5DEB3" d="M116.8,491.2 A31.2,31.2 0 1 1 179.2,491.2 A31.2,31.2 0 1 1 116.8,491.2 Z"/>
+    <path id="boy_hair" data-hint="#92400E" d="M114.9,491.2 A33.1,33.1 0 0 1 181.1,491.2 L167.3,491.2 A19.3,19.3 0 0 0 128.7,491.2 Z"/>
+    <path id="boy_hand" data-hint="#F5DEB3" d="M179,566 A17,17 0 1 1 213,566 A17,17 0 1 1 179,566 Z"/>
+    <path id="man_robe" data-hint="#8B5CF6" d="M662.5,509.1 L737.5,509.1 L757.5,686 L642.5,686 Z"/>
+    <path id="man_sash" data-hint="#B91C1C" d="M654.1,583.4 L745.9,583.4 L745.9,600.9 L654.1,600.9 Z"/>
+    <path id="man_arm_l" data-hint="#8B5CF6" d="M652.5,519.1 H652.5 A12.5,12.5 0 0 1 665,531.6 V616.6 A12.5,12.5 0 0 1 652.5,629.1 H652.5 A12.5,12.5 0 0 1 640,616.6 V531.6 A12.5,12.5 0 0 1 652.5,519.1 Z"/>
+    <path id="man_arm_r" data-hint="#8B5CF6" d="M747.5,519.1 H747.5 A12.5,12.5 0 0 1 760,531.6 V616.6 A12.5,12.5 0 0 1 747.5,629.1 H747.5 A12.5,12.5 0 0 1 735,616.6 V531.6 A12.5,12.5 0 0 1 747.5,519.1 Z"/>
+    <path id="man_head" data-hint="#F5DEB3" d="M667.5,468.5 A32.5,32.5 0 1 1 732.5,468.5 A32.5,32.5 0 1 1 667.5,468.5 Z"/>
+    <path id="man_hair" data-hint="#1F2937" d="M665.5,468.5 A34.5,34.5 0 0 1 734.5,468.5 L720.1,468.5 A20.1,20.1 0 0 0 679.9,468.5 Z"/>
+    <path id="jar" data-hint="#B45309" d="M288,762 A28,38 0 1 1 344,762 A28,38 0 1 1 288,762 Z"/>
+    <path id="jar_neck" data-hint="#B45309" d="M310,716 H322 A6,6 0 0 1 328,722 V730 A6,6 0 0 1 322,736 H310 A6,6 0 0 1 304,730 V722 A6,6 0 0 1 310,716 Z"/>
+    <path id="flower1" data-hint="#F472B6" d="M83,762 A13,13 0 1 1 109,762 A13,13 0 1 1 83,762 Z"/>
+    <path id="flower2" data-hint="#FACC15" d="M751,776 A13,13 0 1 1 777,776 A13,13 0 1 1 751,776 Z"/>
+  </g>
+</svg>

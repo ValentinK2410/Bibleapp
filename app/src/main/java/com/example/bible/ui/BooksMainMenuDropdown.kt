@@ -10,6 +10,7 @@ import androidx.compose.material.icons.automirrored.filled.ArrowForward
 import androidx.compose.material.icons.filled.AccountTree
 import androidx.compose.material.icons.filled.BookmarkBorder
 import androidx.compose.material.icons.filled.CalendarToday
+import androidx.compose.material.icons.filled.CleaningServices
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Explore
 import androidx.compose.material.icons.filled.Church
@@ -254,6 +255,11 @@ fun BooksMainMenuOrderedItems(
                 text = { Text(stringResource(R.string.church_my_title)) },
                 onClick = { closeMenu(); navController.navigate("my_church") },
                 leadingIcon = { Icon(Icons.Filled.Church, contentDescription = null, tint = primary) },
+            )
+            BooksMainMenuOrder.HOUSE_CARE -> DropdownMenuItem(
+                text = { Text(BooksMainMenuOrder.titleRu(BooksMainMenuOrder.HOUSE_CARE)) },
+                onClick = { closeMenu(); navController.navigate("house_care") },
+                leadingIcon = { Icon(Icons.Filled.CleaningServices, contentDescription = null, tint = primary) },
             )
         }
     }

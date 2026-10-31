@@ -1,0 +1,58 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 800" width="800" height="800" data-page="jonah_1" data-level="detailed">
+  <title>Иона и большая рыба</title>
+  <g fill="#FFFFFF" stroke="#1F2937" stroke-width="4" stroke-linejoin="round" stroke-linecap="round">
+    <path id="sky" data-hint="#7DD3FC" d="M0,0 L800,0 L800,800 L0,800 Z"/>
+    <path id="sun" data-hint="#FACC15" d="M64,116 A52,52 0 1 1 168,116 A52,52 0 1 1 64,116 Z"/>
+    <path id="sun_core" data-hint="#FDE68A" d="M86,116 A30,30 0 1 1 146,116 A30,30 0 1 1 86,116 Z"/>
+    <path id="ray_1" data-hint="#FBBF24" d="M125.4,56.7 L116,24 L106.6,56.7 Z"/>
+    <path id="ray_2" data-hint="#FBBF24" d="M172,94.5 L195.7,70 L162.6,78.2 Z"/>
+    <path id="ray_3" data-hint="#FBBF24" d="M162.6,153.8 L195.7,162 L172,137.5 Z"/>
+    <path id="ray_4" data-hint="#FBBF24" d="M106.6,175.3 L116,208 L125.4,175.3 Z"/>
+    <path id="ray_5" data-hint="#FBBF24" d="M60,137.5 L36.3,162 L69.4,153.8 Z"/>
+    <path id="ray_6" data-hint="#FBBF24" d="M69.4,78.2 L36.3,70 L60,94.5 Z"/>
+    <path id="cloud1" data-hint="#FFFBF5" d="M332.5,116.7 A16.6,16.6 0 0 1 375.7,99.3 A23.2,23.2 0 0 1 427,99.3 A16.6,16.6 0 0 1 467.5,116.7 Z"/>
+    <path id="bird1" data-hint="#1F2937" d="M500,200 L524,182 L548,200 L524,190 Z"/>
+    <path id="hill_city" data-hint="#22C55E" d="M380,400 Q660,220 940,400 Z"/>
+    <path id="city_wall" data-hint="#F5DEB3" d="M540,280 L800,280 L800,400 L540,400 Z"/>
+    <path id="tower_wall" data-hint="#B45309" d="M576,188 L636,188 L636,280 L576,280 Z"/>
+    <path id="tower_roof" data-hint="#B91C1C" d="M568,188 L606,156.7 L644,188 Z"/>
+    <path id="tower_door" data-hint="#78350F" d="M605,237.7 H607 A12,12 0 0 1 619,249.7 V268 A12,12 0 0 1 607,280 H605 A12,12 0 0 1 593,268 V249.7 A12,12 0 0 1 605,237.7 Z"/>
+    <path id="tower_window" data-hint="#7DD3FC" d="M593,206.4 H603 A5,5 0 0 1 608,211.4 V223.4 A5,5 0 0 1 603,228.4 H593 A5,5 0 0 1 588,223.4 V211.4 A5,5 0 0 1 593,206.4 Z"/>
+    <path id="dome" data-hint="#CA8A04" d="M648,280 A52,52 0 0 1 752,280 L700,280 A0,0 0 0 0 700,280 Z"/>
+    <path id="dome_base" data-hint="#B45309" d="M648,280 L752,280 L752,306 L648,306 Z"/>
+    <path id="city_gate" data-hint="#78350F" d="M668,346 H672 A24,24 0 0 1 696,370 V386 A24,24 0 0 1 672,410 H668 A24,24 0 0 1 644,386 V370 A24,24 0 0 1 668,346 Z"/>
+    <path id="sea_far" data-hint="#38BDF8" d="M0,800 L0,428 Q45,412 90,428 Q135,444 180,428 Q225,412 270,428 Q315,444 360,428 Q405,412 450,428 Q495,444 540,428 Q585,412 630,428 Q675,444 720,428 Q760,412 800,428 L800,800 Z"/>
+    <path id="sea_mid" data-hint="#2563EB" d="M0,800 L0,520 Q50,502 100,520 Q150,538 200,520 Q250,502 300,520 Q350,538 400,520 Q450,502 500,520 Q550,538 600,520 Q650,502 700,520 Q750,538 800,520 L800,800 Z"/>
+    <path id="sea_near" data-hint="#1E3A8A" d="M0,800 L0,676 Q55,660 110,676 Q165,692 220,676 Q275,660 330,676 Q385,692 440,676 Q495,660 550,676 Q605,692 660,676 Q715,660 770,676 Q785,692 800,676 L800,800 Z"/>
+    <path id="foam1" data-hint="#FFFBF5" d="M76,470 A44,12 0 1 1 164,470 A44,12 0 1 1 76,470 Z"/>
+    <path id="foam2" data-hint="#FFFBF5" d="M660,500 A40,11 0 1 1 740,500 A40,11 0 1 1 660,500 Z"/>
+    <path id="boat_hull" data-hint="#B45309" d="M70,392 L286,392 L244,470 L112,470 Z"/>
+    <path id="boat_mast" data-hint="#78350F" d="M182,232 H186 A4,4 0 0 1 190,236 V396 A4,4 0 0 1 186,400 H182 A4,4 0 0 1 178,396 V236 A4,4 0 0 1 182,232 Z"/>
+    <path id="sail" data-hint="#FDE68A" d="M192,244 L292,392 L192,392 Z"/>
+    <path id="sail_stripe" data-hint="#EF4444" d="M192,300 L254,392 L192,392 Z"/>
+    <path id="flag" data-hint="#EF4444" d="M190,232 L240,244 L190,258 Z"/>
+    <path id="sailor_body" data-hint="#14B8A6" d="M120,330 L166,330 L176,392 L110,392 Z"/>
+    <path id="sailor_head" data-hint="#F5DEB3" d="M123,312 A20,20 0 1 1 163,312 A20,20 0 1 1 123,312 Z"/>
+    <path id="fish_body" data-hint="#14B8A6" d="M270,600 A200,118 0 1 1 670,600 A200,118 0 1 1 270,600 Z"/>
+    <path id="fish_belly" data-hint="#FFFBF5" d="M290,648 A140,58 0 1 1 570,648 A140,58 0 1 1 290,648 Z"/>
+    <path id="fish_tail_top" data-hint="#14B8A6" d="M668,592 L786,478 L774,592 Z"/>
+    <path id="fish_tail_bottom" data-hint="#14B8A6" d="M668,608 L786,718 L774,608 Z"/>
+    <path id="fish_fin_top" data-hint="#14B8A6" d="M434,478 L492,382 L538,484 Z"/>
+    <path id="fish_eye" data-hint="#FFFBF5" d="M278,554 A26,26 0 1 1 330,554 A26,26 0 1 1 278,554 Z"/>
+    <path id="fish_pupil" data-hint="#1F2937" d="M298,554 A12,12 0 1 1 322,554 A12,12 0 1 1 298,554 Z"/>
+    <path id="fish_mouth" data-hint="#78350F" d="M238.8,626.2 A24,10 -15 1 1 285.2,613.8 A24,10 -15 1 1 238.8,626.2 Z"/>
+    <path id="fish_scale1" data-hint="#38BDF8" d="M420,572 A18,18 0 1 1 456,572 A18,18 0 1 1 420,572 Z"/>
+    <path id="fish_scale2" data-hint="#38BDF8" d="M482,592 A18,18 0 1 1 518,592 A18,18 0 1 1 482,592 Z"/>
+    <path id="fish_spout" data-hint="#7DD3FC" d="M318,478 L348,406 L378,478 Z"/>
+    <path id="beach" data-hint="#F5DEB3" d="M0,800 L280,800 L240,716 L0,690 Z"/>
+    <path id="jonah_robe" data-hint="#8B5CF6" d="M108,660 L172,660 L192,790 L88,790 Z"/>
+    <path id="jonah_head" data-hint="#F5DEB3" d="M112,632 A28,28 0 1 1 168,632 A28,28 0 1 1 112,632 Z"/>
+    <path id="jonah_hair" data-hint="#1F2937" d="M109,632 A31,31 0 0 1 171,632 L157,632 A17,17 0 0 0 123,632 Z"/>
+    <path id="jonah_arm" data-hint="#8B5CF6" d="M172,686 L212,730 L196,744 L156,700 Z"/>
+    <path id="small_fish_body" data-hint="#F97316" d="M615.2,740 A24.8,10.4 0 1 1 664.8,740 A24.8,10.4 0 1 1 615.2,740 Z"/>
+    <path id="small_fish_tail" data-hint="#F97316" d="M615.2,740 L597.6,725.6 L597.6,754.4 Z"/>
+    <path id="small_fish_fin" data-hint="#CA8A04" d="M636.8,729.6 L649.6,716.8 L652.8,731.2 Z"/>
+    <path id="small_fish_eye" data-hint="#1F2937" d="M648.8,736 A3.2,3.2 0 1 1 655.2,736 A3.2,3.2 0 1 1 648.8,736 Z"/>
+    <path id="seaweed" data-hint="#15803D" d="M740,800 L756,800 L768,706 L746,698 Z"/>
+  </g>
+</svg>

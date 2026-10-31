@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 800" width="800" height="800" data-page="joseph_1" data-level="small">
+  <title>Разноцветная одежда Иосифа</title>
+  <g fill="#FFFFFF" stroke="#1F2937" stroke-width="4" stroke-linejoin="round" stroke-linecap="round">
+    <path id="sky" data-hint="#7DD3FC" d="M0,0 L800,0 L800,800 L0,800 Z"/>
+    <path id="sun" data-hint="#FACC15" d="M598,130 A62,62 0 1 1 722,130 A62,62 0 1 1 598,130 Z"/>
+    <path id="ground" data-hint="#A3E635" d="M0,800 L0,600 Q50,584 100,600 Q150,616 200,600 Q250,584 300,600 Q350,616 400,600 Q450,584 500,600 Q550,616 600,600 Q650,584 700,600 Q750,616 800,600 L800,800 Z"/>
+    <path id="coat" data-hint="#EF4444" d="M330,330 L470,330 L520,640 L280,640 Z"/>
+    <path id="coat_band" data-hint="#FACC15" d="M312,470 L488,470 L488,500 L312,500 Z"/>
+    <path id="joseph_head" data-hint="#F5DEB3" d="M356,288 A44,44 0 1 1 444,288 A44,44 0 1 1 356,288 Z"/>
+    <path id="joseph_hair" data-hint="#1F2937" d="M352,288 A48,48 0 0 1 448,288 L428,288 A28,28 0 0 0 372,288 Z"/>
+    <path id="brother_robe" data-hint="#14B8A6" d="M600,420 L700,420 L730,660 L570,660 Z"/>
+    <path id="brother_head" data-hint="#F5DEB3" d="M616,382 A34,34 0 1 1 684,382 A34,34 0 1 1 616,382 Z"/>
+    <path id="wheat" data-hint="#CA8A04" d="M110,560 A40,90 0 1 1 190,560 A40,90 0 1 1 110,560 Z"/>
+  </g>
+</svg>

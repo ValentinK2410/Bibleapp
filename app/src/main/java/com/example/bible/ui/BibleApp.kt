@@ -232,6 +232,16 @@ import com.example.bible.ui.church.ChurchParticipantsScreen
 import com.example.bible.ui.church.ChurchPlaceholderScreen
 import com.example.bible.ui.church.ChurchViewModel
 import com.example.bible.ui.church.MyChurchHubScreen
+import com.example.bible.ui.housecare.CleaningStatsScreen
+import com.example.bible.ui.housecare.CleaningSystemScreen
+import com.example.bible.ui.housecare.CleaningTaskScreen
+import com.example.bible.ui.housecare.CleaningZoneScreen
+import com.example.bible.ui.housecare.FloorRoomsScreen
+import com.example.bible.ui.housecare.CleaningDayScreen
+import com.example.bible.ui.housecare.HouseCareHubScreen
+import com.example.bible.ui.housecare.HouseCareSettingsScreen
+import com.example.bible.ui.housecare.HouseCareViewModel
+import com.example.bible.ui.housecare.PlaceDaysScreen
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.flow.distinctUntilChanged
@@ -261,6 +271,12 @@ private fun HoistedMimicFaceOverlay(
         frame = state.value,
         modifier = Modifier.fillMaxSize(),
     )
+}
+
+@Composable
+private fun houseCareViewModel(): HouseCareViewModel {
+    val ctx = LocalContext.current
+    return viewModel(factory = HouseCareViewModel.factory(ctx.applicationContext as Application))
 }
 
 @Composable
@@ -2007,6 +2023,96 @@ private fun BibleNavHost(
         composable("church_certificates") {
             ChurchPlaceholderScreen(
                 title = stringResource(R.string.church_section_certificates),
+                onBack = { navController.navigateUp() },
+            )
+        }
+        composable("house_care") {
+            HouseCareHubScreen(
+                onBack = { navController.navigateUp() },
+                onOpenCleaning = { navController.navigate("house_cleaning") },
+                onOpenStats = { navController.navigate("house_clean_stats") },
+            )
+        }
+        composable("house_cleaning") {
+            CleaningSystemScreen(
+                viewModel = houseCareViewModel(),
+                onBack = { navController.navigateUp() },
+                onOpenPlace = { navController.navigate("house_place_days/$it") },
+                onOpenSettings = { navController.navigate("house_clean_settings") },
+            )
+        }
+        composable("house_clean_settings") {
+            HouseCareSettingsScreen(
+                viewModel = houseCareViewModel(),
+                onBack = { navController.navigateUp() },
+            )
+        }
+        composable("house_clean_stats") {
+            CleaningStatsScreen(
+                viewModel = houseCareViewModel(),
+                onBack = { navController.navigateUp() },
+            )
+        }
+        composable(
+            route = "house_place_days/{placeId}",
+            arguments = listOf(navArgument("placeId") { type = NavType.StringType }),
+        ) { entry ->
+            val placeId = entry.arguments?.getString("placeId").orEmpty()
+            PlaceDaysScreen(
+                viewModel = houseCareViewModel(),
+                placeId = placeId,
+                onBack = { navController.navigateUp() },
+                onOpenDate = { date -> navController.navigate("house_place_day/$placeId/$date") },
+                onOpenFloor = { navController.navigate("house_clean_floor/$it") },
+            )
+        }
+        composable(
+            route = "house_place_day/{placeId}/{date}",
+            arguments = listOf(
+                navArgument("placeId") { type = NavType.StringType },
+                navArgument("date") { type = NavType.StringType },
+            ),
+        ) { entry ->
+            val dateText = entry.arguments?.getString("date").orEmpty()
+            CleaningDayScreen(
+                viewModel = houseCareViewModel(),
+                placeId = entry.arguments?.getString("placeId").orEmpty(),
+                date = runCatching { java.time.LocalDate.parse(dateText) }
+                    .getOrElse { java.time.LocalDate.now() },
+                onBack = { navController.navigateUp() },
+                onOpenFloor = { navController.navigate("house_clean_floor/$it") },
+                onOpenZone = { navController.navigate("house_clean_zone/$it") },
+            )
+        }
+        composable(
+            route = "house_clean_floor/{floorId}",
+            arguments = listOf(navArgument("floorId") { type = NavType.StringType }),
+        ) { entry ->
+            FloorRoomsScreen(
+                viewModel = houseCareViewModel(),
+                floorId = entry.arguments?.getString("floorId").orEmpty(),
+                onBack = { navController.navigateUp() },
+                onOpenZone = { navController.navigate("house_clean_zone/$it") },
+            )
+        }
+        composable(
+            route = "house_clean_zone/{zoneId}",
+            arguments = listOf(navArgument("zoneId") { type = NavType.StringType }),
+        ) { entry ->
+            CleaningZoneScreen(
+                viewModel = houseCareViewModel(),
+                zoneId = entry.arguments?.getString("zoneId").orEmpty(),
+                onBack = { navController.navigateUp() },
+                onOpenTask = { navController.navigate("house_clean_task/$it") },
+            )
+        }
+        composable(
+            route = "house_clean_task/{taskId}",
+            arguments = listOf(navArgument("taskId") { type = NavType.StringType }),
+        ) { entry ->
+            CleaningTaskScreen(
+                viewModel = houseCareViewModel(),
+                taskId = entry.arguments?.getString("taskId").orEmpty(),
                 onBack = { navController.navigateUp() },
             )
         }

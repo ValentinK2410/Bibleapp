@@ -30,6 +30,9 @@
     <files-path
         name="travel_route_photos"
         path="travel_route_photos/" />
+    <files-path
+        name="house_care_photos"
+        path="house_care_photos/" />
     <external-path
         name="downloads"
         path="Download/Bible/" />

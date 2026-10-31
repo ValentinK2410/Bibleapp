@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 800" width="800" height="800" data-page="moses_sea_1" data-level="small">
+  <title>Море расступилось</title>
+  <g fill="#FFFFFF" stroke="#1F2937" stroke-width="4" stroke-linejoin="round" stroke-linecap="round">
+    <path id="sky" data-hint="#7DD3FC" d="M0,0 L800,0 L800,800 L0,800 Z"/>
+    <path id="pillar" data-hint="#CBD5E1" d="M317.5,155.3 A20.2,20.2 0 0 1 370.3,134 A28.3,28.3 0 0 1 433,134 A20.2,20.2 0 0 1 482.5,155.3 Z"/>
+    <path id="sea_left" data-hint="#2563EB" d="M0,240 L250,300 L250,800 L0,800 Z"/>
+    <path id="sea_right" data-hint="#2563EB" d="M800,240 L550,300 L550,800 L800,800 Z"/>
+    <path id="dry_path" data-hint="#F5DEB3" d="M300,300 L500,300 L560,800 L240,800 Z"/>
+    <path id="foam_left" data-hint="#FFFBF5" d="M213.2,479.7 A40,18 -14 1 1 290.8,460.3 A40,18 -14 1 1 213.2,479.7 Z"/>
+    <path id="foam_right" data-hint="#FFFBF5" d="M509.2,460.3 A40,18 14 1 1 586.8,479.7 A40,18 14 1 1 509.2,460.3 Z"/>
+    <path id="moses_robe" data-hint="#B91C1C" d="M350,400 L450,400 L480,620 L320,620 Z"/>
+    <path id="moses_head" data-hint="#F5DEB3" d="M364,360 A36,36 0 1 1 436,360 A36,36 0 1 1 364,360 Z"/>
+    <path id="staff" data-hint="#B45309" d="M497,330 H499 A5,5 0 0 1 504,335 V625 A5,5 0 0 1 499,630 H497 A5,5 0 0 1 492,625 V335 A5,5 0 0 1 497,330 Z"/>
+  </g>
+</svg>
