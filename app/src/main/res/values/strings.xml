@@ -1863,6 +1863,21 @@
     <string name="church_field_first_name">Имя</string>
     <string name="church_field_patronymic">Отчество</string>
     <string name="church_field_position">Должность</string>
+    <string name="church_field_birth_date">Дата рождения</string>
+    <string name="church_birth_date_not_set">Дата рождения не указана</string>
+    <string name="church_birth_date_clear">Убрать дату</string>
+    <string name="church_birthdays_title">Дни рождения</string>
+    <string name="church_birthdays_empty">В этом месяце дней рождения нет</string>
+    <string name="church_birthdays_empty_hint">Заполните дату рождения в карточке участника — он появится в этом списке.</string>
+    <string name="church_birthday_age_fmt">%1$s · %2$s</string>
+    <string name="church_birthday_today">Сегодня</string>
+    <string name="church_birthday_passed">День рождения в этом месяце уже был</string>
+    <plurals name="church_birthday_countdown">
+        <item quantity="one">через %d день</item>
+        <item quantity="few">через %d дня</item>
+        <item quantity="many">через %d дней</item>
+        <item quantity="other">через %d дней</item>
+    </plurals>
     <string name="church_save">Сохранить</string>
     <string name="church_delete_participant">Удалить участника</string>
     <string name="travel_menu_edit_markers">Редактирование отметок</string>

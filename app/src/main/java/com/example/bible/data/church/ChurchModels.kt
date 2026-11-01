@@ -2,6 +2,7 @@ package com.example.bible.data.church
 
 import org.json.JSONArray
 import org.json.JSONObject
+import java.time.LocalDate
 import java.util.UUID
 
 data class ChurchParticipant(
@@ -10,6 +11,8 @@ data class ChurchParticipant(
     val firstName: String = "",
     val patronymic: String = "",
     val position: String = "",
+    /** Дата рождения в формате yyyy-MM-dd; пустая строка — дата не указана. */
+    val birthDate: String = "",
     val createdAt: Long = System.currentTimeMillis(),
 ) {
     fun displayName(): String = listOf(lastName, firstName, patronymic)
@@ -23,6 +26,7 @@ data class ChurchParticipant(
         put("firstName", firstName)
         put("patronymic", patronymic)
         put("position", position)
+        put("birthDate", birthDate)
         put("createdAt", createdAt)
     }
 
@@ -33,6 +37,7 @@ data class ChurchParticipant(
             firstName = j.optString("firstName", ""),
             patronymic = j.optString("patronymic", ""),
             position = j.optString("position", ""),
+            birthDate = j.optString("birthDate", ""),
             createdAt = j.optLong("createdAt", System.currentTimeMillis()),
         )
 
@@ -53,3 +58,9 @@ data class ChurchParticipant(
         }
     }
 }
+
+/** Дата рождения карточки; пустое или испорченное значение означает «не указана». */
+val ChurchParticipant.birthLocalDate: LocalDate?
+    get() = runCatching { LocalDate.parse(birthDate) }
+        .getOrNull()
+        ?.takeIf { it.year >= 1900 && !it.isAfter(LocalDate.now()) }
