@@ -15,7 +15,6 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -24,16 +23,20 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.bible.data.housecare.CleaningZone
 import com.example.bible.data.housecare.WeekDays
+import com.example.bible.data.housecare.planDate
 import com.example.bible.ui.theme.OutlinedTextField
+import java.time.DayOfWeek
+import java.time.LocalDate
 
 /**
- * Комнаты и участки уборки одного этажа — без привязки к открытому дню.
- * Здесь можно завести «Кухню» или «Зал» в любой момент и выбрать, в какой день их убирают.
+ * Комнаты и участки одного этажа на выбранную неделю.
+ * Каждая комната привязана к дате, поэтому соседняя неделя начинается заново.
  */
 @Composable
 fun FloorRoomsScreen(
     viewModel: HouseCareViewModel,
     floorId: String,
+    date: LocalDate,
     onBack: () -> Unit,
     onOpenZone: (String) -> Unit,
 ) {
@@ -41,6 +44,8 @@ fun FloorRoomsScreen(
     val floor = data.floorById(floorId)
     var editingZone by remember { mutableStateOf<CleaningZone?>(null) }
     var showAddZone by remember { mutableStateOf(false) }
+    val weekStart = date.with(DayOfWeek.MONDAY)
+    val weekDates = (0 until WeekDays.displayed.size).map { weekStart.plusDays(it.toLong()) }
     val zones = data.zones.filter { it.floorId == floorId }
 
     HouseCareScaffold(title = floor?.name ?: "Этаж", onBack = onBack) { padding ->
@@ -53,7 +58,8 @@ fun FloorRoomsScreen(
         ) {
             item {
                 Text(
-                    "Комнаты и участки этого этажа. День недели показывает, когда их убирают.",
+                    "Комнаты этой недели: ${dayWithDate(weekStart)} — ${dayWithDate(weekStart.plusDays(5))}. " +
+                        "План привязан к дате, на следующей неделе он свой.",
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
@@ -65,21 +71,32 @@ fun FloorRoomsScreen(
                     onClick = { showAddZone = true },
                 )
             }
-            WeekDays.displayed.forEach { day ->
-                val ofDay = zones.filter { it.dayOfWeek == day }
+            weekDates.forEach { day ->
+                val ofDay = zones.filter { it.planDate == day }
                 if (ofDay.isNotEmpty()) {
-                    item { HouseCareSectionTitle(WeekDays.fullLabel(day)) }
+                    item { HouseCareSectionTitle(dayWithDate(day)) }
                     items(ofDay, key = { it.id }) { zone ->
-                        val zoneTasks = data.tasksOf(zone.id)
+                        val (done, total) = data.zoneProgress(zone)
                         CleaningRow(
                             title = zone.name,
-                            subtitle = "разделов ${zoneTasks.count { it.isCleaned }}/${zoneTasks.size}",
-                            cleaned = data.isZoneCleaned(zone.id),
+                            subtitle = "разделов $done/$total",
+                            cleaned = data.isZoneCleaned(zone),
                             onClick = { onOpenZone(zone.id) },
                             onRename = { editingZone = zone },
                             onLongClick = { editingZone = zone },
                         )
                     }
+                }
+            }
+            val outsideWeek = zones.size - zones.count { it.planDate in weekDates }
+            if (outsideWeek > 0) {
+                item {
+                    Text(
+                        "Ещё $outsideWeek ${pluralRu(outsideWeek, "комната", "комнаты", "комнат")} с другой недели — " +
+                            "откройте нужный день в плитках недели.",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
                 }
             }
             if (zones.isEmpty()) {
@@ -98,7 +115,8 @@ fun FloorRoomsScreen(
         RoomEditDialog(
             title = "Новая комната",
             initialName = "",
-            initialDay = todayDayIndex(),
+            initialDate = date,
+            weekDates = weekDates,
             canDelete = false,
             onDismiss = { showAddZone = false },
             onSave = { name, day ->
@@ -113,7 +131,8 @@ fun FloorRoomsScreen(
         RoomEditDialog(
             title = zone.name,
             initialName = zone.name,
-            initialDay = zone.dayOfWeek,
+            initialDate = zone.planDate,
+            weekDates = weekDates,
             canDelete = true,
             onDismiss = { editingZone = null },
             onSave = { name, day ->
@@ -130,14 +149,15 @@ fun FloorRoomsScreen(
 internal fun RoomEditDialog(
     title: String,
     initialName: String,
-    initialDay: Int,
+    initialDate: LocalDate,
+    weekDates: List<LocalDate>,
     canDelete: Boolean,
     onDismiss: () -> Unit,
-    onSave: (name: String, day: Int) -> Unit,
+    onSave: (name: String, date: LocalDate) -> Unit,
     onDelete: () -> Unit,
 ) {
     var name by remember { mutableStateOf(initialName) }
-    var day by remember { mutableIntStateOf(initialDay) }
+    var picked by remember { mutableStateOf(weekDates.firstOrNull { it == initialDate } ?: weekDates.first()) }
     AlertDialog(
         onDismissRequest = onDismiss,
         title = { Text(title) },
@@ -151,24 +171,26 @@ internal fun RoomEditDialog(
                     modifier = Modifier.fillMaxWidth(),
                 )
                 Text(
-                    "День уборки",
+                    "Убираем в этот день",
                     style = MaterialTheme.typography.labelMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
-                Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
-                    WeekDays.displayed.forEach { candidate ->
-                        ChoiceChip(
-                            label = WeekDays.shortLabel(candidate),
-                            selected = candidate == day,
-                            modifier = Modifier.weight(1f),
-                            onClick = { day = candidate },
-                        )
+                weekDates.chunked(3).forEach { row ->
+                    Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                        row.forEach { candidate ->
+                            ChoiceChip(
+                                label = "${WeekDays.shortLabel(candidate.dayOfWeek.value)} ${candidate.dayOfMonth}",
+                                selected = candidate == picked,
+                                modifier = Modifier.weight(1f),
+                                onClick = { picked = candidate },
+                            )
+                        }
                     }
                 }
             }
         },
         confirmButton = {
-            TextButton(enabled = name.isNotBlank(), onClick = { onSave(name.trim(), day) }) {
+            TextButton(enabled = name.isNotBlank(), onClick = { onSave(name.trim(), picked) }) {
                 Text("Сохранить")
             }
         },

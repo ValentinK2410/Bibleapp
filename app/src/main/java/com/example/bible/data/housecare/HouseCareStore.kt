@@ -8,6 +8,8 @@ import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.datastore.preferences.preferencesDataStore
 import java.io.File
+import java.time.DayOfWeek
+import java.time.LocalDate
 import java.util.UUID
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.first
@@ -43,7 +45,10 @@ class HouseCareStore(context: Context) {
             owned + autoFloors(place.id, place.floorsCount, startAt = owned.size + 1)
         }
         // Воскресенья в плане больше нет — комнаты этого дня переезжают на субботу.
-        val zones = cur.zones.map { if (it.dayOfWeek == 7) it.copy(dayOfWeek = 6) else it }
+        val zones = cur.zones.map { zone ->
+            val day = zone.planDate.dayOfWeek
+            if (day == DayOfWeek.SUNDAY) zone.copy(date = zone.planDate.minusDays(1).toString()) else zone
+        }
         return cur.copy(places = places, floors = withAuto, zones = zones)
     }
 
@@ -53,6 +58,16 @@ class HouseCareStore(context: Context) {
         app.houseCareDataStore.edit { prefs ->
             prefs[HouseCareKeys.DOCUMENT_JSON] = data.toJson().toString()
         }
+    }
+
+    /**
+     * Старые документы описывают план днём недели. Один раз сохраняем их уже с датами,
+     * иначе через неделю такие комнаты переедут на новую субботу сами.
+     */
+    suspend fun migrateWeeklyZones() {
+        val raw = app.houseCareDataStore.data.first()[HouseCareKeys.DOCUMENT_JSON] ?: return
+        if (!raw.contains("\"dayOfWeek\"")) return
+        save(normalize(HouseCareData.parse(raw)))
     }
 
     /** Настройка плитки дня недели; старое фото удаляется, если его заменили или убрали. */
@@ -123,15 +138,34 @@ class HouseCareStore(context: Context) {
         )
     }
 
-    suspend fun addZone(floorId: String, dayOfWeek: Int, name: String) = mutate { cur ->
-        cur.copy(zones = cur.zones + CleaningZone(floorId = floorId, dayOfWeek = dayOfWeek, name = name.trim()))
+    suspend fun addZone(floorId: String, date: LocalDate, name: String) = mutate { cur ->
+        cur.copy(zones = cur.zones + CleaningZone(floorId = floorId, date = date.toString(), name = name.trim()))
     }
 
-    /** Комнату можно переименовать и перенести на другой день недели. */
-    suspend fun updateZone(id: String, name: String, dayOfWeek: Int) = mutate { cur ->
+    /** Комнату можно переименовать и перенести на другой день. */
+    suspend fun updateZone(id: String, name: String, date: LocalDate) = mutate { cur ->
         cur.copy(zones = cur.zones.map {
-            if (it.id == id) it.copy(name = name.trim(), dayOfWeek = dayOfWeek.coerceIn(1, 7)) else it
+            if (it.id == id) it.copy(name = name.trim(), date = date.toString()) else it
         })
+    }
+
+    /**
+     * Новый день начинается пустым, поэтому план можно разово перенести с другой даты:
+     * комнаты и их разделы создаются заново, отметок об уборке у них нет.
+     */
+    suspend fun copyZonesPlan(placeId: String, from: LocalDate, to: LocalDate) = mutate { cur ->
+        val floorIds = cur.floorsOf(placeId).map { it.id }.toSet()
+        val source = cur.zones.filter { it.floorId in floorIds && it.date == from.toString() }
+        if (source.isEmpty()) return@mutate cur
+        val copies = source.map { zone ->
+            CleaningZone(floorId = zone.floorId, date = to.toString(), name = zone.name) to zone
+        }
+        val copiedTasks = copies.flatMap { (copy, original) ->
+            cur.tasksOf(original.id).map { task ->
+                CleaningTask(zoneId = copy.id, name = task.name, order = task.order)
+            }
+        }
+        cur.copy(zones = cur.zones + copies.map { it.first }, tasks = cur.tasks + copiedTasks)
     }
 
     suspend fun deleteZone(id: String) = mutate { cur ->

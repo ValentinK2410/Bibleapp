@@ -1,5 +1,7 @@
 package com.example.bible.data.housecare
 
+import java.time.DayOfWeek
+import java.time.LocalDate
 import org.json.JSONArray
 import org.json.JSONObject
 import java.util.UUID
@@ -90,18 +92,22 @@ data class HouseFloor(
     }
 }
 
-/** Зона уборки, закреплённая за этажом и днём недели (детская, кухня...). */
+/**
+ * Зона уборки, закреплённая за этажом и конкретной датой (кухня 31 октября...).
+ * Дата нужна, чтобы план субботы не появлялся каждую следующую суботу сам собой.
+ */
 data class CleaningZone(
     val id: String = UUID.randomUUID().toString(),
     val floorId: String,
-    val dayOfWeek: Int,
+    /** План на этот день в формате yyyy-MM-dd. */
+    val date: String,
     val name: String,
     val createdAt: Long = System.currentTimeMillis(),
 ) {
     fun toJson(): JSONObject = JSONObject().apply {
         put("id", id)
         put("floorId", floorId)
-        put("dayOfWeek", dayOfWeek)
+        put("date", date)
         put("name", name)
         put("createdAt", createdAt)
     }
@@ -110,12 +116,22 @@ data class CleaningZone(
         fun fromJson(j: JSONObject): CleaningZone = CleaningZone(
             id = j.optString("id").ifBlank { UUID.randomUUID().toString() },
             floorId = j.optString("floorId"),
-            dayOfWeek = j.optInt("dayOfWeek", 1).coerceIn(1, 7),
+            date = j.optString("date").ifBlank { legacyDateOf(j.optInt("dayOfWeek", 6)) },
             name = j.optString("name", ""),
             createdAt = j.optLong("createdAt", System.currentTimeMillis()),
         )
+
+        /** Старый план жил по дням недели: переносим его на текущую неделю, воскресенье — на субботу. */
+        private fun legacyDateOf(dayOfWeek: Int): String {
+            val day = if (dayOfWeek == DayOfWeek.SUNDAY.value) DayOfWeek.SATURDAY.value else dayOfWeek
+            return LocalDate.now().with(DayOfWeek.of(day.coerceIn(1, 7))).toString()
+        }
     }
 }
+
+/** Дата, к которой привязана комната; повреждённое значение означает «сегодня». */
+val CleaningZone.planDate: LocalDate
+    get() = runCatching { LocalDate.parse(date) }.getOrElse { LocalDate.now() }
 
 /** Раздел зоны — конкретная работа: потолок, подоконник, батарея. */
 data class CleaningTask(
@@ -286,13 +302,15 @@ data class HouseCareData(
     /** Этажи объекта; у этажей без объекта — «старые» данные до деления на недвижимость. */
     fun floorsOf(placeId: String): List<HouseFloor> = floors.filter { it.placeId == placeId }
 
-    fun zonesOfPlace(placeId: String, dayOfWeek: Int): List<CleaningZone> {
+    /** Комнаты объекта на конкретный день: каждая дата ведёт свой список. */
+    fun zonesOfPlace(placeId: String, date: LocalDate): List<CleaningZone> {
         val floorIds = floorsOf(placeId).map { it.id }.toSet()
-        return zones.filter { it.dayOfWeek == dayOfWeek && it.floorId in floorIds }
+        val iso = date.toString()
+        return zones.filter { it.date == iso && it.floorId in floorIds }
     }
 
-    fun zonesOf(floorId: String, dayOfWeek: Int): List<CleaningZone> =
-        zones.filter { it.floorId == floorId && it.dayOfWeek == dayOfWeek }
+    fun zonesOf(floorId: String, date: LocalDate): List<CleaningZone> =
+        zones.filter { it.floorId == floorId && it.date == date.toString() }
 
     fun tasksOf(zoneId: String): List<CleaningTask> =
         tasks.filter { it.zoneId == zoneId }.sortedWith(compareBy({ it.order }, { it.createdAt }))
@@ -302,12 +320,6 @@ data class HouseCareData(
     fun zoneById(id: String): CleaningZone? = zones.firstOrNull { it.id == id }
 
     fun taskById(id: String): CleaningTask? = tasks.firstOrNull { it.id == id }
-
-    /** Раздел убран, когда каждый его раздел имеет фото «после». */
-    fun isZoneCleaned(zoneId: String): Boolean {
-        val zoneTasks = tasksOf(zoneId)
-        return zoneTasks.isNotEmpty() && zoneTasks.all { it.isCleaned }
-    }
 
     fun finishedReports(): List<CleaningReport> = tasks.flatMap { it.finishedReports() }
 

@@ -1,9 +1,14 @@
 package com.example.bible.ui.housecare
 
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.scaleIn
+import androidx.compose.animation.scaleOut
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.combinedClickable
-import androidx.compose.foundation.gestures.detectDragGestures
+import androidx.compose.foundation.gestures.detectHorizontalDragGestures
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
@@ -18,9 +23,12 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.automirrored.filled.ArrowForward
 import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.CleaningServices
 import androidx.compose.material.icons.filled.Edit
+import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.HomeWork
 import androidx.compose.material.icons.filled.Insights
 import androidx.compose.material.icons.filled.KeyboardArrowDown
@@ -34,8 +42,8 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
@@ -57,10 +65,12 @@ import com.example.bible.data.housecare.HouseCareData
 import com.example.bible.data.housecare.HouseFloor
 import com.example.bible.data.housecare.HousePlace
 import com.example.bible.data.housecare.WeekDays
+import com.example.bible.data.housecare.planDate
 import java.time.DayOfWeek
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 import java.util.Locale
+import kotlinx.coroutines.delay
 
 private val weekDayFormatter = DateTimeFormatter.ofPattern("dd.MM.yyyy")
 private val heroDateFormatter = DateTimeFormatter.ofPattern("d MMMM yyyy", Locale.forLanguageTag("ru"))
@@ -161,8 +171,7 @@ fun CleaningSystemScreen(
                 }
             }
             items(data.places, key = { it.id }) { place ->
-                val floorIds = data.floorsOf(place.id).map { it.id }.toSet()
-                val zones = data.zones.filter { it.floorId in floorIds }
+                val todayRooms = data.zonesOfPlace(place.id, LocalDate.now())
                 CleaningRow(
                     title = place.name,
                     subtitle = buildString {
@@ -170,7 +179,7 @@ fun CleaningSystemScreen(
                         append(" · ")
                         append(if (place.floorsCount > 0) floorsLabel(place.floorsCount) else "этажи не указаны")
                     },
-                    cleaned = zones.isNotEmpty() && zones.all { data.isZoneCleaned(it.id) },
+                    cleaned = todayRooms.isNotEmpty() && todayRooms.all { data.isZoneCleaned(it) },
                     onClick = { onOpenPlace(place.id) },
                     onRename = { editingPlace = place },
                     onLongClick = { editingPlace = place },
@@ -201,6 +210,12 @@ fun CleaningSystemScreen(
     }
 }
 
+/** Куда свайп увёл недели: стрелка повторяет движение пальца, подпись — что за ним пришло. */
+private enum class WeekSwipe(val label: String) {
+    ToPast("прошлая неделя"),
+    ToFuture("следующая неделя"),
+}
+
 /** Дни недели одного объекта уборки и его этажи. */
 @Composable
 fun PlaceDaysScreen(
@@ -208,16 +223,44 @@ fun PlaceDaysScreen(
     placeId: String,
     onBack: () -> Unit,
     onOpenDate: (LocalDate) -> Unit,
-    onOpenFloor: (String) -> Unit,
+    onOpenFloor: (floorId: String, date: LocalDate) -> Unit,
 ) {
     val data by viewModel.data.collectAsStateWithLifecycle()
     val place = data.placeById(placeId)
     var editingFloor by remember { mutableStateOf<HouseFloor?>(null) }
     var weekOffset by remember { mutableIntStateOf(0) }
+    /** Метка о том, куда свайпнул пользователь: живёт секунду, потом снова обычная подсказка. */
+    var swipeNote by remember { mutableStateOf<WeekSwipe?>(null) }
+    var swipeStamp by remember { mutableIntStateOf(0) }
+    LaunchedEffect(swipeStamp) {
+        if (swipeStamp == 0) return@LaunchedEffect
+        delay(1600)
+        swipeNote = null
+    }
     val weekStart = LocalDate.now().with(DayOfWeek.MONDAY).plusWeeks(weekOffset.toLong())
+    val weekDates = (0 until WeekDays.displayed.size).map { weekStart.plusDays(it.toLong()) }.toSet()
     val swipeThresholdPx = with(LocalDensity.current) { 90.dp.toPx() }
 
-    HouseCareScaffold(title = place?.name ?: "Объект", onBack = onBack) { padding ->
+    HouseCareScaffold(
+        title = place?.name ?: "Объект",
+        onBack = onBack,
+        actions = {
+            AnimatedVisibility(
+                visible = weekOffset != 0,
+                enter = fadeIn() + scaleIn(initialScale = 0.85f),
+                exit = fadeOut() + scaleOut(targetScale = 0.85f),
+            ) {
+                IconButton(onClick = { weekOffset = 0 }) {
+                    Icon(
+                        Icons.Filled.Home,
+                        contentDescription = "Показать текущую неделю",
+                        tint = MaterialTheme.colorScheme.primary,
+                        modifier = Modifier.size(30.dp),
+                    )
+                }
+            }
+        },
+    ) { padding ->
         LazyColumn(
             modifier = Modifier
                 .fillMaxSize()
@@ -238,15 +281,25 @@ fun PlaceDaysScreen(
                         .fillMaxWidth()
                         .pointerInput(swipeThresholdPx) {
                             var dragged = 0f
-                            detectDragGestures(
+                            detectHorizontalDragGestures(
                                 onDragStart = { dragged = 0f },
-                                onDrag = { _, amount -> dragged += amount.x },
+                                onHorizontalDrag = { _, dragAmount -> dragged += dragAmount },
                                 onDragEnd = {
                                     when {
-                                        dragged < -swipeThresholdPx -> weekOffset -= 1
-                                        dragged > swipeThresholdPx -> weekOffset += 1
+                                        dragged > swipeThresholdPx -> {
+                                            weekOffset -= 1
+                                            swipeNote = WeekSwipe.ToPast
+                                            swipeStamp += 1
+                                        }
+                                        dragged < -swipeThresholdPx -> {
+                                            weekOffset += 1
+                                            swipeNote = WeekSwipe.ToFuture
+                                            swipeStamp += 1
+                                        }
                                     }
+                                    dragged = 0f
                                 },
+                                onDragCancel = { dragged = 0f },
                             )
                         },
                     verticalArrangement = Arrangement.spacedBy(8.dp),
@@ -258,15 +311,36 @@ fun PlaceDaysScreen(
                             fontWeight = FontWeight.SemiBold,
                             modifier = Modifier.weight(1f),
                         )
-                        if (weekOffset != 0) {
-                            TextButton(onClick = { weekOffset = 0 }) { Text("Сегодня") }
+                    }
+                    val note = swipeNote
+                    if (note == null) {
+                        Text(
+                            "Свайп вправо — прошлая неделя, влево — следующая.",
+                            style = MaterialTheme.typography.labelSmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis,
+                        )
+                    } else {
+                        Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                            Icon(
+                                imageVector = if (note == WeekSwipe.ToPast) {
+                                    Icons.AutoMirrored.Filled.ArrowForward
+                                } else {
+                                    Icons.AutoMirrored.Filled.ArrowBack
+                                },
+                                contentDescription = null,
+                                tint = MaterialTheme.colorScheme.primary,
+                                modifier = Modifier.size(30.dp),
+                            )
+                            Text(
+                                note.label,
+                                style = MaterialTheme.typography.bodySmall,
+                                fontWeight = FontWeight.SemiBold,
+                                color = MaterialTheme.colorScheme.primary,
+                            )
                         }
                     }
-                    Text(
-                        "Смахните по плиткам влево — прошлая неделя, вправо — следующая.",
-                        style = MaterialTheme.typography.labelSmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    )
                     WeekdayTileSection(
                         viewModel = viewModel,
                         placeId = placeId,
@@ -277,16 +351,17 @@ fun PlaceDaysScreen(
             }
             item { HouseCareSectionTitle("Этажи") }
             items(data.floorsOf(placeId), key = { it.id }) { floor ->
-                val zones = data.zones.filter { it.floorId == floor.id }
+                val zones = data.zones.filter { it.floorId == floor.id && it.planDate in weekDates }
                 CleaningRow(
                     title = floor.name,
                     subtitle = if (zones.isEmpty()) {
-                        "Комнаты пока не добавлены"
+                        "На этой неделе комнат нет"
                     } else {
-                        "${zones.size} комнат · ${zones.sumOf { data.tasksOf(it.id).size }} разделов"
+                        "${zones.size} ${pluralRu(zones.size, "комната", "комнаты", "комнат")} " +
+                            "на неделе · ${zones.sumOf { data.tasksOf(it.id).size }} разделов"
                     },
-                    cleaned = zones.isNotEmpty() && zones.all { data.isZoneCleaned(it.id) },
-                    onClick = { onOpenFloor(floor.id) },
+                    cleaned = zones.isNotEmpty() && zones.all { data.isZoneCleaned(it) },
+                    onClick = { onOpenFloor(floor.id, weekStart) },
                     onRename = { editingFloor = floor },
                     onLongClick = { editingFloor = floor },
                 )
@@ -323,7 +398,7 @@ fun CleaningDayScreen(
     date: LocalDate,
     onBack: () -> Unit,
     onOpenZone: (zoneId: String) -> Unit,
-    onOpenFloor: (floorId: String) -> Unit,
+    onOpenFloor: (floorId: String, LocalDate) -> Unit,
 ) {
     val data by viewModel.data.collectAsStateWithLifecycle()
     val place = data.placeById(placeId)
@@ -333,8 +408,12 @@ fun CleaningDayScreen(
     var editingZone by remember { mutableStateOf<CleaningZone?>(null) }
     var addRoomFloorId by remember { mutableStateOf<String?>(null) }
 
-    val rooms = data.zonesOfPlace(placeId, if (dayOfWeek == 7) 6 else dayOfWeek)
-    val roomsDone = rooms.count { data.isZoneCleanedOn(it.id, date) }
+    val rooms = data.zonesOfPlace(placeId, date)
+    val roomsDone = rooms.count { data.isZoneCleaned(it) }
+    // Воскресенье — день отдыха: новую комнату заводим на субботу той же недели.
+    val planDate = if (dayOfWeek == DayOfWeek.SUNDAY.value) date.minusDays(1) else date
+    val weekDates = (0 until WeekDays.displayed.size).map { planDate.with(DayOfWeek.MONDAY).plusDays(it.toLong()) }
+    val previousWeekRooms = data.zonesOfPlace(placeId, planDate.minusWeeks(1))
     val collapse = rememberCollapseState()
     val blockKeys = floors.map { it.id } +
         listOf("habit:${CleaningHabit.KIND_MORNING}", "habit:${CleaningHabit.KIND_EVENING}")
@@ -397,17 +476,27 @@ fun CleaningDayScreen(
                     )
                 }
             }
+            if (rooms.isEmpty() && previousWeekRooms.isNotEmpty()) {
+                item {
+                    val from = planDate.minusWeeks(1)
+                    EmptyAddCard(
+                        hint = "Скопировать план с ${from.format(weekDayFormatter)}",
+                        subtitle = "${previousWeekRooms.size} ${pluralRu(previousWeekRooms.size, "комната", "комнаты", "комнат")} " +
+                            "и их разделы начнут этот день без отметок об уборке",
+                        onClick = { viewModel.copyZonePlan(placeId, from, planDate) },
+                    )
+                }
+            }
             floors.forEach { floor ->
-                val zones = data.zonesOf(floor.id, dayOfWeek)
+                val zones = data.zonesOf(floor.id, date)
                 item(key = floor.id) {
                     FloorDayCard(
                         data = data,
                         floor = floor,
                         zones = zones,
-                        date = date,
                         collapsed = collapse.collapsed(floor.id),
                         onToggleCollapsed = { collapse.toggle(floor.id) },
-                        onOpenFloor = { onOpenFloor(floor.id) },
+                        onOpenFloor = { onOpenFloor(floor.id, date) },
                         onOpenZone = onOpenZone,
                         onEditFloor = { editingFloor = floor },
                         onEditZone = { editingZone = it },
@@ -434,7 +523,8 @@ fun CleaningDayScreen(
         RoomEditDialog(
             title = "Новая комната",
             initialName = "",
-            initialDay = dayOfWeek,
+            initialDate = planDate,
+            weekDates = weekDates,
             canDelete = false,
             onDismiss = { addRoomFloorId = null },
             onSave = { name, day ->
@@ -449,7 +539,8 @@ fun CleaningDayScreen(
         RoomEditDialog(
             title = zone.name,
             initialName = zone.name,
-            initialDay = zone.dayOfWeek,
+            initialDate = zone.planDate,
+            weekDates = weekDates,
             canDelete = true,
             onDismiss = { editingZone = null },
             onSave = { name, day ->
@@ -530,7 +621,6 @@ private fun FloorDayCard(
     data: HouseCareData,
     floor: HouseFloor,
     zones: List<CleaningZone>,
-    date: LocalDate,
     collapsed: Boolean,
     onToggleCollapsed: () -> Unit,
     onOpenFloor: () -> Unit,
@@ -539,7 +629,7 @@ private fun FloorDayCard(
     onEditZone: (CleaningZone) -> Unit,
     onAddRoom: () -> Unit,
 ) {
-    val cleaned = zones.count { data.isZoneCleanedOn(it.id, date) }
+    val cleaned = zones.count { data.isZoneCleaned(it) }
     GroupCard {
         Column(
             modifier = Modifier.padding(horizontal = 12.dp, vertical = 12.dp),
@@ -600,7 +690,7 @@ private fun FloorDayCard(
                     )
                 }
                 zones.forEach { zone ->
-                    val (done, total) = data.zoneProgressOn(zone.id, date)
+                    val (done, total) = data.zoneProgress(zone)
                     RoomRow(
                         name = zone.name,
                         subtitle = "разделов $done/$total",

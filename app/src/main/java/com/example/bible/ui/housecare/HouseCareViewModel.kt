@@ -10,6 +10,7 @@ import com.example.bible.data.housecare.HouseCarePhotoStorage
 import com.example.bible.data.housecare.HouseCareStore
 import com.example.bible.data.housecare.WeekdayTileStyle
 import java.io.File
+import java.time.LocalDate
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.stateIn
@@ -26,6 +27,10 @@ class HouseCareViewModel(
         SharingStarted.WhileSubscribed(5_000),
         HouseCareData.Empty,
     )
+
+    init {
+        viewModelScope.launch { store.migrateWeeklyZones() }
+    }
 
     private fun edit(block: suspend HouseCareStore.() -> Unit) {
         viewModelScope.launch { store.block() }
@@ -47,9 +52,12 @@ class HouseCareViewModel(
 
     fun deleteFloor(id: String) = edit { deleteFloor(id) }
 
-    fun addZone(floorId: String, dayOfWeek: Int, name: String) = edit { addZone(floorId, dayOfWeek, name) }
+    fun addZone(floorId: String, date: LocalDate, name: String) = edit { addZone(floorId, date, name) }
 
-    fun updateZone(id: String, name: String, dayOfWeek: Int) = edit { updateZone(id, name, dayOfWeek) }
+    fun updateZone(id: String, name: String, date: LocalDate) = edit { updateZone(id, name, date) }
+
+    /** Перенести комнаты и их разделы с другой даты на этот день. */
+    fun copyZonePlan(placeId: String, from: LocalDate, to: LocalDate) = edit { copyZonesPlan(placeId, from, to) }
 
     fun deleteZone(id: String) = edit { deleteZone(id) }
 

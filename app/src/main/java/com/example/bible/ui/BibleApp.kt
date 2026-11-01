@@ -2063,7 +2063,7 @@ private fun BibleNavHost(
                 placeId = placeId,
                 onBack = { navController.navigateUp() },
                 onOpenDate = { date -> navController.navigate("house_place_day/$placeId/$date") },
-                onOpenFloor = { navController.navigate("house_clean_floor/$it") },
+                onOpenFloor = { floorId, date -> navController.navigate("house_clean_floor/$floorId/$date") },
             )
         }
         composable(
@@ -2080,17 +2080,22 @@ private fun BibleNavHost(
                 date = runCatching { java.time.LocalDate.parse(dateText) }
                     .getOrElse { java.time.LocalDate.now() },
                 onBack = { navController.navigateUp() },
-                onOpenFloor = { navController.navigate("house_clean_floor/$it") },
+                onOpenFloor = { floorId, date -> navController.navigate("house_clean_floor/$floorId/$date") },
                 onOpenZone = { navController.navigate("house_clean_zone/$it") },
             )
         }
         composable(
-            route = "house_clean_floor/{floorId}",
-            arguments = listOf(navArgument("floorId") { type = NavType.StringType }),
+            route = "house_clean_floor/{floorId}/{date}",
+            arguments = listOf(
+                navArgument("floorId") { type = NavType.StringType },
+                navArgument("date") { type = NavType.StringType },
+            ),
         ) { entry ->
             FloorRoomsScreen(
                 viewModel = houseCareViewModel(),
                 floorId = entry.arguments?.getString("floorId").orEmpty(),
+                date = runCatching { java.time.LocalDate.parse(entry.arguments?.getString("date").orEmpty()) }
+                    .getOrElse { java.time.LocalDate.now() },
                 onBack = { navController.navigateUp() },
                 onOpenZone = { navController.navigate("house_clean_zone/$it") },
             )

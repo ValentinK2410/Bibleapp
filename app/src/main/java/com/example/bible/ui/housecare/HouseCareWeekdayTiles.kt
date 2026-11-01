@@ -56,7 +56,6 @@ import com.example.bible.data.housecare.WeekDays
 import com.example.bible.data.housecare.WeekdayTileStyle
 import java.io.File
 import java.time.LocalDate
-import java.time.DayOfWeek
 import java.time.format.DateTimeFormatter
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -72,8 +71,6 @@ private val TilePalette = listOf(
 private val TileIcons = listOf("🧹", "🧽", "🪣", "✨", "🌿", "⭐", "🙏", "🏠", "🍳", "🛏️", "🚿", "🕯️")
 
 private const val TILE_PHOTO_KIND = "tile"
-
-internal fun todayDayIndex(): Int = LocalDate.now().dayOfWeek.value
 
 /** Комната дня в плитке: название и сколько разделов убрано из общего числа. */
 internal data class TileRoom(val name: String, val sectionsDone: Int, val sectionsTotal: Int) {
@@ -136,13 +133,11 @@ internal fun WeekdayTileSection(
     }
 }
 
-private fun HouseCareData.roomsOfPlaceOn(date: LocalDate, placeId: String): List<TileRoom> {
-    if (date.dayOfWeek == DayOfWeek.SUNDAY) return emptyList()
-    return zonesOfPlace(placeId, date.dayOfWeek.value).map { zone ->
-        val (done, total) = zoneProgressOn(zone.id, date)
+private fun HouseCareData.roomsOfPlaceOn(date: LocalDate, placeId: String): List<TileRoom> =
+    zonesOfPlace(placeId, date).map { zone ->
+        val (done, total) = zoneProgress(zone)
         TileRoom(zone.name, done, total)
     }
-}
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
@@ -231,6 +226,7 @@ private fun WeekdayTile(
                     date.format(tileDateFormatter),
                     style = MaterialTheme.typography.labelSmall,
                     color = onMuted,
+                    maxLines = 1,
                 )
             }
             if (rooms.isEmpty()) {
@@ -306,7 +302,8 @@ private fun HabitLine(label: String, progress: Pair<Int, Int>, onColor: Color, o
     }
 }
 
-private val tileDateFormatter = DateTimeFormatter.ofPattern("dd.MM.yyyy")
+// Год в плитке не показываем: он есть в заголовке недели, а в двух строк дата не влезает.
+private val tileDateFormatter = DateTimeFormatter.ofPattern("dd.MM")
 
 /** Меню настройки плитки дня недели. */
 @Composable

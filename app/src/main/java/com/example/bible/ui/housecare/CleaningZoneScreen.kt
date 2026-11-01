@@ -24,7 +24,6 @@ import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.bible.data.housecare.CleaningTask
-import com.example.bible.data.housecare.WeekDays
 import sh.calvin.reorderable.ReorderableItem
 import sh.calvin.reorderable.rememberReorderableLazyListState
 
@@ -72,7 +71,7 @@ fun CleaningZoneScreen(
         ) {
             if (zone != null) {
                 val floorName = data.floorById(zone.floorId)?.name.orEmpty()
-                HouseCareSectionTitle("$floorName · ${WeekDays.fullLabel(zone.dayOfWeek)}")
+                HouseCareSectionTitle("$floorName · ${zoneDateLabel(zone)}")
             }
             if (draft.size > 1) {
                 Text(

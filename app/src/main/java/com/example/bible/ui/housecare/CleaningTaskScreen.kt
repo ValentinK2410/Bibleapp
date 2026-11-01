@@ -45,7 +45,6 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import coil.compose.AsyncImage
 import com.example.bible.data.housecare.CleaningReport
 import com.example.bible.data.housecare.HouseCarePhotoStorage
-import com.example.bible.data.housecare.WeekDays
 import com.example.bible.ui.theme.OutlinedTextField
 import java.io.File
 import java.time.Instant
@@ -135,7 +134,7 @@ fun CleaningTaskScreen(
                 val path = listOfNotNull(
                     floorName.takeIf { it.isNotBlank() },
                     zone?.name,
-                    zone?.let { WeekDays.fullLabel(it.dayOfWeek) },
+                    zone?.let { zoneDateLabel(it) },
                 ).joinToString(" · ")
                 Text(path, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
             }

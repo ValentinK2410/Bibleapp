@@ -52,23 +52,27 @@ import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import com.example.bible.data.housecare.CleaningZone
 import com.example.bible.data.housecare.HouseCareData
 import com.example.bible.data.housecare.WeekDays
+import com.example.bible.data.housecare.planDate
 import com.example.bible.ui.theme.OutlinedTextField
 import java.text.SimpleDateFormat
 import java.time.LocalDate
 import java.time.ZoneId
+import java.time.format.DateTimeFormatter
 import java.util.Date
 import java.util.Locale
 
 internal val cleaningGreen = androidx.compose.ui.graphics.Color(0xFF2E7D32)
 
 /**
- * Сколько разделов комнаты убрано на конкретную дату.
+ * Сколько разделов комнаты убрано на её день.
  * За сегодня считает текущий цикл уборки, за другой день — завершённые отчёты той даты.
  */
-internal fun HouseCareData.zoneProgressOn(zoneId: String, date: LocalDate): Pair<Int, Int> {
-    val zoneTasks = tasksOf(zoneId)
+internal fun HouseCareData.zoneProgress(zone: CleaningZone): Pair<Int, Int> {
+    val zoneTasks = tasksOf(zone.id)
+    val date = zone.planDate
     val today = LocalDate.now()
     val done = if (date == today) {
         zoneTasks.count { it.isCleaned }
@@ -80,10 +84,24 @@ internal fun HouseCareData.zoneProgressOn(zoneId: String, date: LocalDate): Pair
     return done to zoneTasks.size
 }
 
-internal fun HouseCareData.isZoneCleanedOn(zoneId: String, date: LocalDate): Boolean {
-    val (done, total) = zoneProgressOn(zoneId, date)
+/** Комната живёт один день: она убрана, когда все её разделы закрыты на её же дату. */
+internal fun HouseCareData.isZoneCleaned(zone: CleaningZone): Boolean {
+    val (done, total) = zoneProgress(zone)
     return total > 0 && done == total
 }
+
+private val longDateFormatter = DateTimeFormatter.ofPattern("d MMMM yyyy", Locale.forLanguageTag("ru"))
+private val shortDateFormatter = DateTimeFormatter.ofPattern("dd.MM")
+
+/** Подпись комнаты: день недели и дата плана, например «суббота · 31 октября 2026». */
+internal fun zoneDateLabel(zone: CleaningZone): String {
+    val day = zone.planDate
+    return WeekDays.fullLabel(day.dayOfWeek.value).lowercase() + " · " + day.format(longDateFormatter)
+}
+
+/** День недели вместе с числом: «Суббота · 31.10» — план теперь привязан к дате. */
+internal fun dayWithDate(date: LocalDate): String =
+    WeekDays.fullLabel(date.dayOfWeek.value) + " · " + date.format(shortDateFormatter)
 
 /** Сколько привычек блока выполнено на дату. */
 internal fun HouseCareData.habitProgressOn(placeId: String, kind: String, date: LocalDate): Pair<Int, Int> {
