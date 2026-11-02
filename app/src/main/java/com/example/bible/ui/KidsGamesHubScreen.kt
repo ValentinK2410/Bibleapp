@@ -66,7 +66,6 @@ fun KidsGamesHubScreen(
     onOpenDino: () -> Unit = {},
     onOpenMoses: () -> Unit = {},
     onOpenAdamEve: () -> Unit = {},
-    onOpenHeroesOfFaith: () -> Unit = {},
 ) {
     val context = LocalContext.current
     val repo = remember { AzbukaProgressRepository(context.applicationContext) }
@@ -76,16 +75,12 @@ fun KidsGamesHubScreen(
     val young = family.resolvedMode() == KidsAgeMode.SMALL
     val games = listOf(
         KidsGameTile(
-            KidsGames.HEROES_OF_FAITH, "Герои веры", "🛡️", "12 героев веры (Евреям 11): Ной, Авраам, Иосиф, Давид, Илия, Даниил и другие!",
-            kidsGradient(0), "подвигов", open = onOpenHeroesOfFaith,
+            KidsGames.MOSES, "Путь Моисея", "🪄", "6 уникальных сцен книги Исход: от корзинки в Ниле и Пасхи до Чермного моря и 10 Заповедей Синая!",
+            kidsGradient(2), "сцен", open = onOpenMoses,
         ),
         KidsGameTile(
             KidsGames.ADAM_EVE, "Адам и Ева", "🌳", "5 глав по Бытию 1–3: Эдемский сад, ключевые стихи и глубина смысла!",
             kidsGradient(4), "глав", open = onOpenAdamEve,
-        ),
-        KidsGameTile(
-            KidsGames.MOSES, "Путь Моисея", "🪄", "10 глав книги Исход с Моисеем и Аароном, стихами Библии и защитой Посоха!",
-            kidsGradient(2), "глав", open = onOpenMoses,
         ),
         KidsGameTile(
             KidsGames.DINO, "Динозаврик", "🦖", "Прыгай через кактусы и птиц, как в браузере!",
@@ -169,7 +164,6 @@ fun KidsGamesHubScreen(
                             .padding(10.dp),
                     ) {
                         when (game.key) {
-                            KidsGames.HEROES_OF_FAITH -> HeroesOfFaithArt(Modifier.fillMaxSize())
                             KidsGames.ADAM_EVE -> AdamEveGardenArt(Modifier.fillMaxSize())
                             KidsGames.MOSES -> MosesAdventureArt(Modifier.fillMaxSize())
                             KidsGames.DINO -> DinoRunnerArt(Modifier.fillMaxSize())
