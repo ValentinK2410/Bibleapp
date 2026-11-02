@@ -199,21 +199,24 @@ fun KidsDinoGameScreen(onBack: () -> Unit) {
         KidsGameAudio.play(KidsSfx.TAP)
     }
 
+    val isNight = (score / 250) % 2 == 1
+
     fun triggerJump() {
         if (gameOver || !running) {
             resetAndStart()
             return
         }
+        val nightActive = (score / 250) % 2 == 1
         if (dinoY <= 3f) {
             // First jump from ground
             ducking = false
             airJumpUsed = false
             dinoVy = if (easyMode) 545f else 580f
             KidsGameAudio.play(KidsSfx.TAP)
-        } else if (!airJumpUsed) {
-            // Single jump in mid-air (resets only after landing on the ground)
+        } else if (nightActive || !airJumpUsed) {
+            // Unlimited air jumps at night, or single mid-air jump during the day (resets on landing)
             ducking = false
-            airJumpUsed = true
+            airJumpUsed = !nightActive
             airPuffY = dinoY
             airPuffAlpha = 1f
             dinoVy = if (easyMode) 500f else 530f
@@ -245,7 +248,13 @@ fun KidsDinoGameScreen(onBack: () -> Unit) {
                 distance += speed * dt * 0.045f
                 val newScore = distance.toInt()
                 if (newScore != score) {
+                    val wasNight = (score / 250) % 2 == 1
                     score = newScore
+                    val nowNight = (score / 250) % 2 == 1
+                    if (!wasNight && nowNight) {
+                        airJumpUsed = false
+                        milestoneBanner = "🌙 Ночь! Прыгай в воздухе сколько угодно ∞"
+                    }
                     if (score > highScore) {
                         highScore = score
                         prefs.edit().putInt("high_score", highScore).apply()
@@ -264,6 +273,10 @@ fun KidsDinoGameScreen(onBack: () -> Unit) {
                 if (dinoY > 0f || dinoVy > 0f) {
                     dinoY += dinoVy * dt
                     dinoVy -= gravity * dt
+                    if (dinoY > 185f) {
+                        dinoY = 185f
+                        if (dinoVy > 0f) dinoVy = 0f
+                    }
                     if (dinoY <= 0f) {
                         dinoY = 0f
                         dinoVy = 0f
@@ -364,8 +377,6 @@ fun KidsDinoGameScreen(onBack: () -> Unit) {
         points = 20,
         round = winRound,
     )
-
-    val isNight = (score / 250) % 2 == 1
 
     Scaffold(
         containerColor = MaterialTheme.colorScheme.background,
@@ -859,8 +870,8 @@ fun KidsDinoGameScreen(onBack: () -> Unit) {
             }
 
             // Floating Right Control: ПРЫЖОК (instant touch response + drag handle ✥)
-            val canAirJumpNow = dinoY > 3f && !airJumpUsed
-            val jumpExhaustedInAir = dinoY > 3f && airJumpUsed
+            val canAirJumpNow = dinoY > 3f && (isNight || !airJumpUsed)
+            val jumpExhaustedInAir = dinoY > 3f && !isNight && airJumpUsed
             Row(
                 modifier = Modifier
                     .align(Alignment.BottomEnd)
@@ -871,6 +882,7 @@ fun KidsDinoGameScreen(onBack: () -> Unit) {
                     .clip(RoundedCornerShape(999.dp))
                     .background(
                         when {
+                            isNight && dinoY > 3f -> Color(0xFF7C3AED).copy(alpha = 0.92f)
                             canAirJumpNow -> Color(0xFF0284C7).copy(alpha = 0.92f)
                             jumpExhaustedInAir -> Color(0xFF475569).copy(alpha = 0.78f)
                             else -> Color(0xFF059669).copy(alpha = 0.90f)
@@ -899,7 +911,11 @@ fun KidsDinoGameScreen(onBack: () -> Unit) {
                         modifier = Modifier.size(24.dp),
                     )
                     Text(
-                        text = if (canAirJumpNow) "ПРЫЖОК ×2" else "ПРЫЖОК",
+                        text = when {
+                            isNight && dinoY > 3f -> "ПРЫЖОК ∞"
+                            canAirJumpNow -> "ПРЫЖОК ×2"
+                            else -> "ПРЫЖОК"
+                        },
                         color = Color.White,
                         fontWeight = FontWeight.Black,
                         fontSize = 15.sp,
