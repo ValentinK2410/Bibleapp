@@ -34,7 +34,6 @@ import androidx.compose.material.icons.filled.HomeWork
 import androidx.compose.material.icons.filled.Insights
 import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material.icons.filled.KeyboardArrowRight
-import androidx.compose.material.icons.filled.Palette
 import androidx.compose.material.icons.filled.Timer
 import androidx.compose.material.icons.filled.UnfoldLess
 import androidx.compose.material.icons.filled.UnfoldMore
@@ -85,7 +84,6 @@ fun HouseCareHubScreen(
     onOpenCleaning: () -> Unit,
     onOpenStats: () -> Unit,
 ) {
-    var showThemeDialog by remember { mutableStateOf(false) }
     HouseCareScaffold(
         title = "Попечительная о доме",
         onBack = onBack,
@@ -128,27 +126,6 @@ fun HouseCareHubScreen(
                     onClick = onOpenStats,
                 )
             }
-            item {
-                HubCard(
-                    title = "Нежное оформление раздела",
-                    subtitle = "Женственные палитры и стили карточек для всего раздела или каждого экрана отдельно",
-                    icon = {
-                        Icon(
-                            Icons.Filled.Palette,
-                            contentDescription = null,
-                            tint = MaterialTheme.colorScheme.primary,
-                            modifier = Modifier.size(22.dp),
-                        )
-                    },
-                    onClick = { showThemeDialog = true },
-                )
-            }
-        }
-        if (showThemeDialog) {
-            HouseCareThemeDialog(
-                initialSection = HouseCareSectionId.Hub,
-                onDismiss = { showThemeDialog = false },
-            )
         }
     }
 }
