@@ -165,39 +165,39 @@ private data class FloatingPopup(
 private data class ExodusVerseCard(
     val ref: String,
     val text: String,
-    valttsText: String,
+    val ttsText: String,
 )
 
 private val EXODUS_VERSES = listOf(
     ExodusVerseCard(
         ref = "Исход 3:12",
         text = "«Бог сказал Моисею: Я буду с тобою!»",
-        valttsText = "Бог сказал Моисею: Я буду с тобою! Книга Исход, глава третья, стих двенадцатый.",
+        ttsText = "Бог сказал Моисею: Я буду с тобою! Книга Исход, глава третья, стих двенадцатый.",
     ),
     ExodusVerseCard(
         ref = "Исход 13:21",
         text = "«Господь шёл пред ними днём в столпе облачном, а ночью в столпе огненном, светя им»",
-        valttsText = "Господь шёл пред ними днём в столпе облачном, а ночью в столпе огненном, светя им.",
+        ttsText = "Господь шёл пред ними днём в столпе облачном, а ночью в столпе огненном, светя им.",
     ),
     ExodusVerseCard(
         ref = "Исход 14:14",
         text = "«Господь будет поборать за вас, а вы будьте спокойны!»",
-        valttsText = "Господь будет поборать за вас, а вы будьте спокойны! Исход, глава четырнадцатая.",
+        ttsText = "Господь будет поборать за вас, а вы будьте спокойны! Исход, глава четырнадцатая.",
     ),
     ExodusVerseCard(
         ref = "Исход 15:2",
         text = "«Господь — крепость моя и слава моя, Он был мне спасением!»",
-        valttsText = "Господь — крепость моя и слава моя, Он был мне спасением!",
+        ttsText = "Господь — крепость моя и слава моя, Он был мне спасением!",
     ),
     ExodusVerseCard(
         ref = "Исход 17:6",
         text = "«Ударь в скалу посохом, и пойдёт из неё вода, и будет пить народ!»",
-        valttsText = "Ударь в скалу посохом, и пойдёт из неё вода, и будет пить народ!",
+        ttsText = "Ударь в скалу посохом, и пойдёт из неё вода, и будет пить народ!",
     ),
     ExodusVerseCard(
         ref = "Исход 20:12",
         text = "«Почитай отца твоего и мать твою, чтобы продлились дни твои на земле»",
-        valttsText = "Заповедь Божия: Почитай отца твоего и мать твою, чтобы продлились дни твои на земле.",
+        ttsText = "Заповедь Божия: Почитай отца твоего и мать твою, чтобы продлились дни твои на земле.",
     ),
 )
 
@@ -669,7 +669,7 @@ fun KidsMosesGameScreen(onBack: () -> Unit) {
                                 hearts = (hearts + 1).coerceAtMost(4)
                                 val verse = EXODUS_VERSES[3]
                                 activeVerseCard = verse
-                                speak(verse.valttsText)
+                                speak(verse.ttsText)
                             } else {
                                 score += 15
                             }
@@ -751,7 +751,7 @@ fun KidsMosesGameScreen(onBack: () -> Unit) {
                                         score += 30
                                         val verse = EXODUS_VERSES[b.verseIndex % EXODUS_VERSES.size]
                                         activeVerseCard = verse
-                                        speak(verse.valttsText)
+                                        speak(verse.ttsText)
                                         popups.add(FloatingPopup(b.x + 12f, b.y + 34f, "📜 ${verse.ref}", Color(0xFFFEF08A)))
                                         KidsGameAudio.play(KidsSfx.CORRECT)
                                     }
@@ -1244,7 +1244,7 @@ fun KidsMosesGameScreen(onBack: () -> Unit) {
                             ),
                         )
                         .border(1.5.dp, Color(0xFFFDE047), RoundedCornerShape(20.dp))
-                        .clickable { speak(verse.valttsText) }
+                        .clickable { speak(verse.ttsText) }
                         .padding(horizontal = 14.dp, vertical = 10.dp),
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.spacedBy(10.dp),
@@ -1272,7 +1272,7 @@ fun KidsMosesGameScreen(onBack: () -> Unit) {
                             .size(32.dp)
                             .clip(CircleShape)
                             .background(Color.White.copy(alpha = 0.18f))
-                            .clickable { speak(verse.valttsText) },
+                            .clickable { speak(verse.ttsText) },
                         contentAlignment = Alignment.Center,
                     ) {
                         Icon(
