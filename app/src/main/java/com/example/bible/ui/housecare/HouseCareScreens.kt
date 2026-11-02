@@ -768,6 +768,8 @@ private fun FloorDayCard(
     onAddRoom: () -> Unit,
 ) {
     val cleaned = zones.count { data.isZoneCleaned(it) }
+    val timerState by FifteenMinuteTimerManager.state.collectAsStateWithLifecycle()
+    val timerMins = timerState.presetMinutes
     GroupCard {
         Column(
             modifier = Modifier.padding(horizontal = 14.dp, vertical = 12.dp),
@@ -814,7 +816,11 @@ private fun FloorDayCard(
                         overflow = TextOverflow.Ellipsis,
                     )
                 }
-                IconButton(onClick = onEditFloor, modifier = Modifier.size(34.dp)) {
+                CompactActionIcon(
+                    onClick = onEditFloor,
+                    contentDescription = "Этаж: название или удалить",
+                    size = 30.dp,
+                ) {
                     Icon(
                         Icons.Default.Edit,
                         contentDescription = "Этаж: название или удалить",
@@ -822,7 +828,11 @@ private fun FloorDayCard(
                         modifier = Modifier.size(18.dp),
                     )
                 }
-                IconButton(onClick = onOpenFloor, modifier = Modifier.size(34.dp)) {
+                CompactActionIcon(
+                    onClick = onOpenFloor,
+                    contentDescription = "Все комнаты этажа",
+                    size = 30.dp,
+                ) {
                     Icon(
                         Icons.Default.HomeWork,
                         contentDescription = "Все комнаты этажа",
@@ -840,16 +850,38 @@ private fun FloorDayCard(
                     val (done, total) = data.zoneProgress(zone)
                     val zoneDurationMs = data.tasksOf(zone.id).sumOf { it.active?.durationMs ?: 0L }
                     val isTimerRoom = isFifteenMinuteZoneName(zone.name)
+                    val timerActiveOrPaused = isTimerRoom && (
+                        timerState.isRunning ||
+                            timerState.remainingSeconds < timerState.totalSeconds ||
+                            timerState.isFinishedBanner
+                        )
+                    val customPillText = when {
+                        timerActiveOrPaused -> {
+                            val mm = timerState.remainingSeconds / 60
+                            val ss = timerState.remainingSeconds % 60
+                            String.format(Locale.getDefault(), "⏱ %02d:%02d", mm, ss)
+                        }
+                        isTimerRoom && total == 0 -> "⏱ $timerMins мин"
+                        else -> null
+                    }
+                    val customPillTone = when {
+                        isTimerRoom && (timerState.isRunning || timerState.isFinishedBanner) -> PillTone.Done
+                        isTimerRoom && timerActiveOrPaused -> PillTone.Pending
+                        isTimerRoom && total == 0 -> PillTone.Muted
+                        else -> null
+                    }
                     RoomRow(
                         name = zone.name,
                         subtitle = buildString {
-                            if (isTimerRoom) append("Таймер 15 мин · ")
+                            if (isTimerRoom) append("Таймер $timerMins мин · ")
                             append("разделов $done/$total")
                             if (zoneDurationMs > 0L) append(" · ${formatDurationMs(zoneDurationMs)}")
                         },
                         done = done,
                         total = total,
                         isFifteenMinute = isTimerRoom,
+                        customPillText = customPillText,
+                        customPillTone = customPillTone,
                         onClick = { onOpenZone(zone.id) },
                         onEdit = { onEditZone(zone) },
                         onDelete = { onDeleteZone(zone) },
@@ -870,6 +902,8 @@ private fun RoomRow(
     done: Int,
     total: Int,
     isFifteenMinute: Boolean = false,
+    customPillText: String? = null,
+    customPillTone: PillTone? = null,
     onClick: () -> Unit,
     onEdit: () -> Unit,
     onDelete: () -> Unit,
@@ -880,7 +914,7 @@ private fun RoomRow(
             .fillMaxWidth()
             .clip(RoundedCornerShape(14.dp))
             .combinedClickable(onClick = onClick, onLongClick = onEdit)
-            .padding(horizontal = 8.dp, vertical = 7.dp),
+            .padding(horizontal = 6.dp, vertical = 7.dp),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(8.dp),
     ) {
@@ -914,32 +948,49 @@ private fun RoomRow(
                 fontWeight = if (isDone) FontWeight.Normal else FontWeight.Medium,
                 textDecoration = if (isDone) TextDecoration.LineThrough else null,
                 color = if (isDone) MaterialTheme.colorScheme.onSurfaceVariant else MaterialTheme.colorScheme.onSurface,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
             )
             Text(
                 subtitle,
                 style = MaterialTheme.typography.labelSmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
             )
         }
         StatusPill(
-            if (isFifteenMinute && total == 0) "⏱ 15 мин" else "$done/$total",
-            if (isFifteenMinute && total == 0) PillTone.Muted else pillToneOf(done, total),
+            customPillText ?: "$done/$total",
+            customPillTone ?: pillToneOf(done, total),
         )
-        IconButton(onClick = onEdit, modifier = Modifier.size(32.dp)) {
-            Icon(
-                Icons.Default.Edit,
+        Row(
+            horizontalArrangement = Arrangement.spacedBy(2.dp),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            CompactActionIcon(
+                onClick = onEdit,
                 contentDescription = "Комната: название, день или удалить",
-                tint = MaterialTheme.colorScheme.onSurfaceVariant,
-                modifier = Modifier.size(17.dp),
-            )
-        }
-        IconButton(onClick = onDelete, modifier = Modifier.size(32.dp)) {
-            Icon(
-                Icons.Default.DeleteOutline,
+                size = 28.dp,
+            ) {
+                Icon(
+                    Icons.Default.Edit,
+                    contentDescription = "Комната: название, день или удалить",
+                    tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                    modifier = Modifier.size(17.dp),
+                )
+            }
+            CompactActionIcon(
+                onClick = onDelete,
                 contentDescription = "Удалить комнату",
-                tint = MaterialTheme.colorScheme.error.copy(alpha = 0.8f),
-                modifier = Modifier.size(18.dp),
-            )
+                size = 28.dp,
+            ) {
+                Icon(
+                    Icons.Default.DeleteOutline,
+                    contentDescription = "Удалить комнату",
+                    tint = MaterialTheme.colorScheme.error.copy(alpha = 0.8f),
+                    modifier = Modifier.size(18.dp),
+                )
+            }
         }
     }
 }

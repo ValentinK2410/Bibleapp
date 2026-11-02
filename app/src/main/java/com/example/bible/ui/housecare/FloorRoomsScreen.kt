@@ -57,6 +57,7 @@ fun FloorRoomsScreen(
     onOpenZone: (String) -> Unit,
 ) {
     val data by viewModel.data.collectAsStateWithLifecycle()
+    val timerState by FifteenMinuteTimerManager.state.collectAsStateWithLifecycle()
     val floor = data.floorById(floorId)
     var editingZone by remember { mutableStateOf<CleaningZone?>(null) }
     var showAddZone by remember { mutableStateOf(false) }
@@ -99,9 +100,11 @@ fun FloorRoomsScreen(
                     items(ofDay, key = { it.id }) { zone ->
                         val (done, total) = data.zoneProgress(zone)
                         val zoneDurationMs = data.tasksOf(zone.id).sumOf { it.active?.durationMs ?: 0L }
+                        val isTimerRoom = isFifteenMinuteZoneName(zone.name)
                         CleaningRow(
                             title = zone.name,
                             subtitle = buildString {
+                                if (isTimerRoom) append("Таймер ${timerState.presetMinutes} мин · ")
                                 append("разделов $done/$total")
                                 if (zoneDurationMs > 0L) append(" · ${formatDurationMs(zoneDurationMs)}")
                             },

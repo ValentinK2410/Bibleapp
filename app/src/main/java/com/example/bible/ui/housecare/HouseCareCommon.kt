@@ -426,33 +426,62 @@ internal fun CleaningRow(
                 cleaned -> StatusPill("убрано", PillTone.Done)
                 showNotCleanedLabel -> StatusPill("не убрано", PillTone.Pending)
             }
-            if (onRename != null) {
-                IconButton(
-                    onClick = onRename,
-                    modifier = Modifier.size(34.dp),
+            if (onRename != null || onDelete != null) {
+                Row(
+                    horizontalArrangement = Arrangement.spacedBy(2.dp),
+                    verticalAlignment = Alignment.CenterVertically,
                 ) {
-                    Icon(
-                        Icons.Default.Edit,
-                        contentDescription = "Переименовать",
-                        tint = MaterialTheme.colorScheme.onSurfaceVariant,
-                        modifier = Modifier.size(18.dp),
-                    )
-                }
-            }
-            if (onDelete != null) {
-                IconButton(
-                    onClick = onDelete,
-                    modifier = Modifier.size(34.dp),
-                ) {
-                    Icon(
-                        Icons.Default.DeleteOutline,
-                        contentDescription = "Удалить",
-                        tint = MaterialTheme.colorScheme.error.copy(alpha = 0.85f),
-                        modifier = Modifier.size(18.dp),
-                    )
+                    if (onRename != null) {
+                        CompactActionIcon(
+                            onClick = onRename,
+                            contentDescription = "Переименовать",
+                            tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                        ) {
+                            Icon(
+                                Icons.Default.Edit,
+                                contentDescription = "Переименовать",
+                                tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                                modifier = Modifier.size(17.dp),
+                            )
+                        }
+                    }
+                    if (onDelete != null) {
+                        CompactActionIcon(
+                            onClick = onDelete,
+                            contentDescription = "Удалить",
+                            tint = MaterialTheme.colorScheme.error.copy(alpha = 0.85f),
+                        ) {
+                            Icon(
+                                Icons.Default.DeleteOutline,
+                                contentDescription = "Удалить",
+                                tint = MaterialTheme.colorScheme.error.copy(alpha = 0.85f),
+                                modifier = Modifier.size(18.dp),
+                            )
+                        }
+                    }
                 }
             }
         }
+    }
+}
+
+/** Компактная круглая кнопка действия без раздувания строки до 48dp по ширине. */
+@Composable
+internal fun CompactActionIcon(
+    onClick: () -> Unit,
+    contentDescription: String?,
+    tint: Color = MaterialTheme.colorScheme.onSurfaceVariant,
+    size: androidx.compose.ui.unit.Dp = 28.dp,
+    content: @Composable () -> Unit,
+) {
+    Box(
+        modifier = Modifier
+            .size(size)
+            .clip(CircleShape)
+            .clickable(onClick = onClick),
+        contentAlignment = Alignment.Center,
+    ) {
+        content()
     }
 }
 

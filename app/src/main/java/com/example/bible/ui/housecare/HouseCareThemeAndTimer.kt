@@ -321,6 +321,7 @@ internal data class HouseCareThemeSettings(
     val timerTickSound: Boolean = true,
     val timerMinuteSound: Boolean = true,
     val timerVoiceCountdown: Boolean = true,
+    val timerPresetMinutes: Int = 15,
 ) {
     fun resolvePalette(section: HouseCareSectionId): HouseCarePalette {
         val overrideKey = sectionOverrides[section.key]?.paletteKey?.takeIf { it.isNotBlank() }
@@ -348,6 +349,7 @@ internal data class HouseCareThemeSettings(
         put("timerTickSound", timerTickSound)
         put("timerMinuteSound", timerMinuteSound)
         put("timerVoiceCountdown", timerVoiceCountdown)
+        put("timerPresetMinutes", timerPresetMinutes)
     }
 
     companion object {
@@ -373,6 +375,7 @@ internal data class HouseCareThemeSettings(
                     timerTickSound = j.optBoolean("timerTickSound", true),
                     timerMinuteSound = j.optBoolean("timerMinuteSound", true),
                     timerVoiceCountdown = j.optBoolean("timerVoiceCountdown", true),
+                    timerPresetMinutes = j.optInt("timerPresetMinutes", 15).coerceIn(1, 120),
                 )
             } catch (_: Exception) {
                 HouseCareThemeSettings()
@@ -432,6 +435,9 @@ internal fun HouseCareThemeWrapper(
 ) {
     val context = LocalContext.current
     val settings by HouseCareThemeStore.observe(context).collectAsState()
+    LaunchedEffect(context) {
+        FifteenMinuteTimerManager.ensureInitialized(context)
+    }
     val dark = isSystemInDarkTheme()
     val palette = settings.resolvePalette(section)
     val cardStyle = settings.resolveCardStyle(section)
@@ -1172,7 +1178,16 @@ internal object FifteenMinuteTimerManager {
     fun ensureInitialized(context: Context): FifteenMinuteSoundEngine {
         val app = context.applicationContext
         appContext = app
-        HouseCareThemeStore.observe(app)
+        val settings = HouseCareThemeStore.observe(app).value
+        val cur = _state.value
+        if (!cur.isRunning && cur.remainingSeconds == cur.totalSeconds && cur.presetMinutes != settings.timerPresetMinutes) {
+            val mins = settings.timerPresetMinutes.coerceIn(1, 120)
+            _state.value = cur.copy(
+                presetMinutes = mins,
+                totalSeconds = mins * 60,
+                remainingSeconds = mins * 60,
+            )
+        }
         var engine = soundEngine
         if (engine == null) {
             synchronized(this) {
@@ -1309,18 +1324,24 @@ internal object FifteenMinuteTimerManager {
 
     fun selectPreset(context: Context, minutes: Int) {
         ensureInitialized(context)
+        val mins = minutes.coerceIn(1, 120)
+        HouseCareThemeStore.update(context) { it.copy(timerPresetMinutes = mins) }
+        val wasRunning = _state.value.isRunning
         timerJob?.cancel()
         timerJob = null
         releaseWakeLock()
         soundEngine?.stopSpeaking()
         _state.value = _state.value.copy(
-            presetMinutes = minutes,
-            totalSeconds = minutes * 60,
-            remainingSeconds = minutes * 60,
+            presetMinutes = mins,
+            totalSeconds = mins * 60,
+            remainingSeconds = mins * 60,
             overtimeSeconds = 0,
             isRunning = false,
             isFinishedBanner = false,
         )
+        if (wasRunning) {
+            start(context)
+        }
     }
 
     private fun acquireWakeLock(context: Context) {
@@ -1363,7 +1384,7 @@ internal fun ActiveFifteenMinuteTimerBanner(
     } else {
         val overM = timerState.overtimeSeconds / 60
         val overS = timerState.overtimeSeconds % 60
-        String.format(Locale.getDefault(), "00:00 (+%02d:%02d)", overM, overS)
+        String.format(Locale.getDefault(), "+%02d:%02d", overM, overS)
     }
 
     val isDone = timerState.isFinishedBanner
@@ -1383,14 +1404,32 @@ internal fun ActiveFifteenMinuteTimerBanner(
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(horizontal = 12.dp, vertical = 8.dp),
+                .padding(horizontal = 10.dp, vertical = 8.dp),
             verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(10.dp),
+            horizontalArrangement = Arrangement.spacedBy(8.dp),
         ) {
-            Text(if (isDone) "✨" else "⏱", fontSize = 18.sp)
+            Box(
+                modifier = Modifier
+                    .clip(RoundedCornerShape(12.dp))
+                    .background(accent.copy(alpha = 0.18f), RoundedCornerShape(12.dp))
+                    .padding(horizontal = 9.dp, vertical = 5.dp),
+                contentAlignment = Alignment.Center,
+            ) {
+                Text(
+                    text = "${if (isDone) "✨" else "⏱"} $timeText",
+                    style = MaterialTheme.typography.titleSmall,
+                    fontWeight = FontWeight.Bold,
+                    color = accent,
+                    maxLines = 1,
+                )
+            }
             Column(modifier = Modifier.weight(1f)) {
                 Text(
-                    if (isDone) "Время 15-минутки вышло!" else "Идёт ${timerState.zoneTitle} · $timeText",
+                    if (isDone) {
+                        "Время вышло (${timerState.presetMinutes} мин)!"
+                    } else {
+                        "${timerState.zoneTitle} · ${timerState.presetMinutes} мин"
+                    },
                     style = MaterialTheme.typography.labelLarge,
                     fontWeight = FontWeight.Bold,
                     color = accent,
@@ -1399,9 +1438,9 @@ internal fun ActiveFifteenMinuteTimerBanner(
                 )
                 Text(
                     if (isDone) {
-                        "Нажмите «Стоп», чтобы завершить звуковой сигнал"
+                        "Нажмите «Стоп» для отключения"
                     } else {
-                        "Таймер работает в фоне · можно открывать разделы и делать фото"
+                        "Таймер работает в фоне"
                     },
                     style = MaterialTheme.typography.labelSmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
@@ -1410,19 +1449,26 @@ internal fun ActiveFifteenMinuteTimerBanner(
                 )
             }
             if (timerState.isRunning) {
-                TextButton(
-                    onClick = { FifteenMinuteTimerManager.pause() },
+                Box(
+                    modifier = Modifier
+                        .clip(RoundedCornerShape(10.dp))
+                        .background(accent.copy(alpha = 0.16f), RoundedCornerShape(10.dp))
+                        .clickable { FifteenMinuteTimerManager.pause() }
+                        .padding(horizontal = 10.dp, vertical = 6.dp),
+                    contentAlignment = Alignment.Center,
                 ) {
                     Text(
                         if (isDone) "Стоп" else "Пауза",
+                        style = MaterialTheme.typography.labelMedium,
                         fontWeight = FontWeight.Bold,
                         color = accent,
                     )
                 }
             }
-            IconButton(
+            CompactActionIcon(
                 onClick = { FifteenMinuteTimerManager.reset(context) },
-                modifier = Modifier.size(32.dp),
+                contentDescription = "Сбросить таймер",
+                size = 28.dp,
             ) {
                 Icon(
                     Icons.Default.Close,
@@ -1505,7 +1551,7 @@ internal fun FifteenMinuteTimerCard(
                     }
                     Column {
                         Text(
-                            "Таймер «15-минутка»",
+                            "Таймер «15-минутка» · $presetMinutes мин",
                             style = MaterialTheme.typography.titleSmall,
                             fontWeight = FontWeight.Bold,
                             color = primary,
@@ -1594,7 +1640,7 @@ internal fun FifteenMinuteTimerCard(
                             isRunning && isFinishedBanner -> "Остановить"
                             isRunning -> "Пауза"
                             remainingSeconds < totalSeconds && remainingSeconds > 0 -> "Продолжить"
-                            else -> "Старт 15-минутки"
+                            else -> "Старт ($presetMinutes мин)"
                         },
                         style = MaterialTheme.typography.labelLarge,
                         fontWeight = FontWeight.Bold,
