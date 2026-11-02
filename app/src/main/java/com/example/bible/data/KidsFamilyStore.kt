@@ -21,6 +21,8 @@ data class KidsChild(
 
 data class KidsChildProgress(
     val stories: Set<String> = emptySet(),
+    val bibleBooksRead: Set<String> = emptySet(),
+    val lettersOpened: Set<String> = emptySet(),
     val points: Int = 0,
     val gameWins: Map<String, Int> = emptyMap(),
     val miniStars: Map<String, Int> = emptyMap(),
@@ -158,8 +160,59 @@ object KidsFamilyStore {
         return added
     }
 
+    /** @return true, если книга/история из 66-книжной «Детской Библии» засчитана впервые для активного профиля. */
+    suspend fun recordBibleStory(context: Context, storyId: String, title: String): Boolean {
+        var added = false
+        update(context) { state ->
+            val id = state.bucketId()
+            val progress = state.progressOf(id)
+            if (storyId in progress.bibleBooksRead) {
+                state
+            } else {
+                added = true
+                val next = progress.copy(
+                    bibleBooksRead = progress.bibleBooksRead + storyId,
+                    points = progress.points + 15,
+                    feed = (listOf(stamp("Детская Библия: «$title»")) + progress.feed).take(40),
+                )
+                state.copy(progress = state.progress + (id to next))
+            }
+        }
+        return added
+    }
+
+    /** @return true, если буква открыта впервые для активного профиля. */
+    suspend fun recordLetterOpened(context: Context, letter: String): Boolean {
+        var added = false
+        update(context) { state ->
+            val id = state.bucketId()
+            val progress = state.progressOf(id)
+            if (letter in progress.lettersOpened) {
+                state
+            } else {
+                added = true
+                val next = progress.copy(
+                    lettersOpened = progress.lettersOpened + letter,
+                    points = progress.points + 5,
+                    feed = (listOf(stamp("буква «$letter»")) + progress.feed).take(40),
+                )
+                state.copy(progress = state.progress + (id to next))
+            }
+        }
+        return added
+    }
+
     suspend fun recordGameWin(context: Context, game: String, points: Int) {
-        mutateActive(context, points = points, feed = "игра «$game»") { progress ->
+        val gameTitle = when (game) {
+            KidsGames.BRAIN_RING -> "Брейн-ринг"
+            KidsGames.TIC_TAC_TOE -> "Крестики-нолики"
+            KidsGames.CHECKERS -> "Шашки"
+            KidsGames.GO -> "Го"
+            KidsGames.PIPES -> "Водопровод"
+            KidsGames.DINO -> "Динозаврик"
+            else -> game
+        }
+        mutateActive(context, points = points, feed = "игра «$gameTitle»") { progress ->
             val wins = progress.gameWins.toMutableMap()
             wins[game] = (wins[game] ?: 0) + 1
             progress.copy(gameWins = wins)
@@ -298,6 +351,8 @@ private fun encode(state: KidsFamilyState): JSONObject = JSONObject().apply {
 
 private fun encodeProgress(progress: KidsChildProgress): JSONObject = JSONObject().apply {
     put("stories", JSONArray(progress.stories.toList()))
+    put("bibleBooksRead", JSONArray(progress.bibleBooksRead.toList()))
+    put("lettersOpened", JSONArray(progress.lettersOpened.toList()))
     put("points", progress.points)
     put("gameWins", JSONObject(progress.gameWins))
     put("miniStars", JSONObject(progress.miniStars))
@@ -341,6 +396,8 @@ private fun decode(json: JSONObject): KidsFamilyState {
 
 private fun decodeProgress(json: JSONObject) = KidsChildProgress(
     stories = json.optJSONArray("stories").toStringSet(),
+    bibleBooksRead = json.optJSONArray("bibleBooksRead").toStringSet(),
+    lettersOpened = json.optJSONArray("lettersOpened").toStringSet(),
     points = json.optInt("points"),
     gameWins = json.optJSONObject("gameWins").toIntMap(),
     miniStars = json.optJSONObject("miniStars").toIntMap(),

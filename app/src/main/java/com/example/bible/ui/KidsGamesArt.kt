@@ -130,3 +130,56 @@ internal fun GoArt(modifier: Modifier = Modifier) {
         }
     }
 }
+
+@Composable
+internal fun DinoRunnerArt(modifier: Modifier = Modifier) {
+    Canvas(modifier) {
+        squareArea { l, t, s ->
+            // Desert sky & sun
+            drawRoundRect(
+                Brush.verticalGradient(listOf(Color(0xFFFEF3C7), Color(0xFFFDE68A))),
+                Offset(l, t),
+                Size(s, s),
+                CornerRadius(s * 0.14f),
+            )
+            drawCircle(Color(0xFFF59E0B), s * 0.11f, Offset(l + s * 0.8f, t + s * 0.22f))
+            // Cloud
+            drawRoundRect(Color.White.copy(alpha = 0.85f), Offset(l + s * 0.14f, t + s * 0.16f), Size(s * 0.28f, s * 0.09f), CornerRadius(s * 0.05f))
+            // Ground line
+            val groundY = t + s * 0.8f
+            drawLine(Color(0xFF78350F), Offset(l + s * 0.08f, groundY), Offset(l + s * 0.92f, groundY), s * 0.035f, StrokeCap.Round)
+            // Cactus on the right
+            val cx = l + s * 0.72f
+            val cy = groundY - s * 0.26f
+            val cColor = Color(0xFF15803D)
+            drawRoundRect(cColor, Offset(cx, cy), Size(s * 0.08f, s * 0.26f), CornerRadius(s * 0.03f))
+            drawRoundRect(cColor, Offset(cx - s * 0.06f, cy + s * 0.07f), Size(s * 0.06f, s * 0.1f), CornerRadius(s * 0.02f))
+            drawRoundRect(cColor, Offset(cx + s * 0.08f, cy + s * 0.04f), Size(s * 0.06f, s * 0.11f), CornerRadius(s * 0.02f))
+            // Cute pixel T-Rex jumping on the left
+            val dx = l + s * 0.2f
+            val dy = groundY - s * 0.48f
+            val dinoColor = Color(0xFF047857)
+            // Head & snout
+            drawRoundRect(dinoColor, Offset(dx + s * 0.1f, dy), Size(s * 0.22f, s * 0.15f), CornerRadius(s * 0.03f))
+            // Eye
+            drawCircle(Color.White, s * 0.025f, Offset(dx + s * 0.17f, dy + s * 0.05f))
+            drawCircle(Color(0xFF111827), s * 0.013f, Offset(dx + s * 0.175f, dy + s * 0.05f))
+            // Body
+            drawRoundRect(dinoColor, Offset(dx + s * 0.05f, dy + s * 0.12f), Size(s * 0.17f, s * 0.2f), CornerRadius(s * 0.03f))
+            // Tail
+            val tail = Path().apply {
+                moveTo(dx + s * 0.06f, dy + s * 0.17f)
+                lineTo(dx - s * 0.05f, dy + s * 0.12f)
+                lineTo(dx - s * 0.02f, dy + s * 0.27f)
+                close()
+            }
+            drawPath(tail, dinoColor)
+            // Tiny arm
+            drawRoundRect(dinoColor, Offset(dx + s * 0.21f, dy + s * 0.17f), Size(s * 0.06f, s * 0.035f), CornerRadius(s * 0.01f))
+            // Legs
+            drawRoundRect(dinoColor, Offset(dx + s * 0.07f, dy + s * 0.3f), Size(s * 0.045f, s * 0.09f), CornerRadius(s * 0.01f))
+            drawRoundRect(dinoColor, Offset(dx + s * 0.15f, dy + s * 0.28f), Size(s * 0.045f, s * 0.09f), CornerRadius(s * 0.01f))
+        }
+    }
+}
+

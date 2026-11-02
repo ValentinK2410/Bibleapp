@@ -53,6 +53,7 @@ import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -65,6 +66,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.compose.LocalLifecycleOwner
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
@@ -73,6 +75,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.bible.data.AzbukaProgressRepository
 import com.example.bible.data.CanonBookGroup
 import com.example.bible.data.KidsBibleAge
 import com.example.bible.data.KidsBibleBookRow
@@ -81,10 +84,12 @@ import com.example.bible.data.KidsBiblePin
 import com.example.bible.data.KidsBiblePinStore
 import com.example.bible.data.KidsBibleReading
 import com.example.bible.data.KidsBibleVoice
+import com.example.bible.data.KidsFamilyStore
 import com.example.bible.data.KidsVoiceKind
 import com.example.bible.data.kidsClipAt
 import com.example.bible.data.kidsGlobalMs
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 
 private val BibleInk = Color(0xFF3B2418)
 private val BibleCard = Color(0xFFFFF8F1)
@@ -98,6 +103,7 @@ internal fun KidsBibleShelfScreen(
 ) {
     val context = LocalContext.current
     val lifecycleOwner = LocalLifecycleOwner.current
+    val family by KidsFamilyStore.state(context).collectAsStateWithLifecycle()
     var pinSet by remember { mutableStateOf(KidsBiblePinStore.isSet(context)) }
     var settings by remember { mutableStateOf(false) }
     var askPin by remember { mutableStateOf(false) }
@@ -118,7 +124,13 @@ internal fun KidsBibleShelfScreen(
     }
     val stories = remember { KidsBibleCatalog.load(context) }
     val shelf = remember(stories) { KidsBibleCatalog.shelf(stories) }
-    val read = remember(pinSet, settings) { KidsBiblePinStore.readIds(context) }
+    val read = remember(pinSet, settings, family) {
+        if (family.activeChild() != null) {
+            family.activeProgress().bibleBooksRead
+        } else {
+            KidsBiblePinStore.readIds(context) + family.activeProgress().bibleBooksRead
+        }
+    }
 
     Scaffold(
         topBar = {
@@ -376,9 +388,16 @@ internal fun KidsBibleBookScreen(
     onOpenStory: (String) -> Unit,
 ) {
     val context = LocalContext.current
+    val family by KidsFamilyStore.state(context).collectAsStateWithLifecycle()
     val stories = remember { KidsBibleCatalog.load(context) }
     val row = remember(stories, bookId) { KidsBibleCatalog.shelf(stories).find { it.book.id == bookId } }
-    val read = remember { KidsBiblePinStore.readIds(context) }
+    val read = remember(family) {
+        if (family.activeChild() != null) {
+            family.activeProgress().bibleBooksRead
+        } else {
+            KidsBiblePinStore.readIds(context) + family.activeProgress().bibleBooksRead
+        }
+    }
     Scaffold(
         topBar = {
             TopAppBar(
@@ -471,6 +490,8 @@ internal fun KidsBibleBookScreen(
 @Composable
 internal fun KidsBibleStoryScreen(storyId: String, onBack: () -> Unit) {
     val context = LocalContext.current
+    val scope = rememberCoroutineScope()
+    val familyState by KidsFamilyStore.state(context).collectAsStateWithLifecycle()
     val story = remember { KidsBibleCatalog.load(context).find { it.id == storyId } }
     if (story == null) {
         Scaffold(
@@ -488,6 +509,22 @@ internal fun KidsBibleStoryScreen(storyId: String, onBack: () -> Unit) {
             Text("Этой истории нет.", modifier = Modifier.padding(padding).padding(20.dp))
         }
         return
+    }
+    var markedLocal by remember(story.id) { mutableStateOf(story.id in KidsBiblePinStore.readIds(context)) }
+    val isStoryRead = if (familyState.activeChild() != null) {
+        story.id in familyState.activeProgress().bibleBooksRead
+    } else {
+        markedLocal || story.id in familyState.activeProgress().bibleBooksRead
+    }
+    val markStoryCompleted: () -> Unit = {
+        KidsBiblePinStore.markRead(context, story.id)
+        markedLocal = true
+        scope.launch {
+            val added = KidsFamilyStore.recordBibleStory(context, story.id, story.title)
+            if (added) {
+                AzbukaProgressRepository(context.applicationContext).addPoints(15)
+            }
+        }
     }
     var age by remember { mutableStateOf(KidsBiblePinStore.ageForChild(context)) }
     val maySwitch = remember { KidsBiblePinStore.childMaySwitch(context) }
@@ -589,7 +626,7 @@ internal fun KidsBibleStoryScreen(storyId: String, onBack: () -> Unit) {
                 playing = false
                 playingBox[0] = false
                 position = duration
-                KidsBiblePinStore.markRead(context, story.id)
+                markStoryCompleted()
             }
         }
         val opened = runCatching {
@@ -786,6 +823,18 @@ internal fun KidsBibleStoryScreen(storyId: String, onBack: () -> Unit) {
             }
             Block("Молитва", track.prayer, activePart == "prayer")
             Block("Что мы можем сделать", track.activity, activePart == "do")
+            Button(
+                onClick = markStoryCompleted,
+                enabled = !isStoryRead,
+                modifier = Modifier.fillMaxWidth().padding(top = 4.dp),
+            ) {
+                Text(
+                    if (isStoryRead) "✓ История прочитана · получена награда ⭐" else "Я прочитал(а) историю ⭐ (+15 очков)",
+                    fontFamily = FontFamily.SansSerif,
+                    fontWeight = FontWeight.Bold,
+                    fontSize = 15.sp,
+                )
+            }
             Spacer(Modifier.height(8.dp))
         }
     }

@@ -30,7 +30,8 @@ object KidsGames {
     const val GO = "go"
     const val PIPES = "pipes"
     const val BRAIN_RING = "brainring"
-    val all = listOf(TIC_TAC_TOE, CHECKERS, GO, PIPES, BRAIN_RING)
+    const val DINO = "dino"
+    val all = listOf(TIC_TAC_TOE, CHECKERS, GO, PIPES, BRAIN_RING, DINO)
 }
 
 /** Очки, открытые буквы и начисления для азбуки. */
@@ -126,7 +127,8 @@ class AzbukaProgressRepository(private val context: Context) {
                 prefs[AzbukaKeys.POINTS] = (prefs[AzbukaKeys.POINTS] ?: 0) + 5
             }
         }
-        return isNew
+        val childNew = KidsFamilyStore.recordLetterOpened(context, key)
+        return isNew || childNew
     }
 }
 

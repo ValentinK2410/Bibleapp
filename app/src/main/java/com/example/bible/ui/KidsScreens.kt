@@ -561,7 +561,7 @@ private val KIDS_HUB_DEFAULT_ROWS: List<KidsHubRow> = listOf(
     ),
     KidsHubRow(
         title = "Игры",
-        subtitle = "Крестики-нолики, шашки, го, водопровод и другие игры",
+        subtitle = "Динозаврик, крестики-нолики, шашки, го, водопровод и брейн-ринг",
         route = "kids_games",
         icon = Icons.Filled.Extension,
         cardStyle = KidsHubCardVisual.Videos,

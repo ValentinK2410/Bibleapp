@@ -63,13 +63,19 @@ fun KidsGamesHubScreen(
     onOpenGo: () -> Unit,
     onOpenPipePuzzle: () -> Unit,
     onOpenBrainRing: () -> Unit,
+    onOpenDino: () -> Unit = {},
 ) {
     val context = LocalContext.current
     val repo = remember { AzbukaProgressRepository(context.applicationContext) }
     val wins by repo.gameWins.collectAsStateWithLifecycle(initialValue = emptyMap())
     val family by KidsFamilyStore.state(context).collectAsStateWithLifecycle()
+    val effectiveWins = if (family.activeChild() != null) family.activeProgress().gameWins else wins
     val young = family.resolvedMode() == KidsAgeMode.SMALL
     val games = listOf(
+        KidsGameTile(
+            KidsGames.DINO, "Динозаврик", "🦖", "Прыгай через кактусы и птиц, как в браузере!",
+            kidsGradient(5), "забегов", open = onOpenDino,
+        ),
         KidsGameTile(
             KidsGames.BRAIN_RING, "Брейн-ринг", "⏱️", "1000 вопросов из Библии. Новые запоминаются",
             kidsGradient(0), "раундов", school = true, open = onOpenBrainRing,
@@ -125,7 +131,7 @@ fun KidsGamesHubScreen(
                 ) {
                     Text("🎮 Выбери игру", color = Color.White, fontSize = 22.sp, fontWeight = FontWeight.Black)
                     Text(
-                        "Всего побед: ${wins.values.sum()} · за победу 2 звезды ⭐\n🎵 Музыку и звуки можно выключить вверху справа",
+                        "Всего побед: ${effectiveWins.values.sum()} · за победу 2 звезды ⭐\n🎵 Музыку и звуки можно выключить вверху справа",
                         color = Color.White.copy(alpha = 0.82f),
                         fontSize = 14.sp,
                     )
@@ -148,6 +154,7 @@ fun KidsGamesHubScreen(
                             .padding(10.dp),
                     ) {
                         when (game.key) {
+                            KidsGames.DINO -> DinoRunnerArt(Modifier.fillMaxSize())
                             KidsGames.TIC_TAC_TOE -> TicTacToeArt(Modifier.fillMaxSize())
                             KidsGames.CHECKERS -> CheckersArt(Modifier.fillMaxSize())
                             KidsGames.GO -> GoArt(Modifier.fillMaxSize())
@@ -186,7 +193,7 @@ fun KidsGamesHubScreen(
                             .padding(horizontal = 10.dp, vertical = 4.dp),
                     ) {
                         Text(
-                            "🏆 ${wins[game.key] ?: 0} ${game.winLabel}",
+                            "🏆 ${effectiveWins[game.key] ?: 0} ${game.winLabel}",
                             color = Color.White,
                             fontWeight = FontWeight.ExtraBold,
                             fontSize = 13.sp,

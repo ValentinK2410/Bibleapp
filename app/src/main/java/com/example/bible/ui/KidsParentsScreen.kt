@@ -94,7 +94,9 @@ fun KidsParentsScreen(onBack: () -> Unit) {
                         fontWeight = FontWeight.Bold,
                         fontSize = 18.sp,
                     )
-                    Text("Звёзды: ${kidsStars(progress.points)} · истории: ${progress.stories.size} · стихи: ${progress.versesDone.size} · раскраски: ${progress.coloring.size} · игры: ${progress.gameWins.values.sum()}")
+                    Text(
+                        "Звёзды: ${kidsStars(progress.points)} · истории: ${progress.stories.size} · Детская Библия: ${progress.bibleBooksRead.size} · буквы: ${progress.lettersOpened.size}/33 · стихи: ${progress.versesDone.size} · раскраски: ${progress.coloring.size} · игры: ${progress.gameWins.values.sum()}",
+                    )
                     Text("Сегодня в разделе: ${progress.minutesByDay[LocalDate.now().toString()] ?: 0} мин · всего по дням: ${progress.minutesByDay.values.sum()} мин")
                     Row {
                         TextButton(onClick = { scope.launch { KidsFamilyStore.setActiveChild(context, child.id) } }) { Text("Этот играет") }

@@ -122,8 +122,35 @@ private fun KidsPrayerDetail(
     val recorder = remember { PrayerRecorder(context.applicationContext) }
     val voiceFile = KidsStoryVoice.file(context, "prayer_${family.bucketId()}", prayer.id)
     var hasVoice by remember(voiceFile.path) { mutableStateOf(voiceFile.exists() && voiceFile.length() > 800L) }
+    var playingVoice by remember(voiceFile.path) { mutableStateOf(false) }
+    val voicePlayer = remember { MediaPlayer() }
+    DisposableEffect(voiceFile.path) {
+        onDispose {
+            if (recording) {
+                runCatching { recorder.stop(save = false) }
+            }
+            runCatching {
+                if (voicePlayer.isPlaying) voicePlayer.stop()
+                voicePlayer.reset()
+            }
+            playingVoice = false
+        }
+    }
+    DisposableEffect(Unit) {
+        onDispose {
+            runCatching { voicePlayer.release() }
+        }
+    }
+    val stopVoicePlayback: () -> Unit = {
+        runCatching {
+            if (voicePlayer.isPlaying) voicePlayer.stop()
+            voicePlayer.reset()
+        }
+        playingVoice = false
+    }
     val permission = rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) { granted ->
         if (granted) {
+            stopVoicePlayback()
             recording = recorder.start(voiceFile)
         } else {
             Toast.makeText(context, "Нужен микрофон, чтобы записать молитву", Toast.LENGTH_SHORT).show()
@@ -210,22 +237,64 @@ private fun KidsPrayerDetail(
             item {
                 Text("Моя молитва", fontWeight = FontWeight.Bold)
                 Text("Запись хранится только на этом телефоне.", color = MaterialTheme.colorScheme.onSurfaceVariant, fontSize = 13.sp)
-                Row {
+                Spacer(Modifier.height(6.dp))
+                Row(
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
                     Button(onClick = {
                         if (recording) {
                             recorder.stop(save = true)
                             recording = false
-                            hasVoice = voiceFile.exists()
+                            val savedNow = voiceFile.exists() && voiceFile.length() > 800L
+                            if (!hasVoice && savedNow) {
+                                scope.launch {
+                                    KidsFamilyStore.addPoints(context, 10, "записана молитва «${prayer.title}»")
+                                }
+                            }
+                            hasVoice = savedNow
+                            if (savedNow) {
+                                Toast.makeText(context, "Молитва записана ⭐", Toast.LENGTH_SHORT).show()
+                            }
                         } else if (ContextCompat.checkSelfPermission(context, Manifest.permission.RECORD_AUDIO) == PackageManager.PERMISSION_GRANTED) {
+                            stopVoicePlayback()
                             recording = recorder.start(voiceFile)
                         } else {
                             permission.launch(Manifest.permission.RECORD_AUDIO)
                         }
-                    }) { Text(if (recording) "Сохранить" else "Записать голосом") }
-                    if (hasVoice) {
-                        TextButton(onClick = { speak("Запись сохранена на этом телефоне.") }) {
-                            Text("Запись сохранена")
+                    }) {
+                        Text(if (recording) "⏹ Сохранить запись" else if (hasVoice) "🎙 Записать заново" else "🎙 Записать голосом")
+                    }
+                    if (hasVoice && !recording) {
+                        Button(onClick = {
+                            if (playingVoice) {
+                                stopVoicePlayback()
+                            } else {
+                                try {
+                                    voicePlayer.reset()
+                                    voicePlayer.setDataSource(voiceFile.absolutePath)
+                                    voicePlayer.setOnCompletionListener { playingVoice = false }
+                                    voicePlayer.prepare()
+                                    voicePlayer.start()
+                                    playingVoice = true
+                                } catch (_: Exception) {
+                                    playingVoice = false
+                                    Toast.makeText(context, "Не удалось воспроизвести запись", Toast.LENGTH_SHORT).show()
+                                }
+                            }
+                        }) {
+                            Text(if (playingVoice) "⏹ Стоп" else "▶️ Слушать запись")
                         }
+                    }
+                }
+                if (hasVoice && !recording) {
+                    TextButton(onClick = {
+                        stopVoicePlayback()
+                        runCatching { voiceFile.delete() }
+                        hasVoice = false
+                        Toast.makeText(context, "Запись удалена", Toast.LENGTH_SHORT).show()
+                    }) {
+                        Text("🗑 Удалить запись")
                     }
                 }
             }

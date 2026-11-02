@@ -1442,7 +1442,15 @@ private fun BibleNavHost(
                         launchSingleTop = true
                     }
                 },
+                onOpenDino = {
+                    navController.navigate("kids_dino") {
+                        launchSingleTop = true
+                    }
+                },
             )
+        }
+        composable("kids_dino") {
+            KidsDinoGameScreen(onBack = { navController.navigateUp() })
         }
         composable("kids_brainring") {
             KidsBrainRingScreen(onBack = { navController.navigateUp() })

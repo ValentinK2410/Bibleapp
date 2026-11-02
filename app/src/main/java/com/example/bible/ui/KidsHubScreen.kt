@@ -79,8 +79,10 @@ import coil.request.ImageRequest
 import com.example.bible.R
 import com.example.bible.data.AzbukaProgressRepository
 import com.example.bible.data.KidsAgeMode
+import com.example.bible.data.KidsBiblePinStore
 import com.example.bible.data.KidsBibleStories
 import com.example.bible.data.KidsFamilyStore
+import com.example.bible.data.KidsGames
 import com.example.bible.data.KidsPicturedRoutes
 import com.example.bible.data.KidsUserSectionsState
 import com.example.bible.data.easterSeason
@@ -92,6 +94,56 @@ import com.example.bible.ui.theme.OutlinedTextField
 import kotlinx.coroutines.launch
 import java.util.Locale
 import kotlin.random.Random
+
+private enum class KidsHubCategory(val id: String, val label: String) {
+    ALL("all", "✨ Все"),
+    BIBLE("bible", "📖 Библия и вера"),
+    LEARN("learn", "🔤 Учимся"),
+    WORLD("world", "🌍 Мир вокруг"),
+    PLAY("play", "🎮 Игры и творчество"),
+}
+
+private fun kidsHubRouteCategory(route: String): KidsHubCategory = when (route) {
+    "kids_bible",
+    "kids_stories",
+    "kids_story/easter",
+    "kids_prayers",
+    "kids_verse",
+    "kids_songs",
+    "kids_heroes",
+    "kids_map",
+    "kids_values",
+    -> KidsHubCategory.BIBLE
+    "azbuka",
+    "cifry",
+    "kids_colors",
+    "kids_seasons",
+    -> KidsHubCategory.LEARN
+    "kids_countries",
+    "kids_animals",
+    "kids_fish",
+    "kids_snakes",
+    "kids_insects",
+    "kids_trees",
+    "kids_plants",
+    "kids_space",
+    -> KidsHubCategory.WORLD
+    "kids_games",
+    "kids_coloring",
+    -> KidsHubCategory.PLAY
+    else -> if (KidsPicturedRoutes.isPicturedRoute(route)) KidsHubCategory.WORLD else KidsHubCategory.ALL
+}
+
+private data class KidsBadgeItem(
+    val id: String,
+    val emoji: String,
+    val title: String,
+    val description: String,
+    val current: Int,
+    val target: Int,
+) {
+    val unlocked: Boolean get() = current >= target
+}
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -111,9 +163,81 @@ fun KidsHubScreen(
     val locked by repo.kidsLock.collectAsStateWithLifecycle(initialValue = false)
     val family by KidsFamilyStore.state(context).collectAsStateWithLifecycle()
     val mode = family.resolvedMode()
-    val rows = remember(hubState) { mergeKidsHubRows(kidsHubDefaultRows(), hubState) }
+    val allRows = remember(hubState) { mergeKidsHubRows(kidsHubDefaultRows(), hubState) }
     val activeChild = family.activeChild()
     val activeProgress = family.activeProgress()
+    val biblePinRead = remember(family) { KidsBiblePinStore.readIds(context) }
+
+    val effectiveStars = if (activeChild != null) kidsStars(activeProgress.points) else kidsStars(points)
+    val effectiveLetters = if (activeChild != null && activeProgress.lettersOpened.isNotEmpty()) {
+        activeProgress.lettersOpened.size
+    } else {
+        letters
+    }
+    val effectiveWinsMap = if (activeChild != null) activeProgress.gameWins else wins
+    val effectiveWins = effectiveWinsMap.values.sum()
+    val effectiveStories = if (activeChild != null) {
+        activeProgress.stories.count { KidsBibleStories.byId(it) != null }
+    } else {
+        stories.count { KidsBibleStories.byId(it) != null }
+    }
+    val effectiveBibleBooks = if (activeChild != null) {
+        activeProgress.bibleBooksRead.size
+    } else {
+        (biblePinRead + activeProgress.bibleBooksRead).size
+    }
+
+    var selectedCategory by remember { mutableStateOf(KidsHubCategory.ALL) }
+    var filterByAge by remember { mutableStateOf(false) }
+    var showRewardsDialog by remember { mutableStateOf(false) }
+
+    val rows = remember(allRows, selectedCategory, filterByAge, mode) {
+        val targetBand = if (mode == KidsAgeMode.SMALL) "small" else "big"
+        val byCat = if (selectedCategory == KidsHubCategory.ALL) {
+            allRows
+        } else {
+            allRows.filter { kidsHubRouteCategory(it.route) == selectedCategory }
+        }
+        val byAge = if (filterByAge) {
+            byCat.filter { it.ageBand == "both" || it.ageBand == targetBand }
+        } else {
+            byCat.sortedBy { row ->
+                when (row.ageBand) {
+                    targetBand -> 0
+                    "both" -> 1
+                    else -> 2
+                }
+            }
+        }
+        byAge
+    }
+
+    val badges = remember(
+        effectiveStars,
+        effectiveStories,
+        effectiveBibleBooks,
+        effectiveLetters,
+        effectiveWins,
+        effectiveWinsMap,
+        activeProgress,
+    ) {
+        listOf(
+            KidsBadgeItem("first_star", "🌟", "Первая звезда", "Заработать первую звезду в разделе «Детям»", effectiveStars, 1),
+            KidsBadgeItem("story_1", "📖", "Слушатель историй", "Прочитать первую библейскую историю", effectiveStories, 1),
+            KidsBadgeItem("story_5", "📚", "Знаток историй", "Прочитать 5 библейских историй", effectiveStories, 5),
+            KidsBadgeItem("bible_1", "✝️", "Чтец Детской Библии", "Прочитать книгу на полке «Детская Библия»", effectiveBibleBooks, 1),
+            KidsBadgeItem("bible_5", "🏛️", "Хранитель Писания", "Прочитать 5 книг в «Детской Библии»", effectiveBibleBooks, 5),
+            KidsBadgeItem("letters_10", "🔤", "Друг Азбуки", "Открыть 10 букв в Алфавите", effectiveLetters, 10),
+            KidsBadgeItem("letters_33", "🎓", "Мастер Алфавита", "Открыть все 33 буквы русского алфавита", effectiveLetters, 33),
+            KidsBadgeItem("verse_1", "💌", "Стих в сердце", "Выучить стих недели", activeProgress.versesDone.size, 1),
+            KidsBadgeItem("coloring_1", "🎨", "Юный художник", "Раскрасить картинку в раскрасках", activeProgress.coloring.size, 1),
+            KidsBadgeItem("values_1", "💛", "Доброе сердце", "Выполнить доброе дело в разделе «Ценности»", activeProgress.valuesDone.size, 1),
+            KidsBadgeItem("game_1", "🎮", "Первая победа", "Победить в любой детской игре", effectiveWins, 1),
+            KidsBadgeItem("dino_1", "🦖", "Укротитель динозавра", "Набрать 100 очков в игре «Динозаврик»", effectiveWinsMap[KidsGames.DINO] ?: 0, 1),
+            KidsBadgeItem("game_10", "🏆", "Чемпион игр", "Одержать 10 побед в играх", effectiveWins, 10),
+        )
+    }
+
     val easterDate = remember(family.easterCalendar) {
         nextEaster(LocalDate.now(), family.easterCalendar != "western")
     }
@@ -166,10 +290,21 @@ fun KidsHubScreen(
                     }
                 },
                 actions = {
+                    IconButton(onClick = { showRewardsDialog = true }) {
+                        Icon(Icons.Filled.EmojiEvents, contentDescription = "Мои награды", tint = Color(0xFFD97706))
+                    }
                     IconButton(onClick = { menuOpen = true }) {
                         Icon(Icons.Filled.MoreVert, contentDescription = stringResource(R.string.kids_hub_menu_cd))
                     }
                     DropdownMenu(expanded = menuOpen, onDismissRequest = { menuOpen = false }) {
+                        DropdownMenuItem(
+                            text = { Text("Мои награды 🏆") },
+                            leadingIcon = { Icon(Icons.Filled.EmojiEvents, contentDescription = null) },
+                            onClick = {
+                                menuOpen = false
+                                showRewardsDialog = true
+                            },
+                        )
                         DropdownMenuItem(
                             text = { Text("Детский режим") },
                             leadingIcon = { Icon(Icons.Filled.Lock, contentDescription = null) },
@@ -209,17 +344,17 @@ fun KidsHubScreen(
         ) {
             item(key = "hero", span = { GridItemSpan(maxLineSpan) }) {
                 KidsHeroCard(
-                    stars = if (activeChild != null) kidsStars(activeProgress.points) else kidsStars(points),
-                    letters = letters,
-                    wins = if (activeChild != null) activeProgress.gameWins.values.sum() else wins.values.sum(),
-                    stories = if (activeChild != null) {
-                        activeProgress.stories.count { KidsBibleStories.byId(it) != null }
-                    } else {
-                        stories.count { KidsBibleStories.byId(it) != null }
-                    },
+                    stars = effectiveStars,
+                    letters = effectiveLetters,
+                    wins = effectiveWins,
+                    stories = effectiveStories,
+                    bibleBooks = effectiveBibleBooks,
+                    unlockedBadges = badges.count { it.unlocked },
+                    totalBadges = badges.size,
                     locked = locked,
                     who = activeChild?.let { "${it.name}, ${it.age}" } ?: "Семья",
                     mode = mode,
+                    onOpenRewards = { showRewardsDialog = true },
                 )
             }
             item(key = "kids", span = { GridItemSpan(maxLineSpan) }) {
@@ -280,23 +415,58 @@ fun KidsHubScreen(
                                 .padding(horizontal = 12.dp, vertical = 8.dp),
                         )
                     }
-                    Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    Row(
+                        horizontalArrangement = Arrangement.spacedBy(8.dp),
+                        modifier = Modifier.horizontalScroll(rememberScrollState()),
+                    ) {
                         Text(
-                            if (mode == KidsAgeMode.SMALL) "🐣 Малыши" else "Малыши",
+                            if (mode == KidsAgeMode.SMALL) "🐣 Малыши 3–5" else "Малыши 3–5",
                             modifier = Modifier
                                 .clip(RoundedCornerShape(999.dp))
                                 .background(if (mode == KidsAgeMode.SMALL) Color(0xFFFDE68A) else Color(0xFFF8FAFC))
                                 .clickable { gateAction = { scope.launch { KidsFamilyStore.setAgeMode(context, "small") } } }
                                 .padding(horizontal = 12.dp, vertical = 8.dp),
+                            fontWeight = if (mode == KidsAgeMode.SMALL) FontWeight.Bold else FontWeight.Normal,
                         )
                         Text(
-                            if (mode == KidsAgeMode.BIG) "🎒 Школьники" else "Школьники",
+                            if (mode == KidsAgeMode.BIG) "🎒 Школьники 6–10" else "Школьники 6–10",
                             modifier = Modifier
                                 .clip(RoundedCornerShape(999.dp))
                                 .background(if (mode == KidsAgeMode.BIG) Color(0xFFDBEAFE) else Color(0xFFF8FAFC))
                                 .clickable { gateAction = { scope.launch { KidsFamilyStore.setAgeMode(context, "big") } } }
                                 .padding(horizontal = 12.dp, vertical = 8.dp),
+                            fontWeight = if (mode == KidsAgeMode.BIG) FontWeight.Bold else FontWeight.Normal,
                         )
+                        Text(
+                            if (filterByAge) "✓ Только для ${if (mode == KidsAgeMode.SMALL) "малышей" else "школьников"}" else "По возрасту",
+                            modifier = Modifier
+                                .clip(RoundedCornerShape(999.dp))
+                                .background(if (filterByAge) Color(0xFFDCFCE7) else Color(0xFFF1F5F9))
+                                .clickable { filterByAge = !filterByAge }
+                                .padding(horizontal = 12.dp, vertical = 8.dp),
+                            fontWeight = if (filterByAge) FontWeight.Bold else FontWeight.Normal,
+                        )
+                    }
+                    Row(
+                        horizontalArrangement = Arrangement.spacedBy(8.dp),
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .horizontalScroll(rememberScrollState()),
+                    ) {
+                        KidsHubCategory.entries.forEach { category ->
+                            val selected = selectedCategory == category
+                            Text(
+                                category.label,
+                                color = if (selected) Color.White else MaterialTheme.colorScheme.onSurface,
+                                fontWeight = FontWeight.Bold,
+                                fontSize = 14.sp,
+                                modifier = Modifier
+                                    .clip(RoundedCornerShape(999.dp))
+                                    .background(if (selected) Color(0xFF7C3AED) else Color(0xFFEDE9FE))
+                                    .clickable { selectedCategory = category }
+                                    .padding(horizontal = 14.dp, vertical = 8.dp),
+                            )
+                        }
                     }
                 }
             }
@@ -365,6 +535,16 @@ fun KidsHubScreen(
         }
     }
 
+    if (showRewardsDialog) {
+        KidsRewardsDialog(
+            who = activeChild?.name ?: "Семья",
+            stars = effectiveStars,
+            badges = badges,
+            onSpeak = speak,
+            onDismiss = { showRewardsDialog = false },
+        )
+    }
+
     val overLimit = family.timeLimitMinutes > 0 && family.todayMinutes() >= family.timeLimitMinutes && !limitLifted
     if (overLimit && !restGate) {
         AlertDialog(
@@ -404,9 +584,13 @@ private fun KidsHeroCard(
     letters: Int,
     wins: Int,
     stories: Int,
+    bibleBooks: Int,
+    unlockedBadges: Int,
+    totalBadges: Int,
     locked: Boolean,
     who: String,
     mode: KidsAgeMode,
+    onOpenRewards: () -> Unit,
 ) {
     Column(
         Modifier
@@ -440,6 +624,7 @@ private fun KidsHeroCard(
                     .clip(RoundedCornerShape(22.dp))
                     .background(Color.White.copy(alpha = 0.22f))
                     .border(1.dp, Color.White.copy(alpha = 0.35f), RoundedCornerShape(22.dp))
+                    .clickable(onClick = onOpenRewards)
                     .padding(horizontal = 14.dp, vertical = 8.dp),
                 horizontalAlignment = Alignment.CenterHorizontally,
             ) {
@@ -464,9 +649,129 @@ private fun KidsHeroCard(
         Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
             KidsHeroStat(Icons.Filled.SortByAlpha, "$letters/33", "букв", Modifier.weight(1f))
             KidsHeroStat(Icons.Filled.EmojiEvents, "$wins", "побед", Modifier.weight(1f))
-            KidsHeroStat(Icons.AutoMirrored.Filled.MenuBook, "$stories/${KidsBibleStories.all.size}", "историй", Modifier.weight(1f))
+            KidsHeroStat(
+                Icons.AutoMirrored.Filled.MenuBook,
+                if (bibleBooks > 0) "$stories + $bibleBooks кн." else "$stories/${KidsBibleStories.all.size}",
+                if (bibleBooks > 0) "историй и книг" else "историй",
+                Modifier.weight(1f),
+            )
+        }
+        Row(
+            Modifier
+                .fillMaxWidth()
+                .clip(RoundedCornerShape(16.dp))
+                .background(Color.White.copy(alpha = 0.22f))
+                .clickable(onClick = onOpenRewards)
+                .padding(horizontal = 14.dp, vertical = 10.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.SpaceBetween,
+        ) {
+            Text(
+                "🏆 Мои награды и медали",
+                color = Color.White,
+                fontFamily = FontFamily.SansSerif,
+                fontWeight = FontWeight.ExtraBold,
+                fontSize = 15.sp,
+            )
+            Text(
+                "$unlockedBadges из $totalBadges →",
+                color = Color(0xFFFFF3D6),
+                fontFamily = FontFamily.SansSerif,
+                fontWeight = FontWeight.Black,
+                fontSize = 14.sp,
+            )
         }
     }
+}
+
+@Composable
+private fun KidsRewardsDialog(
+    who: String,
+    stars: Int,
+    badges: List<KidsBadgeItem>,
+    onSpeak: (String) -> Unit,
+    onDismiss: () -> Unit,
+) {
+    val unlockedCount = badges.count { it.unlocked }
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = {
+            Column {
+                Text("🏆 Мои награды · $who", fontWeight = FontWeight.Black, fontSize = 21.sp)
+                Text(
+                    "Открыто медалей: $unlockedCount из ${badges.size} · ⭐ $stars ${starsWord(stars)}",
+                    fontSize = 13.sp,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+            }
+        },
+        text = {
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(420.dp),
+            ) {
+                androidx.compose.foundation.lazy.LazyColumn(
+                    modifier = Modifier.fillMaxWidth(),
+                    verticalArrangement = Arrangement.spacedBy(8.dp),
+                ) {
+                    item {
+                        Text(
+                            "Нажми на медаль, чтобы послушать про неё!",
+                            fontSize = 12.sp,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        )
+                    }
+                    items(badges.size) { idx ->
+                        val b = badges[idx]
+                        val bg = if (b.unlocked) {
+                            Brush.linearGradient(listOf(Color(0xFFF59E0B), Color(0xFFEA580C)))
+                        } else {
+                            Brush.linearGradient(listOf(Color(0xFFE2E8F0), Color(0xFFCBD5E1)))
+                        }
+                        val fg = if (b.unlocked) Color.White else Color(0xFF334155)
+                        Row(
+                            Modifier
+                                .fillMaxWidth()
+                                .clip(RoundedCornerShape(18.dp))
+                                .background(bg)
+                                .clickable {
+                                    val status = if (b.unlocked) "Награда получена!" else "Пока закрыто. Прогресс ${b.current} из ${b.target}."
+                                    onSpeak("${b.title}. ${b.description}. $status")
+                                }
+                                .padding(12.dp),
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(12.dp),
+                        ) {
+                            Box(
+                                Modifier
+                                    .size(48.dp)
+                                    .clip(CircleShape)
+                                    .background(Color.White.copy(alpha = if (b.unlocked) 0.25f else 0.55f)),
+                                contentAlignment = Alignment.Center,
+                            ) {
+                                Text(if (b.unlocked) b.emoji else "🔒", fontSize = 24.sp)
+                            }
+                            Column(Modifier.weight(1f)) {
+                                Text(b.title, color = fg, fontWeight = FontWeight.ExtraBold, fontSize = 16.sp)
+                                Text(b.description, color = fg.copy(alpha = 0.9f), fontSize = 13.sp, lineHeight = 17.sp)
+                                Text(
+                                    if (b.unlocked) "✓ Получено!" else "Прогресс: ${b.current.coerceAtMost(b.target)} / ${b.target}",
+                                    color = fg,
+                                    fontWeight = FontWeight.Bold,
+                                    fontSize = 12.sp,
+                                    modifier = Modifier.padding(top = 2.dp),
+                                )
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        confirmButton = {
+            TextButton(onClick = onDismiss) { Text("Закрыть", fontWeight = FontWeight.Bold) }
+        },
+    )
 }
 
 @Composable
