@@ -92,19 +92,6 @@ fun FloorRoomsScreen(
                     onClick = { showAddZone = true },
                 )
             }
-            if (zones.none { it.planDate in weekDates && isFifteenMinuteZoneName(it.name) }) {
-                item {
-                    CleaningRow(
-                        title = "15-минутка",
-                        subtitle = "Таймер 15 минут · быстрая уборка по разделам (${dayWithDate(targetDate)})",
-                        cleaned = false,
-                        showNotCleanedLabel = false,
-                        onClick = {
-                            viewModel.openOrCreateFifteenMinuteZone(floorId, targetDate, onOpenZone)
-                        },
-                    )
-                }
-            }
             weekDates.forEach { day ->
                 val ofDay = zones.filter { it.planDate == day }
                 if (ofDay.isNotEmpty()) {

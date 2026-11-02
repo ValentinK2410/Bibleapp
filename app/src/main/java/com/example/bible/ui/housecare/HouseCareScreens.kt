@@ -647,9 +647,6 @@ fun CleaningDayScreen(
                         onToggleCollapsed = { collapse.toggle(floor.id) },
                         onOpenFloor = { onOpenFloor(floor.id, date) },
                         onOpenZone = onOpenZone,
-                        onOpenFifteenMinute = {
-                            viewModel.openOrCreateFifteenMinuteZone(floor.id, planDate, onOpenZone)
-                        },
                         onEditFloor = { editingFloor = floor },
                         onEditZone = { editingZone = it },
                         onAddRoom = { addRoomFloorId = floor.id },
@@ -786,13 +783,11 @@ private fun FloorDayCard(
     onToggleCollapsed: () -> Unit,
     onOpenFloor: () -> Unit,
     onOpenZone: (String) -> Unit,
-    onOpenFifteenMinute: () -> Unit,
     onEditFloor: () -> Unit,
     onEditZone: (CleaningZone) -> Unit,
     onAddRoom: () -> Unit,
 ) {
     val cleaned = zones.count { data.isZoneCleaned(it) }
-    val hasFifteenMinute = zones.any { isFifteenMinuteZoneName(it.name) }
     GroupCard {
         Column(
             modifier = Modifier.padding(horizontal = 14.dp, vertical = 12.dp),
@@ -825,7 +820,7 @@ private fun FloorDayCard(
                     Text(floor.name, style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.SemiBold)
                     Text(
                         if (zones.isEmpty()) {
-                            "Комнат на этот день нет · доступна 15-минутка"
+                            "Комнат на этот день нет"
                         } else {
                             "${zones.size} ${pluralRu(zones.size, "комната", "комнаты", "комнат")} · убрано $cleaned/${zones.size}"
                         },
@@ -877,17 +872,6 @@ private fun FloorDayCard(
                         isFifteenMinute = isTimerRoom,
                         onClick = { onOpenZone(zone.id) },
                         onEdit = { onEditZone(zone) },
-                    )
-                }
-                if (!hasFifteenMinute) {
-                    RoomRow(
-                        name = "15-минутка",
-                        subtitle = "Таймер 15 минут · быстрая уборка по разделам",
-                        done = 0,
-                        total = 0,
-                        isFifteenMinute = true,
-                        onClick = onOpenFifteenMinute,
-                        onEdit = onOpenFifteenMinute,
                     )
                 }
                 AddInlineRow(label = "Добавить комнату/участок", onClick = onAddRoom)
