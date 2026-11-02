@@ -33,6 +33,8 @@ import androidx.compose.material.icons.filled.HomeWork
 import androidx.compose.material.icons.filled.Insights
 import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material.icons.filled.KeyboardArrowRight
+import androidx.compose.material.icons.filled.Palette
+import androidx.compose.material.icons.filled.Timer
 import androidx.compose.material.icons.filled.UnfoldLess
 import androidx.compose.material.icons.filled.UnfoldMore
 import androidx.compose.material3.Card
@@ -82,7 +84,12 @@ fun HouseCareHubScreen(
     onOpenCleaning: () -> Unit,
     onOpenStats: () -> Unit,
 ) {
-    HouseCareScaffold(title = "Попечительная о доме", onBack = onBack) { padding ->
+    var showThemeDialog by remember { mutableStateOf(false) }
+    HouseCareScaffold(
+        title = "Попечительная о доме",
+        onBack = onBack,
+        section = HouseCareSectionId.Hub,
+    ) { padding ->
         LazyColumn(
             modifier = Modifier
                 .fillMaxSize()
@@ -120,6 +127,30 @@ fun HouseCareHubScreen(
                     onClick = onOpenStats,
                 )
             }
+            item {
+                HubCard(
+                    title = "Нежное оформление раздела",
+                    subtitle = "Женственные палитры и стили карточек для всего раздела или каждого экрана отдельно",
+                    icon = {
+                        Icon(
+                            Icons.Filled.Palette,
+                            contentDescription = null,
+                            tint = MaterialTheme.colorScheme.primary,
+                            modifier = Modifier.size(22.dp),
+                        )
+                    },
+                    onClick = { showThemeDialog = true },
+                )
+            }
+            item {
+                FifteenMinuteTimerCard(zoneTitle = "Попечительная о доме")
+            }
+        }
+        if (showThemeDialog) {
+            HouseCareThemeDialog(
+                initialSection = HouseCareSectionId.Hub,
+                onDismiss = { showThemeDialog = false },
+            )
         }
     }
 }
@@ -179,7 +210,11 @@ fun CleaningSystemScreen(
     val data by viewModel.data.collectAsStateWithLifecycle()
     var editingPlace by remember { mutableStateOf<HousePlace?>(null) }
 
-    HouseCareScaffold(title = "Система уборки", onBack = onBack) { padding ->
+    HouseCareScaffold(
+        title = "Система уборки",
+        onBack = onBack,
+        section = HouseCareSectionId.System,
+    ) { padding ->
         LazyColumn(
             modifier = Modifier
                 .fillMaxSize()
@@ -296,6 +331,7 @@ fun PlaceDaysScreen(
     HouseCareScaffold(
         title = place?.name ?: "Объект",
         onBack = onBack,
+        section = HouseCareSectionId.Week,
         actions = {
             AnimatedVisibility(
                 visible = weekOffset != 0,
@@ -534,13 +570,23 @@ fun CleaningDayScreen(
     val blockKeys = floors.map { it.id } + habitKeys
     val allCollapsed = collapse.allCollapsed(blockKeys)
 
+    var showDayTimer by remember { mutableStateOf(false) }
+
     HouseCareScaffold(
         title = listOfNotNull(
             place?.name?.takeIf { it.isNotBlank() },
             WeekDays.fullLabel(dayOfWeek),
         ).joinToString(" · "),
         onBack = onBack,
+        section = HouseCareSectionId.Day,
         actions = {
+            IconButton(onClick = { showDayTimer = !showDayTimer }) {
+                Icon(
+                    Icons.Default.Timer,
+                    contentDescription = "Таймер 15-минутка",
+                    tint = if (showDayTimer) cleaningGreen else MaterialTheme.colorScheme.primary,
+                )
+            }
             IconButton(onClick = { collapse.set(blockKeys, !allCollapsed) }) {
                 Icon(
                     if (allCollapsed) Icons.Default.UnfoldMore else Icons.Default.UnfoldLess,
@@ -565,6 +611,15 @@ fun CleaningDayScreen(
                     morning = data.habitProgressOn(placeId, CleaningHabit.KIND_MORNING, date),
                     evening = data.habitProgressOn(placeId, CleaningHabit.KIND_EVENING, date),
                 )
+            }
+            if (showDayTimer) {
+                item {
+                    FifteenMinuteTimerCard(
+                        zoneTitle = WeekDays.fullLabel(dayOfWeek),
+                        tasksDone = roomsDone,
+                        tasksTotal = rooms.size,
+                    )
+                }
             }
             item {
                 HabitBlocks(

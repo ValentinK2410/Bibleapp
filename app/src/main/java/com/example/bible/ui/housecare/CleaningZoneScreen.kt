@@ -103,16 +103,24 @@ fun CleaningZoneScreen(
     val lazyListState = rememberLazyListState()
     val haptic = LocalHapticFeedback.current
     val reorderableState = rememberReorderableLazyListState(lazyListState) { from, to ->
-        val moved = draft.removeAt(from.index)
-        draft.add(to.index.coerceAtMost(draft.size), moved)
-        viewModel.moveTask(zoneId, from.index, to.index)
-        haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+        val fromIdx = draft.indexOfFirst { it.id == from.key }
+        val toIdx = draft.indexOfFirst { it.id == to.key }
+        if (fromIdx != -1 && toIdx != -1 && fromIdx != toIdx) {
+            val moved = draft.removeAt(fromIdx)
+            draft.add(toIdx.coerceAtMost(draft.size), moved)
+            viewModel.moveTask(zoneId, fromIdx, toIdx)
+            haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+        }
     }
 
     val doneCount = draft.count { it.isCleaned }
     val totalDurationMs = draft.sumOf { it.active?.durationMs ?: 0L }
 
-    HouseCareScaffold(title = zone?.name ?: "Зона уборки", onBack = onBack) { padding ->
+    HouseCareScaffold(
+        title = zone?.name ?: "Зона уборки",
+        onBack = onBack,
+        section = HouseCareSectionId.Zone,
+    ) { padding ->
         Column(
             modifier = Modifier
                 .fillMaxSize()
@@ -123,61 +131,70 @@ fun CleaningZoneScreen(
                 val floorName = data.floorById(zone.floorId)?.name.orEmpty()
                 HouseCareSectionTitle("$floorName · ${zoneDateLabel(zone)}")
             }
-            if (draft.isNotEmpty()) {
-                GroupCard(
-                    modifier = Modifier.padding(top = 8.dp),
-                    container = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.25f),
-                ) {
-                    Row(
-                        modifier = Modifier.padding(horizontal = 16.dp, vertical = 12.dp),
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.spacedBy(12.dp),
-                    ) {
-                        Column(
-                            modifier = Modifier.weight(1f),
-                            verticalArrangement = Arrangement.spacedBy(3.dp),
-                        ) {
-                            Text(
-                                "Разделов убрано: $doneCount из ${draft.size}",
-                                style = MaterialTheme.typography.titleSmall,
-                                fontWeight = FontWeight.SemiBold,
-                            )
-                            Text(
-                                if (totalDurationMs > 0L) {
-                                    "Общее время по фото: ${formatDurationMs(totalDurationMs)}"
-                                } else {
-                                    "Откройте раздел и сделайте фото «До» и «После»"
-                                },
-                                style = MaterialTheme.typography.labelSmall,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                            )
-                        }
-                        ProgressRing(
-                            done = doneCount,
-                            total = draft.size,
-                            modifier = Modifier.size(54.dp),
-                            label = "$doneCount/${draft.size}",
-                        )
-                    }
-                }
-            }
-            if (draft.size > 1) {
-                Text(
-                    "Зажмите раздел пальцем и перетащите вверх или вниз, чтобы изменить порядок. " +
-                        "Карандаш — переименовать.",
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    modifier = Modifier.padding(vertical = 8.dp),
-                )
-            }
             LazyColumn(
                 state = lazyListState,
                 modifier = Modifier.fillMaxSize(),
                 contentPadding = PaddingValues(top = 8.dp, bottom = 16.dp),
-                verticalArrangement = Arrangement.spacedBy(8.dp),
+                verticalArrangement = Arrangement.spacedBy(10.dp),
             ) {
+                item(key = "fifteen_min_timer") {
+                    FifteenMinuteTimerCard(
+                        zoneTitle = zone?.name ?: "Комната",
+                        tasksDone = doneCount,
+                        tasksTotal = draft.size,
+                    )
+                }
+                if (draft.isNotEmpty()) {
+                    item(key = "zone_progress_summary") {
+                        GroupCard(
+                            container = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.25f),
+                        ) {
+                            Row(
+                                modifier = Modifier.padding(horizontal = 16.dp, vertical = 12.dp),
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.spacedBy(12.dp),
+                            ) {
+                                Column(
+                                    modifier = Modifier.weight(1f),
+                                    verticalArrangement = Arrangement.spacedBy(3.dp),
+                                ) {
+                                    Text(
+                                        "Разделов убрано: $doneCount из ${draft.size}",
+                                        style = MaterialTheme.typography.titleSmall,
+                                        fontWeight = FontWeight.SemiBold,
+                                    )
+                                    Text(
+                                        if (totalDurationMs > 0L) {
+                                            "Общее время по фото: ${formatDurationMs(totalDurationMs)}"
+                                        } else {
+                                            "Откройте раздел и сделайте фото «До» и «После»"
+                                        },
+                                        style = MaterialTheme.typography.labelSmall,
+                                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                    )
+                                }
+                                ProgressRing(
+                                    done = doneCount,
+                                    total = draft.size,
+                                    modifier = Modifier.size(54.dp),
+                                    label = "$doneCount/${draft.size}",
+                                )
+                            }
+                        }
+                    }
+                }
+                if (draft.size > 1) {
+                    item(key = "reorder_hint") {
+                        Text(
+                            "Зажмите раздел пальцем и перетащите вверх или вниз, чтобы изменить порядок. " +
+                                "Карандаш — переименовать.",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        )
+                    }
+                }
                 if (draft.isEmpty()) {
-                    item {
+                    item(key = "empty_add_task") {
                         EmptyAddCard(
                             hint = "Добавьте раздел",
                             subtitle = "Например: потолок, пол, окно, подоконник, батарея",

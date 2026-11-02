@@ -68,7 +68,11 @@ fun CleaningStatsScreen(
     val weekStart = today.with(java.time.DayOfWeek.MONDAY).periodStartMs()
     val monthStart = today.withDayOfMonth(1).periodStartMs()
 
-    HouseCareScaffold(title = "Статистика уборки", onBack = onBack) { padding ->
+    HouseCareScaffold(
+        title = "Статистика уборки",
+        onBack = onBack,
+        section = HouseCareSectionId.Stats,
+    ) { padding ->
         LazyColumn(
             modifier = Modifier
                 .fillMaxSize()

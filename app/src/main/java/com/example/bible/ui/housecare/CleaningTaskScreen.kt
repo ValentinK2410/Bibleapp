@@ -125,7 +125,11 @@ fun CleaningTaskScreen(
         pickPhoto.launch(PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly))
     }
 
-    HouseCareScaffold(title = task?.name ?: "Раздел", onBack = onBack) { padding ->
+    HouseCareScaffold(
+        title = task?.name ?: "Раздел",
+        onBack = onBack,
+        section = HouseCareSectionId.Task,
+    ) { padding ->
         if (task == null) {
             Column(modifier = Modifier.fillMaxSize().padding(padding).padding(16.dp)) {
                 Text("Раздел удалён.", style = MaterialTheme.typography.bodyMedium)
@@ -161,6 +165,10 @@ fun CleaningTaskScreen(
                         )
                     }
                 }
+            }
+
+            item {
+                FifteenMinuteTimerCard(zoneTitle = task.name)
             }
 
             if (report != null && report.beforePhoto != null && report.afterPhoto != null) {

@@ -63,7 +63,11 @@ fun FloorRoomsScreen(
     val weekDates = (0 until WeekDays.displayed.size).map { weekStart.plusDays(it.toLong()) }
     val zones = data.zones.filter { it.floorId == floorId }
 
-    HouseCareScaffold(title = floor?.name ?: "Этаж", onBack = onBack) { padding ->
+    HouseCareScaffold(
+        title = floor?.name ?: "Этаж",
+        onBack = onBack,
+        section = HouseCareSectionId.Floor,
+    ) { padding ->
         LazyColumn(
             modifier = Modifier
                 .fillMaxSize()

@@ -31,6 +31,7 @@ import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Edit
+import androidx.compose.material.icons.filled.Palette
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
@@ -42,6 +43,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
+import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.getValue
@@ -153,23 +155,53 @@ internal fun formatTimeMs(ms: Long): String =
 internal fun HouseCareScaffold(
     title: String,
     onBack: () -> Unit,
+    section: HouseCareSectionId = HouseCareSectionId.Hub,
     actions: @Composable () -> Unit = {},
     content: @Composable (PaddingValues) -> Unit,
 ) {
-    Scaffold(
-        topBar = {
-            CenterAlignedTopAppBar(
-                title = { Text(title) },
-                navigationIcon = {
-                    IconButton(onClick = onBack) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = null)
-                    }
-                },
-                actions = { actions() },
+    HouseCareThemeWrapper(section = section) {
+        var showThemeDialog by remember { mutableStateOf(false) }
+        Scaffold(
+            containerColor = MaterialTheme.colorScheme.background,
+            topBar = {
+                CenterAlignedTopAppBar(
+                    title = {
+                        Text(
+                            title,
+                            fontWeight = FontWeight.SemiBold,
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis,
+                        )
+                    },
+                    navigationIcon = {
+                        IconButton(onClick = onBack) {
+                            Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = null)
+                        }
+                    },
+                    actions = {
+                        actions()
+                        IconButton(onClick = { showThemeDialog = true }) {
+                            Icon(
+                                Icons.Default.Palette,
+                                contentDescription = "Нежное оформление раздела",
+                                tint = MaterialTheme.colorScheme.primary,
+                            )
+                        }
+                    },
+                    colors = TopAppBarDefaults.centerAlignedTopAppBarColors(
+                        containerColor = MaterialTheme.colorScheme.background,
+                    ),
+                )
+            },
+            content = content,
+        )
+        if (showThemeDialog) {
+            HouseCareThemeDialog(
+                initialSection = section,
+                onDismiss = { showThemeDialog = false },
             )
-        },
-        content = content,
-    )
+        }
+    }
 }
 
 /**
@@ -321,20 +353,30 @@ internal fun CleaningRow(
     onClick: () -> Unit,
     onLongClick: (() -> Unit)? = null,
 ) {
-    val shape = RoundedCornerShape(20.dp)
+    val hcStyle = LocalHouseCareStyle.current
+    val shape = RoundedCornerShape(hcStyle.cornerDp.dp)
+    val rowBg = when (hcStyle.cardStyle) {
+        HouseCareCardStyle.SoftBlush -> MaterialTheme.colorScheme.surface
+        HouseCareCardStyle.Pearl -> MaterialTheme.colorScheme.surface
+        HouseCareCardStyle.Watercolor -> MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.26f)
+        HouseCareCardStyle.LaceBorder -> MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.16f)
+    }
+    val borderWidth = if (hcStyle.cardStyle == HouseCareCardStyle.LaceBorder) 1.5.dp else 1.dp
     Card(
         modifier = modifier
             .fillMaxWidth()
             .clip(shape)
             .combinedClickable(onClick = onClick, onLongClick = onLongClick),
         shape = shape,
-        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+        colors = CardDefaults.cardColors(containerColor = rowBg),
         border = BorderStroke(
-            width = 1.dp,
+            width = borderWidth,
             color = if (cleaned) {
-                cleaningGreen.copy(alpha = 0.35f)
+                cleaningGreen.copy(alpha = 0.4f)
+            } else if (hcStyle.cardStyle == HouseCareCardStyle.LaceBorder) {
+                MaterialTheme.colorScheme.primary.copy(alpha = 0.42f)
             } else {
-                MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.55f)
+                MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.65f)
             },
         ),
         elevation = CardDefaults.cardElevation(defaultElevation = elevation),
@@ -583,11 +625,29 @@ internal fun GroupCard(
     container: androidx.compose.ui.graphics.Color = MaterialTheme.colorScheme.surface,
     content: @Composable ColumnScope.() -> Unit,
 ) {
+    val hcStyle = LocalHouseCareStyle.current
+    val defaultSurface = MaterialTheme.colorScheme.surface
+    val resolvedContainer = if (container == defaultSurface) {
+        when (hcStyle.cardStyle) {
+            HouseCareCardStyle.SoftBlush -> MaterialTheme.colorScheme.surface
+            HouseCareCardStyle.Pearl -> MaterialTheme.colorScheme.surface
+            HouseCareCardStyle.Watercolor -> MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.24f)
+            HouseCareCardStyle.LaceBorder -> MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.14f)
+        }
+    } else {
+        container
+    }
+    val borderWidth = if (hcStyle.cardStyle == HouseCareCardStyle.LaceBorder) 1.5.dp else 1.dp
+    val borderColor = if (hcStyle.cardStyle == HouseCareCardStyle.LaceBorder) {
+        MaterialTheme.colorScheme.primary.copy(alpha = 0.42f)
+    } else {
+        MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.65f)
+    }
     Card(
         modifier = modifier.fillMaxWidth(),
-        shape = RoundedCornerShape(22.dp),
-        colors = CardDefaults.cardColors(containerColor = container),
-        border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.55f)),
+        shape = RoundedCornerShape(hcStyle.cornerDp.dp),
+        colors = CardDefaults.cardColors(containerColor = resolvedContainer),
+        border = BorderStroke(borderWidth, borderColor),
         elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
         content = content,
     )
