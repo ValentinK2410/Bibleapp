@@ -54,6 +54,13 @@ class HouseCareViewModel(
 
     fun addZone(floorId: String, date: LocalDate, name: String) = edit { addZone(floorId, date, name) }
 
+    fun openOrCreateFifteenMinuteZone(floorId: String, date: LocalDate, onReady: (String) -> Unit) {
+        viewModelScope.launch {
+            val id = store.ensureZone(floorId, date, "15-минутка")
+            if (id.isNotBlank()) onReady(id)
+        }
+    }
+
     fun updateZone(id: String, name: String, date: LocalDate) = edit { updateZone(id, name, date) }
 
     /** Перенести комнаты и их разделы с другой даты на этот день. */

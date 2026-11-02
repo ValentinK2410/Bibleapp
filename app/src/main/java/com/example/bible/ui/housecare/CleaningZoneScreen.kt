@@ -40,6 +40,16 @@ import sh.calvin.reorderable.rememberReorderableLazyListState
 private fun suggestedSectionsForZone(zoneName: String): List<String> {
     val lower = zoneName.lowercase()
     return when {
+        isFifteenMinuteZoneName(zoneName) -> listOf(
+            "Разобрать вещи на местах",
+            "Протереть поверхности",
+            "Кухонная столешница и раковина",
+            "Зеркало и раковина в ванной",
+            "Прихожая и обувь",
+            "Быстро пропылесосить / пол",
+            "Диван, пледы и подушки",
+            "Пыль на видных местах",
+        )
         "кухн" in lower -> listOf(
             "Плита",
             "Раковина",
@@ -115,6 +125,7 @@ fun CleaningZoneScreen(
 
     val doneCount = draft.count { it.isCleaned }
     val totalDurationMs = draft.sumOf { it.active?.durationMs ?: 0L }
+    val isFifteenMinRoom = isFifteenMinuteZoneName(zone?.name)
 
     HouseCareScaffold(
         title = zone?.name ?: "Зона уборки",
@@ -137,12 +148,14 @@ fun CleaningZoneScreen(
                 contentPadding = PaddingValues(top = 8.dp, bottom = 16.dp),
                 verticalArrangement = Arrangement.spacedBy(10.dp),
             ) {
-                item(key = "fifteen_min_timer") {
-                    FifteenMinuteTimerCard(
-                        zoneTitle = zone?.name ?: "Комната",
-                        tasksDone = doneCount,
-                        tasksTotal = draft.size,
-                    )
+                if (isFifteenMinRoom) {
+                    item(key = "fifteen_min_timer") {
+                        FifteenMinuteTimerCard(
+                            zoneTitle = zone?.name ?: "15-минутка",
+                            tasksDone = doneCount,
+                            tasksTotal = draft.size,
+                        )
+                    }
                 }
                 if (draft.isNotEmpty()) {
                     item(key = "zone_progress_summary") {

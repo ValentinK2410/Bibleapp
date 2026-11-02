@@ -142,9 +142,6 @@ fun HouseCareHubScreen(
                     onClick = { showThemeDialog = true },
                 )
             }
-            item {
-                FifteenMinuteTimerCard(zoneTitle = "Попечительная о доме")
-            }
         }
         if (showThemeDialog) {
             HouseCareThemeDialog(
@@ -570,8 +567,6 @@ fun CleaningDayScreen(
     val blockKeys = floors.map { it.id } + habitKeys
     val allCollapsed = collapse.allCollapsed(blockKeys)
 
-    var showDayTimer by remember { mutableStateOf(false) }
-
     HouseCareScaffold(
         title = listOfNotNull(
             place?.name?.takeIf { it.isNotBlank() },
@@ -580,13 +575,6 @@ fun CleaningDayScreen(
         onBack = onBack,
         section = HouseCareSectionId.Day,
         actions = {
-            IconButton(onClick = { showDayTimer = !showDayTimer }) {
-                Icon(
-                    Icons.Default.Timer,
-                    contentDescription = "Таймер 15-минутка",
-                    tint = if (showDayTimer) cleaningGreen else MaterialTheme.colorScheme.primary,
-                )
-            }
             IconButton(onClick = { collapse.set(blockKeys, !allCollapsed) }) {
                 Icon(
                     if (allCollapsed) Icons.Default.UnfoldMore else Icons.Default.UnfoldLess,
@@ -611,15 +599,6 @@ fun CleaningDayScreen(
                     morning = data.habitProgressOn(placeId, CleaningHabit.KIND_MORNING, date),
                     evening = data.habitProgressOn(placeId, CleaningHabit.KIND_EVENING, date),
                 )
-            }
-            if (showDayTimer) {
-                item {
-                    FifteenMinuteTimerCard(
-                        zoneTitle = WeekDays.fullLabel(dayOfWeek),
-                        tasksDone = roomsDone,
-                        tasksTotal = rooms.size,
-                    )
-                }
             }
             item {
                 HabitBlocks(
@@ -668,6 +647,9 @@ fun CleaningDayScreen(
                         onToggleCollapsed = { collapse.toggle(floor.id) },
                         onOpenFloor = { onOpenFloor(floor.id, date) },
                         onOpenZone = onOpenZone,
+                        onOpenFifteenMinute = {
+                            viewModel.openOrCreateFifteenMinuteZone(floor.id, planDate, onOpenZone)
+                        },
                         onEditFloor = { editingFloor = floor },
                         onEditZone = { editingZone = it },
                         onAddRoom = { addRoomFloorId = floor.id },
@@ -804,11 +786,13 @@ private fun FloorDayCard(
     onToggleCollapsed: () -> Unit,
     onOpenFloor: () -> Unit,
     onOpenZone: (String) -> Unit,
+    onOpenFifteenMinute: () -> Unit,
     onEditFloor: () -> Unit,
     onEditZone: (CleaningZone) -> Unit,
     onAddRoom: () -> Unit,
 ) {
     val cleaned = zones.count { data.isZoneCleaned(it) }
+    val hasFifteenMinute = zones.any { isFifteenMinuteZoneName(it.name) }
     GroupCard {
         Column(
             modifier = Modifier.padding(horizontal = 14.dp, vertical = 12.dp),
@@ -841,7 +825,7 @@ private fun FloorDayCard(
                     Text(floor.name, style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.SemiBold)
                     Text(
                         if (zones.isEmpty()) {
-                            "Комнат на этот день нет"
+                            "Комнат на этот день нет · доступна 15-минутка"
                         } else {
                             "${zones.size} ${pluralRu(zones.size, "комната", "комнаты", "комнат")} · убрано $cleaned/${zones.size}"
                         },
@@ -880,16 +864,30 @@ private fun FloorDayCard(
                 zones.forEach { zone ->
                     val (done, total) = data.zoneProgress(zone)
                     val zoneDurationMs = data.tasksOf(zone.id).sumOf { it.active?.durationMs ?: 0L }
+                    val isTimerRoom = isFifteenMinuteZoneName(zone.name)
                     RoomRow(
                         name = zone.name,
                         subtitle = buildString {
+                            if (isTimerRoom) append("Таймер 15 мин · ")
                             append("разделов $done/$total")
                             if (zoneDurationMs > 0L) append(" · ${formatDurationMs(zoneDurationMs)}")
                         },
                         done = done,
                         total = total,
+                        isFifteenMinute = isTimerRoom,
                         onClick = { onOpenZone(zone.id) },
                         onEdit = { onEditZone(zone) },
+                    )
+                }
+                if (!hasFifteenMinute) {
+                    RoomRow(
+                        name = "15-минутка",
+                        subtitle = "Таймер 15 минут · быстрая уборка по разделам",
+                        done = 0,
+                        total = 0,
+                        isFifteenMinute = true,
+                        onClick = onOpenFifteenMinute,
+                        onEdit = onOpenFifteenMinute,
                     )
                 }
                 AddInlineRow(label = "Добавить комнату/участок", onClick = onAddRoom)
@@ -906,6 +904,7 @@ private fun RoomRow(
     subtitle: String,
     done: Int,
     total: Int,
+    isFifteenMinute: Boolean = false,
     onClick: () -> Unit,
     onEdit: () -> Unit,
 ) {
@@ -921,12 +920,24 @@ private fun RoomRow(
     ) {
         BadgeCircle(
             size = 34.dp,
-            container = if (isDone) cleaningGreen.copy(alpha = 0.14f) else MaterialTheme.colorScheme.surfaceVariant,
+            container = when {
+                isDone -> cleaningGreen.copy(alpha = 0.14f)
+                isFifteenMinute -> MaterialTheme.colorScheme.primary.copy(alpha = 0.14f)
+                else -> MaterialTheme.colorScheme.surfaceVariant
+            },
         ) {
             Icon(
-                if (isDone) Icons.Default.CheckCircle else Icons.Default.CleaningServices,
+                when {
+                    isDone -> Icons.Default.CheckCircle
+                    isFifteenMinute -> Icons.Default.Timer
+                    else -> Icons.Default.CleaningServices
+                },
                 contentDescription = null,
-                tint = if (isDone) cleaningGreen else MaterialTheme.colorScheme.onSurfaceVariant,
+                tint = when {
+                    isDone -> cleaningGreen
+                    isFifteenMinute -> MaterialTheme.colorScheme.primary
+                    else -> MaterialTheme.colorScheme.onSurfaceVariant
+                },
                 modifier = Modifier.size(17.dp),
             )
         }
@@ -944,7 +955,10 @@ private fun RoomRow(
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
         }
-        StatusPill("$done/$total", pillToneOf(done, total))
+        StatusPill(
+            if (isFifteenMinute && total == 0) "⏱ 15 мин" else "$done/$total",
+            if (isFifteenMinute && total == 0) PillTone.Muted else pillToneOf(done, total),
+        )
         IconButton(onClick = onEdit, modifier = Modifier.size(34.dp)) {
             Icon(
                 Icons.Default.Edit,

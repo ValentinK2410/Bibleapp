@@ -167,10 +167,6 @@ fun CleaningTaskScreen(
                 }
             }
 
-            item {
-                FifteenMinuteTimerCard(zoneTitle = task.name)
-            }
-
             if (report != null && report.beforePhoto != null && report.afterPhoto != null) {
                 item {
                     BeforeAfterComparisonCard(

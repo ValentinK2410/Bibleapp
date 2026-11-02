@@ -142,6 +142,32 @@ class HouseCareStore(context: Context) {
         cur.copy(zones = cur.zones + CleaningZone(floorId = floorId, date = date.toString(), name = name.trim()))
     }
 
+    /** Находит комнату с таким именем на этаже и дате или создаёт новую и возвращает её id. */
+    suspend fun ensureZone(floorId: String, date: LocalDate, name: String): String {
+        val trimmed = name.trim()
+        val dateStr = date.toString()
+        var resultId = ""
+        mutate { cur ->
+            val existing = cur.zones.firstOrNull {
+                it.floorId == floorId && it.date == dateStr && it.name.equals(trimmed, ignoreCase = true)
+            }
+            if (existing != null) {
+                resultId = existing.id
+                cur
+            } else {
+                val created = CleaningZone(
+                    id = "fifteen-$floorId-$dateStr",
+                    floorId = floorId,
+                    date = dateStr,
+                    name = trimmed,
+                )
+                resultId = created.id
+                cur.copy(zones = cur.zones + created)
+            }
+        }
+        return resultId
+    }
+
     /** Комнату можно переименовать и перенести на другой день. */
     suspend fun updateZone(id: String, name: String, date: LocalDate) = mutate { cur ->
         cur.copy(zones = cur.zones.map {

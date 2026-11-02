@@ -3,7 +3,9 @@ package com.example.bible.ui.housecare
 import android.content.Context
 import android.media.AudioAttributes
 import android.media.AudioFormat
+import android.media.AudioManager
 import android.media.AudioTrack
+import android.media.ToneGenerator
 import android.speech.tts.TextToSpeech
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.FastOutSlowInEasing
@@ -238,6 +240,12 @@ internal val houseCarePalettes: List<HouseCarePalette> = listOf(
 
 internal fun paletteByKey(key: String?): HouseCarePalette =
     houseCarePalettes.firstOrNull { it.key == key } ?: houseCarePalettes.first()
+
+/** Проверяет, является ли комната «15-минуткой». */
+internal fun isFifteenMinuteZoneName(name: String?): Boolean {
+    val lower = name?.trim()?.lowercase().orEmpty()
+    return "15" in lower && "минут" in lower
+}
 
 /** Эмодзи-значки для оформления отдельных комнат и разделов уборки. */
 internal val houseCareDecorativeEmojis = listOf(
@@ -878,11 +886,21 @@ internal class FifteenMinuteSoundEngine(context: Context) {
     private val scope = CoroutineScope(Dispatchers.Default)
     private var tts: TextToSpeech? = null
     private var ttsReady = false
+    private var toneGenerator: ToneGenerator? = null
 
     init {
         runCatching {
+            toneGenerator = ToneGenerator(AudioManager.STREAM_MUSIC, 80)
+        }
+        runCatching {
             tts = TextToSpeech(appContext) { status ->
                 if (status == TextToSpeech.SUCCESS) {
+                    tts?.setAudioAttributes(
+                        AudioAttributes.Builder()
+                            .setUsage(AudioAttributes.USAGE_MEDIA)
+                            .setContentType(AudioAttributes.CONTENT_TYPE_SPEECH)
+                            .build(),
+                    )
                     val result = tts?.setLanguage(Locale.forLanguageTag("ru-RU"))
                     ttsReady = result != TextToSpeech.LANG_MISSING_DATA &&
                         result != TextToSpeech.LANG_NOT_SUPPORTED
@@ -893,19 +911,25 @@ internal class FifteenMinuteSoundEngine(context: Context) {
         }
     }
 
-    /** Мягкий часовой тик (короткий затухающий импульс, приятный на слух). */
-    fun playTick() {
+    /** Отчётливый часовой «тик-так» каждую секунду. */
+    fun playTick(isEvenSecond: Boolean = true) {
         scope.launch {
-            playSoftTone(freqHz = 1150.0, durationMs = 22, decayRate = 140.0, volume = 0.25f)
+            val baseFreq = if (isEvenSecond) 920.0 else 780.0
+            val played = playClockClick(baseFreq = baseFreq, volume = 0.88f)
+            if (!played) {
+                runCatching {
+                    toneGenerator?.startTone(ToneGenerator.TONE_PROP_BEEP, 28)
+                }
+            }
         }
     }
 
     /** Нежный двухнотный перезвон прошедшей минуты + мягкое голосовое уведомление. */
     fun playMinutePassed(minutesElapsed: Int, speakVoice: Boolean) {
         scope.launch {
-            playSoftTone(freqHz = 659.25, durationMs = 150, decayRate = 14.0, volume = 0.45f) // E5
+            playSoftTone(freqHz = 659.25, durationMs = 160, decayRate = 13.0, volume = 0.65f) // E5
             delay(130)
-            playSoftTone(freqHz = 880.0, durationMs = 240, decayRate = 10.0, volume = 0.50f) // A5
+            playSoftTone(freqHz = 880.0, durationMs = 240, decayRate = 9.0, volume = 0.70f) // A5
         }
         if (speakVoice && ttsReady && minutesElapsed > 0) {
             val word = when {
@@ -922,7 +946,7 @@ internal class FifteenMinuteSoundEngine(context: Context) {
     fun playFinalSecond(secondLeft: Int, speakVoice: Boolean) {
         scope.launch {
             val freq = 740.0 + (5 - secondLeft.coerceIn(1, 5)) * 60.0
-            playSoftTone(freqHz = freq, durationMs = 120, decayRate = 18.0, volume = 0.5f)
+            playSoftTone(freqHz = freq, durationMs = 140, decayRate = 16.0, volume = 0.68f)
         }
         if (speakVoice) {
             val word = when (secondLeft) {
@@ -940,13 +964,13 @@ internal class FifteenMinuteSoundEngine(context: Context) {
     /** Финал: «Время вышло, пора завершать уборку!» + мелодичный аккорд. */
     fun playFinished(speakVoice: Boolean) {
         scope.launch {
-            playSoftTone(freqHz = 523.25, durationMs = 160, decayRate = 12.0, volume = 0.55f) // C5
+            playSoftTone(freqHz = 523.25, durationMs = 160, decayRate = 12.0, volume = 0.68f) // C5
             delay(140)
-            playSoftTone(freqHz = 659.25, durationMs = 160, decayRate = 12.0, volume = 0.55f) // E5
+            playSoftTone(freqHz = 659.25, durationMs = 160, decayRate = 12.0, volume = 0.68f) // E5
             delay(140)
-            playSoftTone(freqHz = 783.99, durationMs = 180, decayRate = 10.0, volume = 0.55f) // G5
+            playSoftTone(freqHz = 783.99, durationMs = 180, decayRate = 10.0, volume = 0.70f) // G5
             delay(150)
-            playSoftTone(freqHz = 1046.50, durationMs = 420, decayRate = 6.0, volume = 0.65f) // C6
+            playSoftTone(freqHz = 1046.50, durationMs = 420, decayRate = 6.0, volume = 0.78f) // C6
         }
         if (speakVoice) {
             speak("Время вышло, пора завершать уборку!")
@@ -965,45 +989,100 @@ internal class FifteenMinuteSoundEngine(context: Context) {
             tts?.stop()
             tts?.shutdown()
         }
+        runCatching {
+            toneGenerator?.release()
+            toneGenerator = null
+        }
+    }
+
+    /**
+     * Генерирует чёткий механический часовой щелчок («тик» / «так») с буфером не меньше minBufferSize,
+     * чтобы AudioTrack гарантированно воспроизводил звук каждую секунду на всех устройствах Android.
+     */
+    private fun playClockClick(baseFreq: Double, volume: Float): Boolean {
+        return runCatching {
+            val sampleRate = 24000
+            val minBufBytes = AudioTrack.getMinBufferSize(
+                sampleRate,
+                AudioFormat.CHANNEL_OUT_MONO,
+                AudioFormat.ENCODING_PCM_16BIT,
+            ).coerceAtLeast(4800)
+            val activeSamples = (sampleRate * 48 / 1000) // 48 мс активного щелчка
+            val totalSamples = maxOf(activeSamples, (minBufBytes / 2) + 256)
+            val samples = ShortArray(totalSamples)
+            for (i in 0 until activeSamples) {
+                val t = i.toDouble() / sampleRate
+                // Короткий ударный фронт (первые 4 мс) + деревянный/часовой резонанс
+                val clickTransient = if (t < 0.004) (1.0 - t / 0.004) * sin(2.0 * PI * 2600.0 * t) else 0.0
+                val attack = (i.toDouble() / (sampleRate * 0.0015)).coerceAtMost(1.0)
+                val bodyEnv = attack * exp(-95.0 * t)
+                val bodyWave = sin(2.0 * PI * baseFreq * t) +
+                    0.55 * sin(2.0 * PI * (baseFreq * 1.95) * t) +
+                    0.25 * sin(2.0 * PI * (baseFreq * 3.1) * t)
+                val combined = (clickTransient * 0.65 + bodyWave * bodyEnv * 0.85) * volume
+                val pcm = (combined * Short.MAX_VALUE).toInt()
+                samples[i] = pcm.coerceIn(Short.MIN_VALUE.toInt(), Short.MAX_VALUE.toInt()).toShort()
+            }
+            playPcmBuffer(sampleRate, samples, sleepMs = 65L)
+        }.getOrDefault(false)
     }
 
     private fun playSoftTone(freqHz: Double, durationMs: Int, decayRate: Double, volume: Float) {
         runCatching {
             val sampleRate = 24000
-            val numSamples = (sampleRate * durationMs / 1000).coerceAtLeast(1)
-            val samples = ShortArray(numSamples)
-            for (i in 0 until numSamples) {
+            val minBufBytes = AudioTrack.getMinBufferSize(
+                sampleRate,
+                AudioFormat.CHANNEL_OUT_MONO,
+                AudioFormat.ENCODING_PCM_16BIT,
+            ).coerceAtLeast(4800)
+            val activeSamples = (sampleRate * durationMs / 1000).coerceAtLeast(1)
+            val totalSamples = maxOf(activeSamples, (minBufBytes / 2) + 256)
+            val samples = ShortArray(totalSamples)
+            for (i in 0 until activeSamples) {
                 val t = i.toDouble() / sampleRate
                 val attack = (i.toDouble() / (sampleRate * 0.004)).coerceAtMost(1.0)
                 val envelope = attack * exp(-decayRate * t)
-                val wave = sin(2.0 * PI * freqHz * t) + 0.25 * sin(4.0 * PI * freqHz * t)
-                val value = (wave * envelope * volume * Short.MAX_VALUE * 0.75).toInt()
+                val wave = sin(2.0 * PI * freqHz * t) + 0.28 * sin(4.0 * PI * freqHz * t)
+                val value = (wave * envelope * volume * Short.MAX_VALUE * 0.78).toInt()
                 samples[i] = value.coerceIn(Short.MIN_VALUE.toInt(), Short.MAX_VALUE.toInt()).toShort()
             }
-            val bufferBytes = samples.size * 2
-            val track = AudioTrack.Builder()
-                .setAudioAttributes(
-                    AudioAttributes.Builder()
-                        .setUsage(AudioAttributes.USAGE_ASSISTANCE_SONIFICATION)
-                        .setContentType(AudioAttributes.CONTENT_TYPE_SONIFICATION)
-                        .build(),
-                )
-                .setAudioFormat(
-                    AudioFormat.Builder()
-                        .setEncoding(AudioFormat.ENCODING_PCM_16BIT)
-                        .setSampleRate(sampleRate)
-                        .setChannelMask(AudioFormat.CHANNEL_OUT_MONO)
-                        .build(),
-                )
-                .setBufferSizeInBytes(bufferBytes.coerceAtLeast(1024))
-                .setTransferMode(AudioTrack.MODE_STATIC)
-                .build()
-            track.write(samples, 0, samples.size)
-            track.play()
-            Thread.sleep(durationMs.toLong() + 30L)
-            track.stop()
-            track.release()
+            playPcmBuffer(sampleRate, samples, sleepMs = durationMs.toLong() + 45L)
         }
+    }
+
+    private fun playPcmBuffer(sampleRate: Int, samples: ShortArray, sleepMs: Long): Boolean {
+        val bufferBytes = samples.size * 2
+        val track = AudioTrack.Builder()
+            .setAudioAttributes(
+                AudioAttributes.Builder()
+                    .setUsage(AudioAttributes.USAGE_MEDIA)
+                    .setContentType(AudioAttributes.CONTENT_TYPE_MUSIC)
+                    .build(),
+            )
+            .setAudioFormat(
+                AudioFormat.Builder()
+                    .setEncoding(AudioFormat.ENCODING_PCM_16BIT)
+                    .setSampleRate(sampleRate)
+                    .setChannelMask(AudioFormat.CHANNEL_OUT_MONO)
+                    .build(),
+            )
+            .setBufferSizeInBytes(bufferBytes)
+            .setTransferMode(AudioTrack.MODE_STATIC)
+            .build()
+        if (track.state != AudioTrack.STATE_INITIALIZED) {
+            track.release()
+            return false
+        }
+        val written = track.write(samples, 0, samples.size)
+        if (written <= 0) {
+            track.release()
+            return false
+        }
+        track.play()
+        Thread.sleep(sleepMs)
+        runCatching { track.stop() }
+        track.release()
+        return true
     }
 }
 
@@ -1019,7 +1098,7 @@ internal fun rememberFifteenMinuteSoundEngine(): FifteenMinuteSoundEngine {
 
 /**
  * Большой и красивый женственный таймер «15-минутка» с удобным включением, паузой, сбросом,
- * звуками тиканья, минутными сигналами и голосовым отсчётом 5, 4, 3, 2, 1, «Время вышло, пора завершать уборку!».
+ * звуками тиканья каждую секунду, минутными сигналами и голосовым отсчётом 5, 4, 3, 2, 1, «Время вышло, пора завершать уборку!».
  */
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
@@ -1042,40 +1121,33 @@ internal fun FifteenMinuteTimerCard(
 
     LaunchedEffect(isRunning) {
         if (!isRunning) return@LaunchedEffect
+        // Сразу озвучиваем первый тик при нажатии «Старт»
+        if (settings.timerTickSound && remainingSeconds > 0) {
+            soundEngine.playTick(isEvenSecond = remainingSeconds % 2 == 0)
+        }
         while (isRunning && remainingSeconds > 0) {
             delay(1000L)
             if (!isRunning) break
             val next = (remainingSeconds - 1).coerceAtLeast(0)
             remainingSeconds = next
 
-            when {
-                next == 0 -> {
-                    isRunning = false
-                    isFinishedBanner = true
-                    soundEngine.playFinished(speakVoice = settings.timerVoiceCountdown)
+            if (next == 0) {
+                isRunning = false
+                isFinishedBanner = true
+                soundEngine.playFinished(speakVoice = settings.timerVoiceCountdown)
+            } else {
+                // Тиканье звучит КАЖДУЮ секунду без пропусков
+                if (settings.timerTickSound) {
+                    soundEngine.playTick(isEvenSecond = next % 2 == 0)
                 }
-                next in 1..5 -> {
-                    if (settings.timerVoiceCountdown) {
-                        soundEngine.playFinalSecond(next, speakVoice = true)
-                    } else if (settings.timerTickSound) {
-                        soundEngine.playTick()
-                    }
-                }
-                next > 0 && next % 60 == 0 && next < totalSeconds -> {
+                if (next in 1..5 && settings.timerVoiceCountdown) {
+                    soundEngine.playFinalSecond(next, speakVoice = true)
+                } else if (next % 60 == 0 && next < totalSeconds && settings.timerMinuteSound) {
                     val elapsedMinutes = (totalSeconds - next) / 60
-                    if (settings.timerMinuteSound) {
-                        soundEngine.playMinutePassed(
-                            minutesElapsed = elapsedMinutes,
-                            speakVoice = settings.timerVoiceCountdown,
-                        )
-                    } else if (settings.timerTickSound) {
-                        soundEngine.playTick()
-                    }
-                }
-                else -> {
-                    if (settings.timerTickSound) {
-                        soundEngine.playTick()
-                    }
+                    soundEngine.playMinutePassed(
+                        minutesElapsed = elapsedMinutes,
+                        speakVoice = settings.timerVoiceCountdown,
+                    )
                 }
             }
         }

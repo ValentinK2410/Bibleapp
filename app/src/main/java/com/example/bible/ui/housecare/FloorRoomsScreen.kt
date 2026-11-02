@@ -31,6 +31,7 @@ import java.time.DayOfWeek
 import java.time.LocalDate
 
 private val roomNameTemplates = listOf(
+    "15-минутка",
     "Кухня",
     "Гостиная",
     "Спальня",
@@ -62,6 +63,7 @@ fun FloorRoomsScreen(
     val weekStart = date.with(DayOfWeek.MONDAY)
     val weekDates = (0 until WeekDays.displayed.size).map { weekStart.plusDays(it.toLong()) }
     val zones = data.zones.filter { it.floorId == floorId }
+    val targetDate = if (date.dayOfWeek == DayOfWeek.SUNDAY) date.minusDays(1) else date
 
     HouseCareScaffold(
         title = floor?.name ?: "Этаж",
@@ -86,9 +88,22 @@ fun FloorRoomsScreen(
             item {
                 EmptyAddCard(
                     hint = "Добавить комнату или участок",
-                    subtitle = "Кухня, зал, санузел… и день, когда убираем",
+                    subtitle = "15-минутка, кухня, зал, санузел… и день, когда убираем",
                     onClick = { showAddZone = true },
                 )
+            }
+            if (zones.none { it.planDate in weekDates && isFifteenMinuteZoneName(it.name) }) {
+                item {
+                    CleaningRow(
+                        title = "15-минутка",
+                        subtitle = "Таймер 15 минут · быстрая уборка по разделам (${dayWithDate(targetDate)})",
+                        cleaned = false,
+                        showNotCleanedLabel = false,
+                        onClick = {
+                            viewModel.openOrCreateFifteenMinuteZone(floorId, targetDate, onOpenZone)
+                        },
+                    )
+                }
             }
             weekDates.forEach { day ->
                 val ofDay = zones.filter { it.planDate == day }
