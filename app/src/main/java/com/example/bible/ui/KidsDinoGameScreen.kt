@@ -1,19 +1,27 @@
 package com.example.bible.ui
 
 import android.content.Context
+import android.content.res.Configuration
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.gestures.detectDragGestures
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.safeDrawingPadding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
@@ -22,13 +30,11 @@ import androidx.compose.material.icons.filled.KeyboardArrowUp
 import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.CenterAlignedTopAppBar
-import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.FilterChip
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -44,6 +50,7 @@ import androidx.compose.runtime.withFrameNanos
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.geometry.CornerRadius
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Rect
@@ -54,10 +61,13 @@ import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -68,6 +78,8 @@ import com.example.bible.games.KidsGameAudio
 import com.example.bible.games.KidsMusicTrack
 import com.example.bible.games.KidsSfx
 import kotlin.math.max
+import kotlin.math.min
+import kotlin.math.roundToInt
 import kotlin.random.Random
 
 private enum class DinoObstacleKind {
@@ -79,21 +91,23 @@ private enum class DinoObstacleKind {
 
 private data class DinoObstacle(
     val id: Long,
-    val x: Float, // in virtual units (0..1000)
+    val x: Float, // uniform virtual units
     val kind: DinoObstacleKind,
-    val flyLevel: Int = 0, // 0 = ground, 1 = mid (can duck or jump), 2 = high (walk under / duck)
+    val flyLevel: Int = 0, // 0 = low, 1 = mid (duck under or jump over)
 )
 
 private data class DinoCloud(
     val x: Float,
-    val y: Float,
+    val yFrac: Float, // fraction of sky height (0.12f..0.48f)
     val scale: Float,
 )
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun KidsDinoGameScreen(onBack: () -> Unit) {
     val context = LocalContext.current
+    val configuration = LocalConfiguration.current
+    val isLandscape = configuration.orientation == Configuration.ORIENTATION_LANDSCAPE
+
     val family by KidsFamilyStore.state(context).collectAsStateWithLifecycle()
     val defaultEasy = family.resolvedMode() == KidsAgeMode.SMALL
     val prefs = remember { context.getSharedPreferences("kids_dino_prefs", Context.MODE_PRIVATE) }
@@ -103,8 +117,10 @@ fun KidsDinoGameScreen(onBack: () -> Unit) {
     var gameOver by remember { mutableStateOf(false) }
     var ducking by remember { mutableStateOf(false) }
 
-    // Virtual coordinate system: width = 1000f, groundY = 380f, height = 450f
-    var dinoY by remember { mutableFloatStateOf(0f) } // height above ground (0 = on ground)
+    // Uniform world coordinate system: 1 unit = `u` pixels on BOTH X and Y axes!
+    // This guarantees 1:1 aspect ratio with zero stretching or squashing in any screen orientation.
+    var worldWidthUnits by remember { mutableFloatStateOf(if (isLandscape) 680f else 380f) }
+    var dinoY by remember { mutableFloatStateOf(0f) } // height above ground in uniform units
     var dinoVy by remember { mutableFloatStateOf(0f) }
     var distance by remember { mutableFloatStateOf(0f) }
     var score by remember { mutableIntStateOf(0) }
@@ -115,12 +131,20 @@ fun KidsDinoGameScreen(onBack: () -> Unit) {
     var milestoneBanner by remember { mutableStateOf<String?>(null) }
     var nextObstacleId by remember { mutableLongStateOf(1L) }
 
+    // Draggable offsets for the floating buttons (persisted in memory while playing)
+    var jumpBtnOffsetX by remember { mutableFloatStateOf(0f) }
+    var jumpBtnOffsetY by remember { mutableFloatStateOf(0f) }
+    var duckBtnOffsetX by remember { mutableFloatStateOf(0f) }
+    var duckBtnOffsetY by remember { mutableFloatStateOf(0f) }
+
+    val dinoX = if (isLandscape) 78f else 44f
+
     val obstacles = remember { mutableStateListOf<DinoObstacle>() }
     val clouds = remember {
         mutableStateListOf(
-            DinoCloud(180f, 85f, 1.0f),
-            DinoCloud(520f, 60f, 1.25f),
-            DinoCloud(840f, 105f, 0.9f),
+            DinoCloud(90f, 0.20f, 1.0f),
+            DinoCloud(260f, 0.14f, 1.2f),
+            DinoCloud(450f, 0.28f, 0.9f),
         )
     }
 
@@ -138,7 +162,7 @@ fun KidsDinoGameScreen(onBack: () -> Unit) {
         obstacles.add(
             DinoObstacle(
                 id = nextObstacleId++,
-                x = 980f,
+                x = max(worldWidthUnits + 30f, 420f),
                 kind = DinoObstacleKind.CACTUS_SMALL,
             ),
         )
@@ -146,22 +170,18 @@ fun KidsDinoGameScreen(onBack: () -> Unit) {
     }
 
     fun triggerJump() {
-        if (gameOver) {
+        if (gameOver || !running) {
             resetAndStart()
             return
         }
-        if (!running) {
-            resetAndStart()
-            return
-        }
-        if (dinoY <= 4f) {
+        if (dinoY <= 3f) {
             ducking = false
-            dinoVy = if (easyMode) 960f else 1020f
+            dinoVy = if (easyMode) 540f else 575f
             KidsGameAudio.play(KidsSfx.TAP)
         }
     }
 
-    // 60 FPS game loop
+    // 60 FPS uniform physics loop
     LaunchedEffect(running, gameOver, easyMode) {
         if (!running || gameOver) return@LaunchedEffect
         var lastNanos = 0L
@@ -174,12 +194,12 @@ fun KidsDinoGameScreen(onBack: () -> Unit) {
                 val dt = ((now - lastNanos) / 1_000_000_000f).coerceIn(0f, 0.05f)
                 lastNanos = now
 
-                val baseSpeed = if (easyMode) 370f else 460f
-                val maxSpeed = if (easyMode) 680f else 880f
-                val speed = (baseSpeed + score * 1.45f).coerceAtMost(maxSpeed)
+                val baseSpeed = if (easyMode) 215f else 265f
+                val maxSpeed = if (easyMode) 390f else 490f
+                val speed = (baseSpeed + score * 0.85f).coerceAtMost(maxSpeed)
 
-                animTick += dt * (speed / 70f)
-                distance += speed * dt * 0.025f
+                animTick += dt * (speed / 40f)
+                distance += speed * dt * 0.045f
                 val newScore = distance.toInt()
                 if (newScore != score) {
                     score = newScore
@@ -196,8 +216,8 @@ fun KidsDinoGameScreen(onBack: () -> Unit) {
                     }
                 }
 
-                // Physics for Dino jump / gravity
-                val gravity = if (ducking && dinoY > 0f) 4200f else 2550f
+                // Uniform gravity & jump arc (max jump height ~ 105 units, easily clears tallest 52-unit cactus)
+                val gravity = if (ducking && dinoY > 0f) 2600f else 1450f
                 if (dinoY > 0f || dinoVy > 0f) {
                     dinoY += dinoVy * dt
                     dinoVy -= gravity * dt
@@ -210,32 +230,35 @@ fun KidsDinoGameScreen(onBack: () -> Unit) {
                 // Clouds movement
                 for (i in clouds.indices) {
                     val c = clouds[i]
-                    val nx = c.x - speed * 0.18f * dt
-                    clouds[i] = if (nx < -140f) {
-                        c.copy(x = 1100f + Random.nextFloat() * 150f, y = Random.nextFloat() * 90f + 45f)
+                    val nx = c.x - speed * 0.16f * dt
+                    clouds[i] = if (nx < -90f) {
+                        c.copy(
+                            x = worldWidthUnits + 50f + Random.nextFloat() * 90f,
+                            yFrac = Random.nextFloat() * 0.30f + 0.12f,
+                        )
                     } else {
                         c.copy(x = nx)
                     }
                 }
 
-                // Move obstacles
+                // Obstacles movement
                 val iter = obstacles.listIterator()
                 while (iter.hasNext()) {
                     val ob = iter.next()
-                    val obSpeed = if (ob.kind == DinoObstacleKind.PTERODACTYL) speed * 1.12f else speed
+                    val obSpeed = if (ob.kind == DinoObstacleKind.PTERODACTYL) speed * 1.1f else speed
                     val nx = ob.x - obSpeed * dt
-                    if (nx < -140f) {
+                    if (nx < -90f) {
                         iter.remove()
                     } else {
                         iter.set(ob.copy(x = nx))
                     }
                 }
 
-                // Spawn new obstacle if needed
+                // Spawn obstacles off the right edge of the current screen width
                 val lastX = obstacles.maxOfOrNull { it.x } ?: 0f
-                val minGap = if (easyMode) 430f else 350f
-                if (obstacles.isEmpty() || lastX < 1000f - minGap - Random.nextFloat() * 240f) {
-                    val canSpawnBird = score >= 35
+                val minGap = if (easyMode) 235f else 190f
+                if (obstacles.isEmpty() || lastX < worldWidthUnits - minGap - Random.nextFloat() * 110f) {
+                    val canSpawnBird = score >= 30
                     val r = Random.nextFloat()
                     val kind = when {
                         canSpawnBird && r < 0.28f -> DinoObstacleKind.PTERODACTYL
@@ -251,31 +274,32 @@ fun KidsDinoGameScreen(onBack: () -> Unit) {
                     obstacles.add(
                         DinoObstacle(
                             id = nextObstacleId++,
-                            x = max(1060f, lastX + minGap + Random.nextFloat() * 220f),
+                            x = max(worldWidthUnits + 35f, lastX + minGap + Random.nextFloat() * 115f),
                             kind = kind,
                             flyLevel = flyLevel,
                         ),
                     )
                 }
 
-                // Collision check in virtual coords (groundY = 380f, dinoX = 120f)
-                val dinoW = if (ducking && dinoY <= 2f) 86f else 64f
-                val dinoH = if (ducking && dinoY <= 2f) 52f else 88f
+                // Hitbox check in uniform virtual units (ground is y = 0, up is positive)
+                val isDuckOnGround = ducking && dinoY <= 2f
+                val dinoW = if (isDuckOnGround) 52f else 40f
+                val dinoH = if (isDuckOnGround) 28f else 48f
                 val dinoRect = Rect(
-                    left = 120f + 12f,
-                    top = 380f - dinoY - dinoH + 10f,
-                    right = 120f + dinoW - 12f,
-                    bottom = 380f - dinoY - 6f,
+                    left = dinoX + 7f,
+                    top = -(dinoY + dinoH - 5f),
+                    right = dinoX + dinoW - 7f,
+                    bottom = -(dinoY + 3f),
                 )
 
                 for (ob in obstacles) {
                     val obRect = when (ob.kind) {
-                        DinoObstacleKind.CACTUS_SMALL -> Rect(ob.x + 6f, 380f - 68f, ob.x + 42f, 380f)
-                        DinoObstacleKind.CACTUS_TALL -> Rect(ob.x + 6f, 380f - 94f, ob.x + 48f, 380f)
-                        DinoObstacleKind.CACTUS_TRIPLE -> Rect(ob.x + 6f, 380f - 78f, ob.x + 92f, 380f)
+                        DinoObstacleKind.CACTUS_SMALL -> Rect(ob.x + 4f, -36f, ob.x + 22f, 0f)
+                        DinoObstacleKind.CACTUS_TALL -> Rect(ob.x + 4f, -48f, ob.x + 26f, 0f)
+                        DinoObstacleKind.CACTUS_TRIPLE -> Rect(ob.x + 4f, -42f, ob.x + 52f, 0f)
                         DinoObstacleKind.PTERODACTYL -> {
-                            val bottomY = if (ob.flyLevel == 1) 380f - 62f else 380f - 18f
-                            Rect(ob.x + 8f, bottomY - 42f, ob.x + 76f, bottomY)
+                            val bottomH = if (ob.flyLevel == 1) 33f else 10f
+                            Rect(ob.x + 5f, -(bottomH + 22f), ob.x + 42f, -bottomH)
                         }
                     }
                     if (dinoRect.overlaps(obRect)) {
@@ -301,285 +325,401 @@ fun KidsDinoGameScreen(onBack: () -> Unit) {
 
     Scaffold(
         containerColor = MaterialTheme.colorScheme.background,
-        topBar = {
-            CenterAlignedTopAppBar(
-                title = { Text("Динозаврик 🦖", fontWeight = FontWeight.ExtraBold) },
-                navigationIcon = {
-                    IconButton(onClick = onBack) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Назад")
-                    }
-                },
-                actions = {
-                    IconButton(onClick = { resetAndStart() }) {
-                        Icon(Icons.Filled.Refresh, contentDescription = "Заново")
-                    }
-                    KidsAudioToggles()
-                },
-            )
-        },
+        contentWindowInsets = WindowInsets(0, 0, 0, 0),
     ) { padding ->
-        Column(
+        Box(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(padding)
-                .padding(horizontal = 16.dp, vertical = 10.dp),
-            verticalArrangement = Arrangement.spacedBy(12.dp),
+                .padding(padding),
         ) {
-            // Top bar with High Score, Current Score, and Speed Mode
-            Row(
+            // Full-screen Game Canvas (both in landscape and portrait!)
+            Canvas(
                 modifier = Modifier
-                    .fillMaxWidth()
-                    .clip(RoundedCornerShape(22.dp))
-                    .background(
-                        Brush.linearGradient(
-                            if (isNight) listOf(Color(0xFF1E293B), Color(0xFF0F172A))
-                            else listOf(Color(0xFF059669), Color(0xFF0D9488)),
-                        ),
-                    )
-                    .padding(horizontal = 16.dp, vertical = 12.dp),
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.SpaceBetween,
-            ) {
-                Column {
-                    Text(
-                        "СЧЁТ: ${score.toString().padStart(5, '0')}",
-                        color = Color.White,
-                        fontFamily = FontFamily.Monospace,
-                        fontWeight = FontWeight.Black,
-                        fontSize = 20.sp,
-                    )
-                    Text(
-                        "РЕКОРД: ${highScore.toString().padStart(5, '0')} · Каждые 100 очков = ⭐+2",
-                        color = Color.White.copy(alpha = 0.88f),
-                        fontSize = 12.sp,
-                        fontWeight = FontWeight.Bold,
-                    )
-                }
-                Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
-                    FilterChip(
-                        selected = easyMode,
-                        onClick = { easyMode = true },
-                        label = { Text("Легко", fontWeight = FontWeight.Bold) },
-                    )
-                    FilterChip(
-                        selected = !easyMode,
-                        onClick = { easyMode = false },
-                        label = { Text("Быстро", fontWeight = FontWeight.Bold) },
-                    )
-                }
-            }
-
-            milestoneBanner?.let { banner ->
-                Box(
-                    Modifier
-                        .fillMaxWidth()
-                        .clip(RoundedCornerShape(16.dp))
-                        .background(Color(0xFFFEF3C7))
-                        .padding(horizontal = 14.dp, vertical = 8.dp),
-                    contentAlignment = Alignment.Center,
-                ) {
-                    Text(banner, color = Color(0xFF92400E), fontWeight = FontWeight.ExtraBold, fontSize = 14.sp)
-                }
-            }
-
-            // Main Chrome Dino Canvas
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .weight(1f)
-                    .clip(RoundedCornerShape(28.dp))
+                    .fillMaxSize()
                     .pointerInput(running, gameOver, easyMode) {
                         detectTapGestures(
                             onTap = { triggerJump() },
                         )
                     },
-                contentAlignment = Alignment.Center,
             ) {
-                Canvas(modifier = Modifier.fillMaxSize()) {
-                    val sx = size.width / 1000f
-                    val sy = size.height / 450f
-                    val groundPx = 380f * sy
+                // UNIFORM scale factor `u`: 1 virtual unit = `u` pixels on BOTH X and Y!
+                val minDim = min(size.width, size.height)
+                val u = (minDim / 310f).coerceAtLeast(1f)
+                worldWidthUnits = size.width / u
 
-                    // Sky background (Day / Night transition like Chrome)
-                    val skyBrush = if (isNight) {
-                        Brush.verticalGradient(listOf(Color(0xFF0F172A), Color(0xFF1E293B)))
-                    } else {
-                        Brush.verticalGradient(listOf(Color(0xFFFFFBEB), Color(0xFFFEF3C7)))
-                    }
-                    drawRect(skyBrush)
+                // Ground sits cleanly above the bottom floating buttons
+                val groundBottomUnits = if (size.width > size.height) 62f else 98f
+                val groundPx = (size.height - groundBottomUnits * u).coerceIn(size.height * 0.55f, size.height * 0.86f)
 
-                    // Sun or Moon & Stars
-                    if (isNight) {
-                        drawCircle(Color(0xFFFDE68A), radius = 26f * sy, center = Offset(860f * sx, 80f * sy))
-                        drawCircle(Color(0xFF0F172A), radius = 22f * sy, center = Offset(870f * sx, 74f * sy))
-                        val starPositions = listOf(140f to 60f, 310f to 95f, 490f to 50f, 680f to 85f)
-                        starPositions.forEach { (stX, stY) ->
-                            drawCircle(Color.White.copy(alpha = 0.75f), radius = 3.5f * sy, center = Offset(stX * sx, stY * sy))
-                        }
-                    } else {
-                        drawCircle(Color(0xFFF59E0B).copy(alpha = 0.85f), radius = 32f * sy, center = Offset(860f * sx, 82f * sy))
-                    }
+                // Sky background (Day / Night transition)
+                val skyBrush = if (isNight) {
+                    Brush.verticalGradient(listOf(Color(0xFF0F172A), Color(0xFF1E293B)))
+                } else {
+                    Brush.verticalGradient(listOf(Color(0xFFFFFBEB), Color(0xFFFEF3C7)))
+                }
+                drawRect(skyBrush)
 
-                    // Clouds
-                    val cloudColor = if (isNight) Color(0xFF334155) else Color.White.copy(alpha = 0.92f)
-                    clouds.forEach { c ->
-                        drawRoundRect(
-                            color = cloudColor,
-                            topLeft = Offset(c.x * sx, c.y * sy),
-                            size = Size(95f * c.scale * sx, 30f * c.scale * sy),
-                            cornerRadius = CornerRadius(16f * sy, 16f * sy),
-                        )
+                // Sun or Moon & Stars (uniform radius `u` so sun/moon is ALWAYS a true circle!)
+                val sunX = size.width - 68f * u
+                val sunY = (groundPx * 0.26f).coerceAtLeast(56f * u)
+                if (isNight) {
+                    drawCircle(Color(0xFFFDE68A), radius = 18f * u, center = Offset(sunX, sunY))
+                    drawCircle(Color(0xFF0F172A), radius = 15f * u, center = Offset(sunX + 6f * u, sunY - 4f * u))
+                    val starFracs = listOf(0.18f to 0.18f, 0.36f to 0.28f, 0.55f to 0.16f, 0.72f to 0.25f)
+                    starFracs.forEach { (fx, fy) ->
                         drawCircle(
-                            color = cloudColor,
-                            radius = 22f * c.scale * sy,
-                            center = Offset((c.x + 32f * c.scale) * sx, (c.y + 4f * c.scale) * sy),
-                        )
-                        drawCircle(
-                            color = cloudColor,
-                            radius = 18f * c.scale * sy,
-                            center = Offset((c.x + 64f * c.scale) * sx, (c.y + 8f * c.scale) * sy),
+                            Color.White.copy(alpha = 0.75f),
+                            radius = 2.2f * u,
+                            center = Offset(size.width * fx, groundPx * fy),
                         )
                     }
+                } else {
+                    drawCircle(Color(0xFFF59E0B).copy(alpha = 0.88f), radius = 22f * u, center = Offset(sunX, sunY))
+                }
 
-                    // Desert Ground & scrolling pebbles
-                    val groundColor = if (isNight) Color(0xFF94A3B8) else Color(0xFF78350F)
-                    val sandFill = if (isNight) Color(0xFF0B1120) else Color(0xFFFDE68A)
-                    drawRect(
-                        color = sandFill,
-                        topLeft = Offset(0f, groundPx),
-                        size = Size(size.width, size.height - groundPx),
+                // Clouds (drawn with uniform `u` in both width and height)
+                val cloudColor = if (isNight) Color(0xFF334155) else Color.White.copy(alpha = 0.92f)
+                clouds.forEach { c ->
+                    val cx = c.x * u
+                    val cy = (groundPx * c.yFrac).coerceAtLeast(42f * u)
+                    val s = c.scale * u
+                    drawRoundRect(
+                        color = cloudColor,
+                        topLeft = Offset(cx, cy),
+                        size = Size(54f * s, 16f * s),
+                        cornerRadius = CornerRadius(9f * s, 9f * s),
                     )
-                    drawLine(
-                        color = groundColor,
-                        start = Offset(0f, groundPx),
-                        end = Offset(size.width, groundPx),
-                        strokeWidth = 4f * sy,
-                        cap = StrokeCap.Round,
+                    drawCircle(
+                        color = cloudColor,
+                        radius = 12f * s,
+                        center = Offset(cx + 18f * s, cy + 2f * s),
                     )
-                    val scrollOffset = (animTick * 42f) % 120f
-                    for (k in 0..10) {
-                        val px = ((k * 120f - scrollOffset + 1200f) % 1100f) * sx
-                        drawLine(
-                            color = groundColor.copy(alpha = 0.45f),
-                            start = Offset(px, groundPx + 14f * sy),
-                            end = Offset(px + 22f * sx, groundPx + 14f * sy),
-                            strokeWidth = 3f * sy,
-                            cap = StrokeCap.Round,
-                        )
-                        drawCircle(
-                            color = groundColor.copy(alpha = 0.35f),
-                            radius = 2.5f * sy,
-                            center = Offset(px + 55f * sx, groundPx + 24f * sy),
-                        )
-                    }
-
-                    // Draw Obstacles (Cacti & Pterodactyls)
-                    obstacles.forEach { ob ->
-                        drawObstacle(ob, sx, sy, groundPx, animTick, isNight)
-                    }
-
-                    // Draw Chrome T-Rex Dino
-                    drawDino(
-                        dinoX = 120f,
-                        dinoY = dinoY,
-                        ducking = ducking && dinoY <= 2f,
-                        gameOver = gameOver,
-                        animTick = animTick,
-                        sx = sx,
-                        sy = sy,
-                        groundPx = groundPx,
-                        isNight = isNight,
+                    drawCircle(
+                        color = cloudColor,
+                        radius = 10f * s,
+                        center = Offset(cx + 36f * s, cy + 4f * s),
                     )
                 }
 
-                // Start or Game Over overlay card
-                if (!running || gameOver) {
-                    Column(
-                        modifier = Modifier
-                            .clip(RoundedCornerShape(24.dp))
-                            .background(Color(0xFF0F172A).copy(alpha = 0.86f))
-                            .clickable { resetAndStart() }
-                            .padding(horizontal = 28.dp, vertical = 20.dp),
-                        horizontalAlignment = Alignment.CenterHorizontally,
-                        verticalArrangement = Arrangement.spacedBy(8.dp),
+                // Desert Ground & scrolling pebbles
+                val groundColor = if (isNight) Color(0xFF94A3B8) else Color(0xFF78350F)
+                val sandFill = if (isNight) Color(0xFF0B1120) else Color(0xFFFDE68A)
+                drawRect(
+                    color = sandFill,
+                    topLeft = Offset(0f, groundPx),
+                    size = Size(size.width, size.height - groundPx),
+                )
+                drawLine(
+                    color = groundColor,
+                    start = Offset(0f, groundPx),
+                    end = Offset(size.width, groundPx),
+                    strokeWidth = 2.6f * u,
+                    cap = StrokeCap.Round,
+                )
+                val scrollOffset = (animTick * 26f) % 80f
+                val pebbleCount = (worldWidthUnits / 75f).toInt() + 3
+                for (k in 0..pebbleCount) {
+                    val px = (k * 75f - scrollOffset) * u
+                    drawLine(
+                        color = groundColor.copy(alpha = 0.45f),
+                        start = Offset(px, groundPx + 9f * u),
+                        end = Offset(px + 14f * u, groundPx + 9f * u),
+                        strokeWidth = 2f * u,
+                        cap = StrokeCap.Round,
+                    )
+                    drawCircle(
+                        color = groundColor.copy(alpha = 0.35f),
+                        radius = 1.6f * u,
+                        center = Offset(px + 34f * u, groundPx + 16f * u),
+                    )
+                }
+
+                // Obstacles (drawn with uniform `u`)
+                obstacles.forEach { ob ->
+                    drawObstacleUniform(ob, u, groundPx, animTick, isNight)
+                }
+
+                // Chrome T-Rex Dino (drawn with uniform `u`)
+                drawDinoUniform(
+                    dinoX = dinoX,
+                    dinoY = dinoY,
+                    ducking = ducking && dinoY <= 2f,
+                    gameOver = gameOver,
+                    animTick = animTick,
+                    u = u,
+                    groundPx = groundPx,
+                    isNight = isNight,
+                )
+            }
+
+            // Floating Top HUD (compact in landscape so the game fills the whole screen, neat in portrait)
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .safeDrawingPadding()
+                    .padding(horizontal = 12.dp, vertical = if (isLandscape) 6.dp else 10.dp),
+                verticalArrangement = Arrangement.spacedBy(6.dp),
+            ) {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
+                    // Left floating pill: Back + Title + Score
+                    Surface(
+                        color = Color(0xFF0F172A).copy(alpha = 0.72f),
+                        contentColor = Color.White,
+                        shape = RoundedCornerShape(999.dp),
+                        shadowElevation = 4.dp,
                     ) {
-                        Text(
-                            if (gameOver) "💥 ОЙ, КАКТУС!" else "🦖 ДИНОЗАВРИК",
-                            color = Color.White,
-                            fontSize = 24.sp,
-                            fontWeight = FontWeight.Black,
-                        )
-                        Text(
-                            if (gameOver) {
-                                "Твой счёт: $score · Рекорд: $highScore\nНажми на экран, чтобы побежать снова!"
-                            } else {
-                                "Нажимай на экран или кнопку «Прыжок»,\nчтобы перепрыгивать кактусы и птиц!"
-                            },
-                            color = Color.White.copy(alpha = 0.9f),
-                            fontSize = 14.sp,
-                            textAlign = TextAlign.Center,
-                        )
-                        Spacer(Modifier.height(4.dp))
-                        Button(
-                            onClick = { resetAndStart() },
-                            colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF10B981)),
-                            shape = RoundedCornerShape(16.dp),
+                        Row(
+                            modifier = Modifier.padding(start = 4.dp, end = 14.dp, top = 2.dp, bottom = 2.dp),
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(6.dp),
                         ) {
+                            IconButton(
+                                onClick = onBack,
+                                modifier = Modifier.size(36.dp),
+                            ) {
+                                Icon(
+                                    Icons.AutoMirrored.Filled.ArrowBack,
+                                    contentDescription = "Назад",
+                                    tint = Color.White,
+                                )
+                            }
                             Text(
-                                if (gameOver) "🔄 Играть ещё раз" else "▶️ Старт!",
+                                text = if (isLandscape) "🦖" else "Динозаврик 🦖",
+                                fontWeight = FontWeight.ExtraBold,
+                                fontSize = 15.sp,
+                                maxLines = 1,
+                                softWrap = false,
+                            )
+                            Text(
+                                text = "СЧЁТ ${score.toString().padStart(4, '0')} · РЕК ${highScore.toString().padStart(4, '0')}",
+                                fontFamily = FontFamily.Monospace,
                                 fontWeight = FontWeight.Black,
-                                fontSize = 16.sp,
+                                fontSize = 13.sp,
+                                color = Color(0xFFFDE68A),
+                                maxLines = 1,
+                                softWrap = false,
                             )
                         }
+                    }
+
+                    // Right floating pill: Speed toggle + Restart + Audio
+                    Surface(
+                        color = Color(0xFF0F172A).copy(alpha = 0.72f),
+                        contentColor = Color.White,
+                        shape = RoundedCornerShape(999.dp),
+                        shadowElevation = 4.dp,
+                    ) {
+                        Row(
+                            modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp),
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(2.dp),
+                        ) {
+                            Box(
+                                modifier = Modifier
+                                    .clip(RoundedCornerShape(999.dp))
+                                    .background(if (easyMode) Color(0xFF10B981) else Color(0xFFF59E0B))
+                                    .clickable { easyMode = !easyMode }
+                                    .padding(horizontal = 10.dp, vertical = 5.dp),
+                            ) {
+                                Text(
+                                    text = if (easyMode) "Легко" else "Быстро",
+                                    color = Color.White,
+                                    fontWeight = FontWeight.ExtraBold,
+                                    fontSize = 12.sp,
+                                    maxLines = 1,
+                                    softWrap = false,
+                                )
+                            }
+                            IconButton(
+                                onClick = { resetAndStart() },
+                                modifier = Modifier.size(34.dp),
+                            ) {
+                                Icon(
+                                    Icons.Filled.Refresh,
+                                    contentDescription = "Заново",
+                                    tint = Color.White,
+                                )
+                            }
+                            KidsAudioToggles()
+                        }
+                    }
+                }
+
+                milestoneBanner?.let { banner ->
+                    Box(
+                        modifier = Modifier
+                            .align(Alignment.CenterHorizontally)
+                            .clip(RoundedCornerShape(999.dp))
+                            .background(Color(0xFFFEF3C7).copy(alpha = 0.95f))
+                            .padding(horizontal = 14.dp, vertical = 4.dp),
+                    ) {
+                        Text(
+                            text = banner,
+                            color = Color(0xFF92400E),
+                            fontWeight = FontWeight.ExtraBold,
+                            fontSize = 13.sp,
+                            maxLines = 1,
+                        )
                     }
                 }
             }
 
-            // Big kid-friendly Jump & Duck controls
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(12.dp),
-            ) {
-                Button(
-                    onClick = { triggerJump() },
+            // Start or Game Over overlay card in the center
+            if (!running || gameOver) {
+                Column(
                     modifier = Modifier
-                        .weight(1.4f)
-                        .height(64.dp),
-                    shape = RoundedCornerShape(22.dp),
-                    colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF059669)),
+                        .align(Alignment.Center)
+                        .padding(horizontal = 24.dp)
+                        .clip(RoundedCornerShape(24.dp))
+                        .background(Color(0xFF0F172A).copy(alpha = 0.86f))
+                        .clickable { resetAndStart() }
+                        .padding(horizontal = 24.dp, vertical = 16.dp),
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    verticalArrangement = Arrangement.spacedBy(6.dp),
                 ) {
-                    Icon(Icons.Filled.KeyboardArrowUp, contentDescription = null)
                     Text(
-                        " ПРЫЖОК",
-                        fontSize = 18.sp,
+                        text = if (gameOver) "💥 ОЙ, КАКТУС!" else "🦖 ДИНОЗАВРИК",
+                        color = Color.White,
+                        fontSize = 21.sp,
                         fontWeight = FontWeight.Black,
+                        maxLines = 1,
+                    )
+                    Text(
+                        text = if (gameOver) {
+                            "Счёт: $score · Рекорд: $highScore · Каждые 100 очков = ⭐+2"
+                        } else {
+                            "Прыгай через кактусы и приседай от птиц! (Кнопки можно двигать)"
+                        },
+                        color = Color.White.copy(alpha = 0.9f),
+                        fontSize = 13.sp,
+                        textAlign = TextAlign.Center,
+                    )
+                    Spacer(Modifier.height(2.dp))
+                    Button(
+                        onClick = { resetAndStart() },
+                        colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF10B981)),
+                        shape = RoundedCornerShape(999.dp),
+                    ) {
+                        Text(
+                            text = if (gameOver) "🔄 Играть ещё раз" else "▶️ Старт!",
+                            fontWeight = FontWeight.Black,
+                            fontSize = 15.sp,
+                            maxLines = 1,
+                        )
+                    }
+                }
+            }
+
+            // Floating Left Control: ПРИСЕСТЬ (supports tap, hold, and drag to reposition!)
+            Box(
+                modifier = Modifier
+                    .align(Alignment.BottomStart)
+                    .safeDrawingPadding()
+                    .padding(start = 16.dp, bottom = 14.dp)
+                    .offset { IntOffset(duckBtnOffsetX.roundToInt(), duckBtnOffsetY.roundToInt()) }
+                    .shadow(8.dp, RoundedCornerShape(999.dp))
+                    .clip(RoundedCornerShape(999.dp))
+                    .background(
+                        if (ducking) Color(0xFFD97706).copy(alpha = 0.92f)
+                        else Color(0xFF334155).copy(alpha = 0.80f),
+                    )
+                    .border(1.5.dp, Color.White.copy(alpha = 0.45f), RoundedCornerShape(999.dp))
+                    .pointerInput(running, gameOver) {
+                        detectTapGestures(
+                            onPress = {
+                                if (!running || gameOver) {
+                                    resetAndStart()
+                                } else {
+                                    ducking = true
+                                    if (dinoY > 0f) {
+                                        dinoVy = -420f
+                                    }
+                                    tryAwaitRelease()
+                                    ducking = false
+                                }
+                            },
+                        )
+                    }
+                    .pointerInput(Unit) {
+                        detectDragGestures { change, dragAmount ->
+                            change.consume()
+                            duckBtnOffsetX = (duckBtnOffsetX + dragAmount.x).coerceIn(-80f, 400f)
+                            duckBtnOffsetY = (duckBtnOffsetY + dragAmount.y).coerceIn(-360f, 40f)
+                        }
+                    }
+                    .padding(horizontal = 20.dp, vertical = 14.dp),
+                contentAlignment = Alignment.Center,
+            ) {
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(6.dp),
+                ) {
+                    Icon(
+                        Icons.Filled.KeyboardArrowDown,
+                        contentDescription = null,
+                        tint = Color.White,
+                        modifier = Modifier.size(24.dp),
+                    )
+                    Text(
+                        text = "ПРИСЕСТЬ",
+                        color = Color.White,
+                        fontWeight = FontWeight.Black,
+                        fontSize = 15.sp,
+                        maxLines = 1,
+                        softWrap = false,
+                        overflow = TextOverflow.Visible,
                     )
                 }
+            }
 
-                Button(
-                    onClick = {
-                        if (!running || gameOver) {
-                            resetAndStart()
-                        } else {
-                            ducking = !ducking
-                            if (dinoY > 0f && ducking) {
-                                dinoVy = -700f
-                            }
+            // Floating Right Control: ПРЫЖОК (supports tap and drag to reposition!)
+            Box(
+                modifier = Modifier
+                    .align(Alignment.BottomEnd)
+                    .safeDrawingPadding()
+                    .padding(end = 16.dp, bottom = 14.dp)
+                    .offset { IntOffset(jumpBtnOffsetX.roundToInt(), jumpBtnOffsetY.roundToInt()) }
+                    .shadow(8.dp, RoundedCornerShape(999.dp))
+                    .clip(RoundedCornerShape(999.dp))
+                    .background(Color(0xFF059669).copy(alpha = 0.86f))
+                    .border(1.5.dp, Color.White.copy(alpha = 0.45f), RoundedCornerShape(999.dp))
+                    .pointerInput(running, gameOver, easyMode) {
+                        detectTapGestures(
+                            onPress = { triggerJump() },
+                        )
+                    }
+                    .pointerInput(Unit) {
+                        detectDragGestures { change, dragAmount ->
+                            change.consume()
+                            jumpBtnOffsetX = (jumpBtnOffsetX + dragAmount.x).coerceIn(-400f, 80f)
+                            jumpBtnOffsetY = (jumpBtnOffsetY + dragAmount.y).coerceIn(-360f, 40f)
                         }
-                    },
-                    modifier = Modifier
-                        .weight(1f)
-                        .height(64.dp),
-                    shape = RoundedCornerShape(22.dp),
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = if (ducking) Color(0xFFD97706) else Color(0xFF475569),
-                    ),
+                    }
+                    .padding(horizontal = 24.dp, vertical = 14.dp),
+                contentAlignment = Alignment.Center,
+            ) {
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(6.dp),
                 ) {
-                    Icon(Icons.Filled.KeyboardArrowDown, contentDescription = null)
+                    Icon(
+                        Icons.Filled.KeyboardArrowUp,
+                        contentDescription = null,
+                        tint = Color.White,
+                        modifier = Modifier.size(26.dp),
+                    )
                     Text(
-                        if (ducking) " ВСТАТЬ" else " ПРИСЕСТЬ",
-                        fontSize = 16.sp,
+                        text = "ПРЫЖОК",
+                        color = Color.White,
                         fontWeight = FontWeight.Black,
+                        fontSize = 16.sp,
+                        maxLines = 1,
+                        softWrap = false,
+                        overflow = TextOverflow.Visible,
                     )
                 }
             }
@@ -587,180 +727,186 @@ fun KidsDinoGameScreen(onBack: () -> Unit) {
     }
 }
 
-private fun DrawScope.drawDino(
+private fun DrawScope.drawDinoUniform(
     dinoX: Float,
     dinoY: Float,
     ducking: Boolean,
     gameOver: Boolean,
     animTick: Float,
-    sx: Float,
-    sy: Float,
+    u: Float,
     groundPx: Float,
     isNight: Boolean,
 ) {
     val bodyColor = if (isNight) Color(0xFF34D399) else Color(0xFF047857)
     val bellyColor = if (isNight) Color(0xFFA7F3D0) else Color(0xFF6EE7B7)
-    val basePxX = dinoX * sx
-    val basePxY = groundPx - dinoY * sy
+    val basePxX = dinoX * u
+    val basePxY = groundPx - dinoY * u
 
     if (ducking) {
-        // Ducking horizontal T-Rex
-        val topY = basePxY - 54f * sy
+        // Ducking horizontal T-Rex (52x28 uniform units)
+        val topY = basePxY - 29f * u
+        // Tail
+        val tail = Path().apply {
+            moveTo(basePxX + 4f * u, topY + 10f * u)
+            lineTo(basePxX - 10f * u, topY + 5f * u)
+            lineTo(basePxX - 4f * u, topY + 19f * u)
+            close()
+        }
+        drawPath(tail, bodyColor)
         // Body
         drawRoundRect(
             color = bodyColor,
-            topLeft = Offset(basePxX, topY + 10f * sy),
-            size = Size(62f * sx, 30f * sy),
-            cornerRadius = CornerRadius(8f * sx, 8f * sy),
+            topLeft = Offset(basePxX, topY + 5f * u),
+            size = Size(34f * u, 16f * u),
+            cornerRadius = CornerRadius(5f * u, 5f * u),
         )
         // Head stretched forward
         drawRoundRect(
             color = bodyColor,
-            topLeft = Offset(basePxX + 48f * sx, topY + 4f * sy),
-            size = Size(40f * sx, 26f * sy),
-            cornerRadius = CornerRadius(6f * sx, 6f * sy),
+            topLeft = Offset(basePxX + 26f * u, topY + 2f * u),
+            size = Size(24f * u, 15f * u),
+            cornerRadius = CornerRadius(4f * u, 4f * u),
         )
         // Eye
-        drawCircle(Color.White, radius = 4.5f * sy, center = Offset(basePxX + 72f * sx, topY + 12f * sy))
-        drawCircle(Color(0xFF111827), radius = 2.3f * sy, center = Offset(basePxX + 73f * sx, topY + 12f * sy))
+        drawCircle(Color.White, radius = 2.6f * u, center = Offset(basePxX + 40f * u, topY + 7f * u))
+        drawCircle(Color(0xFF111827), radius = 1.4f * u, center = Offset(basePxX + 40.7f * u, topY + 7f * u))
     } else {
-        // Standing / jumping T-Rex in classic Chrome silhouette
-        val topY = basePxY - 90f * sy
+        // Standing / jumping T-Rex (40x48 uniform units — classic square proportions!)
+        val topY = basePxY - 48f * u
         // Tail
         val tail = Path().apply {
-            moveTo(basePxX + 12f * sx, topY + 38f * sy)
-            lineTo(basePxX - 16f * sx, topY + 24f * sy)
-            lineTo(basePxX - 8f * sx, topY + 58f * sy)
+            moveTo(basePxX + 7f * u, topY + 20f * u)
+            lineTo(basePxX - 9f * u, topY + 13f * u)
+            lineTo(basePxX - 4f * u, topY + 32f * u)
             close()
         }
         drawPath(tail, bodyColor)
         // Torso
         drawRoundRect(
             color = bodyColor,
-            topLeft = Offset(basePxX + 6f * sx, topY + 24f * sy),
-            size = Size(38f * sx, 44f * sy),
-            cornerRadius = CornerRadius(8f * sx, 8f * sy),
+            topLeft = Offset(basePxX + 4f * u, topY + 13f * u),
+            size = Size(22f * u, 24f * u),
+            cornerRadius = CornerRadius(5f * u, 5f * u),
         )
         // Belly highlight
         drawRoundRect(
             color = bellyColor.copy(alpha = 0.5f),
-            topLeft = Offset(basePxX + 28f * sx, topY + 32f * sy),
-            size = Size(12f * sx, 30f * sy),
-            cornerRadius = CornerRadius(5f * sx, 5f * sy),
+            topLeft = Offset(basePxX + 17f * u, topY + 17f * u),
+            size = Size(7f * u, 16f * u),
+            cornerRadius = CornerRadius(3f * u, 3f * u),
         )
         // Head & Snout
         drawRoundRect(
             color = bodyColor,
-            topLeft = Offset(basePxX + 20f * sx, topY),
-            size = Size(44f * sx, 30f * sy),
-            cornerRadius = CornerRadius(7f * sx, 7f * sy),
+            topLeft = Offset(basePxX + 12f * u, topY),
+            size = Size(25f * u, 17f * u),
+            cornerRadius = CornerRadius(4.5f * u, 4.5f * u),
         )
         // Mouth line
         drawLine(
             color = Color(0xFF064E3B),
-            start = Offset(basePxX + 44f * sx, topY + 22f * sy),
-            end = Offset(basePxX + 62f * sx, topY + 22f * sy),
-            strokeWidth = 2.5f * sy,
+            start = Offset(basePxX + 25f * u, topY + 12.5f * u),
+            end = Offset(basePxX + 36f * u, topY + 12.5f * u),
+            strokeWidth = 1.6f * u,
         )
-        // Eye (surprised wide eye on Game Over)
-        val eyeCenter = Offset(basePxX + 36f * sx, topY + 10f * sy)
-        drawCircle(Color.White, radius = if (gameOver) 6f * sy else 4.5f * sy, center = eyeCenter)
-        drawCircle(Color(0xFF111827), radius = 2.5f * sy, center = eyeCenter + Offset(1f * sx, 0f))
+        // Eye
+        val eyeCenter = Offset(basePxX + 21f * u, topY + 6f * u)
+        drawCircle(Color.White, radius = if (gameOver) 3.4f * u else 2.6f * u, center = eyeCenter)
+        drawCircle(Color(0xFF111827), radius = 1.4f * u, center = eyeCenter + Offset(0.6f * u, 0f))
         // Tiny arm
         drawRoundRect(
             color = bodyColor,
-            topLeft = Offset(basePxX + 42f * sx, topY + 38f * sy),
-            size = Size(14f * sx, 7f * sy),
-            cornerRadius = CornerRadius(3f * sx, 3f * sy),
+            topLeft = Offset(basePxX + 24f * u, topY + 21f * u),
+            size = Size(8f * u, 4f * u),
+            cornerRadius = CornerRadius(2f * u, 2f * u),
         )
     }
 
     // Alternating running legs
     val step = ((animTick * 2.4f).toInt() % 2 == 0)
-    val leftLegLift = if (dinoY > 2f) 4f else if (step) 8f else 0f
-    val rightLegLift = if (dinoY > 2f) 4f else if (!step) 8f else 0f
+    val leftLegLift = if (dinoY > 2f) 2f else if (step) 4.5f else 0f
+    val rightLegLift = if (dinoY > 2f) 2f else if (!step) 4.5f else 0f
     drawRoundRect(
         color = bodyColor,
-        topLeft = Offset(basePxX + 12f * sx, basePxY - (22f + leftLegLift) * sy),
-        size = Size(10f * sx, 22f * sy),
-        cornerRadius = CornerRadius(3f * sx, 3f * sy),
+        topLeft = Offset(basePxX + 7f * u, basePxY - (12f + leftLegLift) * u),
+        size = Size(5.5f * u, 12f * u),
+        cornerRadius = CornerRadius(2f * u, 2f * u),
     )
     drawRoundRect(
         color = bodyColor,
-        topLeft = Offset(basePxX + 28f * sx, basePxY - (22f + rightLegLift) * sy),
-        size = Size(10f * sx, 22f * sy),
-        cornerRadius = CornerRadius(3f * sx, 3f * sy),
+        topLeft = Offset(basePxX + 16f * u, basePxY - (12f + rightLegLift) * u),
+        size = Size(5.5f * u, 12f * u),
+        cornerRadius = CornerRadius(2f * u, 2f * u),
     )
 }
 
-private fun DrawScope.drawObstacle(
+private fun DrawScope.drawObstacleUniform(
     ob: DinoObstacle,
-    sx: Float,
-    sy: Float,
+    u: Float,
     groundPx: Float,
     animTick: Float,
     isNight: Boolean,
 ) {
     val cactusColor = if (isNight) Color(0xFF22C55E) else Color(0xFF15803D)
-    val xPx = ob.x * sx
+    val xPx = ob.x * u
 
     fun drawSingleCactus(cx: Float, h: Float, w: Float) {
-        val top = groundPx - h * sy
+        val top = groundPx - h * u
         // Main stem
         drawRoundRect(
             color = cactusColor,
             topLeft = Offset(cx, top),
-            size = Size(w * sx, h * sy),
-            cornerRadius = CornerRadius(6f * sx, 6f * sy),
+            size = Size(w * u, h * u),
+            cornerRadius = CornerRadius(3.5f * u, 3.5f * u),
         )
         // Left branch
         drawRoundRect(
             color = cactusColor,
-            topLeft = Offset(cx - 10f * sx, top + h * 0.28f * sy),
-            size = Size(12f * sx, h * 0.34f * sy),
-            cornerRadius = CornerRadius(4f * sx, 4f * sy),
+            topLeft = Offset(cx - 5.5f * u, top + h * 0.28f * u),
+            size = Size(6.5f * u, h * 0.34f * u),
+            cornerRadius = CornerRadius(2.5f * u, 2.5f * u),
         )
         // Right branch
         drawRoundRect(
             color = cactusColor,
-            topLeft = Offset(cx + (w - 2f) * sx, top + h * 0.18f * sy),
-            size = Size(12f * sx, h * 0.36f * sy),
-            cornerRadius = CornerRadius(4f * sx, 4f * sy),
+            topLeft = Offset(cx + (w - 1f) * u, top + h * 0.18f * u),
+            size = Size(6.5f * u, h * 0.36f * u),
+            cornerRadius = CornerRadius(2.5f * u, 2.5f * u),
         )
     }
 
     when (ob.kind) {
-        DinoObstacleKind.CACTUS_SMALL -> drawSingleCactus(xPx + 10f * sx, 68f, 22f)
-        DinoObstacleKind.CACTUS_TALL -> drawSingleCactus(xPx + 10f * sx, 94f, 26f)
+        DinoObstacleKind.CACTUS_SMALL -> drawSingleCactus(xPx + 6f * u, 36f, 12f)
+        DinoObstacleKind.CACTUS_TALL -> drawSingleCactus(xPx + 6f * u, 48f, 14f)
         DinoObstacleKind.CACTUS_TRIPLE -> {
-            drawSingleCactus(xPx + 6f * sx, 72f, 20f)
-            drawSingleCactus(xPx + 36f * sx, 82f, 22f)
-            drawSingleCactus(xPx + 66f * sx, 64f, 18f)
+            drawSingleCactus(xPx + 4f * u, 38f, 11f)
+            drawSingleCactus(xPx + 20f * u, 43f, 12f)
+            drawSingleCactus(xPx + 36f * u, 34f, 10f)
         }
         DinoObstacleKind.PTERODACTYL -> {
             val birdColor = if (isNight) Color(0xFFFBBF24) else Color(0xFF7C3AED)
-            val bottomY = if (ob.flyLevel == 1) groundPx - 62f * sy else groundPx - 18f * sy
-            val cy = bottomY - 22f * sy
+            val bottomY = if (ob.flyLevel == 1) groundPx - 33f * u else groundPx - 10f * u
+            val cy = bottomY - 12f * u
             // Body & Beak
             drawRoundRect(
                 color = birdColor,
-                topLeft = Offset(xPx + 14f * sx, cy - 8f * sy),
-                size = Size(54f * sx, 18f * sy),
-                cornerRadius = CornerRadius(6f * sx, 6f * sy),
+                topLeft = Offset(xPx + 8f * u, cy - 4.5f * u),
+                size = Size(30f * u, 10f * u),
+                cornerRadius = CornerRadius(3.5f * u, 3.5f * u),
             )
             val beak = Path().apply {
-                moveTo(xPx + 18f * sx, cy - 6f * sy)
-                lineTo(xPx - 4f * sx, cy + 2f * sy)
-                lineTo(xPx + 18f * sx, cy + 8f * sy)
+                moveTo(xPx + 10f * u, cy - 3.5f * u)
+                lineTo(xPx - 2f * u, cy + 1f * u)
+                lineTo(xPx + 10f * u, cy + 4.5f * u)
                 close()
             }
             drawPath(beak, birdColor)
             // Flapping wing
             val wingUp = ((animTick * 2f).toInt() % 2 == 0)
             val wing = Path().apply {
-                moveTo(xPx + 28f * sx, cy)
-                lineTo(xPx + 42f * sx, if (wingUp) cy - 26f * sy else cy + 24f * sy)
-                lineTo(xPx + 56f * sx, cy)
+                moveTo(xPx + 16f * u, cy)
+                lineTo(xPx + 24f * u, if (wingUp) cy - 14f * u else cy + 13f * u)
+                lineTo(xPx + 32f * u, cy)
                 close()
             }
             drawPath(wing, birdColor)
