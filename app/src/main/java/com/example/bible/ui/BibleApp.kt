@@ -1457,7 +1457,15 @@ private fun BibleNavHost(
                         launchSingleTop = true
                     }
                 },
+                onOpenHeroesOfFaith = {
+                    navController.navigate("kids_heroes_faith") {
+                        launchSingleTop = true
+                    }
+                },
             )
+        }
+        composable("kids_heroes_faith") {
+            KidsHeroesOfFaithGameScreen(onBack = { navController.navigateUp() })
         }
         composable("kids_adameve") {
             KidsAdamEveGameScreen(onBack = { navController.navigateUp() })

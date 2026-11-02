@@ -299,5 +299,47 @@ internal fun AdamEveGardenArt(modifier: Modifier = Modifier) {
     }
 }
 
+@Composable
+internal fun HeroesOfFaithArt(modifier: Modifier = Modifier) {
+    Canvas(modifier) {
+        squareArea { l, t, s ->
+            // Starry covenant sky (Abraham's stars + Noah's rainbow + Shield of Faith)
+            drawRoundRect(
+                Brush.verticalGradient(listOf(Color(0xFF1E1B4B), Color(0xFF312E81), Color(0xFFD97706))),
+                Offset(l, t),
+                Size(s, s),
+                CornerRadius(s * 0.14f),
+            )
+            // Rainbow of Covenant arc
+            val arcCenter = Offset(l + s * 0.5f, t + s * 0.78f)
+            drawCircle(Color(0xFFF87171).copy(alpha = 0.55f), s * 0.42f, arcCenter, style = Stroke(s * 0.035f))
+            drawCircle(Color(0xFFFACC15).copy(alpha = 0.55f), s * 0.38f, arcCenter, style = Stroke(s * 0.035f))
+            drawCircle(Color(0xFF34D399).copy(alpha = 0.55f), s * 0.34f, arcCenter, style = Stroke(s * 0.035f))
+
+            // Stars of Abraham
+            drawCircle(Color(0xFFFEF08A), s * 0.03f, Offset(l + s * 0.22f, t + s * 0.20f))
+            drawCircle(Color(0xFFFEF08A), s * 0.035f, Offset(l + s * 0.78f, t + s * 0.18f))
+            drawCircle(Color(0xFFFEF08A), s * 0.025f, Offset(l + s * 0.52f, t + s * 0.14f))
+
+            // Golden Shield of Faith & Crown in center
+            val cx = l + s * 0.5f
+            val cy = t + s * 0.52f
+            val shield = Path().apply {
+                moveTo(cx - s * 0.18f, cy - s * 0.16f)
+                lineTo(cx + s * 0.18f, cy - s * 0.16f)
+                lineTo(cx + s * 0.15f, cy + s * 0.06f)
+                lineTo(cx, cy + s * 0.22f)
+                lineTo(cx - s * 0.15f, cy + s * 0.06f)
+                close()
+            }
+            drawPath(shield, Brush.verticalGradient(listOf(Color(0xFFFDE047), Color(0xFFD97706))))
+            // Cross of Faith on the shield
+            drawLine(Color(0xFF78350F), Offset(cx, cy - s * 0.10f), Offset(cx, cy + s * 0.13f), s * 0.04f, StrokeCap.Round)
+            drawLine(Color(0xFF78350F), Offset(cx - s * 0.09f, cy - s * 0.02f), Offset(cx + s * 0.09f, cy - s * 0.02f), s * 0.04f, StrokeCap.Round)
+        }
+    }
+}
+
+
 
 
