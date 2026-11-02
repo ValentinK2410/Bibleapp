@@ -275,7 +275,16 @@ fun PlaceDaysScreen(
         swipeNote = null
     }
     val weekStart = LocalDate.now().with(DayOfWeek.MONDAY).plusWeeks(weekOffset.toLong())
+    val prevWeekStart = weekStart.minusWeeks(1)
     val weekDates = (0 until WeekDays.displayed.size).map { weekStart.plusDays(it.toLong()) }.toSet()
+    val copyableDays = (0 until WeekDays.displayed.size).mapNotNull { offset ->
+        val toDate = weekStart.plusDays(offset.toLong())
+        val fromDate = prevWeekStart.plusDays(offset.toLong())
+        val targetZones = data.zonesOfPlace(placeId, toDate)
+        val sourceZones = data.zonesOfPlace(placeId, fromDate)
+        if (targetZones.isEmpty() && sourceZones.isNotEmpty()) sourceZones.size else null
+    }
+    val copyableRoomsTotal = copyableDays.sum()
     val swipeThresholdPx = with(LocalDensity.current) { 90.dp.toPx() }
 
     fun shiftWeek(delta: Int) {
@@ -432,6 +441,16 @@ fun PlaceDaysScreen(
                         placeId = placeId,
                         weekStart = weekStart,
                         onPickDate = onOpenDate,
+                    )
+                }
+            }
+            if (copyableRoomsTotal > 0) {
+                item {
+                    EmptyAddCard(
+                        hint = "Скопировать план со всей прошлой недели",
+                        subtitle = "$copyableRoomsTotal ${pluralRu(copyableRoomsTotal, "комната", "комнаты", "комнат")} " +
+                            "за ${copyableDays.size} ${pluralRu(copyableDays.size, "день", "дня", "дней")} перенесутся в пустые дни этой недели",
+                        onClick = { viewModel.copyWeekPlan(placeId, prevWeekStart, weekStart) },
                     )
                 }
             }
@@ -805,9 +824,13 @@ private fun FloorDayCard(
                 )
                 zones.forEach { zone ->
                     val (done, total) = data.zoneProgress(zone)
+                    val zoneDurationMs = data.tasksOf(zone.id).sumOf { it.active?.durationMs ?: 0L }
                     RoomRow(
                         name = zone.name,
-                        subtitle = "разделов $done/$total",
+                        subtitle = buildString {
+                            append("разделов $done/$total")
+                            if (zoneDurationMs > 0L) append(" · ${formatDurationMs(zoneDurationMs)}")
+                        },
                         done = done,
                         total = total,
                         onClick = { onOpenZone(zone.id) },

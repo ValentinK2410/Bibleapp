@@ -59,6 +59,10 @@ class HouseCareViewModel(
     /** Перенести комнаты и их разделы с другой даты на этот день. */
     fun copyZonePlan(placeId: String, from: LocalDate, to: LocalDate) = edit { copyZonesPlan(placeId, from, to) }
 
+    /** Перенести план комнат и разделов со всей недели [fromWeekStart] на неделю [toWeekStart]. */
+    fun copyWeekPlan(placeId: String, fromWeekStart: LocalDate, toWeekStart: LocalDate) =
+        edit { copyWeekPlan(placeId, fromWeekStart, toWeekStart) }
+
     fun deleteZone(id: String) = edit { deleteZone(id) }
 
     fun addHabit(placeId: String, kind: String, name: String) = edit { addHabit(placeId, kind, name) }

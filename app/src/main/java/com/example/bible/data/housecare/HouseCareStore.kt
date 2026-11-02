@@ -168,6 +168,31 @@ class HouseCareStore(context: Context) {
         cur.copy(zones = cur.zones + copies.map { it.first }, tasks = cur.tasks + copiedTasks)
     }
 
+    /**
+     * Копирует план сразу на всю неделю (Пн–Сб) с недели [fromWeekStart] на [toWeekStart]
+     * для тех дней целевой недели, в которых ещё нет ни одной комнаты.
+     */
+    suspend fun copyWeekPlan(placeId: String, fromWeekStart: LocalDate, toWeekStart: LocalDate) = mutate { cur ->
+        val floorIds = cur.floorsOf(placeId).map { it.id }.toSet()
+        val newZones = mutableListOf<CleaningZone>()
+        val newTasks = mutableListOf<CleaningTask>()
+        for (offset in 0 until WeekDays.displayed.size) {
+            val fromDate = fromWeekStart.plusDays(offset.toLong())
+            val toDate = toWeekStart.plusDays(offset.toLong())
+            val existingOnTarget = cur.zones.any { it.floorId in floorIds && it.date == toDate.toString() }
+            if (existingOnTarget) continue
+            val source = cur.zones.filter { it.floorId in floorIds && it.date == fromDate.toString() }
+            source.forEach { zone ->
+                val copy = CleaningZone(floorId = zone.floorId, date = toDate.toString(), name = zone.name)
+                newZones += copy
+                cur.tasksOf(zone.id).forEach { task ->
+                    newTasks += CleaningTask(zoneId = copy.id, name = task.name, order = task.order)
+                }
+            }
+        }
+        if (newZones.isEmpty()) cur else cur.copy(zones = cur.zones + newZones, tasks = cur.tasks + newTasks)
+    }
+
     suspend fun deleteZone(id: String) = mutate { cur ->
         val removedPhotos = cur.tasks.filter { it.zoneId == id }.flatMap { it.photos() }
         removedPhotos.forEach { HouseCarePhotoStorage.deleteFile(app, it) }

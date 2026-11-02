@@ -4,19 +4,23 @@ import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.PickVisualMediaRequest
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowForward
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.PhotoCamera
 import androidx.compose.material.icons.filled.PhotoLibrary
@@ -28,6 +32,7 @@ import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -36,6 +41,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
@@ -73,6 +79,8 @@ fun CleaningTaskScreen(
 
     var pendingKind by remember { mutableStateOf<String?>(null) }
     var pendingFile by remember { mutableStateOf<File?>(null) }
+    var viewingReport by remember { mutableStateOf<CleaningReport?>(null) }
+    var viewingInitialTab by remember { mutableIntStateOf(0) }
 
     fun applyPhoto(kind: String, fileName: String) {
         when (kind) {
@@ -141,10 +149,26 @@ fun CleaningTaskScreen(
 
             if (report == null) {
                 item {
-                    Text(
-                        "Начните уборку: сделайте фото «до», по окончании — фото «после». " +
-                            "Время между снимками попадёт в статистику.",
-                        style = MaterialTheme.typography.bodyMedium,
+                    GroupCard(container = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.22f)) {
+                        Text(
+                            "Начните уборку: сделайте фото «до», по окончании — фото «после». " +
+                                "Точное время между снимками автоматически попадёт в статистику недели.",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            modifier = Modifier.padding(14.dp),
+                        )
+                    }
+                }
+            }
+
+            if (report != null && report.beforePhoto != null && report.afterPhoto != null) {
+                item {
+                    BeforeAfterComparisonCard(
+                        report = report,
+                        onOpenFull = { tab ->
+                            viewingInitialTab = tab
+                            viewingReport = report
+                        },
                     )
                 }
             }
@@ -155,6 +179,12 @@ fun CleaningTaskScreen(
                     kind = HouseCarePhotoStorage.KIND_BEFORE,
                     photo = report?.beforePhoto,
                     timeLabel = report?.beforeAtMs?.let(::formatTimeMs),
+                    onPreview = {
+                        if (report != null) {
+                            viewingInitialTab = 1
+                            viewingReport = report
+                        }
+                    },
                     onCamera = { requestCamera(HouseCarePhotoStorage.KIND_BEFORE) },
                     onGallery = { requestGallery(HouseCarePhotoStorage.KIND_BEFORE) },
                     onRemove = { viewModel.removePhoto(taskId, HouseCarePhotoStorage.KIND_BEFORE) },
@@ -168,9 +198,15 @@ fun CleaningTaskScreen(
                     photo = report?.afterPhoto,
                     timeLabel = report?.afterAtMs?.let(::formatTimeMs),
                     hint = if (report != null && report.beforePhoto != null && !report.isFinished) {
-                        "Уборка идёт — снимите результат, чтобы поставить галочку"
+                        "Уборка идёт — снимите результат, чтобы зафиксировать время и поставить галочку"
                     } else {
                         null
+                    },
+                    onPreview = {
+                        if (report != null) {
+                            viewingInitialTab = 2
+                            viewingReport = report
+                        }
                     },
                     onCamera = { requestCamera(HouseCarePhotoStorage.KIND_AFTER) },
                     onGallery = { requestGallery(HouseCarePhotoStorage.KIND_AFTER) },
@@ -216,7 +252,7 @@ fun CleaningTaskScreen(
                     item {
                         Text(
                             "Раздел убран ${formatDateMs(report.dateMs)} · ${formatDurationMs(report.durationMs)}. " +
-                                "Новое фото «до» начнёт следующий цикл.",
+                                "Новое фото «до» начнёт следующий цикл, а этот отчёт сохранится в истории.",
                             style = MaterialTheme.typography.bodySmall,
                             color = cleaningGreen,
                         )
@@ -225,9 +261,135 @@ fun CleaningTaskScreen(
             }
 
             if (task.history.isNotEmpty()) {
-                item { HouseCareSectionTitle("История уборок") }
-                items(task.history, key = { it.id }) { old -> HistoryRow(old) }
+                item { HouseCareSectionTitle("История уборок (${task.history.size})") }
+                items(task.history, key = { it.id }) { old ->
+                    HistoryRow(
+                        report = old,
+                        onOpenPhotos = {
+                            viewingInitialTab = 0
+                            viewingReport = old
+                        },
+                    )
+                }
             }
+        }
+    }
+
+    viewingReport?.let { target ->
+        ReportPhotosDialog(
+            report = target,
+            title = listOfNotNull(zone?.name, task?.name).joinToString(" · "),
+            initialTab = viewingInitialTab,
+            onDismiss = { viewingReport = null },
+        )
+    }
+}
+
+/** Наглядная карточка сравнения снимков «До» и «После» рядом друг с другом. */
+@Composable
+private fun BeforeAfterComparisonCard(
+    report: CleaningReport,
+    onOpenFull: (initialTab: Int) -> Unit,
+) {
+    val context = LocalContext.current
+    val beforeFile = HouseCarePhotoStorage.resolve(context, report.beforePhoto)
+    val afterFile = HouseCarePhotoStorage.resolve(context, report.afterPhoto)
+    if (beforeFile == null || afterFile == null) return
+
+    GroupCard(container = cleaningGreen.copy(alpha = 0.08f)) {
+        Column(
+            modifier = Modifier.padding(14.dp),
+            verticalArrangement = Arrangement.spacedBy(10.dp),
+        ) {
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+            ) {
+                Text(
+                    "Результат «До и После»",
+                    style = MaterialTheme.typography.titleSmall,
+                    fontWeight = FontWeight.Bold,
+                    modifier = Modifier.weight(1f),
+                )
+                StatusPill(formatDurationMs(report.durationMs), PillTone.Done)
+            }
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(10.dp),
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                ComparisonThumbBox(
+                    file = beforeFile,
+                    label = "До" + (report.beforeAtMs?.let { " · ${formatTimeMs(it)}" } ?: ""),
+                    isAfter = false,
+                    modifier = Modifier.weight(1f),
+                    onClick = { onOpenFull(0) },
+                )
+                Icon(
+                    Icons.AutoMirrored.Filled.ArrowForward,
+                    contentDescription = null,
+                    tint = cleaningGreen,
+                    modifier = Modifier.size(18.dp),
+                )
+                ComparisonThumbBox(
+                    file = afterFile,
+                    label = "После" + (report.afterAtMs?.let { " · ${formatTimeMs(it)}" } ?: ""),
+                    isAfter = true,
+                    modifier = Modifier.weight(1f),
+                    onClick = { onOpenFull(0) },
+                )
+            }
+            Text(
+                "Нажмите на фото, чтобы открыть полноэкранное сравнение с приближением",
+                style = MaterialTheme.typography.labelSmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+        }
+    }
+}
+
+@Composable
+private fun ComparisonThumbBox(
+    file: File,
+    label: String,
+    isAfter: Boolean,
+    modifier: Modifier = Modifier,
+    onClick: () -> Unit,
+) {
+    val shape = RoundedCornerShape(14.dp)
+    Box(
+        modifier = modifier
+            .height(132.dp)
+            .clip(shape)
+            .border(
+                1.dp,
+                if (isAfter) cleaningGreen.copy(alpha = 0.6f) else MaterialTheme.colorScheme.outlineVariant,
+                shape,
+            )
+            .clickable(onClick = onClick),
+    ) {
+        AsyncImage(
+            model = file,
+            contentDescription = label,
+            contentScale = ContentScale.Crop,
+            modifier = Modifier.fillMaxSize(),
+        )
+        Box(
+            modifier = Modifier
+                .align(Alignment.BottomStart)
+                .padding(6.dp)
+                .background(
+                    if (isAfter) cleaningGreen.copy(alpha = 0.88f) else Color.Black.copy(alpha = 0.65f),
+                    RoundedCornerShape(50),
+                )
+                .padding(horizontal = 8.dp, vertical = 3.dp),
+        ) {
+            Text(
+                label,
+                style = MaterialTheme.typography.labelSmall,
+                fontWeight = FontWeight.SemiBold,
+                color = Color.White,
+            )
         }
     }
 }
@@ -239,6 +401,7 @@ private fun PhotoSlot(
     photo: String?,
     timeLabel: String?,
     hint: String? = null,
+    onPreview: () -> Unit,
     onCamera: () -> Unit,
     onGallery: () -> Unit,
     onRemove: () -> Unit,
@@ -285,7 +448,8 @@ private fun PhotoSlot(
                     modifier = Modifier
                         .fillMaxWidth()
                         .size(190.dp)
-                        .clip(RoundedCornerShape(16.dp)),
+                        .clip(RoundedCornerShape(16.dp))
+                        .clickable(onClick = onPreview),
                 )
                 Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                     SlotButton(
@@ -478,13 +642,28 @@ private fun DurationEditorRow(
 }
 
 @Composable
-private fun HistoryRow(report: CleaningReport) {
-    GroupCard {
+private fun HistoryRow(
+    report: CleaningReport,
+    onOpenPhotos: () -> Unit,
+) {
+    val context = LocalContext.current
+    val hasAnyPhoto = HouseCarePhotoStorage.resolve(context, report.beforePhoto) != null ||
+        HouseCarePhotoStorage.resolve(context, report.afterPhoto) != null
+    GroupCard(
+        modifier = if (hasAnyPhoto) {
+            Modifier
+                .clip(RoundedCornerShape(22.dp))
+                .clickable(onClick = onOpenPhotos)
+        } else {
+            Modifier
+        },
+    ) {
         Row(
             modifier = Modifier.padding(horizontal = 16.dp, vertical = 12.dp),
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(12.dp),
         ) {
+            ReportThumbnailsPair(report = report, onClick = onOpenPhotos)
             Column(modifier = Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(2.dp)) {
                 Text(
                     formatDateMs(report.dateMs),

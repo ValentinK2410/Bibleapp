@@ -7,6 +7,8 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.combinedClickable
+import androidx.compose.foundation.gestures.detectTapGestures
+import androidx.compose.foundation.gestures.detectTransformGestures
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -14,16 +16,20 @@ import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.automirrored.filled.ArrowForward
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.CheckCircle
+import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Card
@@ -39,6 +45,8 @@ import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableFloatStateOf
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -48,12 +56,23 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.drawscope.Stroke
+import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.window.Dialog
+import androidx.compose.ui.window.DialogProperties
+import coil.compose.AsyncImage
+import com.example.bible.data.housecare.CleaningReport
 import com.example.bible.data.housecare.CleaningZone
 import com.example.bible.data.housecare.HouseCareData
+import com.example.bible.data.housecare.HouseCarePhotoStorage
 import com.example.bible.data.housecare.WeekDays
 import com.example.bible.data.housecare.planDate
 import com.example.bible.ui.theme.OutlinedTextField
@@ -572,4 +591,348 @@ internal fun GroupCard(
         elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
         content = content,
     )
+}
+
+/**
+ * Компактная пара миниатюр «До → После» для строк истории и статистики.
+ */
+@Composable
+internal fun ReportThumbnailsPair(
+    report: CleaningReport,
+    modifier: Modifier = Modifier,
+    onClick: () -> Unit,
+) {
+    val context = LocalContext.current
+    val beforeFile = HouseCarePhotoStorage.resolve(context, report.beforePhoto)
+    val afterFile = HouseCarePhotoStorage.resolve(context, report.afterPhoto)
+    if (beforeFile == null && afterFile == null) return
+
+    Row(
+        modifier = modifier
+            .clip(RoundedCornerShape(12.dp))
+            .clickable(onClick = onClick)
+            .padding(2.dp),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(4.dp),
+    ) {
+        if (beforeFile != null) {
+            AsyncImage(
+                model = beforeFile,
+                contentDescription = "Фото до",
+                contentScale = ContentScale.Crop,
+                modifier = Modifier
+                    .size(44.dp)
+                    .clip(RoundedCornerShape(10.dp))
+                    .border(1.dp, MaterialTheme.colorScheme.outlineVariant, RoundedCornerShape(10.dp)),
+            )
+        }
+        if (beforeFile != null && afterFile != null) {
+            Icon(
+                Icons.AutoMirrored.Filled.ArrowForward,
+                contentDescription = null,
+                tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                modifier = Modifier.size(14.dp),
+            )
+        }
+        if (afterFile != null) {
+            AsyncImage(
+                model = afterFile,
+                contentDescription = "Фото после",
+                contentScale = ContentScale.Crop,
+                modifier = Modifier
+                    .size(44.dp)
+                    .clip(RoundedCornerShape(10.dp))
+                    .border(1.dp, cleaningGreen.copy(alpha = 0.55f), RoundedCornerShape(10.dp)),
+            )
+        }
+    }
+}
+
+/**
+ * Полноэкранный просмотр фотографий отчёта: режим «Рядом» (сравнение до/после)
+ * и одиночный просмотр «До» или «После» с поддержкой pinch-to-zoom и двойного тапа.
+ */
+@Composable
+internal fun ReportPhotosDialog(
+    report: CleaningReport,
+    title: String,
+    initialTab: Int = 0,
+    onDismiss: () -> Unit,
+) {
+    val context = LocalContext.current
+    val beforeFile = HouseCarePhotoStorage.resolve(context, report.beforePhoto)
+    val afterFile = HouseCarePhotoStorage.resolve(context, report.afterPhoto)
+    val bothExist = beforeFile != null && afterFile != null
+    // 0 = Рядом (если есть оба), 1 = До, 2 = После
+    var tab by remember {
+        mutableIntStateOf(
+            when {
+                initialTab in 1..2 -> initialTab
+                bothExist -> 0
+                beforeFile != null -> 1
+                else -> 2
+            },
+        )
+    }
+
+    Dialog(
+        onDismissRequest = onDismiss,
+        properties = DialogProperties(usePlatformDefaultWidth = false),
+    ) {
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .background(Color.Black.copy(alpha = 0.94f)),
+        ) {
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(16.dp),
+                verticalArrangement = Arrangement.spacedBy(12.dp),
+            ) {
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(10.dp),
+                ) {
+                    Column(modifier = Modifier.weight(1f)) {
+                        Text(
+                            title,
+                            style = MaterialTheme.typography.titleMedium,
+                            fontWeight = FontWeight.Bold,
+                            color = Color.White,
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis,
+                        )
+                        Text(
+                            buildString {
+                                append(formatDateMs(report.dateMs))
+                                if (report.durationMs > 0L) {
+                                    append(" · ")
+                                    append(formatDurationMs(report.durationMs))
+                                }
+                            },
+                            style = MaterialTheme.typography.bodySmall,
+                            color = Color.White.copy(alpha = 0.75f),
+                        )
+                    }
+                    IconButton(onClick = onDismiss) {
+                        Icon(
+                            Icons.Default.Close,
+                            contentDescription = "Закрыть",
+                            tint = Color.White,
+                        )
+                    }
+                }
+
+                Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    if (bothExist) {
+                        ViewerTabChip(
+                            label = "До и После",
+                            selected = tab == 0,
+                            modifier = Modifier.weight(1f),
+                            onClick = { tab = 0 },
+                        )
+                    }
+                    if (beforeFile != null) {
+                        ViewerTabChip(
+                            label = "Фото до" + (report.beforeAtMs?.let { " · ${formatTimeMs(it)}" } ?: ""),
+                            selected = tab == 1,
+                            modifier = Modifier.weight(1f),
+                            onClick = { tab = 1 },
+                        )
+                    }
+                    if (afterFile != null) {
+                        ViewerTabChip(
+                            label = "Фото после" + (report.afterAtMs?.let { " · ${formatTimeMs(it)}" } ?: ""),
+                            selected = tab == 2,
+                            modifier = Modifier.weight(1f),
+                            onClick = { tab = 2 },
+                        )
+                    }
+                }
+
+                Box(
+                    modifier = Modifier
+                        .weight(1f)
+                        .fillMaxWidth(),
+                    contentAlignment = Alignment.Center,
+                ) {
+                    when (tab) {
+                        0 -> {
+                            Column(
+                                modifier = Modifier.fillMaxSize(),
+                                verticalArrangement = Arrangement.spacedBy(12.dp),
+                            ) {
+                                if (beforeFile != null) {
+                                    ComparisonHalfCard(
+                                        file = beforeFile,
+                                        badge = "ДО" + (report.beforeAtMs?.let { " · ${formatTimeMs(it)}" } ?: ""),
+                                        isAfter = false,
+                                        modifier = Modifier.weight(1f),
+                                        onClick = { tab = 1 },
+                                    )
+                                }
+                                if (afterFile != null) {
+                                    ComparisonHalfCard(
+                                        file = afterFile,
+                                        badge = "ПОСЛЕ" + (report.afterAtMs?.let { " · ${formatTimeMs(it)}" } ?: ""),
+                                        isAfter = true,
+                                        modifier = Modifier.weight(1f),
+                                        onClick = { tab = 2 },
+                                    )
+                                }
+                            }
+                        }
+                        1 -> if (beforeFile != null) ZoomablePhotoBox(file = beforeFile)
+                        2 -> if (afterFile != null) ZoomablePhotoBox(file = afterFile)
+                    }
+                }
+
+                Text(
+                    if (tab == 0) {
+                        "Нажмите на снимок, чтобы приблизить его двумя пальцами"
+                    } else {
+                        "Раздвиньте двумя пальцами для масштаба · двойной тап сбрасывает зум"
+                    },
+                    style = MaterialTheme.typography.labelSmall,
+                    color = Color.White.copy(alpha = 0.65f),
+                    modifier = Modifier.align(Alignment.CenterHorizontally),
+                )
+            }
+        }
+    }
+}
+
+@Composable
+private fun ViewerTabChip(
+    label: String,
+    selected: Boolean,
+    modifier: Modifier = Modifier,
+    onClick: () -> Unit,
+) {
+    val shape = RoundedCornerShape(12.dp)
+    Box(
+        modifier = modifier
+            .clip(shape)
+            .background(
+                if (selected) Color.White.copy(alpha = 0.22f) else Color.White.copy(alpha = 0.08f),
+                shape,
+            )
+            .border(
+                1.dp,
+                if (selected) Color.White else Color.White.copy(alpha = 0.2f),
+                shape,
+            )
+            .clickable(onClick = onClick)
+            .padding(vertical = 8.dp, horizontal = 8.dp),
+        contentAlignment = Alignment.Center,
+    ) {
+        Text(
+            label,
+            style = MaterialTheme.typography.labelSmall,
+            fontWeight = if (selected) FontWeight.Bold else FontWeight.Normal,
+            color = Color.White,
+            maxLines = 1,
+            overflow = TextOverflow.Ellipsis,
+        )
+    }
+}
+
+@Composable
+private fun ComparisonHalfCard(
+    file: java.io.File,
+    badge: String,
+    isAfter: Boolean,
+    modifier: Modifier = Modifier,
+    onClick: () -> Unit,
+) {
+    val shape = RoundedCornerShape(18.dp)
+    Box(
+        modifier = modifier
+            .fillMaxWidth()
+            .clip(shape)
+            .border(
+                1.5.dp,
+                if (isAfter) cleaningGreen.copy(alpha = 0.8f) else Color.White.copy(alpha = 0.35f),
+                shape,
+            )
+            .clickable(onClick = onClick),
+    ) {
+        AsyncImage(
+            model = file,
+            contentDescription = badge,
+            contentScale = ContentScale.Crop,
+            modifier = Modifier.fillMaxSize(),
+        )
+        Box(
+            modifier = Modifier
+                .padding(10.dp)
+                .background(
+                    if (isAfter) cleaningGreen.copy(alpha = 0.88f) else Color.Black.copy(alpha = 0.68f),
+                    RoundedCornerShape(50),
+                )
+                .padding(horizontal = 10.dp, vertical = 4.dp),
+        ) {
+            Text(
+                badge,
+                style = MaterialTheme.typography.labelSmall,
+                fontWeight = FontWeight.Bold,
+                color = Color.White,
+            )
+        }
+    }
+}
+
+@Composable
+private fun ZoomablePhotoBox(file: java.io.File) {
+    var scale by remember(file) { mutableFloatStateOf(1f) }
+    var offsetX by remember(file) { mutableFloatStateOf(0f) }
+    var offsetY by remember(file) { mutableFloatStateOf(0f) }
+
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .clip(RoundedCornerShape(18.dp))
+            .pointerInput(file) {
+                detectTapGestures(
+                    onDoubleTap = {
+                        if (scale > 1.05f) {
+                            scale = 1f
+                            offsetX = 0f
+                            offsetY = 0f
+                        } else {
+                            scale = 2.4f
+                        }
+                    },
+                )
+            }
+            .pointerInput(file) {
+                detectTransformGestures { _, pan, zoom, _ ->
+                    val newScale = (scale * zoom).coerceIn(1f, 4.5f)
+                    scale = newScale
+                    if (newScale > 1f) {
+                        offsetX += pan.x
+                        offsetY += pan.y
+                    } else {
+                        offsetX = 0f
+                        offsetY = 0f
+                    }
+                }
+            },
+        contentAlignment = Alignment.Center,
+    ) {
+        AsyncImage(
+            model = file,
+            contentDescription = null,
+            contentScale = ContentScale.Fit,
+            modifier = Modifier
+                .fillMaxSize()
+                .graphicsLayer(
+                    scaleX = scale,
+                    scaleY = scale,
+                    translationX = offsetX,
+                    translationY = offsetY,
+                ),
+        )
+    }
 }

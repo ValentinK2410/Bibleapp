@@ -2,6 +2,8 @@ package com.example.bible.ui.housecare
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
+import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
@@ -27,6 +29,19 @@ import com.example.bible.data.housecare.planDate
 import com.example.bible.ui.theme.OutlinedTextField
 import java.time.DayOfWeek
 import java.time.LocalDate
+
+private val roomNameTemplates = listOf(
+    "Кухня",
+    "Гостиная",
+    "Спальня",
+    "Детская",
+    "Ванная",
+    "Санузел",
+    "Прихожая",
+    "Коридор",
+    "Кабинет",
+    "Балкон",
+)
 
 /**
  * Комнаты и участки одного этажа на выбранную неделю.
@@ -77,9 +92,13 @@ fun FloorRoomsScreen(
                     item { HouseCareSectionTitle(dayWithDate(day)) }
                     items(ofDay, key = { it.id }) { zone ->
                         val (done, total) = data.zoneProgress(zone)
+                        val zoneDurationMs = data.tasksOf(zone.id).sumOf { it.active?.durationMs ?: 0L }
                         CleaningRow(
                             title = zone.name,
-                            subtitle = "разделов $done/$total",
+                            subtitle = buildString {
+                                append("разделов $done/$total")
+                                if (zoneDurationMs > 0L) append(" · ${formatDurationMs(zoneDurationMs)}")
+                            },
                             cleaned = data.isZoneCleaned(zone),
                             onClick = { onOpenZone(zone.id) },
                             onRename = { editingZone = zone },
@@ -144,7 +163,8 @@ fun FloorRoomsScreen(
     }
 }
 
-/** Название + день недели для комнаты уборки. */
+/** Название + шаблоны + день недели для комнаты уборки. */
+@OptIn(ExperimentalLayoutApi::class)
 @Composable
 internal fun RoomEditDialog(
     title: String,
@@ -170,6 +190,25 @@ internal fun RoomEditDialog(
                     singleLine = true,
                     modifier = Modifier.fillMaxWidth(),
                 )
+                Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
+                    Text(
+                        "Быстрый выбор",
+                        style = MaterialTheme.typography.labelMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                    FlowRow(
+                        horizontalArrangement = Arrangement.spacedBy(6.dp),
+                        verticalArrangement = Arrangement.spacedBy(6.dp),
+                    ) {
+                        roomNameTemplates.forEach { preset ->
+                            ChoiceChip(
+                                label = preset,
+                                selected = name.trim().equals(preset, ignoreCase = true),
+                                onClick = { name = preset },
+                            )
+                        }
+                    }
+                }
                 Text(
                     "Убираем в этот день",
                     style = MaterialTheme.typography.labelMedium,

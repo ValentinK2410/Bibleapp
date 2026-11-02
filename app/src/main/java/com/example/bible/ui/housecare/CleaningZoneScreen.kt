@@ -3,14 +3,21 @@ package com.example.bible.ui.housecare
 import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
+import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -18,14 +25,54 @@ import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.platform.LocalHapticFeedback
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.bible.data.housecare.CleaningTask
+import com.example.bible.ui.theme.OutlinedTextField
 import sh.calvin.reorderable.ReorderableItem
 import sh.calvin.reorderable.rememberReorderableLazyListState
+
+private fun suggestedSectionsForZone(zoneName: String): List<String> {
+    val lower = zoneName.lowercase()
+    return when {
+        "кухн" in lower -> listOf(
+            "Плита",
+            "Раковина",
+            "Столешница",
+            "Фасады",
+            "Холодильник",
+            "Пол",
+            "Окно",
+            "Подоконник",
+        )
+        "ванн" in lower || "сануз" in lower || "туал" in lower || "душ" in lower -> listOf(
+            "Зеркало",
+            "Раковина",
+            "Ванна / душ",
+            "Унитаз",
+            "Кафель",
+            "Пол",
+            "Полочки",
+        )
+        else -> listOf(
+            "Пол",
+            "Пыль",
+            "Окно",
+            "Подоконник",
+            "Зеркало",
+            "Дверь",
+            "Светильник",
+            "Потолок",
+            "Батарея",
+            "Шкаф",
+        )
+    }
+}
 
 /** Разделы зоны уборки: потолок, подоконник, батарея. Пусто — кнопка «плюс» с подсказкой. */
 @Composable
@@ -62,6 +109,9 @@ fun CleaningZoneScreen(
         haptic.performHapticFeedback(HapticFeedbackType.LongPress)
     }
 
+    val doneCount = draft.count { it.isCleaned }
+    val totalDurationMs = draft.sumOf { it.active?.durationMs ?: 0L }
+
     HouseCareScaffold(title = zone?.name ?: "Зона уборки", onBack = onBack) { padding ->
         Column(
             modifier = Modifier
@@ -72,6 +122,44 @@ fun CleaningZoneScreen(
             if (zone != null) {
                 val floorName = data.floorById(zone.floorId)?.name.orEmpty()
                 HouseCareSectionTitle("$floorName · ${zoneDateLabel(zone)}")
+            }
+            if (draft.isNotEmpty()) {
+                GroupCard(
+                    modifier = Modifier.padding(top = 8.dp),
+                    container = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.25f),
+                ) {
+                    Row(
+                        modifier = Modifier.padding(horizontal = 16.dp, vertical = 12.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(12.dp),
+                    ) {
+                        Column(
+                            modifier = Modifier.weight(1f),
+                            verticalArrangement = Arrangement.spacedBy(3.dp),
+                        ) {
+                            Text(
+                                "Разделов убрано: $doneCount из ${draft.size}",
+                                style = MaterialTheme.typography.titleSmall,
+                                fontWeight = FontWeight.SemiBold,
+                            )
+                            Text(
+                                if (totalDurationMs > 0L) {
+                                    "Общее время по фото: ${formatDurationMs(totalDurationMs)}"
+                                } else {
+                                    "Откройте раздел и сделайте фото «До» и «После»"
+                                },
+                                style = MaterialTheme.typography.labelSmall,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            )
+                        }
+                        ProgressRing(
+                            done = doneCount,
+                            total = draft.size,
+                            modifier = Modifier.size(54.dp),
+                            label = "$doneCount/${draft.size}",
+                        )
+                    }
+                }
             }
             if (draft.size > 1) {
                 Text(
@@ -137,14 +225,16 @@ fun CleaningZoneScreen(
     }
 
     if (showAddTask) {
-        NameEditDialog(
+        val existingNames = draft.map { it.name.trim().lowercase() }.toSet()
+        val suggestions = suggestedSectionsForZone(zone?.name.orEmpty())
+            .filter { it.lowercase() !in existingNames }
+        TaskEditWithTemplatesDialog(
             title = "Новый раздел",
             initial = "",
             placeholder = "Например: подоконник",
-            canDelete = false,
+            suggestions = suggestions,
             onDismiss = { showAddTask = false },
             onConfirm = { viewModel.addTask(zoneId, it); showAddTask = false },
-            onDelete = {},
         )
     }
 
@@ -159,4 +249,61 @@ fun CleaningZoneScreen(
             onDelete = { viewModel.deleteTask(task.id); editingTask = null },
         )
     }
+}
+
+@OptIn(ExperimentalLayoutApi::class)
+@Composable
+private fun TaskEditWithTemplatesDialog(
+    title: String,
+    initial: String,
+    placeholder: String,
+    suggestions: List<String>,
+    onDismiss: () -> Unit,
+    onConfirm: (String) -> Unit,
+) {
+    var text by remember { mutableStateOf(initial) }
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = { Text(title) },
+        text = {
+            Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                OutlinedTextField(
+                    value = text,
+                    onValueChange = { text = it },
+                    placeholder = { Text(placeholder) },
+                    singleLine = true,
+                    modifier = Modifier.fillMaxWidth(),
+                )
+                if (suggestions.isNotEmpty()) {
+                    Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
+                        Text(
+                            "Быстрый выбор для этой комнаты",
+                            style = MaterialTheme.typography.labelMedium,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        )
+                        FlowRow(
+                            horizontalArrangement = Arrangement.spacedBy(6.dp),
+                            verticalArrangement = Arrangement.spacedBy(6.dp),
+                        ) {
+                            suggestions.forEach { preset ->
+                                ChoiceChip(
+                                    label = preset,
+                                    selected = text.trim().equals(preset, ignoreCase = true),
+                                    onClick = { text = preset },
+                                )
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        confirmButton = {
+            TextButton(enabled = text.isNotBlank(), onClick = { onConfirm(text.trim()) }) {
+                Text("Сохранить")
+            }
+        },
+        dismissButton = {
+            TextButton(onClick = onDismiss) { Text("Отмена") }
+        },
+    )
 }
