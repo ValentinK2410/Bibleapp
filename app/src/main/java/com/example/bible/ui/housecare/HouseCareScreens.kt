@@ -529,9 +529,9 @@ fun CleaningDayScreen(
     val planDate = if (dayOfWeek == DayOfWeek.SUNDAY.value) date.minusDays(1) else date
     val weekDates = (0 until WeekDays.displayed.size).map { planDate.with(DayOfWeek.MONDAY).plusDays(it.toLong()) }
     val previousWeekRooms = data.zonesOfPlace(placeId, planDate.minusWeeks(1))
-    val collapse = rememberCollapseState()
-    val blockKeys = floors.map { it.id } +
-        listOf("habit:${CleaningHabit.KIND_MORNING}", "habit:${CleaningHabit.KIND_EVENING}")
+    val habitKeys = listOf("habit:${CleaningHabit.KIND_MORNING}", "habit:${CleaningHabit.KIND_EVENING}")
+    val collapse = rememberCollapseState(initialKeys = habitKeys)
+    val blockKeys = floors.map { it.id } + habitKeys
     val allCollapsed = collapse.allCollapsed(blockKeys)
 
     HouseCareScaffold(

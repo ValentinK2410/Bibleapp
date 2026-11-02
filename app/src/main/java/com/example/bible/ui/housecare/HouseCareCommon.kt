@@ -194,8 +194,8 @@ internal class CollapseState(private val store: MutableState<String>) {
 }
 
 @Composable
-internal fun rememberCollapseState(): CollapseState {
-    val store = rememberSaveable { mutableStateOf("") }
+internal fun rememberCollapseState(initialKeys: List<String> = emptyList()): CollapseState {
+    val store = rememberSaveable { mutableStateOf(initialKeys.joinToString("|")) }
     return remember(store) { CollapseState(store) }
 }
 

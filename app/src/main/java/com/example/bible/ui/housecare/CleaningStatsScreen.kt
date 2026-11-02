@@ -1,5 +1,6 @@
 package com.example.bible.ui.housecare
 
+import android.content.res.Configuration
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.horizontalScroll
@@ -29,6 +30,8 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.platform.LocalConfiguration
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -504,9 +507,27 @@ private fun ReportLogRow(
     view: ReportView,
     onOpenPhotos: () -> Unit,
 ) {
-    val context = androidx.compose.ui.platform.LocalContext.current
+    val context = LocalContext.current
+    val isLandscape = LocalConfiguration.current.orientation == Configuration.ORIENTATION_LANDSCAPE
     val hasPhotos = HouseCarePhotoStorage.resolve(context, view.report.beforePhoto) != null ||
         HouseCarePhotoStorage.resolve(context, view.report.afterPhoto) != null
+    val titleText = listOfNotNull(
+        view.floor.takeIf { it.isNotBlank() },
+        view.zone,
+        view.task,
+    ).joinToString(" · ")
+    val subtitleText = buildString {
+        append(formatDateMs(view.report.dateMs))
+        val times = listOfNotNull(
+            view.report.beforeAtMs?.let { "до ${formatTimeMs(it)}" },
+            view.report.afterAtMs?.let { "после ${formatTimeMs(it)}" },
+        ).joinToString(" · ")
+        if (times.isNotBlank()) {
+            append(" · ")
+            append(times)
+        }
+    }
+
     GroupCard(
         modifier = if (hasPhotos) {
             Modifier
@@ -516,41 +537,57 @@ private fun ReportLogRow(
             Modifier
         },
     ) {
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 16.dp, vertical = 12.dp),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(12.dp),
-        ) {
-            ReportThumbnailsPair(report = view.report, onClick = onOpenPhotos)
-            Column(modifier = Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(2.dp)) {
-                Text(
-                    listOfNotNull(
-                        view.floor.takeIf { it.isNotBlank() },
-                        view.zone,
-                        view.task,
-                    ).joinToString(" · "),
-                    style = MaterialTheme.typography.titleSmall,
-                    fontWeight = FontWeight.SemiBold,
-                )
-                Text(
-                    buildString {
-                        append(formatDateMs(view.report.dateMs))
-                        val times = listOfNotNull(
-                            view.report.beforeAtMs?.let { "до ${formatTimeMs(it)}" },
-                            view.report.afterAtMs?.let { "после ${formatTimeMs(it)}" },
-                        ).joinToString(" · ")
-                        if (times.isNotBlank()) {
-                            append(" · ")
-                            append(times)
-                        }
-                    },
-                    style = MaterialTheme.typography.labelSmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                )
+        if (isLandscape) {
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 16.dp, vertical = 12.dp),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(12.dp),
+            ) {
+                ReportThumbnailsPair(report = view.report, onClick = onOpenPhotos)
+                Column(modifier = Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(2.dp)) {
+                    Text(
+                        titleText,
+                        style = MaterialTheme.typography.titleSmall,
+                        fontWeight = FontWeight.SemiBold,
+                    )
+                    Text(
+                        subtitleText,
+                        style = MaterialTheme.typography.labelSmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                }
+                StatusPill(formatDurationMs(view.report.durationMs), PillTone.Done)
             }
-            StatusPill(formatDurationMs(view.report.durationMs), PillTone.Done)
+        } else {
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 16.dp, vertical = 12.dp),
+                verticalArrangement = Arrangement.spacedBy(10.dp),
+            ) {
+                Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
+                    Text(
+                        titleText,
+                        style = MaterialTheme.typography.titleSmall,
+                        fontWeight = FontWeight.SemiBold,
+                    )
+                    Text(
+                        subtitleText,
+                        style = MaterialTheme.typography.labelSmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                }
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                ) {
+                    ReportThumbnailsPair(report = view.report, onClick = onOpenPhotos)
+                    StatusPill(formatDurationMs(view.report.durationMs), PillTone.Done)
+                }
+            }
         }
     }
 }

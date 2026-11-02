@@ -1,5 +1,6 @@
 package com.example.bible.ui.housecare
 
+import android.content.res.Configuration
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.PickVisualMediaRequest
 import androidx.activity.result.contract.ActivityResultContracts
@@ -43,6 +44,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -647,8 +649,15 @@ private fun HistoryRow(
     onOpenPhotos: () -> Unit,
 ) {
     val context = LocalContext.current
+    val isLandscape = LocalConfiguration.current.orientation == Configuration.ORIENTATION_LANDSCAPE
     val hasAnyPhoto = HouseCarePhotoStorage.resolve(context, report.beforePhoto) != null ||
         HouseCarePhotoStorage.resolve(context, report.afterPhoto) != null
+    val titleText = formatDateMs(report.dateMs)
+    val subtitleText = listOfNotNull(
+        report.beforeAtMs?.let { "до ${formatTimeMs(it)}" },
+        report.afterAtMs?.let { "после ${formatTimeMs(it)}" },
+    ).joinToString(" · ").ifBlank { "—" }
+
     GroupCard(
         modifier = if (hasAnyPhoto) {
             Modifier
@@ -658,28 +667,55 @@ private fun HistoryRow(
             Modifier
         },
     ) {
-        Row(
-            modifier = Modifier.padding(horizontal = 16.dp, vertical = 12.dp),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(12.dp),
-        ) {
-            ReportThumbnailsPair(report = report, onClick = onOpenPhotos)
-            Column(modifier = Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(2.dp)) {
-                Text(
-                    formatDateMs(report.dateMs),
-                    style = MaterialTheme.typography.titleSmall,
-                    fontWeight = FontWeight.SemiBold,
-                )
-                Text(
-                    listOfNotNull(
-                        report.beforeAtMs?.let { "до ${formatTimeMs(it)}" },
-                        report.afterAtMs?.let { "после ${formatTimeMs(it)}" },
-                    ).joinToString(" · ").ifBlank { "—" },
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                )
+        if (isLandscape) {
+            Row(
+                modifier = Modifier.padding(horizontal = 16.dp, vertical = 12.dp),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(12.dp),
+            ) {
+                ReportThumbnailsPair(report = report, onClick = onOpenPhotos)
+                Column(modifier = Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(2.dp)) {
+                    Text(
+                        titleText,
+                        style = MaterialTheme.typography.titleSmall,
+                        fontWeight = FontWeight.SemiBold,
+                    )
+                    Text(
+                        subtitleText,
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                }
+                StatusPill(formatDurationMs(report.durationMs), PillTone.Done)
             }
-            StatusPill(formatDurationMs(report.durationMs), PillTone.Done)
+        } else {
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 16.dp, vertical = 12.dp),
+                verticalArrangement = Arrangement.spacedBy(10.dp),
+            ) {
+                Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
+                    Text(
+                        titleText,
+                        style = MaterialTheme.typography.titleSmall,
+                        fontWeight = FontWeight.SemiBold,
+                    )
+                    Text(
+                        subtitleText,
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                }
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                ) {
+                    ReportThumbnailsPair(report = report, onClick = onOpenPhotos)
+                    StatusPill(formatDurationMs(report.durationMs), PillTone.Done)
+                }
+            }
         }
     }
 }
