@@ -141,6 +141,9 @@ fun KidsDinoGameScreen(onBack: () -> Unit) {
     var running by remember { mutableStateOf(false) }
     var gameOver by remember { mutableStateOf(false) }
     var ducking by remember { mutableStateOf(false) }
+    var airJumpUsed by remember { mutableStateOf(false) }
+    var airPuffY by remember { mutableFloatStateOf(0f) }
+    var airPuffAlpha by remember { mutableFloatStateOf(0f) }
 
     // Uniform world coordinate system: 1 unit = `u` pixels on BOTH X and Y axes.
     // Guarantees 1:1 proportions with zero stretching or squashing in any orientation.
@@ -177,6 +180,8 @@ fun KidsDinoGameScreen(onBack: () -> Unit) {
         obstacles.clear()
         dinoY = 0f
         dinoVy = 0f
+        airJumpUsed = false
+        airPuffAlpha = 0f
         distance = 0f
         score = 0
         rewardedHundreds = 0
@@ -200,8 +205,18 @@ fun KidsDinoGameScreen(onBack: () -> Unit) {
             return
         }
         if (dinoY <= 3f) {
+            // First jump from ground
             ducking = false
+            airJumpUsed = false
             dinoVy = if (easyMode) 545f else 580f
+            KidsGameAudio.play(KidsSfx.TAP)
+        } else if (!airJumpUsed) {
+            // Single jump in mid-air (resets only after landing on the ground)
+            ducking = false
+            airJumpUsed = true
+            airPuffY = dinoY
+            airPuffAlpha = 1f
+            dinoVy = if (easyMode) 500f else 530f
             KidsGameAudio.play(KidsSfx.TAP)
         }
     }
@@ -224,6 +239,9 @@ fun KidsDinoGameScreen(onBack: () -> Unit) {
                 val speed = (baseSpeed + score * 0.85f).coerceAtMost(maxSpeed)
 
                 animTick += dt * (speed / 38f)
+                if (airPuffAlpha > 0f) {
+                    airPuffAlpha = (airPuffAlpha - dt * 3.5f).coerceAtLeast(0f)
+                }
                 distance += speed * dt * 0.045f
                 val newScore = distance.toInt()
                 if (newScore != score) {
@@ -249,6 +267,7 @@ fun KidsDinoGameScreen(onBack: () -> Unit) {
                     if (dinoY <= 0f) {
                         dinoY = 0f
                         dinoVy = 0f
+                        airJumpUsed = false
                     }
                 }
 
@@ -512,6 +531,33 @@ fun KidsDinoGameScreen(onBack: () -> Unit) {
                     drawObstacleUniform(ob, u, groundPx, animTick, isNight)
                 }
 
+                // Air-jump cloud puff ring when double jump is triggered in mid-air
+                if (airPuffAlpha > 0f) {
+                    val puffProgress = 1f - airPuffAlpha
+                    val puffCenterX = (dinoX + 20f) * u
+                    val puffCenterY = groundPx - (airPuffY - 6f * puffProgress) * u
+                    val puffColor = if (isNight) {
+                        Color(0xFF38BDF8).copy(alpha = airPuffAlpha * 0.75f)
+                    } else {
+                        Color.White.copy(alpha = airPuffAlpha * 0.9f)
+                    }
+                    drawOval(
+                        color = puffColor,
+                        topLeft = Offset(puffCenterX - (18f + 16f * puffProgress) * u, puffCenterY - 5f * u),
+                        size = Size((36f + 32f * puffProgress) * u, 10f * u),
+                    )
+                    drawCircle(
+                        color = puffColor,
+                        radius = (6f - 2f * puffProgress) * u,
+                        center = Offset(puffCenterX - (14f + 12f * puffProgress) * u, puffCenterY),
+                    )
+                    drawCircle(
+                        color = puffColor,
+                        radius = (6f - 2f * puffProgress) * u,
+                        center = Offset(puffCenterX + (14f + 12f * puffProgress) * u, puffCenterY),
+                    )
+                }
+
                 // Chrome T-Rex Dino (drawn with uniform `u`)
                 drawDinoUniform(
                     dinoX = dinoX,
@@ -705,7 +751,7 @@ fun KidsDinoGameScreen(onBack: () -> Unit) {
                         text = if (gameOver) {
                             "Счёт: $score · Рекорд: $highScore · Каждые 100 очков = ⭐+2"
                         } else {
-                            "Прыгай через кактусы и приседай от птиц! Кнопки можно двигать за значок ✥"
+                            "Доступен двойной прыжок (1 раз в воздухе до приземления)! Кнопки можно двигать за ✥"
                         },
                         color = Color.White.copy(alpha = 0.9f),
                         fontSize = 13.sp,
@@ -813,6 +859,8 @@ fun KidsDinoGameScreen(onBack: () -> Unit) {
             }
 
             // Floating Right Control: ПРЫЖОК (instant touch response + drag handle ✥)
+            val canAirJumpNow = dinoY > 3f && !airJumpUsed
+            val jumpExhaustedInAir = dinoY > 3f && airJumpUsed
             Row(
                 modifier = Modifier
                     .align(Alignment.BottomEnd)
@@ -821,7 +869,13 @@ fun KidsDinoGameScreen(onBack: () -> Unit) {
                     .offset { IntOffset(jumpBtnOffsetX.roundToInt(), jumpBtnOffsetY.roundToInt()) }
                     .shadow(8.dp, RoundedCornerShape(999.dp))
                     .clip(RoundedCornerShape(999.dp))
-                    .background(Color(0xFF059669).copy(alpha = 0.90f))
+                    .background(
+                        when {
+                            canAirJumpNow -> Color(0xFF0284C7).copy(alpha = 0.92f)
+                            jumpExhaustedInAir -> Color(0xFF475569).copy(alpha = 0.78f)
+                            else -> Color(0xFF059669).copy(alpha = 0.90f)
+                        },
+                    )
                     .border(1.5.dp, Color.White.copy(alpha = 0.50f), RoundedCornerShape(999.dp)),
                 verticalAlignment = Alignment.CenterVertically,
             ) {
@@ -845,7 +899,7 @@ fun KidsDinoGameScreen(onBack: () -> Unit) {
                         modifier = Modifier.size(24.dp),
                     )
                     Text(
-                        text = "ПРЫЖОК",
+                        text = if (canAirJumpNow) "ПРЫЖОК ×2" else "ПРЫЖОК",
                         color = Color.White,
                         fontWeight = FontWeight.Black,
                         fontSize = 15.sp,
