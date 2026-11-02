@@ -274,6 +274,8 @@ fun AboutAppScreen(onBack: () -> Unit) {
                 )
             }
 
+            AboutProgramOverviewCard()
+
             HorizontalDivider()
 
             val currentRelease = releases.firstOrNull { it.versionName == local.versionName }
@@ -368,3 +370,80 @@ private fun ReleaseCard(release: WhatsNewRelease) {
         }
     }
 }
+
+private data class ProgramSectionInfo(
+    val title: String,
+    val description: String,
+)
+
+private val PROGRAM_SECTIONS = listOf(
+    ProgramSectionInfo(
+        title = "📖 Чтение и глубокое изучение Писания",
+        description = "Офлайн-переводы (Синодальный, НРП, РБО, Кулаковых, WEB, подстрочник Винокурова), сравнение 2–3 переводов рядом, словарь Стронга, комментарии, перекрёстные ссылки, план «Библия за год», родословная, исторические карты и изучение библейских языков.",
+    ),
+    ProgramSectionInfo(
+        title = "🎧 Озвучка и редактор таймкодов",
+        description = "Более 8 дикторов, чтение на иврите и греческом, фоновая загрузка аудиоглав, настройка скорости, таймер сна и пословная/постиховая синхронизация через редактор таймкодов.",
+    ),
+    ProgramSectionInfo(
+        title = "🏡 Попечительная о доме",
+        description = "Система домашнего уюта и порядка: планирование уборки по этажам, комнатам и датам недели, утренние и вечерние привычки, статистика, выбор нежной палитры в шапке и фоновый таймер «15-минутка» (5/10/15/20 мин) с тиканьем и голосовым отсчётом.",
+    ),
+    ProgramSectionInfo(
+        title = "👨‍👩‍👧 Детский раздел и Детская Библия",
+        description = "Полка из всех 66 книг Библии для трёх возрастов (5–7, 8–10, 11–13 лет), сюжетные истории с картинками и записью голоса родителей, стих недели, молитвы, песни, раскраски, карточки героев, ценностей, азбука, цифры, космос, природа и развивающие игры (включая Брейн-ринг на 1000 вопросов).",
+    ),
+    ProgramSectionInfo(
+        title = "🎵 Медиатека, песнопение и студия музыканта",
+        description = "Офлайн-каталог видео и аудио с плейлистами и фоновой докачкой, сборник песен с аккордами и таймкодами строк, многодорожечная студия записи, хроматический тюнер, метроном и тренажёр нотной грамоты.",
+    ),
+    ProgramSectionInfo(
+        title = "🗺️ Жизнь, община и путешествия",
+        description = "Заметки со ссылками на стихи, ежедневник с будильником, микроблог, своя книга контактов с днями рождения, раздел «Моя церковь» и «Мои путешествия» с GPS-треками, геозонами и фото по маршруту.",
+    ),
+    ProgramSectionInfo(
+        title = "🤖 ИИ-помощники и доступность",
+        description = "Интеграция с DeepSeek и GigaChat (размышление над стихом, голосовой диалог, работа с фото), управление чтением мимикой лица через камеру и полный ZIP-бэкап всех пользовательских данных.",
+    ),
+)
+
+@Composable
+private fun AboutProgramOverviewCard() {
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(16.dp),
+    ) {
+        Column(
+            modifier = Modifier.padding(16.dp),
+            verticalArrangement = Arrangement.spacedBy(10.dp),
+        ) {
+            Text(
+                "О приложении",
+                style = MaterialTheme.typography.titleMedium,
+                fontWeight = FontWeight.Bold,
+            )
+            Text(
+                "Многофункциональная офлайн-библиотека и семейный помощник на каждый день: чтение и изучение Библии, аудиокнига, детский образовательный центр, уход за домом, музыкальная студия и путевой дневник в одном приложении.",
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+            PROGRAM_SECTIONS.forEach { section ->
+                Column(modifier = Modifier.padding(top = 4.dp)) {
+                    Text(
+                        section.title,
+                        style = MaterialTheme.typography.labelLarge,
+                        color = MaterialTheme.colorScheme.primary,
+                        fontWeight = FontWeight.SemiBold,
+                    )
+                    Text(
+                        section.description,
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurface,
+                        modifier = Modifier.padding(top = 2.dp),
+                    )
+                }
+            }
+        }
+    }
+}
+

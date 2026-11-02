@@ -1817,6 +1817,7 @@ private fun BibleNavHost(
                 onOpenOfflineDownload = { navController.navigate("offline_download") },
                 onOpenNetworkRegion = { navController.navigate("network_region") },
                 onOpenMenuOrder = { navController.navigate("books_menu_order") },
+                onOpenAboutApp = { navController.navigate("about_app") },
                 ttsUserSettings = ttsUserSettings,
                 onTtsSpeechRateChange = { viewModel.setTtsSpeechRate(it) },
                 onTtsPitchChange = { viewModel.setTtsPitch(it) },
@@ -2955,6 +2956,17 @@ private fun BibleNavHost(
                                         leadingIcon = {
                                             Icon(
                                                 Icons.Default.Settings,
+                                                contentDescription = null,
+                                                tint = MaterialTheme.colorScheme.primary,
+                                            )
+                                        },
+                                    )
+                                    DropdownMenuItem(
+                                        text = { Text(stringResource(R.string.about_app_title)) },
+                                        onClick = { showMoreMenu = false; navController.navigate("about_app") },
+                                        leadingIcon = {
+                                            Icon(
+                                                Icons.Filled.Info,
                                                 contentDescription = null,
                                                 tint = MaterialTheme.colorScheme.primary,
                                             )
