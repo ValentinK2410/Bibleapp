@@ -250,4 +250,54 @@ internal fun MosesAdventureArt(modifier: Modifier = Modifier) {
     }
 }
 
+@Composable
+internal fun AdamEveGardenArt(modifier: Modifier = Modifier) {
+    Canvas(modifier) {
+        squareArea { l, t, s ->
+            // Lush Eden sky & golden light of creation
+            drawRoundRect(
+                Brush.verticalGradient(listOf(Color(0xFFBAE6FD), Color(0xFFFEF9C3), Color(0xFFBBF7D0))),
+                Offset(l, t),
+                Size(s, s),
+                CornerRadius(s * 0.14f),
+            )
+            val groundY = t + s * 0.78f
+            // River of Eden
+            drawRoundRect(
+                Color(0xFF38BDF8),
+                Offset(l + s * 0.06f, groundY),
+                Size(s * 0.88f, s * 0.14f),
+                CornerRadius(s * 0.06f),
+            )
+            // Tree of Life in the center
+            val tx = l + s * 0.50f
+            drawRoundRect(
+                Color(0xFF78350F),
+                Offset(tx - s * 0.045f, groundY - s * 0.36f),
+                Size(s * 0.09f, s * 0.36f),
+                CornerRadius(s * 0.03f),
+            )
+            drawCircle(Color(0xFF15803D), s * 0.20f, Offset(tx, groundY - s * 0.44f))
+            drawCircle(Color(0xFF22C55E), s * 0.14f, Offset(tx - s * 0.07f, groundY - s * 0.47f))
+            drawCircle(Color(0xFF16A34A), s * 0.14f, Offset(tx + s * 0.07f, groundY - s * 0.47f))
+            // Golden fruits of life
+            drawCircle(Color(0xFFFACC15), s * 0.035f, Offset(tx - s * 0.08f, groundY - s * 0.44f))
+            drawCircle(Color(0xFFFACC15), s * 0.035f, Offset(tx + s * 0.06f, groundY - s * 0.48f))
+            drawCircle(Color(0xFFFACC15), s * 0.035f, Offset(tx, groundY - s * 0.37f))
+
+            // Adam on the left & Eve on the right
+            val ax = l + s * 0.22f
+            val ex = l + s * 0.78f
+            drawRoundRect(Color(0xFF059669), Offset(ax - s * 0.06f, groundY - s * 0.24f), Size(s * 0.12f, s * 0.24f), CornerRadius(s * 0.04f))
+            drawCircle(Color(0xFFFDE68A), s * 0.065f, Offset(ax, groundY - s * 0.30f))
+            drawRoundRect(Color(0xFF10B981), Offset(ex - s * 0.06f, groundY - s * 0.23f), Size(s * 0.12f, s * 0.23f), CornerRadius(s * 0.04f))
+            drawCircle(Color(0xFFFDE68A), s * 0.062f, Offset(ex, groundY - s * 0.29f))
+
+            // Green grass line
+            drawLine(Color(0xFF15803D), Offset(l + s * 0.06f, groundY), Offset(l + s * 0.94f, groundY), s * 0.04f, StrokeCap.Round)
+        }
+    }
+}
+
+
 

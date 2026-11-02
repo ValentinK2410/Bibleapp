@@ -211,6 +211,7 @@ object KidsFamilyStore {
             KidsGames.PIPES -> "Водопровод"
             KidsGames.DINO -> "Динозаврик"
             KidsGames.MOSES -> "Путь Моисея"
+            KidsGames.ADAM_EVE -> "Адам и Ева"
             else -> game
         }
         mutateActive(context, points = points, feed = "игра «$gameTitle»") { progress ->

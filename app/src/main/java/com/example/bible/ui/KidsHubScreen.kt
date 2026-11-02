@@ -233,6 +233,7 @@ fun KidsHubScreen(
             KidsBadgeItem("coloring_1", "🎨", "Юный художник", "Раскрасить картинку в раскрасках", activeProgress.coloring.size, 1),
             KidsBadgeItem("values_1", "💛", "Доброе сердце", "Выполнить доброе дело в разделе «Ценности»", activeProgress.valuesDone.size, 1),
             KidsBadgeItem("game_1", "🎮", "Первая победа", "Победить в любой детской игре", effectiveWins, 1),
+            KidsBadgeItem("adameve_1", "🌳", "Хранитель Эдема", "Пройти главу в игре «Адам и Ева»", effectiveWinsMap[KidsGames.ADAM_EVE] ?: 0, 1),
             KidsBadgeItem("moses_1", "🪄", "Посох Моисея", "Пройти главу в игре «Путь Моисея»", effectiveWinsMap[KidsGames.MOSES] ?: 0, 1),
             KidsBadgeItem("dino_1", "🦖", "Укротитель динозавра", "Набрать 100 очков в игре «Динозаврик»", effectiveWinsMap[KidsGames.DINO] ?: 0, 1),
             KidsBadgeItem("game_10", "🏆", "Чемпион игр", "Одержать 10 побед в играх", effectiveWins, 10),
