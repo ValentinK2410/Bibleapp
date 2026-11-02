@@ -31,7 +31,8 @@ object KidsGames {
     const val PIPES = "pipes"
     const val BRAIN_RING = "brainring"
     const val DINO = "dino"
-    val all = listOf(TIC_TAC_TOE, CHECKERS, GO, PIPES, BRAIN_RING, DINO)
+    const val MOSES = "moses"
+    val all = listOf(TIC_TAC_TOE, CHECKERS, GO, PIPES, BRAIN_RING, DINO, MOSES)
 }
 
 /** Очки, открытые буквы и начисления для азбуки. */

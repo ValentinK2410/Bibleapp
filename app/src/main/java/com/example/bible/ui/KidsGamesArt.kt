@@ -183,3 +183,71 @@ internal fun DinoRunnerArt(modifier: Modifier = Modifier) {
     }
 }
 
+@Composable
+internal fun MosesAdventureArt(modifier: Modifier = Modifier) {
+    Canvas(modifier) {
+        squareArea { l, t, s ->
+            // Warm desert sky & pyramid silhouette
+            drawRoundRect(
+                Brush.verticalGradient(listOf(Color(0xFF38BDF8), Color(0xFFFDE68A))),
+                Offset(l, t),
+                Size(s, s),
+                CornerRadius(s * 0.14f),
+            )
+            // Pyramid in the background
+            val pyr = Path().apply {
+                moveTo(l + s * 0.56f, t + s * 0.78f)
+                lineTo(l + s * 0.74f, t + s * 0.44f)
+                lineTo(l + s * 0.92f, t + s * 0.78f)
+                close()
+            }
+            drawPath(pyr, Color(0xFFD97706).copy(alpha = 0.45f))
+
+            val groundY = t + s * 0.78f
+            // Mario-style floating golden block (?)
+            drawRoundRect(
+                Color(0xFFF59E0B),
+                Offset(l + s * 0.42f, t + s * 0.22f),
+                Size(s * 0.16f, s * 0.16f),
+                CornerRadius(s * 0.03f),
+            )
+            drawRoundRect(
+                Color(0xFFFEF3C7),
+                Offset(l + s * 0.47f, t + s * 0.26f),
+                Size(s * 0.06f, s * 0.08f),
+                CornerRadius(s * 0.015f),
+            )
+
+            // Stone desert well (instead of Mario pipe)
+            val wx = l + s * 0.64f
+            val wy = groundY - s * 0.24f
+            drawRoundRect(Color(0xFF78716C), Offset(wx, wy), Size(s * 0.20f, s * 0.24f), CornerRadius(s * 0.03f))
+            drawRoundRect(Color(0xFF57534E), Offset(wx - s * 0.02f, wy), Size(s * 0.24f, s * 0.06f), CornerRadius(s * 0.02f))
+            // Water glow on top of well
+            drawRoundRect(Color(0xFF38BDF8), Offset(wx + s * 0.03f, wy - s * 0.02f), Size(s * 0.14f, s * 0.03f), CornerRadius(s * 0.015f))
+
+            // Moses with robe & shepherd staff on the left
+            val mx = l + s * 0.18f
+            val my = groundY - s * 0.42f
+            // Staff
+            drawLine(
+                Color(0xFF78350F),
+                Offset(mx + s * 0.22f, my - s * 0.04f),
+                Offset(mx + s * 0.22f, groundY),
+                s * 0.032f,
+                StrokeCap.Round,
+            )
+            drawCircle(Color(0xFFFEF08A), s * 0.04f, Offset(mx + s * 0.22f, my - s * 0.05f))
+            // Robe & cloak
+            drawRoundRect(Color(0xFF9A3412), Offset(mx, my + s * 0.14f), Size(s * 0.16f, s * 0.28f), CornerRadius(s * 0.04f))
+            // Head & beard
+            drawCircle(Color(0xFFFDE68A), s * 0.075f, Offset(mx + s * 0.08f, my + s * 0.08f))
+            drawRoundRect(Color(0xFFE5E7EB), Offset(mx + s * 0.03f, my + s * 0.10f), Size(s * 0.10f, s * 0.09f), CornerRadius(s * 0.03f))
+
+            // Desert ground
+            drawLine(Color(0xFFB45309), Offset(l + s * 0.06f, groundY), Offset(l + s * 0.94f, groundY), s * 0.04f, StrokeCap.Round)
+        }
+    }
+}
+
+

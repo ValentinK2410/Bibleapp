@@ -1447,7 +1447,15 @@ private fun BibleNavHost(
                         launchSingleTop = true
                     }
                 },
+                onOpenMoses = {
+                    navController.navigate("kids_moses") {
+                        launchSingleTop = true
+                    }
+                },
             )
+        }
+        composable("kids_moses") {
+            KidsMosesGameScreen(onBack = { navController.navigateUp() })
         }
         composable("kids_dino") {
             KidsDinoGameScreen(onBack = { navController.navigateUp() })
