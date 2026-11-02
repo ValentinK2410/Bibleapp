@@ -18,6 +18,7 @@ import androidx.compose.material.icons.filled.WbTwilight
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Checkbox
 import androidx.compose.material3.CheckboxDefaults
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -127,23 +128,23 @@ private fun HabitBlock(
     val done = habits.count { doneOf(it) }
     GroupCard {
         Column(
-            modifier = Modifier.padding(horizontal = 12.dp, vertical = 12.dp),
+            modifier = Modifier.padding(horizontal = 14.dp, vertical = 12.dp),
             verticalArrangement = Arrangement.spacedBy(2.dp),
         ) {
             Row(
                 verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(10.dp),
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
                 modifier = Modifier
                     .fillMaxWidth()
                     .clip(RoundedCornerShape(16.dp))
                     .clickable(onClick = onToggleCollapsed)
-                    .padding(bottom = 4.dp),
+                    .padding(vertical = 2.dp),
             ) {
                 Icon(
                     if (collapsed) Icons.Default.KeyboardArrowRight else Icons.Default.KeyboardArrowDown,
                     contentDescription = if (collapsed) "Развернуть" else "Свернуть",
                     tint = MaterialTheme.colorScheme.onSurfaceVariant,
-                    modifier = Modifier.size(24.dp),
+                    modifier = Modifier.size(22.dp),
                 )
                 BadgeCircle(size = 36.dp) {
                     Icon(
@@ -166,9 +167,21 @@ private fun HabitBlock(
                 }
             }
             if (!collapsed) {
+                HorizontalDivider(
+                    modifier = Modifier.padding(vertical = 8.dp),
+                    color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.45f),
+                )
                 habits.forEachIndexed { index, habit ->
                     val isDone = doneOf(habit)
-                    Row(verticalAlignment = Alignment.CenterVertically) {
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(4.dp),
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .clip(RoundedCornerShape(14.dp))
+                            .clickable { onToggle(habit) }
+                            .padding(horizontal = 4.dp, vertical = 2.dp),
+                    ) {
                         Checkbox(
                             checked = isDone,
                             onCheckedChange = { onToggle(habit) },
@@ -180,12 +193,14 @@ private fun HabitBlock(
                         Text(
                             habit.name,
                             style = MaterialTheme.typography.bodyMedium,
+                            fontWeight = if (isDone) FontWeight.Normal else FontWeight.Medium,
                             textDecoration = if (isDone) TextDecoration.LineThrough else null,
-                            color = if (isDone) MaterialTheme.colorScheme.onSurfaceVariant else MaterialTheme.colorScheme.onSurface,
-                            modifier = Modifier
-                                .weight(1f)
-                                .clip(RoundedCornerShape(12.dp))
-                                .clickable { onToggle(habit) },
+                            color = if (isDone) {
+                                MaterialTheme.colorScheme.onSurfaceVariant
+                            } else {
+                                MaterialTheme.colorScheme.onSurface
+                            },
+                            modifier = Modifier.weight(1f),
                         )
                         if (habits.size > 1) {
                             IconButton(
@@ -193,18 +208,31 @@ private fun HabitBlock(
                                 enabled = index > 0,
                                 modifier = Modifier.size(32.dp),
                             ) {
-                                Icon(Icons.Default.KeyboardArrowUp, contentDescription = "Выше", modifier = Modifier.size(20.dp))
+                                Icon(
+                                    Icons.Default.KeyboardArrowUp,
+                                    contentDescription = "Выше",
+                                    modifier = Modifier.size(19.dp),
+                                )
                             }
                             IconButton(
                                 onClick = { onMove(index, 1) },
                                 enabled = index < habits.lastIndex,
                                 modifier = Modifier.size(32.dp),
                             ) {
-                                Icon(Icons.Default.KeyboardArrowDown, contentDescription = "Ниже", modifier = Modifier.size(20.dp))
+                                Icon(
+                                    Icons.Default.KeyboardArrowDown,
+                                    contentDescription = "Ниже",
+                                    modifier = Modifier.size(19.dp),
+                                )
                             }
                         }
-                        IconButton(onClick = { onEdit(habit) }, modifier = Modifier.size(32.dp)) {
-                            Icon(Icons.Default.Edit, contentDescription = "Изменить или удалить", modifier = Modifier.size(17.dp))
+                        IconButton(onClick = { onEdit(habit) }, modifier = Modifier.size(34.dp)) {
+                            Icon(
+                                Icons.Default.Edit,
+                                contentDescription = "Изменить или удалить",
+                                tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                                modifier = Modifier.size(17.dp),
+                            )
                         }
                     }
                 }
@@ -213,7 +241,7 @@ private fun HabitBlock(
                         "Помолиться, почистить зубы, помыть посуду…",
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        modifier = Modifier.padding(start = 12.dp, top = 4.dp, bottom = 4.dp),
+                        modifier = Modifier.padding(start = 10.dp, top = 2.dp, bottom = 6.dp),
                     )
                 }
                 AddInlineRow(label = "Добавить привычку", onClick = onAdd)

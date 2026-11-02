@@ -3,6 +3,7 @@ package com.example.bible.ui.housecare
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.PickVisualMediaRequest
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -19,8 +20,6 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.PhotoCamera
 import androidx.compose.material.icons.filled.PhotoLibrary
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -39,6 +38,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.core.content.FileProvider
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -244,16 +244,35 @@ private fun PhotoSlot(
     onRemove: () -> Unit,
 ) {
     val context = LocalContext.current
-    Card(modifier = Modifier.fillMaxWidth(), elevation = CardDefaults.cardElevation(defaultElevation = 1.dp)) {
-        Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-            Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                Text(label, style = MaterialTheme.typography.titleSmall, modifier = Modifier.weight(1f))
+    GroupCard {
+        Column(
+            modifier = Modifier.padding(16.dp),
+            verticalArrangement = Arrangement.spacedBy(10.dp),
+        ) {
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+            ) {
+                Text(
+                    label,
+                    style = MaterialTheme.typography.titleSmall,
+                    fontWeight = FontWeight.SemiBold,
+                    modifier = Modifier.weight(1f),
+                )
                 if (timeLabel != null) {
-                    Text(timeLabel, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    StatusPill(timeLabel, PillTone.Muted)
                 }
                 if (photo != null) {
-                    IconButton(onClick = onRemove) {
-                        Icon(Icons.Default.Close, contentDescription = "Удалить $label")
+                    IconButton(
+                        onClick = onRemove,
+                        modifier = Modifier.size(32.dp),
+                    ) {
+                        Icon(
+                            Icons.Default.Close,
+                            contentDescription = "Удалить $label",
+                            tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                            modifier = Modifier.size(18.dp),
+                        )
                     }
                 }
             }
@@ -265,11 +284,36 @@ private fun PhotoSlot(
                     contentScale = ContentScale.Crop,
                     modifier = Modifier
                         .fillMaxWidth()
-                        .size(180.dp)
-                        .clip(RoundedCornerShape(12.dp)),
+                        .size(190.dp)
+                        .clip(RoundedCornerShape(16.dp)),
                 )
-                TextButton(onClick = onCamera, modifier = Modifier.fillMaxWidth()) {
-                    Text(if (kind == HouseCarePhotoStorage.KIND_BEFORE) "Переснять «до»" else "Переснять «после»")
+                Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    SlotButton(
+                        icon = {
+                            Icon(
+                                Icons.Default.PhotoCamera,
+                                contentDescription = null,
+                                tint = MaterialTheme.colorScheme.primary,
+                                modifier = Modifier.size(18.dp),
+                            )
+                        },
+                        text = if (kind == HouseCarePhotoStorage.KIND_BEFORE) "Переснять «до»" else "Переснять «после»",
+                        modifier = Modifier.weight(1f),
+                        onClick = onCamera,
+                    )
+                    SlotButton(
+                        icon = {
+                            Icon(
+                                Icons.Default.PhotoLibrary,
+                                contentDescription = null,
+                                tint = MaterialTheme.colorScheme.primary,
+                                modifier = Modifier.size(18.dp),
+                            )
+                        },
+                        text = "Галерея",
+                        modifier = Modifier.weight(1f),
+                        onClick = onGallery,
+                    )
                 }
             } else {
                 Text(
@@ -278,8 +322,32 @@ private fun PhotoSlot(
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
                 Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                    SlotButton(icon = { Icon(Icons.Default.PhotoCamera, contentDescription = null) }, text = "Камера", onClick = onCamera)
-                    SlotButton(icon = { Icon(Icons.Default.PhotoLibrary, contentDescription = null) }, text = "Из галереи", onClick = onGallery)
+                    SlotButton(
+                        icon = {
+                            Icon(
+                                Icons.Default.PhotoCamera,
+                                contentDescription = null,
+                                tint = MaterialTheme.colorScheme.primary,
+                                modifier = Modifier.size(18.dp),
+                            )
+                        },
+                        text = "Камера",
+                        modifier = Modifier.weight(1f),
+                        onClick = onCamera,
+                    )
+                    SlotButton(
+                        icon = {
+                            Icon(
+                                Icons.Default.PhotoLibrary,
+                                contentDescription = null,
+                                tint = MaterialTheme.colorScheme.primary,
+                                modifier = Modifier.size(18.dp),
+                            )
+                        },
+                        text = "Из галереи",
+                        modifier = Modifier.weight(1f),
+                        onClick = onGallery,
+                    )
                 }
             }
         }
@@ -290,18 +358,26 @@ private fun PhotoSlot(
 private fun SlotButton(
     icon: @Composable () -> Unit,
     text: String,
+    modifier: Modifier = Modifier,
     onClick: () -> Unit,
 ) {
+    val shape = RoundedCornerShape(14.dp)
     Row(
-        modifier = Modifier
-            .clip(RoundedCornerShape(12.dp))
+        modifier = modifier
+            .clip(shape)
+            .background(MaterialTheme.colorScheme.primary.copy(alpha = 0.11f), shape)
             .clickable(onClick = onClick)
-            .padding(horizontal = 12.dp, vertical = 8.dp),
+            .padding(horizontal = 12.dp, vertical = 10.dp),
         verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.spacedBy(8.dp),
+        horizontalArrangement = Arrangement.spacedBy(8.dp, Alignment.CenterHorizontally),
     ) {
         icon()
-        Text(text, style = MaterialTheme.typography.labelLarge)
+        Text(
+            text,
+            style = MaterialTheme.typography.labelLarge,
+            fontWeight = FontWeight.Medium,
+            color = MaterialTheme.colorScheme.primary,
+        )
     }
 }
 
@@ -311,19 +387,28 @@ private fun InfoRow(
     value: String,
     onClick: () -> Unit,
 ) {
-    Card(
+    GroupCard(
         modifier = Modifier
-            .fillMaxWidth()
+            .clip(RoundedCornerShape(22.dp))
             .clickable(onClick = onClick),
-        elevation = CardDefaults.cardElevation(defaultElevation = 1.dp),
     ) {
         Row(
             modifier = Modifier.padding(horizontal = 16.dp, vertical = 14.dp),
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(12.dp),
         ) {
-            Text(title, style = MaterialTheme.typography.titleSmall, modifier = Modifier.weight(1f))
-            Text(value, style = MaterialTheme.typography.bodyMedium)
+            Text(
+                title,
+                style = MaterialTheme.typography.titleSmall,
+                fontWeight = FontWeight.SemiBold,
+                modifier = Modifier.weight(1f),
+            )
+            Text(
+                value,
+                style = MaterialTheme.typography.bodyMedium,
+                fontWeight = FontWeight.Medium,
+                color = MaterialTheme.colorScheme.primary,
+            )
         }
     }
 }
@@ -349,11 +434,20 @@ private fun DurationEditorRow(
 ) {
     var editing by remember { mutableStateOf(false) }
     var draft by remember { mutableStateOf((durationMs / 60_000L).coerceAtLeast(0).toString()) }
-    Card(modifier = Modifier.fillMaxWidth(), elevation = CardDefaults.cardElevation(defaultElevation = 1.dp)) {
-        Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+    GroupCard {
+        Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
             Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-                Text("Время уборки", style = MaterialTheme.typography.titleSmall, modifier = Modifier.weight(1f))
-                Text(formatDurationMs(durationMs), style = MaterialTheme.typography.bodyMedium)
+                Text(
+                    "Время уборки",
+                    style = MaterialTheme.typography.titleSmall,
+                    fontWeight = FontWeight.SemiBold,
+                    modifier = Modifier.weight(1f),
+                )
+                Text(
+                    formatDurationMs(durationMs),
+                    style = MaterialTheme.typography.bodyMedium,
+                    fontWeight = FontWeight.Medium,
+                )
                 TextButton(onClick = {
                     draft = (durationMs / 60_000L).coerceAtLeast(0).toString()
                     editing = !editing
@@ -385,14 +479,18 @@ private fun DurationEditorRow(
 
 @Composable
 private fun HistoryRow(report: CleaningReport) {
-    Card(modifier = Modifier.fillMaxWidth(), elevation = CardDefaults.cardElevation(defaultElevation = 1.dp)) {
+    GroupCard {
         Row(
             modifier = Modifier.padding(horizontal = 16.dp, vertical = 12.dp),
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(12.dp),
         ) {
-            Column(modifier = Modifier.weight(1f)) {
-                Text(formatDateMs(report.dateMs), style = MaterialTheme.typography.titleSmall)
+            Column(modifier = Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(2.dp)) {
+                Text(
+                    formatDateMs(report.dateMs),
+                    style = MaterialTheme.typography.titleSmall,
+                    fontWeight = FontWeight.SemiBold,
+                )
                 Text(
                     listOfNotNull(
                         report.beforeAtMs?.let { "до ${formatTimeMs(it)}" },
@@ -402,7 +500,7 @@ private fun HistoryRow(report: CleaningReport) {
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
             }
-            Text(formatDurationMs(report.durationMs), style = MaterialTheme.typography.bodyMedium)
+            StatusPill(formatDurationMs(report.durationMs), PillTone.Done)
         }
     }
 }

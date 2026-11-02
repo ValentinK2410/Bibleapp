@@ -2,21 +2,23 @@ package com.example.bible.ui.housecare
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.bible.data.housecare.CleaningReport
@@ -48,20 +50,26 @@ fun CleaningStatsScreen(
         ) {
             if (reports.isEmpty()) {
                 item {
-                    Text(
-                        "Пока нет завершённых уборок. Сфотографируйте раздел «после» — и время появится здесь.",
-                        style = MaterialTheme.typography.bodyMedium,
-                    )
+                    GroupCard {
+                        Text(
+                            "Пока нет завершённых уборок. Сфотографируйте раздел «после» — и время появится здесь.",
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            modifier = Modifier.padding(16.dp),
+                        )
+                    }
                 }
             } else {
                 item {
                     Row(
-                        modifier = Modifier.fillMaxWidth(),
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(IntrinsicSize.Min),
                         horizontalArrangement = Arrangement.spacedBy(8.dp),
                     ) {
-                        TotalCard("За неделю", reports.sumWeek(weekStart), Modifier.weight(1f))
-                        TotalCard("За месяц", reports.sumWeek(monthStart), Modifier.weight(1f))
-                        TotalCard("Всего", reports.sumOf { it.report.durationMs }, Modifier.weight(1f))
+                        TotalCard("За неделю", reports.sumWeek(weekStart), Modifier.weight(1f).fillMaxHeight())
+                        TotalCard("За месяц", reports.sumWeek(monthStart), Modifier.weight(1f).fillMaxHeight())
+                        TotalCard("Всего", reports.sumOf { it.report.durationMs }, Modifier.weight(1f).fillMaxHeight())
                     }
                 }
                 item { HouseCareSectionTitle("По дням недели (30 дней)") }
@@ -74,23 +82,29 @@ fun CleaningStatsScreen(
                         item {
                             StatLine(
                                 title = WeekDays.fullLabel(day),
-                                value = "${dayReports.size} уборок · ${formatDurationMs(dayReports.sumOf { it.report.durationMs })}",
+                                subtitle = "${dayReports.size} ${pluralRu(dayReports.size, "уборка", "уборки", "уборок")}",
+                                value = formatDurationMs(dayReports.sumOf { it.report.durationMs }),
                             )
                         }
                     }
                 }
                 item { HouseCareSectionTitle("По зонам") }
-                items(reports.groupBy { it.zone }.toList().sortedByDescending { (_, list) -> list.sumOf { it.report.durationMs } }, key = { it.first }) { (zone, list) ->
+                items(
+                    reports.groupBy { it.zone }.toList().sortedByDescending { (_, list) -> list.sumOf { it.report.durationMs } },
+                    key = { it.first },
+                ) { (zone, list) ->
                     StatLine(
                         title = zone,
-                        value = "${list.size} раз · ${formatDurationMs(list.sumOf { it.report.durationMs })}",
+                        subtitle = "${list.size} ${pluralRu(list.size, "раз", "раза", "раз")}",
+                        value = formatDurationMs(list.sumOf { it.report.durationMs }),
                     )
                 }
                 item { HouseCareSectionTitle("Последние уборки") }
                 items(reports.take(30), key = { it.report.id }) { view ->
                     StatLine(
                         title = "${view.floor} · ${view.zone} · ${view.task}",
-                        value = "${formatDateMs(view.report.dateMs)} · ${formatDurationMs(view.report.durationMs)}",
+                        subtitle = formatDateMs(view.report.dateMs),
+                        value = formatDurationMs(view.report.durationMs),
                     )
                 }
             }
@@ -123,20 +137,32 @@ private fun weekDayOf(millis: Long): Int =
 
 @Composable
 private fun TotalCard(label: String, durationMs: Long, modifier: Modifier = Modifier) {
-    Card(modifier = modifier, elevation = CardDefaults.cardElevation(defaultElevation = 1.dp)) {
-        Column(modifier = Modifier.padding(12.dp)) {
-            Text(label, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
-            Text(formatDurationMs(durationMs), style = MaterialTheme.typography.titleMedium)
+    GroupCard(
+        modifier = modifier,
+        container = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.25f),
+    ) {
+        Column(
+            modifier = Modifier.padding(horizontal = 12.dp, vertical = 14.dp),
+            verticalArrangement = Arrangement.spacedBy(4.dp),
+        ) {
+            Text(
+                label,
+                style = MaterialTheme.typography.labelSmall,
+                color = MaterialTheme.colorScheme.primary,
+                fontWeight = FontWeight.SemiBold,
+            )
+            Text(
+                formatDurationMs(durationMs),
+                style = MaterialTheme.typography.titleMedium,
+                fontWeight = FontWeight.Bold,
+            )
         }
     }
 }
 
 @Composable
-private fun StatLine(title: String, value: String) {
-    Card(
-        modifier = Modifier.fillMaxWidth(),
-        elevation = CardDefaults.cardElevation(defaultElevation = 1.dp),
-    ) {
+private fun StatLine(title: String, subtitle: String, value: String) {
+    GroupCard {
         Row(
             modifier = Modifier
                 .fillMaxWidth()
@@ -144,12 +170,15 @@ private fun StatLine(title: String, value: String) {
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(12.dp),
         ) {
-            Text(title, style = MaterialTheme.typography.titleSmall, modifier = Modifier.weight(1f))
-            Text(
-                value,
-                style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-            )
+            Column(modifier = Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(2.dp)) {
+                Text(title, style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.SemiBold)
+                Text(
+                    subtitle,
+                    style = MaterialTheme.typography.labelSmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+            }
+            StatusPill(value, PillTone.Done)
         }
     }
 }

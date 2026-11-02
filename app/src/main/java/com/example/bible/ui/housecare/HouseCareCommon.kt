@@ -184,35 +184,59 @@ internal fun rememberCollapseState(): CollapseState {
 internal fun HouseCareSectionTitle(text: String) {
     Text(
         text,
-        style = MaterialTheme.typography.titleSmall,
+        style = MaterialTheme.typography.labelLarge,
         fontWeight = FontWeight.SemiBold,
-        color = MaterialTheme.colorScheme.onSurfaceVariant,
-        modifier = Modifier.padding(top = 8.dp, bottom = 4.dp),
+        color = MaterialTheme.colorScheme.primary,
+        modifier = Modifier.padding(start = 4.dp, top = 10.dp, bottom = 4.dp),
     )
 }
 
-/** Карточка «плюс» с подсказкой: создание зоны или раздела, когда список пуст. */
+/** Карточка «плюс» с подсказкой: создание зоны, этажа, объекта или раздела. */
 @Composable
 internal fun EmptyAddCard(
     hint: String,
     subtitle: String,
     onClick: () -> Unit,
 ) {
+    val shape = RoundedCornerShape(20.dp)
     Card(
         modifier = Modifier
             .fillMaxWidth()
-            .border(1.dp, MaterialTheme.colorScheme.outlineVariant, RoundedCornerShape(12.dp))
+            .clip(shape)
             .clickable(onClick = onClick),
-        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant),
+        shape = shape,
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.22f),
+        ),
+        border = BorderStroke(1.dp, MaterialTheme.colorScheme.primary.copy(alpha = 0.28f)),
+        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
     ) {
         Row(
-            modifier = Modifier.padding(16.dp),
+            modifier = Modifier.padding(horizontal = 16.dp, vertical = 14.dp),
             verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(12.dp),
+            horizontalArrangement = Arrangement.spacedBy(14.dp),
         ) {
-            Icon(Icons.Default.Add, contentDescription = null, tint = MaterialTheme.colorScheme.primary)
-            Column {
-                Text(hint, style = MaterialTheme.typography.titleSmall)
+            BadgeCircle(
+                size = 38.dp,
+                container = MaterialTheme.colorScheme.primary.copy(alpha = 0.14f),
+            ) {
+                Icon(
+                    Icons.Default.Add,
+                    contentDescription = null,
+                    tint = MaterialTheme.colorScheme.primary,
+                    modifier = Modifier.size(20.dp),
+                )
+            }
+            Column(
+                modifier = Modifier.weight(1f),
+                verticalArrangement = Arrangement.spacedBy(2.dp),
+            ) {
+                Text(
+                    hint,
+                    style = MaterialTheme.typography.titleSmall,
+                    fontWeight = FontWeight.SemiBold,
+                    color = MaterialTheme.colorScheme.onSurface,
+                )
                 Text(
                     subtitle,
                     style = MaterialTheme.typography.bodySmall,
@@ -231,28 +255,39 @@ internal fun ChoiceChip(
     modifier: Modifier = Modifier,
     onClick: () -> Unit,
 ) {
-    val shape = RoundedCornerShape(10.dp)
+    val shape = RoundedCornerShape(12.dp)
+    val bgColor = if (selected) {
+        MaterialTheme.colorScheme.primary.copy(alpha = 0.14f)
+    } else {
+        MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.45f)
+    }
     Box(
         modifier = modifier
+            .clip(shape)
+            .background(bgColor, shape)
             .border(
                 width = if (selected) 1.5.dp else 1.dp,
-                color = if (selected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.outlineVariant,
+                color = if (selected) {
+                    MaterialTheme.colorScheme.primary
+                } else {
+                    MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.6f)
+                },
                 shape = shape,
             )
             .clickable(onClick = onClick)
-            .padding(vertical = 8.dp),
+            .padding(vertical = 9.dp, horizontal = 8.dp),
         contentAlignment = Alignment.Center,
     ) {
         Text(
             label,
             style = MaterialTheme.typography.labelMedium,
-            fontWeight = if (selected) FontWeight.Bold else FontWeight.Normal,
+            fontWeight = if (selected) FontWeight.SemiBold else FontWeight.Normal,
             color = if (selected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant,
         )
     }
 }
 
-/** Строка списка: название, подпись и зелёная галочка, если убрано. */
+/** Строка списка: название, подпись и аккуратная метка статуса. */
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
 internal fun CleaningRow(
@@ -261,15 +296,28 @@ internal fun CleaningRow(
     cleaned: Boolean,
     showNotCleanedLabel: Boolean = true,
     modifier: Modifier = Modifier,
-    elevation: androidx.compose.ui.unit.Dp = 1.dp,
+    elevation: androidx.compose.ui.unit.Dp = 0.dp,
+    leadingIcon: (@Composable () -> Unit)? = null,
     onRename: (() -> Unit)? = null,
     onClick: () -> Unit,
     onLongClick: (() -> Unit)? = null,
 ) {
+    val shape = RoundedCornerShape(20.dp)
     Card(
         modifier = modifier
             .fillMaxWidth()
+            .clip(shape)
             .combinedClickable(onClick = onClick, onLongClick = onLongClick),
+        shape = shape,
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+        border = BorderStroke(
+            width = 1.dp,
+            color = if (cleaned) {
+                cleaningGreen.copy(alpha = 0.35f)
+            } else {
+                MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.55f)
+            },
+        ),
         elevation = CardDefaults.cardElevation(defaultElevation = elevation),
     ) {
         Row(
@@ -277,8 +325,27 @@ internal fun CleaningRow(
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(12.dp),
         ) {
-            Column(modifier = Modifier.weight(1f)) {
-                Text(title, style = MaterialTheme.typography.titleSmall)
+            if (leadingIcon != null) {
+                BadgeCircle(
+                    size = 38.dp,
+                    container = if (cleaned) {
+                        cleaningGreen.copy(alpha = 0.14f)
+                    } else {
+                        MaterialTheme.colorScheme.primary.copy(alpha = 0.10f)
+                    },
+                ) {
+                    leadingIcon()
+                }
+            }
+            Column(
+                modifier = Modifier.weight(1f),
+                verticalArrangement = Arrangement.spacedBy(2.dp),
+            ) {
+                Text(
+                    title,
+                    style = MaterialTheme.typography.titleSmall,
+                    fontWeight = FontWeight.SemiBold,
+                )
                 Text(
                     subtitle,
                     style = MaterialTheme.typography.bodySmall,
@@ -286,16 +353,20 @@ internal fun CleaningRow(
                 )
             }
             when {
-                cleaned -> Icon(Icons.Default.CheckCircle, contentDescription = "Убрано", tint = cleaningGreen)
-                showNotCleanedLabel -> Text(
-                    "не убрано",
-                    style = MaterialTheme.typography.labelSmall,
-                    color = MaterialTheme.colorScheme.error,
-                )
+                cleaned -> StatusPill("убрано", PillTone.Done)
+                showNotCleanedLabel -> StatusPill("не убрано", PillTone.Pending)
             }
             if (onRename != null) {
-                IconButton(onClick = onRename) {
-                    Icon(Icons.Default.Edit, contentDescription = "Переименовать")
+                IconButton(
+                    onClick = onRename,
+                    modifier = Modifier.size(36.dp),
+                ) {
+                    Icon(
+                        Icons.Default.Edit,
+                        contentDescription = "Переименовать",
+                        tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                        modifier = Modifier.size(18.dp),
+                    )
                 }
             }
         }
@@ -367,18 +438,19 @@ internal fun pluralRu(count: Int, one: String, few: String, many: String): Strin
 internal fun StatusPill(text: String, tone: PillTone, modifier: Modifier = Modifier) {
     val (container, content) = when (tone) {
         PillTone.Done -> cleaningGreen.copy(alpha = 0.14f) to cleaningGreen
-        PillTone.Pending -> MaterialTheme.colorScheme.errorContainer to MaterialTheme.colorScheme.onErrorContainer
+        PillTone.Pending -> MaterialTheme.colorScheme.errorContainer.copy(alpha = 0.75f) to MaterialTheme.colorScheme.onErrorContainer
         PillTone.Muted -> MaterialTheme.colorScheme.surfaceVariant to MaterialTheme.colorScheme.onSurfaceVariant
     }
     Box(
         modifier = modifier
             .background(container, RoundedCornerShape(50))
-            .padding(horizontal = 10.dp, vertical = 5.dp),
+            .padding(horizontal = 10.dp, vertical = 4.dp),
+        contentAlignment = Alignment.Center,
     ) {
         Text(
             text,
             style = MaterialTheme.typography.labelSmall,
-            fontWeight = FontWeight.Medium,
+            fontWeight = FontWeight.SemiBold,
             color = content,
             maxLines = 1,
         )
@@ -393,7 +465,7 @@ internal fun ProgressRing(
     modifier: Modifier = Modifier,
     label: String = "$done/$total",
 ) {
-    val track = MaterialTheme.colorScheme.outlineVariant
+    val track = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.45f)
     val sweepColor = if (total > 0 && done >= total) cleaningGreen else MaterialTheme.colorScheme.primary
     Box(modifier, contentAlignment = Alignment.Center) {
         Canvas(modifier) {
@@ -423,7 +495,12 @@ internal fun ProgressRing(
                 )
             }
         }
-        Text(label, style = MaterialTheme.typography.labelMedium, fontWeight = FontWeight.SemiBold)
+        Text(
+            label,
+            style = MaterialTheme.typography.labelMedium,
+            fontWeight = FontWeight.Bold,
+            color = if (total > 0 && done >= total) cleaningGreen else MaterialTheme.colorScheme.onSurface,
+        )
     }
 }
 
@@ -435,13 +512,13 @@ internal fun AddInlineRow(label: String, onClick: () -> Unit) {
             .fillMaxWidth()
             .clip(RoundedCornerShape(14.dp))
             .clickable(onClick = onClick)
-            .padding(horizontal = 12.dp, vertical = 10.dp),
+            .padding(horizontal = 10.dp, vertical = 9.dp),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(10.dp),
     ) {
         Box(
             modifier = Modifier
-                .size(30.dp)
+                .size(32.dp)
                 .background(MaterialTheme.colorScheme.primary.copy(alpha = 0.12f), CircleShape),
             contentAlignment = Alignment.Center,
         ) {
@@ -491,7 +568,7 @@ internal fun GroupCard(
         modifier = modifier.fillMaxWidth(),
         shape = RoundedCornerShape(22.dp),
         colors = CardDefaults.cardColors(containerColor = container),
-        border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f)),
+        border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.55f)),
         elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
         content = content,
     )

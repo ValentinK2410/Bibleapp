@@ -38,7 +38,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.bible.data.housecare.HousePlace
 import com.example.bible.ui.theme.OutlinedTextField
 
-private val PlaceKinds = listOf("Дом", "Квартира", "Гараж", "Дача", "Сарае")
+private val PlaceKinds = listOf("Дом", "Квартира", "Гараж", "Дача", "Сарай")
 
 internal fun floorsLabel(count: Int): String {
     val word = when {
@@ -66,7 +66,7 @@ fun HouseCareSettingsScreen(
                 .fillMaxSize()
                 .padding(padding),
             contentPadding = PaddingValues(16.dp),
-            verticalArrangement = Arrangement.spacedBy(8.dp),
+            verticalArrangement = Arrangement.spacedBy(10.dp),
         ) {
             item { HouseCareSectionTitle("Объекты") }
             item {
@@ -75,6 +75,7 @@ fun HouseCareSettingsScreen(
                         "Эти сведения подписывают список этажей в «Системе уборки».",
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    modifier = Modifier.padding(horizontal = 4.dp),
                 )
             }
             if (data.places.isEmpty()) {
@@ -109,26 +110,12 @@ fun HouseCareSettingsScreen(
                     horizontalArrangement = Arrangement.spacedBy(8.dp),
                 ) {
                     PlaceKinds.forEach { kind ->
-                        Card(
-                            modifier = Modifier.clickable { addingKind = kind },
-                            elevation = CardDefaults.cardElevation(defaultElevation = 1.dp),
-                        ) {
-                            Row(
-                                modifier = Modifier.padding(horizontal = 10.dp, vertical = 8.dp),
-                                verticalAlignment = Alignment.CenterVertically,
-                            ) {
-                                Icon(
-                                    Icons.Filled.Add,
-                                    contentDescription = null,
-                                    modifier = Modifier.size(14.dp),
-                                )
-                                Text(
-                                    kind,
-                                    style = MaterialTheme.typography.labelMedium,
-                                    modifier = Modifier.padding(start = 4.dp),
-                                )
-                            }
-                        }
+                        ChoiceChip(
+                            label = "+ $kind",
+                            selected = false,
+                            modifier = Modifier.padding(vertical = 2.dp),
+                            onClick = { addingKind = kind },
+                        )
                     }
                 }
             }
@@ -186,7 +173,7 @@ internal fun PlaceEditDialog(
                     value = name,
                     onValueChange = { name = it },
                     label = { Text("Название") },
-                    placeholder = { Text("Дом, квартира, гараж, дача, сарае") },
+                    placeholder = { Text("Дом, квартира, гараж, дача, сарай") },
                     singleLine = true,
                     modifier = Modifier.fillMaxWidth(),
                 )
