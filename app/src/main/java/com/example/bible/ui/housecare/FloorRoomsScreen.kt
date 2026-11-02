@@ -108,6 +108,7 @@ fun FloorRoomsScreen(
                             cleaned = data.isZoneCleaned(zone),
                             onClick = { onOpenZone(zone.id) },
                             onRename = { editingZone = zone },
+                            onDelete = { viewModel.deleteZone(zone.id) },
                             onLongClick = { editingZone = zone },
                         )
                     }

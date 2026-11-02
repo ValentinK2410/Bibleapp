@@ -30,6 +30,7 @@ import androidx.compose.material.icons.automirrored.filled.ArrowForward
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.filled.DeleteOutline
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Palette
 import androidx.compose.material3.AlertDialog
@@ -164,34 +165,39 @@ internal fun HouseCareScaffold(
         Scaffold(
             containerColor = MaterialTheme.colorScheme.background,
             topBar = {
-                CenterAlignedTopAppBar(
-                    title = {
-                        Text(
-                            title,
-                            fontWeight = FontWeight.SemiBold,
-                            maxLines = 1,
-                            overflow = TextOverflow.Ellipsis,
-                        )
-                    },
-                    navigationIcon = {
-                        IconButton(onClick = onBack) {
-                            Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = null)
-                        }
-                    },
-                    actions = {
-                        actions()
-                        IconButton(onClick = { showThemeDialog = true }) {
-                            Icon(
-                                Icons.Default.Palette,
-                                contentDescription = "Нежное оформление раздела",
-                                tint = MaterialTheme.colorScheme.primary,
+                Column {
+                    CenterAlignedTopAppBar(
+                        title = {
+                            Text(
+                                title,
+                                fontWeight = FontWeight.SemiBold,
+                                maxLines = 1,
+                                overflow = TextOverflow.Ellipsis,
                             )
-                        }
-                    },
-                    colors = TopAppBarDefaults.centerAlignedTopAppBarColors(
-                        containerColor = MaterialTheme.colorScheme.background,
-                    ),
-                )
+                        },
+                        navigationIcon = {
+                            IconButton(onClick = onBack) {
+                                Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = null)
+                            }
+                        },
+                        actions = {
+                            actions()
+                            IconButton(onClick = { showThemeDialog = true }) {
+                                Icon(
+                                    Icons.Default.Palette,
+                                    contentDescription = "Оформление раздела",
+                                    tint = MaterialTheme.colorScheme.primary,
+                                )
+                            }
+                        },
+                        colors = TopAppBarDefaults.centerAlignedTopAppBarColors(
+                            containerColor = MaterialTheme.colorScheme.background,
+                        ),
+                    )
+                    if (section != HouseCareSectionId.Zone) {
+                        ActiveFifteenMinuteTimerBanner()
+                    }
+                }
             },
             content = content,
         )
@@ -350,12 +356,14 @@ internal fun CleaningRow(
     elevation: androidx.compose.ui.unit.Dp = 0.dp,
     leadingIcon: (@Composable () -> Unit)? = null,
     onRename: (() -> Unit)? = null,
+    onDelete: (() -> Unit)? = null,
     onClick: () -> Unit,
     onLongClick: (() -> Unit)? = null,
 ) {
     val hcStyle = LocalHouseCareStyle.current
     val shape = RoundedCornerShape(hcStyle.cornerDp.dp)
     val rowBg = when (hcStyle.cardStyle) {
+        HouseCareCardStyle.Standard -> MaterialTheme.colorScheme.surface
         HouseCareCardStyle.SoftBlush -> MaterialTheme.colorScheme.surface
         HouseCareCardStyle.Pearl -> MaterialTheme.colorScheme.surface
         HouseCareCardStyle.Watercolor -> MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.26f)
@@ -371,12 +379,13 @@ internal fun CleaningRow(
         colors = CardDefaults.cardColors(containerColor = rowBg),
         border = BorderStroke(
             width = borderWidth,
-            color = if (cleaned) {
-                cleaningGreen.copy(alpha = 0.4f)
-            } else if (hcStyle.cardStyle == HouseCareCardStyle.LaceBorder) {
-                MaterialTheme.colorScheme.primary.copy(alpha = 0.42f)
-            } else {
-                MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.65f)
+            color = when {
+                cleaned -> cleaningGreen.copy(alpha = 0.4f)
+                hcStyle.cardStyle == HouseCareCardStyle.LaceBorder ->
+                    MaterialTheme.colorScheme.primary.copy(alpha = 0.42f)
+                hcStyle.cardStyle == HouseCareCardStyle.Standard ->
+                    MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.55f)
+                else -> MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.65f)
             },
         ),
         elevation = CardDefaults.cardElevation(defaultElevation = elevation),
@@ -384,7 +393,7 @@ internal fun CleaningRow(
         Row(
             modifier = Modifier.padding(horizontal = 16.dp, vertical = 14.dp),
             verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(12.dp),
+            horizontalArrangement = Arrangement.spacedBy(10.dp),
         ) {
             if (leadingIcon != null) {
                 BadgeCircle(
@@ -420,12 +429,25 @@ internal fun CleaningRow(
             if (onRename != null) {
                 IconButton(
                     onClick = onRename,
-                    modifier = Modifier.size(36.dp),
+                    modifier = Modifier.size(34.dp),
                 ) {
                     Icon(
                         Icons.Default.Edit,
                         contentDescription = "Переименовать",
                         tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                        modifier = Modifier.size(18.dp),
+                    )
+                }
+            }
+            if (onDelete != null) {
+                IconButton(
+                    onClick = onDelete,
+                    modifier = Modifier.size(34.dp),
+                ) {
+                    Icon(
+                        Icons.Default.DeleteOutline,
+                        contentDescription = "Удалить",
+                        tint = MaterialTheme.colorScheme.error.copy(alpha = 0.85f),
                         modifier = Modifier.size(18.dp),
                     )
                 }
@@ -629,6 +651,7 @@ internal fun GroupCard(
     val defaultSurface = MaterialTheme.colorScheme.surface
     val resolvedContainer = if (container == defaultSurface) {
         when (hcStyle.cardStyle) {
+            HouseCareCardStyle.Standard -> MaterialTheme.colorScheme.surface
             HouseCareCardStyle.SoftBlush -> MaterialTheme.colorScheme.surface
             HouseCareCardStyle.Pearl -> MaterialTheme.colorScheme.surface
             HouseCareCardStyle.Watercolor -> MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.24f)
@@ -638,10 +661,10 @@ internal fun GroupCard(
         container
     }
     val borderWidth = if (hcStyle.cardStyle == HouseCareCardStyle.LaceBorder) 1.5.dp else 1.dp
-    val borderColor = if (hcStyle.cardStyle == HouseCareCardStyle.LaceBorder) {
-        MaterialTheme.colorScheme.primary.copy(alpha = 0.42f)
-    } else {
-        MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.65f)
+    val borderColor = when (hcStyle.cardStyle) {
+        HouseCareCardStyle.LaceBorder -> MaterialTheme.colorScheme.primary.copy(alpha = 0.42f)
+        HouseCareCardStyle.Standard -> MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.55f)
+        else -> MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.65f)
     }
     Card(
         modifier = modifier.fillMaxWidth(),

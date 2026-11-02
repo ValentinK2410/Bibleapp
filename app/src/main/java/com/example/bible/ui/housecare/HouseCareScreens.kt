@@ -27,6 +27,7 @@ import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.filled.ArrowForward
 import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.CleaningServices
+import androidx.compose.material.icons.filled.DeleteOutline
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.HomeWork
@@ -649,6 +650,7 @@ fun CleaningDayScreen(
                         onOpenZone = onOpenZone,
                         onEditFloor = { editingFloor = floor },
                         onEditZone = { editingZone = it },
+                        onDeleteZone = { viewModel.deleteZone(it.id) },
                         onAddRoom = { addRoomFloorId = floor.id },
                     )
                 }
@@ -785,6 +787,7 @@ private fun FloorDayCard(
     onOpenZone: (String) -> Unit,
     onEditFloor: () -> Unit,
     onEditZone: (CleaningZone) -> Unit,
+    onDeleteZone: (CleaningZone) -> Unit,
     onAddRoom: () -> Unit,
 ) {
     val cleaned = zones.count { data.isZoneCleaned(it) }
@@ -872,6 +875,7 @@ private fun FloorDayCard(
                         isFifteenMinute = isTimerRoom,
                         onClick = { onOpenZone(zone.id) },
                         onEdit = { onEditZone(zone) },
+                        onDelete = { onDeleteZone(zone) },
                     )
                 }
                 AddInlineRow(label = "Добавить комнату/участок", onClick = onAddRoom)
@@ -891,6 +895,7 @@ private fun RoomRow(
     isFifteenMinute: Boolean = false,
     onClick: () -> Unit,
     onEdit: () -> Unit,
+    onDelete: () -> Unit,
 ) {
     val isDone = pillToneOf(done, total) == PillTone.Done
     Row(
@@ -900,7 +905,7 @@ private fun RoomRow(
             .combinedClickable(onClick = onClick, onLongClick = onEdit)
             .padding(horizontal = 8.dp, vertical = 7.dp),
         verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.spacedBy(10.dp),
+        horizontalArrangement = Arrangement.spacedBy(8.dp),
     ) {
         BadgeCircle(
             size = 34.dp,
@@ -943,12 +948,20 @@ private fun RoomRow(
             if (isFifteenMinute && total == 0) "⏱ 15 мин" else "$done/$total",
             if (isFifteenMinute && total == 0) PillTone.Muted else pillToneOf(done, total),
         )
-        IconButton(onClick = onEdit, modifier = Modifier.size(34.dp)) {
+        IconButton(onClick = onEdit, modifier = Modifier.size(32.dp)) {
             Icon(
                 Icons.Default.Edit,
                 contentDescription = "Комната: название, день или удалить",
                 tint = MaterialTheme.colorScheme.onSurfaceVariant,
                 modifier = Modifier.size(17.dp),
+            )
+        }
+        IconButton(onClick = onDelete, modifier = Modifier.size(32.dp)) {
+            Icon(
+                Icons.Default.DeleteOutline,
+                contentDescription = "Удалить комнату",
+                tint = MaterialTheme.colorScheme.error.copy(alpha = 0.8f),
+                modifier = Modifier.size(18.dp),
             )
         }
     }

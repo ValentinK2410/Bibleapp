@@ -6,14 +6,12 @@ import android.media.AudioFormat
 import android.media.AudioManager
 import android.media.AudioTrack
 import android.media.ToneGenerator
+import android.os.PowerManager
+import android.os.SystemClock
 import android.speech.tts.TextToSpeech
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.FastOutSlowInEasing
-import androidx.compose.animation.core.RepeatMode
-import androidx.compose.animation.core.animateFloat
 import androidx.compose.animation.core.animateFloatAsState
-import androidx.compose.animation.core.infiniteRepeatable
-import androidx.compose.animation.core.rememberInfiniteTransition
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Canvas
@@ -27,7 +25,6 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.FlowRow
-import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -43,20 +40,14 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Fullscreen
-import androidx.compose.material.icons.filled.NotificationsActive
-import androidx.compose.material.icons.filled.Palette
 import androidx.compose.material.icons.filled.Pause
 import androidx.compose.material.icons.filled.PlayArrow
-import androidx.compose.material.icons.filled.RecordVoiceOver
 import androidx.compose.material.icons.filled.Refresh
-import androidx.compose.material.icons.filled.Timer
-import androidx.compose.material.icons.filled.VolumeUp
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -67,15 +58,12 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
-import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.compositionLocalOf
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -83,7 +71,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
-import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.drawscope.Stroke
@@ -102,13 +89,15 @@ import kotlin.math.exp
 import kotlin.math.sin
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 import org.json.JSONObject
 
-/** Женственная цветовая палитра только для раздела «Попечительная о доме». */
+/** Цветовая палитра для раздела «Попечительная о доме» (включая «Стандартный» исходный вариант). */
 internal data class HouseCarePalette(
     val key: String,
     val title: String,
@@ -134,6 +123,23 @@ internal data class HouseCarePalette(
 }
 
 internal val houseCarePalettes: List<HouseCarePalette> = listOf(
+    HouseCarePalette(
+        key = "standard",
+        title = "Стандартный",
+        subtitle = "Изначальное оформление приложения (как было изначально)",
+        emoji = "🏛️",
+        primaryLight = Color(0xFF3F51B5),
+        primaryContainerLight = Color(0xFFE8EAF6),
+        secondaryLight = Color(0xFF5C6BC0),
+        backgroundLight = Color(0xFFFAFAFA),
+        surfaceLight = Color(0xFFFFFFFF),
+        borderLight = Color(0xFFE0E0E0),
+        primaryDark = Color(0xFF9FA8DA),
+        primaryContainerDark = Color(0xFF283593),
+        backgroundDark = Color(0xFF121212),
+        surfaceDark = Color(0xFF1E1E1E),
+        borderDark = Color(0xFF424242),
+    ),
     HouseCarePalette(
         key = "rose_blush",
         title = "Нежная роза",
@@ -266,6 +272,7 @@ internal enum class HouseCareSectionId(val key: String, val title: String, val e
 
 /** Стиль карточек внутри раздела. */
 internal enum class HouseCareCardStyle(val key: String, val title: String, val desc: String) {
+    Standard("standard", "Стандартный", "Изначальный вид карточек"),
     SoftBlush("soft_blush", "Нежный румянец", "Мягкий оттенок палитры и тонкий кант"),
     Pearl("pearl", "Жемчужная гладь", "Чистая светлая поверхность с цветной рамкой"),
     Watercolor("watercolor", "Акварель", "Плавный воздушный градиент на карточках"),
@@ -273,7 +280,7 @@ internal enum class HouseCareCardStyle(val key: String, val title: String, val d
     ;
 
     companion object {
-        fun fromKey(k: String?): HouseCareCardStyle = entries.firstOrNull { it.key == k } ?: SoftBlush
+        fun fromKey(k: String?): HouseCareCardStyle = entries.firstOrNull { it.key == k } ?: Standard
     }
 }
 
@@ -304,11 +311,11 @@ internal data class SectionCustomStyle(
     }
 }
 
-/** Полные настройки женственной темы и звуков таймера «15-минутка». */
+/** Полные настройки темы и звуков таймера «15-минутка». */
 internal data class HouseCareThemeSettings(
-    val globalPaletteKey: String = "rose_blush",
-    val globalCardStyleKey: String = HouseCareCardStyle.SoftBlush.key,
-    val globalCornerDp: Int = 24,
+    val globalPaletteKey: String = "standard",
+    val globalCardStyleKey: String = HouseCareCardStyle.Standard.key,
+    val globalCornerDp: Int = 22,
     val headerOrnament: Boolean = true,
     val sectionOverrides: Map<String, SectionCustomStyle> = emptyMap(),
     val timerTickSound: Boolean = true,
@@ -358,9 +365,9 @@ internal data class HouseCareThemeSettings(
                     }
                 }
                 HouseCareThemeSettings(
-                    globalPaletteKey = j.optString("globalPaletteKey", "rose_blush").ifBlank { "rose_blush" },
-                    globalCardStyleKey = j.optString("globalCardStyleKey", HouseCareCardStyle.SoftBlush.key),
-                    globalCornerDp = j.optInt("globalCornerDp", 24).coerceIn(14, 34),
+                    globalPaletteKey = j.optString("globalPaletteKey", "standard").ifBlank { "standard" },
+                    globalCardStyleKey = j.optString("globalCardStyleKey", HouseCareCardStyle.Standard.key),
+                    globalCornerDp = j.optInt("globalCornerDp", 22).coerceIn(14, 34),
                     headerOrnament = j.optBoolean("headerOrnament", true),
                     sectionOverrides = map,
                     timerTickSound = j.optBoolean("timerTickSound", true),
@@ -374,7 +381,7 @@ internal data class HouseCareThemeSettings(
     }
 }
 
-/** Хранилище женственной темы и настроек таймера для «Попечительной о доме». */
+/** Хранилище темы и настроек таймера для «Попечительной о доме». */
 internal object HouseCareThemeStore {
     private const val PREFS_NAME = "house_care_feminine_theme"
     private const val KEY_JSON = "theme_settings_json"
@@ -406,8 +413,8 @@ internal object HouseCareThemeStore {
 internal data class ActiveHouseCareStyle(
     val section: HouseCareSectionId = HouseCareSectionId.Hub,
     val palette: HouseCarePalette = houseCarePalettes.first(),
-    val cardStyle: HouseCareCardStyle = HouseCareCardStyle.SoftBlush,
-    val cornerDp: Int = 24,
+    val cardStyle: HouseCareCardStyle = HouseCareCardStyle.Standard,
+    val cornerDp: Int = 22,
     val headerOrnament: Boolean = true,
 )
 
@@ -415,8 +422,8 @@ internal val LocalHouseCareStyle = compositionLocalOf { ActiveHouseCareStyle() }
 
 /**
  * Обёртка темы ТОЛЬКО для экранов «Попечительной о доме»:
- * подменяет цветовую схему MaterialTheme на женственную палитру выбранного раздела,
- * не затрагивая остальное приложение.
+ * если выбран «Стандартный» стиль, полностью сохраняет исходную тему приложения как было изначально;
+ * иначе применяет выбранную палитру раздела.
  */
 @Composable
 internal fun HouseCareThemeWrapper(
@@ -431,25 +438,30 @@ internal fun HouseCareThemeWrapper(
     val cornerDp = settings.resolveCornerDp(section)
 
     val baseScheme = MaterialTheme.colorScheme
-    val feminineScheme = remember(palette, dark, baseScheme) {
-        val primary = palette.primary(dark)
-        val primaryContainer = palette.primaryContainer(dark)
-        val background = palette.background(dark)
-        val surface = palette.surface(dark)
-        val border = palette.border(dark)
-        baseScheme.copy(
-            primary = primary,
-            onPrimary = if (dark) Color(0xFF221018) else Color.White,
-            primaryContainer = primaryContainer,
-            onPrimaryContainer = if (dark) Color(0xFFFFEBF2) else primary,
-            secondary = if (dark) palette.primaryDark else palette.secondaryLight,
-            secondaryContainer = primaryContainer.copy(alpha = 0.7f),
-            background = background,
-            surface = surface,
-            surfaceVariant = primaryContainer.copy(alpha = if (dark) 0.35f else 0.52f),
-            outline = border,
-            outlineVariant = border.copy(alpha = if (dark) 0.65f else 0.75f),
-        )
+    val isStandardPalette = palette.key == "standard"
+    val targetScheme = remember(palette, dark, baseScheme, isStandardPalette) {
+        if (isStandardPalette) {
+            baseScheme
+        } else {
+            val primary = palette.primary(dark)
+            val primaryContainer = palette.primaryContainer(dark)
+            val background = palette.background(dark)
+            val surface = palette.surface(dark)
+            val border = palette.border(dark)
+            baseScheme.copy(
+                primary = primary,
+                onPrimary = if (dark) Color(0xFF221018) else Color.White,
+                primaryContainer = primaryContainer,
+                onPrimaryContainer = if (dark) Color(0xFFFFEBF2) else primary,
+                secondary = if (dark) palette.primaryDark else palette.secondaryLight,
+                secondaryContainer = primaryContainer.copy(alpha = 0.7f),
+                background = background,
+                surface = surface,
+                surfaceVariant = primaryContainer.copy(alpha = if (dark) 0.35f else 0.52f),
+                outline = border,
+                outlineVariant = border.copy(alpha = if (dark) 0.65f else 0.75f),
+            )
+        }
     }
 
     val activeStyle = remember(section, palette, cardStyle, cornerDp, settings.headerOrnament) {
@@ -464,7 +476,7 @@ internal fun HouseCareThemeWrapper(
 
     CompositionLocalProvider(LocalHouseCareStyle provides activeStyle) {
         MaterialTheme(
-            colorScheme = feminineScheme,
+            colorScheme = targetScheme,
             typography = MaterialTheme.typography,
             shapes = MaterialTheme.shapes,
             content = content,
@@ -473,8 +485,8 @@ internal fun HouseCareThemeWrapper(
 }
 
 /**
- * Диалог настройки женственного оформления:
- * позволяет настроить как весь раздел «Попечительная о доме», так и отдельно каждый экран/раздел.
+ * Диалог настройки оформления:
+ * позволяет вернуть стандартный вид (как было изначально) или выбрать нежную палитру.
  */
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
@@ -505,6 +517,11 @@ internal fun HouseCareThemeDialog(
         currentOverride?.cornerRadiusDp ?: 0
     }
 
+    val isAlreadyStandard = settings.globalPaletteKey == "standard" &&
+        settings.globalCardStyleKey == HouseCareCardStyle.Standard.key &&
+        settings.globalCornerDp == 22 &&
+        settings.sectionOverrides.isEmpty()
+
     AlertDialog(
         onDismissRequest = onDismiss,
         title = {
@@ -512,15 +529,15 @@ internal fun HouseCareThemeDialog(
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.spacedBy(8.dp),
             ) {
-                Text("🌸", fontSize = 20.sp)
+                Text("🎨", fontSize = 20.sp)
                 Column {
                     Text(
-                        "Нежное оформление",
+                        "Оформление раздела",
                         style = MaterialTheme.typography.titleMedium,
                         fontWeight = FontWeight.Bold,
                     )
                     Text(
-                        "Только для «Попечительной о доме»",
+                        "Стандартный стиль или нежные палитры",
                         style = MaterialTheme.typography.labelSmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                     )
@@ -534,6 +551,36 @@ internal fun HouseCareThemeDialog(
                     .verticalScroll(rememberScrollState()),
                 verticalArrangement = Arrangement.spacedBy(12.dp),
             ) {
+                if (!isAlreadyStandard) {
+                    OutlinedButton(
+                        onClick = {
+                            selectedSection = null
+                            HouseCareThemeStore.update(context) { cur ->
+                                cur.copy(
+                                    globalPaletteKey = "standard",
+                                    globalCardStyleKey = HouseCareCardStyle.Standard.key,
+                                    globalCornerDp = 22,
+                                    sectionOverrides = emptyMap(),
+                                )
+                            }
+                        },
+                        modifier = Modifier.fillMaxWidth(),
+                        shape = RoundedCornerShape(14.dp),
+                    ) {
+                        Icon(
+                            Icons.Default.Refresh,
+                            contentDescription = null,
+                            modifier = Modifier.size(18.dp),
+                        )
+                        Spacer(Modifier.width(8.dp))
+                        Text(
+                            "Вернуть стандартный стиль (как было изначально)",
+                            style = MaterialTheme.typography.labelMedium,
+                            fontWeight = FontWeight.SemiBold,
+                        )
+                    }
+                }
+
                 Text(
                     "Что настраиваем",
                     style = MaterialTheme.typography.labelMedium,
@@ -636,7 +683,15 @@ internal fun HouseCareThemeDialog(
                                 .clickable {
                                     HouseCareThemeStore.update(context) { cur ->
                                         if (selectedSection == null) {
-                                            cur.copy(globalPaletteKey = pal.key)
+                                            if (pal.key == "standard") {
+                                                cur.copy(
+                                                    globalPaletteKey = "standard",
+                                                    globalCardStyleKey = HouseCareCardStyle.Standard.key,
+                                                    globalCornerDp = 22,
+                                                )
+                                            } else {
+                                                cur.copy(globalPaletteKey = pal.key)
+                                            }
                                         } else {
                                             val secKey = selectedSection!!.key
                                             val prev = cur.sectionOverrides[secKey] ?: SectionCustomStyle()
@@ -733,12 +788,14 @@ internal fun HouseCareThemeDialog(
                     fontWeight = FontWeight.SemiBold,
                     color = MaterialTheme.colorScheme.primary,
                 )
-                Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
-                    listOf(18 to "Аккуратные", 24 to "Нежные", 30 to "Воздушные").forEach { (dpVal, label) ->
+                FlowRow(
+                    horizontalArrangement = Arrangement.spacedBy(6.dp),
+                    verticalArrangement = Arrangement.spacedBy(6.dp),
+                ) {
+                    listOf(22 to "Стандартные", 18 to "Аккуратные", 24 to "Нежные", 30 to "Воздушные").forEach { (dpVal, label) ->
                         ChoiceChip(
                             label = label,
                             selected = activeCornerDp == dpVal,
-                            modifier = Modifier.weight(1f),
                             onClick = {
                                 HouseCareThemeStore.update(context) { cur ->
                                     if (selectedSection == null) {
@@ -874,7 +931,7 @@ internal fun ItemFeminineStyleSelector(
 }
 
 // ============================================================================
-// Звуковой движок и большой красивый таймер «15-минутка»
+// Звуковой движок, фоновый менеджер и большой таймер «15-минутка»
 // ============================================================================
 
 /**
@@ -883,7 +940,7 @@ internal fun ItemFeminineStyleSelector(
  */
 internal class FifteenMinuteSoundEngine(context: Context) {
     private val appContext = context.applicationContext
-    private val scope = CoroutineScope(Dispatchers.Default)
+    private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
     private var tts: TextToSpeech? = null
     private var ttsReady = false
     private var toneGenerator: ToneGenerator? = null
@@ -984,14 +1041,9 @@ internal class FifteenMinuteSoundEngine(context: Context) {
         }
     }
 
-    fun release() {
+    fun stopSpeaking() {
         runCatching {
             tts?.stop()
-            tts?.shutdown()
-        }
-        runCatching {
-            toneGenerator?.release()
-            toneGenerator = null
         }
     }
 
@@ -1086,19 +1138,307 @@ internal class FifteenMinuteSoundEngine(context: Context) {
     }
 }
 
-@Composable
-internal fun rememberFifteenMinuteSoundEngine(): FifteenMinuteSoundEngine {
-    val context = LocalContext.current
-    val engine = remember(context.applicationContext) { FifteenMinuteSoundEngine(context) }
-    DisposableEffect(engine) {
-        onDispose { engine.release() }
+/** Состояние фонового таймера «15-минутка», живущее на уровне всего приложения. */
+internal data class FifteenMinuteTimerState(
+    val zoneTitle: String = "15-минутка",
+    val presetMinutes: Int = 15,
+    val totalSeconds: Int = 15 * 60,
+    val remainingSeconds: Int = 15 * 60,
+    val overtimeSeconds: Int = 0,
+    val isRunning: Boolean = false,
+    val isFinishedBanner: Boolean = false,
+)
+
+/**
+ * Фоновый менеджер таймера «15-минутка»:
+ * не привязан к жизненному циклу конкретного экрана, поэтому продолжает тикать,
+ * подавать минутные сигналы и голосовой отсчёт при переходах по экранам,
+ * съёмке фото «До/После» и в фоновом режиме, пока пользователь сам не нажмёт «Пауза» или «Сброс».
+ */
+internal object FifteenMinuteTimerManager {
+    private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
+    private val _state = MutableStateFlow(FifteenMinuteTimerState())
+    val state: StateFlow<FifteenMinuteTimerState> = _state
+
+    @Volatile
+    private var appContext: Context? = null
+
+    @Volatile
+    private var soundEngine: FifteenMinuteSoundEngine? = null
+
+    private var timerJob: Job? = null
+    private var wakeLock: PowerManager.WakeLock? = null
+
+    fun ensureInitialized(context: Context): FifteenMinuteSoundEngine {
+        val app = context.applicationContext
+        appContext = app
+        HouseCareThemeStore.observe(app)
+        var engine = soundEngine
+        if (engine == null) {
+            synchronized(this) {
+                engine = soundEngine
+                if (engine == null) {
+                    engine = FifteenMinuteSoundEngine(app)
+                    soundEngine = engine
+                }
+            }
+        }
+        return engine!!
     }
-    return engine
+
+    fun setZoneTitle(title: String) {
+        if (title.isNotBlank() && _state.value.zoneTitle != title) {
+            _state.value = _state.value.copy(zoneTitle = title)
+        }
+    }
+
+    fun toggleStartPause(context: Context) {
+        ensureInitialized(context)
+        if (_state.value.isRunning) {
+            pause()
+        } else {
+            start(context)
+        }
+    }
+
+    fun start(context: Context) {
+        val engine = ensureInitialized(context)
+        val cur = _state.value
+        if (cur.isRunning) return
+
+        val startRemaining = if (cur.remainingSeconds <= 0 && cur.isFinishedBanner) {
+            cur.totalSeconds
+        } else {
+            cur.remainingSeconds
+        }
+        _state.value = cur.copy(
+            remainingSeconds = startRemaining,
+            overtimeSeconds = if (startRemaining == cur.totalSeconds) 0 else cur.overtimeSeconds,
+            isRunning = true,
+            isFinishedBanner = false,
+        )
+
+        acquireWakeLock(context)
+        val settings = HouseCareThemeStore.observe(context).value
+        if (settings.timerTickSound) {
+            engine.playTick(isEvenSecond = startRemaining % 2 == 0)
+        }
+
+        timerJob?.cancel()
+        timerJob = scope.launch {
+            var nextTickAt = SystemClock.elapsedRealtime() + 1000L
+            while (_state.value.isRunning) {
+                val now = SystemClock.elapsedRealtime()
+                val waitMs = (nextTickAt - now).coerceAtLeast(10L)
+                delay(waitMs)
+                if (!_state.value.isRunning) break
+                nextTickAt += 1000L
+                val drift = SystemClock.elapsedRealtime() - nextTickAt
+                if (drift > 1500L) {
+                    nextTickAt = SystemClock.elapsedRealtime() + 1000L
+                }
+
+                val currentSettings = appContext?.let { HouseCareThemeStore.observe(it).value }
+                    ?: HouseCareThemeSettings()
+                val snapshot = _state.value
+
+                if (snapshot.remainingSeconds > 0) {
+                    val next = (snapshot.remainingSeconds - 1).coerceAtLeast(0)
+                    _state.value = snapshot.copy(
+                        remainingSeconds = next,
+                        isFinishedBanner = if (next == 0) true else snapshot.isFinishedBanner,
+                    )
+
+                    if (next == 0) {
+                        // Таймер дошёл до 00:00, но НЕ останавливается сам, пока пользователь не остановит!
+                        engine.playFinished(speakVoice = currentSettings.timerVoiceCountdown)
+                    } else {
+                        if (currentSettings.timerTickSound) {
+                            engine.playTick(isEvenSecond = next % 2 == 0)
+                        }
+                        if (next in 1..5 && currentSettings.timerVoiceCountdown) {
+                            engine.playFinalSecond(next, speakVoice = true)
+                        } else if (next % 60 == 0 && next < snapshot.totalSeconds && currentSettings.timerMinuteSound) {
+                            val elapsedMinutes = (snapshot.totalSeconds - next) / 60
+                            engine.playMinutePassed(
+                                minutesElapsed = elapsedMinutes,
+                                speakVoice = currentSettings.timerVoiceCountdown,
+                            )
+                        }
+                    }
+                } else {
+                    // Время вышло, но пользователь ещё не остановил таймер — продолжаем работать в фоне
+                    val over = snapshot.overtimeSeconds + 1
+                    _state.value = snapshot.copy(
+                        overtimeSeconds = over,
+                        isFinishedBanner = true,
+                    )
+                    if (currentSettings.timerTickSound) {
+                        engine.playTick(isEvenSecond = over % 2 == 0)
+                    }
+                    if (over % 15 == 0) {
+                        engine.playFinished(speakVoice = currentSettings.timerVoiceCountdown)
+                    }
+                }
+            }
+        }
+    }
+
+    fun pause() {
+        timerJob?.cancel()
+        timerJob = null
+        releaseWakeLock()
+        soundEngine?.stopSpeaking()
+        _state.value = _state.value.copy(isRunning = false)
+    }
+
+    fun reset(context: Context) {
+        ensureInitialized(context)
+        timerJob?.cancel()
+        timerJob = null
+        releaseWakeLock()
+        soundEngine?.stopSpeaking()
+        val cur = _state.value
+        _state.value = cur.copy(
+            remainingSeconds = cur.totalSeconds,
+            overtimeSeconds = 0,
+            isRunning = false,
+            isFinishedBanner = false,
+        )
+    }
+
+    fun selectPreset(context: Context, minutes: Int) {
+        ensureInitialized(context)
+        timerJob?.cancel()
+        timerJob = null
+        releaseWakeLock()
+        soundEngine?.stopSpeaking()
+        _state.value = _state.value.copy(
+            presetMinutes = minutes,
+            totalSeconds = minutes * 60,
+            remainingSeconds = minutes * 60,
+            overtimeSeconds = 0,
+            isRunning = false,
+            isFinishedBanner = false,
+        )
+    }
+
+    private fun acquireWakeLock(context: Context) {
+        runCatching {
+            if (wakeLock?.isHeld == true) return
+            val pm = context.applicationContext.getSystemService(Context.POWER_SERVICE) as? PowerManager ?: return
+            wakeLock = pm.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, "BibleApp:FifteenMinuteTimerWakeLock").apply {
+                setReferenceCounted(false)
+                acquire(60 * 60 * 1000L) // до 1 часа непрерывной работы
+            }
+        }
+    }
+
+    private fun releaseWakeLock() {
+        runCatching {
+            if (wakeLock?.isHeld == true) {
+                wakeLock?.release()
+            }
+        }
+    }
 }
 
 /**
- * Большой и красивый женственный таймер «15-минутка» с удобным включением, паузой, сбросом,
- * звуками тиканья каждую секунду, минутными сигналами и голосовым отсчётом 5, 4, 3, 2, 1, «Время вышло, пора завершать уборку!».
+ * Компактная плашка активного таймера «15-минутка»:
+ * отображается в верхней части других экранов «Попечительной о доме», когда таймер запущен,
+ * чтобы пользователь видел обратный отсчёт и мог поставить на паузу или остановить его с любого экрана.
+ */
+@Composable
+internal fun ActiveFifteenMinuteTimerBanner(
+    modifier: Modifier = Modifier,
+) {
+    val context = LocalContext.current
+    val timerState by FifteenMinuteTimerManager.state.collectAsState()
+    if (!timerState.isRunning && !timerState.isFinishedBanner) return
+
+    val mins = timerState.remainingSeconds / 60
+    val secs = timerState.remainingSeconds % 60
+    val timeText = if (timerState.remainingSeconds > 0) {
+        String.format(Locale.getDefault(), "%02d:%02d", mins, secs)
+    } else {
+        val overM = timerState.overtimeSeconds / 60
+        val overS = timerState.overtimeSeconds % 60
+        String.format(Locale.getDefault(), "00:00 (+%02d:%02d)", overM, overS)
+    }
+
+    val isDone = timerState.isFinishedBanner
+    val accent = if (isDone) cleaningGreen else MaterialTheme.colorScheme.primary
+
+    Card(
+        modifier = modifier
+            .fillMaxWidth()
+            .padding(horizontal = 16.dp, vertical = 6.dp),
+        shape = RoundedCornerShape(16.dp),
+        colors = CardDefaults.cardColors(
+            containerColor = accent.copy(alpha = 0.14f),
+        ),
+        border = BorderStroke(1.dp, accent.copy(alpha = 0.45f)),
+        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 12.dp, vertical = 8.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(10.dp),
+        ) {
+            Text(if (isDone) "✨" else "⏱", fontSize = 18.sp)
+            Column(modifier = Modifier.weight(1f)) {
+                Text(
+                    if (isDone) "Время 15-минутки вышло!" else "Идёт ${timerState.zoneTitle} · $timeText",
+                    style = MaterialTheme.typography.labelLarge,
+                    fontWeight = FontWeight.Bold,
+                    color = accent,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
+                )
+                Text(
+                    if (isDone) {
+                        "Нажмите «Стоп», чтобы завершить звуковой сигнал"
+                    } else {
+                        "Таймер работает в фоне · можно открывать разделы и делать фото"
+                    },
+                    style = MaterialTheme.typography.labelSmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
+                )
+            }
+            if (timerState.isRunning) {
+                TextButton(
+                    onClick = { FifteenMinuteTimerManager.pause() },
+                ) {
+                    Text(
+                        if (isDone) "Стоп" else "Пауза",
+                        fontWeight = FontWeight.Bold,
+                        color = accent,
+                    )
+                }
+            }
+            IconButton(
+                onClick = { FifteenMinuteTimerManager.reset(context) },
+                modifier = Modifier.size(32.dp),
+            ) {
+                Icon(
+                    Icons.Default.Close,
+                    contentDescription = "Сбросить таймер",
+                    tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                    modifier = Modifier.size(18.dp),
+                )
+            }
+        }
+    }
+}
+
+/**
+ * Большой и красивый таймер «15-минутка» с удобным включением, паузой, сбросом,
+ * непрерывной работой в фоновом режиме, звуками тиканья каждую секунду, минутными сигналами
+ * и голосовым отсчётом 5, 4, 3, 2, 1, «Время вышло, пора завершать уборку!».
  */
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
@@ -1110,67 +1450,27 @@ internal fun FifteenMinuteTimerCard(
 ) {
     val context = LocalContext.current
     val settings by HouseCareThemeStore.observe(context).collectAsState()
-    val soundEngine = rememberFifteenMinuteSoundEngine()
+    val soundEngine = remember(context.applicationContext) {
+        FifteenMinuteTimerManager.ensureInitialized(context)
+    }
+    val timerState by FifteenMinuteTimerManager.state.collectAsState()
 
-    var presetMinutes by rememberSaveable { mutableIntStateOf(15) }
-    var totalSeconds by rememberSaveable { mutableIntStateOf(15 * 60) }
-    var remainingSeconds by rememberSaveable { mutableIntStateOf(15 * 60) }
-    var isRunning by rememberSaveable { mutableStateOf(false) }
-    var isFinishedBanner by rememberSaveable { mutableStateOf(false) }
+    LaunchedEffect(zoneTitle) {
+        FifteenMinuteTimerManager.setZoneTitle(zoneTitle)
+    }
+
+    val presetMinutes = timerState.presetMinutes
+    val totalSeconds = timerState.totalSeconds
+    val remainingSeconds = timerState.remainingSeconds
+    val isRunning = timerState.isRunning
+    val isFinishedBanner = timerState.isFinishedBanner
     var showFullScreen by rememberSaveable { mutableStateOf(false) }
-
-    LaunchedEffect(isRunning) {
-        if (!isRunning) return@LaunchedEffect
-        // Сразу озвучиваем первый тик при нажатии «Старт»
-        if (settings.timerTickSound && remainingSeconds > 0) {
-            soundEngine.playTick(isEvenSecond = remainingSeconds % 2 == 0)
-        }
-        while (isRunning && remainingSeconds > 0) {
-            delay(1000L)
-            if (!isRunning) break
-            val next = (remainingSeconds - 1).coerceAtLeast(0)
-            remainingSeconds = next
-
-            if (next == 0) {
-                isRunning = false
-                isFinishedBanner = true
-                soundEngine.playFinished(speakVoice = settings.timerVoiceCountdown)
-            } else {
-                // Тиканье звучит КАЖДУЮ секунду без пропусков
-                if (settings.timerTickSound) {
-                    soundEngine.playTick(isEvenSecond = next % 2 == 0)
-                }
-                if (next in 1..5 && settings.timerVoiceCountdown) {
-                    soundEngine.playFinalSecond(next, speakVoice = true)
-                } else if (next % 60 == 0 && next < totalSeconds && settings.timerMinuteSound) {
-                    val elapsedMinutes = (totalSeconds - next) / 60
-                    soundEngine.playMinutePassed(
-                        minutesElapsed = elapsedMinutes,
-                        speakVoice = settings.timerVoiceCountdown,
-                    )
-                }
-            }
-        }
-    }
-
-    fun selectPreset(minutes: Int) {
-        isRunning = false
-        isFinishedBanner = false
-        presetMinutes = minutes
-        totalSeconds = minutes * 60
-        remainingSeconds = minutes * 60
-    }
-
-    fun resetTimer() {
-        isRunning = false
-        isFinishedBanner = false
-        remainingSeconds = totalSeconds
-    }
 
     val style = LocalHouseCareStyle.current
     val dark = isSystemInDarkTheme()
-    val primary = style.palette.primary(dark)
-    val container = style.palette.primaryContainer(dark)
+    val isStandard = style.palette.key == "standard"
+    val primary = if (isStandard) MaterialTheme.colorScheme.primary else style.palette.primary(dark)
+    val container = if (isStandard) MaterialTheme.colorScheme.primaryContainer else style.palette.primaryContainer(dark)
 
     Card(
         modifier = modifier.fillMaxWidth(),
@@ -1214,7 +1514,7 @@ internal fun FifteenMinuteTimerCard(
                             if (tasksTotal > 0) {
                                 "Частей комнат: $tasksDone из $tasksTotal выполнено"
                             } else {
-                                "Быстрая уборка в удовольствие ✨"
+                                "Работает даже в фоне, пока вы не остановите ✨"
                             },
                             style = MaterialTheme.typography.labelSmall,
                             color = MaterialTheme.colorScheme.onSurfaceVariant,
@@ -1254,7 +1554,11 @@ internal fun FifteenMinuteTimerCard(
                     contentAlignment = Alignment.Center,
                 ) {
                     Text(
-                        "✨ Время вышло! Пора завершать уборку ✨",
+                        if (isRunning) {
+                            "✨ Время вышло! Нажмите «Остановить» или «Сброс» ✨"
+                        } else {
+                            "✨ Время вышло! Пора завершать уборку ✨"
+                        },
                         style = MaterialTheme.typography.bodyMedium,
                         fontWeight = FontWeight.Bold,
                         color = cleaningGreen,
@@ -1270,13 +1574,7 @@ internal fun FifteenMinuteTimerCard(
                 verticalAlignment = Alignment.CenterVertically,
             ) {
                 Button(
-                    onClick = {
-                        if (remainingSeconds == 0) {
-                            remainingSeconds = totalSeconds
-                            isFinishedBanner = false
-                        }
-                        isRunning = !isRunning
-                    },
+                    onClick = { FifteenMinuteTimerManager.toggleStartPause(context) },
                     modifier = Modifier
                         .weight(1.35f)
                         .height(48.dp),
@@ -1293,6 +1591,7 @@ internal fun FifteenMinuteTimerCard(
                     Spacer(Modifier.width(6.dp))
                     Text(
                         when {
+                            isRunning && isFinishedBanner -> "Остановить"
                             isRunning -> "Пауза"
                             remainingSeconds < totalSeconds && remainingSeconds > 0 -> "Продолжить"
                             else -> "Старт 15-минутки"
@@ -1303,7 +1602,7 @@ internal fun FifteenMinuteTimerCard(
                 }
 
                 OutlinedButton(
-                    onClick = { resetTimer() },
+                    onClick = { FifteenMinuteTimerManager.reset(context) },
                     modifier = Modifier
                         .weight(0.85f)
                         .height(48.dp),
@@ -1336,7 +1635,7 @@ internal fun FifteenMinuteTimerCard(
                         label = "$mins мин",
                         selected = presetMinutes == mins,
                         modifier = Modifier.weight(1f),
-                        onClick = { selectPreset(mins) },
+                        onClick = { FifteenMinuteTimerManager.selectPreset(context, mins) },
                     )
                 }
             }
@@ -1440,7 +1739,7 @@ internal fun FifteenMinuteTimerCard(
                                 color = primary,
                             )
                             Text(
-                                "Режим «15-минутка» · держите темп с удовольствием 🌸",
+                                "Режим «15-минутка» · работает даже в фоновом режиме 🌸",
                                 style = MaterialTheme.typography.bodySmall,
                                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                             )
@@ -1478,13 +1777,7 @@ internal fun FifteenMinuteTimerCard(
                             horizontalArrangement = Arrangement.spacedBy(12.dp),
                         ) {
                             Button(
-                                onClick = {
-                                    if (remainingSeconds == 0) {
-                                        remainingSeconds = totalSeconds
-                                        isFinishedBanner = false
-                                    }
-                                    isRunning = !isRunning
-                                },
+                                onClick = { FifteenMinuteTimerManager.toggleStartPause(context) },
                                 modifier = Modifier
                                     .weight(1.3f)
                                     .height(54.dp),
@@ -1496,13 +1789,17 @@ internal fun FifteenMinuteTimerCard(
                                 )
                                 Spacer(Modifier.width(8.dp))
                                 Text(
-                                    if (isRunning) "Пауза" else "Старт",
+                                    when {
+                                        isRunning && isFinishedBanner -> "Остановить"
+                                        isRunning -> "Пауза"
+                                        else -> "Старт"
+                                    },
                                     style = MaterialTheme.typography.titleMedium,
                                     fontWeight = FontWeight.Bold,
                                 )
                             }
                             OutlinedButton(
-                                onClick = { resetTimer() },
+                                onClick = { FifteenMinuteTimerManager.reset(context) },
                                 modifier = Modifier
                                     .weight(0.8f)
                                     .height(54.dp),

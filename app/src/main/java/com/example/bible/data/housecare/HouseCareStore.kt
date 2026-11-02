@@ -45,10 +45,13 @@ class HouseCareStore(context: Context) {
             owned + autoFloors(place.id, place.floorsCount, startAt = owned.size + 1)
         }
         // Воскресенья в плане больше нет — комнаты этого дня переезжают на субботу.
-        val zones = cur.zones.map { zone ->
-            val day = zone.planDate.dayOfWeek
-            if (day == DayOfWeek.SUNDAY) zone.copy(date = zone.planDate.minusDays(1).toString()) else zone
-        }
+        // Старые автоматически созданные пустые зоны "fifteen-..." убираем, чтобы 15-минутка была только по выбору пользователя.
+        val zones = cur.zones
+            .filterNot { zone -> zone.id.startsWith("fifteen-") && cur.tasks.none { it.zoneId == zone.id } }
+            .map { zone ->
+                val day = zone.planDate.dayOfWeek
+                if (day == DayOfWeek.SUNDAY) zone.copy(date = zone.planDate.minusDays(1).toString()) else zone
+            }
         return cur.copy(places = places, floors = withAuto, zones = zones)
     }
 
@@ -66,7 +69,7 @@ class HouseCareStore(context: Context) {
      */
     suspend fun migrateWeeklyZones() {
         val raw = app.houseCareDataStore.data.first()[HouseCareKeys.DOCUMENT_JSON] ?: return
-        if (!raw.contains("\"dayOfWeek\"")) return
+        if (!raw.contains("\"dayOfWeek\"") && !raw.contains("\"fifteen-")) return
         save(normalize(HouseCareData.parse(raw)))
     }
 
@@ -142,32 +145,6 @@ class HouseCareStore(context: Context) {
         cur.copy(zones = cur.zones + CleaningZone(floorId = floorId, date = date.toString(), name = name.trim()))
     }
 
-    /** Находит комнату с таким именем на этаже и дате или создаёт новую и возвращает её id. */
-    suspend fun ensureZone(floorId: String, date: LocalDate, name: String): String {
-        val trimmed = name.trim()
-        val dateStr = date.toString()
-        var resultId = ""
-        mutate { cur ->
-            val existing = cur.zones.firstOrNull {
-                it.floorId == floorId && it.date == dateStr && it.name.equals(trimmed, ignoreCase = true)
-            }
-            if (existing != null) {
-                resultId = existing.id
-                cur
-            } else {
-                val created = CleaningZone(
-                    id = "fifteen-$floorId-$dateStr",
-                    floorId = floorId,
-                    date = dateStr,
-                    name = trimmed,
-                )
-                resultId = created.id
-                cur.copy(zones = cur.zones + created)
-            }
-        }
-        return resultId
-    }
-
     /** Комнату можно переименовать и перенести на другой день. */
     suspend fun updateZone(id: String, name: String, date: LocalDate) = mutate { cur ->
         cur.copy(zones = cur.zones.map {
@@ -220,9 +197,23 @@ class HouseCareStore(context: Context) {
     }
 
     suspend fun deleteZone(id: String) = mutate { cur ->
-        val removedPhotos = cur.tasks.filter { it.zoneId == id }.flatMap { it.photos() }
+        val target = cur.zoneById(id)
+        val idsToDelete = buildSet {
+            add(id)
+            if (target != null) {
+                cur.zones.filter {
+                    it.floorId == target.floorId &&
+                        it.date == target.date &&
+                        it.name.trim().equals(target.name.trim(), ignoreCase = true)
+                }.forEach { add(it.id) }
+            }
+        }
+        val removedPhotos = cur.tasks.filter { it.zoneId in idsToDelete }.flatMap { it.photos() }
         removedPhotos.forEach { HouseCarePhotoStorage.deleteFile(app, it) }
-        cur.copy(zones = cur.zones.filterNot { it.id == id }, tasks = cur.tasks.filterNot { it.zoneId == id })
+        cur.copy(
+            zones = cur.zones.filterNot { it.id in idsToDelete },
+            tasks = cur.tasks.filterNot { it.zoneId in idsToDelete },
+        )
     }
 
     suspend fun addTask(zoneId: String, name: String) = mutate { cur ->
