@@ -34,6 +34,7 @@ import androidx.compose.material.icons.filled.HomeWork
 import androidx.compose.material.icons.filled.Insights
 import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material.icons.filled.KeyboardArrowRight
+import androidx.compose.material.icons.filled.RestaurantMenu
 import androidx.compose.material.icons.filled.Timer
 import androidx.compose.material.icons.filled.UnfoldLess
 import androidx.compose.material.icons.filled.UnfoldMore
@@ -46,6 +47,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
@@ -55,6 +57,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextDecoration
@@ -63,7 +66,10 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.bible.data.housecare.CleaningHabit
 import com.example.bible.data.housecare.CleaningZone
+import com.example.bible.data.housecare.FamilyMenuDefaults
+import com.example.bible.data.housecare.FamilyMenuStore
 import com.example.bible.data.housecare.HouseCareData
+import com.example.bible.data.housecare.HouseCareStore
 import com.example.bible.data.housecare.HouseFloor
 import com.example.bible.data.housecare.HousePlace
 import com.example.bible.data.housecare.WeekDays
@@ -83,7 +89,14 @@ fun HouseCareHubScreen(
     onBack: () -> Unit,
     onOpenCleaning: () -> Unit,
     onOpenStats: () -> Unit,
+    onOpenFamilyMenu: () -> Unit = {},
 ) {
+    val context = LocalContext.current
+    val familyMenuStore = remember(context.applicationContext) { FamilyMenuStore(context) }
+    val houseCareStore = remember(context.applicationContext) { HouseCareStore(context) }
+    val menuData by familyMenuStore.data.collectAsState(initial = FamilyMenuDefaults.initialData())
+    val houseCareData by houseCareStore.data.collectAsState(initial = HouseCareData.Empty)
+
     HouseCareScaffold(
         title = "Попечительная о доме",
         onBack = onBack,
@@ -124,6 +137,28 @@ fun HouseCareHubScreen(
                         )
                     },
                     onClick = onOpenStats,
+                )
+            }
+            item {
+                HubCard(
+                    title = "Меню для семьи",
+                    subtitle = "Расписание питания на неделю, домашние рецепты с КБЖУ, готовые рационы, детское меню, аллергии и список покупок",
+                    icon = {
+                        Icon(
+                            Icons.Filled.RestaurantMenu,
+                            contentDescription = null,
+                            tint = MaterialTheme.colorScheme.primary,
+                            modifier = Modifier.size(22.dp),
+                        )
+                    },
+                    onClick = onOpenFamilyMenu,
+                )
+            }
+            item {
+                HouseCareUnifiedDaySummaryCard(
+                    menuData = menuData,
+                    houseCareData = houseCareData,
+                    onOpenFamilyMenu = onOpenFamilyMenu,
                 )
             }
         }

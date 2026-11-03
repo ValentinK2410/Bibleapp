@@ -238,6 +238,7 @@ import com.example.bible.ui.housecare.CleaningTaskScreen
 import com.example.bible.ui.housecare.CleaningZoneScreen
 import com.example.bible.ui.housecare.FloorRoomsScreen
 import com.example.bible.ui.housecare.CleaningDayScreen
+import com.example.bible.ui.housecare.FamilyMenuScreen
 import com.example.bible.ui.housecare.HouseCareHubScreen
 import com.example.bible.ui.housecare.HouseCareSettingsScreen
 import com.example.bible.ui.housecare.HouseCareViewModel
@@ -2056,6 +2057,12 @@ private fun BibleNavHost(
                 onBack = { navController.navigateUp() },
                 onOpenCleaning = { navController.navigate("house_cleaning") },
                 onOpenStats = { navController.navigate("house_clean_stats") },
+                onOpenFamilyMenu = { navController.navigate("house_family_menu") },
+            )
+        }
+        composable("house_family_menu") {
+            FamilyMenuScreen(
+                onBack = { navController.navigateUp() },
             )
         }
         composable("house_cleaning") {

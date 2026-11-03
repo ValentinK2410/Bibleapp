@@ -268,6 +268,7 @@ internal enum class HouseCareSectionId(val key: String, val title: String, val e
     Zone("zone", "Комната, разделы и 15-минутка", "🧹"),
     Task("task", "Раздел и фото «До / После»", "📸"),
     Stats("stats", "Статистика уборки", "📊"),
+    FamilyMenu("family_menu", "Меню для семьи", "🍽️"),
 }
 
 /** Стиль карточек внутри раздела. */
