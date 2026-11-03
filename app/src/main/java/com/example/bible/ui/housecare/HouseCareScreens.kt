@@ -32,6 +32,7 @@ import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.HomeWork
 import androidx.compose.material.icons.filled.Insights
+import androidx.compose.material.icons.filled.RestaurantMenu
 import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material.icons.filled.KeyboardArrowRight
 import androidx.compose.material.icons.filled.Timer
@@ -83,6 +84,7 @@ fun HouseCareHubScreen(
     onBack: () -> Unit,
     onOpenCleaning: () -> Unit,
     onOpenStats: () -> Unit,
+    onOpenFamilyMenu: () -> Unit = {},
 ) {
     HouseCareScaffold(
         title = "Попечительная о доме",
@@ -124,6 +126,21 @@ fun HouseCareHubScreen(
                         )
                     },
                     onClick = onOpenStats,
+                )
+            }
+            item {
+                HubCard(
+                    title = "Меню для семьи",
+                    subtitle = "Расписание питания на неделю, домашние рецепты с КБЖУ, готовые рационы, детское меню, аллергии и список покупок",
+                    icon = {
+                        Icon(
+                            Icons.Filled.RestaurantMenu,
+                            contentDescription = null,
+                            tint = MaterialTheme.colorScheme.primary,
+                            modifier = Modifier.size(22.dp),
+                        )
+                    },
+                    onClick = onOpenFamilyMenu,
                 )
             }
         }
