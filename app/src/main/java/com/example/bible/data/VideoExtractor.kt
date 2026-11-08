@@ -2,6 +2,7 @@ package com.example.bible.data
 
 import android.content.Context
 import android.os.Environment
+import android.text.Html
 import android.util.Log
 import com.yausername.youtubedl_android.YoutubeDL
 import com.yausername.youtubedl_android.YoutubeDLException
@@ -14,8 +15,14 @@ import org.json.JSONArray
 import org.json.JSONException
 import org.json.JSONObject
 import java.io.File
+import java.net.HttpURLConnection
+import java.net.URL
+import java.net.URLEncoder
+import java.nio.charset.Charset
 
 private const val TAG = "VideoExtractor"
+private const val DESKTOP_USER_AGENT =
+    "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36"
 
 data class PlaylistMediaItem(
     /** Устойчивый ключ для UI и выборки */
@@ -45,6 +52,71 @@ object VideoExtractor {
         return "youtube.com" in l || "youtu.be" in l
     }
 
+    private fun isVkUrl(url: String): Boolean {
+        val l = url.lowercase()
+        return "vkvideo.ru" in l || "vk.com" in l || "vk.ru" in l
+    }
+
+    private val vkPlaylistRegexes = listOf(
+        Regex("""(?:vkvideo\.ru|vk\.com|vk\.ru)/(?:video/)?playlist/(-?\d+)_(-?\d+)""", RegexOption.IGNORE_CASE),
+        Regex("""(?:vkvideo\.ru|vk\.com|vk\.ru)/videos(-?\d+).*?[?&]section=album_(-?\d+)""", RegexOption.IGNORE_CASE),
+        Regex("""[?&]z=album(-?\d+)_(-?\d+)""", RegexOption.IGNORE_CASE),
+    )
+
+    private val vkSingleVideoRegex =
+        Regex("""(?:vkvideo\.ru|vk\.ru)/(?:.+?\?.*?z=)?(video|clip)(-?\d+_\d+)""", RegexOption.IGNORE_CASE)
+
+    private val vkChannelRegex =
+        Regex("""(?:m\.|new\.)?vkvideo\.ru/(?:video/)?(@[^/?#]+)""", RegexOption.IGNORE_CASE)
+
+    /**
+     * Извлекает `(ownerId, playlistId)` из ссылок вида:
+     * - `https://vkvideo.ru/video/playlist/-211185652_40`
+     * - `https://vkvideo.ru/playlist/-211185652_40`
+     * - `https://vk.com/video/playlist/-211185652_40`
+     * - `https://vk.com/videos-211185652?section=album_40`
+     */
+    fun extractVkPlaylistIds(url: String): Pair<String, String>? {
+        val trimmed = url.trim()
+        for (regex in vkPlaylistRegexes) {
+            val match = regex.find(trimmed)
+            if (match != null) {
+                return match.groupValues[1] to match.groupValues[2]
+            }
+        }
+        return null
+    }
+
+    /**
+     * Приводит ссылки `vkvideo.ru` (особенно `vkvideo.ru/video/playlist/...`, которую
+     * внутренний регулярный фильтр yt-dlp отклоняет с `Unsupported URL`) к каноническому виду `vk.com`,
+     * поддерживаемому всеми версиями yt-dlp.
+     */
+    fun normalizeInputUrl(rawUrl: String): String {
+        val trimmed = rawUrl.trim()
+        extractVkPlaylistIds(trimmed)?.let { (ownerId, playlistId) ->
+            return "https://vk.com/video/playlist/${ownerId}_${playlistId}"
+        }
+        vkSingleVideoRegex.find(trimmed)?.let { m ->
+            val kind = m.groupValues[1].lowercase()
+            val id = m.groupValues[2]
+            val listParam = Regex("""[?&]list=([\da-fA-F-]+)""").find(trimmed)?.groupValues?.get(1)
+            return if (!listParam.isNullOrBlank()) {
+                "https://vk.com/${kind}${id}?list=$listParam"
+            } else {
+                "https://vk.com/${kind}${id}"
+            }
+        }
+        vkChannelRegex.find(trimmed)?.let { m ->
+            val handle = m.groupValues[1]
+            return "https://vk.com/video/$handle"
+        }
+        if ("vkvideo.ru/video_ext.php" in trimmed.lowercase()) {
+            return trimmed.replace(Regex("""https?://(?:m\.)?vkvideo\.ru/video_ext\.php""", RegexOption.IGNORE_CASE), "https://vk.com/video_ext.php")
+        }
+        return trimmed
+    }
+
     /**
      * Клиенты плеера YouTube по очереди: сначала выбор самого yt-dlp, затем запасные.
      * YouTube регулярно перестаёт отдавать форматы то одному, то другому клиенту.
@@ -64,13 +136,14 @@ object VideoExtractor {
 
     private fun YoutubeDLRequest.addYoutubeBotWorkaroundsIfNeeded(url: String) = addYoutubeClient(url, null)
 
-    /** Ошибка, при которой стоит попробовать другой клиент YouTube. */
+    /** Ошибка, при которой стоит попробовать другой клиент YouTube или обновить yt-dlp. */
     private fun isClientProblem(msg: String): Boolean {
         val m = msg.lowercase()
         return "requested format is not available" in m ||
             "sign in to confirm" in m || "not a bot" in m ||
             "unable to extract" in m || "failed to extract any player response" in m ||
             "http error 403" in m || "po token" in m || "only images are available" in m ||
+            "unsupported url" in m || "is not a valid url" in m ||
             "this video is not available" in m && "playlist" !in m
     }
 
@@ -83,9 +156,14 @@ object VideoExtractor {
     }
 
     fun isPlaylistUrl(url: String): Boolean {
-        val l = url.lowercase()
-        if (!isYouTubeUrl(l)) return false
-        return "/playlist" in l || ("list=" in l && "v=" !in l && "youtu.be/" !in l)
+        val l = url.trim().lowercase()
+        if (isYouTubeUrl(l)) {
+            return "/playlist" in l || ("list=" in l && "v=" !in l && "youtu.be/" !in l)
+        }
+        if (extractVkPlaylistIds(url) != null) return true
+        if (isVkUrl(l) && ("/playlist/" in l || "section=album_" in l || "/@" in l)) return true
+        if ("rutube.ru/plst/" in l) return true
+        return false
     }
 
     @Volatile
@@ -150,13 +228,14 @@ object VideoExtractor {
     }
 
     suspend fun fetchInfo(url: String): VideoInfo = withContext(Dispatchers.IO) {
-        val info: YtVideoInfo = if (isYouTubeUrl(url)) {
+        val normalizedUrl = normalizeInputUrl(url)
+        val info: YtVideoInfo = if (isYouTubeUrl(normalizedUrl)) {
             var lastError: Exception? = null
             var found: YtVideoInfo? = null
             for (strategy in YoutubeClientStrategies) {
                 try {
-                    val req = YoutubeDLRequest(url)
-                    req.addYoutubeClient(url, strategy)
+                    val req = YoutubeDLRequest(normalizedUrl)
+                    req.addYoutubeClient(normalizedUrl, strategy)
                     found = YoutubeDL.getInstance().getInfo(req)
                     break
                 } catch (e: Exception) {
@@ -166,7 +245,11 @@ object VideoExtractor {
             }
             found ?: throw (lastError ?: RuntimeException("Не удалось получить сведения о ролике"))
         } else {
-            YoutubeDL.getInstance().getInfo(url)
+            val req = YoutubeDLRequest(normalizedUrl)
+            if (isVkUrl(normalizedUrl)) {
+                req.addOption("--user-agent", DESKTOP_USER_AGENT)
+            }
+            YoutubeDL.getInstance().getInfo(req)
         }
         val title = info.title ?: "media_${System.currentTimeMillis()}"
         val ext = info.ext ?: "mp4"
@@ -178,27 +261,153 @@ object VideoExtractor {
     }
 
     /**
+     * Прямая загрузка содержимого плейлиста VK / VK Video через `al_video.php` (`load_videos_silent`).
+     * Возвращает полные названия лекций/роликов, обложки и длительность без ошибок `vkvideo.ru/video/playlist/...`.
+     */
+    private fun inspectVkPlaylistDirect(ownerId: String, playlistId: String): PlaylistInspection? {
+        return try {
+            val section = "playlist_$playlistId"
+            val items = ArrayList<PlaylistMediaItem>()
+            var offset = 0
+            var total = Int.MAX_VALUE
+            var channelTitle: String? = null
+            val win1251 = runCatching { Charset.forName("windows-1251") }.getOrElse { Charsets.UTF_8 }
+
+            while (offset < total && offset < 2000) {
+                val postBody = buildString {
+                    append("act=load_videos_silent")
+                    append("&offset=").append(offset)
+                    append("&oid=").append(URLEncoder.encode(ownerId, "UTF-8"))
+                    append("&section=").append(URLEncoder.encode(section, "UTF-8"))
+                    append("&al=1")
+                }.toByteArray(Charsets.UTF_8)
+
+                val conn = (URL("https://vk.com/al_video.php").openConnection() as HttpURLConnection).apply {
+                    requestMethod = "POST"
+                    connectTimeout = 15_000
+                    readTimeout = 20_000
+                    doOutput = true
+                    setRequestProperty("User-Agent", DESKTOP_USER_AGENT)
+                    setRequestProperty("X-Requested-With", "XMLHttpRequest")
+                    setRequestProperty("Referer", "https://vk.com/al_video.php")
+                    setRequestProperty("Content-Type", "application/x-www-form-urlencoded; charset=UTF-8")
+                }
+                conn.outputStream.use { it.write(postBody) }
+                val contentType = conn.contentType.orEmpty().lowercase()
+                val charset = if ("utf-8" in contentType) Charsets.UTF_8 else win1251
+                val raw = conn.inputStream.bufferedReader(charset).use { it.readText() }
+                conn.disconnect()
+
+                val jsonStart = raw.indexOf('{')
+                if (jsonStart < 0) break
+                val root = JSONObject(raw.substring(jsonStart))
+                val payload = root.optJSONArray("payload") ?: break
+                val dataArr = payload.optJSONArray(1) ?: break
+                val wrapper = dataArr.optJSONObject(0) ?: break
+                val secObj = wrapper.optJSONObject(section) ?: break
+
+                total = secObj.optInt("total", 0)
+                val list = secObj.optJSONArray("list") ?: break
+                if (list.length() == 0) break
+
+                for (i in 0 until list.length()) {
+                    val row = list.optJSONArray(i) ?: continue
+                    if (row.length() < 4) continue
+                    val vOwner = row.optLong(0, 0L)
+                    val vId = row.optLong(1, 0L)
+                    if (vOwner == 0L || vId == 0L) continue
+                    val thumb = row.optString(2, "").takeIf { it.startsWith("http") }
+                    val rawTitle = row.optString(3, "")
+                    val cleanTitle = Html.fromHtml(rawTitle, Html.FROM_HTML_MODE_LEGACY).toString().trim()
+                        .ifBlank { "Видео ${items.size + 1}" }
+                    val durStr = row.optString(5, "")
+                    val durSecFromField = if (row.length() > 19) row.optLong(19, 0L).takeIf { it > 0L } else null
+                    val durationSec = durSecFromField ?: parseColonDurationSeconds(durStr)
+
+                    if (channelTitle == null && row.length() > 8) {
+                        val ownerHtml = row.optString(8, "")
+                        val parsedOwner = Html.fromHtml(ownerHtml, Html.FROM_HTML_MODE_LEGACY).toString().trim()
+                        if (parsedOwner.isNotBlank()) {
+                            channelTitle = parsedOwner
+                        }
+                    }
+
+                    val pageUrl = "https://vk.com/video${vOwner}_${vId}"
+                    val stableId = "vk_${vOwner}_${vId}"
+                    if (items.none { it.stableId == stableId }) {
+                        items += PlaylistMediaItem(
+                            stableId = stableId,
+                            title = cleanTitle,
+                            pageUrl = pageUrl,
+                            thumbnail = thumb,
+                            durationSec = durationSec,
+                        )
+                    }
+                }
+
+                val newCount = secObj.optInt("count", offset + list.length())
+                if (newCount <= offset) {
+                    offset += list.length()
+                } else {
+                    offset = newCount
+                }
+            }
+
+            if (items.isEmpty()) {
+                null
+            } else {
+                val plTitle = channelTitle?.let { "$it · Плейлист #$playlistId" } ?: "Плейлист VK #$playlistId"
+                PlaylistInspection(playlistTitle = plTitle, items = items)
+            }
+        } catch (e: Throwable) {
+            Log.w(TAG, "inspectVkPlaylistDirect failed for ${ownerId}_${playlistId}: ${e.message}")
+            null
+        }
+    }
+
+    private fun parseColonDurationSeconds(raw: String): Long? {
+        val parts = raw.trim().split(':').mapNotNull { it.toLongOrNull() }
+        return when (parts.size) {
+            2 -> parts[0] * 60L + parts[1]
+            3 -> parts[0] * 3600L + parts[1] * 60L + parts[2]
+            else -> null
+        }?.takeIf { it > 0L }
+    }
+
+    /**
      * Список элементов плейлиста или один ролик по ссылке.
      * [flatPlaylist] без полной загрузки метаданных каждого ролика — быстрее для длинных списков.
      */
     suspend fun inspectPlaylist(url: String, flatPlaylist: Boolean = true): PlaylistInspection =
         withContext(Dispatchers.IO) {
             val trimmed = url.trim()
-            val req = YoutubeDLRequest(trimmed)
-            req.addYoutubeBotWorkaroundsIfNeeded(trimmed)
+            extractVkPlaylistIds(trimmed)?.let { (ownerId, playlistId) ->
+                inspectVkPlaylistDirect(ownerId, playlistId)?.let { direct ->
+                    if (direct.items.isNotEmpty()) {
+                        return@withContext direct
+                    }
+                }
+            }
+
+            val normalized = normalizeInputUrl(trimmed)
+            val req = YoutubeDLRequest(normalized)
+            req.addYoutubeBotWorkaroundsIfNeeded(normalized)
             req.addOption("--dump-single-json")
             req.addOption("--no-warnings")
             req.addOption("--skip-download")
             if (flatPlaylist) {
                 req.addOption("--flat-playlist")
             }
-            if (!isYouTubeUrl(trimmed)) {
+            if (!isYouTubeUrl(normalized)) {
                 req.addOption("--force-ipv4")
+            }
+            if (isVkUrl(normalized)) {
+                req.addOption("--user-agent", DESKTOP_USER_AGENT)
             }
             req.addOption("--socket-timeout", "60")
             req.addOption("--retries", "3")
 
-            Log.d(TAG, "inspectPlaylist: $trimmed flat=$flatPlaylist")
+            Log.d(TAG, "inspectPlaylist: $normalized (raw=$trimmed) flat=$flatPlaylist")
             val response = try {
                 YoutubeDL.getInstance().execute(req, null, null)
             } catch (e: YoutubeDLException) {
@@ -207,7 +416,7 @@ object VideoExtractor {
                 if (ctx != null && !retriedAfterUpdate && isClientProblem(e.message.orEmpty())) {
                     retriedAfterUpdate = true
                     runCatching { updateYtDlp(ctx) }
-                    return@withContext inspectPlaylist(url, flatPlaylist)
+                    return@withContext inspectPlaylist(normalized, flatPlaylist)
                 }
                 throw RuntimeException(e.message ?: "Не удалось прочитать список", e)
             } catch (e: InterruptedException) {
@@ -215,7 +424,7 @@ object VideoExtractor {
                 throw RuntimeException("Операция прервана", e)
             }
             try {
-                parsePlaylistDumpJson(response.out.trim(), pageUrlFallback = trimmed)
+                parsePlaylistDumpJson(response.out.trim(), pageUrlFallback = normalized)
             } catch (e: JSONException) {
                 Log.e(TAG, "Playlist JSON parse failed", e)
                 throw RuntimeException("Не удалось разобрать ответ yt-dlp", e)
@@ -317,9 +526,16 @@ object VideoExtractor {
 
         val u = o.optString("url", "")
         if (u.startsWith("http")) return u
+        if (u.startsWith("vk:")) {
+            val vkId = u.removePrefix("vk:").trim()
+            if (vkId.isNotBlank()) return "https://vk.com/video$vkId"
+        }
 
         val id = o.optString("id", "")
         val ie = o.optString("ie_key", "").lowercase()
+        if ("vk" in ie && id.matches(Regex("""-?\d+_\d+"""))) {
+            return "https://vk.com/video$id"
+        }
         val explicitHost =
             o.optString("url_host").takeIf { it.startsWith("http") }.orEmpty()
         val host = explicitHost.takeIf { it.isNotBlank() } ?: inferHostFromIe(ie).orEmpty()
@@ -374,9 +590,11 @@ object VideoExtractor {
         )
         dir.mkdirs()
 
+        val normalizedUrl = normalizeInputUrl(url)
+
         fun buildRequest(strategy: String?, forceIpv4: Boolean): YoutubeDLRequest {
-            val request = YoutubeDLRequest(url)
-            request.addYoutubeClient(url, strategy)
+            val request = YoutubeDLRequest(normalizedUrl)
+            request.addYoutubeClient(normalizedUrl, strategy)
             request.addOption("-o", dir.absolutePath + "/%(title).100s.%(ext)s")
             if (skipIfFileExists) {
                 request.addOption("--no-overwrites")
@@ -385,8 +603,11 @@ object VideoExtractor {
             request.addOption("--no-check-certificates")
             request.addOption("--no-warnings")
             request.addOption("--no-playlist")
-            if (forceIpv4 || !isYouTubeUrl(url)) {
+            if (forceIpv4 || !isYouTubeUrl(normalizedUrl)) {
                 request.addOption("--force-ipv4")
+            }
+            if (isVkUrl(normalizedUrl)) {
+                request.addOption("--user-agent", DESKTOP_USER_AGENT)
             }
             request.addOption("--socket-timeout", "30")
             request.addOption("--retries", "10")
@@ -409,13 +630,13 @@ object VideoExtractor {
             return request
         }
 
-        val strategies = if (isYouTubeUrl(url)) YoutubeClientStrategies else listOf(null)
+        val strategies = if (isYouTubeUrl(normalizedUrl)) YoutubeClientStrategies else listOf(null)
         var attempt: com.yausername.youtubedl_android.YoutubeDLResponse? = null
         var lastError: Throwable? = null
         loop@ for (strategy in strategies) {
             for ((attemptNo, forceIpv4) in listOf(false, true, true, true, true).withIndex()) {
                 if (attemptNo > 1) Thread.sleep(attemptNo * 8_000L)
-                Log.d(TAG, "yt-dlp: $url audioOnly=$audioOnly q=$videoQuality client=$strategy ipv4=$forceIpv4")
+                Log.d(TAG, "yt-dlp: $normalizedUrl (raw=$url) audioOnly=$audioOnly q=$videoQuality client=$strategy ipv4=$forceIpv4")
                 try {
                     attempt = YoutubeDL.getInstance().execute(buildRequest(strategy, forceIpv4), processId) { progress, etaInSeconds, _ ->
                         try {
@@ -435,7 +656,15 @@ object VideoExtractor {
                     val msg = e.message.orEmpty()
                     when {
                         isNetworkGlitch(msg) -> continue
-                        isClientProblem(msg) -> continue@loop
+                        isClientProblem(msg) -> {
+                            val ctx = appContext
+                            if (ctx != null && !retriedAfterUpdate) {
+                                retriedAfterUpdate = true
+                                runCatching { updateYtDlp(ctx) }
+                                continue
+                            }
+                            continue@loop
+                        }
                         else -> break@loop
                     }
                 }
