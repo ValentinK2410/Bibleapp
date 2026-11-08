@@ -38,6 +38,8 @@ import androidx.compose.material.icons.filled.Checklist
 import androidx.compose.material.icons.filled.ContentCopy
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Headphones
+import androidx.compose.material.icons.filled.Repeat
+import androidx.compose.material.icons.filled.RepeatOne
 import androidx.compose.material.icons.filled.Stop
 import androidx.compose.material.icons.filled.Link
 import androidx.compose.material.icons.automirrored.filled.NoteAdd
@@ -626,6 +628,8 @@ fun VerseActionsBottomSheet(
     translation: TranslationId = TranslationId.SYNODAL,
     chapterVerseCount: Int = 0,
     chapterVerseTexts: Map<Int, String> = emptyMap(),
+    onRepeatSingleVerse: ((VerseRef) -> Unit)? = null,
+    onOpenVerseRangeRepeat: ((VerseRef) -> Unit)? = null,
 ) {
     val context = LocalContext.current
     var previewAttachment by remember { mutableStateOf<VerseAttachment?>(null) }
@@ -888,6 +892,38 @@ fun VerseActionsBottomSheet(
                         onDismiss()
                     },
             )
+            if (onRepeatSingleVerse != null) {
+                ListItem(
+                    headlineContent = { Text("Повторять этот стих (по кругу)") },
+                    supportingContent = { Text("Циклическое прослушивание стиха ${target.ref.verse}") },
+                    leadingContent = {
+                        Icon(Icons.Default.RepeatOne, contentDescription = null, tint = MaterialTheme.colorScheme.primary)
+                    },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clickable {
+                            onStopSpeech()
+                            onRepeatSingleVerse(target.ref)
+                            onDismiss()
+                        },
+                )
+            }
+            if (onOpenVerseRangeRepeat != null) {
+                ListItem(
+                    headlineContent = { Text("Прослушать / повторять отрывок (стихи, глава, книга)…") },
+                    supportingContent = { Text("Выбор нескольких стихов, числа повторов, диктора или голоса TTS") },
+                    leadingContent = {
+                        Icon(Icons.Default.Repeat, contentDescription = null, tint = MaterialTheme.colorScheme.primary)
+                    },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clickable {
+                            onStopSpeech()
+                            onOpenVerseRangeRepeat(target.ref)
+                            onDismiss()
+                        },
+                )
+            }
             ListItem(
                 headlineContent = { Text(stringResource(R.string.audio_stop)) },
                 leadingContent = {
@@ -897,6 +933,7 @@ fun VerseActionsBottomSheet(
                     .fillMaxWidth()
                     .clickable {
                         onStopSpeech()
+                        stopReaderChapterAudio()
                     },
             )
             ListItem(

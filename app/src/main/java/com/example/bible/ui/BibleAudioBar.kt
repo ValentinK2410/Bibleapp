@@ -5,12 +5,17 @@ import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.animateContentSize
 import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutVertically
-import androidx.compose.foundation.horizontalScroll
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
+import androidx.compose.foundation.layout.FlowRow
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.defaultMinSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -18,22 +23,36 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.PlaylistPlay
+import androidx.compose.material.icons.automirrored.filled.VolumeUp
+import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.CloudDownload
-import androidx.compose.material.icons.filled.Timer
+import androidx.compose.material.icons.filled.Headphones
 import androidx.compose.material.icons.filled.Pause
 import androidx.compose.material.icons.filled.PlayArrow
+import androidx.compose.material.icons.filled.Remove
+import androidx.compose.material.icons.filled.Repeat
+import androidx.compose.material.icons.filled.RepeatOne
+import androidx.compose.material.icons.filled.SkipNext
+import androidx.compose.material.icons.filled.SkipPrevious
 import androidx.compose.material.icons.filled.Stop
-import androidx.compose.material.icons.automirrored.filled.PlaylistPlay
+import androidx.compose.material.icons.filled.Timer
+import androidx.compose.material.icons.filled.Tune
 import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.AssistChip
+import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.FilterChip
 import androidx.compose.material3.FilledTonalIconButton
+import androidx.compose.material3.FilterChip
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.IconToggleButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Slider
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Switch
@@ -43,6 +62,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -60,13 +80,19 @@ import androidx.compose.ui.unit.dp
 import com.example.bible.R
 import com.example.bible.data.BibleAudioNarrators
 import com.example.bible.data.BibleAudioPlayer
+import com.example.bible.data.BibleAudioRepeatMode
 import com.example.bible.data.BibleCanon
+import com.example.bible.data.BibleVerse
+import com.example.bible.data.NoteScriptureLinks
+import com.example.bible.data.TranslationId
 import com.example.bible.data.localAudioFile
+import com.example.bible.data.narratorForReading
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
 private val SPEED_STEPS = listOf(0.75f, 1f, 1.25f, 1.5f, 2f)
+private val REPEAT_COUNT_STEPS = listOf(0, 2, 3, 5, 10)
 
 @Composable
 fun BibleAudioBar(
@@ -77,15 +103,26 @@ fun BibleAudioBar(
     val density = LocalDensity.current
     val ps by BibleAudioPlayer.state.collectAsState()
     val continueChapters by BibleAudioPlayer.continueChapters.collectAsState()
+    val repeatMode by BibleAudioPlayer.repeatMode.collectAsState()
+    val repeatTargetCount by BibleAudioPlayer.repeatTargetCount.collectAsState()
+    val repeatCompletedCount by BibleAudioPlayer.repeatCompletedCount.collectAsState()
+    val verseRepeatConfig by BibleAudioPlayer.verseRepeatConfig.collectAsState()
+    val startOffsetMs by BibleAudioPlayer.segmentLoopStartOffsetMs.collectAsState()
+    val endOffsetMs by BibleAudioPlayer.segmentLoopEndOffsetMs.collectAsState()
     val playbackSpeed by BibleAudioPlayer.playbackSpeed.collectAsState()
     val sleepRemaining by BibleAudioPlayer.sleepTimerRemainingMs.collectAsState()
     val sleepAwaitChapter by BibleAudioPlayer.sleepAwaitingChapterEnd.collectAsState()
+    val ttsLoopState by ReaderVerseTtsLooper.state.collectAsState()
+    val activeChapterSnap by ReaderChapterAudioContext.snapshot.collectAsState()
+
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
     var isSeeking by remember { mutableStateOf(false) }
     var seekPos by remember { mutableStateOf(0) }
     var isDownloading by remember { mutableStateOf(false) }
     var showSleepDialog by remember { mutableStateOf(false) }
+    var showRepeatDialog by remember { mutableStateOf(false) }
+    var showOffsetAdjust by remember { mutableStateOf(false) }
 
     LaunchedEffect(ps.isPlaying) {
         while (ps.isPlaying) {
@@ -94,10 +131,53 @@ fun BibleAudioBar(
         }
     }
 
-    val isActive = ps.bookId.isNotBlank()
+    val isAudioActive = ps.bookId.isNotBlank()
+    val isTtsLoopActive = ttsLoopState.isActive
+    val isActive = isAudioActive || isTtsLoopActive
 
     LaunchedEffect(isActive) {
         if (!isActive) onBarHeightChanged?.invoke(0.dp)
+    }
+
+    if (showRepeatDialog) {
+        val dlgBookId = when {
+            isAudioActive -> ps.bookId
+            isTtsLoopActive -> ttsLoopState.bookId
+            else -> activeChapterSnap.bookId
+        }
+        val dlgChapter = when {
+            isAudioActive && ps.chapter > 0 -> ps.chapter
+            isTtsLoopActive && ttsLoopState.chapter > 0 -> ttsLoopState.chapter
+            else -> activeChapterSnap.chapter.coerceAtLeast(1)
+        }
+        val dlgNarratorId = if (isAudioActive && ps.narratorId.isNotBlank()) {
+            ps.narratorId
+        } else {
+            activeChapterSnap.narratorId
+        }
+        val dlgVerses = if (activeChapterSnap.bookId == dlgBookId && activeChapterSnap.chapter == dlgChapter) {
+            activeChapterSnap.verses
+        } else if (isTtsLoopActive) {
+            ttsLoopState.verses
+        } else {
+            emptyList()
+        }
+        BibleAudioRepeatDialog(
+            bookId = dlgBookId,
+            chapter = dlgChapter,
+            translation = activeChapterSnap.translation,
+            narratorId = dlgNarratorId,
+            chapterVerses = dlgVerses,
+            initialStartVerse = verseRepeatConfig?.startVerse
+                ?: ttsLoopState.verses.firstOrNull()?.number
+                ?: 1,
+            initialEndVerse = verseRepeatConfig?.endVerse
+                ?: ttsLoopState.verses.lastOrNull()?.number
+                ?: dlgVerses.size.coerceAtLeast(1),
+            initialSegmentSpec = verseRepeatConfig?.segmentSpec.orEmpty(),
+            initialUseTts = isTtsLoopActive,
+            onDismiss = { showRepeatDialog = false },
+        )
     }
 
     AnimatedVisibility(
@@ -106,6 +186,15 @@ fun BibleAudioBar(
         exit = slideOutVertically { it },
         modifier = modifier,
     ) {
+        if (isTtsLoopActive && !isAudioActive) {
+            TtsVerseRepeatBarContent(
+                ttsState = ttsLoopState,
+                onBarHeightChanged = onBarHeightChanged,
+                onOpenRepeatDialog = { showRepeatDialog = true },
+            )
+            return@AnimatedVisibility
+        }
+
         val bookName = BibleCanon.byId(ps.bookId)?.nameRu ?: ps.bookId
         val narrator = BibleAudioNarrators.byId(ps.narratorId)
         val displayPos = if (isSeeking) seekPos else ps.positionMs
@@ -124,6 +213,25 @@ fun BibleAudioBar(
                     showSleepDialog = false
                 },
             )
+        }
+
+        val repeatLoopBadge = remember(repeatMode, repeatTargetCount, repeatCompletedCount, verseRepeatConfig) {
+            when (repeatMode) {
+                BibleAudioRepeatMode.OFF -> null
+                BibleAudioRepeatMode.CHAPTER -> {
+                    val cnt = if (repeatTargetCount <= 0) "∞" else "${(repeatCompletedCount + 1).coerceAtMost(repeatTargetCount)}/$repeatTargetCount"
+                    "🔂 Повтор главы ($cnt)"
+                }
+                BibleAudioRepeatMode.BOOK -> {
+                    val cnt = if (repeatTargetCount <= 0) "∞" else "${(repeatCompletedCount + 1).coerceAtMost(repeatTargetCount)}/$repeatTargetCount"
+                    "🔁 Повтор книги ($cnt)"
+                }
+                BibleAudioRepeatMode.VERSES -> {
+                    val vLabel = verseRepeatConfig?.labelRu ?: "стихи"
+                    val cnt = if (repeatTargetCount <= 0) "∞" else "${(repeatCompletedCount + 1).coerceAtMost(repeatTargetCount)}/$repeatTargetCount"
+                    "🔂 Повтор $vLabel ($cnt)"
+                }
+            }
         }
 
         Surface(
@@ -166,13 +274,36 @@ fun BibleAudioBar(
                     Spacer(Modifier.width(8.dp))
 
                     Column(modifier = Modifier.weight(1f)) {
-                        Text(
-                            "$bookName ${ps.chapter} (${narrator.name})",
-                            style = MaterialTheme.typography.labelMedium,
-                            fontWeight = FontWeight.Bold,
-                            maxLines = 1,
-                            overflow = TextOverflow.Ellipsis,
-                        )
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(6.dp),
+                        ) {
+                            Text(
+                                "$bookName ${ps.chapter} (${narrator.name})",
+                                style = MaterialTheme.typography.labelMedium,
+                                fontWeight = FontWeight.Bold,
+                                maxLines = 1,
+                                overflow = TextOverflow.Ellipsis,
+                                modifier = Modifier.weight(1f, fill = false),
+                            )
+                            if (repeatLoopBadge != null) {
+                                Text(
+                                    text = repeatLoopBadge,
+                                    style = MaterialTheme.typography.labelSmall,
+                                    color = MaterialTheme.colorScheme.primary,
+                                    fontWeight = FontWeight.SemiBold,
+                                    maxLines = 1,
+                                )
+                            } else if (verseRepeatConfig != null) {
+                                Text(
+                                    text = "🎧 ${verseRepeatConfig!!.labelRu}",
+                                    style = MaterialTheme.typography.labelSmall,
+                                    color = MaterialTheme.colorScheme.tertiary,
+                                    fontWeight = FontWeight.SemiBold,
+                                    maxLines = 1,
+                                )
+                            }
+                        }
                         Row(verticalAlignment = Alignment.CenterVertically) {
                             Text(
                                 formatMs(displayPos),
@@ -247,9 +378,35 @@ fun BibleAudioBar(
                         )
                     }
 
+                    IconButton(
+                        onClick = { showRepeatDialog = true },
+                        modifier = Modifier.size(32.dp),
+                    ) {
+                        Icon(
+                            imageVector = when (repeatMode) {
+                                BibleAudioRepeatMode.CHAPTER,
+                                BibleAudioRepeatMode.VERSES,
+                                -> Icons.Default.RepeatOne
+                                else -> Icons.Default.Repeat
+                            },
+                            contentDescription = "Режим повтора и выбор стихов",
+                            modifier = Modifier.size(20.dp),
+                            tint = if (repeatMode != BibleAudioRepeatMode.OFF || verseRepeatConfig != null) {
+                                MaterialTheme.colorScheme.primary
+                            } else {
+                                MaterialTheme.colorScheme.onSurfaceVariant
+                            },
+                        )
+                    }
+
                     IconToggleButton(
-                        checked = continueChapters,
-                        onCheckedChange = { BibleAudioPlayer.setContinueChapters(it) },
+                        checked = continueChapters || repeatMode == BibleAudioRepeatMode.BOOK,
+                        onCheckedChange = { enabled ->
+                            if (!enabled && repeatMode == BibleAudioRepeatMode.BOOK) {
+                                BibleAudioPlayer.setRepeatMode(BibleAudioRepeatMode.OFF)
+                            }
+                            BibleAudioPlayer.setContinueChapters(enabled)
+                        },
                         modifier = Modifier.size(32.dp),
                     ) {
                         Icon(
@@ -272,6 +429,225 @@ fun BibleAudioBar(
                     }
                 }
 
+                // Ряд быстрого переключения режима повтора (Глава / Книга / Повтор главы / Повтор книги / Стихи)
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .horizontalScroll(rememberScrollState()),
+                    horizontalArrangement = Arrangement.spacedBy(6.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
+                    Text(
+                        "Режим:",
+                        style = MaterialTheme.typography.labelSmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                    FilterChip(
+                        selected = repeatMode == BibleAudioRepeatMode.OFF && !continueChapters && verseRepeatConfig == null,
+                        onClick = {
+                            resetReaderVerseRangeToFullChapter()
+                            BibleAudioPlayer.setRepeatMode(BibleAudioRepeatMode.OFF)
+                            BibleAudioPlayer.setContinueChapters(false)
+                        },
+                        label = { Text("1 глава", style = MaterialTheme.typography.labelSmall) },
+                    )
+                    FilterChip(
+                        selected = repeatMode == BibleAudioRepeatMode.OFF && continueChapters,
+                        onClick = {
+                            resetReaderVerseRangeToFullChapter()
+                            BibleAudioPlayer.setRepeatMode(BibleAudioRepeatMode.OFF)
+                            BibleAudioPlayer.setContinueChapters(true)
+                        },
+                        label = { Text("Книга подряд", style = MaterialTheme.typography.labelSmall) },
+                    )
+                    FilterChip(
+                        selected = repeatMode == BibleAudioRepeatMode.CHAPTER,
+                        onClick = {
+                            if (repeatMode == BibleAudioRepeatMode.CHAPTER) {
+                                BibleAudioPlayer.setRepeatMode(BibleAudioRepeatMode.OFF)
+                            } else {
+                                resetReaderVerseRangeToFullChapter()
+                                BibleAudioPlayer.setContinueChapters(false)
+                                BibleAudioPlayer.setRepeatMode(BibleAudioRepeatMode.CHAPTER, repeatTargetCount)
+                            }
+                        },
+                        label = { Text("🔂 Повтор главы", style = MaterialTheme.typography.labelSmall) },
+                    )
+                    FilterChip(
+                        selected = repeatMode == BibleAudioRepeatMode.BOOK,
+                        onClick = {
+                            if (repeatMode == BibleAudioRepeatMode.BOOK) {
+                                BibleAudioPlayer.setRepeatMode(BibleAudioRepeatMode.OFF)
+                            } else {
+                                resetReaderVerseRangeToFullChapter()
+                                BibleAudioPlayer.setRepeatMode(BibleAudioRepeatMode.BOOK, repeatTargetCount)
+                            }
+                        },
+                        label = { Text("🔁 Повтор книги", style = MaterialTheme.typography.labelSmall) },
+                    )
+                    FilterChip(
+                        selected = repeatMode == BibleAudioRepeatMode.VERSES || verseRepeatConfig != null,
+                        onClick = { showRepeatDialog = true },
+                        label = {
+                            val label = verseRepeatConfig?.let { "🔂 Стихи (${it.labelRu})" } ?: "🔂 Стихи…"
+                            Text(label, style = MaterialTheme.typography.labelSmall)
+                        },
+                    )
+                }
+
+                // Если включён любой режим повтора — быстрый выбор числа повторений (∞, 2×, 3×, 5×, 10×)
+                if (repeatMode != BibleAudioRepeatMode.OFF) {
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .horizontalScroll(rememberScrollState()),
+                        horizontalArrangement = Arrangement.spacedBy(6.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                    ) {
+                        Text(
+                            "Повторов:",
+                            style = MaterialTheme.typography.labelSmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        )
+                        REPEAT_COUNT_STEPS.forEach { count ->
+                            FilterChip(
+                                selected = repeatTargetCount == count,
+                                onClick = { BibleAudioPlayer.setRepeatTargetCount(count) },
+                                label = {
+                                    Text(
+                                        if (count == 0) "∞ По кругу" else "${count}×",
+                                        style = MaterialTheme.typography.labelSmall,
+                                    )
+                                },
+                            )
+                        }
+                    }
+                }
+
+                // Панель активного отрезка стихов (с возможностью включить повтор, подстроить границы ±2с или сбросить до всей главы)
+                verseRepeatConfig?.let { cfg ->
+                    Surface(
+                        color = MaterialTheme.colorScheme.secondaryContainer.copy(alpha = 0.55f),
+                        shape = RoundedCornerShape(10.dp),
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(vertical = 2.dp),
+                    ) {
+                        Column(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(horizontal = 8.dp, vertical = 4.dp),
+                        ) {
+                            Row(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .horizontalScroll(rememberScrollState()),
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.spacedBy(6.dp),
+                            ) {
+                                Text(
+                                    text = if (repeatMode == BibleAudioRepeatMode.VERSES) {
+                                        "🔂 Повтор ${cfg.labelRu}"
+                                    } else {
+                                        "🎧 Отрывок ${cfg.labelRu}"
+                                    },
+                                    style = MaterialTheme.typography.labelSmall,
+                                    fontWeight = FontWeight.Bold,
+                                    color = MaterialTheme.colorScheme.onSecondaryContainer,
+                                )
+                                FilterChip(
+                                    selected = repeatMode == BibleAudioRepeatMode.VERSES,
+                                    onClick = {
+                                        if (repeatMode == BibleAudioRepeatMode.VERSES) {
+                                            BibleAudioPlayer.setRepeatMode(BibleAudioRepeatMode.OFF)
+                                            BibleAudioPlayer.setVerseRepeatConfig(cfg)
+                                        } else {
+                                            BibleAudioPlayer.setRepeatMode(BibleAudioRepeatMode.VERSES, repeatTargetCount)
+                                            BibleAudioPlayer.setVerseRepeatConfig(cfg)
+                                            restartActiveVerseRepeatIfConfigured(context)
+                                        }
+                                    },
+                                    label = {
+                                        Text(
+                                            if (repeatMode == BibleAudioRepeatMode.VERSES) "Повтор вкл" else "Повторять",
+                                            style = MaterialTheme.typography.labelSmall,
+                                        )
+                                    },
+                                )
+                                AssistChip(
+                                    onClick = { showRepeatDialog = true },
+                                    label = { Text("Стихи…", style = MaterialTheme.typography.labelSmall) },
+                                )
+                                AssistChip(
+                                    onClick = { showOffsetAdjust = !showOffsetAdjust },
+                                    leadingIcon = {
+                                        Icon(Icons.Default.Tune, contentDescription = null, modifier = Modifier.size(14.dp))
+                                    },
+                                    label = {
+                                        val hasOff = startOffsetMs != 0 || endOffsetMs != 0
+                                        Text(
+                                            if (hasOff) "Границы (${formatSignedSec(startOffsetMs)}/${formatSignedSec(endOffsetMs)})"
+                                            else "Границы ±2с",
+                                            style = MaterialTheme.typography.labelSmall,
+                                        )
+                                    },
+                                )
+                                TextButton(
+                                    onClick = {
+                                        resetReaderVerseRangeToFullChapter()
+                                        BibleAudioPlayer.setRepeatMode(BibleAudioRepeatMode.OFF)
+                                    },
+                                    contentPadding = PaddingValues(horizontal = 6.dp, vertical = 0.dp),
+                                    modifier = Modifier.defaultMinSize(minWidth = 1.dp, minHeight = 28.dp),
+                                ) {
+                                    Text("Вся глава", style = MaterialTheme.typography.labelSmall)
+                                }
+                            }
+                            if (showOffsetAdjust) {
+                                Row(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .horizontalScroll(rememberScrollState()),
+                                    verticalAlignment = Alignment.CenterVertically,
+                                    horizontalArrangement = Arrangement.spacedBy(4.dp),
+                                ) {
+                                    Text(
+                                        "Начало (${formatSignedSec(startOffsetMs)}):",
+                                        style = MaterialTheme.typography.labelSmall,
+                                    )
+                                    TextButton(
+                                        onClick = { nudgeReaderVerseLoopStart(-2_000) },
+                                        contentPadding = PaddingValues(horizontal = 6.dp, vertical = 0.dp),
+                                        modifier = Modifier.defaultMinSize(minWidth = 1.dp, minHeight = 26.dp),
+                                    ) { Text("−2с", style = MaterialTheme.typography.labelSmall) }
+                                    TextButton(
+                                        onClick = { nudgeReaderVerseLoopStart(2_000) },
+                                        contentPadding = PaddingValues(horizontal = 6.dp, vertical = 0.dp),
+                                        modifier = Modifier.defaultMinSize(minWidth = 1.dp, minHeight = 26.dp),
+                                    ) { Text("+2с", style = MaterialTheme.typography.labelSmall) }
+
+                                    Spacer(Modifier.width(6.dp))
+                                    Text(
+                                        "Конец (${formatSignedSec(endOffsetMs)}):",
+                                        style = MaterialTheme.typography.labelSmall,
+                                    )
+                                    TextButton(
+                                        onClick = { BibleAudioPlayer.adjustSegmentLoopEndOffsetMs(-2_000) },
+                                        contentPadding = PaddingValues(horizontal = 6.dp, vertical = 0.dp),
+                                        modifier = Modifier.defaultMinSize(minWidth = 1.dp, minHeight = 26.dp),
+                                    ) { Text("−2с", style = MaterialTheme.typography.labelSmall) }
+                                    TextButton(
+                                        onClick = { BibleAudioPlayer.adjustSegmentLoopEndOffsetMs(2_000) },
+                                        contentPadding = PaddingValues(horizontal = 6.dp, vertical = 0.dp),
+                                        modifier = Modifier.defaultMinSize(minWidth = 1.dp, minHeight = 26.dp),
+                                    ) { Text("+2с", style = MaterialTheme.typography.labelSmall) }
+                                }
+                            }
+                        }
+                    }
+                }
+
+                // Ряд выбора скорости
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -325,6 +701,598 @@ fun BibleAudioBar(
             }
         }
     }
+}
+
+@Composable
+private fun TtsVerseRepeatBarContent(
+    ttsState: ReaderVerseTtsLoopState,
+    onBarHeightChanged: ((Dp) -> Unit)?,
+    onOpenRepeatDialog: () -> Unit,
+) {
+    val context = LocalContext.current
+    val density = LocalDensity.current
+    val bookName = BibleCanon.byId(ttsState.bookId)?.nameRu ?: ttsState.bookId
+    val loopBadge = if (ttsState.repeatEnabled) {
+        val cnt = if (ttsState.targetLoops <= 0) "∞" else "${(ttsState.completedLoops + 1).coerceAtMost(ttsState.targetLoops)}/${ttsState.targetLoops}"
+        "🔂 Повтор ($cnt)"
+    } else {
+        "1 раз"
+    }
+
+    Surface(
+        modifier = Modifier
+            .fillMaxWidth()
+            .animateContentSize()
+            .onGloballyPositioned { coords ->
+                onBarHeightChanged?.invoke(with(density) { coords.size.height.toDp() })
+            },
+        shape = RoundedCornerShape(topStart = 14.dp, topEnd = 14.dp),
+        shadowElevation = 8.dp,
+        tonalElevation = 3.dp,
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 10.dp, vertical = 8.dp),
+            verticalArrangement = Arrangement.spacedBy(4.dp),
+        ) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                FilledTonalIconButton(
+                    onClick = { ReaderVerseTtsLooper.togglePlay(context) },
+                    modifier = Modifier.size(36.dp),
+                ) {
+                    Icon(
+                        if (ttsState.isPlaying) Icons.Default.Pause else Icons.Default.PlayArrow,
+                        contentDescription = null,
+                        modifier = Modifier.size(22.dp),
+                    )
+                }
+                Spacer(Modifier.width(8.dp))
+                Column(modifier = Modifier.weight(1f)) {
+                    Text(
+                        text = "🗣️ $bookName ${ttsState.chapter}: ${ttsState.rangeLabelRu} · $loopBadge",
+                        style = MaterialTheme.typography.labelMedium,
+                        fontWeight = FontWeight.Bold,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis,
+                    )
+                    Text(
+                        text = "Стих ${ttsState.currentVerseNumber}: ${ttsState.currentVerseText}",
+                        style = MaterialTheme.typography.labelSmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis,
+                    )
+                }
+                IconButton(
+                    onClick = { ReaderVerseTtsLooper.skipVerse(context, -1) },
+                    enabled = ttsState.verses.size > 1,
+                    modifier = Modifier.size(30.dp),
+                ) {
+                    Icon(Icons.Default.SkipPrevious, contentDescription = "Предыдущий стих", modifier = Modifier.size(18.dp))
+                }
+                IconButton(
+                    onClick = { ReaderVerseTtsLooper.skipVerse(context, 1) },
+                    enabled = ttsState.verses.size > 1,
+                    modifier = Modifier.size(30.dp),
+                ) {
+                    Icon(Icons.Default.SkipNext, contentDescription = "Следующий стих", modifier = Modifier.size(18.dp))
+                }
+                IconButton(
+                    onClick = onOpenRepeatDialog,
+                    modifier = Modifier.size(30.dp),
+                ) {
+                    Icon(
+                        Icons.Default.RepeatOne,
+                        contentDescription = "Настроить повтор",
+                        tint = MaterialTheme.colorScheme.primary,
+                        modifier = Modifier.size(20.dp),
+                    )
+                }
+                IconButton(
+                    onClick = { ReaderVerseTtsLooper.stop() },
+                    modifier = Modifier.size(28.dp),
+                ) {
+                    Icon(
+                        Icons.Default.Close,
+                        contentDescription = "Закрыть",
+                        modifier = Modifier.size(16.dp),
+                    )
+                }
+            }
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .horizontalScroll(rememberScrollState()),
+                horizontalArrangement = Arrangement.spacedBy(6.dp),
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                FilterChip(
+                    selected = ttsState.repeatEnabled,
+                    onClick = {
+                        ReaderVerseTtsLooper.setRepeatSettings(!ttsState.repeatEnabled, ttsState.targetLoops)
+                    },
+                    label = { Text("🔂 Повторять", style = MaterialTheme.typography.labelSmall) },
+                )
+                REPEAT_COUNT_STEPS.forEach { count ->
+                    FilterChip(
+                        selected = ttsState.repeatEnabled && ttsState.targetLoops == count,
+                        onClick = {
+                            ReaderVerseTtsLooper.setRepeatSettings(true, count)
+                        },
+                        label = {
+                            Text(
+                                if (count == 0) "∞" else "${count}×",
+                                style = MaterialTheme.typography.labelSmall,
+                            )
+                        },
+                    )
+                }
+                AssistChip(
+                    onClick = onOpenRepeatDialog,
+                    label = { Text("Изменить стихи / Диктор", style = MaterialTheme.typography.labelSmall) },
+                )
+            }
+        }
+    }
+}
+
+/**
+ * Диалог настройки прослушивания и повтора:
+ * - Повтор текущей главы, всей книги или выбранных стихов (диапазона / набора стихов);
+ * - Выбор количества повторов (∞, 1 раз, 2×, 3×, 5×, 10×);
+ * - Выбор источника озвучки для стихов: Аудио диктора или Голос TTS (по стихам).
+ */
+@OptIn(ExperimentalLayoutApi::class)
+@Composable
+fun BibleAudioRepeatDialog(
+    bookId: String,
+    chapter: Int,
+    translation: TranslationId,
+    narratorId: String,
+    chapterVerses: List<BibleVerse>,
+    initialStartVerse: Int = 1,
+    initialEndVerse: Int = 1,
+    initialSegmentSpec: String = "",
+    initialMode: BibleAudioRepeatMode? = null,
+    initialUseTts: Boolean = false,
+    onDismiss: () -> Unit,
+) {
+    val context = LocalContext.current
+    val currentRepeatMode by BibleAudioPlayer.repeatMode.collectAsState()
+    val currentContinue by BibleAudioPlayer.continueChapters.collectAsState()
+    val currentTargetCount by BibleAudioPlayer.repeatTargetCount.collectAsState()
+
+    val maxVerse = chapterVerses.size.coerceAtLeast(maxOf(initialStartVerse, initialEndVerse, 1))
+    val bookName = BibleCanon.byId(bookId)?.nameRu ?: bookId
+    val narrator = remember(translation, bookId, narratorId) {
+        narratorForReading(translation, bookId, narratorId)
+    }
+
+    // 0 = 1 глава, 1 = Книга подряд, 2 = Повтор главы, 3 = Повтор всей книги, 4 = Выбранные стихи
+    var selectedScope by remember {
+        mutableIntStateOf(
+            when (initialMode ?: currentRepeatMode) {
+                BibleAudioRepeatMode.VERSES -> 4
+                BibleAudioRepeatMode.CHAPTER -> 2
+                BibleAudioRepeatMode.BOOK -> 3
+                BibleAudioRepeatMode.OFF -> when {
+                    initialSegmentSpec.isNotBlank() || initialStartVerse > 1 || initialEndVerse < maxVerse -> 4
+                    currentContinue -> 1
+                    else -> 2 // По умолчанию при нажатии кнопки повтора предлагаем повтор главы или стихов
+                }
+            },
+        )
+    }
+
+    var startVerse by remember(maxVerse) { mutableIntStateOf(initialStartVerse.coerceIn(1, maxVerse)) }
+    var endVerse by remember(maxVerse) { mutableIntStateOf(initialEndVerse.coerceIn(startVerse, maxVerse)) }
+    var customSpec by remember { mutableStateOf(initialSegmentSpec) }
+    var repeatEnabledForVerses by remember { mutableStateOf(true) }
+    var targetLoops by remember { mutableIntStateOf(currentTargetCount) }
+    var useTtsForVerses by remember { mutableStateOf(initialUseTts) }
+
+    val verseMap = remember(chapterVerses) { chapterVerses.associateBy { it.number } }
+
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = {
+            Column {
+                Text("Прослушивание и повтор", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
+                Text(
+                    "$bookName, глава $chapter · Всего стихов: $maxVerse",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+            }
+        },
+        text = {
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .verticalScroll(rememberScrollState()),
+                verticalArrangement = Arrangement.spacedBy(10.dp),
+            ) {
+                Text(
+                    "Что прослушивать:",
+                    style = MaterialTheme.typography.labelLarge,
+                    fontWeight = FontWeight.SemiBold,
+                )
+                FlowRow(
+                    horizontalArrangement = Arrangement.spacedBy(6.dp),
+                    verticalArrangement = Arrangement.spacedBy(4.dp),
+                ) {
+                    FilterChip(
+                        selected = selectedScope == 4,
+                        onClick = { selectedScope = 4 },
+                        label = { Text("🔂 Выбранные стихи") },
+                    )
+                    FilterChip(
+                        selected = selectedScope == 2,
+                        onClick = { selectedScope = 2 },
+                        label = { Text("🔂 Повтор главы") },
+                    )
+                    FilterChip(
+                        selected = selectedScope == 3,
+                        onClick = { selectedScope = 3 },
+                        label = { Text("🔁 Повтор всей книги") },
+                    )
+                    FilterChip(
+                        selected = selectedScope == 1,
+                        onClick = { selectedScope = 1 },
+                        label = { Text("▶️ Книга подряд (1 раз)") },
+                    )
+                    FilterChip(
+                        selected = selectedScope == 0,
+                        onClick = { selectedScope = 0 },
+                        label = { Text("▶️ Текущая глава (1 раз)") },
+                    )
+                }
+
+                if (selectedScope == 4) {
+                    HorizontalDivider()
+                    Text(
+                        "Диапазон стихов в главе $chapter:",
+                        style = MaterialTheme.typography.labelLarge,
+                        fontWeight = FontWeight.SemiBold,
+                    )
+
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically,
+                    ) {
+                        Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                            Text("С какого стиха", style = MaterialTheme.typography.labelSmall)
+                            Row(verticalAlignment = Alignment.CenterVertically) {
+                                FilledTonalIconButton(
+                                    onClick = {
+                                        if (startVerse > 1) {
+                                            startVerse--
+                                            customSpec = ""
+                                        }
+                                    },
+                                    enabled = startVerse > 1,
+                                    modifier = Modifier.size(32.dp),
+                                ) {
+                                    Icon(Icons.Default.Remove, contentDescription = null, modifier = Modifier.size(16.dp))
+                                }
+                                Text(
+                                    text = "$startVerse",
+                                    style = MaterialTheme.typography.titleMedium,
+                                    fontWeight = FontWeight.Bold,
+                                    modifier = Modifier.padding(horizontal = 12.dp),
+                                )
+                                FilledTonalIconButton(
+                                    onClick = {
+                                        if (startVerse < maxVerse) {
+                                            startVerse++
+                                            if (endVerse < startVerse) endVerse = startVerse
+                                            customSpec = ""
+                                        }
+                                    },
+                                    enabled = startVerse < maxVerse,
+                                    modifier = Modifier.size(32.dp),
+                                ) {
+                                    Icon(Icons.Default.Add, contentDescription = null, modifier = Modifier.size(16.dp))
+                                }
+                            }
+                        }
+
+                        Text("—", style = MaterialTheme.typography.titleMedium)
+
+                        Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                            Text("По какой стих", style = MaterialTheme.typography.labelSmall)
+                            Row(verticalAlignment = Alignment.CenterVertically) {
+                                FilledTonalIconButton(
+                                    onClick = {
+                                        if (endVerse > startVerse) {
+                                            endVerse--
+                                            customSpec = ""
+                                        }
+                                    },
+                                    enabled = endVerse > startVerse,
+                                    modifier = Modifier.size(32.dp),
+                                ) {
+                                    Icon(Icons.Default.Remove, contentDescription = null, modifier = Modifier.size(16.dp))
+                                }
+                                Text(
+                                    text = "$endVerse",
+                                    style = MaterialTheme.typography.titleMedium,
+                                    fontWeight = FontWeight.Bold,
+                                    modifier = Modifier.padding(horizontal = 12.dp),
+                                )
+                                FilledTonalIconButton(
+                                    onClick = {
+                                        if (endVerse < maxVerse) {
+                                            endVerse++
+                                            customSpec = ""
+                                        }
+                                    },
+                                    enabled = endVerse < maxVerse,
+                                    modifier = Modifier.size(32.dp),
+                                ) {
+                                    Icon(Icons.Default.Add, contentDescription = null, modifier = Modifier.size(16.dp))
+                                }
+                            }
+                        }
+                    }
+
+                    // Быстрые кнопки выбора длины отрывка
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .horizontalScroll(rememberScrollState()),
+                        horizontalArrangement = Arrangement.spacedBy(6.dp),
+                    ) {
+                        AssistChip(
+                            onClick = {
+                                endVerse = startVerse
+                                customSpec = ""
+                            },
+                            label = { Text("Только $startVerse-й", style = MaterialTheme.typography.labelSmall) },
+                        )
+                        AssistChip(
+                            onClick = {
+                                endVerse = (startVerse + 2).coerceAtMost(maxVerse)
+                                customSpec = ""
+                            },
+                            label = { Text("3 стиха", style = MaterialTheme.typography.labelSmall) },
+                        )
+                        AssistChip(
+                            onClick = {
+                                endVerse = (startVerse + 4).coerceAtMost(maxVerse)
+                                customSpec = ""
+                            },
+                            label = { Text("5 стихов", style = MaterialTheme.typography.labelSmall) },
+                        )
+                        AssistChip(
+                            onClick = {
+                                endVerse = maxVerse
+                                customSpec = ""
+                            },
+                            label = { Text("До конца ($maxVerse)", style = MaterialTheme.typography.labelSmall) },
+                        )
+                    }
+
+                    // Произвольный список стихов (например 1-3, 7, 10-12)
+                    OutlinedTextField(
+                        value = customSpec,
+                        onValueChange = { customSpec = it },
+                        label = { Text("Или укажите стихи через запятую (напр. 1-3, 7, 12)") },
+                        singleLine = true,
+                        modifier = Modifier.fillMaxWidth(),
+                    )
+
+                    // Превью текста выбранных стихов
+                    val startText = verseMap[startVerse]?.text
+                    val endText = if (endVerse != startVerse) verseMap[endVerse]?.text else null
+                    if (!startText.isNullOrBlank()) {
+                        Surface(
+                            color = MaterialTheme.colorScheme.surfaceContainerHighest.copy(alpha = 0.6f),
+                            shape = RoundedCornerShape(8.dp),
+                            modifier = Modifier.fillMaxWidth(),
+                        ) {
+                            Column(
+                                modifier = Modifier.padding(8.dp),
+                                verticalArrangement = Arrangement.spacedBy(4.dp),
+                            ) {
+                                Text(
+                                    text = "$startVerse. $startText",
+                                    style = MaterialTheme.typography.bodySmall,
+                                    maxLines = 2,
+                                    overflow = TextOverflow.Ellipsis,
+                                )
+                                if (!endText.isNullOrBlank()) {
+                                    Text(
+                                        text = "… $endVerse. $endText",
+                                        style = MaterialTheme.typography.bodySmall,
+                                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                        maxLines = 2,
+                                        overflow = TextOverflow.Ellipsis,
+                                    )
+                                }
+                            }
+                        }
+                    }
+
+                    // Выбор способа озвучки стихов: Диктор или Голос TTS
+                    Text(
+                        "Озвучка выбранных стихов:",
+                        style = MaterialTheme.typography.labelLarge,
+                        fontWeight = FontWeight.SemiBold,
+                    )
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.spacedBy(8.dp),
+                    ) {
+                        FilterChip(
+                            selected = !useTtsForVerses,
+                            onClick = { useTtsForVerses = false },
+                            leadingIcon = { Icon(Icons.Default.Headphones, null, Modifier.size(16.dp)) },
+                            label = { Text("Диктор (${narrator.name})", maxLines = 1, overflow = TextOverflow.Ellipsis) },
+                            modifier = Modifier.weight(1f),
+                        )
+                        FilterChip(
+                            selected = useTtsForVerses,
+                            onClick = { useTtsForVerses = true },
+                            leadingIcon = { Icon(Icons.AutoMirrored.Filled.VolumeUp, null, Modifier.size(16.dp)) },
+                            label = { Text("По стихам (TTS)") },
+                        )
+                    }
+
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                    ) {
+                        Text("Повторять выбранные стихи по кругу", style = MaterialTheme.typography.bodyMedium)
+                        Switch(checked = repeatEnabledForVerses, onCheckedChange = { repeatEnabledForVerses = it })
+                    }
+                }
+
+                // Настройка числа повторений (для Повтора главы, Повтора книги и Повтора стихов)
+                if (selectedScope in listOf(2, 3) || (selectedScope == 4 && repeatEnabledForVerses)) {
+                    HorizontalDivider()
+                    Text(
+                        "Сколько раз повторять:",
+                        style = MaterialTheme.typography.labelLarge,
+                        fontWeight = FontWeight.SemiBold,
+                    )
+                    FlowRow(
+                        horizontalArrangement = Arrangement.spacedBy(6.dp),
+                        verticalArrangement = Arrangement.spacedBy(4.dp),
+                    ) {
+                        REPEAT_COUNT_STEPS.forEach { count ->
+                            FilterChip(
+                                selected = targetLoops == count,
+                                onClick = { targetLoops = count },
+                                label = {
+                                    Text(if (count == 0) "∞ Бесконечно" else "$count раза".replace("5 раза", "5 раз").replace("10 раза", "10 раз"))
+                                },
+                            )
+                        }
+                    }
+                }
+            }
+        },
+        confirmButton = {
+            Button(
+                onClick = {
+                    if (bookId.isBlank() || chapter <= 0) {
+                        onDismiss()
+                        return@Button
+                    }
+                    when (selectedScope) {
+                        0 -> {
+                            // 1 глава (без повтора)
+                            ReaderVerseTtsLooper.stop()
+                            resetReaderVerseRangeToFullChapter()
+                            BibleAudioPlayer.setRepeatMode(BibleAudioRepeatMode.OFF)
+                            BibleAudioPlayer.setContinueChapters(false)
+                            if (BibleAudioPlayer.state.value.bookId != bookId ||
+                                BibleAudioPlayer.state.value.chapter != chapter ||
+                                !BibleAudioPlayer.state.value.isPlaying
+                            ) {
+                                BibleAudioPlayer.playChapter(context, narrator, bookId, chapter)
+                            }
+                        }
+                        1 -> {
+                            // Книга подряд (до конца книги)
+                            ReaderVerseTtsLooper.stop()
+                            resetReaderVerseRangeToFullChapter()
+                            BibleAudioPlayer.setRepeatMode(BibleAudioRepeatMode.OFF)
+                            BibleAudioPlayer.setContinueChapters(true)
+                            if (BibleAudioPlayer.state.value.bookId != bookId ||
+                                BibleAudioPlayer.state.value.chapter != chapter ||
+                                !BibleAudioPlayer.state.value.isPlaying
+                            ) {
+                                BibleAudioPlayer.playChapter(context, narrator, bookId, chapter)
+                            }
+                        }
+                        2 -> {
+                            // Повтор текущей главы
+                            ReaderVerseTtsLooper.stop()
+                            resetReaderVerseRangeToFullChapter()
+                            BibleAudioPlayer.setContinueChapters(false)
+                            BibleAudioPlayer.setRepeatMode(BibleAudioRepeatMode.CHAPTER, targetLoops)
+                            if (BibleAudioPlayer.state.value.bookId != bookId ||
+                                BibleAudioPlayer.state.value.chapter != chapter ||
+                                !BibleAudioPlayer.state.value.isPlaying
+                            ) {
+                                BibleAudioPlayer.playChapter(context, narrator, bookId, chapter)
+                            }
+                        }
+                        3 -> {
+                            // Повтор всей книги
+                            ReaderVerseTtsLooper.stop()
+                            resetReaderVerseRangeToFullChapter()
+                            BibleAudioPlayer.setRepeatMode(BibleAudioRepeatMode.BOOK, targetLoops)
+                            if (BibleAudioPlayer.state.value.bookId != bookId ||
+                                BibleAudioPlayer.state.value.chapter != chapter ||
+                                !BibleAudioPlayer.state.value.isPlaying
+                            ) {
+                                BibleAudioPlayer.playChapter(context, narrator, bookId, chapter)
+                            }
+                        }
+                        4 -> {
+                            // Выбранные стихи
+                            val cleanSpec = customSpec.trim()
+                            if (useTtsForVerses && chapterVerses.isNotEmpty()) {
+                                val wantedNums = if (cleanSpec.isNotBlank()) {
+                                    NoteScriptureLinks.expandSegmentSpecToVerses(cleanSpec, maxVerse)
+                                } else {
+                                    (startVerse..endVerse).toSet()
+                                }
+                                val pickedVerses = chapterVerses.filter { it.number in wantedNums }
+                                    .ifEmpty { chapterVerses.filter { it.number in startVerse..endVerse } }
+                                val label = when {
+                                    cleanSpec.isNotBlank() -> "ст. $cleanSpec"
+                                    startVerse == endVerse -> "ст. $startVerse"
+                                    else -> "ст. $startVerse–$endVerse"
+                                }
+                                ReaderVerseTtsLooper.start(
+                                    context = context,
+                                    bookId = bookId,
+                                    chapter = chapter,
+                                    translation = translation,
+                                    verses = pickedVerses,
+                                    repeatEnabled = repeatEnabledForVerses,
+                                    targetLoops = targetLoops,
+                                    rangeLabelRu = label,
+                                )
+                            } else {
+                                startReaderVerseRangeAudio(
+                                    context = context,
+                                    narrator = narrator,
+                                    bookId = bookId,
+                                    chapter = chapter,
+                                    translation = translation,
+                                    startVerse = startVerse,
+                                    endVerse = endVerse,
+                                    chapterVerseCount = maxVerse,
+                                    repeat = repeatEnabledForVerses,
+                                    targetLoops = targetLoops,
+                                    segmentSpec = cleanSpec.takeIf { it.isNotBlank() },
+                                )
+                            }
+                        }
+                    }
+                    onDismiss()
+                },
+            ) {
+                Text("Запустить")
+            }
+        },
+        dismissButton = {
+            TextButton(onClick = onDismiss) {
+                Text(stringResource(android.R.string.cancel))
+            }
+        },
+    )
 }
 
 @Composable
@@ -438,7 +1406,8 @@ fun BibleAudioMiniBar(modifier: Modifier = Modifier) {
                             "$bookName ${ps.chapter}"
                         } else {
                             stringResource(R.string.verse_action_play_narration)
-                        },
+                        }
+                        ,
                         style = MaterialTheme.typography.labelLarge,
                         fontWeight = FontWeight.SemiBold,
                         maxLines = 1,
@@ -464,6 +1433,15 @@ fun BibleAudioMiniBar(modifier: Modifier = Modifier) {
                 }
             }
         }
+    }
+}
+
+private fun formatSignedSec(ms: Int): String {
+    val s = ms / 1000
+    return when {
+        s > 0 -> "+${s}с"
+        s < 0 -> "${s}с"
+        else -> "0с"
     }
 }
 

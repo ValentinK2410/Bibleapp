@@ -595,6 +595,13 @@ fun DualBibleScreen(
             isDarkTheme = isDarkTheme,
         )
     }
+    LaunchedEffect(Unit) {
+        com.example.bible.data.BibleAudioPlayer.chapterContinueNavigation.collect { (bid, nextCh) ->
+            panes = panes.map { p ->
+                if (p.bookId == bid) p.copy(chapter = nextCh) else p
+            }
+        }
+    }
     Box(
         modifier = Modifier
             .fillMaxSize()
@@ -734,6 +741,10 @@ fun DualBibleScreen(
                 onDismiss = { resizeMode = false },
             )
         }
+
+        BibleAudioBar(
+            modifier = Modifier.align(Alignment.BottomCenter),
+        )
     }
 }
 
@@ -2051,6 +2062,44 @@ private fun ReaderPane(
         onDispose { interlinearTts?.shutdown() }
     }
     val bibleChapterAudioState by com.example.bible.data.BibleAudioPlayer.state.collectAsState()
+    var paneRepeatInitialVerse by remember { mutableStateOf<Int?>(null) }
+    var paneRepeatInitialEnd by remember { mutableStateOf<Int?>(null) }
+    var paneRepeatInitialSpec by remember { mutableStateOf("") }
+    val panePreferredNarratorId = viewModel?.audioNarratorId?.collectAsState()?.value ?: "bondarenko"
+    val paneReadingNarrator = remember(translation, bookId, panePreferredNarratorId) {
+        com.example.bible.data.narratorForReading(translation, bookId, panePreferredNarratorId)
+    }
+    LaunchedEffect(bookId, chapterNum, translation, verses, paneReadingNarrator.id, paneIndex) {
+        if (paneIndex == 0 && verses.isNotEmpty()) {
+            ReaderChapterAudioContext.update(
+                bookId = bookId,
+                chapter = chapterNum,
+                translation = translation,
+                narratorId = paneReadingNarrator.id,
+                verses = verses,
+            )
+        }
+    }
+    if (paneRepeatInitialVerse != null) {
+        val initStart = paneRepeatInitialVerse ?: 1
+        val initEnd = paneRepeatInitialEnd ?: (initStart + 2).coerceAtMost(verses.size.coerceAtLeast(1))
+        BibleAudioRepeatDialog(
+            bookId = bookId,
+            chapter = chapterNum,
+            translation = translation,
+            narratorId = paneReadingNarrator.id,
+            chapterVerses = verses,
+            initialStartVerse = initStart,
+            initialEndVerse = initEnd,
+            initialSegmentSpec = paneRepeatInitialSpec,
+            initialMode = com.example.bible.data.BibleAudioRepeatMode.VERSES,
+            onDismiss = {
+                paneRepeatInitialVerse = null
+                paneRepeatInitialEnd = null
+                paneRepeatInitialSpec = ""
+            },
+        )
+    }
 
     ProvideReaderFontScale(multiplier = readerFontScale) {
         val darkBodyStyle = TextStyle(
@@ -2486,6 +2535,43 @@ private fun ReaderPane(
                         viewModel?.recordVerseCopies(translation.code, bookId, bookName, chapterNum, copied)
                         multiSelect.clear()
                     },
+                    onListenSelected = {
+                        val selected = multiSelect.selectedVerses ?: return@VerseMultiSelectBottomBar
+                        if (selected.isEmpty()) return@VerseMultiSelectBottomBar
+                        val spec = verseSetToSegmentSpec(selected)
+                        startReaderVerseRangeAudio(
+                            context = paneContext,
+                            narrator = paneReadingNarrator,
+                            bookId = bookId,
+                            chapter = chapterNum,
+                            translation = translation,
+                            startVerse = selected.min(),
+                            endVerse = selected.max(),
+                            chapterVerseCount = verses.size,
+                            repeat = false,
+                            segmentSpec = spec,
+                        )
+                        multiSelect.clear()
+                    },
+                    onRepeatSelected = {
+                        val selected = multiSelect.selectedVerses ?: return@VerseMultiSelectBottomBar
+                        if (selected.isEmpty()) return@VerseMultiSelectBottomBar
+                        val spec = verseSetToSegmentSpec(selected)
+                        startReaderVerseRangeAudio(
+                            context = paneContext,
+                            narrator = paneReadingNarrator,
+                            bookId = bookId,
+                            chapter = chapterNum,
+                            translation = translation,
+                            startVerse = selected.min(),
+                            endVerse = selected.max(),
+                            chapterVerseCount = verses.size,
+                            repeat = true,
+                            targetLoops = 0,
+                            segmentSpec = spec,
+                        )
+                        multiSelect.clear()
+                    },
                     onReflectGigaChat = viewModel?.let {
                         {
                             val selected = multiSelect.selectedVerses ?: return@let
@@ -2581,6 +2667,25 @@ private fun ReaderPane(
             translation = translation,
             chapterVerseCount = verses.size,
             chapterVerseTexts = chapterVerseTexts,
+            onRepeatSingleVerse = { ref ->
+                startReaderVerseRangeAudio(
+                    context = paneContext,
+                    narrator = paneReadingNarrator,
+                    bookId = bookId,
+                    chapter = chapterNum,
+                    translation = translation,
+                    startVerse = ref.verse,
+                    endVerse = ref.verse,
+                    chapterVerseCount = verses.size,
+                    repeat = true,
+                    targetLoops = 0,
+                )
+            },
+            onOpenVerseRangeRepeat = { ref ->
+                paneRepeatInitialVerse = ref.verse
+                paneRepeatInitialEnd = (ref.verse + 2).coerceAtMost(verses.size.coerceAtLeast(ref.verse))
+                paneRepeatInitialSpec = ""
+            },
         )
         val dsVm = viewModel
         if (dsVm != null) {

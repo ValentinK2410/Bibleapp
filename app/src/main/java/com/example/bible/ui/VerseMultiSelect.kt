@@ -5,6 +5,7 @@ import android.content.ClipboardManager
 import android.content.Context
 import android.widget.Toast
 import androidx.compose.foundation.background
+import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
@@ -12,6 +13,7 @@ import androidx.compose.foundation.layout.defaultMinSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.wrapContentHeight
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
@@ -60,6 +62,30 @@ class VerseMultiSelectState {
     }
 }
 
+/**
+ * Преобразует набор выбранных номеров стихов (например {1, 2, 3, 7, 10, 11})
+ * в компактную запись сегментов ("1-3,7,10-11") для прослушивания и повтора.
+ */
+fun verseSetToSegmentSpec(verses: Set<Int>): String {
+    val sorted = verses.filter { it > 0 }.sorted()
+    if (sorted.isEmpty()) return ""
+    val parts = ArrayList<String>()
+    var rangeStart = sorted.first()
+    var prev = rangeStart
+    for (i in 1 until sorted.size) {
+        val cur = sorted[i]
+        if (cur == prev + 1) {
+            prev = cur
+        } else {
+            parts += if (rangeStart == prev) "$rangeStart" else "$rangeStart-$prev"
+            rangeStart = cur
+            prev = cur
+        }
+    }
+    parts += if (rangeStart == prev) "$rangeStart" else "$rangeStart-$prev"
+    return parts.joinToString(",")
+}
+
 @Composable
 fun rememberVerseMultiSelectState(): VerseMultiSelectState = remember { VerseMultiSelectState() }
 
@@ -102,6 +128,8 @@ fun VerseMultiSelectBottomBar(
     onCopy: () -> Unit,
     onCancel: () -> Unit,
     onReflectGigaChat: (() -> Unit)? = null,
+    onListenSelected: (() -> Unit)? = null,
+    onRepeatSelected: (() -> Unit)? = null,
     modifier: Modifier = Modifier,
 ) {
     Surface(
@@ -116,6 +144,7 @@ fun VerseMultiSelectBottomBar(
         Row(
             modifier = Modifier
                 .fillMaxWidth()
+                .horizontalScroll(rememberScrollState())
                 .padding(horizontal = 4.dp, vertical = 2.dp),
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.End,
@@ -130,6 +159,32 @@ fun VerseMultiSelectBottomBar(
                     style = MaterialTheme.typography.labelLarge,
                     maxLines = 1,
                 )
+            }
+            if (onListenSelected != null) {
+                TextButton(
+                    onClick = onListenSelected,
+                    modifier = compactMod,
+                    contentPadding = compactPad,
+                ) {
+                    Text(
+                        "🎧 Слушать ($selectedCount)",
+                        style = MaterialTheme.typography.labelLarge,
+                        maxLines = 1,
+                    )
+                }
+            }
+            if (onRepeatSelected != null) {
+                TextButton(
+                    onClick = onRepeatSelected,
+                    modifier = compactMod,
+                    contentPadding = compactPad,
+                ) {
+                    Text(
+                        "🔂 Повтор ($selectedCount)",
+                        style = MaterialTheme.typography.labelLarge,
+                        maxLines = 1,
+                    )
+                }
             }
             if (onReflectGigaChat != null) {
                 TextButton(

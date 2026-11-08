@@ -363,6 +363,40 @@ data class ChapterListenProgress(
     val closed: Boolean = false,
 )
 
+/** Режим повтора озвучки в читалке Библии. */
+enum class BibleAudioRepeatMode(val labelRu: String, val shortRu: String) {
+    /** Без повтора (по окончании главы — стоп или переход к следующей главе, если включён «Подряд»). */
+    OFF("Без повтора", "Выкл"),
+    /** Повторять текущую главу по кругу. */
+    CHAPTER("Повтор главы", "Глава"),
+    /** Воспроизводить все главы книги подряд и после последней главы начинать книгу сначала (с 1-й главы). */
+    BOOK("Повтор всей книги", "Книга"),
+    /** Повторять выбранные стихи (диапазон или набор стихов) по кругу. */
+    VERSES("Повтор стихов", "Стихи"),
+}
+
+/** Настройка прослушивания / повтора выбранных стихов внутри главы. */
+data class BibleVerseRepeatConfig(
+    val startVerse: Int = 1,
+    val endVerse: Int = 1,
+    /** Спецификация сегментов (например "1-3,7-9"), если выбраны несмежные стихи. */
+    val segmentSpec: String? = null,
+    /** Общее число стихов в главе (для расчёта пропорции времени без таймкодов). */
+    val chapterVerseCount: Int = 0,
+    /** Код перевода для поиска таймкодов. */
+    val translationCode: String = TranslationId.SYNODAL.code,
+) {
+    val labelRu: String
+        get() = when {
+            !segmentSpec.isNullOrBlank() && (',' in segmentSpec || '*' in segmentSpec) ->
+                "ст. $segmentSpec"
+            startVerse == endVerse ->
+                "ст. $startVerse"
+            else ->
+                "ст. $startVerse–$endVerse"
+        }
+}
+
 data class BiblePlayerState(
     val isPlaying: Boolean = false,
     val bookId: String = "",
@@ -424,6 +458,29 @@ object BibleAudioPlayer {
     private val _continueChapters = MutableStateFlow(false)
     val continueChapters: StateFlow<Boolean> = _continueChapters.asStateFlow()
 
+    /** Режим повтора: выкл / повтор главы / повтор всей книги / повтор стихов. */
+    private val _repeatMode = MutableStateFlow(BibleAudioRepeatMode.OFF)
+    val repeatMode: StateFlow<BibleAudioRepeatMode> = _repeatMode.asStateFlow()
+
+    /** Целевое число повторов: 0 = бесконечно (∞), >0 = сколько раз проиграть (например 2, 3, 5, 10). */
+    private val _repeatTargetCount = MutableStateFlow(0)
+    val repeatTargetCount: StateFlow<Int> = _repeatTargetCount.asStateFlow()
+
+    /** Сколько полных циклов уже проиграно в текущей сессии повтора. */
+    private val _repeatCompletedCount = MutableStateFlow(0)
+    val repeatCompletedCount: StateFlow<Int> = _repeatCompletedCount.asStateFlow()
+
+    /** Конфигурация выбранных стихов (диапазон или список сегментов) при прослушивании/повторе стихов. */
+    private val _verseRepeatConfig = MutableStateFlow<BibleVerseRepeatConfig?>(null)
+    val verseRepeatConfig: StateFlow<BibleVerseRepeatConfig?> = _verseRepeatConfig.asStateFlow()
+
+    /** Ручная подстройка начала и конца зацикленного отрезка стихов (мс), шаг ±2000 мс. */
+    private val _segmentLoopStartOffsetMs = MutableStateFlow(0)
+    val segmentLoopStartOffsetMs: StateFlow<Int> = _segmentLoopStartOffsetMs.asStateFlow()
+
+    private val _segmentLoopEndOffsetMs = MutableStateFlow(0)
+    val segmentLoopEndOffsetMs: StateFlow<Int> = _segmentLoopEndOffsetMs.asStateFlow()
+
     /**
      * Событие при переходе озвучки на следующую главу (той же книги): номер новой главы.
      * Экран чтения подписывается и открывает тот же текст, если пользователь смотрел предыдущую главу.
@@ -484,6 +541,72 @@ object BibleAudioPlayer {
 
     fun setContinueChapters(enabled: Boolean) {
         _continueChapters.value = enabled
+        if (enabled && _repeatMode.value == BibleAudioRepeatMode.CHAPTER) {
+            _repeatMode.value = BibleAudioRepeatMode.OFF
+        }
+    }
+
+    fun setRepeatMode(mode: BibleAudioRepeatMode, targetCount: Int = _repeatTargetCount.value) {
+        _repeatMode.value = mode
+        _repeatTargetCount.value = targetCount.coerceAtLeast(0)
+        _repeatCompletedCount.value = 0
+        when (mode) {
+            BibleAudioRepeatMode.BOOK -> {
+                _continueChapters.value = true
+                _verseRepeatConfig.value = null
+                resetSegmentOffsets()
+                clearSegmentStop()
+            }
+            BibleAudioRepeatMode.CHAPTER -> {
+                _verseRepeatConfig.value = null
+                resetSegmentOffsets()
+                clearSegmentStop()
+            }
+            BibleAudioRepeatMode.OFF -> {
+                _verseRepeatConfig.value = null
+                resetSegmentOffsets()
+                clearSegmentStop()
+            }
+            BibleAudioRepeatMode.VERSES -> {
+                // Конфигурация стихов задаётся через setVerseRepeatConfig / startReaderVerseRepeat
+            }
+        }
+    }
+
+    fun setRepeatTargetCount(count: Int) {
+        _repeatTargetCount.value = count.coerceAtLeast(0)
+        _repeatCompletedCount.value = 0
+    }
+
+    fun incrementRepeatCompletedCount(): Int {
+        val next = _repeatCompletedCount.value + 1
+        _repeatCompletedCount.value = next
+        return next
+    }
+
+    fun resetRepeatCompletedCount() {
+        _repeatCompletedCount.value = 0
+    }
+
+    fun setVerseRepeatConfig(config: BibleVerseRepeatConfig?) {
+        _verseRepeatConfig.value = config
+        if (config == null && _repeatMode.value == BibleAudioRepeatMode.VERSES) {
+            _repeatMode.value = BibleAudioRepeatMode.OFF
+        }
+    }
+
+    fun resetSegmentOffsets() {
+        _segmentLoopStartOffsetMs.value = 0
+        _segmentLoopEndOffsetMs.value = 0
+    }
+
+    fun adjustSegmentLoopStartOffsetMs(deltaMs: Int) {
+        _segmentLoopStartOffsetMs.value = (_segmentLoopStartOffsetMs.value + deltaMs).coerceIn(-60_000, 60_000)
+    }
+
+    fun adjustSegmentLoopEndOffsetMs(deltaMs: Int) {
+        _segmentLoopEndOffsetMs.value = (_segmentLoopEndOffsetMs.value + deltaMs).coerceIn(-60_000, 60_000)
+        resolveSegmentStopMs(_state.value.durationMs)
     }
 
     fun setStopAtPositionMs(ms: Int?) {
@@ -524,12 +647,16 @@ object BibleAudioPlayer {
             clearStopAtPosition()
             return
         }
-        val stop = segmentStopTimemarkMs?.takeIf { it > 0 }
+        val baseStop = segmentStopTimemarkMs?.takeIf { it > 0 }
             ?: com.example.bible.data.estimatedPlaybackStopAfterMs(
                 endVerse = end,
                 chapterVerseCount = segmentStopChapterVerseCount,
                 chapterDurationMs = durationMs,
             )
+        val stop = baseStop?.let { raw ->
+            val withOffset = raw + _segmentLoopEndOffsetMs.value
+            if (durationMs > 0) withOffset.coerceIn(500, durationMs) else withOffset.coerceAtLeast(500)
+        }
         if (stop != null && stop > 0) {
             segmentStopGraceUntilElapsed = SystemClock.elapsedRealtime() + 400L
             setStopAtPositionMs(stop)
@@ -948,21 +1075,58 @@ object BibleAudioPlayer {
                     listener?.let { mainHandler.post(it) }
                     return@setOnCompletionListener
                 }
+                val mode = _repeatMode.value
+                if (mode == BibleAudioRepeatMode.CHAPTER) {
+                    val target = _repeatTargetCount.value
+                    val done = incrementRepeatCompletedCount()
+                    if (target <= 0 || done < target) {
+                        try {
+                            noteListenDiscontinuity(0)
+                            mp.seekTo(0)
+                            applyPlaybackSpeed(mp)
+                            mp.start()
+                            startListenTick()
+                            emitChapterStarted(_state.value)
+                            _state.value = _state.value.copy(isPlaying = true, positionMs = 0)
+                            AppMediaButtonSession.refreshPlaybackState()
+                            return@setOnCompletionListener
+                        } catch (e: Exception) {
+                            Log.e(TAG, "chapter repeat failed", e)
+                        }
+                    } else {
+                        resetRepeatCompletedCount()
+                        _state.value = _state.value.copy(isPlaying = false, positionMs = 0)
+                        AppMediaButtonSession.refreshPlaybackState()
+                        return@setOnCompletionListener
+                    }
+                }
                 val ctx = appContext
                 val st = _state.value
                 if (
-                    _continueChapters.value &&
+                    (_continueChapters.value || mode == BibleAudioRepeatMode.BOOK) &&
                     ctx != null &&
                     st.bookId.isNotBlank() &&
                     st.narratorId.isNotBlank()
                 ) {
                     val canon = BibleCanon.byId(st.bookId)
                     val narrator = BibleAudioNarrators.byId(st.narratorId)
-                    if (canon != null && st.chapter < canon.chapters) {
-                        val nextCh = st.chapter + 1
-                        _chapterContinueNavigation.tryEmit(st.bookId to nextCh)
-                        playChapter(ctx, narrator, st.bookId, nextCh)
-                        return@setOnCompletionListener
+                    if (canon != null) {
+                        if (st.chapter < canon.chapters) {
+                            val nextCh = st.chapter + 1
+                            _chapterContinueNavigation.tryEmit(st.bookId to nextCh)
+                            playChapter(ctx, narrator, st.bookId, nextCh)
+                            return@setOnCompletionListener
+                        } else if (mode == BibleAudioRepeatMode.BOOK) {
+                            val target = _repeatTargetCount.value
+                            val done = incrementRepeatCompletedCount()
+                            if (target <= 0 || done < target) {
+                                _chapterContinueNavigation.tryEmit(st.bookId to 1)
+                                playChapter(ctx, narrator, st.bookId, 1)
+                                return@setOnCompletionListener
+                            } else {
+                                resetRepeatCompletedCount()
+                            }
+                        }
                     }
                 }
                 _state.value = _state.value.copy(isPlaying = false, positionMs = 0)
@@ -1048,9 +1212,12 @@ object BibleAudioPlayer {
         val st = _state.value
         if (st.bookId.isBlank() || st.narratorId.isBlank()) return
         val canon = BibleCanon.byId(st.bookId) ?: return
-        if (st.chapter >= canon.chapters) return
         val narrator = BibleAudioNarrators.byId(st.narratorId) ?: return
-        val nextCh = st.chapter + 1
+        val nextCh = when {
+            st.chapter < canon.chapters -> st.chapter + 1
+            _repeatMode.value == BibleAudioRepeatMode.BOOK -> 1
+            else -> return
+        }
         _chapterContinueNavigation.tryEmit(st.bookId to nextCh)
         playChapter(ctx, narrator, st.bookId, nextCh)
         AppMediaButtonSession.refreshPlaybackState()
@@ -1095,6 +1262,9 @@ object BibleAudioPlayer {
             segmentStopChapterVerseCount = 0
             segmentStopTimemarkMs = null
             segmentStopGraceUntilElapsed = 0L
+            _verseRepeatConfig.value = null
+            resetSegmentOffsets()
+            resetRepeatCompletedCount()
         }
         try {
             player?.stop()

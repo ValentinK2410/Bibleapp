@@ -75,6 +75,7 @@ import androidx.compose.material.icons.filled.GraphicEq
 import androidx.compose.material.icons.filled.History
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.Pause
+import androidx.compose.material.icons.filled.Repeat
 import androidx.compose.material.icons.automirrored.filled.MenuBook
 import androidx.compose.material.icons.filled.MoreVert
 import java.time.Instant
@@ -2843,9 +2844,28 @@ private fun BibleNavHost(
                     com.example.bible.data.BibleAudioPlayer.stopForNavigation()
                 }
             }
+            var showReaderRepeatDialog by remember { mutableStateOf(false) }
+            val activeSnapForDialog by ReaderChapterAudioContext.snapshot.collectAsState()
+            if (showReaderRepeatDialog) {
+                BibleAudioRepeatDialog(
+                    bookId = bookId,
+                    chapter = chapterNum,
+                    translation = translation,
+                    narratorId = readingAudioNarrator.id,
+                    chapterVerses = if (activeSnapForDialog.bookId == bookId && activeSnapForDialog.chapter == chapterNum) {
+                        activeSnapForDialog.verses
+                    } else {
+                        emptyList()
+                    },
+                    initialStartVerse = readerVisibleVerse.coerceAtLeast(1),
+                    initialEndVerse = (readerVisibleVerse.coerceAtLeast(1) + 2)
+                        .coerceAtMost(activeSnapForDialog.verses.size.coerceAtLeast(1)),
+                    onDismiss = { showReaderRepeatDialog = false },
+                )
+            }
             LaunchedEffect(bookId, chapterNum, scrollVerse) {
                 com.example.bible.data.BibleAudioPlayer.chapterContinueNavigation.collect { (bid, nextCh) ->
-                    if (bid == bookId && chapterNum == nextCh - 1) {
+                    if (bid == bookId && nextCh != chapterNum) {
                         runCatching {
                             navController.navigate("read/$bid/$nextCh/0") {
                                 popUpTo("read/$bookId/$chapterNum/$scrollVerse") { inclusive = true }
@@ -3018,6 +3038,20 @@ private fun BibleNavHost(
                                         timemarkNarratorId = readingAudioNarrator.id,
                                     )
                                     HorizontalDivider()
+                                    DropdownMenuItem(
+                                        text = { Text("Озвучка с повтором (стихи, глава, книга)…") },
+                                        onClick = {
+                                            showMoreMenu = false
+                                            showReaderRepeatDialog = true
+                                        },
+                                        leadingIcon = {
+                                            Icon(
+                                                Icons.Default.Repeat,
+                                                contentDescription = null,
+                                                tint = MaterialTheme.colorScheme.primary,
+                                            )
+                                        },
+                                    )
                                     if (BibleCanon.isOldTestament(bookId)) {
                                         DropdownMenuItem(
                                             text = { Text(stringResource(R.string.menu_audio_hebrew_chapter)) },
@@ -6480,6 +6514,47 @@ private fun ReaderContent(
         if (dictionaryLookup != null) onLexiconLookupOpened()
     }
 
+    var verseRangeRepeatInitialVerse by remember { mutableStateOf<Int?>(null) }
+    var verseRangeRepeatInitialEnd by remember { mutableStateOf<Int?>(null) }
+    var verseRangeRepeatInitialSpec by remember { mutableStateOf("") }
+    val currentPreferredNarratorId by viewModel.audioNarratorId.collectAsStateWithLifecycle()
+    val currentReadingNarrator = remember(translation, bookId, currentPreferredNarratorId) {
+        com.example.bible.data.narratorForReading(translation, bookId, currentPreferredNarratorId)
+    }
+
+    LaunchedEffect(bookId, chapter, translation, verses, currentReadingNarrator.id, trackReadingDwell) {
+        if (trackReadingDwell && verses.isNotEmpty()) {
+            ReaderChapterAudioContext.update(
+                bookId = bookId,
+                chapter = chapter,
+                translation = translation,
+                narratorId = currentReadingNarrator.id,
+                verses = verses,
+            )
+        }
+    }
+
+    if (verseRangeRepeatInitialVerse != null) {
+        val initStart = verseRangeRepeatInitialVerse ?: 1
+        val initEnd = verseRangeRepeatInitialEnd ?: (initStart + 2).coerceAtMost(verses.size.coerceAtLeast(1))
+        BibleAudioRepeatDialog(
+            bookId = bookId,
+            chapter = chapter,
+            translation = translation,
+            narratorId = currentReadingNarrator.id,
+            chapterVerses = verses,
+            initialStartVerse = initStart,
+            initialEndVerse = initEnd,
+            initialSegmentSpec = verseRangeRepeatInitialSpec,
+            initialMode = com.example.bible.data.BibleAudioRepeatMode.VERSES,
+            onDismiss = {
+                verseRangeRepeatInitialVerse = null
+                verseRangeRepeatInitialEnd = null
+                verseRangeRepeatInitialSpec = ""
+            },
+        )
+    }
+
     LaunchedEffect(bookId, chapter, translation) {
         multiSelect.clear()
     }
@@ -6950,6 +7025,43 @@ private fun ReaderContent(
                     viewModel.recordVerseCopies(translation.code, bookId, bookName, chapter, copied)
                     multiSelect.clear()
                 },
+                onListenSelected = {
+                    val selected = multiSelect.selectedVerses ?: return@VerseMultiSelectBottomBar
+                    if (selected.isEmpty()) return@VerseMultiSelectBottomBar
+                    val spec = verseSetToSegmentSpec(selected)
+                    startReaderVerseRangeAudio(
+                        context = readerContext,
+                        narrator = currentReadingNarrator,
+                        bookId = bookId,
+                        chapter = chapter,
+                        translation = translation,
+                        startVerse = selected.min(),
+                        endVerse = selected.max(),
+                        chapterVerseCount = verses.size,
+                        repeat = false,
+                        segmentSpec = spec,
+                    )
+                    multiSelect.clear()
+                },
+                onRepeatSelected = {
+                    val selected = multiSelect.selectedVerses ?: return@VerseMultiSelectBottomBar
+                    if (selected.isEmpty()) return@VerseMultiSelectBottomBar
+                    val spec = verseSetToSegmentSpec(selected)
+                    startReaderVerseRangeAudio(
+                        context = readerContext,
+                        narrator = currentReadingNarrator,
+                        bookId = bookId,
+                        chapter = chapter,
+                        translation = translation,
+                        startVerse = selected.min(),
+                        endVerse = selected.max(),
+                        chapterVerseCount = verses.size,
+                        repeat = true,
+                        targetLoops = 0,
+                        segmentSpec = spec,
+                    )
+                    multiSelect.clear()
+                },
                 onReflectGigaChat = {
                     val selected = multiSelect.selectedVerses ?: return@VerseMultiSelectBottomBar
                     if (selected.isEmpty()) return@VerseMultiSelectBottomBar
@@ -7041,6 +7153,25 @@ private fun ReaderContent(
             translation = translation,
             chapterVerseCount = verses.size,
             chapterVerseTexts = chapterVerseTexts,
+            onRepeatSingleVerse = { ref ->
+                startReaderVerseRangeAudio(
+                    context = readerContext,
+                    narrator = currentReadingNarrator,
+                    bookId = bookId,
+                    chapter = chapter,
+                    translation = translation,
+                    startVerse = ref.verse,
+                    endVerse = ref.verse,
+                    chapterVerseCount = verses.size,
+                    repeat = true,
+                    targetLoops = 0,
+                )
+            },
+            onOpenVerseRangeRepeat = { ref ->
+                verseRangeRepeatInitialVerse = ref.verse
+                verseRangeRepeatInitialEnd = (ref.verse + 2).coerceAtMost(verses.size.coerceAtLeast(ref.verse))
+                verseRangeRepeatInitialSpec = ""
+            },
         )
         deepSeekTarget?.let { t ->
             DeepSeekVerseDialog(
