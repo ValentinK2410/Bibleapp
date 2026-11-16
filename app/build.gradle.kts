@@ -140,6 +140,9 @@ dependencies {
 
     debugImplementation(libs.androidx.compose.ui.tooling)
     testImplementation(libs.junit)
+    // В unit-тестах android.jar даёт пустой org.json.JSONObject («not mocked»).
+    // На устройстве класс настоящий; для JVM подменяем его реализацией.
+    testImplementation("org.json:json:20240303")
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
 }
