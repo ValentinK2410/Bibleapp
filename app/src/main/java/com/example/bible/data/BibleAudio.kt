@@ -411,6 +411,10 @@ data class BiblePlayerState(
 object BibleAudioPlayer {
 
     private var player: MediaPlayer? = null
+    /** Растёт при каждом [release], чтобы отложенный перезапуск после свайпа не перебивал стоп пользователя. */
+    private var playbackGeneration = 0
+
+    internal fun playbackGeneration(): Int = playbackGeneration
     private var currentKey: String = ""
     private var appContext: Context? = null
 
@@ -1252,6 +1256,7 @@ object BibleAudioPlayer {
     }
 
     fun release(clearSegmentConfig: Boolean = true) {
+        playbackGeneration++
         flushListenProgress()
         cancelSleepTimerInternal()
         stopSegmentStopPolling()

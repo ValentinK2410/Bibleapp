@@ -3238,72 +3238,6 @@ private fun BibleNavHost(
                     }
                 }
 
-                // Озвучка идёт — свайп глушит старый перевод сразу и после остановки
-                // листает новый с того же стиха. Пока жест не успокоился, не стартуем:
-                // серия свайпов должна озвучить только последнюю вкладку.
-                var ttsSwipeHandoff by remember(bookId, chapterNum) {
-                    mutableStateOf<TtsTranslationHandoff?>(null)
-                }
-                DisposableEffect(bookId, chapterNum) {
-                    onDispose {
-                        ReaderVerseTtsLooper.abandonTranslationSwipe()
-                        ReaderInlineVerseSpeech.suppress(false)
-                    }
-                }
-                LaunchedEffect(pagerState.isScrollInProgress) {
-                    if (!pagerState.isScrollInProgress || ttsSwipeHandoff != null) return@LaunchedEffect
-                    val fromLooper = ReaderVerseTtsLooper.beginTranslationSwipe(bookId, chapterNum)
-                    val handoff = if (fromLooper != null) {
-                        fromLooper
-                    } else {
-                        val inline = ReaderInlineVerseSpeech.consume(bookId, chapterNum)
-                        if (inline != null) {
-                            ReaderVerseTtsLooper.beginInlineTranslationSwipe(inline)
-                        } else {
-                            null
-                        }
-                    }
-                    if (handoff != null) {
-                        val playback = viewModel.audioPlaybackState.value
-                        if (playback == AudioPlaybackState.PLAYING || playback == AudioPlaybackState.LOADING) {
-                            viewModel.stopAudio()
-                        }
-                        ttsSwipeHandoff = handoff
-                    }
-                }
-                LaunchedEffect(pagerState.settledPage, ttsSwipeHandoff, pagerState.isScrollInProgress) {
-                    val handoff = ttsSwipeHandoff ?: return@LaunchedEffect
-                    if (pagerState.isScrollInProgress) return@LaunchedEffect
-                    delay(TTS_TRANSLATION_SWIPE_SETTLE_MS)
-                    if (pagerState.isScrollInProgress) return@LaunchedEffect
-                    if (ttsSwipeHandoff?.token != handoff.token) return@LaunchedEffect
-                    val tid = translations.getOrNull(pagerState.settledPage) ?: run {
-                        ttsSwipeHandoff = null
-                        ReaderVerseTtsLooper.abandonTranslationSwipe()
-                        return@LaunchedEffect
-                    }
-                    val localVerses = runCatching {
-                        kotlinx.coroutines.withContext(Dispatchers.IO) {
-                            library.loadChapter(tid, bookId, chapterNum)?.verses.orEmpty()
-                        }
-                    }.getOrDefault(emptyList())
-                    val verses = localVerses.ifEmpty {
-                        runCatching { viewModel.fetchOnlineVerses(tid, bookId, chapterNum) }.getOrDefault(emptyList())
-                    }
-                    if (pagerState.isScrollInProgress) return@LaunchedEffect
-                    if (translations.getOrNull(pagerState.settledPage) != tid) return@LaunchedEffect
-                    if (ttsSwipeHandoff?.token != handoff.token) return@LaunchedEffect
-                    ReaderVerseTtsLooper.resumeAfterTranslationSwipe(
-                        readerContext,
-                        handoff,
-                        tid,
-                        verses,
-                    )
-                    if (ttsSwipeHandoff?.token == handoff.token) {
-                        ttsSwipeHandoff = null
-                    }
-                }
-
                 // Стих, к которому нужно открыть соседний перевод. Пока страница уже на экране,
                 // её не перескролливаем вслед за пальцем — иначе список прыгает при чтении.
                 // Во время свайпа якорь не обновляем: смена раскладки иначе подменяет стих предыдущим.
@@ -3317,6 +3251,15 @@ private fun BibleNavHost(
                 }
                 var readerFingerDown by remember(bookId, chapterNum) { mutableStateOf(false) }
                 val readerFingerDownNow = rememberUpdatedState(readerFingerDown)
+                // Пока палец листает список, якорь не обновляется. В начале свайпа вкладок
+                // фиксируем стих, который реально на экране, иначе откроется старый номер.
+                var swipeAnchorLocked by remember(bookId, chapterNum) { mutableStateOf(false) }
+                val pagerScrolling = pagerState.isScrollInProgress
+                if (pagerScrolling && !swipeAnchorLocked) {
+                    translationSwipeAnchor = readerVisibleVerse.coerceAtLeast(1)
+                    swipeAnchorLocked = true
+                }
+                if (!pagerScrolling) swipeAnchorLocked = false
                 val settledTranslationPage = pagerState.settledPage
                 val translationPageJustSettled = translationLandingSettled != settledTranslationPage
                 if (translationPageJustSettled) {
@@ -3331,6 +3274,118 @@ private fun BibleNavHost(
                 if (!pagerState.isScrollInProgress && !translationPageJustSettled && !readerFingerDown) {
                     val anchored = readerVisibleVerse.coerceAtLeast(1)
                     if (translationSwipeAnchor != anchored) translationSwipeAnchor = anchored
+                }
+
+                // Озвучка: свайп сразу глушит плеер главы (медиасессия) или TTS и после
+                // остановки листа продолжает тот же стих в новом переводе. Быстрые свайпы
+                // не накладывают звук — стартует только последняя вкладка.
+                var ttsSwipeHandoff by remember(bookId, chapterNum) {
+                    mutableStateOf<TtsTranslationHandoff?>(null)
+                }
+                var chapterAudioFollowSwipe by remember(bookId, chapterNum) { mutableStateOf(false) }
+                var chapterAudioFollowToken by remember(bookId, chapterNum) { mutableIntStateOf(0) }
+                DisposableEffect(bookId, chapterNum) {
+                    onDispose {
+                        ReaderVerseTtsLooper.abandonTranslationSwipe()
+                        ReaderInlineVerseSpeech.suppress(false)
+                    }
+                }
+                LaunchedEffect(pagerState.isScrollInProgress) {
+                    if (!pagerState.isScrollInProgress) return@LaunchedEffect
+                    val verse = translationSwipeAnchor.coerceAtLeast(1)
+                    val fromLooper = ReaderVerseTtsLooper.beginTranslationSwipe(bookId, chapterNum)
+                    if (fromLooper != null) {
+                        chapterAudioFollowSwipe = false
+                        ttsSwipeHandoff = fromLooper.copy(anchorVerse = verse)
+                        val playback = viewModel.audioPlaybackState.value
+                        if (playback == AudioPlaybackState.PLAYING || playback == AudioPlaybackState.LOADING) {
+                            viewModel.stopAudio()
+                        }
+                        return@LaunchedEffect
+                    }
+                    if (ttsSwipeHandoff == null && !chapterAudioFollowSwipe) {
+                        val inline = ReaderInlineVerseSpeech.consume(bookId, chapterNum)
+                        if (inline != null) {
+                            ttsSwipeHandoff = ReaderVerseTtsLooper.beginInlineTranslationSwipe(inline)
+                                .copy(anchorVerse = verse)
+                            val playback = viewModel.audioPlaybackState.value
+                            if (playback == AudioPlaybackState.PLAYING || playback == AudioPlaybackState.LOADING) {
+                                viewModel.stopAudio()
+                            }
+                            return@LaunchedEffect
+                        }
+                    }
+                    val audio = BibleAudioPlayer.state.value
+                    val thisChapter = audio.bookId == bookId && audio.chapter == chapterNum
+                    if (thisChapter && (audio.isPlaying || audio.isLoading)) {
+                        if (ttsSwipeHandoff != null) ReaderVerseTtsLooper.abandonTranslationSwipe()
+                        ttsSwipeHandoff = null
+                        BibleAudioPlayer.stopForNavigation()
+                        chapterAudioFollowToken = BibleAudioPlayer.playbackGeneration()
+                        chapterAudioFollowSwipe = true
+                        val playback = viewModel.audioPlaybackState.value
+                        if (playback == AudioPlaybackState.PLAYING || playback == AudioPlaybackState.LOADING) {
+                            viewModel.stopAudio()
+                        }
+                    }
+                }
+                LaunchedEffect(
+                    pagerState.settledPage,
+                    pagerState.isScrollInProgress,
+                    ttsSwipeHandoff,
+                    chapterAudioFollowSwipe,
+                ) {
+                    val handoff = ttsSwipeHandoff
+                    if (handoff == null && !chapterAudioFollowSwipe) return@LaunchedEffect
+                    if (pagerState.isScrollInProgress) return@LaunchedEffect
+                    delay(TTS_TRANSLATION_SWIPE_SETTLE_MS)
+                    if (pagerState.isScrollInProgress) return@LaunchedEffect
+                    val tid = translations.getOrNull(pagerState.settledPage) ?: run {
+                        ttsSwipeHandoff = null
+                        chapterAudioFollowSwipe = false
+                        ReaderVerseTtsLooper.abandonTranslationSwipe()
+                        return@LaunchedEffect
+                    }
+                    val verse = translationSwipeAnchor.coerceAtLeast(1)
+                    val localVerses = runCatching {
+                        kotlinx.coroutines.withContext(Dispatchers.IO) {
+                            library.loadChapter(tid, bookId, chapterNum)?.verses.orEmpty()
+                        }
+                    }.getOrDefault(emptyList())
+                    val verses = localVerses.ifEmpty {
+                        runCatching { viewModel.fetchOnlineVerses(tid, bookId, chapterNum) }.getOrDefault(emptyList())
+                    }
+                    if (pagerState.isScrollInProgress) return@LaunchedEffect
+                    if (translations.getOrNull(pagerState.settledPage) != tid) return@LaunchedEffect
+                    val pendingTts = ttsSwipeHandoff
+                    if (pendingTts != null && pendingTts.token == handoff?.token) {
+                        ReaderVerseTtsLooper.resumeAfterTranslationSwipe(
+                            readerContext,
+                            pendingTts.copy(anchorVerse = verse),
+                            tid,
+                            verses,
+                        )
+                        if (ttsSwipeHandoff?.token == pendingTts.token) ttsSwipeHandoff = null
+                        chapterAudioFollowSwipe = false
+                        return@LaunchedEffect
+                    }
+                    if (!chapterAudioFollowSwipe) return@LaunchedEffect
+                    if (chapterAudioFollowToken != BibleAudioPlayer.playbackGeneration()) {
+                        chapterAudioFollowSwipe = false
+                        return@LaunchedEffect
+                    }
+                    val narrator = com.example.bible.data.narratorForReading(tid, bookId, narratorId)
+                    playReaderChapterAudio(
+                        readerContext,
+                        narrator,
+                        bookId,
+                        chapterNum,
+                        verse,
+                        tid,
+                        forceVerseStart = true,
+                        chapterVerseCount = verses.size,
+                    )
+                    chapterAudioFollowSwipe = false
                 }
 
                 var fontButtonsShown by remember { mutableStateOf(true) }
@@ -3477,15 +3532,16 @@ private fun BibleNavHost(
                                 userNotes.verseNumbersWithNotesInChapter(bookId, chapterNum)
                             }
                             val isSettledTranslationPage = page == settledTranslationPage
+                            val carriedVerse = translationSwipeAnchor.coerceAtLeast(1)
                             val pageScrollVerse = if (isSettledTranslationPage) {
                                 translationLandingVerse
                             } else {
-                                readerVisibleVerse.coerceAtLeast(1)
+                                carriedVerse
                             }
                             val pageScrollRequestId = if (isSettledTranslationPage) {
                                 100_000 + translationLandingToken
                             } else {
-                                readerVisibleVerse.coerceAtLeast(1)
+                                carriedVerse
                             }
                             val isReaderPagerPageActive =
                                 isSettledTranslationPage && !pagerState.isScrollInProgress
