@@ -1459,6 +1459,11 @@ private fun BibleNavHost(
                         launchSingleTop = true
                     }
                 },
+                onOpenRedBall = {
+                    navController.navigate("kids_redball") {
+                        launchSingleTop = true
+                    }
+                },
             )
         }
         composable("kids_adameve") {
@@ -1469,6 +1474,9 @@ private fun BibleNavHost(
         }
         composable("kids_dino") {
             KidsDinoGameScreen(onBack = { navController.navigateUp() })
+        }
+        composable("kids_redball") {
+            KidsRedBallGameScreen(onBack = { navController.navigateUp() })
         }
         composable("kids_brainring") {
             KidsBrainRingScreen(onBack = { navController.navigateUp() })

@@ -132,6 +132,28 @@ internal fun GoArt(modifier: Modifier = Modifier) {
 }
 
 @Composable
+internal fun RedBallArt(modifier: Modifier = Modifier) {
+    Canvas(modifier) {
+        squareArea { l, t, s ->
+            drawRoundRect(
+                Brush.verticalGradient(listOf(Color(0xFF7DD3FC), Color(0xFFD9F99D))),
+                Offset(l, t),
+                Size(s, s),
+                CornerRadius(s * 0.14f),
+            )
+            val ground = t + s * 0.78f
+            drawRoundRect(Color(0xFF16A34A), Offset(l + s * 0.08f, ground), Size(s * 0.84f, s * 0.08f), CornerRadius(s * 0.03f))
+            drawRoundRect(Color(0xFFB45309), Offset(l + s * 0.46f, ground - s * 0.16f), Size(s * 0.16f, s * 0.16f), CornerRadius(s * 0.02f))
+            drawCircle(
+                Brush.radialGradient(listOf(Color(0xFFFECACA), Color(0xFFDC2626)), center = Offset(l + s * 0.26f, ground - s * 0.16f), radius = s * 0.2f),
+                s * 0.11f,
+                Offset(l + s * 0.28f, ground - s * 0.11f),
+            )
+        }
+    }
+}
+
+@Composable
 internal fun DinoRunnerArt(modifier: Modifier = Modifier) {
     Canvas(modifier) {
         squareArea { l, t, s ->

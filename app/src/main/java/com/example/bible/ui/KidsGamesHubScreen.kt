@@ -66,6 +66,7 @@ fun KidsGamesHubScreen(
     onOpenDino: () -> Unit = {},
     onOpenMoses: () -> Unit = {},
     onOpenAdamEve: () -> Unit = {},
+    onOpenRedBall: () -> Unit = {},
 ) {
     val context = LocalContext.current
     val repo = remember { AzbukaProgressRepository(context.applicationContext) }
@@ -85,6 +86,10 @@ fun KidsGamesHubScreen(
         KidsGameTile(
             KidsGames.DINO, "Динозаврик", "🦖", "Прыгай через кактусы и птиц, как в браузере!",
             kidsGradient(5), "забегов", open = onOpenDino,
+        ),
+        KidsGameTile(
+            KidsGames.RED_BALL, "Красный мяч", "🔴", "Кати мяч по горке: толкай ящик, прыгай с пружины и открой дверь",
+            kidsGradient(6), "уровней", open = onOpenRedBall,
         ),
         KidsGameTile(
             KidsGames.BRAIN_RING, "Брейн-ринг", "⏱️", "1000 вопросов из Библии. Новые запоминаются",
@@ -167,6 +172,7 @@ fun KidsGamesHubScreen(
                             KidsGames.ADAM_EVE -> AdamEveGardenArt(Modifier.fillMaxSize())
                             KidsGames.MOSES -> MosesAdventureArt(Modifier.fillMaxSize())
                             KidsGames.DINO -> DinoRunnerArt(Modifier.fillMaxSize())
+                            KidsGames.RED_BALL -> RedBallArt(Modifier.fillMaxSize())
                             KidsGames.TIC_TAC_TOE -> TicTacToeArt(Modifier.fillMaxSize())
                             KidsGames.CHECKERS -> CheckersArt(Modifier.fillMaxSize())
                             KidsGames.GO -> GoArt(Modifier.fillMaxSize())
