@@ -1126,8 +1126,8 @@ fun KidsMosesGameScreen(onBack: () -> Unit) {
         }
     }
 
-    KidsGameMusic(KidsMusicTrack.FAITH)
-    KidsCelebrateWinEffect(gameKey = KidsGames.MOSES, round = winRound, points = 30)
+    KidsGameMusic(KidsMusicTrack.GAMES)
+    KidsGameWinReward(KidsGames.MOSES, won = winRound > 0, points = 30, round = winRound)
 
     Scaffold(
         modifier = Modifier.fillMaxSize(),
