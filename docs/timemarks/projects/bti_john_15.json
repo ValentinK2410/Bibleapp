@@ -1,0 +1,119 @@
+{
+  "id": "gh_bti_john_15",
+  "translationCode": "BTI",
+  "bookId": "john",
+  "chapter": 15,
+  "title": "От Иоанна 15 · Кулаковых",
+  "narratorId": "bti",
+  "audioFileName": "43_15.mp3",
+  "cues": [
+    {
+      "timeMs": 16615,
+      "verseStart": 1
+    },
+    {
+      "timeMs": 33230,
+      "verseStart": 2
+    },
+    {
+      "timeMs": 49845,
+      "verseStart": 3
+    },
+    {
+      "timeMs": 66460,
+      "verseStart": 4
+    },
+    {
+      "timeMs": 71590,
+      "verseStart": 5
+    },
+    {
+      "timeMs": 76720,
+      "verseStart": 6
+    },
+    {
+      "timeMs": 257120,
+      "verseStart": 7
+    },
+    {
+      "timeMs": 263240,
+      "verseStart": 8
+    },
+    {
+      "timeMs": 269360,
+      "verseStart": 9
+    },
+    {
+      "timeMs": 275480,
+      "verseStart": 10
+    },
+    {
+      "timeMs": 281600,
+      "verseStart": 11
+    },
+    {
+      "timeMs": 287720,
+      "verseStart": 12
+    },
+    {
+      "timeMs": 293840,
+      "verseStart": 13
+    },
+    {
+      "timeMs": 299960,
+      "verseStart": 14
+    },
+    {
+      "timeMs": 306080,
+      "verseStart": 15
+    },
+    {
+      "timeMs": 312200,
+      "verseStart": 16
+    },
+    {
+      "timeMs": 318320,
+      "verseStart": 17
+    },
+    {
+      "timeMs": 319576,
+      "verseStart": 18
+    },
+    {
+      "timeMs": 320831,
+      "verseStart": 19
+    },
+    {
+      "timeMs": 322087,
+      "verseStart": 20
+    },
+    {
+      "timeMs": 323342,
+      "verseStart": 21
+    },
+    {
+      "timeMs": 324598,
+      "verseStart": 22
+    },
+    {
+      "timeMs": 325853,
+      "verseStart": 23
+    },
+    {
+      "timeMs": 327109,
+      "verseStart": 24
+    },
+    {
+      "timeMs": 328364,
+      "verseStart": 25
+    },
+    {
+      "timeMs": 329620,
+      "verseStart": 26
+    },
+    {
+      "timeMs": 343660,
+      "verseStart": 27
+    }
+  ]
+}

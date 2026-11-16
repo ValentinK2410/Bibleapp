@@ -1,0 +1,175 @@
+{
+  "id": "gh_syn_john_9",
+  "translationCode": "SYN",
+  "bookId": "john",
+  "chapter": 9,
+  "title": "От Иоанна 9 · Синодальный · Бондаренко",
+  "narratorId": "bondarenko",
+  "audioFileName": "43_09.mp3",
+  "cues": [
+    {
+      "timeMs": 4120,
+      "verseStart": 1
+    },
+    {
+      "timeMs": 10940,
+      "verseStart": 2
+    },
+    {
+      "timeMs": 22140,
+      "verseStart": 3
+    },
+    {
+      "timeMs": 34170,
+      "verseStart": 4
+    },
+    {
+      "timeMs": 45560,
+      "verseStart": 5
+    },
+    {
+      "timeMs": 50800,
+      "verseStart": 6
+    },
+    {
+      "timeMs": 61980,
+      "verseStart": 7
+    },
+    {
+      "timeMs": 76380,
+      "verseStart": 8
+    },
+    {
+      "timeMs": 88147,
+      "verseStart": 9
+    },
+    {
+      "timeMs": 99913,
+      "verseStart": 10
+    },
+    {
+      "timeMs": 111680,
+      "verseStart": 11
+    },
+    {
+      "timeMs": 121680,
+      "verseStart": 12
+    },
+    {
+      "timeMs": 131680,
+      "verseStart": 13
+    },
+    {
+      "timeMs": 141680,
+      "verseStart": 14
+    },
+    {
+      "timeMs": 143980,
+      "verseStart": 15
+    },
+    {
+      "timeMs": 171680,
+      "verseStart": 16
+    },
+    {
+      "timeMs": 182260,
+      "verseStart": 17
+    },
+    {
+      "timeMs": 195660,
+      "verseStart": 18
+    },
+    {
+      "timeMs": 203800,
+      "verseStart": 19
+    },
+    {
+      "timeMs": 216740,
+      "verseStart": 20
+    },
+    {
+      "timeMs": 229680,
+      "verseStart": 21
+    },
+    {
+      "timeMs": 234700,
+      "verseStart": 22
+    },
+    {
+      "timeMs": 249480,
+      "verseStart": 23
+    },
+    {
+      "timeMs": 257600,
+      "verseStart": 24
+    },
+    {
+      "timeMs": 269000,
+      "verseStart": 25
+    },
+    {
+      "timeMs": 279300,
+      "verseStart": 26
+    },
+    {
+      "timeMs": 287420,
+      "verseStart": 27
+    },
+    {
+      "timeMs": 301160,
+      "verseStart": 28
+    },
+    {
+      "timeMs": 308840,
+      "verseStart": 29
+    },
+    {
+      "timeMs": 317380,
+      "verseStart": 30
+    },
+    {
+      "timeMs": 329080,
+      "verseStart": 31
+    },
+    {
+      "timeMs": 337620,
+      "verseStart": 32
+    },
+    {
+      "timeMs": 342460,
+      "verseStart": 33
+    },
+    {
+      "timeMs": 348600,
+      "verseStart": 34
+    },
+    {
+      "timeMs": 359900,
+      "verseStart": 35
+    },
+    {
+      "timeMs": 370000,
+      "verseStart": 36
+    },
+    {
+      "timeMs": 377800,
+      "verseStart": 37
+    },
+    {
+      "timeMs": 385080,
+      "verseStart": 38
+    },
+    {
+      "timeMs": 393580,
+      "verseStart": 39
+    },
+    {
+      "timeMs": 404560,
+      "verseStart": 40
+    },
+    {
+      "timeMs": 415580,
+      "verseStart": 41
+    }
+  ]
+}

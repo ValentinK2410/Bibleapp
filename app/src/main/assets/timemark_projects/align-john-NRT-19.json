@@ -1,0 +1,221 @@
+{
+  "id": "align-john-NRT-19",
+  "translationCode": "NRT",
+  "bookId": "john",
+  "chapter": 19,
+  "title": "От Иоанна 19 · Новый русский",
+  "audioFilePath": "/data/user/0/com.example.bible.sqlite/files/bible_audio/new-russian/43_19.mp3",
+  "updatedAt": 1763308800000,
+  "cues": [
+    {
+      "timeMs": 7550,
+      "verseStart": 1,
+      "attachments": []
+    },
+    {
+      "timeMs": 15100,
+      "verseStart": 2,
+      "attachments": []
+    },
+    {
+      "timeMs": 22650,
+      "verseStart": 3,
+      "attachments": []
+    },
+    {
+      "timeMs": 30200,
+      "verseStart": 4,
+      "attachments": []
+    },
+    {
+      "timeMs": 32700,
+      "verseStart": 5,
+      "attachments": []
+    },
+    {
+      "timeMs": 41620,
+      "verseStart": 6,
+      "attachments": []
+    },
+    {
+      "timeMs": 55280,
+      "verseStart": 7,
+      "attachments": []
+    },
+    {
+      "timeMs": 62965,
+      "verseStart": 8,
+      "attachments": []
+    },
+    {
+      "timeMs": 70650,
+      "verseStart": 9,
+      "attachments": []
+    },
+    {
+      "timeMs": 78335,
+      "verseStart": 10,
+      "attachments": []
+    },
+    {
+      "timeMs": 86020,
+      "verseStart": 11,
+      "attachments": []
+    },
+    {
+      "timeMs": 95360,
+      "verseStart": 12,
+      "attachments": []
+    },
+    {
+      "timeMs": 111720,
+      "verseStart": 13,
+      "attachments": []
+    },
+    {
+      "timeMs": 122780,
+      "verseStart": 14,
+      "attachments": []
+    },
+    {
+      "timeMs": 130940,
+      "verseStart": 15,
+      "attachments": []
+    },
+    {
+      "timeMs": 145680,
+      "verseStart": 16,
+      "attachments": []
+    },
+    {
+      "timeMs": 152560,
+      "verseStart": 17,
+      "attachments": []
+    },
+    {
+      "timeMs": 164600,
+      "verseStart": 18,
+      "attachments": []
+    },
+    {
+      "timeMs": 172320,
+      "verseStart": 19,
+      "attachments": []
+    },
+    {
+      "timeMs": 204170,
+      "verseStart": 20,
+      "attachments": []
+    },
+    {
+      "timeMs": 236020,
+      "verseStart": 21,
+      "attachments": []
+    },
+    {
+      "timeMs": 236330,
+      "verseStart": 22,
+      "attachments": []
+    },
+    {
+      "timeMs": 236640,
+      "verseStart": 23,
+      "attachments": []
+    },
+    {
+      "timeMs": 236950,
+      "verseStart": 24,
+      "attachments": []
+    },
+    {
+      "timeMs": 241925,
+      "verseStart": 25,
+      "attachments": []
+    },
+    {
+      "timeMs": 246900,
+      "verseStart": 26,
+      "attachments": []
+    },
+    {
+      "timeMs": 266540,
+      "verseStart": 27,
+      "attachments": []
+    },
+    {
+      "timeMs": 286180,
+      "verseStart": 28,
+      "attachments": []
+    },
+    {
+      "timeMs": 287140,
+      "verseStart": 29,
+      "attachments": []
+    },
+    {
+      "timeMs": 288840,
+      "verseStart": 30,
+      "attachments": []
+    },
+    {
+      "timeMs": 298500,
+      "verseStart": 31,
+      "attachments": []
+    },
+    {
+      "timeMs": 314960,
+      "verseStart": 32,
+      "attachments": []
+    },
+    {
+      "timeMs": 323080,
+      "verseStart": 33,
+      "attachments": []
+    },
+    {
+      "timeMs": 330020,
+      "verseStart": 34,
+      "attachments": []
+    },
+    {
+      "timeMs": 338660,
+      "verseStart": 35,
+      "attachments": []
+    },
+    {
+      "timeMs": 349460,
+      "verseStart": 36,
+      "attachments": []
+    },
+    {
+      "timeMs": 357880,
+      "verseStart": 37,
+      "attachments": []
+    },
+    {
+      "timeMs": 368520,
+      "verseStart": 38,
+      "attachments": []
+    },
+    {
+      "timeMs": 385800,
+      "verseStart": 39,
+      "attachments": []
+    },
+    {
+      "timeMs": 403080,
+      "verseStart": 40,
+      "attachments": []
+    },
+    {
+      "timeMs": 406260,
+      "verseStart": 41,
+      "attachments": []
+    },
+    {
+      "timeMs": 413540,
+      "verseStart": 42,
+      "attachments": []
+    }
+  ]
+}

@@ -1,0 +1,295 @@
+{
+  "id": "gh_syn_john_6",
+  "translationCode": "SYN",
+  "bookId": "john",
+  "chapter": 6,
+  "title": "От Иоанна 6 · Синодальный · Бондаренко",
+  "narratorId": "bondarenko",
+  "audioFileName": "43_06.mp3",
+  "cues": [
+    {
+      "timeMs": 3840,
+      "verseStart": 1
+    },
+    {
+      "timeMs": 24900,
+      "verseStart": 2
+    },
+    {
+      "timeMs": 25600,
+      "verseStart": 3
+    },
+    {
+      "timeMs": 32680,
+      "verseStart": 4
+    },
+    {
+      "timeMs": 36880,
+      "verseStart": 5
+    },
+    {
+      "timeMs": 49420,
+      "verseStart": 6
+    },
+    {
+      "timeMs": 57300,
+      "verseStart": 7
+    },
+    {
+      "timeMs": 67290,
+      "verseStart": 8
+    },
+    {
+      "timeMs": 77280,
+      "verseStart": 9
+    },
+    {
+      "timeMs": 84830,
+      "verseStart": 10
+    },
+    {
+      "timeMs": 138670,
+      "verseStart": 11
+    },
+    {
+      "timeMs": 139490,
+      "verseStart": 12
+    },
+    {
+      "timeMs": 140310,
+      "verseStart": 13
+    },
+    {
+      "timeMs": 141130,
+      "verseStart": 14
+    },
+    {
+      "timeMs": 149870,
+      "verseStart": 15
+    },
+    {
+      "timeMs": 160295,
+      "verseStart": 16
+    },
+    {
+      "timeMs": 170720,
+      "verseStart": 17
+    },
+    {
+      "timeMs": 181145,
+      "verseStart": 18
+    },
+    {
+      "timeMs": 191570,
+      "verseStart": 19
+    },
+    {
+      "timeMs": 196210,
+      "verseStart": 20
+    },
+    {
+      "timeMs": 204670,
+      "verseStart": 21
+    },
+    {
+      "timeMs": 214410,
+      "verseStart": 22
+    },
+    {
+      "timeMs": 234010,
+      "verseStart": 23
+    },
+    {
+      "timeMs": 245270,
+      "verseStart": 24
+    },
+    {
+      "timeMs": 254750,
+      "verseStart": 25
+    },
+    {
+      "timeMs": 264690,
+      "verseStart": 26
+    },
+    {
+      "timeMs": 284170,
+      "verseStart": 27
+    },
+    {
+      "timeMs": 297930,
+      "verseStart": 28
+    },
+    {
+      "timeMs": 304190,
+      "verseStart": 29
+    },
+    {
+      "timeMs": 317230,
+      "verseStart": 30
+    },
+    {
+      "timeMs": 327470,
+      "verseStart": 31
+    },
+    {
+      "timeMs": 334450,
+      "verseStart": 32
+    },
+    {
+      "timeMs": 349870,
+      "verseStart": 33
+    },
+    {
+      "timeMs": 357070,
+      "verseStart": 34
+    },
+    {
+      "timeMs": 367590,
+      "verseStart": 35
+    },
+    {
+      "timeMs": 378370,
+      "verseStart": 36
+    },
+    {
+      "timeMs": 389150,
+      "verseStart": 37
+    },
+    {
+      "timeMs": 399930,
+      "verseStart": 38
+    },
+    {
+      "timeMs": 405290,
+      "verseStart": 39
+    },
+    {
+      "timeMs": 417830,
+      "verseStart": 40
+    },
+    {
+      "timeMs": 434870,
+      "verseStart": 41
+    },
+    {
+      "timeMs": 451810,
+      "verseStart": 42
+    },
+    {
+      "timeMs": 462197,
+      "verseStart": 43
+    },
+    {
+      "timeMs": 472583,
+      "verseStart": 44
+    },
+    {
+      "timeMs": 482970,
+      "verseStart": 45
+    },
+    {
+      "timeMs": 487290,
+      "verseStart": 46
+    },
+    {
+      "timeMs": 493420,
+      "verseStart": 47
+    },
+    {
+      "timeMs": 499550,
+      "verseStart": 48
+    },
+    {
+      "timeMs": 505680,
+      "verseStart": 49
+    },
+    {
+      "timeMs": 511810,
+      "verseStart": 50
+    },
+    {
+      "timeMs": 516910,
+      "verseStart": 51
+    },
+    {
+      "timeMs": 533750,
+      "verseStart": 52
+    },
+    {
+      "timeMs": 543070,
+      "verseStart": 53
+    },
+    {
+      "timeMs": 567510,
+      "verseStart": 54
+    },
+    {
+      "timeMs": 570750,
+      "verseStart": 55
+    },
+    {
+      "timeMs": 582243,
+      "verseStart": 56
+    },
+    {
+      "timeMs": 593737,
+      "verseStart": 57
+    },
+    {
+      "timeMs": 605230,
+      "verseStart": 58
+    },
+    {
+      "timeMs": 611360,
+      "verseStart": 59
+    },
+    {
+      "timeMs": 617490,
+      "verseStart": 60
+    },
+    {
+      "timeMs": 629070,
+      "verseStart": 61
+    },
+    {
+      "timeMs": 640550,
+      "verseStart": 62
+    },
+    {
+      "timeMs": 649150,
+      "verseStart": 63
+    },
+    {
+      "timeMs": 659970,
+      "verseStart": 64
+    },
+    {
+      "timeMs": 673130,
+      "verseStart": 65
+    },
+    {
+      "timeMs": 687350,
+      "verseStart": 66
+    },
+    {
+      "timeMs": 696110,
+      "verseStart": 67
+    },
+    {
+      "timeMs": 703470,
+      "verseStart": 68
+    },
+    {
+      "timeMs": 714670,
+      "verseStart": 69
+    },
+    {
+      "timeMs": 723010,
+      "verseStart": 70
+    },
+    {
+      "timeMs": 733650,
+      "verseStart": 71
+    }
+  ]
+}

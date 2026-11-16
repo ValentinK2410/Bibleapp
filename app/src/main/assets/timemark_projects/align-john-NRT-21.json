@@ -1,0 +1,136 @@
+{
+  "id": "align-john-NRT-21",
+  "translationCode": "NRT",
+  "bookId": "john",
+  "chapter": 21,
+  "title": "От Иоанна 21 · Новый русский",
+  "audioFilePath": "/data/user/0/com.example.bible.sqlite/files/bible_audio/new-russian/43_21.mp3",
+  "updatedAt": 1763308800000,
+  "cues": [
+    {
+      "timeMs": 28300,
+      "verseStart": 1,
+      "attachments": []
+    },
+    {
+      "timeMs": 56600,
+      "verseStart": 2,
+      "attachments": []
+    },
+    {
+      "timeMs": 57560,
+      "verseStart": 3,
+      "attachments": []
+    },
+    {
+      "timeMs": 68567,
+      "verseStart": 4,
+      "attachments": []
+    },
+    {
+      "timeMs": 79573,
+      "verseStart": 5,
+      "attachments": []
+    },
+    {
+      "timeMs": 90580,
+      "verseStart": 6,
+      "attachments": []
+    },
+    {
+      "timeMs": 111680,
+      "verseStart": 7,
+      "attachments": []
+    },
+    {
+      "timeMs": 176380,
+      "verseStart": 8,
+      "attachments": []
+    },
+    {
+      "timeMs": 241080,
+      "verseStart": 9,
+      "attachments": []
+    },
+    {
+      "timeMs": 266000,
+      "verseStart": 10,
+      "attachments": []
+    },
+    {
+      "timeMs": 267833,
+      "verseStart": 11,
+      "attachments": []
+    },
+    {
+      "timeMs": 269667,
+      "verseStart": 12,
+      "attachments": []
+    },
+    {
+      "timeMs": 271500,
+      "verseStart": 13,
+      "attachments": []
+    },
+    {
+      "timeMs": 273333,
+      "verseStart": 14,
+      "attachments": []
+    },
+    {
+      "timeMs": 275167,
+      "verseStart": 15,
+      "attachments": []
+    },
+    {
+      "timeMs": 277000,
+      "verseStart": 16,
+      "attachments": []
+    },
+    {
+      "timeMs": 278833,
+      "verseStart": 17,
+      "attachments": []
+    },
+    {
+      "timeMs": 280667,
+      "verseStart": 18,
+      "attachments": []
+    },
+    {
+      "timeMs": 282500,
+      "verseStart": 19,
+      "attachments": []
+    },
+    {
+      "timeMs": 284333,
+      "verseStart": 20,
+      "attachments": []
+    },
+    {
+      "timeMs": 286167,
+      "verseStart": 21,
+      "attachments": []
+    },
+    {
+      "timeMs": 288000,
+      "verseStart": 22,
+      "attachments": []
+    },
+    {
+      "timeMs": 290625,
+      "verseStart": 23,
+      "attachments": []
+    },
+    {
+      "timeMs": 293251,
+      "verseStart": 24,
+      "attachments": []
+    },
+    {
+      "timeMs": 295876,
+      "verseStart": 25,
+      "attachments": []
+    }
+  ]
+}
