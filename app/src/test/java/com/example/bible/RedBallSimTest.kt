@@ -37,6 +37,58 @@ class RedBallSimTest {
     }
 
     @Test
+    fun jumpLiftsTheBallAndLandsBack() {
+        val sim = RedBallSim()
+        repeat(90) { sim.step(1f / 60f, 0f) }
+        val restY = sim.ballY
+        sim.jumpHeld = true
+        sim.jump()
+        var top = restY
+        repeat(30) {
+            sim.step(1f / 60f, 0f)
+            top = minOf(top, sim.ballY)
+        }
+        sim.jumpHeld = false
+        assertTrue("прыжок слишком низкий: ${restY - top}", restY - top > 100f)
+        repeat(90) { sim.step(1f / 60f, 0f) }
+        assertFalse(sim.dead)
+        assertTrue("мяч не приземлился: y=${sim.ballY}", kotlin.math.abs(sim.ballY - restY) < 4f)
+    }
+
+    @Test
+    fun shortTapGivesALowerJump() {
+        fun peak(hold: Boolean): Float {
+            val sim = RedBallSim()
+            repeat(90) { sim.step(1f / 60f, 0f) }
+            val restY = sim.ballY
+            sim.jumpHeld = true
+            sim.jump()
+            sim.step(1f / 60f, 0f)
+            sim.jumpHeld = hold
+            var top = restY
+            repeat(40) {
+                sim.step(1f / 60f, 0f)
+                top = minOf(top, sim.ballY)
+            }
+            return restY - top
+        }
+        assertTrue(peak(hold = false) < peak(hold = true) - 40f)
+    }
+
+    @Test
+    fun noJumpInMidAir() {
+        val sim = RedBallSim()
+        repeat(90) { sim.step(1f / 60f, 0f) }
+        sim.jumpHeld = true
+        sim.jump()
+        repeat(12) { sim.step(1f / 60f, 0f) }
+        val vyBefore = sim.ballVy
+        sim.jump()
+        sim.step(1f / 60f, 0f)
+        assertTrue("второй прыжок в воздухе", sim.ballVy > vyBefore)
+    }
+
+    @Test
     fun springThrowsTheBallUpward() {
         val sim = RedBallSim()
         sim.ballX = 1700f

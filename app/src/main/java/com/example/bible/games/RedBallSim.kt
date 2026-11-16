@@ -31,6 +31,21 @@ class RedBallSim(val scene: RedBallScene = RedBallScene.builtin()) {
     private var pendingLose = false
     private var pendingSpring = false
     private var pendingWin = false
+    private var pendingJump = false
+
+    /** Кнопка «Прыжок» сейчас зажата: короткое касание даёт низкий прыжок, удержание — полный. */
+    var jumpHeld = false
+    private var jumpBuffer = 0f
+    private var coyote = 0f
+    private var rising = false
+
+    /** Нажали «Прыжок». Сработает, если мяч стоит на опоре или только что с неё сошёл. */
+    fun jump() {
+        if (won || dead) return
+        jumpBuffer = JUMP_BUFFER
+    }
+
+    fun consumeJump(): Boolean = pendingJump.also { pendingJump = false }
 
     fun reset() {
         ballX = scene.startX
@@ -47,6 +62,11 @@ class RedBallSim(val scene: RedBallScene = RedBallScene.builtin()) {
         pendingLose = false
         pendingSpring = false
         pendingWin = false
+        pendingJump = false
+        jumpHeld = false
+        jumpBuffer = 0f
+        coyote = 0f
+        rising = false
     }
 
     fun consumeWin(): Boolean = pendingWin.also { pendingWin = false }
@@ -71,6 +91,27 @@ class RedBallSim(val scene: RedBallScene = RedBallScene.builtin()) {
     }
 
     private fun substep(dt: Float, move: Float) {
+        coyote = if (wasGrounded) COYOTE_TIME else (coyote - dt).coerceAtLeast(0f)
+        if (jumpBuffer > 0f) {
+            if (coyote > 0f) {
+                ballVy = minOf(ballVy, JUMP_VY)
+                jumpBuffer = 0f
+                coyote = 0f
+                wasGrounded = false
+                rising = true
+                pendingJump = true
+            } else {
+                jumpBuffer = (jumpBuffer - dt).coerceAtLeast(0f)
+            }
+        }
+        if (rising) {
+            if (ballVy >= 0f) {
+                rising = false
+            } else if (!jumpHeld && ballVy < JUMP_CUT_VY) {
+                ballVy = JUMP_CUT_VY
+                rising = false
+            }
+        }
         ballVy += GRAVITY * dt
         for (crate in crates) crate.vy += GRAVITY * dt
         val accel = if (wasGrounded) RUN_ACCEL else AIR_ACCEL
@@ -138,6 +179,7 @@ class RedBallSim(val scene: RedBallScene = RedBallScene.builtin()) {
         }
         if (any && ballVy > -80f) {
             ballVy = SPRING_VY
+            rising = false
             if (ballVx > 0f) ballVx = kotlin.math.max(ballVx, 220f)
             if (armedLaunch) pendingSpring = true
         }
@@ -416,6 +458,14 @@ class RedBallSim(val scene: RedBallScene = RedBallScene.builtin()) {
         private const val AIR_DRAG = 0.15f
         private const val CRATE_DRAG = 2.2f
         private const val SPRING_VY = -1380f
+        /** Полный прыжок поднимает мяч примерно на 3,5 клетки редактора. */
+        private const val JUMP_VY = -820f
+        /** Отпустили кнопку на взлёте — прыжок обрывается ниже. */
+        private const val JUMP_CUT_VY = -380f
+        /** Нажатие чуть раньше приземления не теряется. */
+        private const val JUMP_BUFFER = 0.12f
+        /** Можно прыгнуть ещё мгновение после схода с края. */
+        private const val COYOTE_TIME = 0.09f
     }
 }
 

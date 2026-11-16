@@ -454,6 +454,7 @@ private fun RedBallPlay(scene: RedBallScene, testMode: Boolean, onExit: () -> Un
         if (sim.consumeLose()) KidsGameAudio.play(KidsSfx.LOSE)
         if (sim.consumeSpring()) KidsGameAudio.play(KidsSfx.PLACE)
         if (sim.consumeWin()) KidsGameAudio.play(KidsSfx.WIN)
+        sim.consumeJump()
     }
     if (!testMode) {
         KidsGameWinReward(KidsGames.RED_BALL, sim.won, points = 20, round = if (sim.won) scene.id.hashCode() else 0)
@@ -559,8 +560,35 @@ private fun RedBallPlay(scene: RedBallScene, testMode: Boolean, onExit: () -> Un
             verticalAlignment = Alignment.CenterVertically,
         ) {
             HoldPad("◀", onHold = { held[0] = if (it) 1 else 0 })
-            Text("держи", fontWeight = FontWeight.Black, color = Color(0xFF7C2D12), fontSize = 16.sp)
+            JumpPad(onHold = { down ->
+                sim.jumpHeld = down
+                if (down) sim.jump()
+            })
             HoldPad("▶", onHold = { held[1] = if (it) 1 else 0 })
+        }
+    }
+}
+
+@Composable
+private fun JumpPad(onHold: (Boolean) -> Unit) {
+    Box(
+        Modifier
+            .size(width = 120.dp, height = 76.dp)
+            .clip(RoundedCornerShape(999.dp))
+            .background(Color(0xFFDC2626).copy(alpha = 0.92f))
+            .pointerInput(onHold) {
+                awaitEachGesture {
+                    awaitFirstDown()
+                    onHold(true)
+                    waitForUpOrCancellation()
+                    onHold(false)
+                }
+            },
+        contentAlignment = Alignment.Center,
+    ) {
+        Column(horizontalAlignment = Alignment.CenterHorizontally) {
+            Text("▲", fontSize = 22.sp, fontWeight = FontWeight.Black, color = Color.White)
+            Text("Прыжок", fontSize = 16.sp, fontWeight = FontWeight.Black, color = Color.White)
         }
     }
 }
