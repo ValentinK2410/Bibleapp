@@ -1,0 +1,146 @@
+{
+  "id": "align-john-RBO-15",
+  "translationCode": "RBO",
+  "bookId": "john",
+  "chapter": 15,
+  "title": "От Иоанна 15 · РБО",
+  "audioFilePath": "/data/user/0/com.example.bible.sqlite/files/bible_audio/rbo/43_15.mp3",
+  "updatedAt": 1763308800000,
+  "cues": [
+    {
+      "timeMs": 5400,
+      "verseStart": 1,
+      "attachments": []
+    },
+    {
+      "timeMs": 10180,
+      "verseStart": 2,
+      "attachments": []
+    },
+    {
+      "timeMs": 20400,
+      "verseStart": 3,
+      "attachments": []
+    },
+    {
+      "timeMs": 25820,
+      "verseStart": 4,
+      "attachments": []
+    },
+    {
+      "timeMs": 38400,
+      "verseStart": 5,
+      "attachments": []
+    },
+    {
+      "timeMs": 50980,
+      "verseStart": 6,
+      "attachments": []
+    },
+    {
+      "timeMs": 61520,
+      "verseStart": 7,
+      "attachments": []
+    },
+    {
+      "timeMs": 69980,
+      "verseStart": 8,
+      "attachments": []
+    },
+    {
+      "timeMs": 79780,
+      "verseStart": 9,
+      "attachments": []
+    },
+    {
+      "timeMs": 86360,
+      "verseStart": 10,
+      "attachments": []
+    },
+    {
+      "timeMs": 99100,
+      "verseStart": 11,
+      "attachments": []
+    },
+    {
+      "timeMs": 105640,
+      "verseStart": 12,
+      "attachments": []
+    },
+    {
+      "timeMs": 112440,
+      "verseStart": 13,
+      "attachments": []
+    },
+    {
+      "timeMs": 117280,
+      "verseStart": 14,
+      "attachments": []
+    },
+    {
+      "timeMs": 122840,
+      "verseStart": 15,
+      "attachments": []
+    },
+    {
+      "timeMs": 135180,
+      "verseStart": 16,
+      "attachments": []
+    },
+    {
+      "timeMs": 150500,
+      "verseStart": 17,
+      "attachments": []
+    },
+    {
+      "timeMs": 155780,
+      "verseStart": 18,
+      "attachments": []
+    },
+    {
+      "timeMs": 161740,
+      "verseStart": 19,
+      "attachments": []
+    },
+    {
+      "timeMs": 174640,
+      "verseStart": 20,
+      "attachments": []
+    },
+    {
+      "timeMs": 187540,
+      "verseStart": 21,
+      "attachments": []
+    },
+    {
+      "timeMs": 192780,
+      "verseStart": 22,
+      "attachments": []
+    },
+    {
+      "timeMs": 201420,
+      "verseStart": 23,
+      "attachments": []
+    },
+    {
+      "timeMs": 205760,
+      "verseStart": 24,
+      "attachments": []
+    },
+    {
+      "timeMs": 222520,
+      "verseStart": 25,
+      "attachments": []
+    },
+    {
+      "timeMs": 231100,
+      "verseStart": 26,
+      "attachments": []
+    },
+    {
+      "timeMs": 239828,
+      "verseStart": 27,
+      "attachments": []
+    }
+  ]
+}

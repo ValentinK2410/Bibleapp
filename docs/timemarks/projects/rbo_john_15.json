@@ -1,0 +1,119 @@
+{
+  "id": "gh_rbo_john_15",
+  "translationCode": "RBO",
+  "bookId": "john",
+  "chapter": 15,
+  "title": "От Иоанна 15 · РБО",
+  "narratorId": "rbo",
+  "audioFileName": "43_15.mp3",
+  "cues": [
+    {
+      "timeMs": 5400,
+      "verseStart": 1
+    },
+    {
+      "timeMs": 10180,
+      "verseStart": 2
+    },
+    {
+      "timeMs": 20400,
+      "verseStart": 3
+    },
+    {
+      "timeMs": 25820,
+      "verseStart": 4
+    },
+    {
+      "timeMs": 38400,
+      "verseStart": 5
+    },
+    {
+      "timeMs": 50980,
+      "verseStart": 6
+    },
+    {
+      "timeMs": 61520,
+      "verseStart": 7
+    },
+    {
+      "timeMs": 69980,
+      "verseStart": 8
+    },
+    {
+      "timeMs": 79780,
+      "verseStart": 9
+    },
+    {
+      "timeMs": 86360,
+      "verseStart": 10
+    },
+    {
+      "timeMs": 99100,
+      "verseStart": 11
+    },
+    {
+      "timeMs": 105640,
+      "verseStart": 12
+    },
+    {
+      "timeMs": 112440,
+      "verseStart": 13
+    },
+    {
+      "timeMs": 117280,
+      "verseStart": 14
+    },
+    {
+      "timeMs": 122840,
+      "verseStart": 15
+    },
+    {
+      "timeMs": 135180,
+      "verseStart": 16
+    },
+    {
+      "timeMs": 150500,
+      "verseStart": 17
+    },
+    {
+      "timeMs": 155780,
+      "verseStart": 18
+    },
+    {
+      "timeMs": 161740,
+      "verseStart": 19
+    },
+    {
+      "timeMs": 174640,
+      "verseStart": 20
+    },
+    {
+      "timeMs": 187540,
+      "verseStart": 21
+    },
+    {
+      "timeMs": 192780,
+      "verseStart": 22
+    },
+    {
+      "timeMs": 201420,
+      "verseStart": 23
+    },
+    {
+      "timeMs": 205760,
+      "verseStart": 24
+    },
+    {
+      "timeMs": 222520,
+      "verseStart": 25
+    },
+    {
+      "timeMs": 231100,
+      "verseStart": 26
+    },
+    {
+      "timeMs": 239828,
+      "verseStart": 27
+    }
+  ]
+}

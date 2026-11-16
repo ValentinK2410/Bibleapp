@@ -1,0 +1,215 @@
+{
+  "id": "gh_bti_john_1",
+  "translationCode": "BTI",
+  "bookId": "john",
+  "chapter": 1,
+  "title": "От Иоанна 1 · Кулаковых",
+  "narratorId": "bti",
+  "audioFileName": "43_01.mp3",
+  "cues": [
+    {
+      "timeMs": 11720,
+      "verseStart": 1
+    },
+    {
+      "timeMs": 26460,
+      "verseStart": 2
+    },
+    {
+      "timeMs": 30360,
+      "verseStart": 3
+    },
+    {
+      "timeMs": 38180,
+      "verseStart": 4
+    },
+    {
+      "timeMs": 48440,
+      "verseStart": 5
+    },
+    {
+      "timeMs": 57320,
+      "verseStart": 6
+    },
+    {
+      "timeMs": 64540,
+      "verseStart": 7
+    },
+    {
+      "timeMs": 74540,
+      "verseStart": 8
+    },
+    {
+      "timeMs": 83580,
+      "verseStart": 9
+    },
+    {
+      "timeMs": 96180,
+      "verseStart": 10
+    },
+    {
+      "timeMs": 105840,
+      "verseStart": 11
+    },
+    {
+      "timeMs": 110940,
+      "verseStart": 12
+    },
+    {
+      "timeMs": 118720,
+      "verseStart": 13
+    },
+    {
+      "timeMs": 132340,
+      "verseStart": 14
+    },
+    {
+      "timeMs": 152520,
+      "verseStart": 15
+    },
+    {
+      "timeMs": 174940,
+      "verseStart": 16
+    },
+    {
+      "timeMs": 182540,
+      "verseStart": 17
+    },
+    {
+      "timeMs": 194220,
+      "verseStart": 18
+    },
+    {
+      "timeMs": 212140,
+      "verseStart": 19
+    },
+    {
+      "timeMs": 225920,
+      "verseStart": 20
+    },
+    {
+      "timeMs": 238700,
+      "verseStart": 21
+    },
+    {
+      "timeMs": 259760,
+      "verseStart": 22
+    },
+    {
+      "timeMs": 271220,
+      "verseStart": 23
+    },
+    {
+      "timeMs": 290240,
+      "verseStart": 24
+    },
+    {
+      "timeMs": 294340,
+      "verseStart": 25
+    },
+    {
+      "timeMs": 303520,
+      "verseStart": 26
+    },
+    {
+      "timeMs": 317960,
+      "verseStart": 27
+    },
+    {
+      "timeMs": 327680,
+      "verseStart": 28
+    },
+    {
+      "timeMs": 338920,
+      "verseStart": 29
+    },
+    {
+      "timeMs": 356120,
+      "verseStart": 30
+    },
+    {
+      "timeMs": 369980,
+      "verseStart": 31
+    },
+    {
+      "timeMs": 382180,
+      "verseStart": 32
+    },
+    {
+      "timeMs": 394120,
+      "verseStart": 33
+    },
+    {
+      "timeMs": 416040,
+      "verseStart": 34
+    },
+    {
+      "timeMs": 426115,
+      "verseStart": 35
+    },
+    {
+      "timeMs": 436190,
+      "verseStart": 36
+    },
+    {
+      "timeMs": 446265,
+      "verseStart": 37
+    },
+    {
+      "timeMs": 456340,
+      "verseStart": 38
+    },
+    {
+      "timeMs": 473840,
+      "verseStart": 39
+    },
+    {
+      "timeMs": 490560,
+      "verseStart": 40
+    },
+    {
+      "timeMs": 502100,
+      "verseStart": 41
+    },
+    {
+      "timeMs": 518380,
+      "verseStart": 42
+    },
+    {
+      "timeMs": 539560,
+      "verseStart": 43
+    },
+    {
+      "timeMs": 551120,
+      "verseStart": 44
+    },
+    {
+      "timeMs": 557440,
+      "verseStart": 45
+    },
+    {
+      "timeMs": 573900,
+      "verseStart": 46
+    },
+    {
+      "timeMs": 587060,
+      "verseStart": 47
+    },
+    {
+      "timeMs": 599460,
+      "verseStart": 48
+    },
+    {
+      "timeMs": 616760,
+      "verseStart": 49
+    },
+    {
+      "timeMs": 625480,
+      "verseStart": 50
+    },
+    {
+      "timeMs": 638000,
+      "verseStart": 51
+    }
+  ]
+}

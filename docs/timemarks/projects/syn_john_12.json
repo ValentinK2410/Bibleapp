@@ -1,0 +1,211 @@
+{
+  "id": "gh_syn_john_12",
+  "translationCode": "SYN",
+  "bookId": "john",
+  "chapter": 12,
+  "title": "От Иоанна 12 · Синодальный · Бондаренко",
+  "narratorId": "bondarenko",
+  "audioFileName": "43_12.mp3",
+  "cues": [
+    {
+      "timeMs": 8190,
+      "verseStart": 1
+    },
+    {
+      "timeMs": 16380,
+      "verseStart": 2
+    },
+    {
+      "timeMs": 29400,
+      "verseStart": 3
+    },
+    {
+      "timeMs": 48120,
+      "verseStart": 4
+    },
+    {
+      "timeMs": 59190,
+      "verseStart": 5
+    },
+    {
+      "timeMs": 67330,
+      "verseStart": 6
+    },
+    {
+      "timeMs": 126910,
+      "verseStart": 7
+    },
+    {
+      "timeMs": 206430,
+      "verseStart": 8
+    },
+    {
+      "timeMs": 486830,
+      "verseStart": 9
+    },
+    {
+      "timeMs": 488183,
+      "verseStart": 10
+    },
+    {
+      "timeMs": 489536,
+      "verseStart": 11
+    },
+    {
+      "timeMs": 490889,
+      "verseStart": 12
+    },
+    {
+      "timeMs": 492241,
+      "verseStart": 13
+    },
+    {
+      "timeMs": 493594,
+      "verseStart": 14
+    },
+    {
+      "timeMs": 494947,
+      "verseStart": 15
+    },
+    {
+      "timeMs": 496300,
+      "verseStart": 16
+    },
+    {
+      "timeMs": 497653,
+      "verseStart": 17
+    },
+    {
+      "timeMs": 499006,
+      "verseStart": 18
+    },
+    {
+      "timeMs": 500359,
+      "verseStart": 19
+    },
+    {
+      "timeMs": 501711,
+      "verseStart": 20
+    },
+    {
+      "timeMs": 503064,
+      "verseStart": 21
+    },
+    {
+      "timeMs": 504417,
+      "verseStart": 22
+    },
+    {
+      "timeMs": 505770,
+      "verseStart": 23
+    },
+    {
+      "timeMs": 506392,
+      "verseStart": 24
+    },
+    {
+      "timeMs": 507014,
+      "verseStart": 25
+    },
+    {
+      "timeMs": 507635,
+      "verseStart": 26
+    },
+    {
+      "timeMs": 508257,
+      "verseStart": 27
+    },
+    {
+      "timeMs": 508879,
+      "verseStart": 28
+    },
+    {
+      "timeMs": 509501,
+      "verseStart": 29
+    },
+    {
+      "timeMs": 510123,
+      "verseStart": 30
+    },
+    {
+      "timeMs": 510745,
+      "verseStart": 31
+    },
+    {
+      "timeMs": 511366,
+      "verseStart": 32
+    },
+    {
+      "timeMs": 511988,
+      "verseStart": 33
+    },
+    {
+      "timeMs": 512610,
+      "verseStart": 34
+    },
+    {
+      "timeMs": 513232,
+      "verseStart": 35
+    },
+    {
+      "timeMs": 513854,
+      "verseStart": 36
+    },
+    {
+      "timeMs": 514475,
+      "verseStart": 37
+    },
+    {
+      "timeMs": 515097,
+      "verseStart": 38
+    },
+    {
+      "timeMs": 515719,
+      "verseStart": 39
+    },
+    {
+      "timeMs": 516341,
+      "verseStart": 40
+    },
+    {
+      "timeMs": 516963,
+      "verseStart": 41
+    },
+    {
+      "timeMs": 517585,
+      "verseStart": 42
+    },
+    {
+      "timeMs": 518206,
+      "verseStart": 43
+    },
+    {
+      "timeMs": 518828,
+      "verseStart": 44
+    },
+    {
+      "timeMs": 519450,
+      "verseStart": 45
+    },
+    {
+      "timeMs": 524030,
+      "verseStart": 46
+    },
+    {
+      "timeMs": 532490,
+      "verseStart": 47
+    },
+    {
+      "timeMs": 544050,
+      "verseStart": 48
+    },
+    {
+      "timeMs": 556430,
+      "verseStart": 49
+    },
+    {
+      "timeMs": 567390,
+      "verseStart": 50
+    }
+  ]
+}

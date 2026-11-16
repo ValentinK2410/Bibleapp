@@ -1,0 +1,111 @@
+{
+  "id": "gh_syn_john_2",
+  "translationCode": "SYN",
+  "bookId": "john",
+  "chapter": 2,
+  "title": "От Иоанна 2 · Синодальный · Бондаренко",
+  "narratorId": "bondarenko",
+  "audioFileName": "43_02.mp3",
+  "cues": [
+    {
+      "timeMs": 3665,
+      "verseStart": 1
+    },
+    {
+      "timeMs": 7330,
+      "verseStart": 2
+    },
+    {
+      "timeMs": 10995,
+      "verseStart": 3
+    },
+    {
+      "timeMs": 14660,
+      "verseStart": 4
+    },
+    {
+      "timeMs": 37280,
+      "verseStart": 5
+    },
+    {
+      "timeMs": 45520,
+      "verseStart": 6
+    },
+    {
+      "timeMs": 56700,
+      "verseStart": 7
+    },
+    {
+      "timeMs": 57420,
+      "verseStart": 8
+    },
+    {
+      "timeMs": 61920,
+      "verseStart": 9
+    },
+    {
+      "timeMs": 66420,
+      "verseStart": 10
+    },
+    {
+      "timeMs": 90060,
+      "verseStart": 11
+    },
+    {
+      "timeMs": 113700,
+      "verseStart": 12
+    },
+    {
+      "timeMs": 137340,
+      "verseStart": 13
+    },
+    {
+      "timeMs": 143940,
+      "verseStart": 14
+    },
+    {
+      "timeMs": 150980,
+      "verseStart": 15
+    },
+    {
+      "timeMs": 163440,
+      "verseStart": 16
+    },
+    {
+      "timeMs": 175734,
+      "verseStart": 17
+    },
+    {
+      "timeMs": 188029,
+      "verseStart": 18
+    },
+    {
+      "timeMs": 200323,
+      "verseStart": 19
+    },
+    {
+      "timeMs": 212617,
+      "verseStart": 20
+    },
+    {
+      "timeMs": 224911,
+      "verseStart": 21
+    },
+    {
+      "timeMs": 237206,
+      "verseStart": 22
+    },
+    {
+      "timeMs": 249500,
+      "verseStart": 23
+    },
+    {
+      "timeMs": 260740,
+      "verseStart": 24
+    },
+    {
+      "timeMs": 267620,
+      "verseStart": 25
+    }
+  ]
+}

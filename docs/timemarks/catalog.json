@@ -1,6 +1,847 @@
 {
   "format": "bible_timemark_catalog",
   "version": 1,
-  "updatedAt": "2026-09-10",
-  "items": []
+  "updatedAt": "2026-11-16",
+  "items": [
+    {
+      "id": "gh_bti_john_1",
+      "translationCode": "BTI",
+      "bookId": "john",
+      "chapter": 1,
+      "title": "От Иоанна 1 · Кулаковых",
+      "cueCount": 51,
+      "narratorId": "bti",
+      "file": "projects/bti_john_1.json"
+    },
+    {
+      "id": "gh_bti_john_10",
+      "translationCode": "BTI",
+      "bookId": "john",
+      "chapter": 10,
+      "title": "От Иоанна 10 · Кулаковых",
+      "cueCount": 42,
+      "narratorId": "bti",
+      "file": "projects/bti_john_10.json"
+    },
+    {
+      "id": "gh_bti_john_11",
+      "translationCode": "BTI",
+      "bookId": "john",
+      "chapter": 11,
+      "title": "От Иоанна 11 · Кулаковых",
+      "cueCount": 57,
+      "narratorId": "bti",
+      "file": "projects/bti_john_11.json"
+    },
+    {
+      "id": "gh_bti_john_12",
+      "translationCode": "BTI",
+      "bookId": "john",
+      "chapter": 12,
+      "title": "От Иоанна 12 · Кулаковых",
+      "cueCount": 50,
+      "narratorId": "bti",
+      "file": "projects/bti_john_12.json"
+    },
+    {
+      "id": "gh_bti_john_13",
+      "translationCode": "BTI",
+      "bookId": "john",
+      "chapter": 13,
+      "title": "От Иоанна 13 · Кулаковых",
+      "cueCount": 38,
+      "narratorId": "bti",
+      "file": "projects/bti_john_13.json"
+    },
+    {
+      "id": "gh_bti_john_14",
+      "translationCode": "BTI",
+      "bookId": "john",
+      "chapter": 14,
+      "title": "От Иоанна 14 · Кулаковых",
+      "cueCount": 31,
+      "narratorId": "bti",
+      "file": "projects/bti_john_14.json"
+    },
+    {
+      "id": "gh_bti_john_15",
+      "translationCode": "BTI",
+      "bookId": "john",
+      "chapter": 15,
+      "title": "От Иоанна 15 · Кулаковых",
+      "cueCount": 27,
+      "narratorId": "bti",
+      "file": "projects/bti_john_15.json"
+    },
+    {
+      "id": "gh_bti_john_16",
+      "translationCode": "BTI",
+      "bookId": "john",
+      "chapter": 16,
+      "title": "От Иоанна 16 · Кулаковых",
+      "cueCount": 33,
+      "narratorId": "bti",
+      "file": "projects/bti_john_16.json"
+    },
+    {
+      "id": "gh_bti_john_17",
+      "translationCode": "BTI",
+      "bookId": "john",
+      "chapter": 17,
+      "title": "От Иоанна 17 · Кулаковых",
+      "cueCount": 26,
+      "narratorId": "bti",
+      "file": "projects/bti_john_17.json"
+    },
+    {
+      "id": "gh_bti_john_18",
+      "translationCode": "BTI",
+      "bookId": "john",
+      "chapter": 18,
+      "title": "От Иоанна 18 · Кулаковых",
+      "cueCount": 40,
+      "narratorId": "bti",
+      "file": "projects/bti_john_18.json"
+    },
+    {
+      "id": "gh_bti_john_19",
+      "translationCode": "BTI",
+      "bookId": "john",
+      "chapter": 19,
+      "title": "От Иоанна 19 · Кулаковых",
+      "cueCount": 42,
+      "narratorId": "bti",
+      "file": "projects/bti_john_19.json"
+    },
+    {
+      "id": "gh_bti_john_2",
+      "translationCode": "BTI",
+      "bookId": "john",
+      "chapter": 2,
+      "title": "От Иоанна 2 · Кулаковых",
+      "cueCount": 25,
+      "narratorId": "bti",
+      "file": "projects/bti_john_2.json"
+    },
+    {
+      "id": "gh_bti_john_20",
+      "translationCode": "BTI",
+      "bookId": "john",
+      "chapter": 20,
+      "title": "От Иоанна 20 · Кулаковых",
+      "cueCount": 31,
+      "narratorId": "bti",
+      "file": "projects/bti_john_20.json"
+    },
+    {
+      "id": "gh_bti_john_21",
+      "translationCode": "BTI",
+      "bookId": "john",
+      "chapter": 21,
+      "title": "От Иоанна 21 · Кулаковых",
+      "cueCount": 25,
+      "narratorId": "bti",
+      "file": "projects/bti_john_21.json"
+    },
+    {
+      "id": "gh_bti_john_3",
+      "translationCode": "BTI",
+      "bookId": "john",
+      "chapter": 3,
+      "title": "От Иоанна 3 · Кулаковых",
+      "cueCount": 36,
+      "narratorId": "bti",
+      "file": "projects/bti_john_3.json"
+    },
+    {
+      "id": "gh_bti_john_4",
+      "translationCode": "BTI",
+      "bookId": "john",
+      "chapter": 4,
+      "title": "От Иоанна 4 · Кулаковых",
+      "cueCount": 53,
+      "narratorId": "bti",
+      "file": "projects/bti_john_4.json"
+    },
+    {
+      "id": "gh_bti_john_5",
+      "translationCode": "BTI",
+      "bookId": "john",
+      "chapter": 5,
+      "title": "От Иоанна 5 · Кулаковых",
+      "cueCount": 47,
+      "narratorId": "bti",
+      "file": "projects/bti_john_5.json"
+    },
+    {
+      "id": "gh_bti_john_6",
+      "translationCode": "BTI",
+      "bookId": "john",
+      "chapter": 6,
+      "title": "От Иоанна 6 · Кулаковых",
+      "cueCount": 71,
+      "narratorId": "bti",
+      "file": "projects/bti_john_6.json"
+    },
+    {
+      "id": "gh_bti_john_7",
+      "translationCode": "BTI",
+      "bookId": "john",
+      "chapter": 7,
+      "title": "От Иоанна 7 · Кулаковых",
+      "cueCount": 53,
+      "narratorId": "bti",
+      "file": "projects/bti_john_7.json"
+    },
+    {
+      "id": "gh_bti_john_8",
+      "translationCode": "BTI",
+      "bookId": "john",
+      "chapter": 8,
+      "title": "От Иоанна 8 · Кулаковых",
+      "cueCount": 59,
+      "narratorId": "bti",
+      "file": "projects/bti_john_8.json"
+    },
+    {
+      "id": "gh_bti_john_9",
+      "translationCode": "BTI",
+      "bookId": "john",
+      "chapter": 9,
+      "title": "От Иоанна 9 · Кулаковых",
+      "cueCount": 41,
+      "narratorId": "bti",
+      "file": "projects/bti_john_9.json"
+    },
+    {
+      "id": "gh_nrt_john_1",
+      "translationCode": "NRT",
+      "bookId": "john",
+      "chapter": 1,
+      "title": "От Иоанна 1 · Новый русский",
+      "cueCount": 51,
+      "narratorId": "new-russian",
+      "file": "projects/nrt_john_1.json"
+    },
+    {
+      "id": "gh_nrt_john_10",
+      "translationCode": "NRT",
+      "bookId": "john",
+      "chapter": 10,
+      "title": "От Иоанна 10 · Новый русский",
+      "cueCount": 42,
+      "narratorId": "new-russian",
+      "file": "projects/nrt_john_10.json"
+    },
+    {
+      "id": "gh_nrt_john_11",
+      "translationCode": "NRT",
+      "bookId": "john",
+      "chapter": 11,
+      "title": "От Иоанна 11 · Новый русский",
+      "cueCount": 57,
+      "narratorId": "new-russian",
+      "file": "projects/nrt_john_11.json"
+    },
+    {
+      "id": "gh_nrt_john_12",
+      "translationCode": "NRT",
+      "bookId": "john",
+      "chapter": 12,
+      "title": "От Иоанна 12 · Новый русский",
+      "cueCount": 50,
+      "narratorId": "new-russian",
+      "file": "projects/nrt_john_12.json"
+    },
+    {
+      "id": "gh_nrt_john_13",
+      "translationCode": "NRT",
+      "bookId": "john",
+      "chapter": 13,
+      "title": "От Иоанна 13 · Новый русский",
+      "cueCount": 38,
+      "narratorId": "new-russian",
+      "file": "projects/nrt_john_13.json"
+    },
+    {
+      "id": "gh_nrt_john_14",
+      "translationCode": "NRT",
+      "bookId": "john",
+      "chapter": 14,
+      "title": "От Иоанна 14 · Новый русский",
+      "cueCount": 31,
+      "narratorId": "new-russian",
+      "file": "projects/nrt_john_14.json"
+    },
+    {
+      "id": "gh_nrt_john_15",
+      "translationCode": "NRT",
+      "bookId": "john",
+      "chapter": 15,
+      "title": "От Иоанна 15 · Новый русский",
+      "cueCount": 27,
+      "narratorId": "new-russian",
+      "file": "projects/nrt_john_15.json"
+    },
+    {
+      "id": "gh_nrt_john_16",
+      "translationCode": "NRT",
+      "bookId": "john",
+      "chapter": 16,
+      "title": "От Иоанна 16 · Новый русский",
+      "cueCount": 33,
+      "narratorId": "new-russian",
+      "file": "projects/nrt_john_16.json"
+    },
+    {
+      "id": "gh_nrt_john_17",
+      "translationCode": "NRT",
+      "bookId": "john",
+      "chapter": 17,
+      "title": "От Иоанна 17 · Новый русский",
+      "cueCount": 26,
+      "narratorId": "new-russian",
+      "file": "projects/nrt_john_17.json"
+    },
+    {
+      "id": "gh_nrt_john_18",
+      "translationCode": "NRT",
+      "bookId": "john",
+      "chapter": 18,
+      "title": "От Иоанна 18 · Новый русский",
+      "cueCount": 40,
+      "narratorId": "new-russian",
+      "file": "projects/nrt_john_18.json"
+    },
+    {
+      "id": "gh_nrt_john_19",
+      "translationCode": "NRT",
+      "bookId": "john",
+      "chapter": 19,
+      "title": "От Иоанна 19 · Новый русский",
+      "cueCount": 42,
+      "narratorId": "new-russian",
+      "file": "projects/nrt_john_19.json"
+    },
+    {
+      "id": "gh_nrt_john_2",
+      "translationCode": "NRT",
+      "bookId": "john",
+      "chapter": 2,
+      "title": "От Иоанна 2 · Новый русский",
+      "cueCount": 25,
+      "narratorId": "new-russian",
+      "file": "projects/nrt_john_2.json"
+    },
+    {
+      "id": "gh_nrt_john_20",
+      "translationCode": "NRT",
+      "bookId": "john",
+      "chapter": 20,
+      "title": "От Иоанна 20 · Новый русский",
+      "cueCount": 31,
+      "narratorId": "new-russian",
+      "file": "projects/nrt_john_20.json"
+    },
+    {
+      "id": "gh_nrt_john_21",
+      "translationCode": "NRT",
+      "bookId": "john",
+      "chapter": 21,
+      "title": "От Иоанна 21 · Новый русский",
+      "cueCount": 25,
+      "narratorId": "new-russian",
+      "file": "projects/nrt_john_21.json"
+    },
+    {
+      "id": "gh_nrt_john_3",
+      "translationCode": "NRT",
+      "bookId": "john",
+      "chapter": 3,
+      "title": "От Иоанна 3 · Новый русский",
+      "cueCount": 36,
+      "narratorId": "new-russian",
+      "file": "projects/nrt_john_3.json"
+    },
+    {
+      "id": "gh_nrt_john_4",
+      "translationCode": "NRT",
+      "bookId": "john",
+      "chapter": 4,
+      "title": "От Иоанна 4 · Новый русский",
+      "cueCount": 54,
+      "narratorId": "new-russian",
+      "file": "projects/nrt_john_4.json"
+    },
+    {
+      "id": "gh_nrt_john_5",
+      "translationCode": "NRT",
+      "bookId": "john",
+      "chapter": 5,
+      "title": "От Иоанна 5 · Новый русский",
+      "cueCount": 47,
+      "narratorId": "new-russian",
+      "file": "projects/nrt_john_5.json"
+    },
+    {
+      "id": "gh_nrt_john_6",
+      "translationCode": "NRT",
+      "bookId": "john",
+      "chapter": 6,
+      "title": "От Иоанна 6 · Новый русский",
+      "cueCount": 71,
+      "narratorId": "new-russian",
+      "file": "projects/nrt_john_6.json"
+    },
+    {
+      "id": "gh_nrt_john_7",
+      "translationCode": "NRT",
+      "bookId": "john",
+      "chapter": 7,
+      "title": "От Иоанна 7 · Новый русский",
+      "cueCount": 53,
+      "narratorId": "new-russian",
+      "file": "projects/nrt_john_7.json"
+    },
+    {
+      "id": "gh_nrt_john_8",
+      "translationCode": "NRT",
+      "bookId": "john",
+      "chapter": 8,
+      "title": "От Иоанна 8 · Новый русский",
+      "cueCount": 59,
+      "narratorId": "new-russian",
+      "file": "projects/nrt_john_8.json"
+    },
+    {
+      "id": "gh_nrt_john_9",
+      "translationCode": "NRT",
+      "bookId": "john",
+      "chapter": 9,
+      "title": "От Иоанна 9 · Новый русский",
+      "cueCount": 41,
+      "narratorId": "new-russian",
+      "file": "projects/nrt_john_9.json"
+    },
+    {
+      "id": "gh_rbo_john_1",
+      "translationCode": "RBO",
+      "bookId": "john",
+      "chapter": 1,
+      "title": "От Иоанна 1 · РБО",
+      "cueCount": 51,
+      "narratorId": "rbo",
+      "file": "projects/rbo_john_1.json"
+    },
+    {
+      "id": "gh_rbo_john_10",
+      "translationCode": "RBO",
+      "bookId": "john",
+      "chapter": 10,
+      "title": "От Иоанна 10 · РБО",
+      "cueCount": 42,
+      "narratorId": "rbo",
+      "file": "projects/rbo_john_10.json"
+    },
+    {
+      "id": "gh_rbo_john_11",
+      "translationCode": "RBO",
+      "bookId": "john",
+      "chapter": 11,
+      "title": "От Иоанна 11 · РБО",
+      "cueCount": 57,
+      "narratorId": "rbo",
+      "file": "projects/rbo_john_11.json"
+    },
+    {
+      "id": "gh_rbo_john_12",
+      "translationCode": "RBO",
+      "bookId": "john",
+      "chapter": 12,
+      "title": "От Иоанна 12 · РБО",
+      "cueCount": 50,
+      "narratorId": "rbo",
+      "file": "projects/rbo_john_12.json"
+    },
+    {
+      "id": "gh_rbo_john_13",
+      "translationCode": "RBO",
+      "bookId": "john",
+      "chapter": 13,
+      "title": "От Иоанна 13 · РБО",
+      "cueCount": 38,
+      "narratorId": "rbo",
+      "file": "projects/rbo_john_13.json"
+    },
+    {
+      "id": "gh_rbo_john_14",
+      "translationCode": "RBO",
+      "bookId": "john",
+      "chapter": 14,
+      "title": "От Иоанна 14 · РБО",
+      "cueCount": 31,
+      "narratorId": "rbo",
+      "file": "projects/rbo_john_14.json"
+    },
+    {
+      "id": "gh_rbo_john_15",
+      "translationCode": "RBO",
+      "bookId": "john",
+      "chapter": 15,
+      "title": "От Иоанна 15 · РБО",
+      "cueCount": 27,
+      "narratorId": "rbo",
+      "file": "projects/rbo_john_15.json"
+    },
+    {
+      "id": "gh_rbo_john_16",
+      "translationCode": "RBO",
+      "bookId": "john",
+      "chapter": 16,
+      "title": "От Иоанна 16 · РБО",
+      "cueCount": 33,
+      "narratorId": "rbo",
+      "file": "projects/rbo_john_16.json"
+    },
+    {
+      "id": "gh_rbo_john_17",
+      "translationCode": "RBO",
+      "bookId": "john",
+      "chapter": 17,
+      "title": "От Иоанна 17 · РБО",
+      "cueCount": 26,
+      "narratorId": "rbo",
+      "file": "projects/rbo_john_17.json"
+    },
+    {
+      "id": "gh_rbo_john_18",
+      "translationCode": "RBO",
+      "bookId": "john",
+      "chapter": 18,
+      "title": "От Иоанна 18 · РБО",
+      "cueCount": 40,
+      "narratorId": "rbo",
+      "file": "projects/rbo_john_18.json"
+    },
+    {
+      "id": "gh_rbo_john_19",
+      "translationCode": "RBO",
+      "bookId": "john",
+      "chapter": 19,
+      "title": "От Иоанна 19 · РБО",
+      "cueCount": 42,
+      "narratorId": "rbo",
+      "file": "projects/rbo_john_19.json"
+    },
+    {
+      "id": "gh_rbo_john_2",
+      "translationCode": "RBO",
+      "bookId": "john",
+      "chapter": 2,
+      "title": "От Иоанна 2 · РБО",
+      "cueCount": 25,
+      "narratorId": "rbo",
+      "file": "projects/rbo_john_2.json"
+    },
+    {
+      "id": "gh_rbo_john_20",
+      "translationCode": "RBO",
+      "bookId": "john",
+      "chapter": 20,
+      "title": "От Иоанна 20 · РБО",
+      "cueCount": 31,
+      "narratorId": "rbo",
+      "file": "projects/rbo_john_20.json"
+    },
+    {
+      "id": "gh_rbo_john_21",
+      "translationCode": "RBO",
+      "bookId": "john",
+      "chapter": 21,
+      "title": "От Иоанна 21 · РБО",
+      "cueCount": 25,
+      "narratorId": "rbo",
+      "file": "projects/rbo_john_21.json"
+    },
+    {
+      "id": "gh_rbo_john_3",
+      "translationCode": "RBO",
+      "bookId": "john",
+      "chapter": 3,
+      "title": "От Иоанна 3 · РБО",
+      "cueCount": 36,
+      "narratorId": "rbo",
+      "file": "projects/rbo_john_3.json"
+    },
+    {
+      "id": "gh_rbo_john_4",
+      "translationCode": "RBO",
+      "bookId": "john",
+      "chapter": 4,
+      "title": "От Иоанна 4 · РБО",
+      "cueCount": 54,
+      "narratorId": "rbo",
+      "file": "projects/rbo_john_4.json"
+    },
+    {
+      "id": "gh_rbo_john_5",
+      "translationCode": "RBO",
+      "bookId": "john",
+      "chapter": 5,
+      "title": "От Иоанна 5 · РБО",
+      "cueCount": 47,
+      "narratorId": "rbo",
+      "file": "projects/rbo_john_5.json"
+    },
+    {
+      "id": "gh_rbo_john_6",
+      "translationCode": "RBO",
+      "bookId": "john",
+      "chapter": 6,
+      "title": "От Иоанна 6 · РБО",
+      "cueCount": 71,
+      "narratorId": "rbo",
+      "file": "projects/rbo_john_6.json"
+    },
+    {
+      "id": "gh_rbo_john_7",
+      "translationCode": "RBO",
+      "bookId": "john",
+      "chapter": 7,
+      "title": "От Иоанна 7 · РБО",
+      "cueCount": 53,
+      "narratorId": "rbo",
+      "file": "projects/rbo_john_7.json"
+    },
+    {
+      "id": "gh_rbo_john_8",
+      "translationCode": "RBO",
+      "bookId": "john",
+      "chapter": 8,
+      "title": "От Иоанна 8 · РБО",
+      "cueCount": 59,
+      "narratorId": "rbo",
+      "file": "projects/rbo_john_8.json"
+    },
+    {
+      "id": "gh_rbo_john_9",
+      "translationCode": "RBO",
+      "bookId": "john",
+      "chapter": 9,
+      "title": "От Иоанна 9 · РБО",
+      "cueCount": 41,
+      "narratorId": "rbo",
+      "file": "projects/rbo_john_9.json"
+    },
+    {
+      "id": "gh_syn_john_1",
+      "translationCode": "SYN",
+      "bookId": "john",
+      "chapter": 1,
+      "title": "От Иоанна 1 · Синодальный · Бондаренко",
+      "cueCount": 51,
+      "narratorId": "bondarenko",
+      "file": "projects/syn_john_1.json"
+    },
+    {
+      "id": "gh_syn_john_10",
+      "translationCode": "SYN",
+      "bookId": "john",
+      "chapter": 10,
+      "title": "От Иоанна 10 · Синодальный · Бондаренко",
+      "cueCount": 42,
+      "narratorId": "bondarenko",
+      "file": "projects/syn_john_10.json"
+    },
+    {
+      "id": "gh_syn_john_11",
+      "translationCode": "SYN",
+      "bookId": "john",
+      "chapter": 11,
+      "title": "От Иоанна 11 · Синодальный · Бондаренко",
+      "cueCount": 57,
+      "narratorId": "bondarenko",
+      "file": "projects/syn_john_11.json"
+    },
+    {
+      "id": "gh_syn_john_12",
+      "translationCode": "SYN",
+      "bookId": "john",
+      "chapter": 12,
+      "title": "От Иоанна 12 · Синодальный · Бондаренко",
+      "cueCount": 50,
+      "narratorId": "bondarenko",
+      "file": "projects/syn_john_12.json"
+    },
+    {
+      "id": "gh_syn_john_13",
+      "translationCode": "SYN",
+      "bookId": "john",
+      "chapter": 13,
+      "title": "От Иоанна 13 · Синодальный · Бондаренко",
+      "cueCount": 38,
+      "narratorId": "bondarenko",
+      "file": "projects/syn_john_13.json"
+    },
+    {
+      "id": "gh_syn_john_14",
+      "translationCode": "SYN",
+      "bookId": "john",
+      "chapter": 14,
+      "title": "От Иоанна 14 · Синодальный · Бондаренко",
+      "cueCount": 31,
+      "narratorId": "bondarenko",
+      "file": "projects/syn_john_14.json"
+    },
+    {
+      "id": "gh_syn_john_15",
+      "translationCode": "SYN",
+      "bookId": "john",
+      "chapter": 15,
+      "title": "От Иоанна 15 · Синодальный · Бондаренко",
+      "cueCount": 27,
+      "narratorId": "bondarenko",
+      "file": "projects/syn_john_15.json"
+    },
+    {
+      "id": "gh_syn_john_16",
+      "translationCode": "SYN",
+      "bookId": "john",
+      "chapter": 16,
+      "title": "От Иоанна 16 · Синодальный · Бондаренко",
+      "cueCount": 33,
+      "narratorId": "bondarenko",
+      "file": "projects/syn_john_16.json"
+    },
+    {
+      "id": "gh_syn_john_17",
+      "translationCode": "SYN",
+      "bookId": "john",
+      "chapter": 17,
+      "title": "От Иоанна 17 · Синодальный · Бондаренко",
+      "cueCount": 26,
+      "narratorId": "bondarenko",
+      "file": "projects/syn_john_17.json"
+    },
+    {
+      "id": "gh_syn_john_18",
+      "translationCode": "SYN",
+      "bookId": "john",
+      "chapter": 18,
+      "title": "От Иоанна 18 · Синодальный · Бондаренко",
+      "cueCount": 40,
+      "narratorId": "bondarenko",
+      "file": "projects/syn_john_18.json"
+    },
+    {
+      "id": "gh_syn_john_19",
+      "translationCode": "SYN",
+      "bookId": "john",
+      "chapter": 19,
+      "title": "От Иоанна 19 · Синодальный · Бондаренко",
+      "cueCount": 42,
+      "narratorId": "bondarenko",
+      "file": "projects/syn_john_19.json"
+    },
+    {
+      "id": "gh_syn_john_2",
+      "translationCode": "SYN",
+      "bookId": "john",
+      "chapter": 2,
+      "title": "От Иоанна 2 · Синодальный · Бондаренко",
+      "cueCount": 25,
+      "narratorId": "bondarenko",
+      "file": "projects/syn_john_2.json"
+    },
+    {
+      "id": "gh_syn_john_20",
+      "translationCode": "SYN",
+      "bookId": "john",
+      "chapter": 20,
+      "title": "От Иоанна 20 · Синодальный · Бондаренко",
+      "cueCount": 31,
+      "narratorId": "bondarenko",
+      "file": "projects/syn_john_20.json"
+    },
+    {
+      "id": "gh_syn_john_21",
+      "translationCode": "SYN",
+      "bookId": "john",
+      "chapter": 21,
+      "title": "От Иоанна 21 · Синодальный · Бондаренко",
+      "cueCount": 25,
+      "narratorId": "bondarenko",
+      "file": "projects/syn_john_21.json"
+    },
+    {
+      "id": "gh_syn_john_3",
+      "translationCode": "SYN",
+      "bookId": "john",
+      "chapter": 3,
+      "title": "От Иоанна 3 · Синодальный · Бондаренко",
+      "cueCount": 36,
+      "narratorId": "bondarenko",
+      "file": "projects/syn_john_3.json"
+    },
+    {
+      "id": "gh_syn_john_4",
+      "translationCode": "SYN",
+      "bookId": "john",
+      "chapter": 4,
+      "title": "От Иоанна 4 · Синодальный · Бондаренко",
+      "cueCount": 54,
+      "narratorId": "bondarenko",
+      "file": "projects/syn_john_4.json"
+    },
+    {
+      "id": "gh_syn_john_5",
+      "translationCode": "SYN",
+      "bookId": "john",
+      "chapter": 5,
+      "title": "От Иоанна 5 · Синодальный · Бондаренко",
+      "cueCount": 47,
+      "narratorId": "bondarenko",
+      "file": "projects/syn_john_5.json"
+    },
+    {
+      "id": "gh_syn_john_6",
+      "translationCode": "SYN",
+      "bookId": "john",
+      "chapter": 6,
+      "title": "От Иоанна 6 · Синодальный · Бондаренко",
+      "cueCount": 71,
+      "narratorId": "bondarenko",
+      "file": "projects/syn_john_6.json"
+    },
+    {
+      "id": "gh_syn_john_7",
+      "translationCode": "SYN",
+      "bookId": "john",
+      "chapter": 7,
+      "title": "От Иоанна 7 · Синодальный · Бондаренко",
+      "cueCount": 53,
+      "narratorId": "bondarenko",
+      "file": "projects/syn_john_7.json"
+    },
+    {
+      "id": "gh_syn_john_8",
+      "translationCode": "SYN",
+      "bookId": "john",
+      "chapter": 8,
+      "title": "От Иоанна 8 · Синодальный · Бондаренко",
+      "cueCount": 59,
+      "narratorId": "bondarenko",
+      "file": "projects/syn_john_8.json"
+    },
+    {
+      "id": "gh_syn_john_9",
+      "translationCode": "SYN",
+      "bookId": "john",
+      "chapter": 9,
+      "title": "От Иоанна 9 · Синодальный · Бондаренко",
+      "cueCount": 41,
+      "narratorId": "bondarenko",
+      "file": "projects/syn_john_9.json"
+    }
+  ]
 }

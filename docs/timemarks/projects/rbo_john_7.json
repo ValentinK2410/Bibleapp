@@ -1,0 +1,223 @@
+{
+  "id": "gh_rbo_john_7",
+  "translationCode": "RBO",
+  "bookId": "john",
+  "chapter": 7,
+  "title": "От Иоанна 7 · РБО",
+  "narratorId": "rbo",
+  "audioFileName": "43_07.mp3",
+  "cues": [
+    {
+      "timeMs": 7740,
+      "verseStart": 1
+    },
+    {
+      "timeMs": 13960,
+      "verseStart": 2
+    },
+    {
+      "timeMs": 17080,
+      "verseStart": 3
+    },
+    {
+      "timeMs": 26660,
+      "verseStart": 4
+    },
+    {
+      "timeMs": 34650,
+      "verseStart": 5
+    },
+    {
+      "timeMs": 42640,
+      "verseStart": 6
+    },
+    {
+      "timeMs": 50630,
+      "verseStart": 7
+    },
+    {
+      "timeMs": 58620,
+      "verseStart": 8
+    },
+    {
+      "timeMs": 66320,
+      "verseStart": 9
+    },
+    {
+      "timeMs": 70240,
+      "verseStart": 10
+    },
+    {
+      "timeMs": 80320,
+      "verseStart": 11
+    },
+    {
+      "timeMs": 85620,
+      "verseStart": 12
+    },
+    {
+      "timeMs": 96320,
+      "verseStart": 13
+    },
+    {
+      "timeMs": 103460,
+      "verseStart": 14
+    },
+    {
+      "timeMs": 109960,
+      "verseStart": 15
+    },
+    {
+      "timeMs": 119031,
+      "verseStart": 16
+    },
+    {
+      "timeMs": 128103,
+      "verseStart": 17
+    },
+    {
+      "timeMs": 137174,
+      "verseStart": 18
+    },
+    {
+      "timeMs": 146246,
+      "verseStart": 19
+    },
+    {
+      "timeMs": 155317,
+      "verseStart": 20
+    },
+    {
+      "timeMs": 164389,
+      "verseStart": 21
+    },
+    {
+      "timeMs": 173460,
+      "verseStart": 22
+    },
+    {
+      "timeMs": 180340,
+      "verseStart": 23
+    },
+    {
+      "timeMs": 190760,
+      "verseStart": 24
+    },
+    {
+      "timeMs": 197200,
+      "verseStart": 25
+    },
+    {
+      "timeMs": 205120,
+      "verseStart": 26
+    },
+    {
+      "timeMs": 215220,
+      "verseStart": 27
+    },
+    {
+      "timeMs": 227692,
+      "verseStart": 28
+    },
+    {
+      "timeMs": 240164,
+      "verseStart": 29
+    },
+    {
+      "timeMs": 252636,
+      "verseStart": 30
+    },
+    {
+      "timeMs": 265108,
+      "verseStart": 31
+    },
+    {
+      "timeMs": 277580,
+      "verseStart": 32
+    },
+    {
+      "timeMs": 280180,
+      "verseStart": 33
+    },
+    {
+      "timeMs": 293840,
+      "verseStart": 34
+    },
+    {
+      "timeMs": 307500,
+      "verseStart": 35
+    },
+    {
+      "timeMs": 310440,
+      "verseStart": 36
+    },
+    {
+      "timeMs": 319980,
+      "verseStart": 37
+    },
+    {
+      "timeMs": 331105,
+      "verseStart": 38
+    },
+    {
+      "timeMs": 342230,
+      "verseStart": 39
+    },
+    {
+      "timeMs": 353355,
+      "verseStart": 40
+    },
+    {
+      "timeMs": 364480,
+      "verseStart": 41
+    },
+    {
+      "timeMs": 369260,
+      "verseStart": 42
+    },
+    {
+      "timeMs": 377620,
+      "verseStart": 43
+    },
+    {
+      "timeMs": 381500,
+      "verseStart": 44
+    },
+    {
+      "timeMs": 387320,
+      "verseStart": 45
+    },
+    {
+      "timeMs": 396680,
+      "verseStart": 46
+    },
+    {
+      "timeMs": 404240,
+      "verseStart": 47
+    },
+    {
+      "timeMs": 408680,
+      "verseStart": 48
+    },
+    {
+      "timeMs": 442180,
+      "verseStart": 49
+    },
+    {
+      "timeMs": 443233,
+      "verseStart": 50
+    },
+    {
+      "timeMs": 444287,
+      "verseStart": 51
+    },
+    {
+      "timeMs": 445340,
+      "verseStart": 52
+    },
+    {
+      "timeMs": 450900,
+      "verseStart": 53
+    }
+  ]
+}

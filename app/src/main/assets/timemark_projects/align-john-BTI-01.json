@@ -1,0 +1,266 @@
+{
+  "id": "align-john-BTI-01",
+  "translationCode": "BTI",
+  "bookId": "john",
+  "chapter": 1,
+  "title": "От Иоанна 1 · Кулаковых",
+  "audioFilePath": "/data/user/0/com.example.bible.sqlite/files/bible_audio/bti/43_01.mp3",
+  "updatedAt": 1763308800000,
+  "cues": [
+    {
+      "timeMs": 11720,
+      "verseStart": 1,
+      "attachments": []
+    },
+    {
+      "timeMs": 26460,
+      "verseStart": 2,
+      "attachments": []
+    },
+    {
+      "timeMs": 30360,
+      "verseStart": 3,
+      "attachments": []
+    },
+    {
+      "timeMs": 38180,
+      "verseStart": 4,
+      "attachments": []
+    },
+    {
+      "timeMs": 48440,
+      "verseStart": 5,
+      "attachments": []
+    },
+    {
+      "timeMs": 57320,
+      "verseStart": 6,
+      "attachments": []
+    },
+    {
+      "timeMs": 64540,
+      "verseStart": 7,
+      "attachments": []
+    },
+    {
+      "timeMs": 74540,
+      "verseStart": 8,
+      "attachments": []
+    },
+    {
+      "timeMs": 83580,
+      "verseStart": 9,
+      "attachments": []
+    },
+    {
+      "timeMs": 96180,
+      "verseStart": 10,
+      "attachments": []
+    },
+    {
+      "timeMs": 105840,
+      "verseStart": 11,
+      "attachments": []
+    },
+    {
+      "timeMs": 110940,
+      "verseStart": 12,
+      "attachments": []
+    },
+    {
+      "timeMs": 118720,
+      "verseStart": 13,
+      "attachments": []
+    },
+    {
+      "timeMs": 132340,
+      "verseStart": 14,
+      "attachments": []
+    },
+    {
+      "timeMs": 152520,
+      "verseStart": 15,
+      "attachments": []
+    },
+    {
+      "timeMs": 174940,
+      "verseStart": 16,
+      "attachments": []
+    },
+    {
+      "timeMs": 182540,
+      "verseStart": 17,
+      "attachments": []
+    },
+    {
+      "timeMs": 194220,
+      "verseStart": 18,
+      "attachments": []
+    },
+    {
+      "timeMs": 212140,
+      "verseStart": 19,
+      "attachments": []
+    },
+    {
+      "timeMs": 225920,
+      "verseStart": 20,
+      "attachments": []
+    },
+    {
+      "timeMs": 238700,
+      "verseStart": 21,
+      "attachments": []
+    },
+    {
+      "timeMs": 259760,
+      "verseStart": 22,
+      "attachments": []
+    },
+    {
+      "timeMs": 271220,
+      "verseStart": 23,
+      "attachments": []
+    },
+    {
+      "timeMs": 290240,
+      "verseStart": 24,
+      "attachments": []
+    },
+    {
+      "timeMs": 294340,
+      "verseStart": 25,
+      "attachments": []
+    },
+    {
+      "timeMs": 303520,
+      "verseStart": 26,
+      "attachments": []
+    },
+    {
+      "timeMs": 317960,
+      "verseStart": 27,
+      "attachments": []
+    },
+    {
+      "timeMs": 327680,
+      "verseStart": 28,
+      "attachments": []
+    },
+    {
+      "timeMs": 338920,
+      "verseStart": 29,
+      "attachments": []
+    },
+    {
+      "timeMs": 356120,
+      "verseStart": 30,
+      "attachments": []
+    },
+    {
+      "timeMs": 369980,
+      "verseStart": 31,
+      "attachments": []
+    },
+    {
+      "timeMs": 382180,
+      "verseStart": 32,
+      "attachments": []
+    },
+    {
+      "timeMs": 394120,
+      "verseStart": 33,
+      "attachments": []
+    },
+    {
+      "timeMs": 416040,
+      "verseStart": 34,
+      "attachments": []
+    },
+    {
+      "timeMs": 426115,
+      "verseStart": 35,
+      "attachments": []
+    },
+    {
+      "timeMs": 436190,
+      "verseStart": 36,
+      "attachments": []
+    },
+    {
+      "timeMs": 446265,
+      "verseStart": 37,
+      "attachments": []
+    },
+    {
+      "timeMs": 456340,
+      "verseStart": 38,
+      "attachments": []
+    },
+    {
+      "timeMs": 473840,
+      "verseStart": 39,
+      "attachments": []
+    },
+    {
+      "timeMs": 490560,
+      "verseStart": 40,
+      "attachments": []
+    },
+    {
+      "timeMs": 502100,
+      "verseStart": 41,
+      "attachments": []
+    },
+    {
+      "timeMs": 518380,
+      "verseStart": 42,
+      "attachments": []
+    },
+    {
+      "timeMs": 539560,
+      "verseStart": 43,
+      "attachments": []
+    },
+    {
+      "timeMs": 551120,
+      "verseStart": 44,
+      "attachments": []
+    },
+    {
+      "timeMs": 557440,
+      "verseStart": 45,
+      "attachments": []
+    },
+    {
+      "timeMs": 573900,
+      "verseStart": 46,
+      "attachments": []
+    },
+    {
+      "timeMs": 587060,
+      "verseStart": 47,
+      "attachments": []
+    },
+    {
+      "timeMs": 599460,
+      "verseStart": 48,
+      "attachments": []
+    },
+    {
+      "timeMs": 616760,
+      "verseStart": 49,
+      "attachments": []
+    },
+    {
+      "timeMs": 625480,
+      "verseStart": 50,
+      "attachments": []
+    },
+    {
+      "timeMs": 638000,
+      "verseStart": 51,
+      "attachments": []
+    }
+  ]
+}

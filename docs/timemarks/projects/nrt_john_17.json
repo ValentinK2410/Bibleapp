@@ -1,0 +1,115 @@
+{
+  "id": "gh_nrt_john_17",
+  "translationCode": "NRT",
+  "bookId": "john",
+  "chapter": 17,
+  "title": "От Иоанна 17 · Новый русский",
+  "narratorId": "new-russian",
+  "audioFileName": "43_17.mp3",
+  "cues": [
+    {
+      "timeMs": 6580,
+      "verseStart": 1
+    },
+    {
+      "timeMs": 19180,
+      "verseStart": 2
+    },
+    {
+      "timeMs": 26900,
+      "verseStart": 3
+    },
+    {
+      "timeMs": 39200,
+      "verseStart": 4
+    },
+    {
+      "timeMs": 50200,
+      "verseStart": 5
+    },
+    {
+      "timeMs": 61200,
+      "verseStart": 6
+    },
+    {
+      "timeMs": 72400,
+      "verseStart": 7
+    },
+    {
+      "timeMs": 78440,
+      "verseStart": 8
+    },
+    {
+      "timeMs": 92420,
+      "verseStart": 9
+    },
+    {
+      "timeMs": 102680,
+      "verseStart": 10
+    },
+    {
+      "timeMs": 111200,
+      "verseStart": 11
+    },
+    {
+      "timeMs": 129840,
+      "verseStart": 12
+    },
+    {
+      "timeMs": 140095,
+      "verseStart": 13
+    },
+    {
+      "timeMs": 150350,
+      "verseStart": 14
+    },
+    {
+      "timeMs": 160605,
+      "verseStart": 15
+    },
+    {
+      "timeMs": 170860,
+      "verseStart": 16
+    },
+    {
+      "timeMs": 175880,
+      "verseStart": 17
+    },
+    {
+      "timeMs": 182280,
+      "verseStart": 18
+    },
+    {
+      "timeMs": 187340,
+      "verseStart": 19
+    },
+    {
+      "timeMs": 201640,
+      "verseStart": 20
+    },
+    {
+      "timeMs": 207140,
+      "verseStart": 21
+    },
+    {
+      "timeMs": 221640,
+      "verseStart": 22
+    },
+    {
+      "timeMs": 230760,
+      "verseStart": 23
+    },
+    {
+      "timeMs": 244420,
+      "verseStart": 24
+    },
+    {
+      "timeMs": 262100,
+      "verseStart": 25
+    },
+    {
+      "timeMs": 273080,
+      "verseStart": 26
+    }
+  ]
+}

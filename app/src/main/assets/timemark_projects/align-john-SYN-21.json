@@ -1,0 +1,136 @@
+{
+  "id": "align-john-SYN-21",
+  "translationCode": "SYN",
+  "bookId": "john",
+  "chapter": 21,
+  "title": "От Иоанна 21 · Синодальный · Бондаренко",
+  "audioFilePath": "/data/user/0/com.example.bible.sqlite/files/bible_audio/bondarenko/43_21.mp3",
+  "updatedAt": 1763308800000,
+  "cues": [
+    {
+      "timeMs": 5000,
+      "verseStart": 1,
+      "attachments": []
+    },
+    {
+      "timeMs": 16880,
+      "verseStart": 2,
+      "attachments": []
+    },
+    {
+      "timeMs": 33280,
+      "verseStart": 3,
+      "attachments": []
+    },
+    {
+      "timeMs": 48820,
+      "verseStart": 4,
+      "attachments": []
+    },
+    {
+      "timeMs": 59980,
+      "verseStart": 5,
+      "attachments": []
+    },
+    {
+      "timeMs": 69860,
+      "verseStart": 6,
+      "attachments": []
+    },
+    {
+      "timeMs": 84680,
+      "verseStart": 7,
+      "attachments": []
+    },
+    {
+      "timeMs": 105160,
+      "verseStart": 8,
+      "attachments": []
+    },
+    {
+      "timeMs": 115800,
+      "verseStart": 9,
+      "attachments": []
+    },
+    {
+      "timeMs": 124620,
+      "verseStart": 10,
+      "attachments": []
+    },
+    {
+      "timeMs": 131720,
+      "verseStart": 11,
+      "attachments": []
+    },
+    {
+      "timeMs": 148600,
+      "verseStart": 12,
+      "attachments": []
+    },
+    {
+      "timeMs": 164100,
+      "verseStart": 13,
+      "attachments": []
+    },
+    {
+      "timeMs": 200640,
+      "verseStart": 14,
+      "attachments": []
+    },
+    {
+      "timeMs": 202360,
+      "verseStart": 15,
+      "attachments": []
+    },
+    {
+      "timeMs": 211960,
+      "verseStart": 16,
+      "attachments": []
+    },
+    {
+      "timeMs": 233360,
+      "verseStart": 17,
+      "attachments": []
+    },
+    {
+      "timeMs": 262240,
+      "verseStart": 18,
+      "attachments": []
+    },
+    {
+      "timeMs": 308940,
+      "verseStart": 19,
+      "attachments": []
+    },
+    {
+      "timeMs": 310740,
+      "verseStart": 20,
+      "attachments": []
+    },
+    {
+      "timeMs": 316140,
+      "verseStart": 21,
+      "attachments": []
+    },
+    {
+      "timeMs": 325140,
+      "verseStart": 22,
+      "attachments": []
+    },
+    {
+      "timeMs": 335360,
+      "verseStart": 23,
+      "attachments": []
+    },
+    {
+      "timeMs": 362160,
+      "verseStart": 24,
+      "attachments": []
+    },
+    {
+      "timeMs": 373280,
+      "verseStart": 25,
+      "attachments": []
+    }
+  ]
+}

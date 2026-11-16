@@ -1,0 +1,143 @@
+{
+  "id": "gh_bti_john_16",
+  "translationCode": "BTI",
+  "bookId": "john",
+  "chapter": 16,
+  "title": "От Иоанна 16 · Кулаковых",
+  "narratorId": "bti",
+  "audioFileName": "43_16.mp3",
+  "cues": [
+    {
+      "timeMs": 5900,
+      "verseStart": 1
+    },
+    {
+      "timeMs": 11060,
+      "verseStart": 2
+    },
+    {
+      "timeMs": 22020,
+      "verseStart": 3
+    },
+    {
+      "timeMs": 29080,
+      "verseStart": 4
+    },
+    {
+      "timeMs": 49180,
+      "verseStart": 5
+    },
+    {
+      "timeMs": 58020,
+      "verseStart": 6
+    },
+    {
+      "timeMs": 66860,
+      "verseStart": 7
+    },
+    {
+      "timeMs": 79340,
+      "verseStart": 8
+    },
+    {
+      "timeMs": 93940,
+      "verseStart": 9
+    },
+    {
+      "timeMs": 101540,
+      "verseStart": 10
+    },
+    {
+      "timeMs": 109480,
+      "verseStart": 11
+    },
+    {
+      "timeMs": 119220,
+      "verseStart": 12
+    },
+    {
+      "timeMs": 123980,
+      "verseStart": 13
+    },
+    {
+      "timeMs": 138900,
+      "verseStart": 14
+    },
+    {
+      "timeMs": 148780,
+      "verseStart": 15
+    },
+    {
+      "timeMs": 204800,
+      "verseStart": 16
+    },
+    {
+      "timeMs": 206280,
+      "verseStart": 17
+    },
+    {
+      "timeMs": 207760,
+      "verseStart": 18
+    },
+    {
+      "timeMs": 209240,
+      "verseStart": 19
+    },
+    {
+      "timeMs": 210720,
+      "verseStart": 20
+    },
+    {
+      "timeMs": 227360,
+      "verseStart": 21
+    },
+    {
+      "timeMs": 244000,
+      "verseStart": 22
+    },
+    {
+      "timeMs": 258320,
+      "verseStart": 23
+    },
+    {
+      "timeMs": 272205,
+      "verseStart": 24
+    },
+    {
+      "timeMs": 286090,
+      "verseStart": 25
+    },
+    {
+      "timeMs": 299975,
+      "verseStart": 26
+    },
+    {
+      "timeMs": 313860,
+      "verseStart": 27
+    },
+    {
+      "timeMs": 324300,
+      "verseStart": 28
+    },
+    {
+      "timeMs": 335260,
+      "verseStart": 29
+    },
+    {
+      "timeMs": 338480,
+      "verseStart": 30
+    },
+    {
+      "timeMs": 358060,
+      "verseStart": 31
+    },
+    {
+      "timeMs": 373516,
+      "verseStart": 32
+    },
+    {
+      "timeMs": 388972,
+      "verseStart": 33
+    }
+  ]
+}
