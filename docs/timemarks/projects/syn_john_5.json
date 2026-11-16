@@ -8,99 +8,99 @@
   "audioFileName": "43_05.mp3",
   "cues": [
     {
-      "timeMs": 10800,
+      "timeMs": 4000,
       "verseStart": 1
     },
     {
-      "timeMs": 11500,
+      "timeMs": 12460,
       "verseStart": 2
     },
     {
-      "timeMs": 12200,
+      "timeMs": 24800,
       "verseStart": 3
     },
     {
-      "timeMs": 35180,
+      "timeMs": 35280,
       "verseStart": 4
     },
     {
-      "timeMs": 52260,
+      "timeMs": 51140,
       "verseStart": 5
     },
     {
-      "timeMs": 59560,
+      "timeMs": 59540,
       "verseStart": 6
     },
     {
-      "timeMs": 72460,
+      "timeMs": 72420,
       "verseStart": 7
     },
     {
-      "timeMs": 87180,
+      "timeMs": 87320,
       "verseStart": 8
     },
     {
-      "timeMs": 97080,
+      "timeMs": 96540,
       "verseStart": 9
     },
     {
-      "timeMs": 110720,
+      "timeMs": 109400,
       "verseStart": 10
     },
     {
-      "timeMs": 118600,
+      "timeMs": 118460,
       "verseStart": 11
     },
     {
-      "timeMs": 126960,
+      "timeMs": 127000,
       "verseStart": 12
     },
     {
-      "timeMs": 163800,
+      "timeMs": 134480,
       "verseStart": 13
     },
     {
-      "timeMs": 169840,
+      "timeMs": 144380,
       "verseStart": 14
     },
     {
-      "timeMs": 175880,
+      "timeMs": 161640,
       "verseStart": 15
     },
     {
-      "timeMs": 181920,
+      "timeMs": 169860,
       "verseStart": 16
     },
     {
-      "timeMs": 187960,
+      "timeMs": 180780,
       "verseStart": 17
     },
     {
-      "timeMs": 194000,
+      "timeMs": 187420,
       "verseStart": 18
     },
     {
-      "timeMs": 204600,
+      "timeMs": 204540,
       "verseStart": 19
     },
     {
-      "timeMs": 223920,
+      "timeMs": 224980,
       "verseStart": 20
     },
     {
-      "timeMs": 235220,
+      "timeMs": 235580,
       "verseStart": 21
     },
     {
-      "timeMs": 242280,
+      "timeMs": 243100,
       "verseStart": 22
     },
     {
-      "timeMs": 249260,
+      "timeMs": 249280,
       "verseStart": 23
     },
     {
-      "timeMs": 259260,
+      "timeMs": 258040,
       "verseStart": 24
     },
     {
@@ -108,27 +108,27 @@
       "verseStart": 25
     },
     {
-      "timeMs": 287980,
+      "timeMs": 287700,
       "verseStart": 26
     },
     {
-      "timeMs": 295320,
+      "timeMs": 295640,
       "verseStart": 27
     },
     {
-      "timeMs": 303440,
+      "timeMs": 303400,
       "verseStart": 28
     },
     {
-      "timeMs": 314360,
+      "timeMs": 314340,
       "verseStart": 29
     },
     {
-      "timeMs": 323900,
+      "timeMs": 324360,
       "verseStart": 30
     },
     {
-      "timeMs": 339540,
+      "timeMs": 339280,
       "verseStart": 31
     },
     {
@@ -136,31 +136,31 @@
       "verseStart": 32
     },
     {
-      "timeMs": 358120,
+      "timeMs": 358316,
       "verseStart": 33
     },
     {
-      "timeMs": 363180,
+      "timeMs": 364580,
       "verseStart": 34
     },
     {
-      "timeMs": 372440,
+      "timeMs": 373480,
       "verseStart": 35
     },
     {
-      "timeMs": 381840,
+      "timeMs": 382100,
       "verseStart": 36
     },
     {
-      "timeMs": 398820,
+      "timeMs": 398600,
       "verseStart": 37
     },
     {
-      "timeMs": 409220,
+      "timeMs": 410900,
       "verseStart": 38
     },
     {
-      "timeMs": 418700,
+      "timeMs": 418720,
       "verseStart": 39
     },
     {
@@ -168,19 +168,19 @@
       "verseStart": 40
     },
     {
-      "timeMs": 432460,
+      "timeMs": 432780,
       "verseStart": 41
     },
     {
-      "timeMs": 435660,
+      "timeMs": 435700,
       "verseStart": 42
     },
     {
-      "timeMs": 441920,
+      "timeMs": 442080,
       "verseStart": 43
     },
     {
-      "timeMs": 451760,
+      "timeMs": 451460,
       "verseStart": 44
     },
     {
@@ -188,11 +188,11 @@
       "verseStart": 45
     },
     {
-      "timeMs": 471280,
+      "timeMs": 470760,
       "verseStart": 46
     },
     {
-      "timeMs": 480160,
+      "timeMs": 480220,
       "verseStart": 47
     }
   ]

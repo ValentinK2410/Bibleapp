@@ -5,95 +5,95 @@
   "chapter": 3,
   "title": "От Иоанна 3 · РБО",
   "audioFilePath": "/data/user/0/com.example.bible.sqlite/files/bible_audio/rbo/43_03.mp3",
-  "updatedAt": 1763308800000,
+  "updatedAt": 1763323200000,
   "cues": [
     {
-      "timeMs": 9060,
+      "timeMs": 4300,
       "verseStart": 1,
       "attachments": []
     },
     {
-      "timeMs": 18120,
+      "timeMs": 10340,
       "verseStart": 2,
       "attachments": []
     },
     {
-      "timeMs": 27180,
+      "timeMs": 26060,
       "verseStart": 3,
       "attachments": []
     },
     {
-      "timeMs": 29980,
+      "timeMs": 38100,
       "verseStart": 4,
       "attachments": []
     },
     {
-      "timeMs": 45380,
+      "timeMs": 49740,
       "verseStart": 5,
       "attachments": []
     },
     {
-      "timeMs": 60780,
+      "timeMs": 61160,
       "verseStart": 6,
       "attachments": []
     },
     {
-      "timeMs": 67680,
+      "timeMs": 67800,
       "verseStart": 7,
       "attachments": []
     },
     {
-      "timeMs": 73800,
+      "timeMs": 73600,
       "verseStart": 8,
       "attachments": []
     },
     {
-      "timeMs": 85820,
+      "timeMs": 86140,
       "verseStart": 9,
       "attachments": []
     },
     {
-      "timeMs": 90880,
+      "timeMs": 90940,
       "verseStart": 10,
       "attachments": []
     },
     {
-      "timeMs": 98400,
+      "timeMs": 98420,
       "verseStart": 11,
       "attachments": []
     },
     {
-      "timeMs": 109480,
+      "timeMs": 109460,
       "verseStart": 12,
       "attachments": []
     },
     {
-      "timeMs": 118460,
+      "timeMs": 118020,
       "verseStart": 13,
       "attachments": []
     },
     {
-      "timeMs": 127440,
+      "timeMs": 125580,
       "verseStart": 14,
       "attachments": []
     },
     {
-      "timeMs": 136420,
+      "timeMs": 132640,
       "verseStart": 15,
       "attachments": []
     },
     {
-      "timeMs": 145400,
+      "timeMs": 138040,
       "verseStart": 16,
       "attachments": []
     },
     {
-      "timeMs": 150200,
+      "timeMs": 150140,
       "verseStart": 17,
       "attachments": []
     },
     {
-      "timeMs": 159120,
+      "timeMs": 159060,
       "verseStart": 18,
       "attachments": []
     },
@@ -108,7 +108,7 @@
       "attachments": []
     },
     {
-      "timeMs": 188560,
+      "timeMs": 188580,
       "verseStart": 21,
       "attachments": []
     },
@@ -118,72 +118,72 @@
       "attachments": []
     },
     {
-      "timeMs": 205600,
+      "timeMs": 205700,
       "verseStart": 23,
       "attachments": []
     },
     {
-      "timeMs": 214740,
+      "timeMs": 214800,
       "verseStart": 24,
       "attachments": []
     },
     {
-      "timeMs": 218440,
+      "timeMs": 218780,
       "verseStart": 25,
       "attachments": []
     },
     {
-      "timeMs": 225660,
+      "timeMs": 225720,
       "verseStart": 26,
       "attachments": []
     },
     {
-      "timeMs": 241720,
+      "timeMs": 241820,
       "verseStart": 27,
       "attachments": []
     },
     {
-      "timeMs": 245800,
+      "timeMs": 246920,
       "verseStart": 28,
       "attachments": []
     },
     {
-      "timeMs": 256100,
+      "timeMs": 256080,
       "verseStart": 29,
       "attachments": []
     },
     {
-      "timeMs": 268760,
+      "timeMs": 268740,
       "verseStart": 30,
       "attachments": []
     },
     {
-      "timeMs": 277065,
+      "timeMs": 273220,
       "verseStart": 31,
       "attachments": []
     },
     {
-      "timeMs": 285370,
+      "timeMs": 286720,
       "verseStart": 32,
       "attachments": []
     },
     {
-      "timeMs": 293675,
+      "timeMs": 293900,
       "verseStart": 33,
       "attachments": []
     },
     {
-      "timeMs": 301980,
+      "timeMs": 302020,
       "verseStart": 34,
       "attachments": []
     },
     {
-      "timeMs": 310207,
+      "timeMs": 309040,
       "verseStart": 35,
       "attachments": []
     },
     {
-      "timeMs": 318434,
+      "timeMs": 313500,
       "verseStart": 36,
       "attachments": []
     }

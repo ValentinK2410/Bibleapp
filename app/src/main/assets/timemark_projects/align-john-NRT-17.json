@@ -5,7 +5,7 @@
   "chapter": 17,
   "title": "От Иоанна 17 · Новый русский",
   "audioFilePath": "/data/user/0/com.example.bible.sqlite/files/bible_audio/new-russian/43_17.mp3",
-  "updatedAt": 1763308800000,
+  "updatedAt": 1763323200000,
   "cues": [
     {
       "timeMs": 6580,
@@ -13,12 +13,12 @@
       "attachments": []
     },
     {
-      "timeMs": 19180,
+      "timeMs": 18900,
       "verseStart": 2,
       "attachments": []
     },
     {
-      "timeMs": 26900,
+      "timeMs": 26800,
       "verseStart": 3,
       "attachments": []
     },
@@ -28,17 +28,17 @@
       "attachments": []
     },
     {
-      "timeMs": 50200,
+      "timeMs": 45180,
       "verseStart": 5,
       "attachments": []
     },
     {
-      "timeMs": 61200,
+      "timeMs": 61120,
       "verseStart": 6,
       "attachments": []
     },
     {
-      "timeMs": 72400,
+      "timeMs": 72780,
       "verseStart": 7,
       "attachments": []
     },
@@ -58,37 +58,37 @@
       "attachments": []
     },
     {
-      "timeMs": 111200,
+      "timeMs": 111180,
       "verseStart": 11,
       "attachments": []
     },
     {
-      "timeMs": 129840,
+      "timeMs": 129860,
       "verseStart": 12,
       "attachments": []
     },
     {
-      "timeMs": 140095,
+      "timeMs": 144160,
       "verseStart": 13,
       "attachments": []
     },
     {
-      "timeMs": 150350,
+      "timeMs": 154820,
       "verseStart": 14,
       "attachments": []
     },
     {
-      "timeMs": 160605,
+      "timeMs": 164020,
       "verseStart": 15,
       "attachments": []
     },
     {
-      "timeMs": 170860,
+      "timeMs": 171540,
       "verseStart": 16,
       "attachments": []
     },
     {
-      "timeMs": 175880,
+      "timeMs": 175860,
       "verseStart": 17,
       "attachments": []
     },
@@ -103,7 +103,7 @@
       "attachments": []
     },
     {
-      "timeMs": 201640,
+      "timeMs": 201660,
       "verseStart": 20,
       "attachments": []
     },
@@ -113,7 +113,7 @@
       "attachments": []
     },
     {
-      "timeMs": 221640,
+      "timeMs": 221700,
       "verseStart": 22,
       "attachments": []
     },
@@ -123,17 +123,17 @@
       "attachments": []
     },
     {
-      "timeMs": 244420,
+      "timeMs": 244460,
       "verseStart": 24,
       "attachments": []
     },
     {
-      "timeMs": 262100,
+      "timeMs": 262200,
       "verseStart": 25,
       "attachments": []
     },
     {
-      "timeMs": 273080,
+      "timeMs": 273100,
       "verseStart": 26,
       "attachments": []
     }

@@ -8,183 +8,183 @@
   "audioFileName": "43_12.mp3",
   "cues": [
     {
-      "timeMs": 3940,
+      "timeMs": 4000,
       "verseStart": 1
     },
     {
-      "timeMs": 11380,
+      "timeMs": 11640,
       "verseStart": 2
     },
     {
-      "timeMs": 20560,
+      "timeMs": 19640,
       "verseStart": 3
     },
     {
-      "timeMs": 36400,
+      "timeMs": 36600,
       "verseStart": 4
     },
     {
-      "timeMs": 45340,
+      "timeMs": 45360,
       "verseStart": 5
     },
     {
-      "timeMs": 51780,
+      "timeMs": 51020,
       "verseStart": 6
     },
     {
-      "timeMs": 63460,
+      "timeMs": 64060,
       "verseStart": 7
     },
     {
-      "timeMs": 72640,
+      "timeMs": 72600,
       "verseStart": 8
     },
     {
-      "timeMs": 78420,
+      "timeMs": 78360,
       "verseStart": 9
     },
     {
-      "timeMs": 90520,
+      "timeMs": 90180,
       "verseStart": 10
     },
     {
-      "timeMs": 95420,
+      "timeMs": 94980,
       "verseStart": 11
     },
     {
-      "timeMs": 101160,
+      "timeMs": 101020,
       "verseStart": 12
     },
     {
-      "timeMs": 107920,
+      "timeMs": 107940,
       "verseStart": 13
     },
     {
-      "timeMs": 119180,
+      "timeMs": 118940,
       "verseStart": 14
     },
     {
-      "timeMs": 139247,
+      "timeMs": 125080,
       "verseStart": 15
     },
     {
-      "timeMs": 159313,
+      "timeMs": 132380,
       "verseStart": 16
     },
     {
-      "timeMs": 179380,
+      "timeMs": 145920,
       "verseStart": 17
     },
     {
-      "timeMs": 180100,
+      "timeMs": 154380,
       "verseStart": 18
     },
     {
-      "timeMs": 180820,
+      "timeMs": 161960,
       "verseStart": 19
     },
     {
-      "timeMs": 181540,
+      "timeMs": 170260,
       "verseStart": 20
     },
     {
-      "timeMs": 182260,
+      "timeMs": 175440,
       "verseStart": 21
     },
     {
-      "timeMs": 186660,
+      "timeMs": 186620,
       "verseStart": 22
     },
     {
-      "timeMs": 193860,
+      "timeMs": 193820,
       "verseStart": 23
     },
     {
-      "timeMs": 202420,
+      "timeMs": 202680,
       "verseStart": 24
     },
     {
-      "timeMs": 223620,
+      "timeMs": 215560,
       "verseStart": 25
     },
     {
-      "timeMs": 244820,
+      "timeMs": 222600,
       "verseStart": 26
     },
     {
-      "timeMs": 266020,
+      "timeMs": 238740,
       "verseStart": 27
     },
     {
-      "timeMs": 266910,
+      "timeMs": 253760,
       "verseStart": 28
     },
     {
-      "timeMs": 267800,
+      "timeMs": 264460,
       "verseStart": 29
     },
     {
-      "timeMs": 276020,
+      "timeMs": 275540,
       "verseStart": 30
     },
     {
-      "timeMs": 281680,
+      "timeMs": 281840,
       "verseStart": 31
     },
     {
-      "timeMs": 290060,
+      "timeMs": 290160,
       "verseStart": 32
     },
     {
-      "timeMs": 296140,
+      "timeMs": 295940,
       "verseStart": 33
     },
     {
-      "timeMs": 301180,
+      "timeMs": 300820,
       "verseStart": 34
     },
     {
-      "timeMs": 314675,
+      "timeMs": 314320,
       "verseStart": 35
     },
     {
-      "timeMs": 328170,
+      "timeMs": 329520,
       "verseStart": 36
     },
     {
-      "timeMs": 341665,
+      "timeMs": 341720,
       "verseStart": 37
     },
     {
-      "timeMs": 355160,
+      "timeMs": 347680,
       "verseStart": 38
     },
     {
-      "timeMs": 361120,
+      "timeMs": 359120,
       "verseStart": 39
     },
     {
-      "timeMs": 366420,
+      "timeMs": 366380,
       "verseStart": 40
     },
     {
-      "timeMs": 381140,
+      "timeMs": 381060,
       "verseStart": 41
     },
     {
-      "timeMs": 387140,
+      "timeMs": 387420,
       "verseStart": 42
     },
     {
-      "timeMs": 399920,
+      "timeMs": 400040,
       "verseStart": 43
     },
     {
-      "timeMs": 406380,
+      "timeMs": 405760,
       "verseStart": 44
     },
     {
-      "timeMs": 414500,
+      "timeMs": 414460,
       "verseStart": 45
     },
     {
@@ -192,19 +192,19 @@
       "verseStart": 46
     },
     {
-      "timeMs": 426780,
+      "timeMs": 426660,
       "verseStart": 47
     },
     {
-      "timeMs": 438740,
+      "timeMs": 438720,
       "verseStart": 48
     },
     {
-      "timeMs": 451700,
+      "timeMs": 451680,
       "verseStart": 49
     },
     {
-      "timeMs": 460260,
+      "timeMs": 460380,
       "verseStart": 50
     }
   ]

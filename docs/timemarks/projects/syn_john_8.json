@@ -8,19 +8,19 @@
   "audioFileName": "43_08.mp3",
   "cues": [
     {
-      "timeMs": 4860,
+      "timeMs": 4020,
       "verseStart": 1
     },
     {
-      "timeMs": 9180,
+      "timeMs": 9540,
       "verseStart": 2
     },
     {
-      "timeMs": 17580,
+      "timeMs": 17860,
       "verseStart": 3
     },
     {
-      "timeMs": 26540,
+      "timeMs": 26560,
       "verseStart": 4
     },
     {
@@ -32,127 +32,127 @@
       "verseStart": 6
     },
     {
-      "timeMs": 62420,
+      "timeMs": 62760,
       "verseStart": 7
     },
     {
-      "timeMs": 80700,
+      "timeMs": 75940,
       "verseStart": 8
     },
     {
-      "timeMs": 84500,
+      "timeMs": 83560,
       "verseStart": 9
     },
     {
-      "timeMs": 127700,
+      "timeMs": 101520,
       "verseStart": 10
     },
     {
-      "timeMs": 130340,
+      "timeMs": 117060,
       "verseStart": 11
     },
     {
-      "timeMs": 131120,
+      "timeMs": 131640,
       "verseStart": 12
     },
     {
-      "timeMs": 148820,
+      "timeMs": 148940,
       "verseStart": 13
     },
     {
-      "timeMs": 160260,
+      "timeMs": 160160,
       "verseStart": 14
     },
     {
-      "timeMs": 175110,
+      "timeMs": 177540,
       "verseStart": 15
     },
     {
-      "timeMs": 189960,
+      "timeMs": 183520,
       "verseStart": 16
     },
     {
-      "timeMs": 193960,
+      "timeMs": 193920,
       "verseStart": 17
     },
     {
-      "timeMs": 200420,
+      "timeMs": 199460,
       "verseStart": 18
     },
     {
-      "timeMs": 208320,
+      "timeMs": 208300,
       "verseStart": 19
     },
     {
-      "timeMs": 230860,
+      "timeMs": 226380,
       "verseStart": 20
     },
     {
-      "timeMs": 240400,
+      "timeMs": 240140,
       "verseStart": 21
     },
     {
-      "timeMs": 256700,
+      "timeMs": 257840,
       "verseStart": 22
     },
     {
-      "timeMs": 266020,
+      "timeMs": 266140,
       "verseStart": 23
     },
     {
-      "timeMs": 277140,
+      "timeMs": 277160,
       "verseStart": 24
     },
     {
-      "timeMs": 289380,
+      "timeMs": 289540,
       "verseStart": 25
     },
     {
-      "timeMs": 300840,
+      "timeMs": 301140,
       "verseStart": 26
     },
     {
-      "timeMs": 340420,
+      "timeMs": 313480,
       "verseStart": 27
     },
     {
-      "timeMs": 345783,
+      "timeMs": 319020,
       "verseStart": 28
     },
     {
-      "timeMs": 351147,
+      "timeMs": 336360,
       "verseStart": 29
     },
     {
-      "timeMs": 356510,
+      "timeMs": 347400,
       "verseStart": 30
     },
     {
-      "timeMs": 361873,
+      "timeMs": 351720,
       "verseStart": 31
     },
     {
-      "timeMs": 367237,
+      "timeMs": 364480,
       "verseStart": 32
     },
     {
-      "timeMs": 372600,
+      "timeMs": 371400,
       "verseStart": 33
     },
     {
-      "timeMs": 383760,
+      "timeMs": 384080,
       "verseStart": 34
     },
     {
-      "timeMs": 394800,
+      "timeMs": 393980,
       "verseStart": 35
     },
     {
-      "timeMs": 400560,
+      "timeMs": 400600,
       "verseStart": 36
     },
     {
-      "timeMs": 407760,
+      "timeMs": 407720,
       "verseStart": 37
     },
     {
@@ -164,71 +164,71 @@
       "verseStart": 39
     },
     {
-      "timeMs": 441220,
+      "timeMs": 441180,
       "verseStart": 40
     },
     {
-      "timeMs": 452460,
+      "timeMs": 452400,
       "verseStart": 41
     },
     {
-      "timeMs": 466600,
+      "timeMs": 466400,
       "verseStart": 42
     },
     {
-      "timeMs": 480810,
+      "timeMs": 484940,
       "verseStart": 43
     },
     {
-      "timeMs": 495020,
+      "timeMs": 492180,
       "verseStart": 44
     },
     {
-      "timeMs": 513660,
+      "timeMs": 513020,
       "verseStart": 45
     },
     {
-      "timeMs": 518620,
+      "timeMs": 518700,
       "verseStart": 46
     },
     {
-      "timeMs": 527680,
+      "timeMs": 527660,
       "verseStart": 47
     },
     {
-      "timeMs": 537520,
+      "timeMs": 536740,
       "verseStart": 48
     },
     {
-      "timeMs": 546920,
+      "timeMs": 546620,
       "verseStart": 49
     },
     {
-      "timeMs": 557860,
+      "timeMs": 557520,
       "verseStart": 50
     },
     {
-      "timeMs": 565060,
+      "timeMs": 565160,
       "verseStart": 51
     },
     {
-      "timeMs": 574560,
+      "timeMs": 574580,
       "verseStart": 52
     },
     {
-      "timeMs": 589680,
+      "timeMs": 590700,
       "verseStart": 53
     },
     {
-      "timeMs": 600000,
+      "timeMs": 599920,
       "verseStart": 54
     },
     {
-      "timeMs": 616370,
+      "timeMs": 616100,
       "verseStart": 55
     },
     {
-      "timeMs": 632740,
+      "timeMs": 629960,
       "verseStart": 56
     },
     {
@@ -236,11 +236,11 @@
       "verseStart": 57
     },
     {
-      "timeMs": 649320,
+      "timeMs": 648780,
       "verseStart": 58
     },
     {
-      "timeMs": 657880,
+      "timeMs": 659540,
       "verseStart": 59
     }
   ]

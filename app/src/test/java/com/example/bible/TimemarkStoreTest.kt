@@ -71,6 +71,17 @@ class TimemarkStoreTest {
     }
 
     @Test
+    fun shouldReplaceBundled_newerAssetWinsEvenIfShorter() {
+        val oldJson = """{"updatedAt": 100, "cues": [1, 2, 3, 4]}"""
+        val newerJson = """{"updatedAt": 200, "cues": [9]}"""
+        assertTrue(TimemarkStore.shouldReplaceBundled(oldJson, newerJson))
+        assertFalse(TimemarkStore.shouldReplaceBundled(newerJson, oldJson))
+        assertFalse(TimemarkStore.shouldReplaceBundled(newerJson, newerJson))
+        assertTrue(TimemarkStore.shouldReplaceBundled(null, newerJson))
+        assertTrue(TimemarkStore.shouldReplaceBundled("не json", newerJson))
+    }
+
+    @Test
     fun hasTimemarksForChapter_emptyWhenNoProjects() {
         val root = tempDir.newFolder("files")
         val context = FakeContext(root)

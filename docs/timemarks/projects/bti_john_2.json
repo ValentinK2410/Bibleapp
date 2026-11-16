@@ -8,7 +8,7 @@
   "audioFileName": "43_02.mp3",
   "cues": [
     {
-      "timeMs": 4120,
+      "timeMs": 3640,
       "verseStart": 1
     },
     {
@@ -20,79 +20,79 @@
       "verseStart": 3
     },
     {
-      "timeMs": 27480,
+      "timeMs": 27800,
       "verseStart": 4
     },
     {
-      "timeMs": 39320,
+      "timeMs": 39180,
       "verseStart": 5
     },
     {
-      "timeMs": 48520,
+      "timeMs": 48120,
       "verseStart": 6
     },
     {
-      "timeMs": 60320,
+      "timeMs": 63280,
       "verseStart": 7
     },
     {
-      "timeMs": 68700,
+      "timeMs": 72540,
       "verseStart": 8
     },
     {
-      "timeMs": 83340,
+      "timeMs": 83020,
       "verseStart": 9
     },
     {
-      "timeMs": 97640,
+      "timeMs": 97680,
       "verseStart": 10
     },
     {
-      "timeMs": 117220,
+      "timeMs": 117120,
       "verseStart": 11
     },
     {
-      "timeMs": 137300,
+      "timeMs": 137900,
       "verseStart": 12
     },
     {
-      "timeMs": 148420,
+      "timeMs": 148500,
       "verseStart": 13
     },
     {
-      "timeMs": 156620,
+      "timeMs": 155469,
       "verseStart": 14
     },
     {
-      "timeMs": 169560,
+      "timeMs": 169185,
       "verseStart": 15
     },
     {
-      "timeMs": 184360,
+      "timeMs": 184340,
       "verseStart": 16
     },
     {
-      "timeMs": 202470,
+      "timeMs": 198300,
       "verseStart": 17
     },
     {
-      "timeMs": 220580,
+      "timeMs": 209840,
       "verseStart": 18
     },
     {
-      "timeMs": 223700,
+      "timeMs": 223920,
       "verseStart": 19
     },
     {
-      "timeMs": 234140,
+      "timeMs": 234540,
       "verseStart": 20
     },
     {
-      "timeMs": 245360,
+      "timeMs": 245280,
       "verseStart": 21
     },
     {
-      "timeMs": 254200,
+      "timeMs": 254160,
       "verseStart": 22
     },
     {
@@ -100,11 +100,11 @@
       "verseStart": 23
     },
     {
-      "timeMs": 282920,
+      "timeMs": 282880,
       "verseStart": 24
     },
     {
-      "timeMs": 292620,
+      "timeMs": 292580,
       "verseStart": 25
     }
   ]

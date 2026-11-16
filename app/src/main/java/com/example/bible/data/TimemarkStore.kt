@@ -13,7 +13,11 @@ object TimemarkStore {
     private fun dir(context: Context): File =
         File(context.filesDir, "timemark_projects").also { it.mkdirs() }
 
-    /** Копирует готовые таймкоды из assets, если на телефоне их ещё нет или файл короче. */
+    /**
+     * Копирует готовые таймкоды из assets.
+     * Уже лежащий на телефоне файл заменяется, только если в комплекте метка новее.
+     * Правка пользователя новее комплекта и поэтому сохраняется.
+     */
     fun importBundled(context: Context) {
         val names = context.assets.list("timemark_projects") ?: return
         val out = dir(context)
@@ -22,11 +26,26 @@ object TimemarkStore {
             val dest = File(out, name)
             context.assets.open("timemark_projects/$name").use { input ->
                 val bytes = input.readBytes()
-                if (dest.isFile && dest.length() >= bytes.size) continue
+                val assetJson = bytes.toString(Charsets.UTF_8)
+                val existing = if (dest.isFile) runCatching { dest.readText() }.getOrNull() else null
+                if (!shouldReplaceBundled(existing, assetJson)) continue
                 dest.writeBytes(bytes)
             }
         }
     }
+
+    /** Комплектный JSON заменяет местный, если его updatedAt новее или местный файл не читается. */
+    fun shouldReplaceBundled(existingJson: String?, assetJson: String): Boolean {
+        if (existingJson.isNullOrBlank()) return true
+        val assetUpdated = updatedAtOrNull(assetJson) ?: return existingJson != assetJson
+        val existingUpdated = updatedAtOrNull(existingJson) ?: return true
+        return assetUpdated > existingUpdated
+    }
+
+    private fun updatedAtOrNull(json: String): Long? = runCatching {
+        val obj = JSONObject(json)
+        if (!obj.has("updatedAt")) null else obj.getLong("updatedAt")
+    }.getOrNull()
 
     fun listProjectFiles(context: Context): List<File> =
         dir(context).listFiles()

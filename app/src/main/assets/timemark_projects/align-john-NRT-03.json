@@ -5,35 +5,35 @@
   "chapter": 3,
   "title": "От Иоанна 3 · Новый русский",
   "audioFilePath": "/data/user/0/com.example.bible.sqlite/files/bible_audio/new-russian/43_03.mp3",
-  "updatedAt": 1763308800000,
+  "updatedAt": 1763323200000,
   "cues": [
     {
-      "timeMs": 3780,
+      "timeMs": 8040,
       "verseStart": 1,
       "attachments": []
     },
     {
-      "timeMs": 4960,
+      "timeMs": 15940,
       "verseStart": 2,
       "attachments": []
     },
     {
-      "timeMs": 30000,
+      "timeMs": 29960,
       "verseStart": 3,
       "attachments": []
     },
     {
-      "timeMs": 45000,
+      "timeMs": 39260,
       "verseStart": 4,
       "attachments": []
     },
     {
-      "timeMs": 60000,
+      "timeMs": 50840,
       "verseStart": 5,
       "attachments": []
     },
     {
-      "timeMs": 61280,
+      "timeMs": 61340,
       "verseStart": 6,
       "attachments": []
     },
@@ -48,62 +48,62 @@
       "attachments": []
     },
     {
-      "timeMs": 79280,
+      "timeMs": 81860,
       "verseStart": 9,
       "attachments": []
     },
     {
-      "timeMs": 85660,
+      "timeMs": 85780,
       "verseStart": 10,
       "attachments": []
     },
     {
-      "timeMs": 92060,
+      "timeMs": 91900,
       "verseStart": 11,
       "attachments": []
     },
     {
-      "timeMs": 101600,
+      "timeMs": 101700,
       "verseStart": 12,
       "attachments": []
     },
     {
-      "timeMs": 110140,
+      "timeMs": 110160,
       "verseStart": 13,
       "attachments": []
     },
     {
-      "timeMs": 116600,
+      "timeMs": 117140,
       "verseStart": 14,
       "attachments": []
     },
     {
-      "timeMs": 119620,
+      "timeMs": 122340,
       "verseStart": 15,
       "attachments": []
     },
     {
-      "timeMs": 122640,
+      "timeMs": 127020,
       "verseStart": 16,
       "attachments": []
     },
     {
-      "timeMs": 139200,
+      "timeMs": 139300,
       "verseStart": 17,
       "attachments": []
     },
     {
-      "timeMs": 147160,
+      "timeMs": 147080,
       "verseStart": 18,
       "attachments": []
     },
     {
-      "timeMs": 157340,
+      "timeMs": 157260,
       "verseStart": 19,
       "attachments": []
     },
     {
-      "timeMs": 167400,
+      "timeMs": 167720,
       "verseStart": 20,
       "attachments": []
     },
@@ -113,7 +113,7 @@
       "attachments": []
     },
     {
-      "timeMs": 191000,
+      "timeMs": 190580,
       "verseStart": 22,
       "attachments": []
     },
@@ -128,62 +128,62 @@
       "attachments": []
     },
     {
-      "timeMs": 212060,
+      "timeMs": 212080,
       "verseStart": 25,
       "attachments": []
     },
     {
-      "timeMs": 218920,
+      "timeMs": 219140,
       "verseStart": 26,
       "attachments": []
     },
     {
-      "timeMs": 229927,
+      "timeMs": 232160,
       "verseStart": 27,
       "attachments": []
     },
     {
-      "timeMs": 240933,
+      "timeMs": 238600,
       "verseStart": 28,
       "attachments": []
     },
     {
-      "timeMs": 251940,
+      "timeMs": 246260,
       "verseStart": 29,
       "attachments": []
     },
     {
-      "timeMs": 261140,
+      "timeMs": 260910,
       "verseStart": 30,
       "attachments": []
     },
     {
-      "timeMs": 265920,
+      "timeMs": 266460,
       "verseStart": 31,
       "attachments": []
     },
     {
-      "timeMs": 276700,
+      "timeMs": 276720,
       "verseStart": 32,
       "attachments": []
     },
     {
-      "timeMs": 285225,
+      "timeMs": 284860,
       "verseStart": 33,
       "attachments": []
     },
     {
-      "timeMs": 293750,
+      "timeMs": 290440,
       "verseStart": 34,
       "attachments": []
     },
     {
-      "timeMs": 302275,
+      "timeMs": 298480,
       "verseStart": 35,
       "attachments": []
     },
     {
-      "timeMs": 310800,
+      "timeMs": 302180,
       "verseStart": 36,
       "attachments": []
     }

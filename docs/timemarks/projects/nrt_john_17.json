@@ -12,11 +12,11 @@
       "verseStart": 1
     },
     {
-      "timeMs": 19180,
+      "timeMs": 18900,
       "verseStart": 2
     },
     {
-      "timeMs": 26900,
+      "timeMs": 26800,
       "verseStart": 3
     },
     {
@@ -24,15 +24,15 @@
       "verseStart": 4
     },
     {
-      "timeMs": 50200,
+      "timeMs": 45180,
       "verseStart": 5
     },
     {
-      "timeMs": 61200,
+      "timeMs": 61120,
       "verseStart": 6
     },
     {
-      "timeMs": 72400,
+      "timeMs": 72780,
       "verseStart": 7
     },
     {
@@ -48,31 +48,31 @@
       "verseStart": 10
     },
     {
-      "timeMs": 111200,
+      "timeMs": 111180,
       "verseStart": 11
     },
     {
-      "timeMs": 129840,
+      "timeMs": 129860,
       "verseStart": 12
     },
     {
-      "timeMs": 140095,
+      "timeMs": 144160,
       "verseStart": 13
     },
     {
-      "timeMs": 150350,
+      "timeMs": 154820,
       "verseStart": 14
     },
     {
-      "timeMs": 160605,
+      "timeMs": 164020,
       "verseStart": 15
     },
     {
-      "timeMs": 170860,
+      "timeMs": 171540,
       "verseStart": 16
     },
     {
-      "timeMs": 175880,
+      "timeMs": 175860,
       "verseStart": 17
     },
     {
@@ -84,7 +84,7 @@
       "verseStart": 19
     },
     {
-      "timeMs": 201640,
+      "timeMs": 201660,
       "verseStart": 20
     },
     {
@@ -92,7 +92,7 @@
       "verseStart": 21
     },
     {
-      "timeMs": 221640,
+      "timeMs": 221700,
       "verseStart": 22
     },
     {
@@ -100,15 +100,15 @@
       "verseStart": 23
     },
     {
-      "timeMs": 244420,
+      "timeMs": 244460,
       "verseStart": 24
     },
     {
-      "timeMs": 262100,
+      "timeMs": 262200,
       "verseStart": 25
     },
     {
-      "timeMs": 273080,
+      "timeMs": 273100,
       "verseStart": 26
     }
   ]
