@@ -129,7 +129,6 @@ private fun kidsHubRouteCategory(route: String): KidsHubCategory = when (route) 
     "kids_space",
     -> KidsHubCategory.WORLD
     "kids_games",
-    "kids_redball",
     "kids_coloring",
     -> KidsHubCategory.PLAY
     else -> if (KidsPicturedRoutes.isPicturedRoute(route)) KidsHubCategory.WORLD else KidsHubCategory.ALL

@@ -1,5 +1,7 @@
 package com.example.bible.ui
 
+import android.widget.Toast
+import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.gestures.awaitEachGesture
@@ -8,6 +10,9 @@ import androidx.compose.foundation.gestures.waitForUpOrCancellation
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
+import androidx.compose.foundation.layout.FlowRow
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -17,50 +22,421 @@ import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBarsPadding
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Refresh
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.produceState
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.withFrameNanos
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.geometry.CornerRadius
-import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.geometry.Size
-import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.Path
-import androidx.compose.ui.graphics.drawscope.DrawScope
-import androidx.compose.ui.graphics.drawscope.Stroke
-import androidx.compose.ui.graphics.drawscope.rotate
-import androidx.compose.ui.graphics.drawscope.withTransform
 import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.bible.data.KidsGames
 import com.example.bible.games.KidsGameAudio
 import com.example.bible.games.KidsSfx
+import com.example.bible.games.RedBallDraft
+import com.example.bible.games.RedBallLevelMeta
+import com.example.bible.games.RedBallLevelStore
+import com.example.bible.games.RedBallPiece
+import com.example.bible.games.RedBallScene
 import com.example.bible.games.RedBallSim
+import com.example.bible.ui.theme.OutlinedTextField
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.isActive
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
+
+private enum class RedBallPage { MENU, LEVELS, EDITOR, PLAY }
+
+private class PlayRequest(val scene: RedBallScene, val test: Boolean)
 
 @Composable
 fun KidsRedBallGameScreen(onBack: () -> Unit) {
-    val sim = remember { RedBallSim() }
+    val context = LocalContext.current
+    val store = remember { RedBallLevelStore(context.applicationContext) }
+    val scope = rememberCoroutineScope()
+    var page by remember { mutableStateOf(RedBallPage.MENU) }
+    var draft by remember { mutableStateOf(RedBallDraft.fresh()) }
+    var savedPieces by remember { mutableStateOf(draft.pieces) }
+    var savedName by remember { mutableStateOf(draft.name) }
+    var fromList by remember { mutableStateOf(false) }
+    val undo = remember { ArrayDeque<List<RedBallPiece>>() }
+    var tool by remember { mutableStateOf(RedBallTool.GROUND) }
+    var camX by remember { mutableStateOf(0f) }
+    var play by remember { mutableStateOf<PlayRequest?>(null) }
+    var listRev by remember { mutableIntStateOf(0) }
+    var warning by remember { mutableStateOf<String?>(null) }
+
+    fun cleanName(raw: String) = raw.trim().ifBlank { "Без имени" }.take(32)
+    fun dirty() = draft.pieces != savedPieces || cleanName(draft.name) != cleanName(savedName)
+
+    fun persist(showToast: Boolean): Boolean {
+        return try {
+            val stamped = draft.copy(name = cleanName(draft.name), updatedAt = System.currentTimeMillis())
+            store.save(stamped)
+            draft = stamped
+            savedPieces = stamped.pieces
+            savedName = stamped.name
+            fromList = true
+            listRev++
+            if (showToast) {
+                Toast.makeText(context, "Уровень сохранён", Toast.LENGTH_SHORT).show()
+            }
+            true
+        } catch (_: Exception) {
+            Toast.makeText(context, "Не получилось сохранить", Toast.LENGTH_SHORT).show()
+            false
+        }
+    }
+
+    fun openDraft(next: RedBallDraft, listed: Boolean) {
+        draft = next
+        savedPieces = next.pieces
+        savedName = next.name
+        fromList = listed
+        undo.clear()
+        tool = RedBallTool.GROUND
+        camX = 0f
+        warning = null
+        page = RedBallPage.EDITOR
+    }
+
+    fun closeEditor() {
+        if (dirty() && !persist(showToast = true)) return
+        page = if (fromList) RedBallPage.LEVELS else RedBallPage.MENU
+    }
+
+    fun beginPlay(scene: RedBallScene, test: Boolean) {
+        play = PlayRequest(scene, test)
+        page = RedBallPage.PLAY
+    }
+
+    fun leavePlay() {
+        val current = play
+        page = when {
+            current?.test == true -> RedBallPage.EDITOR
+            current?.scene?.builtin == false -> RedBallPage.LEVELS
+            else -> RedBallPage.MENU
+        }
+    }
+
+    KidsGameMusic(com.example.bible.games.KidsMusicTrack.GAMES)
+    BackHandler {
+        when (page) {
+            RedBallPage.MENU -> onBack()
+            RedBallPage.LEVELS -> page = RedBallPage.MENU
+            RedBallPage.EDITOR -> closeEditor()
+            RedBallPage.PLAY -> leavePlay()
+        }
+    }
+
+    when (page) {
+        RedBallPage.MENU -> RedBallMenu(
+            onBack = onBack,
+            onPlayBuiltin = { beginPlay(RedBallScene.builtin(), test = false) },
+            onMyLevels = { page = RedBallPage.LEVELS },
+            onCreate = { openDraft(RedBallDraft.fresh(), listed = false) },
+        )
+        RedBallPage.LEVELS -> RedBallLevelList(
+            store = store,
+            revision = listRev,
+            onBack = { page = RedBallPage.MENU },
+            onPlay = { id ->
+                scope.launch {
+                    val loaded = withContext(Dispatchers.IO) { store.load(id) }
+                    if (loaded == null) {
+                        Toast.makeText(context, "Уровень не открылся", Toast.LENGTH_SHORT).show()
+                        listRev++
+                        return@launch
+                    }
+                    val reason = loaded.playBlockReason()
+                    if (reason != null) {
+                        Toast.makeText(context, reason, Toast.LENGTH_SHORT).show()
+                        return@launch
+                    }
+                    beginPlay(loaded.toScene(), test = false)
+                }
+            },
+            onEdit = { id ->
+                scope.launch {
+                    val loaded = withContext(Dispatchers.IO) { store.load(id) }
+                    if (loaded == null) {
+                        Toast.makeText(context, "Уровень не открылся", Toast.LENGTH_SHORT).show()
+                        listRev++
+                    } else {
+                        openDraft(loaded, listed = true)
+                    }
+                }
+            },
+            onChanged = { listRev++ },
+        )
+        RedBallPage.EDITOR -> KidsRedBallEditor(
+            draft = draft,
+            tool = tool,
+            onTool = { tool = it },
+            camX = camX,
+            onCamX = { camX = it },
+            canUndo = undo.isNotEmpty(),
+            onUndo = {
+                val prev = undo.removeLastOrNull() ?: return@KidsRedBallEditor
+                draft = draft.copy(pieces = prev)
+                warning = null
+            },
+            onDraft = { draft = it },
+            onCommit = { updated, snapshot ->
+                if (snapshot != null && snapshot != updated.pieces) {
+                    undo.addLast(snapshot)
+                    while (undo.size > 40) undo.removeFirst()
+                }
+                draft = updated
+                warning = null
+            },
+            warning = warning,
+            onBack = { closeEditor() },
+            onTest = {
+                val reason = draft.playBlockReason()
+                if (reason != null) {
+                    warning = reason
+                    return@KidsRedBallEditor
+                }
+                if (dirty() && !persist(showToast = false)) return@KidsRedBallEditor
+                beginPlay(draft.toScene(), test = true)
+            },
+            onSave = { persist(showToast = true) },
+        )
+        RedBallPage.PLAY -> {
+            val request = play
+            if (request != null) {
+                RedBallPlay(
+                    scene = request.scene,
+                    testMode = request.test,
+                    onExit = { leavePlay() },
+                )
+            }
+        }
+    }
+}
+
+@Composable
+private fun RedBallMenu(
+    onBack: () -> Unit,
+    onPlayBuiltin: () -> Unit,
+    onMyLevels: () -> Unit,
+    onCreate: () -> Unit,
+) {
+    Box(
+        Modifier
+            .fillMaxSize()
+            .background(Color(0xFFBFDBFE)),
+    ) {
+        Canvas(Modifier.fillMaxSize()) { drawFairySky(0f, 1f) }
+        Column(
+            Modifier
+                .fillMaxSize()
+                .statusBarsPadding()
+                .navigationBarsPadding()
+                .padding(horizontal = 22.dp, vertical = 8.dp),
+        ) {
+            IconButton(onClick = onBack) {
+                Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Назад", tint = Color(0xFF7C2D12))
+            }
+            Text(
+                "Красный мяч",
+                fontWeight = FontWeight.Black,
+                fontSize = 34.sp,
+                color = Color(0xFF7C2D12),
+            )
+            Text(
+                "Кати мяч до двери или собери свою сказочную горку.",
+                color = Color(0xFF9A3412),
+                fontSize = 16.sp,
+            )
+            Spacer(Modifier.height(22.dp))
+            MenuCard("Играть", "Готовая горка: ящик, пружина и дверь", Color(0xFFDC2626), onPlayBuiltin)
+            Spacer(Modifier.height(12.dp))
+            MenuCard("Мои уровни", "Сыграть, поправить, переименовать или удалить", Color(0xFFC2410C), onMyLevels)
+            Spacer(Modifier.height(12.dp))
+            MenuCard("Создать уровень", "Земля, горки, ящики, шипы и дверь", Color(0xFF15803D), onCreate)
+        }
+    }
+}
+
+@Composable
+private fun MenuCard(title: String, subtitle: String, color: Color, onClick: () -> Unit) {
+    Column(
+        Modifier
+            .fillMaxWidth()
+            .clip(RoundedCornerShape(28.dp))
+            .background(color)
+            .kidsPressable(onClick = onClick)
+            .padding(horizontal = 20.dp, vertical = 18.dp),
+    ) {
+        Text(title, color = Color.White, fontWeight = FontWeight.Black, fontSize = 24.sp)
+        Spacer(Modifier.height(4.dp))
+        Text(subtitle, color = Color.White.copy(alpha = 0.9f), fontSize = 15.sp, lineHeight = 19.sp)
+    }
+}
+
+@OptIn(ExperimentalLayoutApi::class)
+@Composable
+private fun RedBallLevelList(
+    store: RedBallLevelStore,
+    revision: Int,
+    onBack: () -> Unit,
+    onPlay: (String) -> Unit,
+    onEdit: (String) -> Unit,
+    onChanged: () -> Unit,
+) {
+    val levels by produceState(emptyList<RedBallLevelMeta>(), revision, store) {
+        value = withContext(Dispatchers.IO) { store.list() }
+    }
+    var rename by remember { mutableStateOf<RedBallLevelMeta?>(null) }
+    var renameText by remember { mutableStateOf("") }
+    var remove by remember { mutableStateOf<RedBallLevelMeta?>(null) }
+    val scope = rememberCoroutineScope()
+
+    Box(
+        Modifier
+            .fillMaxSize()
+            .background(Color(0xFFFFF7ED)),
+    ) {
+        Column(
+            Modifier
+                .fillMaxSize()
+                .statusBarsPadding()
+                .navigationBarsPadding(),
+        ) {
+            Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.padding(end = 12.dp)) {
+                IconButton(onClick = onBack) {
+                    Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Назад", tint = Color(0xFF7C2D12))
+                }
+                Text("Мои уровни", fontWeight = FontWeight.Black, fontSize = 26.sp, color = Color(0xFF7C2D12))
+            }
+            if (levels.isEmpty()) {
+                Text(
+                    "Пока пусто. Нажми «Создать уровень» и собери свою горку.",
+                    modifier = Modifier.padding(horizontal = 20.dp, vertical = 12.dp),
+                    color = Color(0xFF9A3412),
+                    fontSize = 16.sp,
+                )
+            }
+            LazyColumn(
+                contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp),
+                verticalArrangement = Arrangement.spacedBy(12.dp),
+            ) {
+                items(levels, key = { it.id }) { level ->
+                    Column(
+                        Modifier
+                            .fillMaxWidth()
+                            .clip(RoundedCornerShape(24.dp))
+                            .background(Color.White)
+                            .padding(16.dp),
+                    ) {
+                        Text(level.name, fontWeight = FontWeight.Black, fontSize = 20.sp, color = Color(0xFF7C2D12))
+                        Spacer(Modifier.height(10.dp))
+                        FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                            LevelChip("Играть", Color(0xFF15803D)) { onPlay(level.id) }
+                            LevelChip("Править", Color(0xFFC2410C)) { onEdit(level.id) }
+                            LevelChip("Имя", Color(0xFFB45309)) {
+                                rename = level
+                                renameText = level.name
+                            }
+                            LevelChip("Удалить", Color(0xFFBE123C)) { remove = level }
+                        }
+                    }
+                }
+            }
+        }
+    }
+    val renaming = rename
+    if (renaming != null) {
+        AlertDialog(
+            onDismissRequest = { rename = null },
+            title = { Text("Новое имя", fontWeight = FontWeight.Black) },
+            text = {
+                OutlinedTextField(
+                    value = renameText,
+                    onValueChange = { renameText = it.take(32) },
+                    singleLine = true,
+                    modifier = Modifier.fillMaxWidth(),
+                )
+            },
+            confirmButton = {
+                TextButton(onClick = {
+                    val id = renaming.id
+                    val name = renameText
+                    rename = null
+                    scope.launch {
+                        withContext(Dispatchers.IO) { store.rename(id, name) }
+                        onChanged()
+                    }
+                }) { Text("Сохранить") }
+            },
+            dismissButton = { TextButton(onClick = { rename = null }) { Text("Отмена") } },
+        )
+    }
+    val removing = remove
+    if (removing != null) {
+        AlertDialog(
+            onDismissRequest = { remove = null },
+            title = { Text("Удалить уровень?", fontWeight = FontWeight.Black) },
+            text = { Text("«${removing.name}» пропадёт с этого телефона.") },
+            confirmButton = {
+                TextButton(onClick = {
+                    val id = removing.id
+                    remove = null
+                    scope.launch {
+                        withContext(Dispatchers.IO) { store.delete(id) }
+                        onChanged()
+                    }
+                }) { Text("Удалить") }
+            },
+            dismissButton = { TextButton(onClick = { remove = null }) { Text("Оставить") } },
+        )
+    }
+}
+
+@Composable
+private fun LevelChip(label: String, color: Color, onClick: () -> Unit) {
+    Box(
+        Modifier
+            .clip(RoundedCornerShape(999.dp))
+            .background(color)
+            .kidsPressable(onClick = onClick)
+            .padding(horizontal = 14.dp, vertical = 10.dp),
+    ) {
+        Text(label, color = Color.White, fontWeight = FontWeight.Black, fontSize = 15.sp)
+    }
+}
+
+@Composable
+private fun RedBallPlay(scene: RedBallScene, testMode: Boolean, onExit: () -> Unit) {
+    val sim = remember(scene) { RedBallSim(scene) }
     val held = remember { intArrayOf(0, 0) }
     var tick by remember { mutableIntStateOf(0) }
-    LaunchedEffect(sim) {
+    androidx.compose.runtime.LaunchedEffect(sim) {
         var last = 0L
         while (isActive) {
             withFrameNanos { now ->
@@ -74,50 +450,58 @@ fun KidsRedBallGameScreen(onBack: () -> Unit) {
             }
         }
     }
-    LaunchedEffect(tick) {
+    androidx.compose.runtime.LaunchedEffect(tick) {
         if (sim.consumeLose()) KidsGameAudio.play(KidsSfx.LOSE)
         if (sim.consumeSpring()) KidsGameAudio.play(KidsSfx.PLACE)
         if (sim.consumeWin()) KidsGameAudio.play(KidsSfx.WIN)
     }
-    KidsGameMusic(com.example.bible.games.KidsMusicTrack.GAMES)
-    KidsGameWinReward(KidsGames.RED_BALL, sim.won, points = 20, round = if (sim.won) 1 else 0)
-
-    Box(
-        Modifier
-            .fillMaxSize()
-            .background(Color(0xFF7DD3FC)),
-    ) {
+    if (!testMode) {
+        KidsGameWinReward(KidsGames.RED_BALL, sim.won, points = 20, round = if (sim.won) scene.id.hashCode() else 0)
+    }
+    val title = when {
+        testMode -> "Проверка · ${scene.name}"
+        scene.builtin -> "Красный мяч"
+        else -> scene.name
+    }
+    Box(Modifier.fillMaxSize().background(Color(0xFFBFDBFE))) {
         Canvas(Modifier.fillMaxSize()) {
             @Suppress("UNUSED_VARIABLE")
             val frame = tick
-            drawLevel(sim)
+            drawRedBallPlay(sim)
         }
         Row(
             Modifier
                 .statusBarsPadding()
-                .padding(horizontal = 4.dp, vertical = 4.dp)
-                .align(Alignment.TopStart),
+                .padding(start = 8.dp, top = 6.dp, end = 72.dp)
+                .align(Alignment.TopStart)
+                .clip(RoundedCornerShape(999.dp))
+                .background(Color.White.copy(alpha = 0.86f))
+                .padding(end = 12.dp),
             verticalAlignment = Alignment.CenterVertically,
         ) {
-            IconButton(onClick = onBack) {
-                Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Назад", tint = Color(0xFF0F172A))
+            IconButton(onClick = onExit) {
+                Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Назад", tint = Color(0xFF7C2D12))
             }
-            Text("Красный мяч  ·  уровень 1", fontWeight = FontWeight.Black, color = Color(0xFF0F172A), fontSize = 18.sp)
+            Text(title, fontWeight = FontWeight.Black, color = Color(0xFF7C2D12), fontSize = 16.sp, maxLines = 1)
         }
         IconButton(
             onClick = { sim.reset() },
             modifier = Modifier
                 .statusBarsPadding()
-                .align(Alignment.TopEnd),
+                .padding(6.dp)
+                .align(Alignment.TopEnd)
+                .clip(CircleShape)
+                .background(Color.White.copy(alpha = 0.86f)),
         ) {
-            Icon(Icons.Default.Refresh, contentDescription = "Заново", tint = Color(0xFF0F172A))
+            Icon(Icons.Default.Refresh, contentDescription = "Заново", tint = Color(0xFF7C2D12))
         }
         if (sim.won || sim.dead) {
             Column(
                 Modifier
                     .align(Alignment.Center)
+                    .padding(24.dp)
                     .clip(RoundedCornerShape(28.dp))
-                    .background(Color.White.copy(alpha = 0.94f))
+                    .background(Color.White.copy(alpha = 0.95f))
                     .padding(horizontal = 28.dp, vertical = 22.dp),
                 horizontalAlignment = Alignment.CenterHorizontally,
             ) {
@@ -126,22 +510,42 @@ fun KidsRedBallGameScreen(onBack: () -> Unit) {
                     fontWeight = FontWeight.Black,
                     fontSize = 26.sp,
                     color = Color(0xFF7F1D1D),
+                    textAlign = TextAlign.Center,
                 )
                 Spacer(Modifier.height(8.dp))
                 Text(
-                    if (sim.won) "Мяч докатился сам, как надо" else "Ящик закрывает яму, пружина подбрасывает наверх",
+                    when {
+                        sim.won && scene.builtin -> "Мяч докатился сам, как надо"
+                        sim.won -> "Получилось! Мяч добрался до двери"
+                        scene.builtin -> "Ящик закрывает яму, пружина подбрасывает наверх"
+                        else -> "Шипы колются, а без земли мяч падает"
+                    },
                     color = Color(0xFF44403C),
                     fontSize = 15.sp,
+                    textAlign = TextAlign.Center,
                 )
                 Spacer(Modifier.height(14.dp))
-                Box(
-                    Modifier
-                        .clip(RoundedCornerShape(999.dp))
-                        .background(Color(0xFFDC2626))
-                        .kidsPressable(onClick = { sim.reset() })
-                        .padding(horizontal = 22.dp, vertical = 10.dp),
-                ) {
-                    Text("Ещё раз", color = Color.White, fontWeight = FontWeight.Black, fontSize = 18.sp)
+                Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    Box(
+                        Modifier
+                            .clip(RoundedCornerShape(999.dp))
+                            .background(Color(0xFFDC2626))
+                            .kidsPressable(onClick = { sim.reset() })
+                            .padding(horizontal = 22.dp, vertical = 10.dp),
+                    ) {
+                        Text("Ещё раз", color = Color.White, fontWeight = FontWeight.Black, fontSize = 18.sp)
+                    }
+                    if (testMode) {
+                        Box(
+                            Modifier
+                                .clip(RoundedCornerShape(999.dp))
+                                .background(Color(0xFF15803D))
+                                .kidsPressable(onClick = onExit)
+                                .padding(horizontal = 18.dp, vertical = 10.dp),
+                        ) {
+                            Text("К редактору", color = Color.White, fontWeight = FontWeight.Black, fontSize = 18.sp)
+                        }
+                    }
                 }
             }
         }
@@ -152,9 +556,10 @@ fun KidsRedBallGameScreen(onBack: () -> Unit) {
                 .padding(horizontal = 22.dp, vertical = 16.dp)
                 .fillMaxWidth(),
             horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically,
         ) {
             HoldPad("◀", onHold = { held[0] = if (it) 1 else 0 })
-            Text("держи", fontWeight = FontWeight.Black, color = Color(0xFF7F1D1D), fontSize = 16.sp)
+            Text("держи", fontWeight = FontWeight.Black, color = Color(0xFF7C2D12), fontSize = 16.sp)
             HoldPad("▶", onHold = { held[1] = if (it) 1 else 0 })
         }
     }
@@ -166,7 +571,7 @@ private fun HoldPad(label: String, onHold: (Boolean) -> Unit) {
         Modifier
             .size(92.dp)
             .clip(CircleShape)
-            .background(Color.White.copy(alpha = 0.88f))
+            .background(Color.White.copy(alpha = 0.9f))
             .pointerInput(onHold) {
                 awaitEachGesture {
                     awaitFirstDown()
@@ -179,146 +584,4 @@ private fun HoldPad(label: String, onHold: (Boolean) -> Unit) {
     ) {
         Text(label, fontSize = 36.sp, fontWeight = FontWeight.Black, color = Color(0xFFB91C1C))
     }
-}
-
-private fun DrawScope.drawLevel(sim: RedBallSim) {
-    val viewH = 620f
-    val scale = size.height / viewH
-    val viewW = size.width / scale
-    val camX = (sim.ballX - viewW * 0.38f).coerceIn(0f, RedBallSim.WORLD_W - viewW)
-    val camY = (sim.ballY - viewH * 0.62f).coerceIn(180f, RedBallSim.WORLD_H - viewH)
-    withTransform({
-        scale(scale, scale, pivot = Offset.Zero)
-        translate(-camX, -camY)
-    }) {
-        drawRect(
-            Brush.verticalGradient(
-                listOf(Color(0xFF7DD3FC), Color(0xFFE0F2FE), Color(0xFFD9F99D)),
-                startY = camY,
-                endY = camY + viewH,
-            ),
-            topLeft = Offset(camX, camY),
-            size = Size(viewW, viewH),
-        )
-        drawCloud(camX + viewW * 0.15f, 260f, 90f)
-        drawCloud(camX + viewW * 0.55f, 220f, 70f)
-        drawCircle(Color(0xFFFDE68A), 46f, Offset(camX + viewW * 0.82f, camY + 70f))
-        for (solid in RedBallSim.SOLIDS) {
-            if (solid.t <= 0f || solid.l < 0f) continue
-            drawDirt(solid.l, solid.t, solid.r - solid.l, solid.b - solid.t)
-        }
-        val slope = RedBallSim.SLOPES.first()
-        val hill = Path().apply {
-            moveTo(slope.x0, slope.y0)
-            lineTo(slope.x1, slope.y1)
-            lineTo(slope.x1, 980f)
-            lineTo(slope.x0, 980f)
-            close()
-        }
-        drawPath(hill, Color(0xFF92400E))
-        drawPath(
-            Path().apply {
-                moveTo(slope.x0, slope.y0)
-                lineTo(slope.x1, slope.y1)
-            },
-            Color(0xFF16A34A),
-            style = Stroke(width = 18f),
-        )
-        for (spike in RedBallSim.SPIKES) {
-            val path = Path().apply {
-                moveTo(spike.x, spike.top)
-                lineTo(spike.x - spike.w / 2f, spike.top + spike.h)
-                lineTo(spike.x + spike.w / 2f, spike.top + spike.h)
-                close()
-            }
-            drawPath(path, Color(0xFFDC2626))
-        }
-        drawCrate(sim.crateX, sim.crateY, RedBallSim.CRATE)
-        drawSpring()
-        drawDoor()
-        drawBall(sim.ballX, sim.ballY, RedBallSim.BALL_R, sim.ballAngle)
-    }
-}
-
-private fun DrawScope.drawCloud(x: Float, y: Float, w: Float) {
-    drawCircle(Color.White.copy(alpha = 0.9f), w * 0.28f, Offset(x, y))
-    drawCircle(Color.White.copy(alpha = 0.9f), w * 0.36f, Offset(x + w * 0.28f, y - w * 0.08f))
-    drawCircle(Color.White.copy(alpha = 0.9f), w * 0.24f, Offset(x + w * 0.55f, y))
-}
-
-private fun DrawScope.drawDirt(x: Float, y: Float, w: Float, h: Float) {
-    drawRoundRect(Color(0xFF92400E), Offset(x, y), Size(w, h), CornerRadius(8f, 8f))
-    drawRoundRect(Color(0xFF16A34A), Offset(x, y), Size(w, 16f), CornerRadius(8f, 8f))
-}
-
-private fun DrawScope.drawCrate(cx: Float, cy: Float, side: Float) {
-    val x = cx - side / 2f
-    val y = cy - side / 2f
-    drawRoundRect(Color(0xFFB45309), Offset(x, y), Size(side, side), CornerRadius(8f, 8f))
-    drawRoundRect(
-        Color(0xFF78350F),
-        Offset(x, y),
-        Size(side, side),
-        CornerRadius(8f, 8f),
-        style = Stroke(width = 6f),
-    )
-    drawLine(Color(0xFF78350F), Offset(x + 8f, y + 8f), Offset(x + side - 8f, y + side - 8f), 5f)
-    drawLine(Color(0xFF78350F), Offset(x + side - 8f, y + 8f), Offset(x + 8f, y + side - 8f), 5f)
-}
-
-private fun DrawScope.drawSpring() {
-    val s = RedBallSim.SPRING
-    drawRoundRect(Color(0xFFCA8A04), Offset(s.l, s.b - 10f), Size(s.r - s.l, 10f), CornerRadius(4f, 4f))
-    var y = s.b - 16f
-    while (y > s.t) {
-        drawArc(
-            Color(0xFFFACC15),
-            startAngle = 200f,
-            sweepAngle = 140f,
-            useCenter = false,
-            topLeft = Offset(s.l + 6f, y - 14f),
-            size = Size(s.r - s.l - 12f, 22f),
-            style = Stroke(width = 5f),
-        )
-        y -= 14f
-    }
-}
-
-private fun DrawScope.drawDoor() {
-    val d = RedBallSim.DOOR
-    drawRoundRect(Color(0xFF7C2D12), Offset(d.l, d.t), Size(d.r - d.l, d.b - d.t), CornerRadius(18f, 18f))
-    drawRoundRect(
-        Color(0xFFFBBF24),
-        Offset(d.l + 10f, d.t + 14f),
-        Size(d.r - d.l - 20f, d.b - d.t - 28f),
-        CornerRadius(12f, 12f),
-        style = Stroke(width = 6f),
-    )
-    drawCircle(Color(0xFFFBBF24), 7f, Offset(d.r - 24f, (d.t + d.b) / 2f))
-    drawCircle(Color(0xFFFDE68A), 16f, Offset((d.l + d.r) / 2f, d.t - 28f))
-}
-
-private fun DrawScope.drawBall(x: Float, y: Float, r: Float, angle: Float) {
-    drawCircle(Color(0xFF7F1D1D).copy(alpha = 0.25f), r, Offset(x + 4f, y + 8f))
-    drawCircle(
-        Brush.radialGradient(
-            listOf(Color(0xFFFECACA), Color(0xFFEF4444), Color(0xFF991B1B)),
-            center = Offset(x - r * 0.35f, y - r * 0.4f),
-            radius = r * 1.8f,
-        ),
-        r,
-        Offset(x, y),
-    )
-    rotate(Math.toDegrees(angle.toDouble()).toFloat(), Offset(x, y)) {
-        drawArc(
-            Color(0xFF7F1D1D),
-            startAngle = -20f,
-            sweepAngle = 40f,
-            useCenter = false,
-            topLeft = Offset(x - r, y - r),
-            size = Size(r * 2f, r * 2f),
-            style = Stroke(width = r * 0.28f),
-        )
-    }
-    drawCircle(Color.White.copy(alpha = 0.85f), r * 0.18f, Offset(x - r * 0.35f, y - r * 0.38f))
 }

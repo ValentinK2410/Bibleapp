@@ -140,6 +140,8 @@ dependencies {
 
     debugImplementation(libs.androidx.compose.ui.tooling)
     testImplementation(libs.junit)
+    // Локальные тесты видят заглушку org.json из android.jar. Настоящая библиотека нужна, чтобы проверить JSON уровней.
+    testImplementation("org.json:json:20240303")
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
 }
