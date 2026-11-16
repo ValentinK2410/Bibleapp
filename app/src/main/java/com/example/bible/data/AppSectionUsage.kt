@@ -125,7 +125,9 @@ object AppSectionUsage {
             head == "media_video_playlists" -> "media_videos"
             head.startsWith("media_musician") -> "media_musician"
             head == "media_audio_playlists" -> "media_audios"
-            head == "kids_tictactoe" || head == "kids_checkers" || head == "kids_go" || head == "kids_pipes" || head == "kids_brainring" -> "kids_games"
+            head == "kids_tictactoe" || head == "kids_checkers" || head == "kids_go" || head == "kids_pipes" ||
+                head == "kids_brainring" || head == "kids_redball" || head == "kids_dino" ||
+                head == "kids_moses" || head == "kids_adameve" -> "kids_games"
             head == "kids_story" || head == "kids_story_game" -> "kids_stories"
             head == "kids_album" || head == "kids_edit_sections" || head == "kids_edit_pictured" -> "kids"
             head == "experiment_camera_control" ||

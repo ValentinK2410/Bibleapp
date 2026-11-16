@@ -463,6 +463,14 @@ private val KIDS_HUB_DEFAULT_ROWS: List<KidsHubRow> = listOf(
         imageRes = R.drawable.kids_hub_bible,
     ),
     KidsHubRow(
+        title = "Красный мяч",
+        subtitle = "Игра: кати мяч по горке, толкай ящик и открой дверь",
+        route = "kids_redball",
+        icon = Icons.Filled.Extension,
+        cardStyle = KidsHubCardVisual.Videos,
+        emojiThumb = "🔴",
+    ),
+    KidsHubRow(
         title = "Алфавит",
         subtitle = "Буквы, слоги и примеры слов",
         route = "azbuka",
@@ -561,7 +569,7 @@ private val KIDS_HUB_DEFAULT_ROWS: List<KidsHubRow> = listOf(
     ),
     KidsHubRow(
         title = "Игры",
-        subtitle = "Динозаврик, крестики-нолики, шашки, го, водопровод и брейн-ринг",
+        subtitle = "Красный мяч, динозаврик, крестики-нолики, шашки и другие",
         route = "kids_games",
         icon = Icons.Filled.Extension,
         cardStyle = KidsHubCardVisual.Videos,

@@ -76,6 +76,10 @@ fun KidsGamesHubScreen(
     val young = family.resolvedMode() == KidsAgeMode.SMALL
     val games = listOf(
         KidsGameTile(
+            KidsGames.RED_BALL, "Красный мяч", "🔴", "Кати мяч по горке: толкай ящик, прыгай с пружины и открой дверь",
+            kidsGradient(6), "уровней", open = onOpenRedBall,
+        ),
+        KidsGameTile(
             KidsGames.MOSES, "Путь Моисея", "🪄", "6 уникальных сцен книги Исход: от корзинки в Ниле и Пасхи до Чермного моря и 10 Заповедей Синая!",
             kidsGradient(2), "сцен", open = onOpenMoses,
         ),
@@ -86,10 +90,6 @@ fun KidsGamesHubScreen(
         KidsGameTile(
             KidsGames.DINO, "Динозаврик", "🦖", "Прыгай через кактусы и птиц, как в браузере!",
             kidsGradient(5), "забегов", open = onOpenDino,
-        ),
-        KidsGameTile(
-            KidsGames.RED_BALL, "Красный мяч", "🔴", "Кати мяч по горке: толкай ящик, прыгай с пружины и открой дверь",
-            kidsGradient(6), "уровней", open = onOpenRedBall,
         ),
         KidsGameTile(
             KidsGames.BRAIN_RING, "Брейн-ринг", "⏱️", "1000 вопросов из Библии. Новые запоминаются",
