@@ -76,7 +76,7 @@ fun KidsGamesHubScreen(
     val young = family.resolvedMode() == KidsAgeMode.SMALL
     val games = listOf(
         KidsGameTile(
-            KidsGames.RED_BALL, "Красный мяч", "🔴", "Кати мяч по горке: толкай ящик, прыгай с пружины и открой дверь",
+            KidsGames.RED_BALL, "Красный мяч", "🔴", "Кати мяч до двери или собери свою горку в редакторе",
             kidsGradient(6), "уровней", open = onOpenRedBall,
         ),
         KidsGameTile(

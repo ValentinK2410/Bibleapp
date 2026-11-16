@@ -136,18 +136,40 @@ internal fun RedBallArt(modifier: Modifier = Modifier) {
     Canvas(modifier) {
         squareArea { l, t, s ->
             drawRoundRect(
-                Brush.verticalGradient(listOf(Color(0xFF7DD3FC), Color(0xFFD9F99D))),
+                Brush.verticalGradient(listOf(Color(0xFFBFDBFE), Color(0xFFFDE68A), Color(0xFF86EFAC))),
                 Offset(l, t),
                 Size(s, s),
                 CornerRadius(s * 0.14f),
             )
-            val ground = t + s * 0.78f
-            drawRoundRect(Color(0xFF16A34A), Offset(l + s * 0.08f, ground), Size(s * 0.84f, s * 0.08f), CornerRadius(s * 0.03f))
-            drawRoundRect(Color(0xFFB45309), Offset(l + s * 0.46f, ground - s * 0.16f), Size(s * 0.16f, s * 0.16f), CornerRadius(s * 0.02f))
+            drawCircle(Color(0xFFFFFBEB), s * 0.08f, Offset(l + s * 0.78f, t + s * 0.2f))
+            drawCircle(Color.White.copy(alpha = 0.9f), s * 0.07f, Offset(l + s * 0.22f, t + s * 0.24f))
+            drawCircle(Color.White.copy(alpha = 0.9f), s * 0.1f, Offset(l + s * 0.32f, t + s * 0.2f))
+            val ground = t + s * 0.76f
+            drawRoundRect(Color(0xFF9A5B2A), Offset(l + s * 0.08f, ground), Size(s * 0.84f, s * 0.16f), CornerRadius(s * 0.03f))
+            drawRoundRect(Color(0xFF15803D), Offset(l + s * 0.08f, ground), Size(s * 0.84f, s * 0.045f), CornerRadius(s * 0.02f))
+            val crate = s * 0.16f
+            drawRoundRect(
+                Brush.linearGradient(listOf(Color(0xFFF6E0B5), Color(0xFFA1622F))),
+                Offset(l + s * 0.48f, ground - crate),
+                Size(crate, crate),
+                CornerRadius(s * 0.02f),
+            )
+            val ball = Offset(l + s * 0.28f, ground - s * 0.11f)
             drawCircle(
-                Brush.radialGradient(listOf(Color(0xFFFECACA), Color(0xFFDC2626)), center = Offset(l + s * 0.26f, ground - s * 0.16f), radius = s * 0.2f),
+                Brush.radialGradient(
+                    listOf(Color(0xFFFFF7F7), Color(0xFFE11D48), Color(0xFF9F1239)),
+                    center = ball - Offset(s * 0.03f, s * 0.03f),
+                    radius = s * 0.2f,
+                ),
                 s * 0.11f,
-                Offset(l + s * 0.28f, ground - s * 0.11f),
+                ball,
+            )
+            drawCircle(Color.White.copy(alpha = 0.9f), s * 0.02f, ball - Offset(s * 0.04f, s * 0.04f))
+            drawRoundRect(
+                Color(0xFFF59E0B),
+                Offset(l + s * 0.72f, ground - s * 0.22f),
+                Size(s * 0.1f, s * 0.22f),
+                CornerRadius(s * 0.04f, s * 0.04f),
             )
         }
     }

@@ -1,20 +1,23 @@
 package com.example.bible.games
 
 /**
- * Один уровень физической аркады: мяч катится, падает, толкает ящик и пружинит.
- * Ось Y направлена вниз, как на экране.
+ * Физика «Красного мяча»: мяч катится, падает, толкает ящики и пружинит.
+ * И встроенная горка, и свой уровень — это [RedBallScene]. Ось Y вниз.
  */
-class RedBallSim {
+class RedBallSim(val scene: RedBallScene = RedBallScene.builtin()) {
     var ballX = 0f
     var ballY = 0f
     var ballVx = 0f
     var ballVy = 0f
     var ballAngle = 0f
 
-    var crateX = 0f
-    var crateY = 0f
-    var crateVx = 0f
-    var crateVy = 0f
+    val crates: List<RedBallCrate> = scene.crates.map {
+        RedBallCrate(it.x, it.y, 0f, 0f, it.size, it.x, it.y)
+    }
+
+    /** Первый ящик. Встроенный уровень один, тесты читают его отсюда. */
+    val crateX: Float get() = crates.firstOrNull()?.x ?: 0f
+    val crateY: Float get() = crates.firstOrNull()?.y ?: 0f
 
     var won = false
         private set
@@ -24,31 +27,46 @@ class RedBallSim {
         private set
     private var wasGrounded = false
 
-    private var springArmed = true
+    private val springArmed = BooleanArray(scene.springs.size) { true }
     private var pendingLose = false
     private var pendingSpring = false
     private var pendingWin = false
-    private var crateOnGround = false
+    private var pendingJump = false
+
+    /** Кнопка «Прыжок» сейчас зажата: короткое касание даёт низкий прыжок, удержание — полный. */
+    var jumpHeld = false
+    private var jumpBuffer = 0f
+    private var coyote = 0f
+    private var rising = false
+
+    /** Нажали «Прыжок». Сработает, если мяч стоит на опоре или только что с неё сошёл. */
+    fun jump() {
+        if (won || dead) return
+        jumpBuffer = JUMP_BUFFER
+    }
+
+    fun consumeJump(): Boolean = pendingJump.also { pendingJump = false }
 
     fun reset() {
-        ballX = START_X
-        ballY = START_Y
+        ballX = scene.startX
+        ballY = scene.startY
         ballVx = 0f
         ballVy = 0f
         ballAngle = 0f
-        crateX = CRATE_START_X
-        crateY = CRATE_START_Y
-        crateVx = 0f
-        crateVy = 0f
+        for (crate in crates) crate.reset()
         won = false
         dead = false
         grounded = false
         wasGrounded = false
-        springArmed = true
+        for (i in springArmed.indices) springArmed[i] = true
         pendingLose = false
         pendingSpring = false
         pendingWin = false
-        crateOnGround = false
+        pendingJump = false
+        jumpHeld = false
+        jumpBuffer = 0f
+        coyote = 0f
+        rising = false
     }
 
     fun consumeWin(): Boolean = pendingWin.also { pendingWin = false }
@@ -73,8 +91,29 @@ class RedBallSim {
     }
 
     private fun substep(dt: Float, move: Float) {
+        coyote = if (wasGrounded) COYOTE_TIME else (coyote - dt).coerceAtLeast(0f)
+        if (jumpBuffer > 0f) {
+            if (coyote > 0f) {
+                ballVy = minOf(ballVy, JUMP_VY)
+                jumpBuffer = 0f
+                coyote = 0f
+                wasGrounded = false
+                rising = true
+                pendingJump = true
+            } else {
+                jumpBuffer = (jumpBuffer - dt).coerceAtLeast(0f)
+            }
+        }
+        if (rising) {
+            if (ballVy >= 0f) {
+                rising = false
+            } else if (!jumpHeld && ballVy < JUMP_CUT_VY) {
+                ballVy = JUMP_CUT_VY
+                rising = false
+            }
+        }
         ballVy += GRAVITY * dt
-        crateVy += GRAVITY * dt
+        for (crate in crates) crate.vy += GRAVITY * dt
         val accel = if (wasGrounded) RUN_ACCEL else AIR_ACCEL
         ballVx += move * accel * dt
         ballVx = ballVx.coerceIn(-MAX_RUN, MAX_RUN)
@@ -83,36 +122,33 @@ class RedBallSim {
         }
         ballVx *= (1f - AIR_DRAG * dt).coerceAtLeast(0f)
         grounded = false
-        crateOnGround = false
+        for (crate in crates) crate.onGround = false
 
         ballX += ballVx * dt
         ballY += ballVy * dt
-        crateX += crateVx * dt
-        crateY += crateVy * dt
+        for (crate in crates) {
+            crate.x += crate.vx * dt
+            crate.y += crate.vy * dt
+        }
 
         repeat(4) {
             resolveBallAgainstSolids()
-            resolveBallAgainstCrate()
-            resolveCrateAgainstSolids()
+            resolveBallAgainstCrates()
+            resolveCratesAgainstSolids()
+            if (!scene.builtin) {
+                resolveCratesAgainstSlopes()
+                resolveCratesAgainstEachOther()
+            }
         }
-        if (crateOnGround) {
-            crateVx *= (1f - CRATE_DRAG * dt).coerceAtLeast(0f)
+        for (crate in crates) {
+            if (crate.onGround) crate.vx *= (1f - CRATE_DRAG * dt).coerceAtLeast(0f)
         }
-        ballAngle += ballVx / BALL_R * dt
+        ballAngle += ballVx / RedBallScene.BALL_R * dt
         wasGrounded = grounded
 
-        if (overlapsSpring() && ballVy > -80f) {
-            ballVy = SPRING_VY
-            if (ballVx > 0f) ballVx = kotlin.math.max(ballVx, 220f)
-            if (springArmed) {
-                pendingSpring = true
-                springArmed = false
-            }
-        } else if (!overlapsSpring()) {
-            springArmed = true
-        }
+        applySprings()
 
-        if (ballY > VOID_Y || hitsSpike()) {
+        if (ballY > scene.voidY || hitsSpike()) {
             dead = true
             pendingLose = true
             ballVx = 0f
@@ -127,16 +163,62 @@ class RedBallSim {
         }
     }
 
-    private fun resolveBallAgainstSolids() {
-        for (solid in SOLIDS) {
-            bounceCircle(solid, BALL_R, onBall = true)
+    private fun applySprings() {
+        var any = false
+        var armedLaunch = false
+        for (i in scene.springs.indices) {
+            if (overlaps(scene.springs[i])) {
+                any = true
+                if (ballVy > -80f && springArmed[i]) {
+                    armedLaunch = true
+                    springArmed[i] = false
+                }
+            } else {
+                springArmed[i] = true
+            }
         }
-        for (slope in SLOPES) {
+        if (any && ballVy > -80f) {
+            ballVy = SPRING_VY
+            rising = false
+            if (ballVx > 0f) ballVx = kotlin.math.max(ballVx, 220f)
+            if (armedLaunch) pendingSpring = true
+        }
+    }
+
+    /** Ближайшая поверхность прямо под центром мяча (для тени), или null, если под мячом пусто. */
+    fun groundBelowBall(): Float? {
+        val x = ballX
+        val from = ballY
+        var best = Float.MAX_VALUE
+        fun take(y: Float) {
+            if (y >= from && y < best) best = y
+        }
+        for (s in scene.solids) if (x >= s.l && x <= s.r) take(s.t)
+        for (sl in scene.slopes) {
+            val lo = kotlin.math.min(sl.x0, sl.x1)
+            val hi = kotlin.math.max(sl.x0, sl.x1)
+            if (x < lo || x > hi || hi - lo < 1f) continue
+            val t = (x - sl.x0) / (sl.x1 - sl.x0)
+            take(sl.y0 + (sl.y1 - sl.y0) * t)
+        }
+        for (s in scene.springs) if (x >= s.l && x <= s.r) take(s.t)
+        for (c in crates) {
+            val half = c.size / 2f
+            if (x >= c.x - half && x <= c.x + half) take(c.y - half)
+        }
+        return if (best == Float.MAX_VALUE) null else best
+    }
+
+    private fun resolveBallAgainstSolids() {
+        for (solid in scene.solids) {
+            bounceCircle(solid, RedBallScene.BALL_R)
+        }
+        for (slope in scene.slopes) {
             bounceSlope(slope)
         }
     }
 
-    private fun bounceCircle(solid: Aabb, radius: Float, onBall: Boolean) {
+    private fun bounceCircle(solid: RedBallAabb, radius: Float) {
         val closestX = ballX.coerceIn(solid.l, solid.r)
         val closestY = ballY.coerceIn(solid.t, solid.b)
         var nx = ballX - closestX
@@ -172,10 +254,10 @@ class RedBallSim {
             ballVx -= (1f + bounce) * vn * nx
             ballVy -= (1f + bounce) * vn * ny
         }
-        if (onBall && ny < -0.45f) grounded = true
+        if (ny < -0.45f) grounded = true
     }
 
-    private fun bounceSlope(slope: Slope) {
+    private fun bounceSlope(slope: RedBallSlope) {
         val dx = slope.x1 - slope.x0
         val dy = slope.y1 - slope.y0
         val len2 = dx * dx + dy * dy
@@ -195,8 +277,9 @@ class RedBallSim {
         val ox = ballX - px
         val oy = ballY - py
         val side = ox * nx + oy * ny
-        if (side >= BALL_R || side < -BALL_R) return
-        val pen = BALL_R - side
+        val radius = RedBallScene.BALL_R
+        if (side >= radius || side < -radius) return
+        val pen = radius - side
         ballX += nx * pen
         ballY += ny * pen
         val vn = ballVx * nx + ballVy * ny
@@ -207,17 +290,21 @@ class RedBallSim {
         if (ny < -0.25f) grounded = true
     }
 
-    private fun resolveBallAgainstCrate() {
-        val solid = crateAabb()
+    private fun resolveBallAgainstCrates() {
+        for (i in crates.indices) resolveBallAgainstCrate(crates[i])
+    }
+
+    private fun resolveBallAgainstCrate(crate: RedBallCrate) {
+        val solid = crateAabb(crate)
         val closestX = ballX.coerceIn(solid.l, solid.r)
         val closestY = ballY.coerceIn(solid.t, solid.b)
         var nx = ballX - closestX
         var ny = ballY - closestY
         val dist2 = nx * nx + ny * ny
-        val radius = BALL_R
+        val radius = RedBallScene.BALL_R
         if (dist2 > radius * radius && dist2 > 1e-4f) return
         if (dist2 < 1e-4f) {
-            nx = if (ballX < crateX) -1f else 1f
+            nx = if (ballX < crate.x) -1f else 1f
             ny = 0f
         } else {
             val dist = kotlin.math.sqrt(dist2)
@@ -231,24 +318,28 @@ class RedBallSim {
         val inv = invBall + invCrate
         ballX += nx * pen * (invBall / inv)
         ballY += ny * pen * (invBall / inv)
-        crateX -= nx * pen * (invCrate / inv)
-        crateY -= ny * pen * (invCrate / inv)
-        val rvx = ballVx - crateVx
-        val rvy = ballVy - crateVy
+        crate.x -= nx * pen * (invCrate / inv)
+        crate.y -= ny * pen * (invCrate / inv)
+        val rvx = ballVx - crate.vx
+        val rvy = ballVy - crate.vy
         val vn = rvx * nx + rvy * ny
         if (vn < 0f) {
             val j = -(1.02f) * vn / inv
             ballVx += j * invBall * nx
             ballVy += j * invBall * ny
-            crateVx -= j * invCrate * nx
-            crateVy -= j * invCrate * ny
+            crate.vx -= j * invCrate * nx
+            crate.vy -= j * invCrate * ny
         }
         if (ny < -0.45f) grounded = true
     }
 
-    private fun resolveCrateAgainstSolids() {
-        for (solid in SOLIDS) {
-            val box = crateAabb()
+    private fun resolveCratesAgainstSolids() {
+        for (i in crates.indices) resolveCrateAgainstSolids(crates[i])
+    }
+
+    private fun resolveCrateAgainstSolids(crate: RedBallCrate) {
+        for (solid in scene.solids) {
+            val box = crateAabb(crate)
             if (box.r <= solid.l || box.l >= solid.r || box.b <= solid.t || box.t >= solid.b) continue
             val penL = box.r - solid.l
             val penR = solid.r - box.l
@@ -257,66 +348,133 @@ class RedBallSim {
             val min = minOf(penL, penR, penT, penB)
             when (min) {
                 penL -> {
-                    crateX -= penL
-                    if (crateVx > 0f) crateVx = 0f
+                    crate.x -= penL
+                    if (crate.vx > 0f) crate.vx = 0f
                 }
                 penR -> {
-                    crateX += penR
-                    if (crateVx < 0f) crateVx = 0f
+                    crate.x += penR
+                    if (crate.vx < 0f) crate.vx = 0f
                 }
                 penT -> {
-                    crateY -= penT
-                    if (crateVy > 0f) crateVy *= -0.05f
-                    crateOnGround = true
+                    crate.y -= penT
+                    if (crate.vy > 0f) crate.vy *= -0.05f
+                    crate.onGround = true
                 }
                 else -> {
-                    crateY += penB
-                    if (crateVy < 0f) crateVy = 0f
+                    crate.y += penB
+                    if (crate.vy < 0f) crate.vy = 0f
                 }
             }
         }
     }
 
-    private fun crateAabb(): Aabb {
-        val h = CRATE / 2f
-        return Aabb(crateX - h, crateY - h, crateX + h, crateY + h)
+    private fun resolveCratesAgainstSlopes() {
+        for (i in crates.indices) resolveCrateAgainstSlopes(crates[i])
     }
 
-    private fun overlapsSpring(): Boolean {
-        val s = SPRING
-        return ballX + BALL_R > s.l && ballX - BALL_R < s.r &&
-            ballY + BALL_R > s.t && ballY - BALL_R < s.b
+    private fun resolveCrateAgainstSlopes(crate: RedBallCrate) {
+        val radius = crate.size * 0.5f
+        for (slope in scene.slopes) {
+            val dx = slope.x1 - slope.x0
+            val dy = slope.y1 - slope.y0
+            val len2 = dx * dx + dy * dy
+            if (len2 < 1f) continue
+            val t = (((crate.x - slope.x0) * dx + (crate.y - slope.y0) * dy) / len2).coerceIn(0f, 1f)
+            val px = slope.x0 + dx * t
+            val py = slope.y0 + dy * t
+            var nx = -dy
+            var ny = dx
+            if (ny > 0f) {
+                nx = -nx
+                ny = -ny
+            }
+            val nLen = kotlin.math.sqrt(nx * nx + ny * ny)
+            if (nLen < 1e-4f) continue
+            nx /= nLen
+            ny /= nLen
+            val side = (crate.x - px) * nx + (crate.y - py) * ny
+            if (side >= radius || side < -radius * 0.25f) continue
+            val pen = radius - side
+            crate.x += nx * pen
+            crate.y += ny * pen
+            val vn = crate.vx * nx + crate.vy * ny
+            if (vn < 0f) {
+                crate.vx -= vn * nx
+                crate.vy -= vn * ny
+            }
+            if (ny < -0.25f) crate.onGround = true
+        }
+    }
+
+    private fun resolveCratesAgainstEachOther() {
+        for (i in crates.indices) {
+            for (j in i + 1 until crates.size) separateCrates(crates[i], crates[j])
+        }
+    }
+
+    private fun separateCrates(a: RedBallCrate, b: RedBallCrate) {
+        val ha = a.size / 2f
+        val hb = b.size / 2f
+        val dx = b.x - a.x
+        val dy = b.y - a.y
+        val overlapX = ha + hb - kotlin.math.abs(dx)
+        val overlapY = ha + hb - kotlin.math.abs(dy)
+        if (overlapX <= 0f || overlapY <= 0f) return
+        if (overlapX < overlapY) {
+            val sign = if (dx >= 0f) 1f else -1f
+            val push = overlapX / 2f
+            a.x -= sign * push
+            b.x += sign * push
+            if ((b.vx - a.vx) * sign < 0f) {
+                val va = a.vx
+                a.vx = b.vx
+                b.vx = va
+            }
+        } else {
+            val sign = if (dy >= 0f) 1f else -1f
+            val push = overlapY / 2f
+            a.y -= sign * push
+            b.y += sign * push
+            if (dy > 0f && a.vy > 0f) {
+                a.vy *= -0.05f
+                a.onGround = true
+            } else if (dy < 0f && b.vy > 0f) {
+                b.vy *= -0.05f
+                b.onGround = true
+            }
+        }
+    }
+
+    private fun crateAabb(crate: RedBallCrate): RedBallAabb {
+        val h = crate.size / 2f
+        return RedBallAabb(crate.x - h, crate.y - h, crate.x + h, crate.y + h)
+    }
+
+    private fun overlaps(s: RedBallAabb): Boolean {
+        val radius = RedBallScene.BALL_R
+        return ballX + radius > s.l && ballX - radius < s.r &&
+            ballY + radius > s.t && ballY - radius < s.b
     }
 
     private fun overlapsDoor(): Boolean {
-        val d = DOOR
+        val d = scene.door
         return ballX > d.l && ballX < d.r && ballY > d.t && ballY < d.b
     }
 
     private fun hitsSpike(): Boolean {
-        for (spike in SPIKES) {
-            if (kotlin.math.abs(ballX - spike.x) > spike.w / 2f + BALL_R * 0.4f) continue
-            if (ballY + BALL_R < spike.top || ballY - BALL_R > spike.top + spike.h) continue
+        val radius = RedBallScene.BALL_R
+        for (spike in scene.spikes) {
+            if (kotlin.math.abs(ballX - spike.x) > spike.w / 2f + radius * 0.4f) continue
+            if (ballY + radius < spike.top || ballY - radius > spike.top + spike.h) continue
             val depth = ((ballY - spike.top) / spike.h).coerceIn(0f, 1f)
             val half = spike.w / 2f * depth
-            if (kotlin.math.abs(ballX - spike.x) < half + BALL_R * 0.45f) return true
+            if (kotlin.math.abs(ballX - spike.x) < half + radius * 0.45f) return true
         }
         return false
     }
 
-    data class Aabb(val l: Float, val t: Float, val r: Float, val b: Float)
-    data class Slope(val x0: Float, val y0: Float, val x1: Float, val y1: Float)
-    data class Spike(val x: Float, val top: Float, val w: Float, val h: Float)
-
     companion object {
-        const val WORLD_W = 2680f
-        const val WORLD_H = 1000f
-        const val BALL_R = 28f
-        const val CRATE = 96f
         const val GRAVITY = 2400f
-        const val FLOOR = 760f
-        const val LEDGE = 430f
-
         private const val RUN_ACCEL = 1700f
         private const val AIR_ACCEL = 980f
         private const val MAX_RUN = 460f
@@ -324,29 +482,33 @@ class RedBallSim {
         private const val AIR_DRAG = 0.15f
         private const val CRATE_DRAG = 2.2f
         private const val SPRING_VY = -1380f
-        private const val VOID_Y = 960f
-        private const val START_X = 170f
-        private const val START_Y = 640f - BALL_R
-        private const val CRATE_START_X = 1140f
-        private const val CRATE_START_Y = FLOOR - CRATE / 2f
+        /** Полный прыжок поднимает мяч примерно на 3,5 клетки редактора. */
+        private const val JUMP_VY = -820f
+        /** Отпустили кнопку на взлёте — прыжок обрывается ниже. */
+        private const val JUMP_CUT_VY = -380f
+        /** Нажатие чуть раньше приземления не теряется. */
+        private const val JUMP_BUFFER = 0.12f
+        /** Можно прыгнуть ещё мгновение после схода с края. */
+        private const val COYOTE_TIME = 0.09f
+    }
+}
 
-        val SOLIDS = listOf(
-            Aabb(0f, 640f, 470f, 980f),
-            Aabb(470f, FLOOR, 820f, 980f),
-            Aabb(820f, FLOOR, 1280f, 980f),
-            Aabb(1280f, 860f, 1400f, 980f),
-            Aabb(1400f, FLOOR, 1860f, 980f),
-            Aabb(1860f, LEDGE, 2620f, 980f),
-            Aabb(-80f, 0f, 0f, 980f),
-            Aabb(2620f, 0f, 2700f, 980f),
-        )
-        val SLOPES = listOf(Slope(470f, 640f, 820f, FLOOR))
-        val SPIKES = listOf(
-            Spike(1310f, 800f, 36f, 60f),
-            Spike(1350f, 800f, 36f, 60f),
-            Spike(1390f, 800f, 36f, 60f),
-        )
-        val SPRING = Aabb(1660f, 724f, 1750f, FLOOR)
-        val DOOR = Aabb(2380f, 250f, 2480f, LEDGE)
+class RedBallCrate(
+    var x: Float,
+    var y: Float,
+    var vx: Float,
+    var vy: Float,
+    val size: Float,
+    val homeX: Float,
+    val homeY: Float,
+) {
+    var onGround: Boolean = false
+
+    fun reset() {
+        x = homeX
+        y = homeY
+        vx = 0f
+        vy = 0f
+        onGround = false
     }
 }
