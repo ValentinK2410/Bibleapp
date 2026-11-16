@@ -16,13 +16,36 @@ import com.example.bible.data.NoteScriptureLinks
 import com.example.bible.data.ScriptureAudioSegment
 import com.example.bible.data.TimemarkStore
 import com.example.bible.data.TranslationId
+import com.example.bible.data.VerseRef
 import com.example.bible.data.applyTtsVoiceForTranslation
 import com.example.bible.data.estimatedPlaybackStartMs
+import com.example.bible.data.remapTtsPlaylist
 import com.example.bible.data.timemarkPlaybackStartMs
 import com.example.bible.data.timemarkPlaybackStopAfterMs
+import java.util.concurrent.CopyOnWriteArrayList
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+
+/** Пауза после остановки свайпа, чтобы серия быстрых свайпов озвучила только последний перевод. */
+internal const val TTS_TRANSLATION_SWIPE_SETTLE_MS = 350L
+
+/**
+ * Снимок озвучки на момент свайпа: с какого стиха продолжить и какой был режим повтора.
+ */
+internal data class TtsTranslationHandoff(
+    val token: Int,
+    val bookId: String,
+    val chapter: Int,
+    val anchorVerse: Int,
+    val selectedVerseNumbers: List<Int>,
+    val repeatEnabled: Boolean,
+    val targetLoops: Int,
+    val completedLoops: Int,
+    /** Если ни один номер отрывка не нашёлся — читать от ближайшего стиха до конца главы. */
+    val continueToChapterEndIfUnmapped: Boolean,
+    val rangeLabelRu: String,
+)
 
 /**
  * Актуальные данные открытой в читалке главы, чтобы панель [BibleAudioBar] знала
@@ -83,14 +106,143 @@ data class ReaderVerseTtsLoopState(
  * Контроллер озвучки и зацикленного повтора выбранных стихов (или всей главы) через системный TTS.
  * Работает полностью офлайн и точно соблюдает границы каждого стиха.
  */
-object ReaderVerseTtsLooper {
+internal object ReaderVerseTtsLooper {
     private val mainHandler = Handler(Looper.getMainLooper())
     private var tts: TextToSpeech? = null
     private var ttsReady = false
     private var currentEnginePkg: String = ""
+    /** Какая реплика сейчас в движке. Чужие onDone (после stop) очередь не двигают. */
+    private var activeUtteranceId: String? = null
+    private var ttsEngineEpoch = 0
+    private var handoffGeneration = 0
+    private var pendingHandoffToken: Int? = null
 
     private val _state = MutableStateFlow(ReaderVerseTtsLoopState())
     val state: StateFlow<ReaderVerseTtsLoopState> = _state.asStateFlow()
+
+    /**
+     * Свайп на другой перевод, пока стихи читаются вслух.
+     * Сразу глушит текущую очередь и плеер главы. null — озвучка и так молчит
+     * (пауза и «не запущено» не трогаем).
+     */
+    fun beginTranslationSwipe(bookId: String, chapter: Int): TtsTranslationHandoff? {
+        val st = _state.value
+        if (!st.isActive || !st.isPlaying) return null
+        if (st.bookId != bookId || st.chapter != chapter) return null
+        return armHandoff(
+            TtsTranslationHandoff(
+                token = 0,
+                bookId = st.bookId,
+                chapter = st.chapter,
+                anchorVerse = st.currentVerseNumber.coerceAtLeast(1),
+                selectedVerseNumbers = st.verses.map { it.number },
+                repeatEnabled = st.repeatEnabled,
+                targetLoops = st.targetLoops,
+                completedLoops = st.completedLoops,
+                continueToChapterEndIfUnmapped = st.verses.size > 1,
+                rangeLabelRu = st.rangeLabelRu,
+            ),
+            pauseLooper = true,
+        )
+    }
+
+    /** То же для разового стиха или цепочки подстрочника, которую вёл не этот лупер. */
+    fun beginInlineTranslationSwipe(speech: ReaderInlineSpeech): TtsTranslationHandoff {
+        return armHandoff(
+            TtsTranslationHandoff(
+                token = 0,
+                bookId = speech.bookId,
+                chapter = speech.chapter,
+                anchorVerse = speech.anchorVerse.coerceAtLeast(1),
+                selectedVerseNumbers = speech.verseNumbers.ifEmpty { listOf(speech.anchorVerse.coerceAtLeast(1)) },
+                repeatEnabled = false,
+                targetLoops = 0,
+                completedLoops = 0,
+                continueToChapterEndIfUnmapped = speech.continueToChapterEndIfUnmapped,
+                rangeLabelRu = "",
+            ),
+            pauseLooper = false,
+        )
+    }
+
+    /**
+     * Запускает чтение [translation] с якорного стиха. false — жест уже устарел
+     * (новый свайп, стоп) или в главе нечего читать.
+     */
+    fun resumeAfterTranslationSwipe(
+        context: Context,
+        handoff: TtsTranslationHandoff,
+        translation: TranslationId,
+        targetVerses: List<BibleVerse>,
+    ): Boolean {
+        if (handoff.token != pendingHandoffToken) return false
+        pendingHandoffToken = null
+        ReaderInlineVerseSpeech.suppress(false)
+        val mapped = remapTtsPlaylist(
+            selectedVerseNumbers = handoff.selectedVerseNumbers,
+            anchorVerse = handoff.anchorVerse,
+            targetVerses = targetVerses,
+            continueToChapterEndIfUnmapped = handoff.continueToChapterEndIfUnmapped,
+        )
+        if (mapped == null) {
+            if (_state.value.isActive && _state.value.bookId == handoff.bookId && _state.value.chapter == handoff.chapter) {
+                _state.value = _state.value.copy(isPlaying = false)
+            }
+            return false
+        }
+        val mappedNumbers = mapped.verses.map { it.number }
+        val label = if (
+            handoff.rangeLabelRu.isNotBlank() &&
+            mappedNumbers == handoff.selectedVerseNumbers
+        ) {
+            handoff.rangeLabelRu
+        } else {
+            val first = mapped.verses.first().number
+            val last = mapped.verses.last().number
+            if (first == last) "ст. $first" else "ст. $first–$last"
+        }
+        _state.value = ReaderVerseTtsLoopState(
+            isActive = true,
+            isPlaying = true,
+            bookId = handoff.bookId,
+            chapter = handoff.chapter,
+            translation = translation,
+            verses = mapped.verses,
+            currentVerseIndex = mapped.startIndex.coerceIn(0, mapped.verses.lastIndex),
+            repeatEnabled = handoff.repeatEnabled,
+            targetLoops = handoff.targetLoops,
+            completedLoops = handoff.completedLoops,
+            rangeLabelRu = label,
+        )
+        ensureTtsAndSpeak(context.applicationContext)
+        return true
+    }
+
+    /** Уход с экрана, пока новый перевод ещё не начал говорить: автозапуск отменяем. */
+    fun abandonTranslationSwipe() {
+        if (pendingHandoffToken == null) return
+        pendingHandoffToken = null
+        activeUtteranceId = null
+        mainHandler.removeCallbacksAndMessages(null)
+        runCatching { tts?.stop() }
+        ReaderInlineVerseSpeech.suppress(false)
+    }
+
+    private fun armHandoff(draft: TtsTranslationHandoff, pauseLooper: Boolean): TtsTranslationHandoff {
+        activeUtteranceId = null
+        mainHandler.removeCallbacksAndMessages(null)
+        runCatching { tts?.stop() }
+        clearReaderAudioSegmentQueue()
+        BibleAudioPlayer.stopForNavigation()
+        ReaderInlineVerseSpeech.stopEngines()
+        ReaderInlineVerseSpeech.suppress(true)
+        val token = ++handoffGeneration
+        pendingHandoffToken = token
+        if (pauseLooper) {
+            _state.value = _state.value.copy(isPlaying = false)
+        }
+        return draft.copy(token = token)
+    }
 
     fun start(
         context: Context,
@@ -103,6 +255,9 @@ object ReaderVerseTtsLooper {
         rangeLabelRu: String = "",
     ) {
         if (verses.isEmpty()) return
+        pendingHandoffToken = null
+        activeUtteranceId = null
+        ReaderInlineVerseSpeech.suppress(false)
         // Останавливаем MP3-плеер, чтобы две озвучки не накладывались друг на друга
         clearReaderAudioSegmentQueue()
         BibleAudioPlayer.stopForNavigation()
@@ -132,7 +287,13 @@ object ReaderVerseTtsLooper {
     fun togglePlay(context: Context) {
         val st = _state.value
         if (!st.isActive) return
+        if (pendingHandoffToken != null) {
+            abandonTranslationSwipe()
+            _state.value = st.copy(isPlaying = false)
+            return
+        }
         if (st.isPlaying) {
+            activeUtteranceId = null
             mainHandler.removeCallbacksAndMessages(null)
             runCatching { tts?.stop() }
             _state.value = st.copy(isPlaying = false)
@@ -155,7 +316,9 @@ object ReaderVerseTtsLooper {
     fun skipVerse(context: Context, delta: Int) {
         val st = _state.value
         if (!st.isActive || st.verses.isEmpty()) return
+        if (pendingHandoffToken != null) return
         val nextIdx = (st.currentVerseIndex + delta).coerceIn(0, st.verses.lastIndex)
+        activeUtteranceId = null
         mainHandler.removeCallbacksAndMessages(null)
         runCatching { tts?.stop() }
         _state.value = st.copy(currentVerseIndex = nextIdx, isPlaying = true)
@@ -163,6 +326,9 @@ object ReaderVerseTtsLooper {
     }
 
     fun stop() {
+        pendingHandoffToken = null
+        activeUtteranceId = null
+        ReaderInlineVerseSpeech.suppress(false)
         mainHandler.removeCallbacksAndMessages(null)
         runCatching { tts?.stop() }
         _state.value = ReaderVerseTtsLoopState()
@@ -174,6 +340,7 @@ object ReaderVerseTtsLooper {
             speakCurrentVerse()
             return
         }
+        val epoch = ++ttsEngineEpoch
         runCatching {
             tts?.stop()
             tts?.shutdown()
@@ -185,10 +352,20 @@ object ReaderVerseTtsLooper {
         var engineRef: TextToSpeech? = null
         val listener = TextToSpeech.OnInitListener { status ->
             mainHandler.post {
-                if (status == TextToSpeech.SUCCESS && engineRef != null) {
-                    tts = engineRef
+                val engine = engineRef
+                if (epoch != ttsEngineEpoch || !_state.value.isPlaying) {
+                    if (tts !== engine) {
+                        runCatching {
+                            engine?.stop()
+                            engine?.shutdown()
+                        }
+                    }
+                    return@post
+                }
+                if (status == TextToSpeech.SUCCESS && engine != null) {
+                    tts = engine
                     ttsReady = true
-                    attachProgressListener(engineRef!!)
+                    attachProgressListener(engine)
                     speakCurrentVerse()
                 } else {
                     _state.value = _state.value.copy(isPlaying = false)
@@ -211,6 +388,14 @@ object ReaderVerseTtsLooper {
             override fun onDone(utteranceId: String?) {
                 mainHandler.post { onVerseUtteranceCompleted(utteranceId) }
             }
+            override fun onStop(utteranceId: String?, interrupted: Boolean) {
+                if (!interrupted) return
+                mainHandler.post {
+                    if (utteranceId != null && utteranceId == activeUtteranceId) {
+                        activeUtteranceId = null
+                    }
+                }
+            }
         })
     }
 
@@ -223,11 +408,13 @@ object ReaderVerseTtsLooper {
         val verse = st.verses[idx]
         val textToSpeak = verse.text.trim().ifBlank { "Стих ${verse.number}" }
         val utteranceId = "tts_loop_${st.bookId}_${st.chapter}_${verse.number}_${System.nanoTime()}"
+        activeUtteranceId = utteranceId
         engine.speak(textToSpeak, TextToSpeech.QUEUE_FLUSH, null, utteranceId)
     }
 
     private fun onVerseUtteranceCompleted(utteranceId: String?) {
-        if (utteranceId == null || !utteranceId.startsWith("tts_loop_")) return
+        if (utteranceId == null || utteranceId != activeUtteranceId) return
+        activeUtteranceId = null
         val st = _state.value
         if (!st.isActive || !st.isPlaying || st.verses.isEmpty()) return
         val nextIdx = st.currentVerseIndex + 1
@@ -252,6 +439,112 @@ object ReaderVerseTtsLooper {
                 currentVerseIndex = 0,
                 completedLoops = 0,
             )
+        }
+    }
+}
+
+internal enum class ReaderInlineSpeechKind {
+    ONCE,
+    SEQUENCE,
+}
+
+/** Разовая озвучка стиха или цепочка подстрочника — чтобы свайп знал, с какого стиха продолжить. */
+internal data class ReaderInlineSpeech(
+    val bookId: String,
+    val chapter: Int,
+    val anchorVerse: Int,
+    val translation: TranslationId,
+    val verseNumbers: List<Int>,
+    val continueToChapterEndIfUnmapped: Boolean,
+    val kind: ReaderInlineSpeechKind,
+    val generation: Int,
+)
+
+/**
+ * Движки TTS страниц читалки (стих из меню и подстрочник). Лупер их не держит,
+ * поэтому при смене перевода их нужно остановить отдельно, иначе очереди наложатся.
+ */
+internal object ReaderInlineVerseSpeech {
+    private val stops = CopyOnWriteArrayList<() -> Unit>()
+    private var snapshot: ReaderInlineSpeech? = null
+    private var generation = 0
+    private var suppressed = false
+
+    fun generationNow(): Int = generation
+
+    fun noteOnce(ref: VerseRef) {
+        if (suppressed) return
+        val verse = ref.verse.coerceAtLeast(1)
+        generation++
+        snapshot = ReaderInlineSpeech(
+            bookId = ref.bookId,
+            chapter = ref.chapter,
+            anchorVerse = verse,
+            translation = ref.translation,
+            verseNumbers = listOf(verse),
+            continueToChapterEndIfUnmapped = false,
+            kind = ReaderInlineSpeechKind.ONCE,
+            generation = generation,
+        )
+    }
+
+    fun noteSequence(
+        bookId: String,
+        chapter: Int,
+        anchorVerse: Int,
+        translation: TranslationId,
+        verseNumbers: List<Int>,
+    ) {
+        if (suppressed) return
+        val verse = anchorVerse.coerceAtLeast(1)
+        val numbers = verseNumbers.ifEmpty { listOf(verse) }
+        generation++
+        snapshot = ReaderInlineSpeech(
+            bookId = bookId,
+            chapter = chapter,
+            anchorVerse = verse,
+            translation = translation,
+            verseNumbers = numbers,
+            continueToChapterEndIfUnmapped = true,
+            kind = ReaderInlineSpeechKind.SEQUENCE,
+            generation = generation,
+        )
+    }
+
+    fun onUtteranceFinished(finishedGeneration: Int) {
+        val current = snapshot ?: return
+        if (current.kind == ReaderInlineSpeechKind.ONCE && current.generation == finishedGeneration) {
+            snapshot = null
+        }
+    }
+
+    fun clearSequence(translation: TranslationId) {
+        val current = snapshot ?: return
+        if (current.kind == ReaderInlineSpeechKind.SEQUENCE && current.translation == translation) {
+            snapshot = null
+        }
+    }
+
+    fun consume(bookId: String, chapter: Int): ReaderInlineSpeech? {
+        val current = snapshot ?: return null
+        if (current.bookId != bookId || current.chapter != chapter) return null
+        snapshot = null
+        return current
+    }
+
+    fun suppress(on: Boolean) {
+        suppressed = on
+        if (on) snapshot = null
+    }
+
+    fun registerStop(block: () -> Unit): () -> Unit {
+        stops.add(block)
+        return { stops.remove(block) }
+    }
+
+    fun stopEngines() {
+        for (stop in stops) {
+            runCatching { stop() }
         }
     }
 }

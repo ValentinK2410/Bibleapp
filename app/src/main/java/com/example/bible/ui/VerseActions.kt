@@ -10,6 +10,7 @@ import android.content.Context
 import android.content.ContextWrapper
 import android.content.Intent
 import android.speech.tts.TextToSpeech
+import android.speech.tts.UtteranceProgressListener
 import android.text.InputType
 import android.view.WindowManager
 import android.widget.EditText
@@ -390,19 +391,42 @@ fun rememberAiChatTextToSpeech(
 }
 
 @Composable
-fun rememberVerseTextToSpeech(translation: TranslationId): BibleVoiceTts {
+fun rememberVerseTextToSpeech(
+    translation: TranslationId,
+    /** Читалка: помечать конец фразы, чтобы свайп перевода не продолжал уже законченный стих. */
+    trackReaderUtterances: Boolean = false,
+): BibleVoiceTts {
     val context = LocalContext.current
     var tts by remember { mutableStateOf<TextToSpeech?>(null) }
     val ttsUser by BibleTtsController.settings.collectAsStateWithLifecycle()
     val engineKey = ttsUser.enginePackage.trim()
 
-    DisposableEffect(translation, engineKey) {
+    DisposableEffect(translation, engineKey, trackReaderUtterances) {
         var engine: TextToSpeech? = null
         val app = context.applicationContext
         val init = TextToSpeech.OnInitListener { status ->
             if (status == TextToSpeech.SUCCESS) {
                 engine?.let { e ->
                     applyTtsVoiceForTranslation(e, translation, BibleTtsController.settings.value)
+                    if (trackReaderUtterances) {
+                        e.setOnUtteranceProgressListener(object : UtteranceProgressListener() {
+                            private fun finish(utteranceId: String?) {
+                                Handler(Looper.getMainLooper()).post {
+                                    finishReaderVerseUtterance(utteranceId)
+                                }
+                            }
+                            override fun onStart(utteranceId: String?) {}
+                            override fun onDone(utteranceId: String?) {
+                                finish(utteranceId)
+                            }
+                            override fun onError(utteranceId: String?) {
+                                finish(utteranceId)
+                            }
+                            override fun onStop(utteranceId: String?, interrupted: Boolean) {
+                                if (interrupted) finish(utteranceId)
+                            }
+                        })
+                    }
                     tts = e
                 }
             }
@@ -426,14 +450,38 @@ fun rememberVerseTextToSpeech(translation: TranslationId): BibleVoiceTts {
         applyTtsVoiceForTranslation(e, translation, ttsUser)
     }
 
-    return remember(translation) {
+    return remember(translation, trackReaderUtterances) {
         BibleVoiceTts(
             speak = { text: String ->
-                tts?.speak(text, TextToSpeech.QUEUE_FLUSH, null, null)
+                val engine = tts
+                val generation = if (trackReaderUtterances) ReaderInlineVerseSpeech.generationNow() else 0
+                if (engine == null) {
+                    if (trackReaderUtterances) ReaderInlineVerseSpeech.onUtteranceFinished(generation)
+                    return@BibleVoiceTts
+                }
+                val utteranceId = if (trackReaderUtterances) {
+                    "reader_verse_${generation}_${System.nanoTime()}"
+                } else {
+                    null
+                }
+                val result = engine.speak(text, TextToSpeech.QUEUE_FLUSH, null, utteranceId)
+                if (trackReaderUtterances && result == TextToSpeech.ERROR) {
+                    ReaderInlineVerseSpeech.onUtteranceFinished(generation)
+                }
             },
             stop = { tts?.stop() },
         )
     }
+}
+
+private fun finishReaderVerseUtterance(utteranceId: String?) {
+    val generation = utteranceId
+        ?.takeIf { it.startsWith("reader_verse_") }
+        ?.removePrefix("reader_verse_")
+        ?.substringBefore('_')
+        ?.toIntOrNull()
+        ?: return
+    ReaderInlineVerseSpeech.onUtteranceFinished(generation)
 }
 
 /**
@@ -600,6 +648,8 @@ fun VerseActionsBottomSheet(
     onToggleBookmark: (VerseRef) -> Unit,
     onDismiss: () -> Unit,
     speak: (String) -> Unit,
+    /** Вызывается только когда вслух пойдёт текст стиха, а не файл диктора. */
+    onBeforeVerseTts: ((VerseRef) -> Unit)? = null,
     onStopSpeech: () -> Unit = {},
     onPlayAudio: ((VerseRef, () -> Unit) -> Unit)? = null,
     /** Озвучка главы с таймкода выбранного стиха (если для главы есть проект таймкодов). */
@@ -885,8 +935,12 @@ fun VerseActionsBottomSheet(
                     .fillMaxWidth()
                     .clickable {
                         if (onPlayAudio != null) {
-                            onPlayAudio(target.ref) { speak(target.verseText) }
+                            onPlayAudio(target.ref) {
+                                onBeforeVerseTts?.invoke(target.ref)
+                                speak(target.verseText)
+                            }
                         } else {
+                            onBeforeVerseTts?.invoke(target.ref)
                             speak(target.verseText)
                         }
                         onDismiss()

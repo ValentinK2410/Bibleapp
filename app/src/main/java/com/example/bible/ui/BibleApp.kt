@@ -218,6 +218,7 @@ import com.example.bible.data.isValidForRestore
 import com.example.bible.data.ResumePersistAction
 import com.example.bible.data.resumePersistActionForNavDestination
 import com.example.bible.data.InterlinearTts
+import com.example.bible.data.verseNumberForFlatInterlinearWord
 import com.example.bible.data.UserMediaPlaylistKind
 import com.example.bible.data.UserNote
 import com.example.bible.data.VerseRef
@@ -3234,6 +3235,72 @@ private fun BibleNavHost(
                     val idx = translations.indexOf(translation)
                     if (idx >= 0 && pagerState.currentPage != idx) {
                         pagerState.scrollToPage(idx)
+                    }
+                }
+
+                // Озвучка идёт — свайп глушит старый перевод сразу и после остановки
+                // листает новый с того же стиха. Пока жест не успокоился, не стартуем:
+                // серия свайпов должна озвучить только последнюю вкладку.
+                var ttsSwipeHandoff by remember(bookId, chapterNum) {
+                    mutableStateOf<TtsTranslationHandoff?>(null)
+                }
+                DisposableEffect(bookId, chapterNum) {
+                    onDispose {
+                        ReaderVerseTtsLooper.abandonTranslationSwipe()
+                        ReaderInlineVerseSpeech.suppress(false)
+                    }
+                }
+                LaunchedEffect(pagerState.isScrollInProgress) {
+                    if (!pagerState.isScrollInProgress || ttsSwipeHandoff != null) return@LaunchedEffect
+                    val fromLooper = ReaderVerseTtsLooper.beginTranslationSwipe(bookId, chapterNum)
+                    val handoff = if (fromLooper != null) {
+                        fromLooper
+                    } else {
+                        val inline = ReaderInlineVerseSpeech.consume(bookId, chapterNum)
+                        if (inline != null) {
+                            ReaderVerseTtsLooper.beginInlineTranslationSwipe(inline)
+                        } else {
+                            null
+                        }
+                    }
+                    if (handoff != null) {
+                        val playback = viewModel.audioPlaybackState.value
+                        if (playback == AudioPlaybackState.PLAYING || playback == AudioPlaybackState.LOADING) {
+                            viewModel.stopAudio()
+                        }
+                        ttsSwipeHandoff = handoff
+                    }
+                }
+                LaunchedEffect(pagerState.settledPage, ttsSwipeHandoff, pagerState.isScrollInProgress) {
+                    val handoff = ttsSwipeHandoff ?: return@LaunchedEffect
+                    if (pagerState.isScrollInProgress) return@LaunchedEffect
+                    delay(TTS_TRANSLATION_SWIPE_SETTLE_MS)
+                    if (pagerState.isScrollInProgress) return@LaunchedEffect
+                    if (ttsSwipeHandoff?.token != handoff.token) return@LaunchedEffect
+                    val tid = translations.getOrNull(pagerState.settledPage) ?: run {
+                        ttsSwipeHandoff = null
+                        ReaderVerseTtsLooper.abandonTranslationSwipe()
+                        return@LaunchedEffect
+                    }
+                    val localVerses = runCatching {
+                        kotlinx.coroutines.withContext(Dispatchers.IO) {
+                            library.loadChapter(tid, bookId, chapterNum)?.verses.orEmpty()
+                        }
+                    }.getOrDefault(emptyList())
+                    val verses = localVerses.ifEmpty {
+                        runCatching { viewModel.fetchOnlineVerses(tid, bookId, chapterNum) }.getOrDefault(emptyList())
+                    }
+                    if (pagerState.isScrollInProgress) return@LaunchedEffect
+                    if (translations.getOrNull(pagerState.settledPage) != tid) return@LaunchedEffect
+                    if (ttsSwipeHandoff?.token != handoff.token) return@LaunchedEffect
+                    ReaderVerseTtsLooper.resumeAfterTranslationSwipe(
+                        readerContext,
+                        handoff,
+                        tid,
+                        verses,
+                    )
+                    if (ttsSwipeHandoff?.token == handoff.token) {
+                        ttsSwipeHandoff = null
                     }
                 }
 
@@ -6516,7 +6583,7 @@ private fun ReaderContent(
     val dictManager = remember { DictionaryManager.getInstance(readerContext) }
     var dictionaryLookup by remember { mutableStateOf<LexiconDictionarySheetState?>(null) }
     var dictionarySeeAlso by remember { mutableStateOf<List<String>>(emptyList()) }
-    val speak = rememberVerseTextToSpeech(translation)
+    val speak = rememberVerseTextToSpeech(translation, trackReaderUtterances = true)
 
     LaunchedEffect(dictionaryLookup?.word) {
         if (dictionaryLookup != null) onLexiconLookupOpened()
@@ -6584,6 +6651,33 @@ private fun ReaderContent(
     }
     DisposableEffect(interlinearTts) {
         onDispose { interlinearTts?.shutdown() }
+    }
+    DisposableEffect(speak, interlinearTts) {
+        val remove = ReaderInlineVerseSpeech.registerStop {
+            speak.stop()
+            interlinearTts?.stop()
+        }
+        onDispose { remove() }
+    }
+    if (interlinearTts != null) {
+        val seqHighlight by interlinearTts.sequenceHighlight.collectAsState()
+        LaunchedEffect(seqHighlight?.generation, seqHighlight?.wordIndex, verses) {
+            val highlight = seqHighlight
+            if (highlight == null) {
+                ReaderInlineVerseSpeech.clearSequence(translation)
+            } else {
+                val verse = verseNumberForFlatInterlinearWord(verses, highlight.wordIndex)
+                val numbers = verses.map { it.number }
+                val from = numbers.indexOf(verse).let { if (it >= 0) it else 0 }
+                ReaderInlineVerseSpeech.noteSequence(
+                    bookId = bookId,
+                    chapter = chapter,
+                    anchorVerse = verse,
+                    translation = translation,
+                    verseNumbers = numbers.drop(from),
+                )
+            }
+        }
     }
 
     val initialListIndex = if (scrollToVerse > 0) {
@@ -7125,6 +7219,7 @@ private fun ReaderContent(
             onToggleBookmark = onToggleBookmark,
             onDismiss = { verseActionsTarget = null },
             speak = speak.speak,
+            onBeforeVerseTts = { ref -> ReaderInlineVerseSpeech.noteOnce(ref) },
             onStopSpeech = speak.stop,
             onPlayAudio = onPlayAudio,
             onPlayTimemarkVerseAudio = onPlayTimemarkVerseAudio,
