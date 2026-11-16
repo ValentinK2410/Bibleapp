@@ -185,6 +185,30 @@ class RedBallSim(val scene: RedBallScene = RedBallScene.builtin()) {
         }
     }
 
+    /** Ближайшая поверхность прямо под центром мяча (для тени), или null, если под мячом пусто. */
+    fun groundBelowBall(): Float? {
+        val x = ballX
+        val from = ballY
+        var best = Float.MAX_VALUE
+        fun take(y: Float) {
+            if (y >= from && y < best) best = y
+        }
+        for (s in scene.solids) if (x >= s.l && x <= s.r) take(s.t)
+        for (sl in scene.slopes) {
+            val lo = kotlin.math.min(sl.x0, sl.x1)
+            val hi = kotlin.math.max(sl.x0, sl.x1)
+            if (x < lo || x > hi || hi - lo < 1f) continue
+            val t = (x - sl.x0) / (sl.x1 - sl.x0)
+            take(sl.y0 + (sl.y1 - sl.y0) * t)
+        }
+        for (s in scene.springs) if (x >= s.l && x <= s.r) take(s.t)
+        for (c in crates) {
+            val half = c.size / 2f
+            if (x >= c.x - half && x <= c.x + half) take(c.y - half)
+        }
+        return if (best == Float.MAX_VALUE) null else best
+    }
+
     private fun resolveBallAgainstSolids() {
         for (solid in scene.solids) {
             bounceCircle(solid, RedBallScene.BALL_R)

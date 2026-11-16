@@ -35,8 +35,10 @@ internal fun DrawScope.drawRedBallPlay(sim: RedBallSim) {
     val scale = size.height / viewH
     val viewW = size.width / scale
     val camX = (sim.ballX - viewW * 0.38f).coerceIn(0f, (scene.worldW - viewW).coerceAtLeast(0f))
-    val camY = (sim.ballY - viewH * 0.58f).coerceIn(0f, (scene.worldH - viewH).coerceAtLeast(0f))
-    drawFairySky(camX, scale)
+    // Камера следит за мячом и по вертикали: при прыжке мир (и фон) смещается.
+    val restCamY = (scene.worldH - viewH).coerceAtLeast(0f)
+    val camY = (sim.ballY - viewH * 0.58f).coerceIn(-viewH * 1.5f, restCamY)
+    drawFairySky(camX, scale, liftPx = (restCamY - camY) * scale)
     withTransform({
         scale(scale, scale, pivot = Offset.Zero)
         translate(-camX, -camY)
@@ -48,7 +50,7 @@ internal fun DrawScope.drawRedBallPlay(sim: RedBallSim) {
         for (spring in scene.springs) drawFairySpring(spring.l, spring.t, spring.r, spring.b)
         drawFairyDoor(scene.door.l, scene.door.t, scene.door.r, scene.door.b)
         for (crate in sim.crates) drawWoodCrate(crate.x, crate.y, crate.size)
-        drawGlossyBall(sim.ballX, sim.ballY, RedBallScene.BALL_R, sim.ballAngle)
+        drawGlossyBall(sim.ballX, sim.ballY, RedBallScene.BALL_R, sim.ballAngle, sim.groundBelowBall())
     }
 }
 
@@ -107,7 +109,7 @@ internal fun DrawScope.drawRedBallEditor(
                 RedBallPieceKind.START -> {
                     val x = (box.l + box.r) / 2f
                     val y = box.b - RedBallScene.BALL_R
-                    drawGlossyBall(x, y, RedBallScene.BALL_R, 0.4f)
+                    drawGlossyBall(x, y, RedBallScene.BALL_R, 0.4f, y + RedBallScene.BALL_R)
                     drawCircle(
                         Color.White,
                         RedBallScene.BALL_R + 5f,
@@ -129,7 +131,11 @@ internal fun DrawScope.drawRedBallEditor(
     }
 }
 
-internal fun DrawScope.drawFairySky(camX: Float, worldToScreen: Float) {
+/**
+ * [liftPx] — насколько камера поднялась над обычным уровнем (в пикселях экрана).
+ * Дальние слои сдвигаются меньше, ближние — сильнее (параллакс по вертикали).
+ */
+internal fun DrawScope.drawFairySky(camX: Float, worldToScreen: Float, liftPx: Float = 0f) {
     drawRect(
         Brush.verticalGradient(
             0f to Color(0xFFBFDBFE),
@@ -139,25 +145,30 @@ internal fun DrawScope.drawFairySky(camX: Float, worldToScreen: Float) {
             1f to Color(0xFF86EFAC),
         ),
     )
-    val sun = Offset(size.width * 0.8f - camX * worldToScreen * 0.05f, size.height * 0.13f)
+    val sun = Offset(size.width * 0.8f - camX * worldToScreen * 0.05f, size.height * 0.13f + liftPx * 0.04f)
     drawCircle(Color(0xFFFFF7D6).copy(alpha = 0.38f), 86f, sun)
     drawCircle(Color(0xFFFDE68A).copy(alpha = 0.9f), 48f, sun)
     drawCircle(Color(0xFFFFFBEB), 28f, sun)
-    drawCloudBand(camX, worldToScreen, 0.12f, 0.18f, 1.1f, 0.95f)
-    drawCloudBand(camX, worldToScreen, 0.22f, 0.3f, 0.75f, 0.82f)
+    withTransform({ translate(0f, liftPx * 0.12f) }) {
+        drawCloudBand(camX, worldToScreen, 0.12f, 0.18f, 1.1f, 0.95f)
+    }
+    withTransform({ translate(0f, liftPx * 0.2f) }) {
+        drawCloudBand(camX, worldToScreen, 0.22f, 0.3f, 0.75f, 0.82f)
+    }
     val horizon = size.height * 0.7f
-    drawHills(camX, worldToScreen, 0.26f, horizon, Color(0xFF93C5FD), 42f, 170f)
-    drawHills(camX, worldToScreen, 0.4f, horizon + size.height * 0.045f, Color(0xFF6EE7B7), 30f, 140f)
+    drawHills(camX, worldToScreen, 0.26f, horizon + liftPx * 0.26f, Color(0xFF93C5FD), 42f, 170f)
+    drawHills(camX, worldToScreen, 0.4f, horizon + liftPx * 0.4f + size.height * 0.045f, Color(0xFF6EE7B7), 30f, 140f)
     val span = size.width * 1.8f
     val shift = if (span <= 1f) 0f else (camX * worldToScreen * 0.48f) % span
-    val base = horizon + size.height * 0.03f
+    val base = horizon + liftPx * 0.5f + size.height * 0.03f
     for (i in -1..6) {
         val x = i * span / 5f - shift
         drawStoryTree(x, base, size.height * if (i % 2 == 0) 0.15f else 0.11f)
     }
     val bird = camX * worldToScreen * 0.08f
-    drawBird(size.width * 0.24f - bird, size.height * 0.22f, 18f)
-    drawBird(size.width * 0.33f - bird, size.height * 0.19f, 13f)
+    val birdLift = liftPx * 0.1f
+    drawBird(size.width * 0.24f - bird, size.height * 0.22f + birdLift, 18f)
+    drawBird(size.width * 0.33f - bird, size.height * 0.19f + birdLift, 13f)
 }
 
 private fun DrawScope.drawVoid(scene: RedBallScene) {
@@ -386,12 +397,21 @@ private fun DrawScope.drawWoodCrate(cx: Float, cy: Float, side: Float) {
     }
 }
 
-private fun DrawScope.drawGlossyBall(x: Float, y: Float, r: Float, angle: Float) {
-    drawOval(
-        Color(0xFF7F1D1D).copy(alpha = 0.25f),
-        Offset(x - r * 0.95f, y + r * 0.78f),
-        Size(r * 1.9f, r * 0.46f),
-    )
+/** [groundY] — высота поверхности под мячом; тень лежит на ней, а не прилипает к мячу. */
+private fun DrawScope.drawGlossyBall(x: Float, y: Float, r: Float, angle: Float, groundY: Float?) {
+    if (groundY != null) {
+        val gap = (groundY - (y + r)).coerceAtLeast(0f)
+        val k = (1f - gap / 360f).coerceIn(0f, 1f)
+        if (k > 0.02f) {
+            val w = r * 1.9f * (0.45f + 0.55f * k)
+            val h = r * 0.46f * (0.5f + 0.5f * k)
+            drawOval(
+                Color(0xFF7F1D1D).copy(alpha = 0.25f * k),
+                Offset(x - w / 2f, groundY - h * 0.5f),
+                Size(w, h),
+            )
+        }
+    }
     drawCircle(
         Brush.radialGradient(
             listOf(Color(0xFFFFF7F7), Color(0xFFFB7185), Color(0xFFE11D48), Color(0xFF9F1239)),
