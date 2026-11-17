@@ -1,0 +1,151 @@
+{
+  "id": "gh_nrt_luke_14",
+  "translationCode": "NRT",
+  "bookId": "luke",
+  "chapter": 14,
+  "title": "От Луки 14 · Новый русский",
+  "narratorId": "new-russian",
+  "audioFileName": "42_14.mp3",
+  "cues": [
+    {
+      "timeMs": 4363,
+      "verseStart": 1
+    },
+    {
+      "timeMs": 13349,
+      "verseStart": 2
+    },
+    {
+      "timeMs": 17192,
+      "verseStart": 3
+    },
+    {
+      "timeMs": 23736,
+      "verseStart": 4
+    },
+    {
+      "timeMs": 30881,
+      "verseStart": 5
+    },
+    {
+      "timeMs": 42589,
+      "verseStart": 6
+    },
+    {
+      "timeMs": 49313,
+      "verseStart": 7
+    },
+    {
+      "timeMs": 55878,
+      "verseStart": 8
+    },
+    {
+      "timeMs": 67005,
+      "verseStart": 9
+    },
+    {
+      "timeMs": 80655,
+      "verseStart": 10
+    },
+    {
+      "timeMs": 96725,
+      "verseStart": 11
+    },
+    {
+      "timeMs": 104150,
+      "verseStart": 12
+    },
+    {
+      "timeMs": 120662,
+      "verseStart": 13
+    },
+    {
+      "timeMs": 127386,
+      "verseStart": 14
+    },
+    {
+      "timeMs": 142256,
+      "verseStart": 15
+    },
+    {
+      "timeMs": 151202,
+      "verseStart": 16
+    },
+    {
+      "timeMs": 158107,
+      "verseStart": 17
+    },
+    {
+      "timeMs": 166112,
+      "verseStart": 18
+    },
+    {
+      "timeMs": 176239,
+      "verseStart": 19
+    },
+    {
+      "timeMs": 182984,
+      "verseStart": 20
+    },
+    {
+      "timeMs": 187507,
+      "verseStart": 21
+    },
+    {
+      "timeMs": 202397,
+      "verseStart": 22
+    },
+    {
+      "timeMs": 208701,
+      "verseStart": 23
+    },
+    {
+      "timeMs": 221890,
+      "verseStart": 24
+    },
+    {
+      "timeMs": 234839,
+      "verseStart": 25
+    },
+    {
+      "timeMs": 240122,
+      "verseStart": 26
+    },
+    {
+      "timeMs": 254872,
+      "verseStart": 27
+    },
+    {
+      "timeMs": 262037,
+      "verseStart": 28
+    },
+    {
+      "timeMs": 274606,
+      "verseStart": 29
+    },
+    {
+      "timeMs": 284412,
+      "verseStart": 30
+    },
+    {
+      "timeMs": 288375,
+      "verseStart": 31
+    },
+    {
+      "timeMs": 304806,
+      "verseStart": 32
+    },
+    {
+      "timeMs": 311591,
+      "verseStart": 33
+    },
+    {
+      "timeMs": 320057,
+      "verseStart": 34
+    },
+    {
+      "timeMs": 328322,
+      "verseStart": 35
+    }
+  ]
+}
