@@ -59,6 +59,11 @@ class RedBallSim(val scene: RedBallScene = RedBallScene.builtin()) {
     private var pendingStomp = false
     private var pendingStar = 0
     private var pendingMagnet = false
+    private val portalArmed = BooleanArray(scene.portals.size)
+    private val portalAsleep = BooleanArray(scene.portals.size)
+    private var portalCooldown = 0f
+    private var portalHold = false
+    private var pendingPortalIndex = -1
     private val fx = ArrayList<RedBallParticle>(80)
     private val rng = java.util.Random(1)
 
@@ -107,6 +112,14 @@ class RedBallSim(val scene: RedBallScene = RedBallScene.builtin()) {
         pendingStomp = false
         pendingStar = 0
         pendingMagnet = false
+        portalHold = false
+        portalCooldown = 0f
+        pendingPortalIndex = -1
+        for (i in portalArmed.indices) {
+            portalAsleep[i] = false
+            val portal = scene.portals[i]
+            portalArmed[i] = portal.linkId.isBlank() || !overlaps(portal.box)
+        }
         jumpHeld = false
         jumpBuffer = 0f
         coyote = 0f
@@ -125,19 +138,57 @@ class RedBallSim(val scene: RedBallScene = RedBallScene.builtin()) {
 
     fun consumeMagnet(): Boolean = pendingMagnet.also { pendingMagnet = false }
 
+    /** Портал, в который мяч только что въехал. Пока переход не закончен, физика стоит. */
+    fun consumePortal(): RedBallPortal? {
+        if (pendingPortalIndex < 0) return null
+        val portal = scene.portals[pendingPortalIndex]
+        pendingPortalIndex = -1
+        return portal
+    }
+
+    /**
+     * Появление в другой сцене. Короткий запрет и необходимость выйти из портала
+     * не дают сразу уехать обратно, если точка появления стоит в проходе.
+     */
+    fun arrive(x: Float, y: Float) {
+        ballX = x
+        ballY = y
+        ballVx = 0f
+        ballVy = 0f
+        grounded = false
+        wasGrounded = false
+        rising = false
+        jumpHeld = false
+        jumpBuffer = 0f
+        coyote = 0f
+        portalHold = false
+        pendingPortalIndex = -1
+        portalCooldown = PORTAL_COOLDOWN
+        for (i in portalArmed.indices) portalArmed[i] = false
+    }
+
+    /** Цели больше нет: этот портал засыпает до перезапуска сцены. */
+    fun dismissPortal() {
+        if (pendingPortalIndex >= 0) portalAsleep[pendingPortalIndex] = true
+        pendingPortalIndex = -1
+        portalHold = false
+        portalCooldown = PORTAL_COOLDOWN
+        for (i in portalArmed.indices) portalArmed[i] = false
+    }
+
     init {
         reset()
     }
 
     fun step(dt: Float, move: Float) {
-        if (won || dead) return
+        if (won || dead || portalHold) return
         val total = dt.coerceIn(0f, 0.05f)
         var left = total
         while (left > 0f) {
             val h = min(left, 1f / 120f)
             substep(h, move.coerceIn(-1f, 1f))
             left -= h
-            if (won || dead) break
+            if (won || dead || portalHold) break
         }
         val spent = (total - left).coerceAtLeast(0f)
         if (spent > 0f) {
@@ -256,6 +307,32 @@ class RedBallSim(val scene: RedBallScene = RedBallScene.builtin()) {
             pendingWin = true
             ballVx = 0f
             ballVy = 0f
+            return
+        }
+        touchPortals(dt)
+    }
+
+    private fun touchPortals(dt: Float) {
+        if (portalHold || scene.portals.isEmpty()) return
+        if (portalCooldown > 0f) portalCooldown = (portalCooldown - dt).coerceAtLeast(0f)
+        for (i in scene.portals.indices) {
+            val portal = scene.portals[i]
+            if (portal.linkId.isBlank() || portalAsleep[i]) continue
+            val hit = overlaps(portal.box)
+            if (!hit) {
+                if (portalCooldown <= 0f) portalArmed[i] = true
+                continue
+            }
+            if (portalCooldown > 0f || !portalArmed[i]) {
+                portalArmed[i] = false
+                continue
+            }
+            portalArmed[i] = false
+            portalHold = true
+            pendingPortalIndex = i
+            ballVx = 0f
+            ballVy = 0f
+            return
         }
     }
 
@@ -894,6 +971,7 @@ class RedBallSim(val scene: RedBallScene = RedBallScene.builtin()) {
         private const val CLIMB_SPEED = 250f
         private const val LADDER_FALL = 150f
         private const val ENEMY_SPEED = 86f
+        const val PORTAL_COOLDOWN = 0.75f
     }
 }
 
