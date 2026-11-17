@@ -85,6 +85,7 @@ fun KidsRedBallGameScreen(onBack: () -> Unit) {
     val undo = remember { ArrayDeque<List<RedBallPiece>>() }
     var tool by remember { mutableStateOf(RedBallTool.GROUND) }
     var camX by remember { mutableStateOf(0f) }
+    var camY by remember { mutableStateOf(0f) }
     var play by remember { mutableStateOf<PlayRequest?>(null) }
     var listRev by remember { mutableIntStateOf(0) }
     var warning by remember { mutableStateOf<String?>(null) }
@@ -119,6 +120,7 @@ fun KidsRedBallGameScreen(onBack: () -> Unit) {
         undo.clear()
         tool = RedBallTool.GROUND
         camX = 0f
+        camY = 0f
         warning = null
         page = RedBallPage.EDITOR
     }
@@ -198,6 +200,8 @@ fun KidsRedBallGameScreen(onBack: () -> Unit) {
             onTool = { tool = it },
             camX = camX,
             onCamX = { camX = it },
+            camY = camY,
+            onCamY = { camY = it },
             canUndo = undo.isNotEmpty(),
             onUndo = {
                 val prev = undo.removeLastOrNull() ?: return@KidsRedBallEditor
@@ -454,6 +458,9 @@ private fun RedBallPlay(scene: RedBallScene, testMode: Boolean, onExit: () -> Un
         if (sim.consumeLose()) KidsGameAudio.play(KidsSfx.LOSE)
         if (sim.consumeSpring()) KidsGameAudio.play(KidsSfx.PLACE)
         if (sim.consumeWin()) KidsGameAudio.play(KidsSfx.WIN)
+        if (sim.consumeStomp()) KidsGameAudio.play(KidsSfx.CORRECT)
+        if (sim.consumeStars() > 0) KidsGameAudio.play(KidsSfx.CORRECT)
+        if (sim.consumeMagnet()) KidsGameAudio.play(KidsSfx.PLACE)
         sim.consumeJump()
     }
     if (!testMode) {
@@ -484,6 +491,28 @@ private fun RedBallPlay(scene: RedBallScene, testMode: Boolean, onExit: () -> Un
                 Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Назад", tint = Color(0xFF7C2D12))
             }
             Text(title, fontWeight = FontWeight.Black, color = Color(0xFF7C2D12), fontSize = 16.sp, maxLines = 1)
+        }
+        if (sim.stars.isNotEmpty() || sim.magnetTime > 0f) {
+            val hud = buildString {
+                if (sim.stars.isNotEmpty()) append("★ ${sim.starsCollected}/${sim.stars.size}")
+                if (sim.magnetTime > 0f) {
+                    if (isNotEmpty()) append("   ")
+                    append("Магнит")
+                }
+            }
+            Text(
+                hud,
+                modifier = Modifier
+                    .statusBarsPadding()
+                    .padding(top = 64.dp)
+                    .align(Alignment.TopCenter)
+                    .clip(RoundedCornerShape(999.dp))
+                    .background(Color.White.copy(alpha = 0.88f))
+                    .padding(horizontal = 14.dp, vertical = 6.dp),
+                color = Color(0xFF7C2D12),
+                fontWeight = FontWeight.Black,
+                fontSize = 16.sp,
+            )
         }
         IconButton(
             onClick = { sim.reset() },
@@ -519,7 +548,7 @@ private fun RedBallPlay(scene: RedBallScene, testMode: Boolean, onExit: () -> Un
                         sim.won && scene.builtin -> "Мяч докатился сам, как надо"
                         sim.won -> "Получилось! Мяч добрался до двери"
                         scene.builtin -> "Ящик закрывает яму, пружина подбрасывает наверх"
-                        else -> "Шипы колются, а без земли мяч падает"
+                        else -> "Шипы и злые квадраты сбоку опасны. Сверху квадрат можно раздавить"
                     },
                     color = Color(0xFF44403C),
                     fontSize = 15.sp,

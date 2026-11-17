@@ -8,19 +8,61 @@ import kotlin.math.floor
 import kotlin.math.max
 import kotlin.math.min
 
+/** Трение по умолчанию: так мяч тормозил на земле до отдельных коэффициентов. */
+const val RED_BALL_FRICTION = 0.45f
+
 /** Ось Y направлена вниз, как на экране. Прямоугольник столкновения. */
-data class RedBallAabb(val l: Float, val t: Float, val r: Float, val b: Float)
+data class RedBallAabb(
+    val l: Float,
+    val t: Float,
+    val r: Float,
+    val b: Float,
+    val friction: Float = RED_BALL_FRICTION,
+)
 
 /** Отрезок поверхности горки. Нормаль при расчёте всегда смотрит вверх. */
-data class RedBallSlope(val x0: Float, val y0: Float, val x1: Float, val y1: Float)
+data class RedBallSlope(
+    val x0: Float,
+    val y0: Float,
+    val x1: Float,
+    val y1: Float,
+    val friction: Float = RED_BALL_FRICTION,
+)
 
 data class RedBallSpike(val x: Float, val top: Float, val w: Float, val h: Float)
 
-data class RedBallCrateSpawn(val x: Float, val y: Float, val size: Float)
+data class RedBallCrateSpawn(
+    val x: Float,
+    val y: Float,
+    val size: Float,
+    val gravity: Boolean = true,
+    val movable: Boolean = true,
+    val friction: Float = RED_BALL_FRICTION,
+    val mass: Float = 1f,
+)
+
+data class RedBallStarSpawn(val x: Float, val y: Float)
+
+data class RedBallMagnetSpawn(val x: Float, val y: Float)
+
+data class RedBallEnemySpawn(
+    val x: Float,
+    val y: Float,
+    val size: Float,
+    val left: Float,
+    val right: Float,
+    val gravity: Boolean = true,
+    val friction: Float = RED_BALL_FRICTION,
+    val mass: Float = 1f,
+)
 
 /**
  * Готовая сцена для [RedBallSim]: и встроенная горка, и уровень из редактора
  * приходят сюда одним и тем же набором фигур.
+ *
+ * [minX]/[minY] — левый верх мира, [worldW]/[worldH] — правый низ.
+ * У встроенной горки левый верх нулевой, поэтому старые числа на месте.
+ * Свой уровень тянется за нарисованным, без боковых стен.
  */
 data class RedBallScene(
     val id: String,
@@ -37,6 +79,14 @@ data class RedBallScene(
     val springs: List<RedBallAabb>,
     val door: RedBallAabb,
     val crates: List<RedBallCrateSpawn>,
+    val minX: Float = 0f,
+    val minY: Float = 0f,
+    val concrete: List<RedBallAabb> = emptyList(),
+    val blocks: List<RedBallCrateSpawn> = emptyList(),
+    val ladders: List<RedBallAabb> = emptyList(),
+    val stars: List<RedBallStarSpawn> = emptyList(),
+    val magnets: List<RedBallMagnetSpawn> = emptyList(),
+    val enemies: List<RedBallEnemySpawn> = emptyList(),
 ) {
     companion object {
         const val BALL_R = 28f
@@ -81,10 +131,15 @@ data class RedBallScene(
 
 enum class RedBallPieceKind(val w: Int, val h: Int) {
     GROUND(2, 2),
+    CONCRETE(2, 2),
     SLOPE(4, 2),
+    LADDER(1, 4),
     CRATE(2, 2),
     SPRING(2, 1),
     SPIKE(1, 2),
+    STAR(1, 1),
+    MAGNET(1, 1),
+    ENEMY(2, 2),
     START(1, 1),
     DOOR(2, 4),
 }
@@ -97,11 +152,45 @@ data class RedBallPiece(
     val w: Int,
     val h: Int,
     val flip: Boolean = false,
+    val gravity: Boolean = true,
+    val movable: Boolean = true,
+    val friction: Float = RED_BALL_FRICTION,
+    val mass: Float = 1f,
 )
+
+/** Какие поля физики имеют смысл у предмета. */
+internal enum class RedBallTune {
+    NONE,
+    FRICTION,
+    FULL,
+}
+
+internal fun RedBallPieceKind.tune(): RedBallTune = when (this) {
+    RedBallPieceKind.CRATE, RedBallPieceKind.CONCRETE, RedBallPieceKind.ENEMY -> RedBallTune.FULL
+    RedBallPieceKind.GROUND, RedBallPieceKind.SLOPE -> RedBallTune.FRICTION
+    else -> RedBallTune.NONE
+}
+
+internal data class RedBallPlacedProps(
+    val gravity: Boolean,
+    val movable: Boolean,
+    val friction: Float,
+    val mass: Float,
+)
+
+/** Значения, с которыми предмет появляется из палитры. Старые сохранения их не получают. */
+internal fun RedBallPieceKind.placedProps(): RedBallPlacedProps = when (this) {
+    RedBallPieceKind.CONCRETE -> RedBallPlacedProps(false, false, 0.8f, 3.4f)
+    RedBallPieceKind.CRATE -> RedBallPlacedProps(true, true, RED_BALL_FRICTION, 1f)
+    RedBallPieceKind.ENEMY -> RedBallPlacedProps(true, false, 0.6f, 1.5f)
+    RedBallPieceKind.GROUND, RedBallPieceKind.SLOPE -> RedBallPlacedProps(false, false, RED_BALL_FRICTION, 1f)
+    else -> RedBallPlacedProps(false, false, RED_BALL_FRICTION, 1f)
+}
 
 /**
  * Уровень в клетках. Редактор правит его, [toScene] собирает физическую сцену.
  * Клетка 40: ящик 80, горка 160×80, дверь 80×160.
+ * Клетки не заперты в cols×rows: поле растёт туда, куда ставят предметы.
  */
 data class RedBallDraft(
     val id: String,
@@ -141,32 +230,38 @@ data class RedBallDraft(
         if (pieces.size >= MAX_PIECES && kind != RedBallPieceKind.START && kind != RedBallPieceKind.DOOR) {
             return this
         }
-        val (cc, rr) = kind.anchor(c, r, cols, rows)
+        val (cc, rr) = kind.snapAnchor(c, r)
         val slopeFlip = flip && kind == RedBallPieceKind.SLOPE
+        val props = kind.placedProps()
+        fun make(id: Long) = RedBallPiece(
+            id, kind, cc, rr, kind.w, kind.h, slopeFlip,
+            props.gravity, props.movable, props.friction, props.mass,
+        )
         if (kind == RedBallPieceKind.SLOPE) {
             if (pieces.any { it.kind == kind && it.c == cc && it.r == rr && it.flip == slopeFlip }) return this
             val next = pieces.filter { !(it.kind == kind && it.c == cc && it.r == rr) }
-            return copy(
-                pieces = next + RedBallPiece(nextId, kind, cc, rr, kind.w, kind.h, slopeFlip),
-                nextId = nextId + 1,
-            )
+            return copy(pieces = next + make(nextId), nextId = nextId + 1)
         }
         if (pieces.any { it.kind == kind && it.c == cc && it.r == rr && it.flip == slopeFlip }) return this
         var next = pieces
         if (kind == RedBallPieceKind.START || kind == RedBallPieceKind.DOOR) {
             next = next.filter { it.kind != kind }
         }
-        return copy(
-            pieces = next + RedBallPiece(nextId, kind, cc, rr, kind.w, kind.h, slopeFlip),
-            nextId = nextId + 1,
-        )
+        return copy(pieces = next + make(nextId), nextId = nextId + 1)
     }
 
     fun withMoved(id: Long, c: Int, r: Int): RedBallDraft {
         val piece = pieces.firstOrNull { it.id == id } ?: return this
-        val (cc, rr) = piece.kind.anchor(c, r, cols, rows)
+        val (cc, rr) = piece.kind.snapAnchor(c, r)
         if (piece.c == cc && piece.r == rr) return this
         return copy(pieces = pieces.map { if (it.id == id) it.copy(c = cc, r = rr) else it })
+    }
+
+    fun withPiece(id: Long, transform: (RedBallPiece) -> RedBallPiece): RedBallDraft {
+        val piece = pieces.firstOrNull { it.id == id } ?: return this
+        val updated = transform(piece)
+        if (updated == piece) return this
+        return copy(pieces = pieces.map { if (it.id == id) updated else it })
     }
 
     fun withErasedAt(x: Float, y: Float): RedBallDraft {
@@ -176,32 +271,44 @@ data class RedBallDraft(
 
     fun toScene(): RedBallScene {
         val grounds = mutableListOf<RedBallAabb>()
+        val concretes = mutableListOf<RedBallAabb>()
         val slopes = mutableListOf<RedBallSlope>()
         val spikes = mutableListOf<RedBallSpike>()
         val springs = mutableListOf<RedBallAabb>()
+        val ladders = mutableListOf<RedBallAabb>()
         val crates = mutableListOf<RedBallCrateSpawn>()
+        val blocks = mutableListOf<RedBallCrateSpawn>()
+        val stars = mutableListOf<RedBallStarSpawn>()
+        val magnets = mutableListOf<RedBallMagnetSpawn>()
+        val enemies = mutableListOf<RedBallEnemySpawn>()
         var startX = cell * 2f
         var startY = originY + cell
-        var door = RedBallAabb(worldW - cell * 4f, originY, worldW - cell * 2f, originY + cell * 4f)
+        var door: RedBallAabb? = null
+        var minX = Float.POSITIVE_INFINITY
+        var minY = Float.POSITIVE_INFINITY
+        var maxX = Float.NEGATIVE_INFINITY
+        var maxY = Float.NEGATIVE_INFINITY
         for (piece in pieces) {
             val box = aabb(piece)
+            minX = min(minX, box.l)
+            minY = min(minY, box.t)
+            maxX = max(maxX, box.r)
+            maxY = max(maxY, box.b)
             when (piece.kind) {
                 RedBallPieceKind.GROUND -> grounds += box
+                RedBallPieceKind.CONCRETE -> {
+                    if (piece.gravity || piece.movable) blocks += box.asBody(piece)
+                    else concretes += box
+                }
                 RedBallPieceKind.SLOPE -> {
                     slopes += if (!piece.flip) {
-                        RedBallSlope(box.l, box.t, box.r, box.b)
+                        RedBallSlope(box.l, box.t, box.r, box.b, piece.friction)
                     } else {
-                        RedBallSlope(box.l, box.b, box.r, box.t)
+                        RedBallSlope(box.l, box.b, box.r, box.t, piece.friction)
                     }
                 }
-                RedBallPieceKind.CRATE -> {
-                    val size = min(piece.w, piece.h) * cell
-                    crates += RedBallCrateSpawn(
-                        x = (box.l + box.r) / 2f,
-                        y = (box.t + box.b) / 2f,
-                        size = size,
-                    )
-                }
+                RedBallPieceKind.LADDER -> ladders += box
+                RedBallPieceKind.CRATE -> crates += box.asBody(piece)
                 RedBallPieceKind.SPRING -> springs += box
                 RedBallPieceKind.SPIKE -> spikes += RedBallSpike(
                     x = (box.l + box.r) / 2f,
@@ -209,6 +316,24 @@ data class RedBallDraft(
                     w = box.r - box.l,
                     h = box.b - box.t,
                 )
+                RedBallPieceKind.STAR -> stars += RedBallStarSpawn((box.l + box.r) / 2f, (box.t + box.b) / 2f)
+                RedBallPieceKind.MAGNET -> magnets += RedBallMagnetSpawn((box.l + box.r) / 2f, (box.t + box.b) / 2f)
+                RedBallPieceKind.ENEMY -> {
+                    val cx = (box.l + box.r) / 2f
+                    val cy = (box.t + box.b) / 2f
+                    val size = min(piece.w, piece.h) * cell
+                    val reach = cell * 3.5f
+                    enemies += RedBallEnemySpawn(
+                        x = cx,
+                        y = cy,
+                        size = size,
+                        left = cx - reach,
+                        right = cx + reach,
+                        gravity = piece.gravity,
+                        friction = piece.friction,
+                        mass = piece.mass,
+                    )
+                }
                 RedBallPieceKind.START -> {
                     startX = (box.l + box.r) / 2f
                     startY = box.b - RedBallScene.BALL_R
@@ -216,26 +341,45 @@ data class RedBallDraft(
                 RedBallPieceKind.DOOR -> door = box
             }
         }
-        val gridBottom = originY + rows * cell
-        val worldH = gridBottom + 180f
-        val solids = mergeAabbs(grounds).toMutableList()
-        solids += RedBallAabb(-80f, 0f, 0f, worldH)
-        solids += RedBallAabb(worldW, 0f, worldW + 80f, worldH)
+        if (pieces.isEmpty()) {
+            minX = 0f
+            minY = originY
+            maxX = cols * cell
+            maxY = originY + rows * cell
+        }
+        val padX = cell * 2.5f
+        val padTop = cell * 4f
+        val voidY = maxY + cell * 3f
+        val fallbackDoor = RedBallAabb(
+            maxX - cell * 4f,
+            maxY - cell * 6f,
+            maxX - cell * 2f,
+            maxY - cell * 2f,
+            RED_BALL_FRICTION,
+        )
         return RedBallScene(
             id = id,
             name = name.ifBlank { "Без имени" },
             builtin = false,
-            worldW = worldW,
-            worldH = worldH,
-            voidY = gridBottom + 120f,
+            worldW = maxX + padX,
+            worldH = voidY + cell * 4f,
+            voidY = voidY,
             startX = startX,
             startY = startY,
-            solids = solids,
+            solids = mergeAabbs(grounds),
             slopes = slopes,
             spikes = spikes,
             springs = springs,
-            door = door,
+            door = door ?: fallbackDoor,
             crates = crates,
+            minX = minX - padX,
+            minY = minY - padTop,
+            concrete = mergeAabbs(concretes),
+            blocks = blocks,
+            ladders = ladders,
+            stars = stars,
+            magnets = magnets,
+            enemies = enemies,
         )
     }
 
@@ -243,7 +387,7 @@ data class RedBallDraft(
 
     fun toJson(): String {
         val root = JSONObject()
-        root.put("version", 1)
+        root.put("version", 2)
         root.put("id", id)
         root.put("name", name)
         root.put("cols", cols)
@@ -262,6 +406,10 @@ data class RedBallDraft(
                 put("w", piece.w)
                 put("h", piece.h)
                 put("flip", piece.flip)
+                put("gravity", piece.gravity)
+                put("movable", piece.movable)
+                put("friction", piece.friction.toDouble())
+                put("mass", piece.mass.toDouble())
             })
         }
         root.put("pieces", array)
@@ -273,18 +421,38 @@ data class RedBallDraft(
         t = originY + piece.r * cell,
         r = (piece.c + piece.w) * cell,
         b = originY + (piece.r + piece.h) * cell,
+        friction = piece.friction,
     )
 
+    private fun RedBallAabb.asBody(piece: RedBallPiece): RedBallCrateSpawn {
+        val size = min(piece.w, piece.h) * cell
+        return RedBallCrateSpawn(
+            x = (l + r) / 2f,
+            y = (t + b) / 2f,
+            size = size,
+            gravity = piece.gravity,
+            movable = piece.movable,
+            friction = piece.friction,
+            mass = piece.mass,
+        )
+    }
+
     companion object {
-        const val MAX_PIECES = 480
+        const val MAX_PIECES = 900
+        const val CELL_LIMIT = 480
 
         private val HIT_ORDER = listOf(
+            RedBallPieceKind.ENEMY,
             RedBallPieceKind.CRATE,
+            RedBallPieceKind.STAR,
+            RedBallPieceKind.MAGNET,
             RedBallPieceKind.DOOR,
             RedBallPieceKind.SPRING,
             RedBallPieceKind.SPIKE,
+            RedBallPieceKind.LADDER,
             RedBallPieceKind.START,
             RedBallPieceKind.SLOPE,
+            RedBallPieceKind.CONCRETE,
             RedBallPieceKind.GROUND,
         )
 
@@ -320,6 +488,7 @@ data class RedBallDraft(
         }
 
         private fun parse(root: JSONObject): RedBallDraft {
+            val version = root.optInt("version", 1)
             val cols = root.optInt("cols", 40).coerceIn(8, 80)
             val rows = root.optInt("rows", 14).coerceIn(8, 40)
             val cell = root.optDouble("cell", 40.0).toFloat().coerceIn(16f, 80f)
@@ -332,16 +501,34 @@ data class RedBallDraft(
                 val kind = kindOf(item.optString("kind")) ?: continue
                 val w = kind.w
                 val h = kind.h
-                if (w > cols || h > rows) continue
-                val c = item.optInt("c").coerceIn(0, cols - w)
-                val r = item.optInt("r").coerceIn(0, rows - h)
+                val rawC = item.optInt("c")
+                val rawR = item.optInt("r")
+                val (c, r) = if (version < 2) {
+                    if (w > cols || h > rows) continue
+                    rawC.coerceIn(0, cols - w) to rawR.coerceIn(0, rows - h)
+                } else {
+                    if (rawC !in -CELL_LIMIT..CELL_LIMIT || rawR !in -CELL_LIMIT..CELL_LIMIT) continue
+                    rawC to rawR
+                }
                 val id = item.optLong("id", pieces.size + 1L)
                 if (id > maxId) maxId = id
                 val flip = item.optBoolean("flip") && kind == RedBallPieceKind.SLOPE
+                val gravity = if (item.has("gravity")) item.optBoolean("gravity") else true
+                val movable = if (item.has("movable")) item.optBoolean("movable") else true
+                val friction = if (item.has("friction")) {
+                    item.optDouble("friction").toFloat().coerceIn(0f, 1f)
+                } else {
+                    RED_BALL_FRICTION
+                }
+                val mass = if (item.has("mass")) {
+                    item.optDouble("mass").toFloat().coerceIn(0.2f, 8f)
+                } else {
+                    1f
+                }
                 if (kind == RedBallPieceKind.START || kind == RedBallPieceKind.DOOR) {
                     pieces.removeAll { it.kind == kind }
                 }
-                pieces += RedBallPiece(id, kind, c, r, w, h, flip)
+                pieces += RedBallPiece(id, kind, c, r, w, h, flip, gravity, movable, friction, mass)
             }
             val nextId = root.optLong("nextId", maxId + 1L).coerceAtLeast(maxId + 1L)
             return RedBallDraft(
@@ -359,15 +546,39 @@ data class RedBallDraft(
 
         private fun kindOf(raw: String): RedBallPieceKind? = when (raw.lowercase()) {
             "ground" -> RedBallPieceKind.GROUND
+            "concrete" -> RedBallPieceKind.CONCRETE
             "slope" -> RedBallPieceKind.SLOPE
+            "ladder" -> RedBallPieceKind.LADDER
             "crate" -> RedBallPieceKind.CRATE
             "spring" -> RedBallPieceKind.SPRING
             "spike" -> RedBallPieceKind.SPIKE
+            "star" -> RedBallPieceKind.STAR
+            "magnet" -> RedBallPieceKind.MAGNET
+            "enemy" -> RedBallPieceKind.ENEMY
             "start" -> RedBallPieceKind.START
             "door" -> RedBallPieceKind.DOOR
             else -> null
         }
     }
+}
+
+internal fun RedBallPieceKind.snapAnchor(c: Int, r: Int): Pair<Int, Int> {
+    val stepC = when (this) {
+        RedBallPieceKind.START, RedBallPieceKind.DOOR, RedBallPieceKind.SPIKE,
+        RedBallPieceKind.LADDER, RedBallPieceKind.STAR, RedBallPieceKind.MAGNET,
+        -> 1
+        else -> w
+    }
+    val stepR = when (this) {
+        RedBallPieceKind.START, RedBallPieceKind.DOOR, RedBallPieceKind.SPRING,
+        RedBallPieceKind.LADDER, RedBallPieceKind.STAR, RedBallPieceKind.MAGNET,
+        -> 1
+        else -> h
+    }
+    val limit = RedBallDraft.CELL_LIMIT
+    val cc = (floorDiv(c, stepC) * stepC).coerceIn(-limit, limit - w)
+    val rr = (floorDiv(r, stepR) * stepR).coerceIn(-limit, limit - h)
+    return cc to rr
 }
 
 private fun RedBallPiece.hits(x: Float, y: Float, cell: Float): Boolean {
@@ -384,22 +595,6 @@ private fun RedBallPiece.hits(x: Float, y: Float, cell: Float): Boolean {
     val rr = (c + w) * cell
     val bb = (r + h) * cell
     return x >= l && x < rr && y >= t && y < bb
-}
-
-private fun RedBallPieceKind.anchor(c: Int, r: Int, cols: Int, rows: Int): Pair<Int, Int> {
-    val stepC = when (this) {
-        RedBallPieceKind.START, RedBallPieceKind.DOOR, RedBallPieceKind.SPIKE -> 1
-        else -> w
-    }
-    val stepR = when (this) {
-        RedBallPieceKind.START, RedBallPieceKind.DOOR, RedBallPieceKind.SPRING -> 1
-        else -> h
-    }
-    val maxC = (cols - w).coerceAtLeast(0)
-    val maxR = (rows - h).coerceAtLeast(0)
-    val cc = (floorDiv(c, stepC) * stepC).coerceIn(0, maxC)
-    val rr = (floorDiv(r, stepR) * stepR).coerceIn(0, maxR)
-    return cc to rr
 }
 
 private fun floorDiv(a: Int, b: Int): Int {
@@ -435,6 +630,7 @@ internal fun mergeAabbs(input: List<RedBallAabb>): List<RedBallAabb> {
 }
 
 private fun tryMerge(a: RedBallAabb, b: RedBallAabb): RedBallAabb? {
+    if (abs(a.friction - b.friction) > 0.02f) return null
     val eps = 0.6f
     val sameTop = abs(a.t - b.t) < eps
     val sameBot = abs(a.b - b.b) < eps
@@ -443,10 +639,10 @@ private fun tryMerge(a: RedBallAabb, b: RedBallAabb): RedBallAabb? {
     val overlapX = a.l <= b.r + eps && b.l <= a.r + eps
     val overlapY = a.t <= b.b + eps && b.t <= a.b + eps
     if (sameTop && sameBot && overlapX) {
-        return RedBallAabb(min(a.l, b.l), a.t, max(a.r, b.r), a.b)
+        return RedBallAabb(min(a.l, b.l), a.t, max(a.r, b.r), a.b, a.friction)
     }
     if (sameLeft && sameRight && overlapY) {
-        return RedBallAabb(a.l, min(a.t, b.t), a.r, max(a.b, b.b))
+        return RedBallAabb(a.l, min(a.t, b.t), a.r, max(a.b, b.b), a.friction)
     }
     return null
 }
