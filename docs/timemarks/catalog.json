@@ -214,6 +214,496 @@
       "file": "projects/bti_john_9.json"
     },
     {
+      "id": "gh_grk_john_1",
+      "translationCode": "PODSTR",
+      "bookId": "john",
+      "chapter": 1,
+      "title": "От Иоанна 1 · Греческий (Koine)",
+      "cueCount": 51,
+      "narratorId": "greek-nt",
+      "file": "projects/grk_john_1.json"
+    },
+    {
+      "id": "gh_grk_john_10",
+      "translationCode": "PODSTR",
+      "bookId": "john",
+      "chapter": 10,
+      "title": "От Иоанна 10 · Греческий (Koine)",
+      "cueCount": 42,
+      "narratorId": "greek-nt",
+      "file": "projects/grk_john_10.json"
+    },
+    {
+      "id": "gh_grk_john_11",
+      "translationCode": "PODSTR",
+      "bookId": "john",
+      "chapter": 11,
+      "title": "От Иоанна 11 · Греческий (Koine)",
+      "cueCount": 57,
+      "narratorId": "greek-nt",
+      "file": "projects/grk_john_11.json"
+    },
+    {
+      "id": "gh_grk_john_12",
+      "translationCode": "PODSTR",
+      "bookId": "john",
+      "chapter": 12,
+      "title": "От Иоанна 12 · Греческий (Koine)",
+      "cueCount": 50,
+      "narratorId": "greek-nt",
+      "file": "projects/grk_john_12.json"
+    },
+    {
+      "id": "gh_grk_john_13",
+      "translationCode": "PODSTR",
+      "bookId": "john",
+      "chapter": 13,
+      "title": "От Иоанна 13 · Греческий (Koine)",
+      "cueCount": 38,
+      "narratorId": "greek-nt",
+      "file": "projects/grk_john_13.json"
+    },
+    {
+      "id": "gh_grk_john_14",
+      "translationCode": "PODSTR",
+      "bookId": "john",
+      "chapter": 14,
+      "title": "От Иоанна 14 · Греческий (Koine)",
+      "cueCount": 31,
+      "narratorId": "greek-nt",
+      "file": "projects/grk_john_14.json"
+    },
+    {
+      "id": "gh_grk_john_15",
+      "translationCode": "PODSTR",
+      "bookId": "john",
+      "chapter": 15,
+      "title": "От Иоанна 15 · Греческий (Koine)",
+      "cueCount": 27,
+      "narratorId": "greek-nt",
+      "file": "projects/grk_john_15.json"
+    },
+    {
+      "id": "gh_grk_john_16",
+      "translationCode": "PODSTR",
+      "bookId": "john",
+      "chapter": 16,
+      "title": "От Иоанна 16 · Греческий (Koine)",
+      "cueCount": 33,
+      "narratorId": "greek-nt",
+      "file": "projects/grk_john_16.json"
+    },
+    {
+      "id": "gh_grk_john_17",
+      "translationCode": "PODSTR",
+      "bookId": "john",
+      "chapter": 17,
+      "title": "От Иоанна 17 · Греческий (Koine)",
+      "cueCount": 26,
+      "narratorId": "greek-nt",
+      "file": "projects/grk_john_17.json"
+    },
+    {
+      "id": "gh_grk_john_18",
+      "translationCode": "PODSTR",
+      "bookId": "john",
+      "chapter": 18,
+      "title": "От Иоанна 18 · Греческий (Koine)",
+      "cueCount": 40,
+      "narratorId": "greek-nt",
+      "file": "projects/grk_john_18.json"
+    },
+    {
+      "id": "gh_grk_john_19",
+      "translationCode": "PODSTR",
+      "bookId": "john",
+      "chapter": 19,
+      "title": "От Иоанна 19 · Греческий (Koine)",
+      "cueCount": 42,
+      "narratorId": "greek-nt",
+      "file": "projects/grk_john_19.json"
+    },
+    {
+      "id": "gh_grk_john_2",
+      "translationCode": "PODSTR",
+      "bookId": "john",
+      "chapter": 2,
+      "title": "От Иоанна 2 · Греческий (Koine)",
+      "cueCount": 25,
+      "narratorId": "greek-nt",
+      "file": "projects/grk_john_2.json"
+    },
+    {
+      "id": "gh_grk_john_20",
+      "translationCode": "PODSTR",
+      "bookId": "john",
+      "chapter": 20,
+      "title": "От Иоанна 20 · Греческий (Koine)",
+      "cueCount": 31,
+      "narratorId": "greek-nt",
+      "file": "projects/grk_john_20.json"
+    },
+    {
+      "id": "gh_grk_john_21",
+      "translationCode": "PODSTR",
+      "bookId": "john",
+      "chapter": 21,
+      "title": "От Иоанна 21 · Греческий (Koine)",
+      "cueCount": 25,
+      "narratorId": "greek-nt",
+      "file": "projects/grk_john_21.json"
+    },
+    {
+      "id": "gh_grk_john_3",
+      "translationCode": "PODSTR",
+      "bookId": "john",
+      "chapter": 3,
+      "title": "От Иоанна 3 · Греческий (Koine)",
+      "cueCount": 36,
+      "narratorId": "greek-nt",
+      "file": "projects/grk_john_3.json"
+    },
+    {
+      "id": "gh_grk_john_4",
+      "translationCode": "PODSTR",
+      "bookId": "john",
+      "chapter": 4,
+      "title": "От Иоанна 4 · Греческий (Koine)",
+      "cueCount": 54,
+      "narratorId": "greek-nt",
+      "file": "projects/grk_john_4.json"
+    },
+    {
+      "id": "gh_grk_john_5",
+      "translationCode": "PODSTR",
+      "bookId": "john",
+      "chapter": 5,
+      "title": "От Иоанна 5 · Греческий (Koine)",
+      "cueCount": 47,
+      "narratorId": "greek-nt",
+      "file": "projects/grk_john_5.json"
+    },
+    {
+      "id": "gh_grk_john_6",
+      "translationCode": "PODSTR",
+      "bookId": "john",
+      "chapter": 6,
+      "title": "От Иоанна 6 · Греческий (Koine)",
+      "cueCount": 71,
+      "narratorId": "greek-nt",
+      "file": "projects/grk_john_6.json"
+    },
+    {
+      "id": "gh_grk_john_7",
+      "translationCode": "PODSTR",
+      "bookId": "john",
+      "chapter": 7,
+      "title": "От Иоанна 7 · Греческий (Koine)",
+      "cueCount": 52,
+      "narratorId": "greek-nt",
+      "file": "projects/grk_john_7.json"
+    },
+    {
+      "id": "gh_grk_john_8",
+      "translationCode": "PODSTR",
+      "bookId": "john",
+      "chapter": 8,
+      "title": "От Иоанна 8 · Греческий (Koine)",
+      "cueCount": 59,
+      "narratorId": "greek-nt",
+      "file": "projects/grk_john_8.json"
+    },
+    {
+      "id": "gh_grk_john_9",
+      "translationCode": "PODSTR",
+      "bookId": "john",
+      "chapter": 9,
+      "title": "От Иоанна 9 · Греческий (Koine)",
+      "cueCount": 41,
+      "narratorId": "greek-nt",
+      "file": "projects/grk_john_9.json"
+    },
+    {
+      "id": "gh_grk_matthew_1",
+      "translationCode": "PODSTR",
+      "bookId": "matthew",
+      "chapter": 1,
+      "title": "От Матфея 1 · Греческий (Koine)",
+      "cueCount": 25,
+      "narratorId": "greek-nt",
+      "file": "projects/grk_matthew_1.json"
+    },
+    {
+      "id": "gh_grk_matthew_10",
+      "translationCode": "PODSTR",
+      "bookId": "matthew",
+      "chapter": 10,
+      "title": "От Матфея 10 · Греческий (Koine)",
+      "cueCount": 42,
+      "narratorId": "greek-nt",
+      "file": "projects/grk_matthew_10.json"
+    },
+    {
+      "id": "gh_grk_matthew_11",
+      "translationCode": "PODSTR",
+      "bookId": "matthew",
+      "chapter": 11,
+      "title": "От Матфея 11 · Греческий (Koine)",
+      "cueCount": 30,
+      "narratorId": "greek-nt",
+      "file": "projects/grk_matthew_11.json"
+    },
+    {
+      "id": "gh_grk_matthew_12",
+      "translationCode": "PODSTR",
+      "bookId": "matthew",
+      "chapter": 12,
+      "title": "От Матфея 12 · Греческий (Koine)",
+      "cueCount": 50,
+      "narratorId": "greek-nt",
+      "file": "projects/grk_matthew_12.json"
+    },
+    {
+      "id": "gh_grk_matthew_13",
+      "translationCode": "PODSTR",
+      "bookId": "matthew",
+      "chapter": 13,
+      "title": "От Матфея 13 · Греческий (Koine)",
+      "cueCount": 58,
+      "narratorId": "greek-nt",
+      "file": "projects/grk_matthew_13.json"
+    },
+    {
+      "id": "gh_grk_matthew_14",
+      "translationCode": "PODSTR",
+      "bookId": "matthew",
+      "chapter": 14,
+      "title": "От Матфея 14 · Греческий (Koine)",
+      "cueCount": 36,
+      "narratorId": "greek-nt",
+      "file": "projects/grk_matthew_14.json"
+    },
+    {
+      "id": "gh_grk_matthew_15",
+      "translationCode": "PODSTR",
+      "bookId": "matthew",
+      "chapter": 15,
+      "title": "От Матфея 15 · Греческий (Koine)",
+      "cueCount": 39,
+      "narratorId": "greek-nt",
+      "file": "projects/grk_matthew_15.json"
+    },
+    {
+      "id": "gh_grk_matthew_16",
+      "translationCode": "PODSTR",
+      "bookId": "matthew",
+      "chapter": 16,
+      "title": "От Матфея 16 · Греческий (Koine)",
+      "cueCount": 28,
+      "narratorId": "greek-nt",
+      "file": "projects/grk_matthew_16.json"
+    },
+    {
+      "id": "gh_grk_matthew_17",
+      "translationCode": "PODSTR",
+      "bookId": "matthew",
+      "chapter": 17,
+      "title": "От Матфея 17 · Греческий (Koine)",
+      "cueCount": 27,
+      "narratorId": "greek-nt",
+      "file": "projects/grk_matthew_17.json"
+    },
+    {
+      "id": "gh_grk_matthew_18",
+      "translationCode": "PODSTR",
+      "bookId": "matthew",
+      "chapter": 18,
+      "title": "От Матфея 18 · Греческий (Koine)",
+      "cueCount": 35,
+      "narratorId": "greek-nt",
+      "file": "projects/grk_matthew_18.json"
+    },
+    {
+      "id": "gh_grk_matthew_19",
+      "translationCode": "PODSTR",
+      "bookId": "matthew",
+      "chapter": 19,
+      "title": "От Матфея 19 · Греческий (Koine)",
+      "cueCount": 30,
+      "narratorId": "greek-nt",
+      "file": "projects/grk_matthew_19.json"
+    },
+    {
+      "id": "gh_grk_matthew_2",
+      "translationCode": "PODSTR",
+      "bookId": "matthew",
+      "chapter": 2,
+      "title": "От Матфея 2 · Греческий (Koine)",
+      "cueCount": 23,
+      "narratorId": "greek-nt",
+      "file": "projects/grk_matthew_2.json"
+    },
+    {
+      "id": "gh_grk_matthew_20",
+      "translationCode": "PODSTR",
+      "bookId": "matthew",
+      "chapter": 20,
+      "title": "От Матфея 20 · Греческий (Koine)",
+      "cueCount": 34,
+      "narratorId": "greek-nt",
+      "file": "projects/grk_matthew_20.json"
+    },
+    {
+      "id": "gh_grk_matthew_21",
+      "translationCode": "PODSTR",
+      "bookId": "matthew",
+      "chapter": 21,
+      "title": "От Матфея 21 · Греческий (Koine)",
+      "cueCount": 46,
+      "narratorId": "greek-nt",
+      "file": "projects/grk_matthew_21.json"
+    },
+    {
+      "id": "gh_grk_matthew_22",
+      "translationCode": "PODSTR",
+      "bookId": "matthew",
+      "chapter": 22,
+      "title": "От Матфея 22 · Греческий (Koine)",
+      "cueCount": 46,
+      "narratorId": "greek-nt",
+      "file": "projects/grk_matthew_22.json"
+    },
+    {
+      "id": "gh_grk_matthew_23",
+      "translationCode": "PODSTR",
+      "bookId": "matthew",
+      "chapter": 23,
+      "title": "От Матфея 23 · Греческий (Koine)",
+      "cueCount": 39,
+      "narratorId": "greek-nt",
+      "file": "projects/grk_matthew_23.json"
+    },
+    {
+      "id": "gh_grk_matthew_24",
+      "translationCode": "PODSTR",
+      "bookId": "matthew",
+      "chapter": 24,
+      "title": "От Матфея 24 · Греческий (Koine)",
+      "cueCount": 51,
+      "narratorId": "greek-nt",
+      "file": "projects/grk_matthew_24.json"
+    },
+    {
+      "id": "gh_grk_matthew_25",
+      "translationCode": "PODSTR",
+      "bookId": "matthew",
+      "chapter": 25,
+      "title": "От Матфея 25 · Греческий (Koine)",
+      "cueCount": 46,
+      "narratorId": "greek-nt",
+      "file": "projects/grk_matthew_25.json"
+    },
+    {
+      "id": "gh_grk_matthew_26",
+      "translationCode": "PODSTR",
+      "bookId": "matthew",
+      "chapter": 26,
+      "title": "От Матфея 26 · Греческий (Koine)",
+      "cueCount": 75,
+      "narratorId": "greek-nt",
+      "file": "projects/grk_matthew_26.json"
+    },
+    {
+      "id": "gh_grk_matthew_27",
+      "translationCode": "PODSTR",
+      "bookId": "matthew",
+      "chapter": 27,
+      "title": "От Матфея 27 · Греческий (Koine)",
+      "cueCount": 66,
+      "narratorId": "greek-nt",
+      "file": "projects/grk_matthew_27.json"
+    },
+    {
+      "id": "gh_grk_matthew_28",
+      "translationCode": "PODSTR",
+      "bookId": "matthew",
+      "chapter": 28,
+      "title": "От Матфея 28 · Греческий (Koine)",
+      "cueCount": 20,
+      "narratorId": "greek-nt",
+      "file": "projects/grk_matthew_28.json"
+    },
+    {
+      "id": "gh_grk_matthew_3",
+      "translationCode": "PODSTR",
+      "bookId": "matthew",
+      "chapter": 3,
+      "title": "От Матфея 3 · Греческий (Koine)",
+      "cueCount": 17,
+      "narratorId": "greek-nt",
+      "file": "projects/grk_matthew_3.json"
+    },
+    {
+      "id": "gh_grk_matthew_4",
+      "translationCode": "PODSTR",
+      "bookId": "matthew",
+      "chapter": 4,
+      "title": "От Матфея 4 · Греческий (Koine)",
+      "cueCount": 25,
+      "narratorId": "greek-nt",
+      "file": "projects/grk_matthew_4.json"
+    },
+    {
+      "id": "gh_grk_matthew_5",
+      "translationCode": "PODSTR",
+      "bookId": "matthew",
+      "chapter": 5,
+      "title": "От Матфея 5 · Греческий (Koine)",
+      "cueCount": 48,
+      "narratorId": "greek-nt",
+      "file": "projects/grk_matthew_5.json"
+    },
+    {
+      "id": "gh_grk_matthew_6",
+      "translationCode": "PODSTR",
+      "bookId": "matthew",
+      "chapter": 6,
+      "title": "От Матфея 6 · Греческий (Koine)",
+      "cueCount": 34,
+      "narratorId": "greek-nt",
+      "file": "projects/grk_matthew_6.json"
+    },
+    {
+      "id": "gh_grk_matthew_7",
+      "translationCode": "PODSTR",
+      "bookId": "matthew",
+      "chapter": 7,
+      "title": "От Матфея 7 · Греческий (Koine)",
+      "cueCount": 29,
+      "narratorId": "greek-nt",
+      "file": "projects/grk_matthew_7.json"
+    },
+    {
+      "id": "gh_grk_matthew_8",
+      "translationCode": "PODSTR",
+      "bookId": "matthew",
+      "chapter": 8,
+      "title": "От Матфея 8 · Греческий (Koine)",
+      "cueCount": 34,
+      "narratorId": "greek-nt",
+      "file": "projects/grk_matthew_8.json"
+    },
+    {
+      "id": "gh_grk_matthew_9",
+      "translationCode": "PODSTR",
+      "bookId": "matthew",
+      "chapter": 9,
+      "title": "От Матфея 9 · Греческий (Koine)",
+      "cueCount": 38,
+      "narratorId": "greek-nt",
+      "file": "projects/grk_matthew_9.json"
+    },
+    {
       "id": "gh_nrt_john_1",
       "translationCode": "NRT",
       "bookId": "john",

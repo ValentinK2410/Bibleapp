@@ -1,0 +1,147 @@
+{
+  "id": "gh_grk_matthew_8",
+  "translationCode": "PODSTR",
+  "bookId": "matthew",
+  "chapter": 8,
+  "title": "От Матфея 8 · Греческий (Koine)",
+  "narratorId": "greek-nt",
+  "audioFileName": "40_08.mp3",
+  "cues": [
+    {
+      "timeMs": 180,
+      "verseStart": 1
+    },
+    {
+      "timeMs": 5624,
+      "verseStart": 2
+    },
+    {
+      "timeMs": 14670,
+      "verseStart": 3
+    },
+    {
+      "timeMs": 23176,
+      "verseStart": 4
+    },
+    {
+      "timeMs": 36044,
+      "verseStart": 5
+    },
+    {
+      "timeMs": 42729,
+      "verseStart": 6
+    },
+    {
+      "timeMs": 49833,
+      "verseStart": 7
+    },
+    {
+      "timeMs": 53756,
+      "verseStart": 8
+    },
+    {
+      "timeMs": 64984,
+      "verseStart": 9
+    },
+    {
+      "timeMs": 81054,
+      "verseStart": 10
+    },
+    {
+      "timeMs": 90441,
+      "verseStart": 11
+    },
+    {
+      "timeMs": 100207,
+      "verseStart": 12
+    },
+    {
+      "timeMs": 108413,
+      "verseStart": 13
+    },
+    {
+      "timeMs": 117199,
+      "verseStart": 14
+    },
+    {
+      "timeMs": 124143,
+      "verseStart": 15
+    },
+    {
+      "timeMs": 131588,
+      "verseStart": 16
+    },
+    {
+      "timeMs": 141435,
+      "verseStart": 17
+    },
+    {
+      "timeMs": 150461,
+      "verseStart": 18
+    },
+    {
+      "timeMs": 155804,
+      "verseStart": 19
+    },
+    {
+      "timeMs": 162949,
+      "verseStart": 20
+    },
+    {
+      "timeMs": 174737,
+      "verseStart": 21
+    },
+    {
+      "timeMs": 182482,
+      "verseStart": 22
+    },
+    {
+      "timeMs": 189247,
+      "verseStart": 23
+    },
+    {
+      "timeMs": 193870,
+      "verseStart": 24
+    },
+    {
+      "timeMs": 202856,
+      "verseStart": 25
+    },
+    {
+      "timeMs": 208780,
+      "verseStart": 26
+    },
+    {
+      "timeMs": 218787,
+      "verseStart": 27
+    },
+    {
+      "timeMs": 225791,
+      "verseStart": 28
+    },
+    {
+      "timeMs": 240461,
+      "verseStart": 29
+    },
+    {
+      "timeMs": 248767,
+      "verseStart": 30
+    },
+    {
+      "timeMs": 253250,
+      "verseStart": 31
+    },
+    {
+      "timeMs": 260635,
+      "verseStart": 32
+    },
+    {
+      "timeMs": 274044,
+      "verseStart": 33
+    },
+    {
+      "timeMs": 281789,
+      "verseStart": 34
+    }
+  ]
+}

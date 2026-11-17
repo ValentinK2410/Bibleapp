@@ -1,0 +1,111 @@
+{
+  "id": "gh_grk_john_21",
+  "translationCode": "PODSTR",
+  "bookId": "john",
+  "chapter": 21,
+  "title": "От Иоанна 21 · Греческий (Koine)",
+  "narratorId": "greek-nt",
+  "audioFileName": "43_21.mp3",
+  "cues": [
+    {
+      "timeMs": 941,
+      "verseStart": 1
+    },
+    {
+      "timeMs": 9226,
+      "verseStart": 2
+    },
+    {
+      "timeMs": 19993,
+      "verseStart": 3
+    },
+    {
+      "timeMs": 31421,
+      "verseStart": 4
+    },
+    {
+      "timeMs": 38725,
+      "verseStart": 5
+    },
+    {
+      "timeMs": 45190,
+      "verseStart": 6
+    },
+    {
+      "timeMs": 55937,
+      "verseStart": 7
+    },
+    {
+      "timeMs": 69706,
+      "verseStart": 8
+    },
+    {
+      "timeMs": 79452,
+      "verseStart": 9
+    },
+    {
+      "timeMs": 86677,
+      "verseStart": 10
+    },
+    {
+      "timeMs": 91660,
+      "verseStart": 11
+    },
+    {
+      "timeMs": 102887,
+      "verseStart": 12
+    },
+    {
+      "timeMs": 112494,
+      "verseStart": 13
+    },
+    {
+      "timeMs": 117997,
+      "verseStart": 14
+    },
+    {
+      "timeMs": 123021,
+      "verseStart": 15
+    },
+    {
+      "timeMs": 136049,
+      "verseStart": 16
+    },
+    {
+      "timeMs": 146456,
+      "verseStart": 17
+    },
+    {
+      "timeMs": 162006,
+      "verseStart": 18
+    },
+    {
+      "timeMs": 174554,
+      "verseStart": 19
+    },
+    {
+      "timeMs": 181799,
+      "verseStart": 20
+    },
+    {
+      "timeMs": 192646,
+      "verseStart": 21
+    },
+    {
+      "timeMs": 197689,
+      "verseStart": 22
+    },
+    {
+      "timeMs": 204334,
+      "verseStart": 23
+    },
+    {
+      "timeMs": 217002,
+      "verseStart": 24
+    },
+    {
+      "timeMs": 224807,
+      "verseStart": 25
+    }
+  ]
+}

@@ -1,0 +1,111 @@
+{
+  "id": "align-matthew-GRK-28",
+  "translationCode": "PODSTR",
+  "bookId": "matthew",
+  "chapter": 28,
+  "title": "От Матфея 28 · Греческий (Koine)",
+  "audioFilePath": "/data/user/0/com.example.bible.sqlite/files/bible_audio/greek-nt/40_28.mp3",
+  "updatedAt": 1794873600000,
+  "cues": [
+    {
+      "timeMs": 981,
+      "verseStart": 1,
+      "attachments": []
+    },
+    {
+      "timeMs": 9967,
+      "verseStart": 2,
+      "attachments": []
+    },
+    {
+      "timeMs": 21574,
+      "verseStart": 3,
+      "attachments": []
+    },
+    {
+      "timeMs": 27658,
+      "verseStart": 4,
+      "attachments": []
+    },
+    {
+      "timeMs": 34523,
+      "verseStart": 5,
+      "attachments": []
+    },
+    {
+      "timeMs": 43629,
+      "verseStart": 6,
+      "attachments": []
+    },
+    {
+      "timeMs": 50694,
+      "verseStart": 7,
+      "attachments": []
+    },
+    {
+      "timeMs": 63782,
+      "verseStart": 8,
+      "attachments": []
+    },
+    {
+      "timeMs": 71348,
+      "verseStart": 9,
+      "attachments": []
+    },
+    {
+      "timeMs": 81814,
+      "verseStart": 10,
+      "attachments": []
+    },
+    {
+      "timeMs": 94263,
+      "verseStart": 11,
+      "attachments": []
+    },
+    {
+      "timeMs": 104129,
+      "verseStart": 12,
+      "attachments": []
+    },
+    {
+      "timeMs": 112015,
+      "verseStart": 13,
+      "attachments": []
+    },
+    {
+      "timeMs": 119179,
+      "verseStart": 14,
+      "attachments": []
+    },
+    {
+      "timeMs": 125844,
+      "verseStart": 15,
+      "attachments": []
+    },
+    {
+      "timeMs": 136271,
+      "verseStart": 16,
+      "attachments": []
+    },
+    {
+      "timeMs": 143956,
+      "verseStart": 17,
+      "attachments": []
+    },
+    {
+      "timeMs": 149339,
+      "verseStart": 18,
+      "attachments": []
+    },
+    {
+      "timeMs": 157585,
+      "verseStart": 19,
+      "attachments": []
+    },
+    {
+      "timeMs": 167211,
+      "verseStart": 20,
+      "attachments": []
+    }
+  ]
+}

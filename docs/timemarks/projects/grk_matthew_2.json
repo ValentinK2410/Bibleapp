@@ -1,0 +1,103 @@
+{
+  "id": "gh_grk_matthew_2",
+  "translationCode": "PODSTR",
+  "bookId": "matthew",
+  "chapter": 2,
+  "title": "От Матфея 2 · Греческий (Koine)",
+  "narratorId": "greek-nt",
+  "audioFileName": "40_02.mp3",
+  "cues": [
+    {
+      "timeMs": 580,
+      "verseStart": 1
+    },
+    {
+      "timeMs": 12208,
+      "verseStart": 2
+    },
+    {
+      "timeMs": 22696,
+      "verseStart": 3
+    },
+    {
+      "timeMs": 28319,
+      "verseStart": 4
+    },
+    {
+      "timeMs": 36105,
+      "verseStart": 5
+    },
+    {
+      "timeMs": 43410,
+      "verseStart": 6
+    },
+    {
+      "timeMs": 55698,
+      "verseStart": 7
+    },
+    {
+      "timeMs": 63203,
+      "verseStart": 8
+    },
+    {
+      "timeMs": 76152,
+      "verseStart": 9
+    },
+    {
+      "timeMs": 88200,
+      "verseStart": 10
+    },
+    {
+      "timeMs": 92483,
+      "verseStart": 11
+    },
+    {
+      "timeMs": 108854,
+      "verseStart": 12
+    },
+    {
+      "timeMs": 116359,
+      "verseStart": 13
+    },
+    {
+      "timeMs": 134712,
+      "verseStart": 14
+    },
+    {
+      "timeMs": 141777,
+      "verseStart": 15
+    },
+    {
+      "timeMs": 152164,
+      "verseStart": 16
+    },
+    {
+      "timeMs": 168835,
+      "verseStart": 17
+    },
+    {
+      "timeMs": 172698,
+      "verseStart": 18
+    },
+    {
+      "timeMs": 183785,
+      "verseStart": 19
+    },
+    {
+      "timeMs": 191531,
+      "verseStart": 20
+    },
+    {
+      "timeMs": 201978,
+      "verseStart": 21
+    },
+    {
+      "timeMs": 208242,
+      "verseStart": 22
+    },
+    {
+      "timeMs": 220590,
+      "verseStart": 23
+    }
+  ]
+}

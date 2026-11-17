@@ -1,0 +1,135 @@
+{
+  "id": "gh_grk_john_20",
+  "translationCode": "PODSTR",
+  "bookId": "john",
+  "chapter": 20,
+  "title": "От Иоанна 20 · Греческий (Koine)",
+  "narratorId": "greek-nt",
+  "audioFileName": "43_20.mp3",
+  "cues": [
+    {
+      "timeMs": 620,
+      "verseStart": 1
+    },
+    {
+      "timeMs": 10867,
+      "verseStart": 2
+    },
+    {
+      "timeMs": 22355,
+      "verseStart": 3
+    },
+    {
+      "timeMs": 27018,
+      "verseStart": 4
+    },
+    {
+      "timeMs": 34183,
+      "verseStart": 5
+    },
+    {
+      "timeMs": 38906,
+      "verseStart": 6
+    },
+    {
+      "timeMs": 45951,
+      "verseStart": 7
+    },
+    {
+      "timeMs": 54576,
+      "verseStart": 8
+    },
+    {
+      "timeMs": 61601,
+      "verseStart": 9
+    },
+    {
+      "timeMs": 66024,
+      "verseStart": 10
+    },
+    {
+      "timeMs": 69046,
+      "verseStart": 11
+    },
+    {
+      "timeMs": 75790,
+      "verseStart": 12
+    },
+    {
+      "timeMs": 84316,
+      "verseStart": 13
+    },
+    {
+      "timeMs": 92622,
+      "verseStart": 14
+    },
+    {
+      "timeMs": 99726,
+      "verseStart": 15
+    },
+    {
+      "timeMs": 112775,
+      "verseStart": 16
+    },
+    {
+      "timeMs": 120700,
+      "verseStart": 17
+    },
+    {
+      "timeMs": 133909,
+      "verseStart": 18
+    },
+    {
+      "timeMs": 140493,
+      "verseStart": 19
+    },
+    {
+      "timeMs": 153442,
+      "verseStart": 20
+    },
+    {
+      "timeMs": 161187,
+      "verseStart": 21
+    },
+    {
+      "timeMs": 167772,
+      "verseStart": 22
+    },
+    {
+      "timeMs": 172635,
+      "verseStart": 23
+    },
+    {
+      "timeMs": 178659,
+      "verseStart": 24
+    },
+    {
+      "timeMs": 184623,
+      "verseStart": 25
+    },
+    {
+      "timeMs": 199493,
+      "verseStart": 26
+    },
+    {
+      "timeMs": 210720,
+      "verseStart": 27
+    },
+    {
+      "timeMs": 221167,
+      "verseStart": 28
+    },
+    {
+      "timeMs": 225870,
+      "verseStart": 29
+    },
+    {
+      "timeMs": 232795,
+      "verseStart": 30
+    },
+    {
+      "timeMs": 240160,
+      "verseStart": 31
+    }
+  ]
+}

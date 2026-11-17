@@ -1,0 +1,295 @@
+{
+  "id": "gh_grk_john_6",
+  "translationCode": "PODSTR",
+  "bookId": "john",
+  "chapter": 6,
+  "title": "От Иоанна 6 · Греческий (Koine)",
+  "narratorId": "greek-nt",
+  "audioFileName": "43_06.mp3",
+  "cues": [
+    {
+      "timeMs": 500,
+      "verseStart": 1
+    },
+    {
+      "timeMs": 6264,
+      "verseStart": 2
+    },
+    {
+      "timeMs": 13409,
+      "verseStart": 3
+    },
+    {
+      "timeMs": 18933,
+      "verseStart": 4
+    },
+    {
+      "timeMs": 22556,
+      "verseStart": 5
+    },
+    {
+      "timeMs": 33803,
+      "verseStart": 6
+    },
+    {
+      "timeMs": 38987,
+      "verseStart": 7
+    },
+    {
+      "timeMs": 46272,
+      "verseStart": 8
+    },
+    {
+      "timeMs": 51235,
+      "verseStart": 9
+    },
+    {
+      "timeMs": 58760,
+      "verseStart": 10
+    },
+    {
+      "timeMs": 69968,
+      "verseStart": 11
+    },
+    {
+      "timeMs": 79315,
+      "verseStart": 12
+    },
+    {
+      "timeMs": 87020,
+      "verseStart": 13
+    },
+    {
+      "timeMs": 95686,
+      "verseStart": 14
+    },
+    {
+      "timeMs": 103731,
+      "verseStart": 15
+    },
+    {
+      "timeMs": 113398,
+      "verseStart": 16
+    },
+    {
+      "timeMs": 117881,
+      "verseStart": 17
+    },
+    {
+      "timeMs": 127768,
+      "verseStart": 18
+    },
+    {
+      "timeMs": 131290,
+      "verseStart": 19
+    },
+    {
+      "timeMs": 142658,
+      "verseStart": 20
+    },
+    {
+      "timeMs": 146140,
+      "verseStart": 21
+    },
+    {
+      "timeMs": 152965,
+      "verseStart": 22
+    },
+    {
+      "timeMs": 166735,
+      "verseStart": 23
+    },
+    {
+      "timeMs": 174620,
+      "verseStart": 24
+    },
+    {
+      "timeMs": 185968,
+      "verseStart": 25
+    },
+    {
+      "timeMs": 192012,
+      "verseStart": 26
+    },
+    {
+      "timeMs": 202299,
+      "verseStart": 27
+    },
+    {
+      "timeMs": 214147,
+      "verseStart": 28
+    },
+    {
+      "timeMs": 219191,
+      "verseStart": 29
+    },
+    {
+      "timeMs": 227076,
+      "verseStart": 30
+    },
+    {
+      "timeMs": 233741,
+      "verseStart": 31
+    },
+    {
+      "timeMs": 241686,
+      "verseStart": 32
+    },
+    {
+      "timeMs": 253334,
+      "verseStart": 33
+    },
+    {
+      "timeMs": 258658,
+      "verseStart": 34
+    },
+    {
+      "timeMs": 263401,
+      "verseStart": 35
+    },
+    {
+      "timeMs": 273168,
+      "verseStart": 36
+    },
+    {
+      "timeMs": 276970,
+      "verseStart": 37
+    },
+    {
+      "timeMs": 283435,
+      "verseStart": 38
+    },
+    {
+      "timeMs": 289859,
+      "verseStart": 39
+    },
+    {
+      "timeMs": 299066,
+      "verseStart": 40
+    },
+    {
+      "timeMs": 310213,
+      "verseStart": 41
+    },
+    {
+      "timeMs": 316758,
+      "verseStart": 42
+    },
+    {
+      "timeMs": 326725,
+      "verseStart": 43
+    },
+    {
+      "timeMs": 331228,
+      "verseStart": 44
+    },
+    {
+      "timeMs": 339854,
+      "verseStart": 45
+    },
+    {
+      "timeMs": 349260,
+      "verseStart": 46
+    },
+    {
+      "timeMs": 355865,
+      "verseStart": 47
+    },
+    {
+      "timeMs": 360368,
+      "verseStart": 48
+    },
+    {
+      "timeMs": 362669,
+      "verseStart": 49
+    },
+    {
+      "timeMs": 367112,
+      "verseStart": 50
+    },
+    {
+      "timeMs": 373297,
+      "verseStart": 51
+    },
+    {
+      "timeMs": 386646,
+      "verseStart": 52
+    },
+    {
+      "timeMs": 394011,
+      "verseStart": 53
+    },
+    {
+      "timeMs": 404698,
+      "verseStart": 54
+    },
+    {
+      "timeMs": 412403,
+      "verseStart": 55
+    },
+    {
+      "timeMs": 417127,
+      "verseStart": 56
+    },
+    {
+      "timeMs": 422490,
+      "verseStart": 57
+    },
+    {
+      "timeMs": 429895,
+      "verseStart": 58
+    },
+    {
+      "timeMs": 439602,
+      "verseStart": 59
+    },
+    {
+      "timeMs": 443725,
+      "verseStart": 60
+    },
+    {
+      "timeMs": 451550,
+      "verseStart": 61
+    },
+    {
+      "timeMs": 459156,
+      "verseStart": 62
+    },
+    {
+      "timeMs": 463899,
+      "verseStart": 63
+    },
+    {
+      "timeMs": 472605,
+      "verseStart": 64
+    },
+    {
+      "timeMs": 481871,
+      "verseStart": 65
+    },
+    {
+      "timeMs": 489556,
+      "verseStart": 66
+    },
+    {
+      "timeMs": 496261,
+      "verseStart": 67
+    },
+    {
+      "timeMs": 500344,
+      "verseStart": 68
+    },
+    {
+      "timeMs": 507169,
+      "verseStart": 69
+    },
+    {
+      "timeMs": 511872,
+      "verseStart": 70
+    },
+    {
+      "timeMs": 518716,
+      "verseStart": 71
+    }
+  ]
+}

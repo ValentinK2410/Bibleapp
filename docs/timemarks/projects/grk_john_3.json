@@ -1,0 +1,155 @@
+{
+  "id": "gh_grk_john_3",
+  "translationCode": "PODSTR",
+  "bookId": "john",
+  "chapter": 3,
+  "title": "От Иоанна 3 · Греческий (Koine)",
+  "narratorId": "greek-nt",
+  "audioFileName": "43_03.mp3",
+  "cues": [
+    {
+      "timeMs": 921,
+      "verseStart": 1
+    },
+    {
+      "timeMs": 7205,
+      "verseStart": 2
+    },
+    {
+      "timeMs": 20555,
+      "verseStart": 3
+    },
+    {
+      "timeMs": 30402,
+      "verseStart": 4
+    },
+    {
+      "timeMs": 41090,
+      "verseStart": 5
+    },
+    {
+      "timeMs": 50777,
+      "verseStart": 6
+    },
+    {
+      "timeMs": 58543,
+      "verseStart": 7
+    },
+    {
+      "timeMs": 62766,
+      "verseStart": 8
+    },
+    {
+      "timeMs": 73094,
+      "verseStart": 9
+    },
+    {
+      "timeMs": 77957,
+      "verseStart": 10
+    },
+    {
+      "timeMs": 84122,
+      "verseStart": 11
+    },
+    {
+      "timeMs": 92548,
+      "verseStart": 12
+    },
+    {
+      "timeMs": 99153,
+      "verseStart": 13
+    },
+    {
+      "timeMs": 105237,
+      "verseStart": 14
+    },
+    {
+      "timeMs": 111402,
+      "verseStart": 15
+    },
+    {
+      "timeMs": 115064,
+      "verseStart": 16
+    },
+    {
+      "timeMs": 125332,
+      "verseStart": 17
+    },
+    {
+      "timeMs": 132797,
+      "verseStart": 18
+    },
+    {
+      "timeMs": 141904,
+      "verseStart": 19
+    },
+    {
+      "timeMs": 151331,
+      "verseStart": 20
+    },
+    {
+      "timeMs": 158336,
+      "verseStart": 21
+    },
+    {
+      "timeMs": 166242,
+      "verseStart": 22
+    },
+    {
+      "timeMs": 174768,
+      "verseStart": 23
+    },
+    {
+      "timeMs": 183815,
+      "verseStart": 24
+    },
+    {
+      "timeMs": 187657,
+      "verseStart": 25
+    },
+    {
+      "timeMs": 193141,
+      "verseStart": 26
+    },
+    {
+      "timeMs": 205310,
+      "verseStart": 27
+    },
+    {
+      "timeMs": 213096,
+      "verseStart": 28
+    },
+    {
+      "timeMs": 220862,
+      "verseStart": 29
+    },
+    {
+      "timeMs": 232991,
+      "verseStart": 30
+    },
+    {
+      "timeMs": 236753,
+      "verseStart": 31
+    },
+    {
+      "timeMs": 247521,
+      "verseStart": 32
+    },
+    {
+      "timeMs": 254366,
+      "verseStart": 33
+    },
+    {
+      "timeMs": 259530,
+      "verseStart": 34
+    },
+    {
+      "timeMs": 265534,
+      "verseStart": 35
+    },
+    {
+      "timeMs": 269978,
+      "verseStart": 36
+    }
+  ]
+}

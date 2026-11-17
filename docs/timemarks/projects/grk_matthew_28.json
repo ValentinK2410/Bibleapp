@@ -1,0 +1,91 @@
+{
+  "id": "gh_grk_matthew_28",
+  "translationCode": "PODSTR",
+  "bookId": "matthew",
+  "chapter": 28,
+  "title": "От Матфея 28 · Греческий (Koine)",
+  "narratorId": "greek-nt",
+  "audioFileName": "40_28.mp3",
+  "cues": [
+    {
+      "timeMs": 981,
+      "verseStart": 1
+    },
+    {
+      "timeMs": 9967,
+      "verseStart": 2
+    },
+    {
+      "timeMs": 21574,
+      "verseStart": 3
+    },
+    {
+      "timeMs": 27658,
+      "verseStart": 4
+    },
+    {
+      "timeMs": 34523,
+      "verseStart": 5
+    },
+    {
+      "timeMs": 43629,
+      "verseStart": 6
+    },
+    {
+      "timeMs": 50694,
+      "verseStart": 7
+    },
+    {
+      "timeMs": 63782,
+      "verseStart": 8
+    },
+    {
+      "timeMs": 71348,
+      "verseStart": 9
+    },
+    {
+      "timeMs": 81814,
+      "verseStart": 10
+    },
+    {
+      "timeMs": 94263,
+      "verseStart": 11
+    },
+    {
+      "timeMs": 104129,
+      "verseStart": 12
+    },
+    {
+      "timeMs": 112015,
+      "verseStart": 13
+    },
+    {
+      "timeMs": 119179,
+      "verseStart": 14
+    },
+    {
+      "timeMs": 125844,
+      "verseStart": 15
+    },
+    {
+      "timeMs": 136271,
+      "verseStart": 16
+    },
+    {
+      "timeMs": 143956,
+      "verseStart": 17
+    },
+    {
+      "timeMs": 149339,
+      "verseStart": 18
+    },
+    {
+      "timeMs": 157585,
+      "verseStart": 19
+    },
+    {
+      "timeMs": 167211,
+      "verseStart": 20
+    }
+  ]
+}

@@ -1,0 +1,131 @@
+{
+  "id": "gh_grk_matthew_19",
+  "translationCode": "PODSTR",
+  "bookId": "matthew",
+  "chapter": 19,
+  "title": "От Матфея 19 · Греческий (Koine)",
+  "narratorId": "greek-nt",
+  "audioFileName": "40_19.mp3",
+  "cues": [
+    {
+      "timeMs": 380,
+      "verseStart": 1
+    },
+    {
+      "timeMs": 10867,
+      "verseStart": 2
+    },
+    {
+      "timeMs": 16451,
+      "verseStart": 3
+    },
+    {
+      "timeMs": 25557,
+      "verseStart": 4
+    },
+    {
+      "timeMs": 32382,
+      "verseStart": 5
+    },
+    {
+      "timeMs": 42749,
+      "verseStart": 6
+    },
+    {
+      "timeMs": 50294,
+      "verseStart": 7
+    },
+    {
+      "timeMs": 56758,
+      "verseStart": 8
+    },
+    {
+      "timeMs": 66364,
+      "verseStart": 9
+    },
+    {
+      "timeMs": 74030,
+      "verseStart": 10
+    },
+    {
+      "timeMs": 81194,
+      "verseStart": 11
+    },
+    {
+      "timeMs": 86498,
+      "verseStart": 12
+    },
+    {
+      "timeMs": 103489,
+      "verseStart": 13
+    },
+    {
+      "timeMs": 112095,
+      "verseStart": 14
+    },
+    {
+      "timeMs": 120941,
+      "verseStart": 15
+    },
+    {
+      "timeMs": 124683,
+      "verseStart": 16
+    },
+    {
+      "timeMs": 132989,
+      "verseStart": 17
+    },
+    {
+      "timeMs": 142575,
+      "verseStart": 18
+    },
+    {
+      "timeMs": 151641,
+      "verseStart": 19
+    },
+    {
+      "timeMs": 156665,
+      "verseStart": 20
+    },
+    {
+      "timeMs": 162148,
+      "verseStart": 21
+    },
+    {
+      "timeMs": 175097,
+      "verseStart": 22
+    },
+    {
+      "timeMs": 181962,
+      "verseStart": 23
+    },
+    {
+      "timeMs": 191568,
+      "verseStart": 24
+    },
+    {
+      "timeMs": 199894,
+      "verseStart": 25
+    },
+    {
+      "timeMs": 206178,
+      "verseStart": 26
+    },
+    {
+      "timeMs": 213563,
+      "verseStart": 27
+    },
+    {
+      "timeMs": 222189,
+      "verseStart": 28
+    },
+    {
+      "timeMs": 238540,
+      "verseStart": 29
+    },
+    {
+      "timeMs": 251828,
+      "verseStart": 30
+    }
+  ]
+}

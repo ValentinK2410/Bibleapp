@@ -1,0 +1,221 @@
+{
+  "id": "align-matthew-GRK-10",
+  "translationCode": "PODSTR",
+  "bookId": "matthew",
+  "chapter": 10,
+  "title": "От Матфея 10 · Греческий (Koine)",
+  "audioFilePath": "/data/user/0/com.example.bible.sqlite/files/bible_audio/greek-nt/40_10.mp3",
+  "updatedAt": 1794873600000,
+  "cues": [
+    {
+      "timeMs": 701,
+      "verseStart": 1,
+      "attachments": []
+    },
+    {
+      "timeMs": 12749,
+      "verseStart": 2,
+      "attachments": []
+    },
+    {
+      "timeMs": 26118,
+      "verseStart": 3,
+      "attachments": []
+    },
+    {
+      "timeMs": 34363,
+      "verseStart": 4,
+      "attachments": []
+    },
+    {
+      "timeMs": 39387,
+      "verseStart": 5,
+      "attachments": []
+    },
+    {
+      "timeMs": 48873,
+      "verseStart": 6,
+      "attachments": []
+    },
+    {
+      "timeMs": 53496,
+      "verseStart": 7,
+      "attachments": []
+    },
+    {
+      "timeMs": 59660,
+      "verseStart": 8,
+      "attachments": []
+    },
+    {
+      "timeMs": 70107,
+      "verseStart": 9,
+      "attachments": []
+    },
+    {
+      "timeMs": 75331,
+      "verseStart": 10,
+      "attachments": []
+    },
+    {
+      "timeMs": 84617,
+      "verseStart": 11,
+      "attachments": []
+    },
+    {
+      "timeMs": 93363,
+      "verseStart": 12,
+      "attachments": []
+    },
+    {
+      "timeMs": 97286,
+      "verseStart": 13,
+      "attachments": []
+    },
+    {
+      "timeMs": 105792,
+      "verseStart": 14,
+      "attachments": []
+    },
+    {
+      "timeMs": 116859,
+      "verseStart": 15,
+      "attachments": []
+    },
+    {
+      "timeMs": 123443,
+      "verseStart": 16,
+      "attachments": []
+    },
+    {
+      "timeMs": 133050,
+      "verseStart": 17,
+      "attachments": []
+    },
+    {
+      "timeMs": 141195,
+      "verseStart": 18,
+      "attachments": []
+    },
+    {
+      "timeMs": 147900,
+      "verseStart": 19,
+      "attachments": []
+    },
+    {
+      "timeMs": 156005,
+      "verseStart": 20,
+      "attachments": []
+    },
+    {
+      "timeMs": 161369,
+      "verseStart": 21,
+      "attachments": []
+    },
+    {
+      "timeMs": 171056,
+      "verseStart": 22,
+      "attachments": []
+    },
+    {
+      "timeMs": 178561,
+      "verseStart": 23,
+      "attachments": []
+    },
+    {
+      "timeMs": 189888,
+      "verseStart": 24,
+      "attachments": []
+    },
+    {
+      "timeMs": 195232,
+      "verseStart": 25,
+      "attachments": []
+    },
+    {
+      "timeMs": 207280,
+      "verseStart": 26,
+      "attachments": []
+    },
+    {
+      "timeMs": 215586,
+      "verseStart": 27,
+      "attachments": []
+    },
+    {
+      "timeMs": 223451,
+      "verseStart": 28,
+      "attachments": []
+    },
+    {
+      "timeMs": 234679,
+      "verseStart": 29,
+      "attachments": []
+    },
+    {
+      "timeMs": 241363,
+      "verseStart": 30,
+      "attachments": []
+    },
+    {
+      "timeMs": 245726,
+      "verseStart": 31,
+      "attachments": []
+    },
+    {
+      "timeMs": 249869,
+      "verseStart": 32,
+      "attachments": []
+    },
+    {
+      "timeMs": 258295,
+      "verseStart": 33,
+      "attachments": []
+    },
+    {
+      "timeMs": 266300,
+      "verseStart": 34,
+      "attachments": []
+    },
+    {
+      "timeMs": 272964,
+      "verseStart": 35,
+      "attachments": []
+    },
+    {
+      "timeMs": 282151,
+      "verseStart": 36,
+      "attachments": []
+    },
+    {
+      "timeMs": 285313,
+      "verseStart": 37,
+      "attachments": []
+    },
+    {
+      "timeMs": 293478,
+      "verseStart": 38,
+      "attachments": []
+    },
+    {
+      "timeMs": 299062,
+      "verseStart": 39,
+      "attachments": []
+    },
+    {
+      "timeMs": 306967,
+      "verseStart": 40,
+      "attachments": []
+    },
+    {
+      "timeMs": 313112,
+      "verseStart": 41,
+      "attachments": []
+    },
+    {
+      "timeMs": 322938,
+      "verseStart": 42,
+      "attachments": []
+    }
+  ]
+}

@@ -1,0 +1,127 @@
+{
+  "id": "gh_grk_matthew_7",
+  "translationCode": "PODSTR",
+  "bookId": "matthew",
+  "chapter": 7,
+  "title": "От Матфея 7 · Греческий (Koine)",
+  "narratorId": "greek-nt",
+  "audioFileName": "40_07.mp3",
+  "cues": [
+    {
+      "timeMs": 460,
+      "verseStart": 1
+    },
+    {
+      "timeMs": 3102,
+      "verseStart": 2
+    },
+    {
+      "timeMs": 9146,
+      "verseStart": 3
+    },
+    {
+      "timeMs": 16351,
+      "verseStart": 4
+    },
+    {
+      "timeMs": 24837,
+      "verseStart": 5
+    },
+    {
+      "timeMs": 33603,
+      "verseStart": 6
+    },
+    {
+      "timeMs": 46232,
+      "verseStart": 7
+    },
+    {
+      "timeMs": 53517,
+      "verseStart": 8
+    },
+    {
+      "timeMs": 60241,
+      "verseStart": 9
+    },
+    {
+      "timeMs": 66245,
+      "verseStart": 10
+    },
+    {
+      "timeMs": 69407,
+      "verseStart": 11
+    },
+    {
+      "timeMs": 79975,
+      "verseStart": 12
+    },
+    {
+      "timeMs": 88721,
+      "verseStart": 13
+    },
+    {
+      "timeMs": 98667,
+      "verseStart": 14
+    },
+    {
+      "timeMs": 106433,
+      "verseStart": 15
+    },
+    {
+      "timeMs": 115159,
+      "verseStart": 16
+    },
+    {
+      "timeMs": 123764,
+      "verseStart": 17
+    },
+    {
+      "timeMs": 130109,
+      "verseStart": 18
+    },
+    {
+      "timeMs": 136573,
+      "verseStart": 19
+    },
+    {
+      "timeMs": 141536,
+      "verseStart": 20
+    },
+    {
+      "timeMs": 145599,
+      "verseStart": 21
+    },
+    {
+      "timeMs": 155566,
+      "verseStart": 22
+    },
+    {
+      "timeMs": 169395,
+      "verseStart": 23
+    },
+    {
+      "timeMs": 177901,
+      "verseStart": 24
+    },
+    {
+      "timeMs": 188228,
+      "verseStart": 25
+    },
+    {
+      "timeMs": 199436,
+      "verseStart": 26
+    },
+    {
+      "timeMs": 209203,
+      "verseStart": 27
+    },
+    {
+      "timeMs": 220650,
+      "verseStart": 28
+    },
+    {
+      "timeMs": 227715,
+      "verseStart": 29
+    }
+  ]
+}

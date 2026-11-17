@@ -1,0 +1,119 @@
+{
+  "id": "gh_grk_matthew_17",
+  "translationCode": "PODSTR",
+  "bookId": "matthew",
+  "chapter": 17,
+  "title": "От Матфея 17 · Греческий (Koine)",
+  "narratorId": "greek-nt",
+  "audioFileName": "40_17.mp3",
+  "cues": [
+    {
+      "timeMs": 380,
+      "verseStart": 1
+    },
+    {
+      "timeMs": 11347,
+      "verseStart": 2
+    },
+    {
+      "timeMs": 20693,
+      "verseStart": 3
+    },
+    {
+      "timeMs": 25836,
+      "verseStart": 4
+    },
+    {
+      "timeMs": 38264,
+      "verseStart": 5
+    },
+    {
+      "timeMs": 53653,
+      "verseStart": 6
+    },
+    {
+      "timeMs": 60277,
+      "verseStart": 7
+    },
+    {
+      "timeMs": 67242,
+      "verseStart": 8
+    },
+    {
+      "timeMs": 73005,
+      "verseStart": 9
+    },
+    {
+      "timeMs": 83632,
+      "verseStart": 10
+    },
+    {
+      "timeMs": 90736,
+      "verseStart": 11
+    },
+    {
+      "timeMs": 96380,
+      "verseStart": 12
+    },
+    {
+      "timeMs": 106966,
+      "verseStart": 13
+    },
+    {
+      "timeMs": 111689,
+      "verseStart": 14
+    },
+    {
+      "timeMs": 117072,
+      "verseStart": 15
+    },
+    {
+      "timeMs": 125938,
+      "verseStart": 16
+    },
+    {
+      "timeMs": 131401,
+      "verseStart": 17
+    },
+    {
+      "timeMs": 142328,
+      "verseStart": 18
+    },
+    {
+      "timeMs": 150473,
+      "verseStart": 19
+    },
+    {
+      "timeMs": 157738,
+      "verseStart": 20
+    },
+    {
+      "timeMs": 172327,
+      "verseStart": 21
+    },
+    {
+      "timeMs": 173687,
+      "verseStart": 22
+    },
+    {
+      "timeMs": 181993,
+      "verseStart": 23
+    },
+    {
+      "timeMs": 188657,
+      "verseStart": 24
+    },
+    {
+      "timeMs": 198383,
+      "verseStart": 25
+    },
+    {
+      "timeMs": 213112,
+      "verseStart": 26
+    },
+    {
+      "timeMs": 219676,
+      "verseStart": 27
+    }
+  ]
+}

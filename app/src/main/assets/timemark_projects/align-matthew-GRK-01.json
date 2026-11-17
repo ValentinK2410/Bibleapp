@@ -1,0 +1,136 @@
+{
+  "id": "align-matthew-GRK-01",
+  "translationCode": "PODSTR",
+  "bookId": "matthew",
+  "chapter": 1,
+  "title": "От Матфея 1 · Греческий (Koine)",
+  "audioFilePath": "/data/user/0/com.example.bible.sqlite/files/bible_audio/greek-nt/40_01.mp3",
+  "updatedAt": 1794873600000,
+  "cues": [
+    {
+      "timeMs": 841,
+      "verseStart": 1,
+      "attachments": []
+    },
+    {
+      "timeMs": 5564,
+      "verseStart": 2,
+      "attachments": []
+    },
+    {
+      "timeMs": 15031,
+      "verseStart": 3,
+      "attachments": []
+    },
+    {
+      "timeMs": 24518,
+      "verseStart": 4,
+      "attachments": []
+    },
+    {
+      "timeMs": 32524,
+      "verseStart": 5,
+      "attachments": []
+    },
+    {
+      "timeMs": 42251,
+      "verseStart": 6,
+      "attachments": []
+    },
+    {
+      "timeMs": 49816,
+      "verseStart": 7,
+      "attachments": []
+    },
+    {
+      "timeMs": 57082,
+      "verseStart": 8,
+      "attachments": []
+    },
+    {
+      "timeMs": 65248,
+      "verseStart": 9,
+      "attachments": []
+    },
+    {
+      "timeMs": 73153,
+      "verseStart": 10,
+      "attachments": []
+    },
+    {
+      "timeMs": 81159,
+      "verseStart": 11,
+      "attachments": []
+    },
+    {
+      "timeMs": 87504,
+      "verseStart": 12,
+      "attachments": []
+    },
+    {
+      "timeMs": 95370,
+      "verseStart": 13,
+      "attachments": []
+    },
+    {
+      "timeMs": 103275,
+      "verseStart": 14,
+      "attachments": []
+    },
+    {
+      "timeMs": 110981,
+      "verseStart": 15,
+      "attachments": []
+    },
+    {
+      "timeMs": 118266,
+      "verseStart": 16,
+      "attachments": []
+    },
+    {
+      "timeMs": 125331,
+      "verseStart": 17,
+      "attachments": []
+    },
+    {
+      "timeMs": 139502,
+      "verseStart": 18,
+      "attachments": []
+    },
+    {
+      "timeMs": 151951,
+      "verseStart": 19,
+      "attachments": []
+    },
+    {
+      "timeMs": 159436,
+      "verseStart": 20,
+      "attachments": []
+    },
+    {
+      "timeMs": 174487,
+      "verseStart": 21,
+      "attachments": []
+    },
+    {
+      "timeMs": 183194,
+      "verseStart": 22,
+      "attachments": []
+    },
+    {
+      "timeMs": 188818,
+      "verseStart": 23,
+      "attachments": []
+    },
+    {
+      "timeMs": 200186,
+      "verseStart": 24,
+      "attachments": []
+    },
+    {
+      "timeMs": 209072,
+      "verseStart": 25,
+      "attachments": []
+    }
+  ]
+}
