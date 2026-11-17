@@ -1,0 +1,111 @@
+{
+  "id": "align-mark-SYN-16",
+  "translationCode": "SYN",
+  "bookId": "mark",
+  "chapter": 16,
+  "title": "От Марка 16 · Синодальный · Бондаренко",
+  "audioFilePath": "/data/user/0/com.example.bible.sqlite/files/bible_audio/bondarenko/41_16.mp3",
+  "updatedAt": 1794960000000,
+  "cues": [
+    {
+      "timeMs": 5004,
+      "verseStart": 1,
+      "attachments": []
+    },
+    {
+      "timeMs": 15571,
+      "verseStart": 2,
+      "attachments": []
+    },
+    {
+      "timeMs": 20835,
+      "verseStart": 3,
+      "attachments": []
+    },
+    {
+      "timeMs": 27359,
+      "verseStart": 4,
+      "attachments": []
+    },
+    {
+      "timeMs": 33043,
+      "verseStart": 5,
+      "attachments": []
+    },
+    {
+      "timeMs": 43571,
+      "verseStart": 6,
+      "attachments": []
+    },
+    {
+      "timeMs": 60483,
+      "verseStart": 7,
+      "attachments": []
+    },
+    {
+      "timeMs": 72051,
+      "verseStart": 8,
+      "attachments": []
+    },
+    {
+      "timeMs": 83159,
+      "verseStart": 9,
+      "attachments": []
+    },
+    {
+      "timeMs": 94007,
+      "verseStart": 10,
+      "attachments": []
+    },
+    {
+      "timeMs": 99571,
+      "verseStart": 11,
+      "attachments": []
+    },
+    {
+      "timeMs": 105475,
+      "verseStart": 12,
+      "attachments": []
+    },
+    {
+      "timeMs": 112079,
+      "verseStart": 13,
+      "attachments": []
+    },
+    {
+      "timeMs": 119945,
+      "verseStart": 14,
+      "attachments": []
+    },
+    {
+      "timeMs": 132014,
+      "verseStart": 15,
+      "attachments": []
+    },
+    {
+      "timeMs": 142161,
+      "verseStart": 16,
+      "attachments": []
+    },
+    {
+      "timeMs": 153209,
+      "verseStart": 17,
+      "attachments": []
+    },
+    {
+      "timeMs": 165337,
+      "verseStart": 18,
+      "attachments": []
+    },
+    {
+      "timeMs": 190715,
+      "verseStart": 19,
+      "attachments": []
+    },
+    {
+      "timeMs": 201643,
+      "verseStart": 20,
+      "attachments": []
+    }
+  ]
+}

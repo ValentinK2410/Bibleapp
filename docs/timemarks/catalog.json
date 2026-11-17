@@ -1784,6 +1784,36 @@
       "file": "projects/syn_mark_13.json"
     },
     {
+      "id": "gh_syn_mark_14",
+      "translationCode": "SYN",
+      "bookId": "mark",
+      "chapter": 14,
+      "title": "От Марка 14 · Синодальный · Бондаренко",
+      "cueCount": 72,
+      "narratorId": "bondarenko",
+      "file": "projects/syn_mark_14.json"
+    },
+    {
+      "id": "gh_syn_mark_15",
+      "translationCode": "SYN",
+      "bookId": "mark",
+      "chapter": 15,
+      "title": "От Марка 15 · Синодальный · Бондаренко",
+      "cueCount": 47,
+      "narratorId": "bondarenko",
+      "file": "projects/syn_mark_15.json"
+    },
+    {
+      "id": "gh_syn_mark_16",
+      "translationCode": "SYN",
+      "bookId": "mark",
+      "chapter": 16,
+      "title": "От Марка 16 · Синодальный · Бондаренко",
+      "cueCount": 20,
+      "narratorId": "bondarenko",
+      "file": "projects/syn_mark_16.json"
+    },
+    {
       "id": "gh_syn_mark_2",
       "translationCode": "SYN",
       "bookId": "mark",

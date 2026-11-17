@@ -1,0 +1,91 @@
+{
+  "id": "gh_syn_mark_16",
+  "translationCode": "SYN",
+  "bookId": "mark",
+  "chapter": 16,
+  "title": "От Марка 16 · Синодальный · Бондаренко",
+  "narratorId": "bondarenko",
+  "audioFileName": "41_16.mp3",
+  "cues": [
+    {
+      "timeMs": 5004,
+      "verseStart": 1
+    },
+    {
+      "timeMs": 15571,
+      "verseStart": 2
+    },
+    {
+      "timeMs": 20835,
+      "verseStart": 3
+    },
+    {
+      "timeMs": 27359,
+      "verseStart": 4
+    },
+    {
+      "timeMs": 33043,
+      "verseStart": 5
+    },
+    {
+      "timeMs": 43571,
+      "verseStart": 6
+    },
+    {
+      "timeMs": 60483,
+      "verseStart": 7
+    },
+    {
+      "timeMs": 72051,
+      "verseStart": 8
+    },
+    {
+      "timeMs": 83159,
+      "verseStart": 9
+    },
+    {
+      "timeMs": 94007,
+      "verseStart": 10
+    },
+    {
+      "timeMs": 99571,
+      "verseStart": 11
+    },
+    {
+      "timeMs": 105475,
+      "verseStart": 12
+    },
+    {
+      "timeMs": 112079,
+      "verseStart": 13
+    },
+    {
+      "timeMs": 119945,
+      "verseStart": 14
+    },
+    {
+      "timeMs": 132014,
+      "verseStart": 15
+    },
+    {
+      "timeMs": 142161,
+      "verseStart": 16
+    },
+    {
+      "timeMs": 153209,
+      "verseStart": 17
+    },
+    {
+      "timeMs": 165337,
+      "verseStart": 18
+    },
+    {
+      "timeMs": 190715,
+      "verseStart": 19
+    },
+    {
+      "timeMs": 201643,
+      "verseStart": 20
+    }
+  ]
+}

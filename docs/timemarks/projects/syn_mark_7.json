@@ -1,0 +1,159 @@
+{
+  "id": "gh_syn_mark_7",
+  "translationCode": "SYN",
+  "bookId": "mark",
+  "chapter": 7,
+  "title": "От Марка 7 · Синодальный · Бондаренко",
+  "narratorId": "bondarenko",
+  "audioFileName": "41_07.mp3",
+  "cues": [
+    {
+      "timeMs": 5584,
+      "verseStart": 1
+    },
+    {
+      "timeMs": 11468,
+      "verseStart": 2
+    },
+    {
+      "timeMs": 19173,
+      "verseStart": 3
+    },
+    {
+      "timeMs": 26779,
+      "verseStart": 4
+    },
+    {
+      "timeMs": 38927,
+      "verseStart": 5
+    },
+    {
+      "timeMs": 51376,
+      "verseStart": 6
+    },
+    {
+      "timeMs": 69128,
+      "verseStart": 7
+    },
+    {
+      "timeMs": 75873,
+      "verseStart": 8
+    },
+    {
+      "timeMs": 88662,
+      "verseStart": 9
+    },
+    {
+      "timeMs": 99850,
+      "verseStart": 10
+    },
+    {
+      "timeMs": 112019,
+      "verseStart": 11
+    },
+    {
+      "timeMs": 122166,
+      "verseStart": 12
+    },
+    {
+      "timeMs": 129311,
+      "verseStart": 13
+    },
+    {
+      "timeMs": 139878,
+      "verseStart": 14
+    },
+    {
+      "timeMs": 150005,
+      "verseStart": 15
+    },
+    {
+      "timeMs": 161173,
+      "verseStart": 16
+    },
+    {
+      "timeMs": 165676,
+      "verseStart": 17
+    },
+    {
+      "timeMs": 172461,
+      "verseStart": 18
+    },
+    {
+      "timeMs": 186110,
+      "verseStart": 19
+    },
+    {
+      "timeMs": 194476,
+      "verseStart": 20
+    },
+    {
+      "timeMs": 202402,
+      "verseStart": 21
+    },
+    {
+      "timeMs": 213289,
+      "verseStart": 22
+    },
+    {
+      "timeMs": 225278,
+      "verseStart": 23
+    },
+    {
+      "timeMs": 232283,
+      "verseStart": 24
+    },
+    {
+      "timeMs": 246833,
+      "verseStart": 25
+    },
+    {
+      "timeMs": 256139,
+      "verseStart": 26
+    },
+    {
+      "timeMs": 265946,
+      "verseStart": 27
+    },
+    {
+      "timeMs": 276594,
+      "verseStart": 28
+    },
+    {
+      "timeMs": 284319,
+      "verseStart": 29
+    },
+    {
+      "timeMs": 292085,
+      "verseStart": 30
+    },
+    {
+      "timeMs": 300551,
+      "verseStart": 31
+    },
+    {
+      "timeMs": 310237,
+      "verseStart": 32
+    },
+    {
+      "timeMs": 316942,
+      "verseStart": 33
+    },
+    {
+      "timeMs": 327269,
+      "verseStart": 34
+    },
+    {
+      "timeMs": 337617,
+      "verseStart": 35
+    },
+    {
+      "timeMs": 347664,
+      "verseStart": 36
+    },
+    {
+      "timeMs": 356310,
+      "verseStart": 37
+    }
+  ]
+}
