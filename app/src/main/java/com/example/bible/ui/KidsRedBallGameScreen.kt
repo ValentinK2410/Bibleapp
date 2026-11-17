@@ -4,6 +4,7 @@ import android.widget.Toast
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.gestures.awaitEachGesture
 import androidx.compose.foundation.gestures.awaitFirstDown
 import androidx.compose.foundation.gestures.waitForUpOrCancellation
@@ -15,9 +16,11 @@ import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -28,7 +31,6 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -41,14 +43,22 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.produceState
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.withFrameNanos
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.Path
+import androidx.compose.ui.graphics.StrokeCap
+import androidx.compose.ui.graphics.StrokeJoin
+import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -253,7 +263,7 @@ private fun RedBallMenu(
     Box(
         Modifier
             .fillMaxSize()
-            .background(Color(0xFFBFDBFE)),
+            .background(Color(0xFF7EC8F5)),
     ) {
         Canvas(Modifier.fillMaxSize()) { drawFairySky(0f, 1f) }
         Column(
@@ -439,18 +449,19 @@ private fun LevelChip(label: String, color: Color, onClick: () -> Unit) {
 private fun RedBallPlay(scene: RedBallScene, testMode: Boolean, onExit: () -> Unit) {
     val sim = remember(scene) { RedBallSim(scene) }
     val held = remember { intArrayOf(0, 0) }
+    val paused = remember(scene) { mutableStateOf(false) }
     var tick by remember { mutableIntStateOf(0) }
     androidx.compose.runtime.LaunchedEffect(sim) {
         var last = 0L
         while (isActive) {
             withFrameNanos { now ->
-                if (last != 0L) {
+                if (last != 0L && !paused.value) {
                     val dt = ((now - last) / 1_000_000_000f).coerceIn(0f, 0.033f)
                     val move = (held[1] - held[0]).toFloat()
                     sim.step(dt, move)
                 }
                 last = now
-                tick++
+                if (!paused.value) tick++
             }
         }
     }
@@ -471,7 +482,13 @@ private fun RedBallPlay(scene: RedBallScene, testMode: Boolean, onExit: () -> Un
         scene.builtin -> "Красный мяч"
         else -> scene.name
     }
-    Box(Modifier.fillMaxSize().background(Color(0xFFBFDBFE))) {
+    val progress = if (sim.stars.isNotEmpty()) {
+        sim.starsCollected / sim.stars.size.toFloat()
+    } else {
+        val span = (scene.door.l + scene.door.r) * 0.5f - scene.startX
+        if (kotlin.math.abs(span) < 1f) 0f else ((sim.ballX - scene.startX) / span).coerceIn(0f, 1f)
+    }
+    Box(Modifier.fillMaxSize().background(Color(0xFF7EC8F5))) {
         Canvas(Modifier.fillMaxSize()) {
             @Suppress("UNUSED_VARIABLE")
             val frame = tick
@@ -480,51 +497,53 @@ private fun RedBallPlay(scene: RedBallScene, testMode: Boolean, onExit: () -> Un
         Row(
             Modifier
                 .statusBarsPadding()
-                .padding(start = 8.dp, top = 6.dp, end = 72.dp)
-                .align(Alignment.TopStart)
-                .clip(RoundedCornerShape(999.dp))
-                .background(Color.White.copy(alpha = 0.86f))
-                .padding(end = 12.dp),
-            verticalAlignment = Alignment.CenterVertically,
+                .padding(start = 12.dp, top = 8.dp)
+                .align(Alignment.TopStart),
+            horizontalArrangement = Arrangement.spacedBy(4.dp),
         ) {
-            IconButton(onClick = onExit) {
-                Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Назад", tint = Color(0xFF7C2D12))
-            }
-            Text(title, fontWeight = FontWeight.Black, color = Color(0xFF7C2D12), fontSize = 16.sp, maxLines = 1)
-        }
-        if (sim.stars.isNotEmpty() || sim.magnetTime > 0f) {
-            val hud = buildString {
-                if (sim.stars.isNotEmpty()) append("★ ${sim.starsCollected}/${sim.stars.size}")
-                if (sim.magnetTime > 0f) {
-                    if (isNotEmpty()) append("   ")
-                    append("Магнит")
+            repeat(3) {
+                Canvas(Modifier.size(width = 36.dp, height = 32.dp)) {
+                    drawHudHeart(filled = !sim.dead)
                 }
             }
-            Text(
-                hud,
-                modifier = Modifier
+        }
+        if (!sim.won && !sim.dead) {
+            PauseButton(
+                Modifier
                     .statusBarsPadding()
-                    .padding(top = 64.dp)
-                    .align(Alignment.TopCenter)
-                    .clip(RoundedCornerShape(999.dp))
-                    .background(Color.White.copy(alpha = 0.88f))
-                    .padding(horizontal = 14.dp, vertical = 6.dp),
-                color = Color(0xFF7C2D12),
-                fontWeight = FontWeight.Black,
-                fontSize = 16.sp,
+                    .padding(top = 6.dp)
+                    .align(Alignment.TopCenter),
+                onClick = { paused.value = true },
             )
         }
-        IconButton(
-            onClick = { sim.reset() },
+        StarBar(
+            progress = progress,
+            magnetOn = sim.magnetTime > 0f,
             modifier = Modifier
                 .statusBarsPadding()
-                .padding(6.dp)
-                .align(Alignment.TopEnd)
-                .clip(CircleShape)
-                .background(Color.White.copy(alpha = 0.86f)),
+                .padding(top = 10.dp, end = 12.dp)
+                .align(Alignment.TopEnd),
+        )
+        Row(
+            Modifier
+                .align(Alignment.BottomStart)
+                .navigationBarsPadding()
+                .padding(start = 16.dp, bottom = 16.dp),
+            horizontalArrangement = Arrangement.spacedBy(12.dp),
         ) {
-            Icon(Icons.Default.Refresh, contentDescription = "Заново", tint = Color(0xFF7C2D12))
+            ArrowPad(left = true, onHold = { held[0] = if (it) 1 else 0 })
+            ArrowPad(left = false, onHold = { held[1] = if (it) 1 else 0 })
         }
+        JumpPad(
+            Modifier
+                .align(Alignment.BottomEnd)
+                .navigationBarsPadding()
+                .padding(end = 18.dp, bottom = 14.dp),
+            onHold = { down ->
+                sim.jumpHeld = down
+                if (down) sim.jump()
+            },
+        )
         if (sim.won || sim.dead) {
             Column(
                 Modifier
@@ -579,66 +598,193 @@ private fun RedBallPlay(scene: RedBallScene, testMode: Boolean, onExit: () -> Un
                 }
             }
         }
-        Row(
-            Modifier
-                .align(Alignment.BottomCenter)
-                .navigationBarsPadding()
-                .padding(horizontal = 22.dp, vertical = 16.dp)
-                .fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically,
-        ) {
-            HoldPad("◀", onHold = { held[0] = if (it) 1 else 0 })
-            JumpPad(onHold = { down ->
-                sim.jumpHeld = down
-                if (down) sim.jump()
-            })
-            HoldPad("▶", onHold = { held[1] = if (it) 1 else 0 })
+        if (paused.value) {
+            Box(
+                Modifier
+                    .fillMaxSize()
+                    .background(Color(0xAA16324A))
+                    .pointerInput(Unit) {
+                        awaitEachGesture {
+                            val down = awaitFirstDown()
+                            down.consume()
+                            waitForUpOrCancellation()?.consume()
+                        }
+                    },
+            ) {
+                Column(
+                    Modifier
+                        .align(Alignment.Center)
+                        .padding(24.dp)
+                        .clip(RoundedCornerShape(28.dp))
+                        .background(Color.White)
+                        .padding(horizontal = 28.dp, vertical = 22.dp),
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                ) {
+                    Text(title, fontWeight = FontWeight.Black, fontSize = 22.sp, color = Color(0xFF7C2D12))
+                    Spacer(Modifier.height(6.dp))
+                    Text("Пауза", fontWeight = FontWeight.Black, fontSize = 28.sp, color = Color(0xFFE11D2E))
+                    Spacer(Modifier.height(16.dp))
+                    PauseChoice("Дальше", Color(0xFF15803D)) { paused.value = false }
+                    Spacer(Modifier.height(8.dp))
+                    PauseChoice("Заново", Color(0xFFDC2626)) {
+                        sim.reset()
+                        paused.value = false
+                    }
+                    Spacer(Modifier.height(8.dp))
+                    PauseChoice(if (testMode) "К редактору" else "Выход", Color(0xFFB45309), onExit)
+                }
+            }
         }
     }
 }
 
 @Composable
-private fun JumpPad(onHold: (Boolean) -> Unit) {
+private fun PauseButton(modifier: Modifier, onClick: () -> Unit) {
+    Box(
+        modifier
+            .size(54.dp)
+            .clip(CircleShape)
+            .border(3.dp, Color.White.copy(alpha = 0.95f), CircleShape)
+            .background(Color.White.copy(alpha = 0.16f))
+            .semantics { contentDescription = "Пауза" }
+            .kidsPressable(onClick = onClick),
+        contentAlignment = Alignment.Center,
+    ) {
+        Row(horizontalArrangement = Arrangement.spacedBy(5.dp)) {
+            Box(
+                Modifier
+                    .size(width = 5.dp, height = 18.dp)
+                    .clip(RoundedCornerShape(2.dp))
+                    .background(Color.White),
+            )
+            Box(
+                Modifier
+                    .size(width = 5.dp, height = 18.dp)
+                    .clip(RoundedCornerShape(2.dp))
+                    .background(Color.White),
+            )
+        }
+    }
+}
+
+@Composable
+private fun StarBar(progress: Float, magnetOn: Boolean, modifier: Modifier) {
+    Row(modifier, verticalAlignment = Alignment.CenterVertically) {
+        Canvas(Modifier.size(40.dp)) { drawHudStarMedal(magnetOn) }
+        Box(
+            Modifier
+                .padding(start = 4.dp)
+                .width(112.dp)
+                .height(18.dp)
+                .clip(RoundedCornerShape(999.dp))
+                .background(Color(0xFFE4E8EC).copy(alpha = 0.92f))
+                .border(
+                    2.dp,
+                    if (magnetOn) Color(0xFF7DD3FC) else Color.White.copy(alpha = 0.95f),
+                    RoundedCornerShape(999.dp),
+                ),
+        ) {
+            Box(
+                Modifier
+                    .fillMaxHeight()
+                    .fillMaxWidth(progress.coerceIn(0f, 1f))
+                    .background(
+                        Brush.horizontalGradient(listOf(Color(0xFFFFE38A), Color(0xFFF5B431))),
+                    ),
+            )
+        }
+    }
+}
+
+@Composable
+private fun PauseChoice(label: String, color: Color, onClick: () -> Unit) {
     Box(
         Modifier
-            .size(width = 120.dp, height = 76.dp)
             .clip(RoundedCornerShape(999.dp))
-            .background(Color(0xFFDC2626).copy(alpha = 0.92f))
-            .pointerInput(onHold) {
+            .background(color)
+            .kidsPressable(onClick = onClick)
+            .padding(horizontal = 22.dp, vertical = 10.dp),
+    ) {
+        Text(label, color = Color.White, fontWeight = FontWeight.Black, fontSize = 18.sp)
+    }
+}
+
+@Composable
+private fun JumpPad(modifier: Modifier, onHold: (Boolean) -> Unit) {
+    val hold = rememberUpdatedState(onHold)
+    Box(
+        modifier
+            .size(104.dp)
+            .semantics { contentDescription = "Прыжок" }
+            .pointerInput(Unit) {
                 awaitEachGesture {
-                    awaitFirstDown()
-                    onHold(true)
-                    waitForUpOrCancellation()
-                    onHold(false)
+                    awaitFirstDown().consume()
+                    hold.value(true)
+                    waitForUpOrCancellation()?.consume()
+                    hold.value(false)
                 }
             },
         contentAlignment = Alignment.Center,
     ) {
-        Column(horizontalAlignment = Alignment.CenterHorizontally) {
-            Text("▲", fontSize = 22.sp, fontWeight = FontWeight.Black, color = Color.White)
-            Text("Прыжок", fontSize = 16.sp, fontWeight = FontWeight.Black, color = Color.White)
+        Canvas(Modifier.fillMaxSize()) {
+            val stroke = 5.dp.toPx()
+            val r = size.minDimension / 2f - stroke
+            val center = this.center
+            drawCircle(Color.White.copy(alpha = 0.14f), r, center)
+            drawCircle(Color.White.copy(alpha = 0.92f), r, center, style = Stroke(stroke))
+            val s = r * 0.42f
+            val path = Path().apply {
+                moveTo(center.x - s, center.y + s * 0.2f)
+                lineTo(center.x, center.y - s * 0.65f)
+                lineTo(center.x + s, center.y + s * 0.2f)
+            }
+            drawPath(
+                path,
+                Color.White.copy(alpha = 0.95f),
+                style = Stroke(width = stroke * 0.85f, cap = StrokeCap.Round, join = StrokeJoin.Round),
+            )
         }
     }
 }
 
 @Composable
-private fun HoldPad(label: String, onHold: (Boolean) -> Unit) {
+private fun ArrowPad(left: Boolean, onHold: (Boolean) -> Unit) {
+    val hold = rememberUpdatedState(onHold)
     Box(
         Modifier
             .size(92.dp)
-            .clip(CircleShape)
-            .background(Color.White.copy(alpha = 0.9f))
-            .pointerInput(onHold) {
+            .semantics { contentDescription = if (left) "Влево" else "Вправо" }
+            .pointerInput(Unit) {
                 awaitEachGesture {
-                    awaitFirstDown()
-                    onHold(true)
-                    waitForUpOrCancellation()
-                    onHold(false)
+                    awaitFirstDown().consume()
+                    hold.value(true)
+                    waitForUpOrCancellation()?.consume()
+                    hold.value(false)
                 }
             },
         contentAlignment = Alignment.Center,
     ) {
-        Text(label, fontSize = 36.sp, fontWeight = FontWeight.Black, color = Color(0xFFB91C1C))
+        Canvas(Modifier.fillMaxSize()) {
+            val stroke = 5.dp.toPx()
+            val inset = size.minDimension * 0.16f
+            val path = Path().apply {
+                if (left) {
+                    moveTo(size.width - inset, inset)
+                    lineTo(inset, size.height / 2f)
+                    lineTo(size.width - inset, size.height - inset)
+                } else {
+                    moveTo(inset, inset)
+                    lineTo(size.width - inset, size.height / 2f)
+                    lineTo(inset, size.height - inset)
+                }
+                close()
+            }
+            drawPath(path, Color.White.copy(alpha = 0.14f))
+            drawPath(
+                path,
+                Color.White.copy(alpha = 0.92f),
+                style = Stroke(width = stroke, join = StrokeJoin.Round),
+            )
+        }
     }
 }

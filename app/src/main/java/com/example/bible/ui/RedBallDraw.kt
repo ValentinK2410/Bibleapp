@@ -4,15 +4,26 @@ import androidx.compose.ui.geometry.CornerRadius
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.Canvas
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.FilterQuality
+import androidx.compose.ui.graphics.ImageBitmap
+import androidx.compose.ui.graphics.ImageBitmapConfig
 import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.StrokeCap
+import androidx.compose.ui.graphics.StrokeJoin
+import androidx.compose.ui.graphics.asAndroidBitmap
+import androidx.compose.ui.graphics.drawscope.CanvasDrawScope
 import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.graphics.drawscope.Stroke
+import androidx.compose.ui.graphics.drawscope.draw
 import androidx.compose.ui.graphics.drawscope.rotate
 import androidx.compose.ui.graphics.drawscope.withTransform
+import androidx.compose.ui.unit.Density
+import androidx.compose.ui.unit.LayoutDirection
 import com.example.bible.games.RedBallAabb
 import com.example.bible.games.RedBallDraft
+import com.example.bible.games.RedBallEnemy
 import com.example.bible.games.RedBallParticle
 import com.example.bible.games.RedBallPiece
 import com.example.bible.games.RedBallPieceKind
@@ -22,9 +33,11 @@ import com.example.bible.games.RedBallSlope
 import kotlin.math.PI
 import kotlin.math.abs
 import kotlin.math.cos
+import kotlin.math.hypot
 import kotlin.math.max
 import kotlin.math.min
 import kotlin.math.sin
+import kotlin.math.sqrt
 
 internal const val EDITOR_VIEW_ROWS = 14f
 
@@ -74,30 +87,27 @@ internal fun DrawScope.drawRedBallPlay(sim: RedBallSim) {
     val viewW = size.width / scale
     val maxCamX = (scene.worldW - viewW).coerceAtLeast(scene.minX)
     val camX = (sim.ballX - viewW * 0.38f).coerceIn(scene.minX, maxCamX)
-    // Камера следит за мячом и по вертикали: при прыжке мир (и фон) смещается.
     val restCamY = (scene.worldH - viewH).coerceAtLeast(scene.minY)
     val camY = (sim.ballY - viewH * 0.58f).coerceIn(scene.minY - viewH * 1.5f, restCamY)
     drawFairySky(camX, scale, liftPx = (restCamY - camY) * scale)
+    val art = playArt(scene)
+    val picture = terrainPicture(scene, art, scale)
     withTransform({
         scale(scale, scale, pivot = Offset.Zero)
         translate(-camX, -camY)
     }) {
-        drawVoid(scene)
-        drawSolids(scene.solids, scene.slopes, scene.minX, scene.worldW)
-        for (block in scene.concrete) {
-            drawConcreteBlock(block, topIsOpen(block, scene.concrete, emptyList()))
+        if (picture != null) {
+            drawTerrainPicture(picture)
+        } else {
+            drawStaticWorld(scene, art)
         }
-        for (slope in scene.slopes) drawSlopeBank(slope.x0, slope.y0, slope.x1, slope.y1)
-        for (ladder in scene.ladders) drawLadder(ladder)
-        for (spike in scene.spikes) drawIronSpike(spike.x, spike.top, spike.w, spike.h)
-        for (spring in scene.springs) drawFairySpring(spring.l, spring.t, spring.r, spring.b)
         for (star in sim.stars) {
             if (!star.taken) drawCollectStar(star.x, star.y, 16f, sim.anim, star.attached)
         }
         for (magnet in sim.magnets) if (!magnet.taken) drawMagnet(magnet.x, magnet.y, sim.anim)
-        drawFairyDoor(scene.door.l, scene.door.t, scene.door.r, scene.door.b)
+        drawFinishFlag(scene.door.l, scene.door.t, scene.door.r, scene.door.b, sim.anim)
         for (crate in sim.crates) drawWoodCrate(crate.x, crate.y, crate.size)
-        for (block in sim.blocks) drawConcreteCrate(block.x, block.y, block.size)
+        for (block in sim.blocks) drawRockBoulder(block.x, block.y, block.size)
         for (enemy in sim.enemies) {
             if (enemy.alive) drawAngrySquare(enemy.x, enemy.y, enemy.size, enemy.angle)
         }
@@ -111,6 +121,7 @@ internal fun DrawScope.drawRedBallPlay(sim: RedBallSim) {
             sim.groundBelowBall(),
             sim.jellyX,
             sim.jellyY,
+            faceOf(sim),
         )
     }
 }
@@ -133,6 +144,7 @@ internal fun DrawScope.drawRedBallEditor(
     val viewW = size.width / scale
     val viewH = size.height / scale
     drawFairySky(cam, scale, liftPx = -camDown * scale * 0.15f)
+    val art = editorArt(draft)
     withTransform({
         scale(scale, scale, pivot = Offset.Zero)
         translate(-cam, -camDown)
@@ -152,23 +164,17 @@ internal fun DrawScope.drawRedBallEditor(
             val y = r * cell
             drawLine(if (r % 2 == 0) bold else line, Offset(minC * cell, y), Offset(maxC * cell, y), if (r % 2 == 0) 2f else 1f)
         }
-        val grounds = draft.pieces.filter { it.kind == RedBallPieceKind.GROUND }.map { it.box(cell) }
-        val slopes = draft.pieces.filter { it.kind == RedBallPieceKind.SLOPE }.map { it.slopeLine(cell) }
-        val concretes = draft.pieces.filter { it.kind == RedBallPieceKind.CONCRETE }.map { it.box(cell) }
+        for (ground in art.grounds) drawGroundArt(ground)
         for (piece in draft.pieces) {
-            if (piece.kind != RedBallPieceKind.GROUND) continue
+            if (piece.kind != RedBallPieceKind.CONCRETE) continue
             val box = piece.box(cell)
-            drawGroundBlock(box, topIsOpen(box, grounds, slopes))
+            drawConcreteBlock(box, topIsOpen(box, art.concreteBoxes, emptyList()))
         }
+        for (slope in art.slopes) drawSlopeArt(slope)
         for (piece in draft.pieces) {
             val box = piece.box(cell)
             when (piece.kind) {
-                RedBallPieceKind.GROUND -> Unit
-                RedBallPieceKind.CONCRETE -> drawConcreteBlock(box, topIsOpen(box, concretes, emptyList()))
-                RedBallPieceKind.SLOPE -> {
-                    val lineSlope = piece.slopeLine(cell)
-                    drawSlopeBank(lineSlope.x0, lineSlope.y0, lineSlope.x1, lineSlope.y1)
-                }
+                RedBallPieceKind.GROUND, RedBallPieceKind.SLOPE, RedBallPieceKind.CONCRETE -> Unit
                 RedBallPieceKind.LADDER -> drawLadder(box)
                 RedBallPieceKind.SPIKE -> drawIronSpike(
                     (box.l + box.r) / 2f,
@@ -181,7 +187,7 @@ internal fun DrawScope.drawRedBallEditor(
                 RedBallPieceKind.STAR -> drawCollectStar((box.l + box.r) / 2f, (box.t + box.b) / 2f, 16f, 0.6f, false)
                 RedBallPieceKind.MAGNET -> drawMagnet((box.l + box.r) / 2f, (box.t + box.b) / 2f, 0.4f)
                 RedBallPieceKind.ENEMY -> drawAngrySquare((box.l + box.r) / 2f, (box.t + box.b) / 2f, min(piece.w, piece.h) * cell, 0.15f)
-                RedBallPieceKind.DOOR -> drawFairyDoor(box.l, box.t, box.r, box.b)
+                RedBallPieceKind.DOOR -> drawFinishFlag(box.l, box.t, box.r, box.b, 0.8f)
                 RedBallPieceKind.START -> {
                     val x = (box.l + box.r) / 2f
                     val y = box.b - RedBallScene.BALL_R
@@ -194,7 +200,11 @@ internal fun DrawScope.drawRedBallEditor(
                     )
                 }
             }
-            if (piece.id == selectedId) {
+        }
+        if (selectedId != null) {
+            for (piece in draft.pieces) {
+                if (piece.id != selectedId) continue
+                val box = piece.box(cell)
                 drawRoundRect(
                     Color(0xFF0369A1),
                     Offset(box.l - 3f, box.t - 3f),
@@ -223,45 +233,56 @@ internal fun DrawScope.drawRedBallEditor(
 internal fun DrawScope.drawFairySky(camX: Float, worldToScreen: Float, liftPx: Float = 0f) {
     drawRect(
         Brush.verticalGradient(
-            0f to Color(0xFFBFDBFE),
-            0.28f to Color(0xFFFBCFE8),
-            0.55f to Color(0xFFFDE68A),
-            0.78f to Color(0xFFD9F99D),
-            1f to Color(0xFF86EFAC),
+            0f to Color(0xFF4EB8F5),
+            0.42f to Color(0xFF8AD4FF),
+            0.78f to Color(0xFFC9EFFF),
+            1f to Color(0xFFE7F8FF),
         ),
     )
-    val sun = Offset(size.width * 0.8f - camX * worldToScreen * 0.05f, size.height * 0.13f + liftPx * 0.04f)
-    drawCircle(Color(0xFFFFF7D6).copy(alpha = 0.38f), 86f, sun)
-    drawCircle(Color(0xFFFDE68A).copy(alpha = 0.9f), 48f, sun)
-    drawCircle(Color(0xFFFFFBEB), 28f, sun)
-    withTransform({ translate(0f, liftPx * 0.12f) }) {
-        drawCloudBand(camX, worldToScreen, 0.12f, 0.18f, 1.1f, 0.95f)
+    val sunR = size.minDimension * 0.11f
+    val sun = Offset(
+        size.width * 0.24f - camX * worldToScreen * 0.04f,
+        size.height * 0.16f + liftPx * 0.04f,
+    )
+    drawCircle(
+        Brush.radialGradient(
+            0f to Color(0xFFFFFBE8),
+            0.22f to Color(0xFFFFF3A0),
+            0.4f to Color(0xFFFFE56A).copy(alpha = 0.85f),
+            0.62f to Color(0xFFFFF3B0).copy(alpha = 0.28f),
+            1f to Color(0xFFFFF6C2).copy(alpha = 0f),
+            center = sun,
+            radius = sunR * 2.8f,
+        ),
+        sunR * 2.8f,
+        sun,
+    )
+    drawCircle(Color(0xFFFFF4A8), sunR * 0.92f, sun)
+    drawCircle(Color(0xFFFFFBE8), sunR * 0.5f, sun)
+    withTransform({ translate(0f, liftPx * 0.1f) }) {
+        drawCloudBand(camX, worldToScreen, 0.1f, 0.16f, 1.15f, 0.96f)
     }
-    withTransform({ translate(0f, liftPx * 0.2f) }) {
-        drawCloudBand(camX, worldToScreen, 0.22f, 0.3f, 0.75f, 0.82f)
+    withTransform({ translate(0f, liftPx * 0.18f) }) {
+        drawCloudBand(camX, worldToScreen, 0.2f, 0.28f, 0.78f, 0.9f)
     }
     val horizon = size.height * 0.7f
-    drawHills(camX, worldToScreen, 0.1f, horizon + liftPx * 0.1f - size.height * 0.04f, Color(0xFFDBEAFE), 22f, 240f)
-    drawHills(camX, worldToScreen, 0.26f, horizon + liftPx * 0.26f, Color(0xFF93C5FD), 42f, 170f)
-    drawHills(camX, worldToScreen, 0.4f, horizon + liftPx * 0.4f + size.height * 0.045f, Color(0xFF6EE7B7), 30f, 140f)
+    drawHills(camX, worldToScreen, 0.12f, horizon + liftPx * 0.12f - size.height * 0.05f, Color(0xFFD7F0B8), 26f, 260f)
+    drawBackdropLake(camX, worldToScreen, horizon + liftPx * 0.16f - size.height * 0.01f)
+    drawHills(camX, worldToScreen, 0.24f, horizon + liftPx * 0.24f, Color(0xFF9AD86A), 40f, 180f)
+    val nearBase = horizon + liftPx * 0.42f + size.height * 0.04f
+    drawHills(camX, worldToScreen, 0.4f, nearBase, Color(0xFF6EC84A), 34f, 150f)
     val span = size.width * 1.8f
     val shift = wrapShift(camX * worldToScreen * 0.48f, span)
-    val base = horizon + liftPx * 0.5f + size.height * 0.03f
     for (i in -1..6) {
         val x = i * span / 5f - shift
-        drawStoryTree(x, base, size.height * if (i % 2 == 0) 0.15f else 0.11f)
+        val h = size.height * if (i % 2 == 0) 0.16f else 0.11f
+        drawStoryTree(x, nearBase - 8f, h, i)
     }
+    drawFence(size.width * 0.62f - shift * 0.2f, nearBase - 4f)
     val bird = camX * worldToScreen * 0.08f
     val birdLift = liftPx * 0.1f
-    drawBird(size.width * 0.24f - bird, size.height * 0.22f + birdLift, 18f)
-    drawBird(size.width * 0.33f - bird, size.height * 0.19f + birdLift, 13f)
-    val moteSpan = size.width * 1.5f
-    val moteShift = wrapShift(camX * worldToScreen * 0.72f, moteSpan)
-    for (i in 0 until 7) {
-        val x = i * moteSpan / 5f - moteShift
-        val y = size.height * (0.34f + (i % 3) * 0.07f) + liftPx * 0.62f
-        drawCircle(Color.White.copy(alpha = 0.45f), 2.2f + (i % 3), Offset(x, y))
-    }
+    drawBird(size.width * 0.18f - bird, size.height * 0.2f + birdLift, 16f)
+    drawBird(size.width * 0.28f - bird, size.height * 0.17f + birdLift, 12f)
 }
 
 private fun wrapShift(value: Float, span: Float): Float {
@@ -270,37 +291,721 @@ private fun wrapShift(value: Float, span: Float): Float {
     return if (m < 0f) m + span else m
 }
 
-private fun DrawScope.drawVoid(scene: RedBallScene) {
-    val top = scene.voidY - 50f
-    if (top >= scene.worldH) return
-    val left = scene.minX - 40f
-    drawRect(
-        Brush.verticalGradient(
-            listOf(Color.Transparent, Color(0x66221A3A), Color(0xFF1E1B4B)),
-            startY = top,
-            endY = scene.worldH,
-        ),
-        topLeft = Offset(left, top),
-        size = Size(scene.worldW - left + 40f, scene.worldH - top),
+private enum class BallMood { HAPPY, SURPRISED, SCARED, DEAD }
+
+private data class BallFace(
+    val mood: BallMood,
+    val lookX: Float,
+    val lookY: Float,
+    val blink: Float,
+)
+
+private val editorFace = BallFace(BallMood.HAPPY, 0.35f, 0.05f, 0f)
+
+private fun faceOf(sim: RedBallSim): BallFace {
+    var nearest: RedBallEnemy? = null
+    var nearestD = Float.MAX_VALUE
+    for (enemy in sim.enemies) {
+        if (!enemy.alive) continue
+        val dx = enemy.x - sim.ballX
+        val dy = enemy.y - sim.ballY
+        val d = dx * dx + dy * dy
+        if (d < nearestD) {
+            nearestD = d
+            nearest = enemy
+        }
+    }
+    val foe = nearest
+    val scared = foe != null && nearestD < (foe.size * 0.5f + 130f) * (foe.size * 0.5f + 130f)
+    val mood = when {
+        sim.dead -> BallMood.DEAD
+        sim.won -> BallMood.HAPPY
+        scared -> BallMood.SCARED
+        !sim.grounded && (sim.ballVy < -50f || sim.ballVy > 120f) -> BallMood.SURPRISED
+        else -> BallMood.HAPPY
+    }
+    val lookX: Float
+    val lookY: Float
+    if (mood == BallMood.SCARED && foe != null) {
+        val dx = foe.x - sim.ballX
+        val dy = foe.y - sim.ballY
+        val m = hypot(dx, dy).coerceAtLeast(1f)
+        lookX = (dx / m).coerceIn(-1f, 1f)
+        lookY = ((dy / m) * 0.75f).coerceIn(-1f, 1f)
+    } else {
+        lookX = (sim.ballVx / 480f).coerceIn(-1f, 1f).let { if (abs(sim.ballVx) < 12f) 0.28f else it }
+        lookY = (sim.ballVy / 720f).coerceIn(-1f, 1f)
+    }
+    return BallFace(mood, lookX, lookY, blinkAmount(sim.anim, mood))
+}
+
+private fun blinkAmount(time: Float, mood: BallMood): Float {
+    if (mood != BallMood.HAPPY) return 0f
+    val phase = time % 4.1f
+    val local = when {
+        phase < 0.12f -> phase / 0.12f
+        phase in 0.2f..0.32f -> (phase - 0.2f) / 0.12f
+        else -> return 0f
+    }
+    return sin(local * PI.toFloat())
+}
+
+private class StoneSpec(val x: Float, val y: Float, val rx: Float, val ry: Float, val shade: Int)
+
+private class GroundArt(
+    val l: Float,
+    val t: Float,
+    val r: Float,
+    val b: Float,
+    val bands: List<Path>,
+    val edges: List<Path>,
+    val shades: List<Seg>,
+    val seams: List<Seg>,
+    val stones: List<StoneSpec>,
+)
+
+private class Seg(val x0: Float, val y0: Float, val x1: Float, val y1: Float)
+
+private class SlopeArt(
+    val soil: Path,
+    val band: Path,
+    val edge: Path,
+    val outline: Path,
+    val base0: Offset,
+    val base1: Offset,
+    val minY: Float,
+    val maxY: Float,
+    val stones: List<StoneSpec>,
+    val strokeUnderside: Boolean,
+)
+
+private class TerrainArt(
+    val key: Long,
+    val grounds: List<GroundArt>,
+    val slopes: List<SlopeArt>,
+    val concreteBoxes: List<RedBallAabb>,
+)
+
+private class TerrainPicture(
+    val key: Long,
+    val ppm: Float,
+    val originX: Float,
+    val originY: Float,
+    val worldW: Float,
+    val worldH: Float,
+    val image: ImageBitmap,
+)
+
+private var playCache: TerrainArt? = null
+private var editorCache: TerrainArt? = null
+private var pictureCache: TerrainPicture? = null
+private var pictureFailedKey: Long? = null
+
+/**
+ * Контуры земли и горок собираются один раз на геометрию уровня.
+ * В игре статичный слой ещё и растеризуется в одну картинку: камера её только сдвигает.
+ */
+private fun playArt(scene: RedBallScene): TerrainArt {
+    val key = sceneStaticKey(scene)
+    val cached = playCache
+    if (cached != null && cached.key == key) return cached
+    val grounds = ArrayList<GroundArt>(scene.solids.size)
+    for (solid in scene.solids) {
+        if (solid.r <= scene.minX + 0.5f || solid.l >= scene.worldW - 0.5f) continue
+        grounds += buildGroundArt(solid, scene.solids, scene.slopes)
+    }
+    val slopes = scene.slopes.map { buildSlopeArt(it.x0, it.y0, it.x1, it.y1, scene.solids) }
+    return TerrainArt(key, grounds, slopes, scene.concrete).also { playCache = it }
+}
+
+private fun editorArt(draft: RedBallDraft): TerrainArt {
+    val key = draftStaticKey(draft)
+    val cached = editorCache
+    if (cached != null && cached.key == key) return cached
+    val cell = draft.cell
+    val groundPieces = draft.pieces.filter { it.kind == RedBallPieceKind.GROUND }
+    val slopePieces = draft.pieces.filter { it.kind == RedBallPieceKind.SLOPE }
+    val concreteBoxes = draft.pieces.filter { it.kind == RedBallPieceKind.CONCRETE }.map { it.box(cell) }
+    val groundBoxes = groundPieces.map { it.box(cell) }
+    val slopeLines = slopePieces.map { it.slopeLine(cell) }
+    val grounds = groundPieces.map { piece ->
+        val box = piece.box(cell)
+        buildGroundArt(box, groundBoxes, slopeLines)
+    }
+    val slopes = slopeLines.map { buildSlopeArt(it.x0, it.y0, it.x1, it.y1, groundBoxes) }
+    return TerrainArt(key, grounds, slopes, concreteBoxes).also { editorCache = it }
+}
+
+private fun sceneStaticKey(scene: RedBallScene): Long {
+    var h = -3750763034362895579L
+    fun mix(v: Int) {
+        h = h xor v.toLong()
+        h *= 1099511628211L
+    }
+    fun mixF(v: Float) = mix(v.toBits())
+    mixF(scene.minX)
+    mixF(scene.minY)
+    mixF(scene.worldW)
+    mixF(scene.worldH)
+    mixF(scene.voidY)
+    for (s in scene.solids) {
+        mixF(s.l); mixF(s.t); mixF(s.r); mixF(s.b)
+    }
+    for (s in scene.slopes) {
+        mixF(s.x0); mixF(s.y0); mixF(s.x1); mixF(s.y1)
+    }
+    for (s in scene.concrete) {
+        mixF(s.l); mixF(s.t); mixF(s.r); mixF(s.b)
+    }
+    for (s in scene.ladders) {
+        mixF(s.l); mixF(s.t); mixF(s.r); mixF(s.b)
+    }
+    for (s in scene.spikes) {
+        mixF(s.x); mixF(s.top); mixF(s.w); mixF(s.h)
+    }
+    for (s in scene.springs) {
+        mixF(s.l); mixF(s.t); mixF(s.r); mixF(s.b)
+    }
+    return h
+}
+
+private fun draftStaticKey(draft: RedBallDraft): Long {
+    var h = 1469598103934665603L
+    fun mix(v: Int) {
+        h = h xor v.toLong()
+        h *= 1099511628211L
+    }
+    mix(draft.cell.toBits())
+    for (piece in draft.pieces) {
+        if (
+            piece.kind != RedBallPieceKind.GROUND &&
+            piece.kind != RedBallPieceKind.SLOPE &&
+            piece.kind != RedBallPieceKind.CONCRETE
+        ) {
+            continue
+        }
+        mix(piece.kind.ordinal)
+        mix(piece.c)
+        mix(piece.r)
+        mix(piece.w)
+        mix(piece.h)
+        mix(if (piece.flip) 1 else 0)
+    }
+    return h
+}
+
+private fun terrainPicture(scene: RedBallScene, art: TerrainArt, screenScale: Float): TerrainPicture? {
+    if (pictureFailedKey == art.key) return null
+    val pad = 42f
+    val originX = scene.minX - pad
+    val originY = scene.minY - pad
+    val worldW = (scene.worldW + pad) - originX
+    val worldH = (scene.worldH + pad) - originY
+    if (worldW < 8f || worldH < 8f) return null
+    val maxPixels = 4_800_000
+    val wanted = screenScale.coerceIn(1f, 2f)
+    val ppm = if (worldW * worldH * wanted * wanted > maxPixels) {
+        sqrt(maxPixels / (worldW * worldH))
+    } else {
+        wanted
+    }
+    if (ppm < 0.85f) return null
+    val cached = pictureCache
+    if (cached != null && cached.key == art.key && abs(cached.ppm - ppm) < 0.08f) return cached
+    val bw = (worldW * ppm).toInt().coerceIn(1, 8192)
+    val bh = (worldH * ppm).toInt().coerceIn(1, 8192)
+    return try {
+        val bitmap = ImageBitmap(bw, bh, ImageBitmapConfig.Argb8888)
+        CanvasDrawScope().draw(
+            Density(1f),
+            LayoutDirection.Ltr,
+            Canvas(bitmap),
+            Size(bw.toFloat(), bh.toFloat()),
+        ) {
+            val sx = bw / worldW
+            val sy = bh / worldH
+            withTransform({
+                scale(sx, sy, Offset.Zero)
+                translate(-originX, -originY)
+            }) {
+                drawStaticWorld(scene, art)
+            }
+        }
+        val created = TerrainPicture(art.key, ppm, originX, originY, worldW, worldH, bitmap)
+        val previous = pictureCache
+        pictureCache = created
+        if (previous != null) {
+            runCatching { previous.image.asAndroidBitmap().recycle() }
+        }
+        created
+    } catch (_: Throwable) {
+        pictureFailedKey = art.key
+        null
+    }
+}
+
+private fun DrawScope.drawTerrainPicture(picture: TerrainPicture) {
+    val image = picture.image
+    withTransform({
+        translate(picture.originX, picture.originY)
+        scale(picture.worldW / image.width, picture.worldH / image.height, Offset.Zero)
+    }) {
+        drawImage(image, filterQuality = FilterQuality.Medium)
+    }
+}
+
+private fun DrawScope.drawStaticWorld(scene: RedBallScene, art: TerrainArt) {
+    drawVoid(scene)
+    for (ground in art.grounds) drawGroundArt(ground)
+    for (block in scene.concrete) {
+        drawConcreteBlock(block, topIsOpen(block, scene.concrete, emptyList()))
+    }
+    for (slope in art.slopes) drawSlopeArt(slope)
+    for (ladder in scene.ladders) drawLadder(ladder)
+    for (spike in scene.spikes) drawIronSpike(spike.x, spike.top, spike.w, spike.h)
+    for (spring in scene.springs) drawFairySpring(spring.l, spring.t, spring.r, spring.b)
+}
+
+private val soilStroke = Stroke(5.2f, cap = StrokeCap.Round, join = StrokeJoin.Round)
+private val grassStroke = Stroke(3.6f, cap = StrokeCap.Round, join = StrokeJoin.Round)
+private val stoneFills = arrayOf(
+    Color(0xFF5A3824),
+    Color(0xFF6E4A30),
+    Color(0xFF3E2818),
+    Color(0xFF7A5640),
+)
+
+private fun buildGroundArt(box: RedBallAabb, solids: List<RedBallAabb>, slopes: List<RedBallSlope>): GroundArt {
+    val w = box.r - box.l
+    val h = box.b - box.t
+    if (w <= 1f || h <= 1f) {
+        return GroundArt(box.l, box.t, box.r, box.b, emptyList(), emptyList(), emptyList(), emptyList(), emptyList())
+    }
+    val grassBits = grassIntervals(box, solids, slopes).filter { it.second - it.first >= 18f }
+    val soilTop = if (grassBits.isNotEmpty()) box.t + 24f else box.t + 10f
+    val stones = stonesInRect(box.l, soilTop, box.r, box.b)
+    val seams = ArrayList<Seg>(4)
+    seams += verticalSeams(box.l, box.t, box.b, solids, slopes, box, leftSide = true)
+    seams += verticalSeams(box.r, box.t, box.b, solids, slopes, box, leftSide = false)
+    seams += horizontalSeams(box.b, box.l, box.r, solids, box, alongTop = false)
+    if (grassBits.isEmpty()) seams += horizontalSeams(box.t, box.l, box.r, solids, box, alongTop = true)
+    val bands = ArrayList<Path>(grassBits.size)
+    val edges = ArrayList<Path>(grassBits.size)
+    val shades = ArrayList<Seg>(grassBits.size)
+    val depth = min(GRASS_DEPTH, h * 0.45f).coerceAtLeast(8f)
+    for ((a, b) in grassBits) {
+        val pts = edgePoints(a, box.t, b, box.t)
+        val down = bladeDown(a, box.t, b, box.t)
+        bands += bandPath(pts, down, depth)
+        edges += edgePath(pts)
+        shades += Seg(a + 2f, box.t + depth, b - 2f, box.t + depth)
+    }
+    return GroundArt(box.l, box.t, box.r, box.b, bands, edges, shades, seams, stones)
+}
+
+private fun grassIntervals(
+    box: RedBallAabb,
+    solids: List<RedBallAabb>,
+    slopes: List<RedBallSlope>,
+): List<Pair<Float, Float>> {
+    val covered = ArrayList<Pair<Float, Float>>()
+    for (other in solids) {
+        if (other === box) continue
+        if (other.t < box.t - 0.5f && other.b >= box.t - 0.5f) {
+            val a = max(other.l, box.l)
+            val b = min(other.r, box.r)
+            if (b - a > 1f) covered += a to b
+        }
+    }
+    for (slope in slopes) {
+        val top = min(slope.y0, slope.y1)
+        val bot = max(slope.y0, slope.y1)
+        if (box.t > bot + 4f || box.t < top - 4f) continue
+        val a = max(min(slope.x0, slope.x1), box.l)
+        val b = min(max(slope.x0, slope.x1), box.r)
+        if (b - a > 1f) covered += a to b
+    }
+    return subtractSpan(box.l, box.r, covered)
+}
+
+private const val GRASS_DEPTH = 16f
+
+private fun verticalSeams(
+    x: Float,
+    top: Float,
+    bottom: Float,
+    solids: List<RedBallAabb>,
+    slopes: List<RedBallSlope>,
+    self: RedBallAabb,
+    leftSide: Boolean,
+): List<Seg> {
+    val covered = ArrayList<Pair<Float, Float>>()
+    for (other in solids) {
+        if (other === self) continue
+        val touch = if (leftSide) abs(other.r - x) < 1.6f else abs(other.l - x) < 1.6f
+        if (!touch) continue
+        val a = max(other.t, top)
+        val b = min(other.b, bottom)
+        if (b - a > 1f) covered += a to b
+    }
+    for (slope in slopes) {
+        val legX = if (slope.y0 <= slope.y1) slope.x0 else slope.x1
+        if (abs(legX - x) > 3f) continue
+        val a = max(min(slope.y0, slope.y1), top)
+        val b = min(max(slope.y0, slope.y1), bottom)
+        if (b - a > 1f) covered += a to b
+    }
+    return subtractSpan(top, bottom, covered).map { Seg(x, it.first, x, it.second) }
+}
+
+private fun horizontalSeams(
+    y: Float,
+    left: Float,
+    right: Float,
+    solids: List<RedBallAabb>,
+    self: RedBallAabb,
+    alongTop: Boolean,
+): List<Seg> {
+    val covered = ArrayList<Pair<Float, Float>>()
+    for (other in solids) {
+        if (other === self) continue
+        val touch = if (alongTop) abs(other.b - y) < 1.6f else abs(other.t - y) < 1.6f
+        if (!touch) continue
+        val a = max(other.l, left)
+        val b = min(other.r, right)
+        if (b - a > 1f) covered += a to b
+    }
+    return subtractSpan(left, right, covered).map { Seg(it.first, y, it.second, y) }
+}
+
+private fun subtractSpan(start: Float, end: Float, cuts: List<Pair<Float, Float>>): List<Pair<Float, Float>> {
+    if (end - start < 1.5f) return emptyList()
+    val sorted = cuts.sortedBy { it.first }
+    val out = ArrayList<Pair<Float, Float>>()
+    var cursor = start
+    for ((a, b) in sorted) {
+        val from = max(a, start)
+        val to = min(b, end)
+        if (to <= from) continue
+        if (from - cursor > 1.5f) out += cursor to from
+        if (to > cursor) cursor = to
+    }
+    if (end - cursor > 1.5f) out += cursor to end
+    return out
+}
+
+private fun slopeUndersideExposed(corner: Offset, solids: List<RedBallAabb>): Boolean {
+    for (solid in solids) {
+        if (corner.x >= solid.l - 8f && corner.x <= solid.r + 8f && corner.y >= solid.t - 8f && corner.y <= solid.b + 8f) {
+            return false
+        }
+    }
+    return true
+}
+
+private fun buildSlopeArt(x0: Float, y0: Float, x1: Float, y1: Float, solids: List<RedBallAabb>): SlopeArt {
+    val tuck = 5f
+    val third = if (y0 <= y1) Offset(x0 - tuck, y1 + tuck) else Offset(x1 + tuck, y0 + tuck)
+    val low = if (y0 <= y1) Offset(x1, y1 + tuck) else Offset(x0, y0 + tuck)
+    val soil = Path().apply {
+        moveTo(x0, y0)
+        lineTo(x1, y1)
+        lineTo(low.x, low.y)
+        lineTo(third.x, third.y)
+        close()
+    }
+    val corner = if (y0 <= y1) Offset(x0, y1) else Offset(x1, y0)
+    val pts = edgePoints(x0, y0, x1, y1)
+    val down = bladeDown(x0, y0, x1, y1)
+    val depth = 15f
+    val band = bandPath(pts, down, depth)
+    val edge = edgePath(pts)
+    val outline = Path().apply {
+        moveTo(x0, y0)
+        lineTo(corner.x, corner.y)
+        lineTo(x1, y1)
+    }
+    val minX = min(x0, x1)
+    val maxX = max(x0, x1)
+    val minY = min(min(y0, y1), third.y)
+    val maxY = max(max(y0, y1), third.y)
+    val raw = stonesInRect(minX, minY, maxX, maxY, minCount = 1)
+    val stones = raw.filter { stone ->
+        pointInTri(stone.x, stone.y, x0, y0, x1, y1, corner.x, corner.y) &&
+            distToSeg(stone.x, stone.y, x0, y0, x1, y1) > stone.ry + 8f
+    }
+    val exposed = slopeUndersideExposed(corner, solids)
+    return SlopeArt(
+        soil = soil,
+        band = band,
+        edge = edge,
+        outline = outline,
+        base0 = Offset(x0 + down.x * depth, y0 + down.y * depth),
+        base1 = Offset(x1 + down.x * depth, y1 + down.y * depth),
+        minY = minY,
+        maxY = maxY,
+        stones = stones,
+        strokeUnderside = exposed,
     )
 }
 
-private fun DrawScope.drawSolids(
-    solids: List<RedBallAabb>,
-    slopes: List<RedBallSlope>,
-    minX: Float,
-    worldW: Float,
-) {
-    for (solid in solids) {
-        if (solid.r <= minX + 0.5f || solid.l >= worldW - 0.5f) continue
-        drawGroundBlock(solid, topIsOpen(solid, solids, slopes))
+private fun DrawScope.drawGroundArt(art: GroundArt) {
+    val w = art.r - art.l
+    val h = art.b - art.t
+    if (w <= 1f || h <= 1f) return
+    drawRect(
+        Brush.verticalGradient(
+            listOf(Color(0xFFB07848), Color(0xFF8B5430), Color(0xFF754628)),
+            startY = art.t,
+            endY = art.b,
+        ),
+        Offset(art.l, art.t),
+        Size(w, h),
+    )
+    for (stone in art.stones) drawStone(stone)
+    val grass = Brush.verticalGradient(
+        listOf(Color(0xFFDFFF78), Color(0xFF9BE437), Color(0xFF5CB51C)),
+        startY = art.t - 22f,
+        endY = art.t + 22f,
+    )
+    for (band in art.bands) drawPath(band, grass)
+    for (shade in art.shades) {
+        drawLine(Color(0xFF3E8C16), Offset(shade.x0, shade.y0), Offset(shade.x1, shade.y1), 4.2f, StrokeCap.Round)
     }
+    for (seg in art.seams) {
+        drawLine(Color(0xFF3A2416), Offset(seg.x0, seg.y0), Offset(seg.x1, seg.y1), 5.2f, StrokeCap.Round)
+    }
+    for (edge in art.edges) drawPath(edge, Color(0xFF24580F), style = grassStroke)
+}
+
+private fun DrawScope.drawSlopeArt(art: SlopeArt) {
+    drawPath(
+        art.soil,
+        Brush.verticalGradient(
+            listOf(Color(0xFFC48A52), Color(0xFF8D5A32), Color(0xFF5C381E)),
+            startY = art.minY,
+            endY = art.maxY,
+        ),
+    )
+    for (stone in art.stones) drawStone(stone)
+    drawPath(
+        art.band,
+        Brush.verticalGradient(
+            listOf(Color(0xFFDFFF78), Color(0xFF8ED63A), Color(0xFF4FA818)),
+            startY = art.minY - 18f,
+            endY = art.maxY,
+        ),
+    )
+    drawLine(Color(0xFF3E8C16), art.base0, art.base1, 4f, StrokeCap.Round)
+    if (art.strokeUnderside) drawPath(art.outline, Color(0xFF3A2416), style = soilStroke)
+    drawPath(art.edge, Color(0xFF24580F), style = grassStroke)
+}
+
+private fun DrawScope.drawStone(stone: StoneSpec) {
+    val fill = stoneFills[stone.shade and 3]
+    drawOval(
+        Color(0xFF2A1A10),
+        Offset(stone.x - stone.rx, stone.y - stone.ry),
+        Size(stone.rx * 2f, stone.ry * 2f),
+    )
+    drawOval(
+        fill,
+        Offset(stone.x - stone.rx * 0.84f, stone.y - stone.ry * 0.82f),
+        Size(stone.rx * 1.68f, stone.ry * 1.64f),
+    )
+    drawOval(
+        Color.White.copy(alpha = 0.16f),
+        Offset(stone.x - stone.rx * 0.45f, stone.y - stone.ry * 0.62f),
+        Size(stone.rx * 0.55f, stone.ry * 0.36f),
+    )
+}
+
+private fun edgePoints(x0: Float, y0: Float, x1: Float, y1: Float): List<Offset> {
+    if (abs(y1 - y0) < 1.5f && abs(x1 - x0) > 8f) return horizontalTeeth(x0, y0, x1)
+    val dx = x1 - x0
+    val dy = y1 - y0
+    val len = hypot(dx, dy).coerceAtLeast(1f)
+    val normal = bladeUp(x0, y0, x1, y1)
+    val step = 17f
+    val n = (len / step).toInt().coerceIn(2, 72)
+    val pts = ArrayList<Offset>(n * 2 + 2)
+    pts.add(Offset(x0, y0))
+    val seed = (x0 * 0.17f + y0 * 0.09f).toInt()
+    for (i in 0 until n) {
+        val tm = (i + 0.5f) / n
+        val h = bladeHeight(seed + i)
+        pts.add(Offset(x0 + dx * tm + normal.x * h, y0 + dy * tm + normal.y * h))
+        if (i < n - 1) {
+            val t1 = (i + 1) / n.toFloat()
+            pts.add(Offset(x0 + dx * t1, y0 + dy * t1))
+        }
+    }
+    pts.add(Offset(x1, y1))
+    return pts
+}
+
+/** Зубцы травы сидят на общей сетке, чтобы соседние блоки земли сходились без шва. */
+private fun horizontalTeeth(x0: Float, y: Float, x1: Float): List<Offset> {
+    val left = min(x0, x1)
+    val right = max(x0, x1)
+    val step = 17f
+    val pts = ArrayList<Offset>()
+    fun add(x: Float, peak: Boolean) {
+        val h = if (peak) bladeHeight(kotlin.math.floor(x / step).toInt()) else 0f
+        pts.add(Offset(x, y - h))
+    }
+    if (x0 <= x1) {
+        add(left, false)
+        var peak = kotlin.math.ceil((left + step * 0.5f) / step) * step - step * 0.5f
+        if (peak < left + 1f) peak += step
+        while (peak < right - 1f) {
+            add(peak, true)
+            val base = peak + step * 0.5f
+            if (base < right - 1f) add(base, false)
+            peak += step
+        }
+        add(right, false)
+    } else {
+        add(right, false)
+        var peak = kotlin.math.floor((right - step * 0.5f) / step) * step + step * 0.5f
+        if (peak > right - 1f) peak -= step
+        while (peak > left + 1f) {
+            add(peak, true)
+            val base = peak - step * 0.5f
+            if (base > left + 1f) add(base, false)
+            peak -= step
+        }
+        add(left, false)
+    }
+    return pts
+}
+
+private fun bladeUp(x0: Float, y0: Float, x1: Float, y1: Float): Offset {
+    val dx = x1 - x0
+    val dy = y1 - y0
+    val len = hypot(dx, dy).coerceAtLeast(1f)
+    val tx = dx / len
+    val ty = dy / len
+    var nx = -ty
+    var ny = tx
+    if (ny > 0.02f) {
+        nx = -nx
+        ny = -ny
+    }
+    nx *= 0.3f
+    ny = ny * 0.3f - 0.7f
+    val nl = hypot(nx, ny).coerceAtLeast(0.001f)
+    return Offset(nx / nl, ny / nl)
+}
+
+private fun bladeDown(x0: Float, y0: Float, x1: Float, y1: Float): Offset {
+    val up = bladeUp(x0, y0, x1, y1)
+    return Offset(-up.x, -up.y)
+}
+
+private fun bladeHeight(i: Int): Float = when (Math.floorMod(i, 5)) {
+    0 -> 16f
+    1 -> 8f
+    2 -> 13f
+    3 -> 7f
+    else -> 11f
+}
+
+private fun bandPath(pts: List<Offset>, down: Offset, depth: Float): Path {
+    val path = Path()
+    path.moveTo(pts[0].x, pts[0].y)
+    for (i in 1 until pts.size) path.lineTo(pts[i].x, pts[i].y)
+    val last = pts.last()
+    path.lineTo(last.x + down.x * depth, last.y + down.y * depth)
+    path.lineTo(pts[0].x + down.x * depth, pts[0].y + down.y * depth)
+    path.close()
+    return path
+}
+
+private fun edgePath(pts: List<Offset>): Path {
+    val path = Path()
+    path.moveTo(pts[0].x, pts[0].y)
+    for (i in 1 until pts.size) path.lineTo(pts[i].x, pts[i].y)
+    return path
+}
+
+private fun stonesInRect(l: Float, t: Float, r: Float, b: Float, minCount: Int = 2): List<StoneSpec> {
+    val w = r - l
+    val h = b - t
+    if (w < 18f || h < 16f) return emptyList()
+    val target = ((w * h) / 16000f).toInt().coerceIn(minCount, 8)
+    val cols = sqrt(target * (w / h).coerceAtLeast(0.45f)).toInt().coerceAtLeast(1)
+    val rows = (target / cols).coerceAtLeast(1)
+    val out = ArrayList<StoneSpec>(cols * rows)
+    val seedX = l.toInt()
+    val seedY = t.toInt()
+    for (iy in 0 until rows) {
+        for (ix in 0 until cols) {
+            val jx = unitHash(seedX + ix * 13, seedY + iy * 29)
+            val jy = unitHash(seedX + ix * 7 + 3, seedY + iy * 11 + 5)
+            val big = unitHash(seedX + ix + 19, seedY + iy + 4) > 0.72f
+            val rx = if (big) 16f + unitHash(ix + 2, iy + seedY) * 14f else 8f + unitHash(ix + 6, iy + 8) * 7f
+            val ry = rx * (0.62f + unitHash(ix + 4, iy + 15) * 0.28f)
+            val x = l + w * ((ix + 0.28f + jx * 0.5f) / cols)
+            val y = t + h * ((iy + 0.3f + jy * 0.45f) / rows)
+            if (x - rx < l + 4f || x + rx > r - 4f || y - ry < t + 2f || y + ry > b - 4f) continue
+            val shade = (unitHash(ix + 8, iy + 3) * 4f).toInt().coerceIn(0, 3)
+            out.add(StoneSpec(x, y, rx, ry, shade))
+        }
+    }
+    return out
+}
+
+private fun unitHash(a: Int, b: Int): Float {
+    var x = a * 73856093 xor b * 19349663
+    x = x xor (x ushr 13)
+    x *= 1274126177
+    x = x xor (x ushr 16)
+    return (x and 0xFFFF) / 65535f
+}
+
+private fun pointInTri(
+    px: Float,
+    py: Float,
+    ax: Float,
+    ay: Float,
+    bx: Float,
+    by: Float,
+    cx: Float,
+    cy: Float,
+): Boolean {
+    val v0x = cx - ax
+    val v0y = cy - ay
+    val v1x = bx - ax
+    val v1y = by - ay
+    val v2x = px - ax
+    val v2y = py - ay
+    val dot00 = v0x * v0x + v0y * v0y
+    val dot01 = v0x * v1x + v0y * v1y
+    val dot02 = v0x * v2x + v0y * v2y
+    val dot11 = v1x * v1x + v1y * v1y
+    val dot12 = v1x * v2x + v1y * v2y
+    val den = dot00 * dot11 - dot01 * dot01
+    if (abs(den) < 1e-3f) return false
+    val inv = 1f / den
+    val u = (dot11 * dot02 - dot01 * dot12) * inv
+    val v = (dot00 * dot12 - dot01 * dot02) * inv
+    return u >= 0f && v >= 0f && u + v <= 1f
+}
+
+private fun distToSeg(px: Float, py: Float, x0: Float, y0: Float, x1: Float, y1: Float): Float {
+    val dx = x1 - x0
+    val dy = y1 - y0
+    val len2 = dx * dx + dy * dy
+    if (len2 < 1f) return hypot(px - x0, py - y0)
+    val t = (((px - x0) * dx + (py - y0) * dy) / len2).coerceIn(0f, 1f)
+    return hypot(px - (x0 + dx * t), py - (y0 + dy * t))
 }
 
 private fun topIsOpen(solid: RedBallAabb, solids: List<RedBallAabb>, slopes: List<RedBallSlope>): Boolean {
     for (other in solids) {
         if (other === solid) continue
-        if (other.t < solid.t - 0.5f && other.b > solid.t + 1f && other.l < solid.r - 4f && other.r > solid.l + 4f) {
+        if (other.t < solid.t - 0.5f && other.b >= solid.t - 0.5f && other.l < solid.r - 4f && other.r > solid.l + 4f) {
             return false
         }
     }
@@ -318,199 +1023,290 @@ private fun topIsOpen(solid: RedBallAabb, solids: List<RedBallAabb>, slopes: Lis
     return true
 }
 
-private fun DrawScope.drawGroundBlock(box: RedBallAabb, grass: Boolean) {
-    val w = box.r - box.l
-    val h = box.b - box.t
-    if (w <= 0f || h <= 0f) return
+private val waterPath = Path()
+private val reedPath = Path()
+
+private fun DrawScope.drawVoid(scene: RedBallScene) {
+    val surface = scene.voidY - 6f
+    val bottom = scene.worldH + 60f
+    if (surface >= bottom) return
+    val left = scene.minX - 80f
+    val width = scene.worldW - left + 80f
     drawRect(
         Brush.verticalGradient(
-            listOf(Color(0xFFC4844A), Color(0xFF9A5B2A), Color(0xFF6B3A1E)),
-            startY = box.t,
-            endY = box.b,
+            listOf(Color(0xFF8FE7F0), Color(0xFF3EAFCB), Color(0xFF1C7594), Color(0xFF12485C)),
+            startY = surface,
+            endY = bottom,
         ),
-        Offset(box.l, box.t),
-        Size(w, h),
+        topLeft = Offset(left, surface),
+        size = Size(width, bottom - surface),
     )
-    drawRect(Color(0xFF3F2414).copy(alpha = 0.35f), Offset(box.l, box.b - 7f), Size(w, 7f))
-    var px = box.l + 16f
-    var n = 0
-    val limit = h.toInt().coerceAtLeast(1)
-    while (px < box.r - 8f && n < 28) {
-        val py = box.t + 20f + ((px.toInt() * 13) % limit) * 0.35f
-        if (py < box.b - 10f) drawCircle(Color(0xFF7C4A2A), 3.2f, Offset(px, py))
-        px += 58f
-        n++
+    val right = left + width
+    val wave = waterPath
+    wave.reset()
+    wave.moveTo(left, surface + 8f)
+    var x = left
+    var crest = true
+    while (x < right) {
+        val next = x + 42f
+        wave.quadraticTo(x + 21f, surface + if (crest) -7f else 16f, next, surface + 8f)
+        x = next
+        crest = !crest
     }
-    if (!grass) return
-    drawRect(Color(0xFF15803D), Offset(box.l, box.t), Size(w, 14f))
-    drawRect(Color(0xFFBBF7D0), Offset(box.l, box.t), Size(w, 4f))
-    var x = box.l + 6f
+    drawPath(wave, Color(0xFFE7FCFF), style = Stroke(4f, cap = StrokeCap.Round))
+    var px = left + 24f
     var i = 0
-    while (x < box.r - 3f) {
-        val blade = if (i % 2 == 0) 11f else 7f
-        drawLine(
-            if (i % 3 == 0) Color(0xFF4ADE80) else Color(0xFF166534),
-            Offset(x, box.t + 5f),
-            Offset(x + 2.5f, box.t - blade),
-            2.2f,
-            StrokeCap.Round,
-        )
-        if (i % 8 == 3) {
-            drawCircle(Color(0xFFF472B6), 4.2f, Offset(x, box.t - 8f))
-            drawCircle(Color(0xFFFDE68A), 1.8f, Offset(x, box.t - 8f))
+    while (px < right && i < 48) {
+        val deep = (i % 3) != 0
+        val base = if (deep) surface + 34f else surface + 10f
+        val h = if (deep) 22f else 30f + (i % 4) * 6f
+        drawReed(px, base, h, if (deep) Color(0xFF1A6578) else Color(0xFF2E8C48))
+        if (i % 4 == 1) {
+            drawOval(
+                Color(0xFF14556C).copy(alpha = 0.4f),
+                Offset(px + 10f, surface + 28f),
+                Size(18f, 10f),
+            )
         }
-        x += 16f
+        px += 78f + (i % 3) * 16f
         i++
     }
 }
 
-private fun DrawScope.drawSlopeBank(x0: Float, y0: Float, x1: Float, y1: Float) {
-    val path = Path().apply {
-        moveTo(x0, y0)
-        lineTo(x1, y1)
-        if (y0 <= y1) lineTo(x0, y1) else lineTo(x1, y0)
-        close()
-    }
-    drawPath(path, Color(0xFF9A5B2A))
-    drawLine(Color(0xFF15803D), Offset(x0, y0), Offset(x1, y1), 14f, StrokeCap.Round)
-    drawLine(Color(0xFFBBF7D0), Offset(x0, y0), Offset(x1, y1), 5f, StrokeCap.Round)
-    for (i in 1..4) {
-        val t = i / 5f
-        val x = x0 + (x1 - x0) * t
-        val y = y0 + (y1 - y0) * t
-        drawLine(Color(0xFF166534), Offset(x, y), Offset(x + 2f, y - 9f), 2f, StrokeCap.Round)
-    }
-}
-
 private fun DrawScope.drawIronSpike(x: Float, top: Float, w: Float, h: Float) {
-    val path = Path().apply {
-        moveTo(x, top)
-        lineTo(x - w / 2f, top + h)
-        lineTo(x + w / 2f, top + h)
-        close()
+    val count = (w / 28f).toInt().coerceIn(1, 6)
+    val tw = w / count
+    for (i in 0 until count) {
+        val cx = x - w / 2f + tw * (i + 0.5f)
+        val path = scratchPath
+        path.reset()
+        path.moveTo(cx, top + 1f)
+        path.lineTo(cx - tw * 0.46f, top + h)
+        path.lineTo(cx + tw * 0.46f, top + h)
+        path.close()
+        drawPath(
+            path,
+            Brush.verticalGradient(
+                listOf(Color(0xFFC5CDD4), Color(0xFF6E777F), Color(0xFF2E353B)),
+                startY = top,
+                endY = top + h,
+            ),
+        )
+        val shine = scratchPathB
+        shine.reset()
+        shine.moveTo(cx - tw * 0.06f, top + h * 0.16f)
+        shine.lineTo(cx - tw * 0.22f, top + h * 0.72f)
+        shine.lineTo(cx - tw * 0.02f, top + h * 0.58f)
+        shine.close()
+        drawPath(shine, Color.White.copy(alpha = 0.72f))
+        drawPath(path, Color(0xFF1A1E22), style = Stroke(3.2f, join = StrokeJoin.Round))
     }
-    drawPath(path, Color(0xFF44403C))
-    val shine = Path().apply {
-        moveTo(x, top + h * 0.14f)
-        lineTo(x - w * 0.14f, top + h * 0.7f)
-        lineTo(x, top + h * 0.58f)
-        close()
-    }
-    drawPath(shine, Color(0xFFE7E5E4))
-    drawCircle(Color(0xFFEF4444), (w * 0.12f).coerceIn(3f, 8f), Offset(x, top + h * 0.18f))
 }
 
 private fun DrawScope.drawFairySpring(l: Float, t: Float, r: Float, b: Float) {
     val w = r - l
     val h = b - t
     if (w < 4f || h < 4f) return
-    drawRoundRect(Color(0xFF57534E), Offset(l, b - h * 0.14f), Size(w, h * 0.14f), CornerRadius(4f, 4f))
-    drawRoundRect(Color(0xFFF5F5F4), Offset(l + w * 0.14f, t), Size(w * 0.72f, h * 0.16f), CornerRadius(4f, 4f))
-    val coils = 4
+    val plateH = (h * 0.18f).coerceAtLeast(4f)
+    drawRoundRect(Color(0xFF2E343A), Offset(l, b - plateH), Size(w, plateH), CornerRadius(4f, 4f))
+    drawRoundRect(
+        Brush.horizontalGradient(listOf(Color(0xFFF4F7F8), Color(0xFFB7C0C6), Color(0xFF6E777E))),
+        Offset(l + 2f, b - plateH + 2f),
+        Size((w - 4f).coerceAtLeast(1f), (plateH - 3f).coerceAtLeast(1f)),
+        CornerRadius(3f, 3f),
+    )
+    val topW = w * 0.76f
+    drawRoundRect(Color(0xFF2E343A), Offset(l + w * 0.12f, t), Size(topW, plateH), CornerRadius(4f, 4f))
+    drawRoundRect(
+        Brush.verticalGradient(listOf(Color(0xFFFFFFFF), Color(0xFFD5DCE2))),
+        Offset(l + w * 0.12f + 2f, t + 1.5f),
+        Size((topW - 4f).coerceAtLeast(1f), (plateH - 3f).coerceAtLeast(1f)),
+        CornerRadius(3f, 3f),
+    )
+    val coils = 3
+    val stroke = (min(w, h) * 0.16f).coerceIn(3.5f, 7f)
     for (i in 0 until coils) {
-        val y = t + h * (0.18f + 0.62f * (i + 0.5f) / coils)
+        val y = t + h * (0.2f + 0.58f * (i + 0.5f) / coils)
+        val color = if (i % 2 == 0) Color(0xFFFFD54A) else Color(0xFFF0A020)
+        val arcTop = Offset(l + w * 0.14f, y - h * 0.16f)
+        val arcSize = Size(w * 0.72f, h * 0.32f)
         drawArc(
-            if (i % 2 == 0) Color(0xFFFACC15) else Color(0xFFCA8A04),
+            Color(0xFF5A3A10),
             startAngle = 200f,
             sweepAngle = 140f,
             useCenter = false,
-            topLeft = Offset(l + w * 0.14f, y - h * 0.18f),
-            size = Size(w * 0.72f, h * 0.32f),
-            style = Stroke(width = (w * 0.08f).coerceIn(3f, 7f), cap = StrokeCap.Round),
+            topLeft = arcTop,
+            size = arcSize,
+            style = Stroke(width = stroke + 2.6f, cap = StrokeCap.Round),
+        )
+        drawArc(
+            color,
+            startAngle = 200f,
+            sweepAngle = 140f,
+            useCenter = false,
+            topLeft = arcTop,
+            size = arcSize,
+            style = Stroke(width = stroke, cap = StrokeCap.Round),
         )
     }
 }
 
-private fun DrawScope.drawFairyDoor(l: Float, t: Float, r: Float, b: Float) {
+private fun DrawScope.drawFinishFlag(l: Float, t: Float, r: Float, b: Float, wave: Float) {
     val w = r - l
     val h = b - t
     if (w < 4f || h < 4f) return
-    val arch = min(w * 0.62f, h * 0.42f)
-    val cx = (l + r) / 2f
-    drawCircle(Color(0xFFFDE68A).copy(alpha = 0.5f), w * 0.9f, Offset(cx, t + arch * 0.8f))
-    val frame = Path().apply {
-        moveTo(l, b)
-        lineTo(l, t + arch)
-        quadraticBezierTo(cx, t, r, t + arch)
-        lineTo(r, b)
-        close()
-    }
-    drawPath(frame, Color(0xFF78716C))
-    val inset = w * 0.16f
-    val innerTop = t + arch * 0.45f
-    val inner = Path().apply {
-        moveTo(l + inset, b - w * 0.05f)
-        lineTo(l + inset, innerTop + arch * 0.35f)
-        quadraticBezierTo(cx, innerTop, r - inset, innerTop + arch * 0.35f)
-        lineTo(r - inset, b - w * 0.05f)
-        close()
-    }
+    val poleW = (w * 0.09f).coerceIn(4f, 11f)
+    val poleX = l + w * 0.28f
+    val top = t + h * 0.05f
+    drawRoundRect(Color(0xFF4A2E16), Offset(poleX - 1f, top), Size(poleW + 2f, b - top), CornerRadius(3f, 3f))
+    drawRoundRect(
+        Brush.horizontalGradient(
+            listOf(Color(0xFFF0D2A2), Color(0xFFD09A55), Color(0xFF8C5A2C)),
+            startX = poleX,
+            endX = poleX + poleW,
+        ),
+        Offset(poleX, top),
+        Size(poleW, b - top),
+        CornerRadius(3f, 3f),
+    )
+    val finial = Offset(poleX + poleW / 2f, top + 1f)
+    drawCircle(Color(0xFF8A6410), poleW * 1.25f, finial)
+    drawCircle(
+        Brush.radialGradient(
+            listOf(Color(0xFFFFF6C0), Color(0xFFFFD24A), Color(0xFFE0A010)),
+            center = finial - Offset(poleW * 0.3f, poleW * 0.35f),
+            radius = poleW * 1.6f,
+        ),
+        poleW,
+        finial,
+    )
+    val flutter = sin(wave * 3.1f) * (h * 0.025f)
+    val flagLen = w * 0.7f
+    val flagH = (h * 0.26f).coerceAtLeast(18f)
+    val y0 = top + poleW * 1.6f
+    val cloth = scratchPath
+    cloth.reset()
+    cloth.moveTo(poleX + poleW * 0.7f, y0)
+    cloth.quadraticTo(
+        poleX + flagLen * 0.55f,
+        y0 - flagH * 0.08f + flutter,
+        poleX + flagLen,
+        y0 + flagH * 0.18f + flutter * 0.4f,
+    )
+    cloth.lineTo(poleX + flagLen * 0.9f, y0 + flagH * 0.55f + flutter * 0.2f)
+    cloth.quadraticTo(
+        poleX + flagLen * 0.4f,
+        y0 + flagH * 0.95f + flutter,
+        poleX + poleW * 0.7f,
+        y0 + flagH * 0.82f,
+    )
+    cloth.close()
     drawPath(
-        inner,
-        Brush.verticalGradient(
-            listOf(Color(0xFFFFF7C2), Color(0xFFF59E0B), Color(0xFFB45309)),
-            startY = t,
-            endY = b,
+        cloth,
+        Brush.linearGradient(
+            listOf(Color(0xFFFF6A6A), Color(0xFFE42334), Color(0xFFB01022)),
+            start = Offset(poleX, y0),
+            end = Offset(poleX + flagLen, y0 + flagH),
         ),
     )
-    val span = r - l - inset * 2f
-    for (i in 1..2) {
-        val x = l + inset + span * i / 3f
-        drawLine(Color(0xFF92400E).copy(alpha = 0.75f), Offset(x, innerTop + arch * 0.2f), Offset(x, b - w * 0.08f), w * 0.035f)
-    }
-    val knob = Offset(r - inset - w * 0.14f, t + h * 0.58f)
-    drawCircle(Color(0xFFFBBF24), w * 0.07f, knob)
-    drawCircle(Color(0xFF78350F), w * 0.03f, knob)
-    drawSparkle(cx, t + arch * 0.35f, w * 0.14f, Color(0xFFFFFBEB))
+    drawPath(cloth, Color(0xFF7A1020), style = Stroke(2.8f, cap = StrokeCap.Round, join = StrokeJoin.Round))
+    drawLine(
+        Color.White.copy(alpha = 0.4f),
+        Offset(poleX + poleW, y0 + 4f),
+        Offset(poleX + flagLen * 0.62f, y0 + flagH * 0.22f + flutter),
+        2.2f,
+        StrokeCap.Round,
+    )
 }
 
 private fun DrawScope.drawWoodCrate(cx: Float, cy: Float, side: Float) {
+    if (side < 6f) return
     val x = cx - side / 2f
     val y = cy - side / 2f
     drawOval(
-        Color(0xFF44403C).copy(alpha = 0.22f),
-        Offset(x + side * 0.1f, y + side * 0.88f),
-        Size(side * 0.8f, side * 0.16f),
+        Color(0xFF3A2414).copy(alpha = 0.22f),
+        Offset(x + side * 0.08f, y + side * 0.9f),
+        Size(side * 0.84f, side * 0.14f),
     )
+    val radius = CornerRadius(side * 0.05f, side * 0.05f)
+    drawRoundRect(Color(0xFF4A3018), Offset(x, y), Size(side, side), radius)
+    val inset = side * 0.055f
+    val inner = side - inset * 2f
+    val planks = 4
+    val gap = side * 0.028f
+    val plankH = (inner - gap * (planks - 1)) / planks
+    for (i in 0 until planks) {
+        val py = y + inset + i * (plankH + gap)
+        drawRect(
+            Brush.verticalGradient(
+                listOf(Color(0xFFF0D7A6), Color(0xFFD7A45C), Color(0xFFC48B42)),
+                startY = py,
+                endY = py + plankH,
+            ),
+            Offset(x + inset, py),
+            Size(inner, plankH),
+        )
+        drawLine(
+            Color(0xFF8A5A30).copy(alpha = 0.35f),
+            Offset(x + inset + 3f, py + plankH * 0.62f),
+            Offset(x + side - inset - 3f, py + plankH * 0.62f),
+            1.4f,
+        )
+    }
+    val strapW = side * 0.13f
+    fun strap(sx: Float) {
+        drawRect(Color(0xFF5C3A1C), Offset(sx - 1.2f, y + inset - 1f), Size(strapW + 2.4f, inner + 2f))
+        drawRect(
+            Brush.horizontalGradient(
+                listOf(Color(0xFFE7C48A), Color(0xFFC48A44), Color(0xFF8A5528)),
+                startX = sx,
+                endX = sx + strapW,
+            ),
+            Offset(sx, y + inset),
+            Size(strapW, inner),
+        )
+    }
+    strap(x + side * 0.16f)
+    strap(x + side * 0.71f)
+    val boltR = side * 0.038f
+    val bolts = floatArrayOf(
+        side * 0.2f, side * 0.16f,
+        side * 0.8f, side * 0.16f,
+        side * 0.2f, side * 0.84f,
+        side * 0.8f, side * 0.84f,
+        side * 0.225f, side * 0.4f,
+        side * 0.225f, side * 0.62f,
+        side * 0.775f, side * 0.4f,
+        side * 0.775f, side * 0.62f,
+    )
+    var i = 0
+    while (i < bolts.size) {
+        drawBolt(Offset(x + bolts[i], y + bolts[i + 1]), boltR)
+        i += 2
+    }
     drawRoundRect(
-        Brush.linearGradient(
-            listOf(Color(0xFFF6E0B5), Color(0xFFD4A15A), Color(0xFF9A6230)),
-            start = Offset(x, y),
-            end = Offset(x + side, y + side),
-        ),
+        Color(0xFF2E1C0E),
         Offset(x, y),
         Size(side, side),
-        CornerRadius(side * 0.08f, side * 0.08f),
+        radius,
+        style = Stroke(width = side * 0.045f, join = StrokeJoin.Round),
     )
-    val m = side * 0.13f
-    drawRoundRect(
-        Color(0xFF6B3E1E),
-        Offset(x + m, y + m),
-        Size(side - m * 2f, side - m * 2f),
-        CornerRadius(side * 0.04f, side * 0.04f),
-        style = Stroke(width = side * 0.045f),
-    )
-    drawLine(Color(0xFF6B3E1E), Offset(x + m, y + side * 0.4f), Offset(x + side - m, y + side * 0.4f), side * 0.04f)
-    drawLine(Color(0xFF6B3E1E), Offset(x + m, y + side * 0.62f), Offset(x + side - m, y + side * 0.62f), side * 0.04f)
-    drawLine(
-        Color(0xFF7C4A2A),
-        Offset(x + m * 1.5f, y + m * 1.4f),
-        Offset(x + side - m * 1.5f, y + side - m * 1.4f),
-        side * 0.03f,
-    )
-    val nail = side * 0.034f
-    for (p in listOf(
-        Offset(x + m, y + m),
-        Offset(x + side - m, y + m),
-        Offset(x + m, y + side - m),
-        Offset(x + side - m, y + side - m),
-    )) {
-        drawCircle(Color(0xFF44403C), nail, p)
-        drawCircle(Color(0xFFF5F5F4), nail * 0.35f, p + Offset(-nail * 0.25f, -nail * 0.25f))
-    }
 }
 
-/** [groundY] — высота поверхности под мячом; тень лежит на ней, а не прилипает к мячу. */
+private fun DrawScope.drawBolt(c: Offset, r: Float) {
+    drawCircle(Color(0xFF3E444A), r, c)
+    drawCircle(
+        Brush.radialGradient(
+            listOf(Color(0xFFF7F8F8), Color(0xFFC5CCD1), Color(0xFF7A838A)),
+            center = c - Offset(r * 0.28f, r * 0.32f),
+            radius = r * 1.2f,
+        ),
+        r * 0.78f,
+        c,
+    )
+    drawCircle(Color.White.copy(alpha = 0.85f), r * 0.22f, c - Offset(r * 0.22f, r * 0.24f))
+}
+
 private fun DrawScope.drawGlossyBall(
     x: Float,
     y: Float,
@@ -519,6 +1315,7 @@ private fun DrawScope.drawGlossyBall(
     groundY: Float?,
     squashX: Float = 1f,
     squashY: Float = 1f,
+    face: BallFace = editorFace,
 ) {
     val sx = squashX.coerceIn(0.62f, 1.48f)
     val sy = squashY.coerceIn(0.62f, 1.42f)
@@ -526,61 +1323,133 @@ private fun DrawScope.drawGlossyBall(
         val gap = (groundY - (y + r)).coerceAtLeast(0f)
         val k = (1f - gap / 360f).coerceIn(0f, 1f)
         if (k > 0.02f) {
-            val w = r * 1.9f * sx * (0.45f + 0.55f * k)
-            val h = r * 0.46f * (0.5f + 0.5f * k)
+            val w = r * 1.85f * sx * (0.45f + 0.55f * k)
+            val h = r * 0.42f * (0.5f + 0.5f * k)
             drawOval(
-                Color(0xFF7F1D1D).copy(alpha = 0.28f * k),
-                Offset(x - w / 2f, groundY - h * 0.55f),
+                Color(0xFF1C3314).copy(alpha = 0.28f * k),
+                Offset(x - w / 2f, groundY - h * 0.45f),
                 Size(w, h),
             )
         }
     }
     val sink = ((1f - sy) * r * 0.62f).coerceAtLeast(0f)
     val cy = y + sink
-    drawCircle(Color(0xFFFB7185).copy(alpha = 0.22f), r * 1.35f, Offset(x, cy))
     withTransform({
         scale(sx, sy, pivot = Offset(x, cy))
     }) {
         drawCircle(
             Brush.radialGradient(
-                listOf(Color(0xFFFFF7F7), Color(0xFFFB7185), Color(0xFFE11D48), Color(0xFF9F1239)),
-                center = Offset(x - r * 0.38f, cy - r * 0.42f),
-                radius = r * 1.85f,
+                listOf(Color(0xFFFF8E8E), Color(0xFFFF3B3B), Color(0xFFE2182C), Color(0xFFB01020)),
+                center = Offset(x - r * 0.36f, cy - r * 0.42f),
+                radius = r * 1.75f,
             ),
             r,
             Offset(x, cy),
         )
         rotate(Math.toDegrees(angle.toDouble()).toFloat(), Offset(x, cy)) {
             drawArc(
-                Color(0xFF881337),
-                startAngle = -16f,
-                sweepAngle = 34f,
+                Color(0xFF9F1230).copy(alpha = 0.45f),
+                startAngle = 28f,
+                sweepAngle = 48f,
                 useCenter = false,
-                topLeft = Offset(x - r * 0.9f, cy - r * 0.9f),
-                size = Size(r * 1.8f, r * 1.8f),
-                style = Stroke(width = r * 0.2f, cap = StrokeCap.Round),
+                topLeft = Offset(x - r * 0.78f, cy - r * 0.78f),
+                size = Size(r * 1.56f, r * 1.56f),
+                style = Stroke(width = r * 0.11f, cap = StrokeCap.Round),
             )
         }
-        drawCircle(Color.White.copy(alpha = 0.95f), r * 0.16f, Offset(x - r * 0.36f, cy - r * 0.4f))
-        drawCircle(Color.White.copy(alpha = 0.55f), r * 0.07f, Offset(x - r * 0.12f, cy - r * 0.18f))
+        drawOval(
+            Color.White.copy(alpha = 0.9f),
+            Offset(x - r * 0.58f, cy - r * 0.72f),
+            Size(r * 0.42f, r * 0.24f),
+        )
+        drawBallFace(x, cy, r, face)
+        drawCircle(
+            Color(0xFF3A1218),
+            r,
+            Offset(x, cy),
+            style = Stroke(width = r * 0.1f),
+        )
+    }
+}
+
+private fun DrawScope.drawBallFace(x: Float, cy: Float, r: Float, face: BallFace) {
+    if (face.mood == BallMood.DEAD) {
+        val eyeY = cy - r * 0.02f
+        for (side in intArrayOf(-1, 1)) {
+            val cx = x + side * r * 0.28f
+            val s = r * 0.13f
+            drawLine(Color(0xFF3A1218), Offset(cx - s, eyeY - s), Offset(cx + s, eyeY + s), r * 0.07f, StrokeCap.Round)
+            drawLine(Color(0xFF3A1218), Offset(cx + s, eyeY - s), Offset(cx - s, eyeY + s), r * 0.07f, StrokeCap.Round)
+        }
         drawArc(
-            Color.White.copy(alpha = 0.55f),
+            Color(0xFF3A1218),
             startAngle = 200f,
-            sweepAngle = 70f,
+            sweepAngle = 140f,
             useCenter = false,
-            topLeft = Offset(x - r * 0.78f, cy - r * 0.78f),
-            size = Size(r * 1.56f, r * 1.56f),
-            style = Stroke(width = r * 0.08f, cap = StrokeCap.Round),
+            topLeft = Offset(x - r * 0.22f, cy + r * 0.12f),
+            size = Size(r * 0.44f, r * 0.28f),
+            style = Stroke(width = r * 0.07f, cap = StrokeCap.Round),
         )
-        drawArc(
-            Color.White.copy(alpha = 0.28f),
-            startAngle = 28f,
-            sweepAngle = 120f,
-            useCenter = false,
-            topLeft = Offset(x - r * 0.82f, cy - r * 0.82f),
-            size = Size(r * 1.64f, r * 1.64f),
-            style = Stroke(width = r * 0.07f),
+        return
+    }
+    val widen = when (face.mood) {
+        BallMood.SCARED -> 1.14f
+        BallMood.SURPRISED -> 1.08f
+        else -> 1f
+    }
+    val eyeHalfW = r * 0.23f * widen
+    val openH = r * 0.27f * if (face.mood == BallMood.SURPRISED) 1.08f else 1f
+    val eyeHalfH = openH * (1f - 0.9f * face.blink)
+    val eyeY = cy - r * 0.05f
+    val eyeDx = r * 0.3f
+    val pupilK = when (face.mood) {
+        BallMood.SCARED -> 0.58f
+        BallMood.SURPRISED -> 0.82f
+        else -> 1f
+    }
+    for (side in intArrayOf(-1, 1)) {
+        val ex = x + side * eyeDx
+        drawOval(Color.White, Offset(ex - eyeHalfW, eyeY - eyeHalfH), Size(eyeHalfW * 2f, eyeHalfH * 2f))
+        drawOval(
+            Color(0xFF2A2118),
+            Offset(ex - eyeHalfW, eyeY - eyeHalfH),
+            Size(eyeHalfW * 2f, eyeHalfH * 2f),
+            style = Stroke(width = r * 0.045f),
         )
+        if (face.blink < 0.82f) {
+            val px = ex + face.lookX * eyeHalfW * 0.42f
+            val py = eyeY + face.lookY * eyeHalfH * 0.38f
+            val pr = r * 0.105f * pupilK
+            drawCircle(Color(0xFF1A120C), pr, Offset(px, py))
+            drawCircle(Color.White, pr * 0.38f, Offset(px - pr * 0.32f, py - pr * 0.36f))
+        }
+        if (face.mood == BallMood.SCARED) {
+            val outer = Offset(ex + side * eyeHalfW * 1.05f, eyeY - eyeHalfH - r * 0.08f)
+            val inner = Offset(ex - side * eyeHalfW * 0.15f, eyeY - eyeHalfH + r * 0.02f)
+            drawLine(Color(0xFF4A1520), outer, inner, r * 0.07f, StrokeCap.Round)
+        }
+    }
+    when (face.mood) {
+        BallMood.SURPRISED -> {
+            drawOval(Color(0xFF4A1520), Offset(x - r * 0.13f, cy + r * 0.16f), Size(r * 0.26f, r * 0.3f))
+            drawOval(Color(0xFF2A0A10), Offset(x - r * 0.07f, cy + r * 0.24f), Size(r * 0.14f, r * 0.14f))
+        }
+        BallMood.SCARED -> {
+            drawOval(Color(0xFF3A1218), Offset(x - r * 0.16f, cy + r * 0.16f), Size(r * 0.32f, r * 0.26f))
+            drawOval(Color.White.copy(alpha = 0.85f), Offset(x - r * 0.1f, cy + r * 0.18f), Size(r * 0.2f, r * 0.07f))
+        }
+        else -> {
+            val smile = if (abs(face.lookX) > 0.45f) 1.12f else 1f
+            drawArc(
+                Color(0xFF5A1020),
+                startAngle = 18f,
+                sweepAngle = 144f,
+                useCenter = false,
+                topLeft = Offset(x - r * 0.26f * smile, cy + r * 0.08f),
+                size = Size(r * 0.52f * smile, r * 0.36f),
+                style = Stroke(width = r * 0.075f, cap = StrokeCap.Round),
+            )
+        }
     }
 }
 
@@ -597,16 +1466,24 @@ private fun DrawScope.drawCloudBand(
     val shift = wrapShift(camX * worldToScreen * factor, span)
     val y = size.height * yFrac
     for (i in -1..4) {
-        drawCloud(i * span / 3f - shift, y, 96f * scale, alpha)
+        drawCloud(i * span / 3f - shift, y + (i % 2) * 8f, 110f * scale, alpha)
     }
 }
 
 private fun DrawScope.drawCloud(x: Float, y: Float, w: Float, alpha: Float) {
-    val c = Color.White.copy(alpha = alpha)
-    drawCircle(c, w * 0.26f, Offset(x, y))
-    drawCircle(c, w * 0.36f, Offset(x + w * 0.28f, y - w * 0.08f))
-    drawCircle(c, w * 0.22f, Offset(x + w * 0.52f, y + w * 0.02f))
+    val shade = Color(0xFFD5ECF6).copy(alpha = alpha * 0.95f)
+    val top = Color.White.copy(alpha = alpha)
+    drawCircle(shade, w * 0.22f, Offset(x, y + w * 0.05f))
+    drawCircle(shade, w * 0.34f, Offset(x + w * 0.28f, y + w * 0.02f))
+    drawCircle(shade, w * 0.2f, Offset(x + w * 0.54f, y + w * 0.06f))
+    drawCircle(top, w * 0.22f, Offset(x, y))
+    drawCircle(top, w * 0.36f, Offset(x + w * 0.26f, y - w * 0.08f))
+    drawCircle(top, w * 0.2f, Offset(x + w * 0.52f, y + w * 0.01f))
+    drawCircle(top, w * 0.14f, Offset(x + w * 0.12f, y + w * 0.04f))
 }
+
+private val hillPath = Path()
+private val lakePath = Path()
 
 private fun DrawScope.drawHills(
     camX: Float,
@@ -619,7 +1496,8 @@ private fun DrawScope.drawHills(
 ) {
     val shift = camX * worldToScreen * factor
     val phase = wrapShift(shift, step * 2f)
-    val path = Path()
+    val path = hillPath
+    path.reset()
     var x = -step * 2f - phase
     path.moveTo(x, size.height + 8f)
     path.lineTo(x, baseline)
@@ -627,7 +1505,7 @@ private fun DrawScope.drawHills(
     while (x < size.width + step) {
         val next = x + step
         val hump = if (index % 2 == 0) amp else amp * 0.62f
-        path.quadraticBezierTo(x + step * 0.5f, baseline - hump, next, baseline)
+        path.quadraticTo(x + step * 0.5f, baseline - hump, next, baseline)
         x = next
         index++
     }
@@ -636,22 +1514,145 @@ private fun DrawScope.drawHills(
     drawPath(path, color)
 }
 
-private fun DrawScope.drawStoryTree(x: Float, ground: Float, h: Float) {
+private fun DrawScope.drawBackdropLake(camX: Float, worldToScreen: Float, baseline: Float) {
+    val span = size.width * 2.5f
+    val shift = wrapShift(camX * worldToScreen * 0.18f, span)
+    val lakeW = size.width * 0.7f
+    for (i in -1..2) {
+        val x = i * span - shift + size.width * 0.15f
+        val path = lakePath
+        path.reset()
+        path.moveTo(x, baseline + 10f)
+        path.cubicTo(
+            x + lakeW * 0.28f,
+            baseline - 16f,
+            x + lakeW * 0.62f,
+            baseline + 20f,
+            x + lakeW,
+            baseline + 2f,
+        )
+        path.lineTo(x + lakeW, baseline + 48f)
+        path.lineTo(x, baseline + 48f)
+        path.close()
+        drawPath(path, Color(0xFF7ED3E4).copy(alpha = 0.92f))
+        drawPath(path, Color(0xFFE5FBFF).copy(alpha = 0.8f), style = Stroke(2.5f))
+        drawReed(x + lakeW * 0.2f, baseline + 6f, 36f, Color(0xFF3E9A44))
+        drawReed(x + lakeW * 0.32f, baseline + 4f, 50f, Color(0xFF63C44E))
+        drawReed(x + lakeW * 0.78f, baseline + 8f, 42f, Color(0xFF2E8A3C))
+    }
+}
+
+private fun DrawScope.drawReed(x: Float, base: Float, h: Float, color: Color) {
+    val lean = if ((x.toInt() and 1) == 0) -0.16f else 0.12f
+    val top = Offset(x + h * lean, base - h)
+    drawLine(color.copy(alpha = 0.35f), Offset(x + 1.5f, base), top + Offset(1.5f, 0f), 5f, StrokeCap.Round)
+    drawLine(color, Offset(x, base), top, 3f, StrokeCap.Round)
+    val leaf = reedPath
+    leaf.reset()
+    val y = base - h * 0.42f
+    leaf.moveTo(x, y)
+    leaf.quadraticTo(x + h * 0.42f, y - h * 0.16f, top.x, base - h * 0.75f)
+    leaf.quadraticTo(x + h * 0.1f, y - h * 0.02f, x, y)
+    leaf.close()
+    drawPath(leaf, color)
+}
+
+private fun DrawScope.drawStoryTree(x: Float, ground: Float, h: Float, kind: Int) {
     if (h < 8f) return
-    val trunk = h * 0.14f
+    when (Math.floorMod(kind, 3)) {
+        0 -> drawPine(x, ground, h)
+        1 -> drawRoundTree(x, ground, h * 0.92f)
+        else -> drawCypress(x, ground, h * 1.12f)
+    }
+}
+
+private fun DrawScope.drawPine(x: Float, ground: Float, h: Float) {
+    val trunk = h * 0.08f
     drawRoundRect(
-        Color(0xFF7C4A2D),
-        Offset(x - trunk / 2f, ground - h * 0.38f),
-        Size(trunk, h * 0.4f),
-        CornerRadius(3f, 3f),
+        Color(0xFF8A5A32),
+        Offset(x - trunk / 2f, ground - h * 0.22f),
+        Size(trunk, h * 0.24f),
+        CornerRadius(2f, 2f),
     )
-    drawCircle(Color(0xFF166534), h * 0.26f, Offset(x, ground - h * 0.52f))
-    drawCircle(Color(0xFF15803D), h * 0.2f, Offset(x - h * 0.16f, ground - h * 0.4f))
-    drawCircle(Color(0xFF22C55E), h * 0.18f, Offset(x + h * 0.14f, ground - h * 0.46f))
+    fun tier(topFrac: Float, widthFrac: Float, color: Color) {
+        val path = scratchPath
+        path.reset()
+        val top = ground - h * topFrac
+        val tw = h * widthFrac
+        val th = h * 0.26f
+        path.moveTo(x, top)
+        path.lineTo(x - tw / 2f, top + th)
+        path.lineTo(x + tw / 2f, top + th)
+        path.close()
+        drawPath(path, color)
+        drawPath(path, Color(0xFF2C6818), style = Stroke(2.2f, join = StrokeJoin.Round))
+    }
+    tier(0.58f, 0.62f, Color(0xFF6FCB3E))
+    tier(0.78f, 0.46f, Color(0xFF8FE052))
+    tier(0.96f, 0.3f, Color(0xFFC6F56A))
+}
+
+private fun DrawScope.drawRoundTree(x: Float, ground: Float, h: Float) {
+    val trunk = h * 0.1f
+    drawRoundRect(
+        Color(0xFF8A5A32),
+        Offset(x - trunk / 2f, ground - h * 0.28f),
+        Size(trunk, h * 0.3f),
+        CornerRadius(2f, 2f),
+    )
+    fun blob(ox: Float, oy: Float, r: Float, color: Color) {
+        drawCircle(Color(0xFF2C6818), r + 2.2f, Offset(x + ox, ground + oy))
+        drawCircle(color, r, Offset(x + ox, ground + oy))
+        drawCircle(Color(0xFFD9F98A).copy(alpha = 0.85f), r * 0.28f, Offset(x + ox - r * 0.28f, ground + oy - r * 0.32f))
+    }
+    blob(-h * 0.12f, -h * 0.32f, h * 0.2f, Color(0xFF7ED84A))
+    blob(h * 0.14f, -h * 0.3f, h * 0.17f, Color(0xFF67C83C))
+    blob(0f, -h * 0.48f, h * 0.22f, Color(0xFF98E85A))
+}
+
+private fun DrawScope.drawCypress(x: Float, ground: Float, h: Float) {
+    val trunk = h * 0.06f
+    drawRoundRect(
+        Color(0xFF8A5A32),
+        Offset(x - trunk / 2f, ground - h * 0.2f),
+        Size(trunk, h * 0.2f),
+        CornerRadius(2f, 2f),
+    )
+    val body = scratchPath
+    body.reset()
+    body.moveTo(x, ground - h)
+    body.quadraticTo(x + h * 0.16f, ground - h * 0.55f, x + h * 0.08f, ground - h * 0.08f)
+    body.lineTo(x - h * 0.08f, ground - h * 0.08f)
+    body.quadraticTo(x - h * 0.16f, ground - h * 0.55f, x, ground - h)
+    body.close()
+    drawPath(body, Color(0xFF8FE052))
+    drawPath(body, Color(0xFF2C6818), style = Stroke(2f, join = StrokeJoin.Round))
+    drawOval(
+        Color(0xFFD4F77A).copy(alpha = 0.8f),
+        Offset(x - h * 0.05f, ground - h * 0.72f),
+        Size(h * 0.06f, h * 0.16f),
+    )
+}
+
+private fun DrawScope.drawFence(x: Float, ground: Float) {
+    val posts = 5
+    val gap = 16f
+    val color = Color(0xFFC48A44)
+    val edge = Color(0xFF6B4420)
+    for (i in 0 until posts) {
+        val px = x + i * gap
+        drawRoundRect(edge, Offset(px - 0.8f, ground - 20f), Size(5.2f, 20f), CornerRadius(1.5f, 1.5f))
+        drawRoundRect(color, Offset(px, ground - 19f), Size(3.6f, 18f), CornerRadius(1.2f, 1.2f))
+    }
+    val end = x + (posts - 1) * gap
+    drawLine(edge, Offset(x, ground - 14f), Offset(end, ground - 14f), 3.4f, StrokeCap.Round)
+    drawLine(color, Offset(x, ground - 14.6f), Offset(end, ground - 14.6f), 2f, StrokeCap.Round)
+    drawLine(edge, Offset(x, ground - 7f), Offset(end, ground - 7f), 3.4f, StrokeCap.Round)
+    drawLine(color, Offset(x, ground - 7.6f), Offset(end, ground - 7.6f), 2f, StrokeCap.Round)
 }
 
 private fun DrawScope.drawBird(x: Float, y: Float, s: Float) {
-    val color = Color(0xFF44403C).copy(alpha = 0.55f)
+    val color = Color(0xFF3A4650).copy(alpha = 0.4f)
     drawArc(
         color,
         startAngle = 200f,
@@ -659,7 +1660,7 @@ private fun DrawScope.drawBird(x: Float, y: Float, s: Float) {
         useCenter = false,
         topLeft = Offset(x, y),
         size = Size(s, s * 0.7f),
-        style = Stroke(width = 2.4f, cap = StrokeCap.Round),
+        style = Stroke(width = 2.2f, cap = StrokeCap.Round),
     )
     drawArc(
         color,
@@ -668,95 +1669,139 @@ private fun DrawScope.drawBird(x: Float, y: Float, s: Float) {
         useCenter = false,
         topLeft = Offset(x + s * 0.7f, y),
         size = Size(s, s * 0.7f),
-        style = Stroke(width = 2.4f, cap = StrokeCap.Round),
+        style = Stroke(width = 2.2f, cap = StrokeCap.Round),
     )
-}
-
-private fun DrawScope.drawSparkle(cx: Float, cy: Float, s: Float, color: Color) {
-    drawLine(color, Offset(cx - s, cy), Offset(cx + s, cy), s * 0.28f, StrokeCap.Round)
-    drawLine(color, Offset(cx, cy - s), Offset(cx, cy + s), s * 0.28f, StrokeCap.Round)
-    drawCircle(color, s * 0.22f, Offset(cx, cy))
 }
 
 private fun DrawScope.drawConcreteBlock(box: RedBallAabb, cap: Boolean) {
     val w = box.r - box.l
     val h = box.b - box.t
     if (w <= 1f || h <= 1f) return
+    val radius = CornerRadius(min(12f, w * 0.08f), min(12f, h * 0.08f))
     drawRoundRect(
         Brush.verticalGradient(
-            listOf(Color(0xFFE7E5E4), Color(0xFFA8A29E), Color(0xFF78716C), Color(0xFF44403C)),
+            listOf(Color(0xFFE4E8EB), Color(0xFFC5CCD2), Color(0xFF9AA3AB), Color(0xFF727B83)),
             startY = box.t,
             endY = box.b,
         ),
         Offset(box.l, box.t),
         Size(w, h),
-        CornerRadius(7f, 7f),
+        radius,
     )
-    val speck = h.toInt().coerceAtLeast(1)
-    var px = box.l + 12f
+    val seed = box.l.toInt() * 3 + box.t.toInt()
     var n = 0
-    while (px < box.r - 8f && n < 22) {
-        val py = box.t + 16f + ((px.toInt() * 17) % speck) * 0.45f
+    var px = box.l + 14f
+    while (px < box.r - 10f && n < 16) {
+        val py = box.t + 18f + unitHash(seed + n, px.toInt()) * (h - 28f).coerceAtLeast(4f)
         if (py < box.b - 8f) {
-            drawCircle(Color(0xFF292524).copy(alpha = 0.28f), 2.4f, Offset(px, py))
-            drawCircle(Color.White.copy(alpha = 0.4f), 1.4f, Offset(px + 5f, py + 3f))
+            drawCircle(Color(0xFF4E565C).copy(alpha = 0.28f), 2.2f, Offset(px, py))
         }
-        px += 26f
+        px += 28f
         n++
     }
-    var seam = box.l + 34f
-    var i = 0
-    while (seam < box.r - 10f && i < 10) {
+    if (w > 36f) {
         drawLine(
-            Color(0xFF292524).copy(alpha = 0.22f),
-            Offset(seam, box.t + 10f),
-            Offset(seam - 8f, box.b - 8f),
-            2f,
+            Color(0xFF4A5258).copy(alpha = 0.45f),
+            Offset(box.l + 8f, box.t + h * 0.5f),
+            Offset(box.r - 8f, box.t + h * 0.5f),
+            2.4f,
         )
-        seam += 52f
-        i++
     }
     if (cap) {
-        drawRect(
-            Brush.verticalGradient(listOf(Color(0xFFF5F5F4), Color(0xFFD6D3D1))),
-            Offset(box.l, box.t),
-            Size(w, 9f),
+        drawRoundRect(
+            Color.White.copy(alpha = 0.38f),
+            Offset(box.l + 5f, box.t + 4f),
+            Size((w - 10f).coerceAtLeast(1f), 6f),
+            CornerRadius(3f, 3f),
         )
     }
-    drawRect(Color(0xFF1C1917).copy(alpha = 0.35f), Offset(box.l, box.b - 7f), Size(w, 7f))
+    drawRoundRect(
+        Color(0xFF2E343A),
+        Offset(box.l, box.t),
+        Size(w, h),
+        radius,
+        style = Stroke(width = 4.2f, join = StrokeJoin.Round),
+    )
 }
 
-private fun DrawScope.drawConcreteCrate(cx: Float, cy: Float, side: Float) {
+private fun DrawScope.drawRockBoulder(cx: Float, cy: Float, side: Float) {
+    if (side < 6f) return
+    val half = side / 2f
     drawOval(
-        Color(0xFF292524).copy(alpha = 0.22f),
+        Color(0xFF2A3034).copy(alpha = 0.22f),
         Offset(cx - side * 0.38f, cy + side * 0.38f),
         Size(side * 0.76f, side * 0.16f),
     )
-    val half = side / 2f
-    drawConcreteBlock(RedBallAabb(cx - half, cy - half, cx + half, cy + half), true)
+    val radius = CornerRadius(side * 0.32f, side * 0.3f)
+    drawRoundRect(
+        Brush.radialGradient(
+            listOf(Color(0xFFF2F4F5), Color(0xFFC5CCD2), Color(0xFF8E979F), Color(0xFF5C656D)),
+            center = Offset(cx - side * 0.16f, cy - side * 0.18f),
+            radius = side * 0.9f,
+        ),
+        Offset(cx - half, cy - half),
+        Size(side, side),
+        radius,
+    )
+    drawLine(
+        Color(0xFF3E464C).copy(alpha = 0.75f),
+        Offset(cx - side * 0.08f, cy - side * 0.02f),
+        Offset(cx + side * 0.18f, cy + side * 0.2f),
+        side * 0.035f,
+        StrokeCap.Round,
+    )
+    drawLine(
+        Color(0xFF3E464C).copy(alpha = 0.55f),
+        Offset(cx + side * 0.02f, cy + side * 0.05f),
+        Offset(cx + side * 0.16f, cy + side * 0.22f),
+        side * 0.022f,
+        StrokeCap.Round,
+    )
+    drawOval(
+        Color.White.copy(alpha = 0.7f),
+        Offset(cx - side * 0.28f, cy - side * 0.3f),
+        Size(side * 0.26f, side * 0.14f),
+    )
+    drawRoundRect(
+        Color(0xFF2A3036),
+        Offset(cx - half, cy - half),
+        Size(side, side),
+        radius,
+        style = Stroke(width = side * 0.055f, join = StrokeJoin.Round),
+    )
 }
 
 private fun DrawScope.drawLadder(box: RedBallAabb) {
     val w = box.r - box.l
     val h = box.b - box.t
     if (w < 4f || h < 4f) return
-    val rail = (w * 0.18f).coerceIn(4f, 12f)
-    val wood = Brush.verticalGradient(
-        listOf(Color(0xFFF6E0B5), Color(0xFFD97706), Color(0xFF92400E)),
-        startY = box.t,
-        endY = box.b,
-    )
-    drawRoundRect(wood, Offset(box.l, box.t), Size(rail, h), CornerRadius(4f, 4f))
-    drawRoundRect(wood, Offset(box.r - rail, box.t), Size(rail, h), CornerRadius(4f, 4f))
-    drawRect(Color.White.copy(alpha = 0.35f), Offset(box.l + 1f, box.t), Size(rail * 0.28f, h))
-    val rungH = (h * 0.055f).coerceIn(3f, 8f)
-    var y = box.t + h * 0.14f
-    val step = (w * 0.9f).coerceIn(16f, 30f)
-    while (y < box.b - 8f) {
+    val rail = (w * 0.22f).coerceIn(5f, 14f)
+    fun railAt(x: Float) {
+        drawRoundRect(Color(0xFF4A2E16), Offset(x, box.t), Size(rail, h), CornerRadius(rail / 2f, rail / 2f))
         drawRoundRect(
-            Brush.horizontalGradient(listOf(Color(0xFFFDE68A), Color(0xFFB45309), Color(0xFF78350F))),
-            Offset(box.l + rail * 0.35f, y),
-            Size(w - rail * 0.7f, rungH),
+            Brush.horizontalGradient(
+                listOf(Color(0xFFF3D7A8), Color(0xFFD09A56), Color(0xFF8E5A2C)),
+                startX = x,
+                endX = x + rail,
+            ),
+            Offset(x + 1.4f, box.t + 1.4f),
+            Size((rail - 2.8f).coerceAtLeast(1f), (h - 2.8f).coerceAtLeast(1f)),
+            CornerRadius(rail / 2f, rail / 2f),
+        )
+    }
+    railAt(box.l)
+    railAt(box.r - rail)
+    val rungH = (w * 0.11f).coerceIn(4f, 9f)
+    var y = box.t + h * 0.12f
+    val step = (h * 0.18f).coerceIn(16f, 34f)
+    while (y < box.b - 8f) {
+        val left = box.l + rail * 0.45f
+        val rw = (w - rail * 0.9f).coerceAtLeast(4f)
+        drawRoundRect(Color(0xFF5C3416), Offset(left, y), Size(rw, rungH), CornerRadius(3f, 3f))
+        drawRoundRect(
+            Brush.verticalGradient(listOf(Color(0xFFF6E0B4), Color(0xFFC4843C)), startY = y, endY = y + rungH),
+            Offset(left, y),
+            Size(rw, rungH * 0.72f),
             CornerRadius(3f, 3f),
         )
         y += step
@@ -766,19 +1811,25 @@ private fun DrawScope.drawLadder(box: RedBallAabb) {
 private fun DrawScope.drawCollectStar(cx: Float, cy: Float, radius: Float, time: Float, stuck: Boolean) {
     val bob = sin(time * 3.2f + cx * 0.02f) * if (stuck) 1.5f else 4f
     val y = cy + bob
-    val pulse = 0.9f + 0.1f * sin(time * 5f + cy)
-    drawCircle(Color(0xFFFDE68A).copy(alpha = 0.35f), radius * 1.7f * pulse, Offset(cx, y))
-    val path = starPath(cx, y, radius * pulse, radius * 0.42f * pulse)
+    val pulse = 0.92f + 0.08f * sin(time * 5f + cy)
+    val r = radius * 1.28f * pulse
+    drawCircle(Color(0xFFFFE9A0).copy(alpha = 0.38f), r * 1.45f, Offset(cx, y))
+    val path = starPath(cx, y, r, r * 0.46f)
     drawPath(
         path,
         Brush.radialGradient(
-            listOf(Color(0xFFFFFBEB), Color(0xFFFBBF24), Color(0xFFD97706)),
-            center = Offset(cx - radius * 0.2f, y - radius * 0.25f),
-            radius = radius * 1.6f,
+            listOf(Color(0xFFFFFBE4), Color(0xFFFFD54A), Color(0xFFF0A31A), Color(0xFFE08A10)),
+            center = Offset(cx - r * 0.18f, y - r * 0.22f),
+            radius = r * 1.5f,
         ),
     )
-    drawPath(path, Color(0xFF92400E), style = Stroke(width = 2f))
-    drawCircle(Color.White.copy(alpha = 0.9f), radius * 0.16f, Offset(cx - radius * 0.22f, y - radius * 0.18f))
+    drawPath(path, Color(0xFF8A5A10), style = Stroke(width = r * 0.09f, join = StrokeJoin.Round))
+    drawCircle(Color.White.copy(alpha = 0.9f), r * 0.16f, Offset(cx - r * 0.18f, y - r * 0.22f))
+    val tw = 0.45f + 0.55f * sin(time * 4.2f + cx)
+    val sx = cx + r * 0.85f
+    val sy = y - r * 0.75f
+    drawLine(Color.White.copy(alpha = tw), Offset(sx - 5f, sy), Offset(sx + 5f, sy), 1.8f, StrokeCap.Round)
+    drawLine(Color.White.copy(alpha = tw), Offset(sx, sy - 5f), Offset(sx, sy + 5f), 1.8f, StrokeCap.Round)
 }
 
 private fun starPath(cx: Float, cy: Float, outer: Float, inner: Float): Path {
@@ -786,125 +1837,247 @@ private fun starPath(cx: Float, cy: Float, outer: Float, inner: Float): Path {
     val points = 5
     for (i in 0 until points * 2) {
         val radius = if (i % 2 == 0) outer else inner
-        val angle = (-PI / 2.0 + i * PI / points).toFloat()
-        val x = cx + cos(angle) * radius
-        val y = cy + sin(angle) * radius
-        if (i == 0) path.moveTo(x, y) else path.lineTo(x, y)
+        val ang = (-PI / 2.0 + i * PI / points).toFloat()
+        val px = cx + cos(ang) * radius
+        val py = cy + sin(ang) * radius
+        if (i == 0) path.moveTo(px, py) else path.lineTo(px, py)
     }
     path.close()
     return path
 }
 
 private fun DrawScope.drawMagnet(cx: Float, cy: Float, time: Float) {
-    val bob = sin(time * 2.4f + cx) * 3f
-    val y = cy + bob
-    drawCircle(Color(0xFF38BDF8).copy(alpha = 0.28f), 30f, Offset(cx, y))
-    drawArc(
-        Brush.horizontalGradient(listOf(Color(0xFFEF4444), Color(0xFFE7E5E4), Color(0xFF2563EB))),
-        startAngle = 200f,
-        sweepAngle = 140f,
-        useCenter = false,
-        topLeft = Offset(cx - 16f, y - 18f),
-        size = Size(32f, 32f),
-        style = Stroke(width = 8f, cap = StrokeCap.Butt),
+    val y = cy + sin(time * 2.4f + cx) * 3f
+    drawCircle(Color(0xFFFFD0D0).copy(alpha = 0.35f), 28f, Offset(cx, y - 2f))
+    val shoe = scratchPath
+    shoe.reset()
+    shoe.moveTo(cx - 16f, y + 16f)
+    shoe.lineTo(cx - 16f, y - 2f)
+    shoe.quadraticTo(cx - 16f, y - 22f, cx, y - 22f)
+    shoe.quadraticTo(cx + 16f, y - 22f, cx + 16f, y - 2f)
+    shoe.lineTo(cx + 16f, y + 16f)
+    shoe.lineTo(cx + 6f, y + 16f)
+    shoe.lineTo(cx + 6f, y - 2f)
+    shoe.quadraticTo(cx + 6f, y - 10f, cx, y - 10f)
+    shoe.quadraticTo(cx - 6f, y - 10f, cx - 6f, y - 2f)
+    shoe.lineTo(cx - 6f, y + 16f)
+    shoe.close()
+    drawPath(
+        shoe,
+        Brush.verticalGradient(
+            listOf(Color(0xFFFF6A6A), Color(0xFFE11D2E), Color(0xFFB01020)),
+            startY = y - 22f,
+            endY = y + 8f,
+        ),
     )
-    drawRoundRect(Color(0xFFEF4444), Offset(cx - 16f, y + 2f), Size(8f, 16f), CornerRadius(2f, 2f))
-    drawRoundRect(Color(0xFF2563EB), Offset(cx + 8f, y + 2f), Size(8f, 16f), CornerRadius(2f, 2f))
-    drawCircle(Color.White.copy(alpha = 0.7f), 3f, Offset(cx - 4f, y - 10f))
+    drawPath(shoe, Color(0xFF6E1018), style = Stroke(2.4f, join = StrokeJoin.Round))
+    drawRoundRect(Color(0xFF3E444A), Offset(cx - 18f, y + 8f), Size(14f, 12f), CornerRadius(2f, 2f))
+    drawRoundRect(Color(0xFF3E444A), Offset(cx + 4f, y + 8f), Size(14f, 12f), CornerRadius(2f, 2f))
+    drawRoundRect(
+        Brush.verticalGradient(listOf(Color(0xFFF7F8F8), Color(0xFFC5CCD1), Color(0xFF8A939A)), startY = y + 8f, endY = y + 20f),
+        Offset(cx - 16f, y + 9f),
+        Size(10f, 10f),
+        CornerRadius(2f, 2f),
+    )
+    drawRoundRect(
+        Brush.verticalGradient(listOf(Color(0xFFF7F8F8), Color(0xFFC5CCD1), Color(0xFF8A939A)), startY = y + 8f, endY = y + 20f),
+        Offset(cx + 6f, y + 9f),
+        Size(10f, 10f),
+        CornerRadius(2f, 2f),
+    )
+    drawLine(Color.White.copy(alpha = 0.75f), Offset(cx - 10f, y - 14f), Offset(cx - 2f, y - 16f), 2.4f, StrokeCap.Round)
 }
 
 private fun DrawScope.drawMagnetAura(x: Float, y: Float, time: Float) {
     val pulse = 0.92f + 0.08f * sin(time * 6f)
-    val radius = com.example.bible.games.RedBallSim.MAGNET_RADIUS * pulse
+    val radius = RedBallSim.MAGNET_RADIUS * pulse
+    drawCircle(Color(0xFFFF6B6B).copy(alpha = 0.1f), radius, Offset(x, y))
     drawCircle(
-        Color(0xFF38BDF8).copy(alpha = 0.1f),
-        radius,
-        Offset(x, y),
-    )
-    drawCircle(
-        Color(0xFF7DD3FC).copy(alpha = 0.45f),
+        Color(0xFFFF8A8A).copy(alpha = 0.55f),
         radius,
         Offset(x, y),
         style = Stroke(width = 3f),
     )
 }
 
+private val scratchPath = Path()
+private val scratchPathB = Path()
+
 private fun DrawScope.drawAngrySquare(cx: Float, cy: Float, side: Float, angle: Float) {
+    if (side < 8f) return
     val half = side / 2f
     drawOval(
-        Color(0xFF7F1D1D).copy(alpha = 0.22f),
-        Offset(cx - half * 0.8f, cy + half * 0.72f),
-        Size(side * 0.8f, side * 0.18f),
+        Color(0xFF1A1E22).copy(alpha = 0.22f),
+        Offset(cx - half * 0.85f, cy + half * 0.72f),
+        Size(side * 0.85f, side * 0.18f),
     )
     val deg = Math.toDegrees(angle.toDouble()).toFloat()
     withTransform({ rotate(deg, Offset(cx, cy)) }) {
+        val radius = CornerRadius(side * 0.2f, side * 0.2f)
         drawRoundRect(
             Brush.linearGradient(
-                listOf(Color(0xFFFDA4AF), Color(0xFFE11D48), Color(0xFF9F1239)),
+                listOf(Color(0xFF6A7078), Color(0xFF3A3E44), Color(0xFF23262B)),
                 start = Offset(cx - half, cy - half),
                 end = Offset(cx + half, cy + half),
             ),
             Offset(cx - half, cy - half),
             Size(side, side),
-            CornerRadius(side * 0.16f, side * 0.16f),
+            radius,
         )
+        drawOval(
+            Color.White.copy(alpha = 0.18f),
+            Offset(cx - half * 0.55f, cy - half * 0.72f),
+            Size(side * 0.28f, side * 0.12f),
+        )
+        val eyeW = side * 0.15f
+        val eyeH = side * 0.12f
+        val eyeY = cy - side * 0.08f
+        fun eye(ex: Float, look: Float) {
+            drawOval(Color(0xFFFFB703), Offset(ex - eyeW, eyeY - eyeH), Size(eyeW * 2f, eyeH * 2f))
+            drawOval(
+                Color(0xFF1A1208),
+                Offset(ex - eyeW, eyeY - eyeH),
+                Size(eyeW * 2f, eyeH * 2f),
+                style = Stroke(width = side * 0.035f),
+            )
+            val pr = eyeH * 0.55f
+            val px = ex + look * eyeW * 0.25f
+            drawCircle(Color(0xFF1A1208), pr, Offset(px, eyeY + eyeH * 0.08f))
+            drawCircle(Color.White, pr * 0.35f, Offset(px - pr * 0.35f, eyeY - eyeH * 0.15f))
+        }
+        eye(cx - side * 0.22f, -0.2f)
+        eye(cx + side * 0.22f, 0.15f)
+        drawLine(
+            Color(0xFF14171B),
+            Offset(cx - side * 0.4f, cy - side * 0.32f),
+            Offset(cx - side * 0.08f, cy - side * 0.2f),
+            side * 0.055f,
+            StrokeCap.Round,
+        )
+        drawLine(
+            Color(0xFF14171B),
+            Offset(cx + side * 0.4f, cy - side * 0.32f),
+            Offset(cx + side * 0.08f, cy - side * 0.2f),
+            side * 0.055f,
+            StrokeCap.Round,
+        )
+        val mouthW = side * 0.5f
+        val mouthH = side * 0.28f
+        val mouthTop = cy + side * 0.06f
         drawRoundRect(
-            Color(0xFF881337),
+            Color(0xFF14171B),
+            Offset(cx - mouthW / 2f, mouthTop),
+            Size(mouthW, mouthH),
+            CornerRadius(side * 0.05f, side * 0.05f),
+        )
+        val teeth = 4
+        val tw = mouthW / teeth
+        val tooth = scratchPath
+        for (i in 0 until teeth) {
+            val tx = cx - mouthW / 2f + i * tw
+            tooth.reset()
+            tooth.moveTo(tx + tw * 0.12f, mouthTop + 1.5f)
+            tooth.lineTo(tx + tw * 0.88f, mouthTop + 1.5f)
+            tooth.lineTo(tx + tw * 0.5f, mouthTop + mouthH * 0.48f)
+            tooth.close()
+            drawPath(tooth, Color(0xFFFFFBF5))
+            tooth.reset()
+            tooth.moveTo(tx + tw * 0.18f, mouthTop + mouthH - 1.5f)
+            tooth.lineTo(tx + tw * 0.82f, mouthTop + mouthH - 1.5f)
+            tooth.lineTo(tx + tw * 0.5f, mouthTop + mouthH * 0.55f)
+            tooth.close()
+            drawPath(tooth, Color(0xFFF4F1EA))
+        }
+        drawRoundRect(
+            Color(0xFF101216),
             Offset(cx - half, cy - half),
             Size(side, side),
-            CornerRadius(side * 0.16f, side * 0.16f),
-            style = Stroke(width = side * 0.045f),
+            radius,
+            style = Stroke(width = side * 0.07f, join = StrokeJoin.Round),
         )
-        val bolt = side * 0.06f
-        for (corner in listOf(
-            Offset(cx - half * 0.62f, cy - half * 0.62f),
-            Offset(cx + half * 0.62f, cy - half * 0.62f),
-            Offset(cx - half * 0.62f, cy + half * 0.62f),
-            Offset(cx + half * 0.62f, cy + half * 0.62f),
-        )) {
-            drawCircle(Color(0xFF44403C), bolt, corner)
-            drawCircle(Color.White.copy(alpha = 0.7f), bolt * 0.35f, corner + Offset(-bolt * 0.2f, -bolt * 0.2f))
-        }
     }
-    val eye = side * 0.1f
-    val eyeY = cy - side * 0.08f
-    drawCircle(Color(0xFF1C1917), eye, Offset(cx - side * 0.18f, eyeY))
-    drawCircle(Color(0xFF1C1917), eye, Offset(cx + side * 0.18f, eyeY))
-    drawCircle(Color.White, eye * 0.35f, Offset(cx - side * 0.15f, eyeY - eye * 0.3f))
-    drawCircle(Color.White, eye * 0.35f, Offset(cx + side * 0.21f, eyeY - eye * 0.3f))
-    drawLine(
-        Color(0xFF1C1917),
-        Offset(cx - side * 0.3f, cy - side * 0.26f),
-        Offset(cx - side * 0.06f, cy - side * 0.18f),
-        side * 0.045f,
-        StrokeCap.Round,
-    )
-    drawLine(
-        Color(0xFF1C1917),
-        Offset(cx + side * 0.3f, cy - side * 0.26f),
-        Offset(cx + side * 0.06f, cy - side * 0.18f),
-        side * 0.045f,
-        StrokeCap.Round,
-    )
-    drawArc(
-        Color(0xFF1C1917),
-        startAngle = 20f,
-        sweepAngle = 140f,
-        useCenter = false,
-        topLeft = Offset(cx - side * 0.16f, cy + side * 0.02f),
-        size = Size(side * 0.32f, side * 0.22f),
-        style = Stroke(width = side * 0.045f, cap = StrokeCap.Round),
-    )
 }
 
 private fun DrawScope.drawParticle(particle: RedBallParticle) {
     val t = (particle.life / particle.maxLife).coerceIn(0f, 1f)
-    val color = when (particle.kind) {
-        RedBallParticle.BOOM -> Color(0xFFF97316)
-        RedBallParticle.SPARK -> Color(0xFFFDE68A)
-        else -> Color(0xFFD6D3D1)
+    val c = Offset(particle.x, particle.y)
+    val rad = particle.size * (0.55f + 0.55f * t)
+    when (particle.kind) {
+        RedBallParticle.BOOM -> {
+            val shard = ((particle.size * 100f).toInt() and 1) == 0
+            if (shard) {
+                val path = scratchPathB
+                path.reset()
+                path.moveTo(c.x + rad, c.y)
+                path.lineTo(c.x - rad * 0.45f, c.y - rad * 0.6f)
+                path.lineTo(c.x - rad * 0.15f, c.y + rad * 0.55f)
+                path.close()
+                drawPath(path, Color(0xFF2E3238).copy(alpha = t))
+                drawPath(path, Color(0xFFFFC14A).copy(alpha = t), style = Stroke(1.6f))
+            } else {
+                drawCircle(Color(0xFF7A2E0A).copy(alpha = t), rad, c)
+                drawCircle(Color(0xFFFF8A1E).copy(alpha = t), rad * 0.78f, c)
+                drawCircle(Color(0xFFFFE08A).copy(alpha = t), rad * 0.38f, c)
+            }
+        }
+        RedBallParticle.SPARK -> {
+            val path = starPath(c.x, c.y, rad * 1.3f, rad * 0.55f)
+            drawPath(path, Color(0xFFFFE08A).copy(alpha = t))
+            drawPath(path, Color(0xFF8A5A10).copy(alpha = t), style = Stroke(1.2f))
+        }
+        else -> drawCircle(Color(0xFF8A6240).copy(alpha = 0.4f * t), rad, c)
     }
-    drawCircle(color.copy(alpha = 0.85f * t), particle.size * (0.6f + 0.5f * t), Offset(particle.x, particle.y))
+}
+
+internal fun DrawScope.drawHudHeart(filled: Boolean) {
+    val w = size.width
+    val h = size.height
+    val path = heartPath(w, h)
+    drawPath(path, Color.White, style = Stroke(width = w * 0.1f, join = StrokeJoin.Round))
+    if (filled) {
+        drawPath(
+            path,
+            Brush.verticalGradient(
+                listOf(Color(0xFFFF8B96), Color(0xFFE31B36), Color(0xFFB10E28)),
+                startY = h * 0.12f,
+                endY = h * 0.92f,
+            ),
+        )
+        drawOval(Color.White.copy(alpha = 0.75f), Offset(w * 0.24f, h * 0.22f), Size(w * 0.16f, h * 0.11f))
+    } else {
+        drawPath(path, Color(0xFFE4E8EC))
+    }
+    drawPath(path, Color.White, style = Stroke(width = w * 0.045f, join = StrokeJoin.Round))
+}
+
+internal fun DrawScope.drawHudStarMedal(magnetOn: Boolean) {
+    val c = Offset(size.width / 2f, size.height / 2f)
+    val r = size.minDimension / 2f
+    drawCircle(Color(0xFF8A5A12), r, c)
+    drawCircle(
+        Brush.radialGradient(
+            listOf(Color(0xFFFFF6C4), Color(0xFFFFD24A), Color(0xFFE8A317)),
+            center = c - Offset(r * 0.22f, r * 0.24f),
+            radius = r,
+        ),
+        r * 0.84f,
+        c,
+    )
+    val star = starPath(c.x, c.y + r * 0.02f, r * 0.58f, r * 0.26f)
+    drawPath(star, Color(0xFFFFF8DC))
+    drawPath(star, Color(0xFFC47A10), style = Stroke(width = r * 0.07f, join = StrokeJoin.Round))
+    if (magnetOn) {
+        drawCircle(Color(0xFF7DD3FC), r * 0.92f, c, style = Stroke(width = r * 0.12f))
+    }
+}
+
+private fun heartPath(w: Float, h: Float): Path {
+    val path = Path()
+    path.moveTo(w * 0.5f, h * 0.88f)
+    path.cubicTo(w * 0.02f, h * 0.52f, w * 0.12f, h * 0.14f, w * 0.5f, h * 0.34f)
+    path.cubicTo(w * 0.88f, h * 0.14f, w * 0.98f, h * 0.52f, w * 0.5f, h * 0.88f)
+    path.close()
+    return path
 }
 
 private fun RedBallPiece.box(cell: Float) = RedBallAabb(
