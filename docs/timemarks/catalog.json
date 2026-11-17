@@ -2584,6 +2584,166 @@
       "file": "projects/web_john_9.json"
     },
     {
+      "id": "gh_web_mark_1",
+      "translationCode": "WEB",
+      "bookId": "mark",
+      "chapter": 1,
+      "title": "От Марка 1 · WEB (англ.)",
+      "cueCount": 45,
+      "narratorId": "web",
+      "file": "projects/web_mark_1.json"
+    },
+    {
+      "id": "gh_web_mark_10",
+      "translationCode": "WEB",
+      "bookId": "mark",
+      "chapter": 10,
+      "title": "От Марка 10 · WEB (англ.)",
+      "cueCount": 52,
+      "narratorId": "web",
+      "file": "projects/web_mark_10.json"
+    },
+    {
+      "id": "gh_web_mark_11",
+      "translationCode": "WEB",
+      "bookId": "mark",
+      "chapter": 11,
+      "title": "От Марка 11 · WEB (англ.)",
+      "cueCount": 33,
+      "narratorId": "web",
+      "file": "projects/web_mark_11.json"
+    },
+    {
+      "id": "gh_web_mark_12",
+      "translationCode": "WEB",
+      "bookId": "mark",
+      "chapter": 12,
+      "title": "От Марка 12 · WEB (англ.)",
+      "cueCount": 44,
+      "narratorId": "web",
+      "file": "projects/web_mark_12.json"
+    },
+    {
+      "id": "gh_web_mark_13",
+      "translationCode": "WEB",
+      "bookId": "mark",
+      "chapter": 13,
+      "title": "От Марка 13 · WEB (англ.)",
+      "cueCount": 37,
+      "narratorId": "web",
+      "file": "projects/web_mark_13.json"
+    },
+    {
+      "id": "gh_web_mark_14",
+      "translationCode": "WEB",
+      "bookId": "mark",
+      "chapter": 14,
+      "title": "От Марка 14 · WEB (англ.)",
+      "cueCount": 72,
+      "narratorId": "web",
+      "file": "projects/web_mark_14.json"
+    },
+    {
+      "id": "gh_web_mark_15",
+      "translationCode": "WEB",
+      "bookId": "mark",
+      "chapter": 15,
+      "title": "От Марка 15 · WEB (англ.)",
+      "cueCount": 47,
+      "narratorId": "web",
+      "file": "projects/web_mark_15.json"
+    },
+    {
+      "id": "gh_web_mark_16",
+      "translationCode": "WEB",
+      "bookId": "mark",
+      "chapter": 16,
+      "title": "От Марка 16 · WEB (англ.)",
+      "cueCount": 20,
+      "narratorId": "web",
+      "file": "projects/web_mark_16.json"
+    },
+    {
+      "id": "gh_web_mark_2",
+      "translationCode": "WEB",
+      "bookId": "mark",
+      "chapter": 2,
+      "title": "От Марка 2 · WEB (англ.)",
+      "cueCount": 28,
+      "narratorId": "web",
+      "file": "projects/web_mark_2.json"
+    },
+    {
+      "id": "gh_web_mark_3",
+      "translationCode": "WEB",
+      "bookId": "mark",
+      "chapter": 3,
+      "title": "От Марка 3 · WEB (англ.)",
+      "cueCount": 35,
+      "narratorId": "web",
+      "file": "projects/web_mark_3.json"
+    },
+    {
+      "id": "gh_web_mark_4",
+      "translationCode": "WEB",
+      "bookId": "mark",
+      "chapter": 4,
+      "title": "От Марка 4 · WEB (англ.)",
+      "cueCount": 41,
+      "narratorId": "web",
+      "file": "projects/web_mark_4.json"
+    },
+    {
+      "id": "gh_web_mark_5",
+      "translationCode": "WEB",
+      "bookId": "mark",
+      "chapter": 5,
+      "title": "От Марка 5 · WEB (англ.)",
+      "cueCount": 43,
+      "narratorId": "web",
+      "file": "projects/web_mark_5.json"
+    },
+    {
+      "id": "gh_web_mark_6",
+      "translationCode": "WEB",
+      "bookId": "mark",
+      "chapter": 6,
+      "title": "От Марка 6 · WEB (англ.)",
+      "cueCount": 56,
+      "narratorId": "web",
+      "file": "projects/web_mark_6.json"
+    },
+    {
+      "id": "gh_web_mark_7",
+      "translationCode": "WEB",
+      "bookId": "mark",
+      "chapter": 7,
+      "title": "От Марка 7 · WEB (англ.)",
+      "cueCount": 37,
+      "narratorId": "web",
+      "file": "projects/web_mark_7.json"
+    },
+    {
+      "id": "gh_web_mark_8",
+      "translationCode": "WEB",
+      "bookId": "mark",
+      "chapter": 8,
+      "title": "От Марка 8 · WEB (англ.)",
+      "cueCount": 38,
+      "narratorId": "web",
+      "file": "projects/web_mark_8.json"
+    },
+    {
+      "id": "gh_web_mark_9",
+      "translationCode": "WEB",
+      "bookId": "mark",
+      "chapter": 9,
+      "title": "От Марка 9 · WEB (англ.)",
+      "cueCount": 50,
+      "narratorId": "web",
+      "file": "projects/web_mark_9.json"
+    },
+    {
       "id": "gh_web_matthew_1",
       "translationCode": "WEB",
       "bookId": "matthew",

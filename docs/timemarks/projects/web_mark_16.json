@@ -1,0 +1,91 @@
+{
+  "id": "gh_web_mark_16",
+  "translationCode": "WEB",
+  "bookId": "mark",
+  "chapter": 16,
+  "title": "От Марка 16 · WEB (англ.)",
+  "narratorId": "web",
+  "audioFileName": "41_16.mp3",
+  "cues": [
+    {
+      "timeMs": 3623,
+      "verseStart": 1
+    },
+    {
+      "timeMs": 12529,
+      "verseStart": 2
+    },
+    {
+      "timeMs": 18153,
+      "verseStart": 3
+    },
+    {
+      "timeMs": 24558,
+      "verseStart": 4
+    },
+    {
+      "timeMs": 30983,
+      "verseStart": 5
+    },
+    {
+      "timeMs": 39589,
+      "verseStart": 6
+    },
+    {
+      "timeMs": 51638,
+      "verseStart": 7
+    },
+    {
+      "timeMs": 61866,
+      "verseStart": 8
+    },
+    {
+      "timeMs": 72053,
+      "verseStart": 9
+    },
+    {
+      "timeMs": 80860,
+      "verseStart": 10
+    },
+    {
+      "timeMs": 84963,
+      "verseStart": 11
+    },
+    {
+      "timeMs": 91027,
+      "verseStart": 12
+    },
+    {
+      "timeMs": 96031,
+      "verseStart": 13
+    },
+    {
+      "timeMs": 101235,
+      "verseStart": 14
+    },
+    {
+      "timeMs": 111682,
+      "verseStart": 15
+    },
+    {
+      "timeMs": 119128,
+      "verseStart": 16
+    },
+    {
+      "timeMs": 125973,
+      "verseStart": 17
+    },
+    {
+      "timeMs": 135120,
+      "verseStart": 18
+    },
+    {
+      "timeMs": 146368,
+      "verseStart": 19
+    },
+    {
+      "timeMs": 154014,
+      "verseStart": 20
+    }
+  ]
+}

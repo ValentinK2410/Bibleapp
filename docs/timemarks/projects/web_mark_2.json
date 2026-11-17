@@ -1,0 +1,123 @@
+{
+  "id": "gh_web_mark_2",
+  "translationCode": "WEB",
+  "bookId": "mark",
+  "chapter": 2,
+  "title": "От Марка 2 · WEB (англ.)",
+  "narratorId": "web",
+  "audioFileName": "41_02.mp3",
+  "cues": [
+    {
+      "timeMs": 2081,
+      "verseStart": 1
+    },
+    {
+      "timeMs": 7085,
+      "verseStart": 2
+    },
+    {
+      "timeMs": 16110,
+      "verseStart": 3
+    },
+    {
+      "timeMs": 20793,
+      "verseStart": 4
+    },
+    {
+      "timeMs": 31020,
+      "verseStart": 5
+    },
+    {
+      "timeMs": 38124,
+      "verseStart": 6
+    },
+    {
+      "timeMs": 42347,
+      "verseStart": 7
+    },
+    {
+      "timeMs": 47911,
+      "verseStart": 8
+    },
+    {
+      "timeMs": 56216,
+      "verseStart": 9
+    },
+    {
+      "timeMs": 65342,
+      "verseStart": 10
+    },
+    {
+      "timeMs": 72286,
+      "verseStart": 11
+    },
+    {
+      "timeMs": 78650,
+      "verseStart": 12
+    },
+    {
+      "timeMs": 90478,
+      "verseStart": 13
+    },
+    {
+      "timeMs": 96762,
+      "verseStart": 14
+    },
+    {
+      "timeMs": 108049,
+      "verseStart": 15
+    },
+    {
+      "timeMs": 117816,
+      "verseStart": 16
+    },
+    {
+      "timeMs": 128402,
+      "verseStart": 17
+    },
+    {
+      "timeMs": 141211,
+      "verseStart": 18
+    },
+    {
+      "timeMs": 152478,
+      "verseStart": 19
+    },
+    {
+      "timeMs": 162324,
+      "verseStart": 20
+    },
+    {
+      "timeMs": 169689,
+      "verseStart": 21
+    },
+    {
+      "timeMs": 180256,
+      "verseStart": 22
+    },
+    {
+      "timeMs": 193424,
+      "verseStart": 23
+    },
+    {
+      "timeMs": 201109,
+      "verseStart": 24
+    },
+    {
+      "timeMs": 208133,
+      "verseStart": 25
+    },
+    {
+      "timeMs": 215798,
+      "verseStart": 26
+    },
+    {
+      "timeMs": 227726,
+      "verseStart": 27
+    },
+    {
+      "timeMs": 233570,
+      "verseStart": 28
+    }
+  ]
+}

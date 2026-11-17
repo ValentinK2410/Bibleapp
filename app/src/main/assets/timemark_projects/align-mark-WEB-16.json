@@ -1,0 +1,111 @@
+{
+  "id": "align-mark-WEB-16",
+  "translationCode": "WEB",
+  "bookId": "mark",
+  "chapter": 16,
+  "title": "От Марка 16 · WEB (англ.)",
+  "audioFilePath": "/data/user/0/com.example.bible.sqlite/files/bible_audio/web/41_16.mp3",
+  "updatedAt": 1794873600000,
+  "cues": [
+    {
+      "timeMs": 3623,
+      "verseStart": 1,
+      "attachments": []
+    },
+    {
+      "timeMs": 12529,
+      "verseStart": 2,
+      "attachments": []
+    },
+    {
+      "timeMs": 18153,
+      "verseStart": 3,
+      "attachments": []
+    },
+    {
+      "timeMs": 24558,
+      "verseStart": 4,
+      "attachments": []
+    },
+    {
+      "timeMs": 30983,
+      "verseStart": 5,
+      "attachments": []
+    },
+    {
+      "timeMs": 39589,
+      "verseStart": 6,
+      "attachments": []
+    },
+    {
+      "timeMs": 51638,
+      "verseStart": 7,
+      "attachments": []
+    },
+    {
+      "timeMs": 61866,
+      "verseStart": 8,
+      "attachments": []
+    },
+    {
+      "timeMs": 72053,
+      "verseStart": 9,
+      "attachments": []
+    },
+    {
+      "timeMs": 80860,
+      "verseStart": 10,
+      "attachments": []
+    },
+    {
+      "timeMs": 84963,
+      "verseStart": 11,
+      "attachments": []
+    },
+    {
+      "timeMs": 91027,
+      "verseStart": 12,
+      "attachments": []
+    },
+    {
+      "timeMs": 96031,
+      "verseStart": 13,
+      "attachments": []
+    },
+    {
+      "timeMs": 101235,
+      "verseStart": 14,
+      "attachments": []
+    },
+    {
+      "timeMs": 111682,
+      "verseStart": 15,
+      "attachments": []
+    },
+    {
+      "timeMs": 119128,
+      "verseStart": 16,
+      "attachments": []
+    },
+    {
+      "timeMs": 125973,
+      "verseStart": 17,
+      "attachments": []
+    },
+    {
+      "timeMs": 135120,
+      "verseStart": 18,
+      "attachments": []
+    },
+    {
+      "timeMs": 146368,
+      "verseStart": 19,
+      "attachments": []
+    },
+    {
+      "timeMs": 154014,
+      "verseStart": 20,
+      "attachments": []
+    }
+  ]
+}
