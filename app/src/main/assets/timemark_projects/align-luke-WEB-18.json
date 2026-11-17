@@ -1,0 +1,226 @@
+{
+  "id": "align-luke-WEB-18",
+  "translationCode": "WEB",
+  "bookId": "luke",
+  "chapter": 18,
+  "title": "От Луки 18 · WEB (англ.)",
+  "audioFilePath": "/data/user/0/com.example.bible.sqlite/files/bible_audio/web/42_18.mp3",
+  "updatedAt": 1794873600000,
+  "cues": [
+    {
+      "timeMs": 3783,
+      "verseStart": 1,
+      "attachments": []
+    },
+    {
+      "timeMs": 9567,
+      "verseStart": 2,
+      "attachments": []
+    },
+    {
+      "timeMs": 15110,
+      "verseStart": 3,
+      "attachments": []
+    },
+    {
+      "timeMs": 20334,
+      "verseStart": 4,
+      "attachments": []
+    },
+    {
+      "timeMs": 26918,
+      "verseStart": 5,
+      "attachments": []
+    },
+    {
+      "timeMs": 32983,
+      "verseStart": 6,
+      "attachments": []
+    },
+    {
+      "timeMs": 37506,
+      "verseStart": 7,
+      "attachments": []
+    },
+    {
+      "timeMs": 44571,
+      "verseStart": 8,
+      "attachments": []
+    },
+    {
+      "timeMs": 53817,
+      "verseStart": 9,
+      "attachments": []
+    },
+    {
+      "timeMs": 60421,
+      "verseStart": 10,
+      "attachments": []
+    },
+    {
+      "timeMs": 65205,
+      "verseStart": 11,
+      "attachments": []
+    },
+    {
+      "timeMs": 77533,
+      "verseStart": 12,
+      "attachments": []
+    },
+    {
+      "timeMs": 82697,
+      "verseStart": 13,
+      "attachments": []
+    },
+    {
+      "timeMs": 95245,
+      "verseStart": 14,
+      "attachments": []
+    },
+    {
+      "timeMs": 107214,
+      "verseStart": 15,
+      "attachments": []
+    },
+    {
+      "timeMs": 113058,
+      "verseStart": 16,
+      "attachments": []
+    },
+    {
+      "timeMs": 121363,
+      "verseStart": 17,
+      "attachments": []
+    },
+    {
+      "timeMs": 130289,
+      "verseStart": 18,
+      "attachments": []
+    },
+    {
+      "timeMs": 135833,
+      "verseStart": 19,
+      "attachments": []
+    },
+    {
+      "timeMs": 142838,
+      "verseStart": 20,
+      "attachments": []
+    },
+    {
+      "timeMs": 152625,
+      "verseStart": 21,
+      "attachments": []
+    },
+    {
+      "timeMs": 156888,
+      "verseStart": 22,
+      "attachments": []
+    },
+    {
+      "timeMs": 170957,
+      "verseStart": 23,
+      "attachments": []
+    },
+    {
+      "timeMs": 175280,
+      "verseStart": 24,
+      "attachments": []
+    },
+    {
+      "timeMs": 183005,
+      "verseStart": 25,
+      "attachments": []
+    },
+    {
+      "timeMs": 190431,
+      "verseStart": 26,
+      "attachments": []
+    },
+    {
+      "timeMs": 193973,
+      "verseStart": 27,
+      "attachments": []
+    },
+    {
+      "timeMs": 200217,
+      "verseStart": 28,
+      "attachments": []
+    },
+    {
+      "timeMs": 204040,
+      "verseStart": 29,
+      "attachments": []
+    },
+    {
+      "timeMs": 213626,
+      "verseStart": 30,
+      "attachments": []
+    },
+    {
+      "timeMs": 222693,
+      "verseStart": 31,
+      "attachments": []
+    },
+    {
+      "timeMs": 233100,
+      "verseStart": 32,
+      "attachments": []
+    },
+    {
+      "timeMs": 239324,
+      "verseStart": 33,
+      "attachments": []
+    },
+    {
+      "timeMs": 245188,
+      "verseStart": 34,
+      "attachments": []
+    },
+    {
+      "timeMs": 253214,
+      "verseStart": 35,
+      "attachments": []
+    },
+    {
+      "timeMs": 259518,
+      "verseStart": 36,
+      "attachments": []
+    },
+    {
+      "timeMs": 262800,
+      "verseStart": 37,
+      "attachments": []
+    },
+    {
+      "timeMs": 266142,
+      "verseStart": 38,
+      "attachments": []
+    },
+    {
+      "timeMs": 270866,
+      "verseStart": 39,
+      "attachments": []
+    },
+    {
+      "timeMs": 279091,
+      "verseStart": 40,
+      "attachments": []
+    },
+    {
+      "timeMs": 283915,
+      "verseStart": 41,
+      "attachments": []
+    },
+    {
+      "timeMs": 293261,
+      "verseStart": 42,
+      "attachments": []
+    },
+    {
+      "timeMs": 299926,
+      "verseStart": 43,
+      "attachments": []
+    }
+  ]
+}

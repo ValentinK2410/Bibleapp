@@ -2844,6 +2844,246 @@
       "file": "projects/web_john_9.json"
     },
     {
+      "id": "gh_web_luke_1",
+      "translationCode": "WEB",
+      "bookId": "luke",
+      "chapter": 1,
+      "title": "От Луки 1 · WEB (англ.)",
+      "cueCount": 80,
+      "narratorId": "web",
+      "file": "projects/web_luke_1.json"
+    },
+    {
+      "id": "gh_web_luke_10",
+      "translationCode": "WEB",
+      "bookId": "luke",
+      "chapter": 10,
+      "title": "От Луки 10 · WEB (англ.)",
+      "cueCount": 42,
+      "narratorId": "web",
+      "file": "projects/web_luke_10.json"
+    },
+    {
+      "id": "gh_web_luke_11",
+      "translationCode": "WEB",
+      "bookId": "luke",
+      "chapter": 11,
+      "title": "От Луки 11 · WEB (англ.)",
+      "cueCount": 54,
+      "narratorId": "web",
+      "file": "projects/web_luke_11.json"
+    },
+    {
+      "id": "gh_web_luke_12",
+      "translationCode": "WEB",
+      "bookId": "luke",
+      "chapter": 12,
+      "title": "От Луки 12 · WEB (англ.)",
+      "cueCount": 59,
+      "narratorId": "web",
+      "file": "projects/web_luke_12.json"
+    },
+    {
+      "id": "gh_web_luke_13",
+      "translationCode": "WEB",
+      "bookId": "luke",
+      "chapter": 13,
+      "title": "От Луки 13 · WEB (англ.)",
+      "cueCount": 35,
+      "narratorId": "web",
+      "file": "projects/web_luke_13.json"
+    },
+    {
+      "id": "gh_web_luke_14",
+      "translationCode": "WEB",
+      "bookId": "luke",
+      "chapter": 14,
+      "title": "От Луки 14 · WEB (англ.)",
+      "cueCount": 35,
+      "narratorId": "web",
+      "file": "projects/web_luke_14.json"
+    },
+    {
+      "id": "gh_web_luke_15",
+      "translationCode": "WEB",
+      "bookId": "luke",
+      "chapter": 15,
+      "title": "От Луки 15 · WEB (англ.)",
+      "cueCount": 32,
+      "narratorId": "web",
+      "file": "projects/web_luke_15.json"
+    },
+    {
+      "id": "gh_web_luke_16",
+      "translationCode": "WEB",
+      "bookId": "luke",
+      "chapter": 16,
+      "title": "От Луки 16 · WEB (англ.)",
+      "cueCount": 31,
+      "narratorId": "web",
+      "file": "projects/web_luke_16.json"
+    },
+    {
+      "id": "gh_web_luke_17",
+      "translationCode": "WEB",
+      "bookId": "luke",
+      "chapter": 17,
+      "title": "От Луки 17 · WEB (англ.)",
+      "cueCount": 36,
+      "narratorId": "web",
+      "file": "projects/web_luke_17.json"
+    },
+    {
+      "id": "gh_web_luke_18",
+      "translationCode": "WEB",
+      "bookId": "luke",
+      "chapter": 18,
+      "title": "От Луки 18 · WEB (англ.)",
+      "cueCount": 43,
+      "narratorId": "web",
+      "file": "projects/web_luke_18.json"
+    },
+    {
+      "id": "gh_web_luke_19",
+      "translationCode": "WEB",
+      "bookId": "luke",
+      "chapter": 19,
+      "title": "От Луки 19 · WEB (англ.)",
+      "cueCount": 48,
+      "narratorId": "web",
+      "file": "projects/web_luke_19.json"
+    },
+    {
+      "id": "gh_web_luke_2",
+      "translationCode": "WEB",
+      "bookId": "luke",
+      "chapter": 2,
+      "title": "От Луки 2 · WEB (англ.)",
+      "cueCount": 52,
+      "narratorId": "web",
+      "file": "projects/web_luke_2.json"
+    },
+    {
+      "id": "gh_web_luke_20",
+      "translationCode": "WEB",
+      "bookId": "luke",
+      "chapter": 20,
+      "title": "От Луки 20 · WEB (англ.)",
+      "cueCount": 47,
+      "narratorId": "web",
+      "file": "projects/web_luke_20.json"
+    },
+    {
+      "id": "gh_web_luke_21",
+      "translationCode": "WEB",
+      "bookId": "luke",
+      "chapter": 21,
+      "title": "От Луки 21 · WEB (англ.)",
+      "cueCount": 38,
+      "narratorId": "web",
+      "file": "projects/web_luke_21.json"
+    },
+    {
+      "id": "gh_web_luke_22",
+      "translationCode": "WEB",
+      "bookId": "luke",
+      "chapter": 22,
+      "title": "От Луки 22 · WEB (англ.)",
+      "cueCount": 71,
+      "narratorId": "web",
+      "file": "projects/web_luke_22.json"
+    },
+    {
+      "id": "gh_web_luke_23",
+      "translationCode": "WEB",
+      "bookId": "luke",
+      "chapter": 23,
+      "title": "От Луки 23 · WEB (англ.)",
+      "cueCount": 56,
+      "narratorId": "web",
+      "file": "projects/web_luke_23.json"
+    },
+    {
+      "id": "gh_web_luke_24",
+      "translationCode": "WEB",
+      "bookId": "luke",
+      "chapter": 24,
+      "title": "От Луки 24 · WEB (англ.)",
+      "cueCount": 53,
+      "narratorId": "web",
+      "file": "projects/web_luke_24.json"
+    },
+    {
+      "id": "gh_web_luke_3",
+      "translationCode": "WEB",
+      "bookId": "luke",
+      "chapter": 3,
+      "title": "От Луки 3 · WEB (англ.)",
+      "cueCount": 38,
+      "narratorId": "web",
+      "file": "projects/web_luke_3.json"
+    },
+    {
+      "id": "gh_web_luke_4",
+      "translationCode": "WEB",
+      "bookId": "luke",
+      "chapter": 4,
+      "title": "От Луки 4 · WEB (англ.)",
+      "cueCount": 44,
+      "narratorId": "web",
+      "file": "projects/web_luke_4.json"
+    },
+    {
+      "id": "gh_web_luke_5",
+      "translationCode": "WEB",
+      "bookId": "luke",
+      "chapter": 5,
+      "title": "От Луки 5 · WEB (англ.)",
+      "cueCount": 39,
+      "narratorId": "web",
+      "file": "projects/web_luke_5.json"
+    },
+    {
+      "id": "gh_web_luke_6",
+      "translationCode": "WEB",
+      "bookId": "luke",
+      "chapter": 6,
+      "title": "От Луки 6 · WEB (англ.)",
+      "cueCount": 49,
+      "narratorId": "web",
+      "file": "projects/web_luke_6.json"
+    },
+    {
+      "id": "gh_web_luke_7",
+      "translationCode": "WEB",
+      "bookId": "luke",
+      "chapter": 7,
+      "title": "От Луки 7 · WEB (англ.)",
+      "cueCount": 50,
+      "narratorId": "web",
+      "file": "projects/web_luke_7.json"
+    },
+    {
+      "id": "gh_web_luke_8",
+      "translationCode": "WEB",
+      "bookId": "luke",
+      "chapter": 8,
+      "title": "От Луки 8 · WEB (англ.)",
+      "cueCount": 56,
+      "narratorId": "web",
+      "file": "projects/web_luke_8.json"
+    },
+    {
+      "id": "gh_web_luke_9",
+      "translationCode": "WEB",
+      "bookId": "luke",
+      "chapter": 9,
+      "title": "От Луки 9 · WEB (англ.)",
+      "cueCount": 62,
+      "narratorId": "web",
+      "file": "projects/web_luke_9.json"
+    },
+    {
       "id": "gh_web_mark_1",
       "translationCode": "WEB",
       "bookId": "mark",

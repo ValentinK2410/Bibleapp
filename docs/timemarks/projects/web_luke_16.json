@@ -1,0 +1,135 @@
+{
+  "id": "gh_web_luke_16",
+  "translationCode": "WEB",
+  "bookId": "luke",
+  "chapter": 16,
+  "title": "От Луки 16 · WEB (англ.)",
+  "narratorId": "web",
+  "audioFileName": "42_16.mp3",
+  "cues": [
+    {
+      "timeMs": 3602,
+      "verseStart": 1
+    },
+    {
+      "timeMs": 11888,
+      "verseStart": 2
+    },
+    {
+      "timeMs": 20033,
+      "verseStart": 3
+    },
+    {
+      "timeMs": 29959,
+      "verseStart": 4
+    },
+    {
+      "timeMs": 36063,
+      "verseStart": 5
+    },
+    {
+      "timeMs": 42227,
+      "verseStart": 6
+    },
+    {
+      "timeMs": 48972,
+      "verseStart": 7
+    },
+    {
+      "timeMs": 58098,
+      "verseStart": 8
+    },
+    {
+      "timeMs": 68004,
+      "verseStart": 9
+    },
+    {
+      "timeMs": 79432,
+      "verseStart": 10
+    },
+    {
+      "timeMs": 87777,
+      "verseStart": 11
+    },
+    {
+      "timeMs": 94922,
+      "verseStart": 12
+    },
+    {
+      "timeMs": 100966,
+      "verseStart": 13
+    },
+    {
+      "timeMs": 114294,
+      "verseStart": 14
+    },
+    {
+      "timeMs": 119277,
+      "verseStart": 15
+    },
+    {
+      "timeMs": 130965,
+      "verseStart": 16
+    },
+    {
+      "timeMs": 138950,
+      "verseStart": 17
+    },
+    {
+      "timeMs": 144654,
+      "verseStart": 18
+    },
+    {
+      "timeMs": 155201,
+      "verseStart": 19
+    },
+    {
+      "timeMs": 161625,
+      "verseStart": 20
+    },
+    {
+      "timeMs": 166488,
+      "verseStart": 21
+    },
+    {
+      "timeMs": 174533,
+      "verseStart": 22
+    },
+    {
+      "timeMs": 182538,
+      "verseStart": 23
+    },
+    {
+      "timeMs": 190283,
+      "verseStart": 24
+    },
+    {
+      "timeMs": 200750,
+      "verseStart": 25
+    },
+    {
+      "timeMs": 214419,
+      "verseStart": 26
+    },
+    {
+      "timeMs": 225947,
+      "verseStart": 27
+    },
+    {
+      "timeMs": 231230,
+      "verseStart": 28
+    },
+    {
+      "timeMs": 238635,
+      "verseStart": 29
+    },
+    {
+      "timeMs": 244058,
+      "verseStart": 30
+    },
+    {
+      "timeMs": 250342,
+      "verseStart": 31
+    }
+  ]
+}

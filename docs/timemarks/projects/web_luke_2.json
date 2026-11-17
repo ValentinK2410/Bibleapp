@@ -1,0 +1,219 @@
+{
+  "id": "gh_web_luke_2",
+  "translationCode": "WEB",
+  "bookId": "luke",
+  "chapter": 2,
+  "title": "От Луки 2 · WEB (англ.)",
+  "narratorId": "web",
+  "audioFileName": "42_02.mp3",
+  "cues": [
+    {
+      "timeMs": 2001,
+      "verseStart": 1
+    },
+    {
+      "timeMs": 8866,
+      "verseStart": 2
+    },
+    {
+      "timeMs": 13829,
+      "verseStart": 3
+    },
+    {
+      "timeMs": 17531,
+      "verseStart": 4
+    },
+    {
+      "timeMs": 28098,
+      "verseStart": 5
+    },
+    {
+      "timeMs": 33862,
+      "verseStart": 6
+    },
+    {
+      "timeMs": 40126,
+      "verseStart": 7
+    },
+    {
+      "timeMs": 50653,
+      "verseStart": 8
+    },
+    {
+      "timeMs": 57557,
+      "verseStart": 9
+    },
+    {
+      "timeMs": 66243,
+      "verseStart": 10
+    },
+    {
+      "timeMs": 75048,
+      "verseStart": 11
+    },
+    {
+      "timeMs": 81312,
+      "verseStart": 12
+    },
+    {
+      "timeMs": 89397,
+      "verseStart": 13
+    },
+    {
+      "timeMs": 95401,
+      "verseStart": 14
+    },
+    {
+      "timeMs": 103286,
+      "verseStart": 15
+    },
+    {
+      "timeMs": 118036,
+      "verseStart": 16
+    },
+    {
+      "timeMs": 125481,
+      "verseStart": 17
+    },
+    {
+      "timeMs": 131464,
+      "verseStart": 18
+    },
+    {
+      "timeMs": 137088,
+      "verseStart": 19
+    },
+    {
+      "timeMs": 142752,
+      "verseStart": 20
+    },
+    {
+      "timeMs": 153238,
+      "verseStart": 21
+    },
+    {
+      "timeMs": 163545,
+      "verseStart": 22
+    },
+    {
+      "timeMs": 171630,
+      "verseStart": 23
+    },
+    {
+      "timeMs": 178715,
+      "verseStart": 24
+    },
+    {
+      "timeMs": 186840,
+      "verseStart": 25
+    },
+    {
+      "timeMs": 198007,
+      "verseStart": 26
+    },
+    {
+      "timeMs": 205932,
+      "verseStart": 27
+    },
+    {
+      "timeMs": 213777,
+      "verseStart": 28
+    },
+    {
+      "timeMs": 217960,
+      "verseStart": 29
+    },
+    {
+      "timeMs": 224064,
+      "verseStart": 30
+    },
+    {
+      "timeMs": 227166,
+      "verseStart": 31
+    },
+    {
+      "timeMs": 230808,
+      "verseStart": 32
+    },
+    {
+      "timeMs": 237473,
+      "verseStart": 33
+    },
+    {
+      "timeMs": 243116,
+      "verseStart": 34
+    },
+    {
+      "timeMs": 256145,
+      "verseStart": 35
+    },
+    {
+      "timeMs": 264750,
+      "verseStart": 36
+    },
+    {
+      "timeMs": 275317,
+      "verseStart": 37
+    },
+    {
+      "timeMs": 284743,
+      "verseStart": 38
+    },
+    {
+      "timeMs": 293749,
+      "verseStart": 39
+    },
+    {
+      "timeMs": 301314,
+      "verseStart": 40
+    },
+    {
+      "timeMs": 311560,
+      "verseStart": 41
+    },
+    {
+      "timeMs": 315703,
+      "verseStart": 42
+    },
+    {
+      "timeMs": 320506,
+      "verseStart": 43
+    },
+    {
+      "timeMs": 329332,
+      "verseStart": 44
+    },
+    {
+      "timeMs": 336977,
+      "verseStart": 45
+    },
+    {
+      "timeMs": 342200,
+      "verseStart": 46
+    },
+    {
+      "timeMs": 350085,
+      "verseStart": 47
+    },
+    {
+      "timeMs": 354027,
+      "verseStart": 48
+    },
+    {
+      "timeMs": 363433,
+      "verseStart": 49
+    },
+    {
+      "timeMs": 370898,
+      "verseStart": 50
+    },
+    {
+      "timeMs": 374821,
+      "verseStart": 51
+    },
+    {
+      "timeMs": 383026,
+      "verseStart": 52
+    }
+  ]
+}
