@@ -1,0 +1,179 @@
+{
+  "id": "gh_bti_luke_10",
+  "translationCode": "BTI",
+  "bookId": "luke",
+  "chapter": 10,
+  "title": "От Луки 10 · Кулаковых",
+  "narratorId": "bti",
+  "audioFileName": "42_10.mp3",
+  "cues": [
+    {
+      "timeMs": 4263,
+      "verseStart": 1
+    },
+    {
+      "timeMs": 16671,
+      "verseStart": 2
+    },
+    {
+      "timeMs": 32082,
+      "verseStart": 3
+    },
+    {
+      "timeMs": 45411,
+      "verseStart": 4
+    },
+    {
+      "timeMs": 55137,
+      "verseStart": 5
+    },
+    {
+      "timeMs": 63103,
+      "verseStart": 6
+    },
+    {
+      "timeMs": 73870,
+      "verseStart": 7
+    },
+    {
+      "timeMs": 89500,
+      "verseStart": 8
+    },
+    {
+      "timeMs": 97306,
+      "verseStart": 9
+    },
+    {
+      "timeMs": 107132,
+      "verseStart": 10
+    },
+    {
+      "timeMs": 114918,
+      "verseStart": 11
+    },
+    {
+      "timeMs": 128747,
+      "verseStart": 12
+    },
+    {
+      "timeMs": 136832,
+      "verseStart": 13
+    },
+    {
+      "timeMs": 159468,
+      "verseStart": 14
+    },
+    {
+      "timeMs": 167933,
+      "verseStart": 15
+    },
+    {
+      "timeMs": 181603,
+      "verseStart": 16
+    },
+    {
+      "timeMs": 200856,
+      "verseStart": 17
+    },
+    {
+      "timeMs": 215185,
+      "verseStart": 18
+    },
+    {
+      "timeMs": 224191,
+      "verseStart": 19
+    },
+    {
+      "timeMs": 236940,
+      "verseStart": 20
+    },
+    {
+      "timeMs": 252531,
+      "verseStart": 21
+    },
+    {
+      "timeMs": 283231,
+      "verseStart": 22
+    },
+    {
+      "timeMs": 304165,
+      "verseStart": 23
+    },
+    {
+      "timeMs": 316554,
+      "verseStart": 24
+    },
+    {
+      "timeMs": 336487,
+      "verseStart": 25
+    },
+    {
+      "timeMs": 351698,
+      "verseStart": 26
+    },
+    {
+      "timeMs": 360964,
+      "verseStart": 27
+    },
+    {
+      "timeMs": 379616,
+      "verseStart": 28
+    },
+    {
+      "timeMs": 389923,
+      "verseStart": 29
+    },
+    {
+      "timeMs": 396588,
+      "verseStart": 30
+    },
+    {
+      "timeMs": 413359,
+      "verseStart": 31
+    },
+    {
+      "timeMs": 424747,
+      "verseStart": 32
+    },
+    {
+      "timeMs": 434994,
+      "verseStart": 33
+    },
+    {
+      "timeMs": 445241,
+      "verseStart": 34
+    },
+    {
+      "timeMs": 461292,
+      "verseStart": 35
+    },
+    {
+      "timeMs": 481785,
+      "verseStart": 36
+    },
+    {
+      "timeMs": 493794,
+      "verseStart": 37
+    },
+    {
+      "timeMs": 511005,
+      "verseStart": 38
+    },
+    {
+      "timeMs": 521012,
+      "verseStart": 39
+    },
+    {
+      "timeMs": 531219,
+      "verseStart": 40
+    },
+    {
+      "timeMs": 547770,
+      "verseStart": 41
+    },
+    {
+      "timeMs": 559798,
+      "verseStart": 42
+    }
+  ]
+}

@@ -1,0 +1,135 @@
+{
+  "id": "gh_bti_luke_16",
+  "translationCode": "BTI",
+  "bookId": "luke",
+  "chapter": 16,
+  "title": "От Луки 16 · Кулаковых",
+  "narratorId": "bti",
+  "audioFileName": "42_16.mp3",
+  "cues": [
+    {
+      "timeMs": 5184,
+      "verseStart": 1
+    },
+    {
+      "timeMs": 18233,
+      "verseStart": 2
+    },
+    {
+      "timeMs": 33604,
+      "verseStart": 3
+    },
+    {
+      "timeMs": 49656,
+      "verseStart": 4
+    },
+    {
+      "timeMs": 58022,
+      "verseStart": 5
+    },
+    {
+      "timeMs": 68269,
+      "verseStart": 6
+    },
+    {
+      "timeMs": 80998,
+      "verseStart": 7
+    },
+    {
+      "timeMs": 97811,
+      "verseStart": 8
+    },
+    {
+      "timeMs": 117745,
+      "verseStart": 9
+    },
+    {
+      "timeMs": 136098,
+      "verseStart": 10
+    },
+    {
+      "timeMs": 145205,
+      "verseStart": 11
+    },
+    {
+      "timeMs": 152490,
+      "verseStart": 12
+    },
+    {
+      "timeMs": 158634,
+      "verseStart": 13
+    },
+    {
+      "timeMs": 181571,
+      "verseStart": 14
+    },
+    {
+      "timeMs": 188816,
+      "verseStart": 15
+    },
+    {
+      "timeMs": 207069,
+      "verseStart": 16
+    },
+    {
+      "timeMs": 221580,
+      "verseStart": 17
+    },
+    {
+      "timeMs": 230807,
+      "verseStart": 18
+    },
+    {
+      "timeMs": 243416,
+      "verseStart": 19
+    },
+    {
+      "timeMs": 251942,
+      "verseStart": 20
+    },
+    {
+      "timeMs": 259407,
+      "verseStart": 21
+    },
+    {
+      "timeMs": 271636,
+      "verseStart": 22
+    },
+    {
+      "timeMs": 281903,
+      "verseStart": 23
+    },
+    {
+      "timeMs": 290329,
+      "verseStart": 24
+    },
+    {
+      "timeMs": 308222,
+      "verseStart": 25
+    },
+    {
+      "timeMs": 327416,
+      "verseStart": 26
+    },
+    {
+      "timeMs": 340666,
+      "verseStart": 27
+    },
+    {
+      "timeMs": 348591,
+      "verseStart": 28
+    },
+    {
+      "timeMs": 358138,
+      "verseStart": 29
+    },
+    {
+      "timeMs": 368226,
+      "verseStart": 30
+    },
+    {
+      "timeMs": 377592,
+      "verseStart": 31
+    }
+  ]
+}

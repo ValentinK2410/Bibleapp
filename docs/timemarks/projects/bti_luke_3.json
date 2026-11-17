@@ -1,0 +1,163 @@
+{
+  "id": "gh_bti_luke_3",
+  "translationCode": "BTI",
+  "bookId": "luke",
+  "chapter": 3,
+  "title": "От Луки 3 · Кулаковых",
+  "narratorId": "bti",
+  "audioFileName": "42_03.mp3",
+  "cues": [
+    {
+      "timeMs": 4263,
+      "verseStart": 1
+    },
+    {
+      "timeMs": 21796,
+      "verseStart": 2
+    },
+    {
+      "timeMs": 35165,
+      "verseStart": 3
+    },
+    {
+      "timeMs": 45853,
+      "verseStart": 4
+    },
+    {
+      "timeMs": 62605,
+      "verseStart": 5
+    },
+    {
+      "timeMs": 81758,
+      "verseStart": 6
+    },
+    {
+      "timeMs": 89083,
+      "verseStart": 7
+    },
+    {
+      "timeMs": 107056,
+      "verseStart": 8
+    },
+    {
+      "timeMs": 132914,
+      "verseStart": 9
+    },
+    {
+      "timeMs": 145764,
+      "verseStart": 10
+    },
+    {
+      "timeMs": 151668,
+      "verseStart": 11
+    },
+    {
+      "timeMs": 165337,
+      "verseStart": 12
+    },
+    {
+      "timeMs": 175565,
+      "verseStart": 13
+    },
+    {
+      "timeMs": 185272,
+      "verseStart": 14
+    },
+    {
+      "timeMs": 205986,
+      "verseStart": 15
+    },
+    {
+      "timeMs": 214252,
+      "verseStart": 16
+    },
+    {
+      "timeMs": 238129,
+      "verseStart": 17
+    },
+    {
+      "timeMs": 253740,
+      "verseStart": 18
+    },
+    {
+      "timeMs": 262787,
+      "verseStart": 19
+    },
+    {
+      "timeMs": 272974,
+      "verseStart": 20
+    },
+    {
+      "timeMs": 283982,
+      "verseStart": 21
+    },
+    {
+      "timeMs": 300213,
+      "verseStart": 22
+    },
+    {
+      "timeMs": 321408,
+      "verseStart": 23
+    },
+    {
+      "timeMs": 332496,
+      "verseStart": 24
+    },
+    {
+      "timeMs": 337760,
+      "verseStart": 25
+    },
+    {
+      "timeMs": 342723,
+      "verseStart": 26
+    },
+    {
+      "timeMs": 348167,
+      "verseStart": 27
+    },
+    {
+      "timeMs": 354472,
+      "verseStart": 28
+    },
+    {
+      "timeMs": 360296,
+      "verseStart": 29
+    },
+    {
+      "timeMs": 365960,
+      "verseStart": 30
+    },
+    {
+      "timeMs": 372064,
+      "verseStart": 31
+    },
+    {
+      "timeMs": 379329,
+      "verseStart": 32
+    },
+    {
+      "timeMs": 384133,
+      "verseStart": 33
+    },
+    {
+      "timeMs": 391498,
+      "verseStart": 34
+    },
+    {
+      "timeMs": 397582,
+      "verseStart": 35
+    },
+    {
+      "timeMs": 402006,
+      "verseStart": 36
+    },
+    {
+      "timeMs": 408610,
+      "verseStart": 37
+    },
+    {
+      "timeMs": 415215,
+      "verseStart": 38
+    }
+  ]
+}
