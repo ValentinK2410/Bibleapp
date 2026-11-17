@@ -27,6 +27,7 @@ import com.example.bible.games.RedBallEnemy
 import com.example.bible.games.RedBallParticle
 import com.example.bible.games.RedBallPiece
 import com.example.bible.games.RedBallPieceKind
+import com.example.bible.games.RedBallPortalRole
 import com.example.bible.games.RedBallScene
 import com.example.bible.games.RedBallSim
 import com.example.bible.games.RedBallSlope
@@ -106,7 +107,11 @@ internal fun DrawScope.drawRedBallPlay(sim: RedBallSim) {
         }
         for (magnet in sim.magnets) if (!magnet.taken) drawMagnet(magnet.x, magnet.y, sim.anim)
         for (portal in scene.portals) {
-            val mood = if (portal.linkId.isBlank()) PortalMood.ASLEEP else PortalMood.OPEN
+            val mood = when {
+                portal.role == RedBallPortalRole.EXIT -> PortalMood.EXIT
+                portal.linkId.isBlank() -> PortalMood.ASLEEP
+                else -> PortalMood.OPEN
+            }
             drawFairyPortal(portal.box.l, portal.box.t, portal.box.r, portal.box.b, sim.anim, mood)
         }
         drawFinishFlag(scene.door.l, scene.door.t, scene.door.r, scene.door.b, sim.anim)
@@ -196,6 +201,7 @@ internal fun DrawScope.drawRedBallEditor(
                 RedBallPieceKind.DOOR -> drawFinishFlag(box.l, box.t, box.r, box.b, 0.8f)
                 RedBallPieceKind.PORTAL -> {
                     val mood = when {
+                        piece.role == RedBallPortalRole.EXIT -> PortalMood.EXIT
                         piece.id in lostPortalIds -> PortalMood.LOST
                         piece.linkId.isBlank() -> PortalMood.ASLEEP
                         else -> PortalMood.OPEN
@@ -1233,9 +1239,9 @@ private fun DrawScope.drawFinishFlag(l: Float, t: Float, r: Float, b: Float, wav
     )
 }
 
-private enum class PortalMood { OPEN, ASLEEP, LOST }
+private enum class PortalMood { OPEN, EXIT, ASLEEP, LOST }
 
-/** Каменная арка со светящимся вихрем. Спящий портал серый, потерянная цель помечена красным. */
+/** Каменная арка. Вход — фиолетовый вихрь, выход — бирюзовая арка со стрелкой вниз. */
 private fun DrawScope.drawFairyPortal(
     l: Float,
     t: Float,
@@ -1249,11 +1255,15 @@ private fun DrawScope.drawFairyPortal(
     if (w < 4f || h < 4f) return
     val cx = (l + r) / 2f
     val cy = t + h * 0.58f
+    val exit = mood == PortalMood.EXIT
     val open = mood == PortalMood.OPEN
     val arch = min(w * 0.52f, h * 0.36f)
     if (open) {
         val pulse = 0.88f + 0.12f * sin(time * 3.2f)
         drawCircle(Color(0xFFC4B5FD).copy(alpha = 0.28f), w * 0.72f * pulse, Offset(cx, cy))
+    } else if (exit) {
+        val pulse = 0.9f + 0.08f * sin(time * 2.4f)
+        drawCircle(Color(0xFF99F6E4).copy(alpha = 0.32f), w * 0.68f * pulse, Offset(cx, cy))
     }
     val frame = Path().apply {
         moveTo(l, b)
@@ -1262,11 +1272,31 @@ private fun DrawScope.drawFairyPortal(
         lineTo(r, b)
         close()
     }
-    val stoneTop = if (open) Color(0xFFE9D5FF) else Color(0xFFE7E5E4)
-    val stoneMid = if (open) Color(0xFF7C3AED) else Color(0xFFA8A29E)
-    val stoneBot = if (open) Color(0xFF4C1D95) else Color(0xFF57534E)
+    val stoneTop = when {
+        exit -> Color(0xFFCCFBF1)
+        open -> Color(0xFFE9D5FF)
+        else -> Color(0xFFE7E5E4)
+    }
+    val stoneMid = when {
+        exit -> Color(0xFF0F766E)
+        open -> Color(0xFF7C3AED)
+        else -> Color(0xFFA8A29E)
+    }
+    val stoneBot = when {
+        exit -> Color(0xFF134E4A)
+        open -> Color(0xFF4C1D95)
+        else -> Color(0xFF57534E)
+    }
     drawPath(frame, Brush.verticalGradient(listOf(stoneTop, stoneMid, stoneBot), startY = t, endY = b))
-    drawPath(frame, Color(0xFF3B0764).copy(alpha = if (open) 0.9f else 0.45f), style = Stroke(w * 0.045f, cap = StrokeCap.Round, join = StrokeJoin.Round))
+    drawPath(
+        frame,
+        when {
+            exit -> Color(0xFF134E4A).copy(alpha = 0.9f)
+            open -> Color(0xFF3B0764).copy(alpha = 0.9f)
+            else -> Color(0xFF3B0764).copy(alpha = 0.45f)
+        },
+        style = Stroke(w * 0.045f, cap = StrokeCap.Round, join = StrokeJoin.Round),
+    )
     val inset = w * 0.2f
     val inner = Path().apply {
         moveTo(l + inset, b - h * 0.04f)
@@ -1310,6 +1340,30 @@ private fun DrawScope.drawFairyPortal(
         drawCircle(Color.White.copy(alpha = 0.85f), w * 0.045f, Offset(cx - w * 0.08f, cy - h * 0.04f))
         drawSparkle(cx - w * 0.02f, cy - h * 0.12f, w * 0.07f, Color.White)
         drawSparkle(cx + w * 0.12f, cy + h * 0.02f, w * 0.05f, Color(0xFFFDE68A))
+    } else if (exit) {
+        drawPath(
+            inner,
+            Brush.radialGradient(
+                listOf(Color(0xFFF0FDFA), Color(0xFF5EEAD4), Color(0xFF0F766E)),
+                center = Offset(cx, cy - h * 0.04f),
+                radius = w * 0.55f,
+            ),
+        )
+        val shaft = (w * 0.07f).coerceIn(3f, 7f)
+        drawLine(
+            Color.White,
+            Offset(cx, cy - h * 0.16f),
+            Offset(cx, cy + h * 0.02f),
+            shaft,
+            StrokeCap.Round,
+        )
+        val head = Path().apply {
+            moveTo(cx - w * 0.16f, cy - h * 0.02f)
+            lineTo(cx + w * 0.16f, cy - h * 0.02f)
+            lineTo(cx, cy + h * 0.14f)
+            close()
+        }
+        drawPath(head, Color.White)
     } else {
         drawPath(
             inner,
