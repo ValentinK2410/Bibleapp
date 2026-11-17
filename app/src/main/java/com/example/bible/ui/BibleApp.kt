@@ -6,6 +6,7 @@ import android.content.res.Configuration
 import android.content.pm.PackageManager
 import android.util.Log
 import com.example.bible.BuildConfig
+import com.example.bible.deeplink.DeepLinkRequest
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
@@ -225,6 +226,7 @@ import com.example.bible.data.VerseRef
 import com.example.bible.data.matchesVerseLocation
 import com.example.bible.data.verseNumbersWithNotesInChapter
 import coil.compose.AsyncImage
+import com.example.bible.ui.theme.BibleAppThemePreset
 import com.example.bible.ui.theme.BibleTheme
 import com.example.bible.ui.theme.ThemedWindowBackdrop
 import com.example.bible.ui.travel.MyTravelsScreen
@@ -286,8 +288,8 @@ private fun houseCareViewModel(): HouseCareViewModel {
 fun BibleApp(
     repository: BibleRepository,
     preferences: BiblePreferences,
-    startRoute: String? = null,
-    onStartRouteConsumed: () -> Unit = {},
+    deepLink: DeepLinkRequest? = null,
+    onDeepLinkConsumed: () -> Unit = {},
 ) {
     val context = LocalContext.current
     val viewModel: BibleViewModel = viewModel(
@@ -490,8 +492,8 @@ fun BibleApp(
                     onToggleMimicControl = { viewModel.toggleMimicControl() },
                     onToggleMimicVelocityVector = { viewModel.toggleMimicVelocityVectorVisible() },
                     preferences = preferences,
-                    startRoute = startRoute,
-                    onStartRouteConsumed = onStartRouteConsumed,
+                    deepLink = deepLink,
+                    onDeepLinkConsumed = onDeepLinkConsumed,
                 )
             }
             if (mimicControlOn && mimicCamGranted && state is BibleLoadState.Ready && mimicFaceOverlayOn) {
@@ -612,6 +614,26 @@ private fun ErrorScreen(
     }
 }
 
+/** Неизвестный маршрут не роняет приложение: остаёмся на экране книг. */
+private fun openDeepLinkRoute(navController: NavHostController, route: String) {
+    val opened = runCatching {
+        navController.navigate(route) {
+            launchSingleTop = true
+            if (route == "books") {
+                popUpTo("books") { inclusive = true }
+            }
+        }
+    }.isSuccess
+    if (opened) return
+    val fallback = runCatching {
+        navController.navigate(route) { launchSingleTop = true }
+    }.isSuccess
+    if (fallback || route == "books") return
+    runCatching {
+        navController.navigate("books") { launchSingleTop = true }
+    }
+}
+
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class)
 @Composable
 private fun BibleNavHost(
@@ -624,20 +646,30 @@ private fun BibleNavHost(
     onToggleMimicControl: () -> Unit,
     onToggleMimicVelocityVector: () -> Unit,
     preferences: BiblePreferences,
-    startRoute: String? = null,
-    onStartRouteConsumed: () -> Unit = {},
+    deepLink: DeepLinkRequest? = null,
+    onDeepLinkConsumed: () -> Unit = {},
 ) {
-    LaunchedEffect(startRoute) {
-        val route = startRoute?.trim().orEmpty()
+    LaunchedEffect(deepLink?.nonce) {
+        val request = deepLink ?: return@LaunchedEffect
+        val preset = request.styleKey?.let { key ->
+            BibleAppThemePreset.entries.firstOrNull { it.storageKey == key }
+        }
+        if (preset != null) {
+            preferences.setAppThemePresetKey(preset.storageKey)
+        }
+        val code = request.translationCode
+        if (!code.isNullOrBlank()) {
+            val tid = TranslationId.entries.firstOrNull { it.code.equals(code, ignoreCase = true) }
+            if (tid != null) viewModel.setTranslation(tid)
+        }
+        val route = request.route.trim()
         if (route.isNotEmpty()) {
-            navController.navigate(route) {
-                launchSingleTop = true
-            }
+            openDeepLinkRoute(navController, route)
             if (BuildConfig.DEBUG) {
                 Log.i("BibleScreenshot", "route_navigated:$route")
             }
-            onStartRouteConsumed()
         }
+        onDeepLinkConsumed()
     }
     LaunchedEffect(Unit) {
         if (BuildConfig.DEBUG) {

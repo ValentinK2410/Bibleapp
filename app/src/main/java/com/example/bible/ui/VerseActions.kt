@@ -87,7 +87,9 @@ import com.example.bible.data.resolveTtsEnginePackage
 import com.example.bible.data.SaluteSpeechClient
 import com.example.bible.data.speakAiChatChunk
 import com.example.bible.data.BibleUserAudio
+import com.example.bible.BuildConfig
 import com.example.bible.data.BibleUserImage
+import com.example.bible.deeplink.BibleDeepLinks
 import com.example.bible.data.BibleUserVideo
 import com.example.bible.data.BibleCanon
 import com.example.bible.data.BibleDictionary
@@ -808,11 +810,19 @@ fun VerseActionsBottomSheet(
     }
 
     val shareText = remember(target, chapterVerseTexts) {
-        VerseShareText.format(
+        val body = VerseShareText.format(
             bookName = target.bookName,
             chapter = target.ref.chapter,
             verseNumbers = setOf(target.ref.verse),
             verseTextsByNumber = verseTextsIncludingTarget(),
+        )
+        BibleDeepLinks.appendToShareText(
+            body = body,
+            translation = target.ref.translation,
+            bookId = target.ref.bookId,
+            chapter = target.ref.chapter,
+            verse = target.ref.verse,
+            httpsHost = BuildConfig.DEEP_LINK_HOST,
         )
     }
     val notesAtVerse = remember(target.ref, userNotes) {
