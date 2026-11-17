@@ -13,20 +13,58 @@ import androidx.compose.ui.graphics.drawscope.rotate
 import androidx.compose.ui.graphics.drawscope.withTransform
 import com.example.bible.games.RedBallAabb
 import com.example.bible.games.RedBallDraft
+import com.example.bible.games.RedBallParticle
 import com.example.bible.games.RedBallPiece
 import com.example.bible.games.RedBallPieceKind
 import com.example.bible.games.RedBallScene
 import com.example.bible.games.RedBallSim
 import com.example.bible.games.RedBallSlope
+import kotlin.math.PI
 import kotlin.math.abs
+import kotlin.math.cos
 import kotlin.math.max
 import kotlin.math.min
+import kotlin.math.sin
 
-internal fun editorMaxCam(widthPx: Float, heightPx: Float, draft: RedBallDraft): Float {
-    if (heightPx <= 1f) return 0f
-    val scale = heightPx / (draft.rows * draft.cell)
-    val viewW = widthPx / scale
-    return (draft.cols * draft.cell - viewW).coerceAtLeast(0f)
+internal const val EDITOR_VIEW_ROWS = 14f
+
+internal fun editorScale(heightPx: Float, cell: Float): Float {
+    if (heightPx <= 1f || cell <= 1f) return 1f
+    return heightPx / (EDITOR_VIEW_ROWS * cell)
+}
+
+internal data class EditorCamRange(
+    val minX: Float,
+    val maxX: Float,
+    val minY: Float,
+    val maxY: Float,
+)
+
+/** Камеру можно увести за край нарисованного: туда и ставят новые клетки, мир растёт. */
+internal fun editorCamRange(widthPx: Float, heightPx: Float, draft: RedBallDraft): EditorCamRange {
+    val cell = draft.cell
+    val scale = editorScale(heightPx, cell)
+    val viewW = if (scale <= 0f) cell else widthPx / scale
+    val viewH = if (scale <= 0f) EDITOR_VIEW_ROWS * cell else heightPx / scale
+    val margin = cell * 8f
+    var left = 0f
+    var top = 0f
+    var right = draft.cols * cell
+    var bottom = draft.rows * cell
+    if (draft.pieces.isNotEmpty()) {
+        left = draft.pieces.minOf { it.c * cell }
+        top = draft.pieces.minOf { it.r * cell }
+        right = draft.pieces.maxOf { (it.c + it.w) * cell }
+        bottom = draft.pieces.maxOf { (it.r + it.h) * cell }
+    }
+    val minX = left - margin
+    val minY = top - margin
+    return EditorCamRange(
+        minX = minX,
+        maxX = (right + margin - viewW).coerceAtLeast(minX),
+        minY = minY,
+        maxY = (bottom + margin - viewH).coerceAtLeast(minY),
+    )
 }
 
 internal fun DrawScope.drawRedBallPlay(sim: RedBallSim) {
@@ -34,69 +72,104 @@ internal fun DrawScope.drawRedBallPlay(sim: RedBallSim) {
     val viewH = 620f
     val scale = size.height / viewH
     val viewW = size.width / scale
-    val camX = (sim.ballX - viewW * 0.38f).coerceIn(0f, (scene.worldW - viewW).coerceAtLeast(0f))
+    val maxCamX = (scene.worldW - viewW).coerceAtLeast(scene.minX)
+    val camX = (sim.ballX - viewW * 0.38f).coerceIn(scene.minX, maxCamX)
     // Камера следит за мячом и по вертикали: при прыжке мир (и фон) смещается.
-    val restCamY = (scene.worldH - viewH).coerceAtLeast(0f)
-    val camY = (sim.ballY - viewH * 0.58f).coerceIn(-viewH * 1.5f, restCamY)
+    val restCamY = (scene.worldH - viewH).coerceAtLeast(scene.minY)
+    val camY = (sim.ballY - viewH * 0.58f).coerceIn(scene.minY - viewH * 1.5f, restCamY)
     drawFairySky(camX, scale, liftPx = (restCamY - camY) * scale)
     withTransform({
         scale(scale, scale, pivot = Offset.Zero)
         translate(-camX, -camY)
     }) {
         drawVoid(scene)
-        drawSolids(scene.solids, scene.slopes, scene.worldW)
+        drawSolids(scene.solids, scene.slopes, scene.minX, scene.worldW)
+        for (block in scene.concrete) {
+            drawConcreteBlock(block, topIsOpen(block, scene.concrete, emptyList()))
+        }
         for (slope in scene.slopes) drawSlopeBank(slope.x0, slope.y0, slope.x1, slope.y1)
+        for (ladder in scene.ladders) drawLadder(ladder)
         for (spike in scene.spikes) drawIronSpike(spike.x, spike.top, spike.w, spike.h)
         for (spring in scene.springs) drawFairySpring(spring.l, spring.t, spring.r, spring.b)
+        for (star in sim.stars) {
+            if (!star.taken) drawCollectStar(star.x, star.y, 16f, sim.anim, star.attached)
+        }
+        for (magnet in sim.magnets) if (!magnet.taken) drawMagnet(magnet.x, magnet.y, sim.anim)
         drawFairyDoor(scene.door.l, scene.door.t, scene.door.r, scene.door.b)
         for (crate in sim.crates) drawWoodCrate(crate.x, crate.y, crate.size)
-        drawGlossyBall(sim.ballX, sim.ballY, RedBallScene.BALL_R, sim.ballAngle, sim.groundBelowBall())
+        for (block in sim.blocks) drawConcreteCrate(block.x, block.y, block.size)
+        for (enemy in sim.enemies) {
+            if (enemy.alive) drawAngrySquare(enemy.x, enemy.y, enemy.size, enemy.angle)
+        }
+        for (particle in sim.particles) drawParticle(particle)
+        if (sim.magnetTime > 0f) drawMagnetAura(sim.ballX, sim.ballY, sim.anim)
+        drawGlossyBall(
+            sim.ballX,
+            sim.ballY,
+            RedBallScene.BALL_R,
+            sim.ballAngle,
+            sim.groundBelowBall(),
+            sim.jellyX,
+            sim.jellyY,
+        )
     }
 }
 
 internal fun DrawScope.drawRedBallEditor(
     draft: RedBallDraft,
     camX: Float,
+    camY: Float,
     hoverC: Int,
     hoverR: Int,
     hoverW: Int,
     hoverH: Int,
     showHover: Boolean,
+    selectedId: Long?,
 ) {
-    val gridH = draft.rows * draft.cell
-    val scale = size.height / gridH
-    val cam = camX.coerceIn(0f, editorMaxCam(size.width, size.height, draft))
-    drawFairySky(cam, scale)
+    val scale = editorScale(size.height, draft.cell)
+    val range = editorCamRange(size.width, size.height, draft)
+    val cam = camX.coerceIn(range.minX, range.maxX)
+    val camDown = camY.coerceIn(range.minY, range.maxY)
+    val viewW = size.width / scale
+    val viewH = size.height / scale
+    drawFairySky(cam, scale, liftPx = -camDown * scale * 0.15f)
     withTransform({
         scale(scale, scale, pivot = Offset.Zero)
-        translate(-cam, 0f)
+        translate(-cam, -camDown)
     }) {
-        val gridW = draft.cols * draft.cell
+        val cell = draft.cell
+        val minC = kotlin.math.floor((cam - cell) / cell).toInt()
+        val maxC = kotlin.math.ceil((cam + viewW + cell) / cell).toInt()
+        val minR = kotlin.math.floor((camDown - cell) / cell).toInt()
+        val maxR = kotlin.math.ceil((camDown + viewH + cell) / cell).toInt()
         val line = Color.White.copy(alpha = 0.28f)
         val bold = Color.White.copy(alpha = 0.45f)
-        for (c in 0..draft.cols) {
-            val x = c * draft.cell
-            drawLine(if (c % 4 == 0) bold else line, Offset(x, 0f), Offset(x, gridH), if (c % 4 == 0) 2f else 1f)
+        for (c in minC..maxC) {
+            val x = c * cell
+            drawLine(if (c % 4 == 0) bold else line, Offset(x, minR * cell), Offset(x, maxR * cell), if (c % 4 == 0) 2f else 1f)
         }
-        for (r in 0..draft.rows) {
-            val y = r * draft.cell
-            drawLine(if (r % 2 == 0) bold else line, Offset(0f, y), Offset(gridW, y), if (r % 2 == 0) 2f else 1f)
+        for (r in minR..maxR) {
+            val y = r * cell
+            drawLine(if (r % 2 == 0) bold else line, Offset(minC * cell, y), Offset(maxC * cell, y), if (r % 2 == 0) 2f else 1f)
         }
-        val grounds = draft.pieces.filter { it.kind == RedBallPieceKind.GROUND }.map { it.box(draft.cell) }
-        val slopes = draft.pieces.filter { it.kind == RedBallPieceKind.SLOPE }.map { it.slopeLine(draft.cell) }
+        val grounds = draft.pieces.filter { it.kind == RedBallPieceKind.GROUND }.map { it.box(cell) }
+        val slopes = draft.pieces.filter { it.kind == RedBallPieceKind.SLOPE }.map { it.slopeLine(cell) }
+        val concretes = draft.pieces.filter { it.kind == RedBallPieceKind.CONCRETE }.map { it.box(cell) }
         for (piece in draft.pieces) {
             if (piece.kind != RedBallPieceKind.GROUND) continue
-            val box = piece.box(draft.cell)
+            val box = piece.box(cell)
             drawGroundBlock(box, topIsOpen(box, grounds, slopes))
         }
         for (piece in draft.pieces) {
-            val box = piece.box(draft.cell)
+            val box = piece.box(cell)
             when (piece.kind) {
                 RedBallPieceKind.GROUND -> Unit
+                RedBallPieceKind.CONCRETE -> drawConcreteBlock(box, topIsOpen(box, concretes, emptyList()))
                 RedBallPieceKind.SLOPE -> {
-                    val lineSlope = piece.slopeLine(draft.cell)
+                    val lineSlope = piece.slopeLine(cell)
                     drawSlopeBank(lineSlope.x0, lineSlope.y0, lineSlope.x1, lineSlope.y1)
                 }
+                RedBallPieceKind.LADDER -> drawLadder(box)
                 RedBallPieceKind.SPIKE -> drawIronSpike(
                     (box.l + box.r) / 2f,
                     box.t,
@@ -104,7 +177,10 @@ internal fun DrawScope.drawRedBallEditor(
                     box.b - box.t,
                 )
                 RedBallPieceKind.SPRING -> drawFairySpring(box.l, box.t, box.r, box.b)
-                RedBallPieceKind.CRATE -> drawWoodCrate((box.l + box.r) / 2f, (box.t + box.b) / 2f, min(piece.w, piece.h) * draft.cell)
+                RedBallPieceKind.CRATE -> drawWoodCrate((box.l + box.r) / 2f, (box.t + box.b) / 2f, min(piece.w, piece.h) * cell)
+                RedBallPieceKind.STAR -> drawCollectStar((box.l + box.r) / 2f, (box.t + box.b) / 2f, 16f, 0.6f, false)
+                RedBallPieceKind.MAGNET -> drawMagnet((box.l + box.r) / 2f, (box.t + box.b) / 2f, 0.4f)
+                RedBallPieceKind.ENEMY -> drawAngrySquare((box.l + box.r) / 2f, (box.t + box.b) / 2f, min(piece.w, piece.h) * cell, 0.15f)
                 RedBallPieceKind.DOOR -> drawFairyDoor(box.l, box.t, box.r, box.b)
                 RedBallPieceKind.START -> {
                     val x = (box.l + box.r) / 2f
@@ -118,12 +194,21 @@ internal fun DrawScope.drawRedBallEditor(
                     )
                 }
             }
+            if (piece.id == selectedId) {
+                drawRoundRect(
+                    Color(0xFF0369A1),
+                    Offset(box.l - 3f, box.t - 3f),
+                    Size(box.r - box.l + 6f, box.b - box.t + 6f),
+                    CornerRadius(8f, 8f),
+                    style = Stroke(width = 4f),
+                )
+            }
         }
         if (showHover && hoverW > 0 && hoverH > 0) {
             drawRoundRect(
                 Color.White.copy(alpha = 0.55f),
-                Offset(hoverC * draft.cell, hoverR * draft.cell),
-                Size(hoverW * draft.cell, hoverH * draft.cell),
+                Offset(hoverC * cell, hoverR * cell),
+                Size(hoverW * cell, hoverH * cell),
                 CornerRadius(10f, 10f),
                 style = Stroke(width = 4f),
             )
@@ -156,10 +241,11 @@ internal fun DrawScope.drawFairySky(camX: Float, worldToScreen: Float, liftPx: F
         drawCloudBand(camX, worldToScreen, 0.22f, 0.3f, 0.75f, 0.82f)
     }
     val horizon = size.height * 0.7f
+    drawHills(camX, worldToScreen, 0.1f, horizon + liftPx * 0.1f - size.height * 0.04f, Color(0xFFDBEAFE), 22f, 240f)
     drawHills(camX, worldToScreen, 0.26f, horizon + liftPx * 0.26f, Color(0xFF93C5FD), 42f, 170f)
     drawHills(camX, worldToScreen, 0.4f, horizon + liftPx * 0.4f + size.height * 0.045f, Color(0xFF6EE7B7), 30f, 140f)
     val span = size.width * 1.8f
-    val shift = if (span <= 1f) 0f else (camX * worldToScreen * 0.48f) % span
+    val shift = wrapShift(camX * worldToScreen * 0.48f, span)
     val base = horizon + liftPx * 0.5f + size.height * 0.03f
     for (i in -1..6) {
         val x = i * span / 5f - shift
@@ -169,25 +255,44 @@ internal fun DrawScope.drawFairySky(camX: Float, worldToScreen: Float, liftPx: F
     val birdLift = liftPx * 0.1f
     drawBird(size.width * 0.24f - bird, size.height * 0.22f + birdLift, 18f)
     drawBird(size.width * 0.33f - bird, size.height * 0.19f + birdLift, 13f)
+    val moteSpan = size.width * 1.5f
+    val moteShift = wrapShift(camX * worldToScreen * 0.72f, moteSpan)
+    for (i in 0 until 7) {
+        val x = i * moteSpan / 5f - moteShift
+        val y = size.height * (0.34f + (i % 3) * 0.07f) + liftPx * 0.62f
+        drawCircle(Color.White.copy(alpha = 0.45f), 2.2f + (i % 3), Offset(x, y))
+    }
+}
+
+private fun wrapShift(value: Float, span: Float): Float {
+    if (span <= 1f) return 0f
+    val m = value % span
+    return if (m < 0f) m + span else m
 }
 
 private fun DrawScope.drawVoid(scene: RedBallScene) {
     val top = scene.voidY - 50f
     if (top >= scene.worldH) return
+    val left = scene.minX - 40f
     drawRect(
         Brush.verticalGradient(
             listOf(Color.Transparent, Color(0x66221A3A), Color(0xFF1E1B4B)),
             startY = top,
             endY = scene.worldH,
         ),
-        topLeft = Offset(-40f, top),
-        size = Size(scene.worldW + 80f, scene.worldH - top),
+        topLeft = Offset(left, top),
+        size = Size(scene.worldW - left + 40f, scene.worldH - top),
     )
 }
 
-private fun DrawScope.drawSolids(solids: List<RedBallAabb>, slopes: List<RedBallSlope>, worldW: Float) {
+private fun DrawScope.drawSolids(
+    solids: List<RedBallAabb>,
+    slopes: List<RedBallSlope>,
+    minX: Float,
+    worldW: Float,
+) {
     for (solid in solids) {
-        if (solid.r <= 0.5f || solid.l >= worldW - 0.5f) continue
+        if (solid.r <= minX + 0.5f || solid.l >= worldW - 0.5f) continue
         drawGroundBlock(solid, topIsOpen(solid, solids, slopes))
     }
 }
@@ -217,8 +322,16 @@ private fun DrawScope.drawGroundBlock(box: RedBallAabb, grass: Boolean) {
     val w = box.r - box.l
     val h = box.b - box.t
     if (w <= 0f || h <= 0f) return
-    drawRect(Color(0xFF9A5B2A), Offset(box.l, box.t), Size(w, h))
-    drawRect(Color(0xFF6B3A1E), Offset(box.l, box.b - 7f), Size(w, 7f))
+    drawRect(
+        Brush.verticalGradient(
+            listOf(Color(0xFFC4844A), Color(0xFF9A5B2A), Color(0xFF6B3A1E)),
+            startY = box.t,
+            endY = box.b,
+        ),
+        Offset(box.l, box.t),
+        Size(w, h),
+    )
+    drawRect(Color(0xFF3F2414).copy(alpha = 0.35f), Offset(box.l, box.b - 7f), Size(w, 7f))
     var px = box.l + 16f
     var n = 0
     val limit = h.toInt().coerceAtLeast(1)
@@ -398,51 +511,77 @@ private fun DrawScope.drawWoodCrate(cx: Float, cy: Float, side: Float) {
 }
 
 /** [groundY] — высота поверхности под мячом; тень лежит на ней, а не прилипает к мячу. */
-private fun DrawScope.drawGlossyBall(x: Float, y: Float, r: Float, angle: Float, groundY: Float?) {
+private fun DrawScope.drawGlossyBall(
+    x: Float,
+    y: Float,
+    r: Float,
+    angle: Float,
+    groundY: Float?,
+    squashX: Float = 1f,
+    squashY: Float = 1f,
+) {
+    val sx = squashX.coerceIn(0.62f, 1.48f)
+    val sy = squashY.coerceIn(0.62f, 1.42f)
     if (groundY != null) {
         val gap = (groundY - (y + r)).coerceAtLeast(0f)
         val k = (1f - gap / 360f).coerceIn(0f, 1f)
         if (k > 0.02f) {
-            val w = r * 1.9f * (0.45f + 0.55f * k)
+            val w = r * 1.9f * sx * (0.45f + 0.55f * k)
             val h = r * 0.46f * (0.5f + 0.5f * k)
             drawOval(
-                Color(0xFF7F1D1D).copy(alpha = 0.25f * k),
-                Offset(x - w / 2f, groundY - h * 0.5f),
+                Color(0xFF7F1D1D).copy(alpha = 0.28f * k),
+                Offset(x - w / 2f, groundY - h * 0.55f),
                 Size(w, h),
             )
         }
     }
-    drawCircle(
-        Brush.radialGradient(
-            listOf(Color(0xFFFFF7F7), Color(0xFFFB7185), Color(0xFFE11D48), Color(0xFF9F1239)),
-            center = Offset(x - r * 0.38f, y - r * 0.42f),
-            radius = r * 1.85f,
-        ),
-        r,
-        Offset(x, y),
-    )
-    rotate(Math.toDegrees(angle.toDouble()).toFloat(), Offset(x, y)) {
+    val sink = ((1f - sy) * r * 0.62f).coerceAtLeast(0f)
+    val cy = y + sink
+    drawCircle(Color(0xFFFB7185).copy(alpha = 0.22f), r * 1.35f, Offset(x, cy))
+    withTransform({
+        scale(sx, sy, pivot = Offset(x, cy))
+    }) {
+        drawCircle(
+            Brush.radialGradient(
+                listOf(Color(0xFFFFF7F7), Color(0xFFFB7185), Color(0xFFE11D48), Color(0xFF9F1239)),
+                center = Offset(x - r * 0.38f, cy - r * 0.42f),
+                radius = r * 1.85f,
+            ),
+            r,
+            Offset(x, cy),
+        )
+        rotate(Math.toDegrees(angle.toDouble()).toFloat(), Offset(x, cy)) {
+            drawArc(
+                Color(0xFF881337),
+                startAngle = -16f,
+                sweepAngle = 34f,
+                useCenter = false,
+                topLeft = Offset(x - r * 0.9f, cy - r * 0.9f),
+                size = Size(r * 1.8f, r * 1.8f),
+                style = Stroke(width = r * 0.2f, cap = StrokeCap.Round),
+            )
+        }
+        drawCircle(Color.White.copy(alpha = 0.95f), r * 0.16f, Offset(x - r * 0.36f, cy - r * 0.4f))
+        drawCircle(Color.White.copy(alpha = 0.55f), r * 0.07f, Offset(x - r * 0.12f, cy - r * 0.18f))
         drawArc(
-            Color(0xFF881337),
-            startAngle = -16f,
-            sweepAngle = 34f,
+            Color.White.copy(alpha = 0.55f),
+            startAngle = 200f,
+            sweepAngle = 70f,
             useCenter = false,
-            topLeft = Offset(x - r * 0.9f, y - r * 0.9f),
-            size = Size(r * 1.8f, r * 1.8f),
-            style = Stroke(width = r * 0.2f, cap = StrokeCap.Round),
+            topLeft = Offset(x - r * 0.78f, cy - r * 0.78f),
+            size = Size(r * 1.56f, r * 1.56f),
+            style = Stroke(width = r * 0.08f, cap = StrokeCap.Round),
+        )
+        drawArc(
+            Color.White.copy(alpha = 0.28f),
+            startAngle = 28f,
+            sweepAngle = 120f,
+            useCenter = false,
+            topLeft = Offset(x - r * 0.82f, cy - r * 0.82f),
+            size = Size(r * 1.64f, r * 1.64f),
+            style = Stroke(width = r * 0.07f),
         )
     }
-    drawCircle(Color.White.copy(alpha = 0.95f), r * 0.16f, Offset(x - r * 0.36f, y - r * 0.4f))
-    drawCircle(Color.White.copy(alpha = 0.5f), r * 0.07f, Offset(x - r * 0.12f, y - r * 0.18f))
-    drawArc(
-        Color.White.copy(alpha = 0.4f),
-        startAngle = 28f,
-        sweepAngle = 120f,
-        useCenter = false,
-        topLeft = Offset(x - r * 0.82f, y - r * 0.82f),
-        size = Size(r * 1.64f, r * 1.64f),
-        style = Stroke(width = r * 0.07f),
-    )
 }
 
 private fun DrawScope.drawCloudBand(
@@ -455,7 +594,7 @@ private fun DrawScope.drawCloudBand(
 ) {
     val span = size.width * 1.7f
     if (span <= 1f) return
-    val shift = (camX * worldToScreen * factor) % span
+    val shift = wrapShift(camX * worldToScreen * factor, span)
     val y = size.height * yFrac
     for (i in -1..4) {
         drawCloud(i * span / 3f - shift, y, 96f * scale, alpha)
@@ -479,7 +618,7 @@ private fun DrawScope.drawHills(
     step: Float,
 ) {
     val shift = camX * worldToScreen * factor
-    val phase = if (step <= 1f) 0f else shift % (step * 2f)
+    val phase = wrapShift(shift, step * 2f)
     val path = Path()
     var x = -step * 2f - phase
     path.moveTo(x, size.height + 8f)
@@ -537,6 +676,235 @@ private fun DrawScope.drawSparkle(cx: Float, cy: Float, s: Float, color: Color) 
     drawLine(color, Offset(cx - s, cy), Offset(cx + s, cy), s * 0.28f, StrokeCap.Round)
     drawLine(color, Offset(cx, cy - s), Offset(cx, cy + s), s * 0.28f, StrokeCap.Round)
     drawCircle(color, s * 0.22f, Offset(cx, cy))
+}
+
+private fun DrawScope.drawConcreteBlock(box: RedBallAabb, cap: Boolean) {
+    val w = box.r - box.l
+    val h = box.b - box.t
+    if (w <= 1f || h <= 1f) return
+    drawRoundRect(
+        Brush.verticalGradient(
+            listOf(Color(0xFFE7E5E4), Color(0xFFA8A29E), Color(0xFF78716C), Color(0xFF44403C)),
+            startY = box.t,
+            endY = box.b,
+        ),
+        Offset(box.l, box.t),
+        Size(w, h),
+        CornerRadius(7f, 7f),
+    )
+    val speck = h.toInt().coerceAtLeast(1)
+    var px = box.l + 12f
+    var n = 0
+    while (px < box.r - 8f && n < 22) {
+        val py = box.t + 16f + ((px.toInt() * 17) % speck) * 0.45f
+        if (py < box.b - 8f) {
+            drawCircle(Color(0xFF292524).copy(alpha = 0.28f), 2.4f, Offset(px, py))
+            drawCircle(Color.White.copy(alpha = 0.4f), 1.4f, Offset(px + 5f, py + 3f))
+        }
+        px += 26f
+        n++
+    }
+    var seam = box.l + 34f
+    var i = 0
+    while (seam < box.r - 10f && i < 10) {
+        drawLine(
+            Color(0xFF292524).copy(alpha = 0.22f),
+            Offset(seam, box.t + 10f),
+            Offset(seam - 8f, box.b - 8f),
+            2f,
+        )
+        seam += 52f
+        i++
+    }
+    if (cap) {
+        drawRect(
+            Brush.verticalGradient(listOf(Color(0xFFF5F5F4), Color(0xFFD6D3D1))),
+            Offset(box.l, box.t),
+            Size(w, 9f),
+        )
+    }
+    drawRect(Color(0xFF1C1917).copy(alpha = 0.35f), Offset(box.l, box.b - 7f), Size(w, 7f))
+}
+
+private fun DrawScope.drawConcreteCrate(cx: Float, cy: Float, side: Float) {
+    drawOval(
+        Color(0xFF292524).copy(alpha = 0.22f),
+        Offset(cx - side * 0.38f, cy + side * 0.38f),
+        Size(side * 0.76f, side * 0.16f),
+    )
+    val half = side / 2f
+    drawConcreteBlock(RedBallAabb(cx - half, cy - half, cx + half, cy + half), true)
+}
+
+private fun DrawScope.drawLadder(box: RedBallAabb) {
+    val w = box.r - box.l
+    val h = box.b - box.t
+    if (w < 4f || h < 4f) return
+    val rail = (w * 0.18f).coerceIn(4f, 12f)
+    val wood = Brush.verticalGradient(
+        listOf(Color(0xFFF6E0B5), Color(0xFFD97706), Color(0xFF92400E)),
+        startY = box.t,
+        endY = box.b,
+    )
+    drawRoundRect(wood, Offset(box.l, box.t), Size(rail, h), CornerRadius(4f, 4f))
+    drawRoundRect(wood, Offset(box.r - rail, box.t), Size(rail, h), CornerRadius(4f, 4f))
+    drawRect(Color.White.copy(alpha = 0.35f), Offset(box.l + 1f, box.t), Size(rail * 0.28f, h))
+    val rungH = (h * 0.055f).coerceIn(3f, 8f)
+    var y = box.t + h * 0.14f
+    val step = (w * 0.9f).coerceIn(16f, 30f)
+    while (y < box.b - 8f) {
+        drawRoundRect(
+            Brush.horizontalGradient(listOf(Color(0xFFFDE68A), Color(0xFFB45309), Color(0xFF78350F))),
+            Offset(box.l + rail * 0.35f, y),
+            Size(w - rail * 0.7f, rungH),
+            CornerRadius(3f, 3f),
+        )
+        y += step
+    }
+}
+
+private fun DrawScope.drawCollectStar(cx: Float, cy: Float, radius: Float, time: Float, stuck: Boolean) {
+    val bob = sin(time * 3.2f + cx * 0.02f) * if (stuck) 1.5f else 4f
+    val y = cy + bob
+    val pulse = 0.9f + 0.1f * sin(time * 5f + cy)
+    drawCircle(Color(0xFFFDE68A).copy(alpha = 0.35f), radius * 1.7f * pulse, Offset(cx, y))
+    val path = starPath(cx, y, radius * pulse, radius * 0.42f * pulse)
+    drawPath(
+        path,
+        Brush.radialGradient(
+            listOf(Color(0xFFFFFBEB), Color(0xFFFBBF24), Color(0xFFD97706)),
+            center = Offset(cx - radius * 0.2f, y - radius * 0.25f),
+            radius = radius * 1.6f,
+        ),
+    )
+    drawPath(path, Color(0xFF92400E), style = Stroke(width = 2f))
+    drawCircle(Color.White.copy(alpha = 0.9f), radius * 0.16f, Offset(cx - radius * 0.22f, y - radius * 0.18f))
+}
+
+private fun starPath(cx: Float, cy: Float, outer: Float, inner: Float): Path {
+    val path = Path()
+    val points = 5
+    for (i in 0 until points * 2) {
+        val radius = if (i % 2 == 0) outer else inner
+        val angle = (-PI / 2.0 + i * PI / points).toFloat()
+        val x = cx + cos(angle) * radius
+        val y = cy + sin(angle) * radius
+        if (i == 0) path.moveTo(x, y) else path.lineTo(x, y)
+    }
+    path.close()
+    return path
+}
+
+private fun DrawScope.drawMagnet(cx: Float, cy: Float, time: Float) {
+    val bob = sin(time * 2.4f + cx) * 3f
+    val y = cy + bob
+    drawCircle(Color(0xFF38BDF8).copy(alpha = 0.28f), 30f, Offset(cx, y))
+    drawArc(
+        Brush.horizontalGradient(listOf(Color(0xFFEF4444), Color(0xFFE7E5E4), Color(0xFF2563EB))),
+        startAngle = 200f,
+        sweepAngle = 140f,
+        useCenter = false,
+        topLeft = Offset(cx - 16f, y - 18f),
+        size = Size(32f, 32f),
+        style = Stroke(width = 8f, cap = StrokeCap.Butt),
+    )
+    drawRoundRect(Color(0xFFEF4444), Offset(cx - 16f, y + 2f), Size(8f, 16f), CornerRadius(2f, 2f))
+    drawRoundRect(Color(0xFF2563EB), Offset(cx + 8f, y + 2f), Size(8f, 16f), CornerRadius(2f, 2f))
+    drawCircle(Color.White.copy(alpha = 0.7f), 3f, Offset(cx - 4f, y - 10f))
+}
+
+private fun DrawScope.drawMagnetAura(x: Float, y: Float, time: Float) {
+    val pulse = 0.92f + 0.08f * sin(time * 6f)
+    val radius = com.example.bible.games.RedBallSim.MAGNET_RADIUS * pulse
+    drawCircle(
+        Color(0xFF38BDF8).copy(alpha = 0.1f),
+        radius,
+        Offset(x, y),
+    )
+    drawCircle(
+        Color(0xFF7DD3FC).copy(alpha = 0.45f),
+        radius,
+        Offset(x, y),
+        style = Stroke(width = 3f),
+    )
+}
+
+private fun DrawScope.drawAngrySquare(cx: Float, cy: Float, side: Float, angle: Float) {
+    val half = side / 2f
+    drawOval(
+        Color(0xFF7F1D1D).copy(alpha = 0.22f),
+        Offset(cx - half * 0.8f, cy + half * 0.72f),
+        Size(side * 0.8f, side * 0.18f),
+    )
+    val deg = Math.toDegrees(angle.toDouble()).toFloat()
+    withTransform({ rotate(deg, Offset(cx, cy)) }) {
+        drawRoundRect(
+            Brush.linearGradient(
+                listOf(Color(0xFFFDA4AF), Color(0xFFE11D48), Color(0xFF9F1239)),
+                start = Offset(cx - half, cy - half),
+                end = Offset(cx + half, cy + half),
+            ),
+            Offset(cx - half, cy - half),
+            Size(side, side),
+            CornerRadius(side * 0.16f, side * 0.16f),
+        )
+        drawRoundRect(
+            Color(0xFF881337),
+            Offset(cx - half, cy - half),
+            Size(side, side),
+            CornerRadius(side * 0.16f, side * 0.16f),
+            style = Stroke(width = side * 0.045f),
+        )
+        val bolt = side * 0.06f
+        for (corner in listOf(
+            Offset(cx - half * 0.62f, cy - half * 0.62f),
+            Offset(cx + half * 0.62f, cy - half * 0.62f),
+            Offset(cx - half * 0.62f, cy + half * 0.62f),
+            Offset(cx + half * 0.62f, cy + half * 0.62f),
+        )) {
+            drawCircle(Color(0xFF44403C), bolt, corner)
+            drawCircle(Color.White.copy(alpha = 0.7f), bolt * 0.35f, corner + Offset(-bolt * 0.2f, -bolt * 0.2f))
+        }
+    }
+    val eye = side * 0.1f
+    val eyeY = cy - side * 0.08f
+    drawCircle(Color(0xFF1C1917), eye, Offset(cx - side * 0.18f, eyeY))
+    drawCircle(Color(0xFF1C1917), eye, Offset(cx + side * 0.18f, eyeY))
+    drawCircle(Color.White, eye * 0.35f, Offset(cx - side * 0.15f, eyeY - eye * 0.3f))
+    drawCircle(Color.White, eye * 0.35f, Offset(cx + side * 0.21f, eyeY - eye * 0.3f))
+    drawLine(
+        Color(0xFF1C1917),
+        Offset(cx - side * 0.3f, cy - side * 0.26f),
+        Offset(cx - side * 0.06f, cy - side * 0.18f),
+        side * 0.045f,
+        StrokeCap.Round,
+    )
+    drawLine(
+        Color(0xFF1C1917),
+        Offset(cx + side * 0.3f, cy - side * 0.26f),
+        Offset(cx + side * 0.06f, cy - side * 0.18f),
+        side * 0.045f,
+        StrokeCap.Round,
+    )
+    drawArc(
+        Color(0xFF1C1917),
+        startAngle = 20f,
+        sweepAngle = 140f,
+        useCenter = false,
+        topLeft = Offset(cx - side * 0.16f, cy + side * 0.02f),
+        size = Size(side * 0.32f, side * 0.22f),
+        style = Stroke(width = side * 0.045f, cap = StrokeCap.Round),
+    )
+}
+
+private fun DrawScope.drawParticle(particle: RedBallParticle) {
+    val t = (particle.life / particle.maxLife).coerceIn(0f, 1f)
+    val color = when (particle.kind) {
+        RedBallParticle.BOOM -> Color(0xFFF97316)
+        RedBallParticle.SPARK -> Color(0xFFFDE68A)
+        else -> Color(0xFFD6D3D1)
+    }
+    drawCircle(color.copy(alpha = 0.85f * t), particle.size * (0.6f + 0.5f * t), Offset(particle.x, particle.y))
 }
 
 private fun RedBallPiece.box(cell: Float) = RedBallAabb(

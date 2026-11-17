@@ -1,11 +1,17 @@
 package com.example.bible
 
+import com.example.bible.games.RED_BALL_FRICTION
+import com.example.bible.games.RedBallAabb
+import com.example.bible.games.RedBallCrateSpawn
 import com.example.bible.games.RedBallDraft
+import com.example.bible.games.RedBallEnemySpawn
 import com.example.bible.games.RedBallLevelStore
+import com.example.bible.games.RedBallMagnetSpawn
 import com.example.bible.games.RedBallPiece
 import com.example.bible.games.RedBallPieceKind
 import com.example.bible.games.RedBallScene
 import com.example.bible.games.RedBallSim
+import com.example.bible.games.RedBallStarSpawn
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNotNull
@@ -255,6 +261,227 @@ class RedBallSimTest {
         assertEquals("Новое имя", store.list().single().name)
         store.delete(draft.id)
         assertTrue(store.list().isEmpty())
+    }
+
+    @Test
+    fun stompKillsEnemyAndSideContactRestarts() {
+        val scene = arena(enemies = listOf(RedBallEnemySpawn(420f, 460f, 80f, 280f, 560f)))
+        val stomp = RedBallSim(scene)
+        val enemy = stomp.enemies.single()
+        stomp.ballX = enemy.x
+        stomp.ballY = enemy.y - 52f
+        stomp.ballVy = 420f
+        stomp.step(1f / 60f, 0f)
+        assertFalse("враг пережил прыжок сверху", enemy.alive)
+        assertFalse("мяч погиб от своего прыжка", stomp.dead)
+        assertTrue(stomp.consumeStomp())
+
+        val side = RedBallSim(scene)
+        val walker = side.enemies.single()
+        side.ballX = walker.x - walker.size / 2f - 8f
+        side.ballY = walker.y
+        side.ballVy = 0f
+        side.step(1f / 60f, 0f)
+        assertTrue("боковой удар не перезапустил мяч", side.dead)
+        assertTrue("враг исчез от касания сбоку", walker.alive)
+    }
+
+    @Test
+    fun magnetPullsNearbyStarsAndLeavesFarOnes() {
+        val radius = RedBallSim.MAGNET_RADIUS
+        val home = 80f
+        val scene = arena(
+            magnets = listOf(RedBallMagnetSpawn(home, 472f)),
+            stars = listOf(
+                RedBallStarSpawn(home + radius * 0.55f, 460f),
+                RedBallStarSpawn(home + radius * 3f, 460f),
+            ),
+        )
+        val sim = RedBallSim(scene)
+        val near = sim.stars[0]
+        val far = sim.stars[1]
+        val farX = far.x
+        val nearStart = kotlin.math.abs(near.x - sim.ballX)
+        repeat(40) { sim.step(1f / 60f, 0f) }
+        assertTrue("магнит не подобрался", sim.magnetTime > 0f)
+        assertTrue(
+            "ближняя звезда не полетела к мячу: x=${near.x} мяч=${sim.ballX}",
+            near.attached || near.taken || kotlin.math.abs(near.x - sim.ballX) < nearStart - 40f,
+        )
+        assertFalse(far.attached)
+        assertFalse(far.taken)
+        assertEquals(farX, far.x, 0.01f)
+    }
+
+    @Test
+    fun gravityOffObjectStaysPut() {
+        val scene = arena(
+            crates = listOf(RedBallCrateSpawn(360f, 180f, 80f, gravity = false, movable = true)),
+        )
+        val sim = RedBallSim(scene)
+        val y = sim.crateY
+        val x = sim.crateX
+        repeat(120) { sim.step(1f / 60f, 0f) }
+        assertEquals(x, sim.crateX, 0.5f)
+        assertEquals(y, sim.crateY, 0.5f)
+        assertFalse(sim.dead)
+    }
+
+    @Test
+    fun pushableObjectMovesAndStaticOneDoesNot() {
+        val pushable = RedBallSim(
+            arena(crates = listOf(RedBallCrateSpawn(300f, 460f, 80f, gravity = true, movable = true))),
+        )
+        val start = pushable.crateX
+        repeat(60 * 3) { pushable.step(1f / 60f, 1f) }
+        assertTrue("толкаемый ящик не сдвинулся: ${pushable.crateX}", pushable.crateX > start + 24f)
+
+        val fixed = RedBallSim(
+            arena(crates = listOf(RedBallCrateSpawn(300f, 460f, 80f, gravity = true, movable = false, mass = 4f))),
+        )
+        val fixedX = fixed.crateX
+        repeat(60 * 3) { fixed.step(1f / 60f, 1f) }
+        assertEquals(fixedX, fixed.crateX, 1f)
+        assertFalse(fixed.dead)
+    }
+
+    @Test
+    fun frictionChangesHowFarTheBallCoasts() {
+        fun coast(friction: Float): Float {
+            val sim = RedBallSim(arena(friction = friction))
+            repeat(40) { sim.step(1f / 60f, 0f) }
+            sim.ballVx = 320f
+            val x = sim.ballX
+            repeat(50) { sim.step(1f / 60f, 0f) }
+            return sim.ballX - x
+        }
+        val icy = coast(0f)
+        val rough = coast(1f)
+        assertTrue("лёд $icy не дальше шершавого $rough", icy > rough + 30f)
+    }
+
+    @Test
+    fun ladderClimbKeepsGoingHigherThanAJump() {
+        val scene = arena(ladders = listOf(RedBallAabb(40f, 120f, 90f, 500f)))
+        val sim = RedBallSim(scene)
+        repeat(20) { sim.step(1f / 60f, 0f) }
+        val y = sim.ballY
+        sim.jumpHeld = true
+        sim.jump()
+        repeat(50) { sim.step(1f / 60f, 0f) }
+        assertFalse(sim.dead)
+        assertTrue("лестница не подняла мяч: ${y - sim.ballY}", y - sim.ballY > 170f)
+    }
+
+    @Test
+    fun levelBoundsFollowWhatWasDrawn() {
+        val draft = RedBallDraft(
+            id = "wide",
+            name = "Широкий",
+            cols = 20,
+            rows = 12,
+            cell = 40f,
+            originY = 100f,
+            pieces = listOf(
+                RedBallPiece(1, RedBallPieceKind.GROUND, -8, 10, 2, 2, false),
+                RedBallPiece(2, RedBallPieceKind.GROUND, 48, 10, 2, 2, false),
+                RedBallPiece(3, RedBallPieceKind.START, -7, 9, 1, 1, false),
+                RedBallPiece(4, RedBallPieceKind.DOOR, 48, 6, 2, 4, false),
+                RedBallPiece(5, RedBallPieceKind.STAR, 55, -3, 1, 1, false),
+            ),
+            nextId = 6,
+        )
+        val scene = draft.toScene()
+        assertTrue("мир не ушёл влево: ${scene.minX}", scene.minX < -40f)
+        assertTrue("мир не вырос вправо: ${scene.worldW}", scene.worldW > draft.cols * draft.cell)
+        assertTrue(scene.minY < draft.originY)
+        assertEquals(1, scene.stars.size)
+        assertTrue(scene.solids.any { it.l < 0f })
+        assertTrue(scene.solids.none { it.r <= 0.5f && it.b - it.t > 400f })
+        val again = RedBallDraft.fromJson(draft.toJson())
+        assertNotNull(again)
+        assertTrue(again!!.pieces.any { it.kind == RedBallPieceKind.STAR && it.c > draft.cols && it.r < 0 })
+        val sim = RedBallSim(scene)
+        repeat(50) { sim.step(1f / 60f, 0f) }
+        assertFalse(sim.dead)
+        assertTrue("мяч вытолкнуло из отрицательных координат: x=${sim.ballX}", sim.ballX < -20f)
+    }
+
+    @Test
+    fun oldLevelJsonKeepsDefaultsAndStillLoads() {
+        val old = """
+            {"version":1,"id":"legacy-level","name":"Старый","cols":20,"rows":12,"cell":40,"originY":100,"nextId":5,"updatedAt":7,
+            "pieces":[
+              {"id":1,"kind":"ground","c":0,"r":10,"w":2,"h":2,"flip":false},
+              {"id":2,"kind":"ground","c":2,"r":10,"w":2,"h":2,"flip":false},
+              {"id":3,"kind":"ground","c":4,"r":10,"w":2,"h":2,"flip":false},
+              {"id":4,"kind":"ground","c":6,"r":10,"w":2,"h":2,"flip":false},
+              {"id":5,"kind":"ground","c":8,"r":10,"w":2,"h":2,"flip":false},
+              {"id":6,"kind":"ground","c":10,"r":10,"w":2,"h":2,"flip":false},
+              {"id":7,"kind":"ground","c":12,"r":10,"w":2,"h":2,"flip":false},
+              {"id":8,"kind":"ground","c":14,"r":10,"w":2,"h":2,"flip":false},
+              {"id":9,"kind":"ground","c":16,"r":10,"w":2,"h":2,"flip":false},
+              {"id":10,"kind":"ground","c":18,"r":10,"w":2,"h":2,"flip":false},
+              {"id":11,"kind":"crate","c":6,"r":8,"w":2,"h":2,"flip":false},
+              {"id":12,"kind":"start","c":1,"r":9,"w":1,"h":1,"flip":false},
+              {"id":13,"kind":"door","c":16,"r":6,"w":2,"h":4,"flip":false},
+              {"id":14,"kind":"portal","c":3,"r":3,"w":1,"h":1,"flip":false}
+            ]}
+        """.trimIndent()
+        val parsed = RedBallDraft.fromJson(old)
+        assertNotNull(parsed)
+        val crate = parsed!!.pieces.first { it.kind == RedBallPieceKind.CRATE }
+        assertTrue(crate.gravity)
+        assertTrue(crate.movable)
+        assertEquals(RED_BALL_FRICTION, crate.friction, 0.0001f)
+        assertEquals(1f, crate.mass, 0.0001f)
+        assertEquals(6, crate.c)
+        assertNull(parsed.playBlockReason())
+        assertTrue(parsed.pieces.none { it.kind.name == "PORTAL" })
+        val sim = RedBallSim(parsed.toScene())
+        val x = sim.crateX
+        repeat(60 * 3) { sim.step(1f / 60f, 1f) }
+        assertTrue("старый ящик не толкается: ${sim.crateX}", sim.crateX > x + 15f)
+
+        val tuned = parsed.withPiece(crate.id) {
+            it.copy(gravity = false, movable = false, friction = 0.15f, mass = 2.5f)
+        }
+        val round = RedBallDraft.fromJson(tuned.toJson())
+        val saved = round!!.pieces.first { it.id == crate.id }
+        assertFalse(saved.gravity)
+        assertFalse(saved.movable)
+        assertEquals(0.15f, saved.friction, 0.0001f)
+        assertEquals(2.5f, saved.mass, 0.0001f)
+    }
+
+    private fun arena(
+        friction: Float = RED_BALL_FRICTION,
+        crates: List<RedBallCrateSpawn> = emptyList(),
+        ladders: List<RedBallAabb> = emptyList(),
+        stars: List<RedBallStarSpawn> = emptyList(),
+        magnets: List<RedBallMagnetSpawn> = emptyList(),
+        enemies: List<RedBallEnemySpawn> = emptyList(),
+    ): RedBallScene {
+        return RedBallScene(
+            id = "arena",
+            name = "Площадка",
+            builtin = false,
+            worldW = 1800f,
+            worldH = 820f,
+            voidY = 760f,
+            startX = 80f,
+            startY = 472f,
+            solids = listOf(RedBallAabb(0f, 500f, 1700f, 760f, friction)),
+            slopes = emptyList(),
+            spikes = emptyList(),
+            springs = emptyList(),
+            door = RedBallAabb(1500f, 340f, 1600f, 500f),
+            crates = crates,
+            ladders = ladders,
+            stars = stars,
+            magnets = magnets,
+            enemies = enemies,
+        )
     }
 
     private fun flatDraft(extra: RedBallPiece? = null): RedBallDraft {
