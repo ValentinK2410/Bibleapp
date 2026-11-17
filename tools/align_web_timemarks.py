@@ -46,6 +46,8 @@ KJV_URL = "https://raw.githubusercontent.com/thiagobodruk/bible/master/json/en_k
 # bookId, номер книги WordProject, индекс в KJV-json, название по-русски, имя для подсказки
 BOOKS = [
     ("matthew", 40, 39, "От Матфея", "Matthew"),
+    ("mark", 41, 40, "От Марка", "Mark"),
+    ("luke", 42, 41, "От Луки", "Luke"),
     ("john", 43, 42, "От Иоанна", "John"),
 ]
 
@@ -272,6 +274,27 @@ def write_project(book_id: str, book_num: int, title_ru: str, chapter: int, cues
     )
 
 
+def fa_chapter(fa, dest: Path, verses, web_verses, length: float):
+    """Принудительное выравнивание (MMS_FA) по тексту KJV/WEB, как для греческой озвучки."""
+    import align_greek_timemarks as grk
+
+    starts, confidence = grk.forced_align(
+        fa, dest, verses, romanize=lambda text: re.findall(r"[a-z]+", text.lower().replace("'", ""))
+    )
+    cues = grk.fa_cues(verses, starts, length)
+    keep = {v["number"] for v in web_verses}
+    cues = [c for c in cues if c["verseStart"] in keep]
+    if len(cues) != len(web_verses):
+        raise RuntimeError(f"cue count {len(cues)} != verses {len(web_verses)}")
+    row = {
+        "verses": len(cues), "confident": sum(1 for v in confidence.values() if v >= grk.CONFIDENT),
+        "weak": [n for n, v in confidence.items() if v < grk.CONFIDENT],
+        "meanConfidence": round(sum(confidence.values()) / max(len(confidence), 1), 3),
+        "duration": round(length, 1),
+    }
+    return cues, row
+
+
 def main() -> None:
     from faster_whisper import WhisperModel
 
@@ -282,7 +305,15 @@ def main() -> None:
     chapters_only = {int(arg) for arg in args if arg.isdigit()}
     model_name = os.environ.get("WHISPER_MODEL", "medium.en")
     threads = int(os.environ.get("WHISPER_CPU_THREADS", str(os.cpu_count() or 4)))
-    model = WhisperModel(model_name, device="cpu", compute_type="int8", cpu_threads=threads)
+    fa = None
+    if "--fa" in sys.argv:
+        import align_greek_timemarks as grk  # noqa: F401  (MMS_FA)
+
+        fa = grk.load_fa()
+        model = None
+        model_name = "fa"
+    else:
+        model = WhisperModel(model_name, device="cpu", compute_type="int8", cpu_threads=threads)
     kjv = load_kjv()
     stats = []
     for book_id, book_num, kjv_index, title_ru, name_en in BOOKS:
@@ -292,6 +323,9 @@ def main() -> None:
         for index, web_verses in enumerate(web, start=1):
             if chapters_only and index not in chapters_only:
                 continue
+            if (OUT / f"align-{book_id}-{CODE}-{index:02d}.json").exists() and "--force" not in sys.argv:
+                print(f"{book_id} {index}: already done", flush=True)
+                continue
             kjv_chapter = kjv[kjv_index]["chapters"][index - 1] if kjv else None
             verses, used_kjv = chapter_verses(web_verses, kjv_chapter)
             url = f"https://www.wordpocket.org/bibles/app/audio/1/{book_num}/{index}.mp3"
@@ -299,6 +333,21 @@ def main() -> None:
             download(url, dest)
             length = base.duration_sec(dest)
             print(f"{book_id} {index}: listen {length:.0f}s, text {'KJV' if used_kjv else 'WEB'}", flush=True)
+            if fa is not None:
+                if kjv_chapter is not None and len(kjv_chapter) > len(web_verses):
+                    # диктор читает KJV: стих, которого нет в WEB (Лк 17:36), выравниваем
+                    # по KJV, а метку для него не пишем — его звук достаётся предыдущему стиху
+                    verses = [{"number": i, "text": re.sub(r"[{}\[\]]", "", t)}
+                              for i, t in enumerate(kjv_chapter, start=1)]
+                    used_kjv = True
+                cues, row = fa_chapter(fa, dest, verses, web_verses, length)
+                write_project(book_id, book_num, title_ru, index, cues)
+                row.update({"book": book_id, "chapter": index, "text": "KJV" if used_kjv else "WEB"})
+                stats.append(row)
+                with open(WORK / "stats-fa.jsonl", "a", encoding="utf-8") as fh:
+                    fh.write(json.dumps(row) + "\n")
+                print(json.dumps(row), flush=True)
+                continue
             tag = f"{NARRATOR}-{book_id}"
             heard = hear(model, dest, tag, index, 1, length, rehear)
             cues, hit, anchored = align(verses, heard, length)
@@ -316,8 +365,11 @@ def main() -> None:
                 "hit": round(hit, 3), "words": len(heard), "duration": round(length, 1),
                 "lastCueSec": cues[-1]["timeMs"] / 1000 if cues else 0, "text": "KJV" if used_kjv else "WEB",
             })
+            with open(WORK / "stats.jsonl", "a", encoding="utf-8") as fh:
+                fh.write(json.dumps(stats[-1]) + "\n")
             print(f"{book_id} {index}: {len(cues)} verses, anchored {anchored}, hit {hit:.2f}", flush=True)
-    (WORK / f"stats-{model_name}.json").write_text(json.dumps(stats, indent=1), encoding="utf-8")
+    suffix = "-".join(sorted(books_only)) or "all"
+    (WORK / f"stats-{model_name}-{suffix}.json").write_text(json.dumps(stats, indent=1), encoding="utf-8")
 
 
 if __name__ == "__main__":

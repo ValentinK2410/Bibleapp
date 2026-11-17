@@ -48,6 +48,8 @@ UPDATED_AT = 1794873600000
 
 BOOKS = [
     ("matthew", 40, "От Матфея"),
+    ("mark", 41, "От Марка"),
+    ("luke", 42, "От Луки"),
     ("john", 43, "От Иоанна"),
 ]
 
@@ -270,7 +272,7 @@ def load_fa():
     return model, bundle.get_dict(star="*"), torch
 
 
-def forced_align(fa, path: Path, verses: list[dict]):
+def forced_align(fa, path: Path, verses: list[dict], romanize=None):
     """Начало каждого стиха (сек) и средняя уверенность букв первых слов стиха."""
     import torchaudio
 
@@ -290,7 +292,7 @@ def forced_align(fa, path: Path, verses: list[dict]):
     for verse in verses:
         if verse is not verses[0]:
             targets.append(labels["*"])
-        words = ["".join(ch for ch in word if ch in labels) for word in tokens(verse["text"])]
+        words = ["".join(ch for ch in word if ch in labels) for word in (romanize or tokens)(verse["text"])]
         words = [word for word in words if word] or ["a"]
         first_token[verse["number"]] = len(targets)
         head = []
@@ -430,7 +432,8 @@ def main() -> None:
             stats.append(row)
             print(json.dumps(row, ensure_ascii=False), flush=True)
     name = "check" if check else "fa"
-    (WORK / f"stats-{name}.json").write_text(json.dumps(stats, indent=1), encoding="utf-8")
+    suffix = "-".join(sorted(books_only)) if books_only else "all"
+    (WORK / f"stats-{name}-{suffix}.json").write_text(json.dumps(stats, indent=1), encoding="utf-8")
 
 
 def verify_main() -> None:

@@ -424,6 +424,406 @@
       "file": "projects/grk_john_9.json"
     },
     {
+      "id": "gh_grk_luke_1",
+      "translationCode": "PODSTR",
+      "bookId": "luke",
+      "chapter": 1,
+      "title": "От Луки 1 · Греческий (Koine)",
+      "cueCount": 80,
+      "narratorId": "greek-nt",
+      "file": "projects/grk_luke_1.json"
+    },
+    {
+      "id": "gh_grk_luke_10",
+      "translationCode": "PODSTR",
+      "bookId": "luke",
+      "chapter": 10,
+      "title": "От Луки 10 · Греческий (Koine)",
+      "cueCount": 42,
+      "narratorId": "greek-nt",
+      "file": "projects/grk_luke_10.json"
+    },
+    {
+      "id": "gh_grk_luke_11",
+      "translationCode": "PODSTR",
+      "bookId": "luke",
+      "chapter": 11,
+      "title": "От Луки 11 · Греческий (Koine)",
+      "cueCount": 54,
+      "narratorId": "greek-nt",
+      "file": "projects/grk_luke_11.json"
+    },
+    {
+      "id": "gh_grk_luke_12",
+      "translationCode": "PODSTR",
+      "bookId": "luke",
+      "chapter": 12,
+      "title": "От Луки 12 · Греческий (Koine)",
+      "cueCount": 59,
+      "narratorId": "greek-nt",
+      "file": "projects/grk_luke_12.json"
+    },
+    {
+      "id": "gh_grk_luke_13",
+      "translationCode": "PODSTR",
+      "bookId": "luke",
+      "chapter": 13,
+      "title": "От Луки 13 · Греческий (Koine)",
+      "cueCount": 35,
+      "narratorId": "greek-nt",
+      "file": "projects/grk_luke_13.json"
+    },
+    {
+      "id": "gh_grk_luke_14",
+      "translationCode": "PODSTR",
+      "bookId": "luke",
+      "chapter": 14,
+      "title": "От Луки 14 · Греческий (Koine)",
+      "cueCount": 35,
+      "narratorId": "greek-nt",
+      "file": "projects/grk_luke_14.json"
+    },
+    {
+      "id": "gh_grk_luke_15",
+      "translationCode": "PODSTR",
+      "bookId": "luke",
+      "chapter": 15,
+      "title": "От Луки 15 · Греческий (Koine)",
+      "cueCount": 32,
+      "narratorId": "greek-nt",
+      "file": "projects/grk_luke_15.json"
+    },
+    {
+      "id": "gh_grk_luke_16",
+      "translationCode": "PODSTR",
+      "bookId": "luke",
+      "chapter": 16,
+      "title": "От Луки 16 · Греческий (Koine)",
+      "cueCount": 31,
+      "narratorId": "greek-nt",
+      "file": "projects/grk_luke_16.json"
+    },
+    {
+      "id": "gh_grk_luke_17",
+      "translationCode": "PODSTR",
+      "bookId": "luke",
+      "chapter": 17,
+      "title": "От Луки 17 · Греческий (Koine)",
+      "cueCount": 37,
+      "narratorId": "greek-nt",
+      "file": "projects/grk_luke_17.json"
+    },
+    {
+      "id": "gh_grk_luke_18",
+      "translationCode": "PODSTR",
+      "bookId": "luke",
+      "chapter": 18,
+      "title": "От Луки 18 · Греческий (Koine)",
+      "cueCount": 43,
+      "narratorId": "greek-nt",
+      "file": "projects/grk_luke_18.json"
+    },
+    {
+      "id": "gh_grk_luke_19",
+      "translationCode": "PODSTR",
+      "bookId": "luke",
+      "chapter": 19,
+      "title": "От Луки 19 · Греческий (Koine)",
+      "cueCount": 48,
+      "narratorId": "greek-nt",
+      "file": "projects/grk_luke_19.json"
+    },
+    {
+      "id": "gh_grk_luke_2",
+      "translationCode": "PODSTR",
+      "bookId": "luke",
+      "chapter": 2,
+      "title": "От Луки 2 · Греческий (Koine)",
+      "cueCount": 52,
+      "narratorId": "greek-nt",
+      "file": "projects/grk_luke_2.json"
+    },
+    {
+      "id": "gh_grk_luke_20",
+      "translationCode": "PODSTR",
+      "bookId": "luke",
+      "chapter": 20,
+      "title": "От Луки 20 · Греческий (Koine)",
+      "cueCount": 47,
+      "narratorId": "greek-nt",
+      "file": "projects/grk_luke_20.json"
+    },
+    {
+      "id": "gh_grk_luke_21",
+      "translationCode": "PODSTR",
+      "bookId": "luke",
+      "chapter": 21,
+      "title": "От Луки 21 · Греческий (Koine)",
+      "cueCount": 38,
+      "narratorId": "greek-nt",
+      "file": "projects/grk_luke_21.json"
+    },
+    {
+      "id": "gh_grk_luke_22",
+      "translationCode": "PODSTR",
+      "bookId": "luke",
+      "chapter": 22,
+      "title": "От Луки 22 · Греческий (Koine)",
+      "cueCount": 71,
+      "narratorId": "greek-nt",
+      "file": "projects/grk_luke_22.json"
+    },
+    {
+      "id": "gh_grk_luke_23",
+      "translationCode": "PODSTR",
+      "bookId": "luke",
+      "chapter": 23,
+      "title": "От Луки 23 · Греческий (Koine)",
+      "cueCount": 56,
+      "narratorId": "greek-nt",
+      "file": "projects/grk_luke_23.json"
+    },
+    {
+      "id": "gh_grk_luke_24",
+      "translationCode": "PODSTR",
+      "bookId": "luke",
+      "chapter": 24,
+      "title": "От Луки 24 · Греческий (Koine)",
+      "cueCount": 53,
+      "narratorId": "greek-nt",
+      "file": "projects/grk_luke_24.json"
+    },
+    {
+      "id": "gh_grk_luke_3",
+      "translationCode": "PODSTR",
+      "bookId": "luke",
+      "chapter": 3,
+      "title": "От Луки 3 · Греческий (Koine)",
+      "cueCount": 38,
+      "narratorId": "greek-nt",
+      "file": "projects/grk_luke_3.json"
+    },
+    {
+      "id": "gh_grk_luke_4",
+      "translationCode": "PODSTR",
+      "bookId": "luke",
+      "chapter": 4,
+      "title": "От Луки 4 · Греческий (Koine)",
+      "cueCount": 44,
+      "narratorId": "greek-nt",
+      "file": "projects/grk_luke_4.json"
+    },
+    {
+      "id": "gh_grk_luke_5",
+      "translationCode": "PODSTR",
+      "bookId": "luke",
+      "chapter": 5,
+      "title": "От Луки 5 · Греческий (Koine)",
+      "cueCount": 39,
+      "narratorId": "greek-nt",
+      "file": "projects/grk_luke_5.json"
+    },
+    {
+      "id": "gh_grk_luke_6",
+      "translationCode": "PODSTR",
+      "bookId": "luke",
+      "chapter": 6,
+      "title": "От Луки 6 · Греческий (Koine)",
+      "cueCount": 49,
+      "narratorId": "greek-nt",
+      "file": "projects/grk_luke_6.json"
+    },
+    {
+      "id": "gh_grk_luke_7",
+      "translationCode": "PODSTR",
+      "bookId": "luke",
+      "chapter": 7,
+      "title": "От Луки 7 · Греческий (Koine)",
+      "cueCount": 50,
+      "narratorId": "greek-nt",
+      "file": "projects/grk_luke_7.json"
+    },
+    {
+      "id": "gh_grk_luke_8",
+      "translationCode": "PODSTR",
+      "bookId": "luke",
+      "chapter": 8,
+      "title": "От Луки 8 · Греческий (Koine)",
+      "cueCount": 56,
+      "narratorId": "greek-nt",
+      "file": "projects/grk_luke_8.json"
+    },
+    {
+      "id": "gh_grk_luke_9",
+      "translationCode": "PODSTR",
+      "bookId": "luke",
+      "chapter": 9,
+      "title": "От Луки 9 · Греческий (Koine)",
+      "cueCount": 62,
+      "narratorId": "greek-nt",
+      "file": "projects/grk_luke_9.json"
+    },
+    {
+      "id": "gh_grk_mark_1",
+      "translationCode": "PODSTR",
+      "bookId": "mark",
+      "chapter": 1,
+      "title": "От Марка 1 · Греческий (Koine)",
+      "cueCount": 45,
+      "narratorId": "greek-nt",
+      "file": "projects/grk_mark_1.json"
+    },
+    {
+      "id": "gh_grk_mark_10",
+      "translationCode": "PODSTR",
+      "bookId": "mark",
+      "chapter": 10,
+      "title": "От Марка 10 · Греческий (Koine)",
+      "cueCount": 52,
+      "narratorId": "greek-nt",
+      "file": "projects/grk_mark_10.json"
+    },
+    {
+      "id": "gh_grk_mark_11",
+      "translationCode": "PODSTR",
+      "bookId": "mark",
+      "chapter": 11,
+      "title": "От Марка 11 · Греческий (Koine)",
+      "cueCount": 33,
+      "narratorId": "greek-nt",
+      "file": "projects/grk_mark_11.json"
+    },
+    {
+      "id": "gh_grk_mark_12",
+      "translationCode": "PODSTR",
+      "bookId": "mark",
+      "chapter": 12,
+      "title": "От Марка 12 · Греческий (Koine)",
+      "cueCount": 44,
+      "narratorId": "greek-nt",
+      "file": "projects/grk_mark_12.json"
+    },
+    {
+      "id": "gh_grk_mark_13",
+      "translationCode": "PODSTR",
+      "bookId": "mark",
+      "chapter": 13,
+      "title": "От Марка 13 · Греческий (Koine)",
+      "cueCount": 37,
+      "narratorId": "greek-nt",
+      "file": "projects/grk_mark_13.json"
+    },
+    {
+      "id": "gh_grk_mark_14",
+      "translationCode": "PODSTR",
+      "bookId": "mark",
+      "chapter": 14,
+      "title": "От Марка 14 · Греческий (Koine)",
+      "cueCount": 72,
+      "narratorId": "greek-nt",
+      "file": "projects/grk_mark_14.json"
+    },
+    {
+      "id": "gh_grk_mark_15",
+      "translationCode": "PODSTR",
+      "bookId": "mark",
+      "chapter": 15,
+      "title": "От Марка 15 · Греческий (Koine)",
+      "cueCount": 47,
+      "narratorId": "greek-nt",
+      "file": "projects/grk_mark_15.json"
+    },
+    {
+      "id": "gh_grk_mark_16",
+      "translationCode": "PODSTR",
+      "bookId": "mark",
+      "chapter": 16,
+      "title": "От Марка 16 · Греческий (Koine)",
+      "cueCount": 20,
+      "narratorId": "greek-nt",
+      "file": "projects/grk_mark_16.json"
+    },
+    {
+      "id": "gh_grk_mark_2",
+      "translationCode": "PODSTR",
+      "bookId": "mark",
+      "chapter": 2,
+      "title": "От Марка 2 · Греческий (Koine)",
+      "cueCount": 28,
+      "narratorId": "greek-nt",
+      "file": "projects/grk_mark_2.json"
+    },
+    {
+      "id": "gh_grk_mark_3",
+      "translationCode": "PODSTR",
+      "bookId": "mark",
+      "chapter": 3,
+      "title": "От Марка 3 · Греческий (Koine)",
+      "cueCount": 35,
+      "narratorId": "greek-nt",
+      "file": "projects/grk_mark_3.json"
+    },
+    {
+      "id": "gh_grk_mark_4",
+      "translationCode": "PODSTR",
+      "bookId": "mark",
+      "chapter": 4,
+      "title": "От Марка 4 · Греческий (Koine)",
+      "cueCount": 41,
+      "narratorId": "greek-nt",
+      "file": "projects/grk_mark_4.json"
+    },
+    {
+      "id": "gh_grk_mark_5",
+      "translationCode": "PODSTR",
+      "bookId": "mark",
+      "chapter": 5,
+      "title": "От Марка 5 · Греческий (Koine)",
+      "cueCount": 43,
+      "narratorId": "greek-nt",
+      "file": "projects/grk_mark_5.json"
+    },
+    {
+      "id": "gh_grk_mark_6",
+      "translationCode": "PODSTR",
+      "bookId": "mark",
+      "chapter": 6,
+      "title": "От Марка 6 · Греческий (Koine)",
+      "cueCount": 56,
+      "narratorId": "greek-nt",
+      "file": "projects/grk_mark_6.json"
+    },
+    {
+      "id": "gh_grk_mark_7",
+      "translationCode": "PODSTR",
+      "bookId": "mark",
+      "chapter": 7,
+      "title": "От Марка 7 · Греческий (Koine)",
+      "cueCount": 37,
+      "narratorId": "greek-nt",
+      "file": "projects/grk_mark_7.json"
+    },
+    {
+      "id": "gh_grk_mark_8",
+      "translationCode": "PODSTR",
+      "bookId": "mark",
+      "chapter": 8,
+      "title": "От Марка 8 · Греческий (Koine)",
+      "cueCount": 38,
+      "narratorId": "greek-nt",
+      "file": "projects/grk_mark_8.json"
+    },
+    {
+      "id": "gh_grk_mark_9",
+      "translationCode": "PODSTR",
+      "bookId": "mark",
+      "chapter": 9,
+      "title": "От Марка 9 · Греческий (Koine)",
+      "cueCount": 50,
+      "narratorId": "greek-nt",
+      "file": "projects/grk_mark_9.json"
+    },
+    {
       "id": "gh_grk_matthew_1",
       "translationCode": "PODSTR",
       "bookId": "matthew",
@@ -1332,6 +1732,136 @@
       "cueCount": 41,
       "narratorId": "bondarenko",
       "file": "projects/syn_john_9.json"
+    },
+    {
+      "id": "gh_syn_mark_1",
+      "translationCode": "SYN",
+      "bookId": "mark",
+      "chapter": 1,
+      "title": "От Марка 1 · Синодальный · Бондаренко",
+      "cueCount": 45,
+      "narratorId": "bondarenko",
+      "file": "projects/syn_mark_1.json"
+    },
+    {
+      "id": "gh_syn_mark_10",
+      "translationCode": "SYN",
+      "bookId": "mark",
+      "chapter": 10,
+      "title": "От Марка 10 · Синодальный · Бондаренко",
+      "cueCount": 52,
+      "narratorId": "bondarenko",
+      "file": "projects/syn_mark_10.json"
+    },
+    {
+      "id": "gh_syn_mark_11",
+      "translationCode": "SYN",
+      "bookId": "mark",
+      "chapter": 11,
+      "title": "От Марка 11 · Синодальный · Бондаренко",
+      "cueCount": 33,
+      "narratorId": "bondarenko",
+      "file": "projects/syn_mark_11.json"
+    },
+    {
+      "id": "gh_syn_mark_12",
+      "translationCode": "SYN",
+      "bookId": "mark",
+      "chapter": 12,
+      "title": "От Марка 12 · Синодальный · Бондаренко",
+      "cueCount": 44,
+      "narratorId": "bondarenko",
+      "file": "projects/syn_mark_12.json"
+    },
+    {
+      "id": "gh_syn_mark_13",
+      "translationCode": "SYN",
+      "bookId": "mark",
+      "chapter": 13,
+      "title": "От Марка 13 · Синодальный · Бондаренко",
+      "cueCount": 37,
+      "narratorId": "bondarenko",
+      "file": "projects/syn_mark_13.json"
+    },
+    {
+      "id": "gh_syn_mark_2",
+      "translationCode": "SYN",
+      "bookId": "mark",
+      "chapter": 2,
+      "title": "От Марка 2 · Синодальный · Бондаренко",
+      "cueCount": 28,
+      "narratorId": "bondarenko",
+      "file": "projects/syn_mark_2.json"
+    },
+    {
+      "id": "gh_syn_mark_3",
+      "translationCode": "SYN",
+      "bookId": "mark",
+      "chapter": 3,
+      "title": "От Марка 3 · Синодальный · Бондаренко",
+      "cueCount": 35,
+      "narratorId": "bondarenko",
+      "file": "projects/syn_mark_3.json"
+    },
+    {
+      "id": "gh_syn_mark_4",
+      "translationCode": "SYN",
+      "bookId": "mark",
+      "chapter": 4,
+      "title": "От Марка 4 · Синодальный · Бондаренко",
+      "cueCount": 41,
+      "narratorId": "bondarenko",
+      "file": "projects/syn_mark_4.json"
+    },
+    {
+      "id": "gh_syn_mark_5",
+      "translationCode": "SYN",
+      "bookId": "mark",
+      "chapter": 5,
+      "title": "От Марка 5 · Синодальный · Бондаренко",
+      "cueCount": 43,
+      "narratorId": "bondarenko",
+      "file": "projects/syn_mark_5.json"
+    },
+    {
+      "id": "gh_syn_mark_6",
+      "translationCode": "SYN",
+      "bookId": "mark",
+      "chapter": 6,
+      "title": "От Марка 6 · Синодальный · Бондаренко",
+      "cueCount": 56,
+      "narratorId": "bondarenko",
+      "file": "projects/syn_mark_6.json"
+    },
+    {
+      "id": "gh_syn_mark_7",
+      "translationCode": "SYN",
+      "bookId": "mark",
+      "chapter": 7,
+      "title": "От Марка 7 · Синодальный · Бондаренко",
+      "cueCount": 37,
+      "narratorId": "bondarenko",
+      "file": "projects/syn_mark_7.json"
+    },
+    {
+      "id": "gh_syn_mark_8",
+      "translationCode": "SYN",
+      "bookId": "mark",
+      "chapter": 8,
+      "title": "От Марка 8 · Синодальный · Бондаренко",
+      "cueCount": 38,
+      "narratorId": "bondarenko",
+      "file": "projects/syn_mark_8.json"
+    },
+    {
+      "id": "gh_syn_mark_9",
+      "translationCode": "SYN",
+      "bookId": "mark",
+      "chapter": 9,
+      "title": "От Марка 9 · Синодальный · Бондаренко",
+      "cueCount": 50,
+      "narratorId": "bondarenko",
+      "file": "projects/syn_mark_9.json"
     },
     {
       "id": "gh_web_john_1",

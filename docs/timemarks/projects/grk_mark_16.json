@@ -1,0 +1,91 @@
+{
+  "id": "gh_grk_mark_16",
+  "translationCode": "PODSTR",
+  "bookId": "mark",
+  "chapter": 16,
+  "title": "От Марка 16 · Греческий (Koine)",
+  "narratorId": "greek-nt",
+  "audioFileName": "41_16.mp3",
+  "cues": [
+    {
+      "timeMs": 440,
+      "verseStart": 1
+    },
+    {
+      "timeMs": 11707,
+      "verseStart": 2
+    },
+    {
+      "timeMs": 17931,
+      "verseStart": 3
+    },
+    {
+      "timeMs": 23775,
+      "verseStart": 4
+    },
+    {
+      "timeMs": 30359,
+      "verseStart": 5
+    },
+    {
+      "timeMs": 37583,
+      "verseStart": 6
+    },
+    {
+      "timeMs": 40445,
+      "verseStart": 7
+    },
+    {
+      "timeMs": 42546,
+      "verseStart": 8
+    },
+    {
+      "timeMs": 48910,
+      "verseStart": 9
+    },
+    {
+      "timeMs": 50732,
+      "verseStart": 10
+    },
+    {
+      "timeMs": 52453,
+      "verseStart": 11
+    },
+    {
+      "timeMs": 53853,
+      "verseStart": 12
+    },
+    {
+      "timeMs": 55835,
+      "verseStart": 13
+    },
+    {
+      "timeMs": 57336,
+      "verseStart": 14
+    },
+    {
+      "timeMs": 60338,
+      "verseStart": 15
+    },
+    {
+      "timeMs": 61939,
+      "verseStart": 16
+    },
+    {
+      "timeMs": 64000,
+      "verseStart": 17
+    },
+    {
+      "timeMs": 66281,
+      "verseStart": 18
+    },
+    {
+      "timeMs": 69563,
+      "verseStart": 19
+    },
+    {
+      "timeMs": 71825,
+      "verseStart": 20
+    }
+  ]
+}

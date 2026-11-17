@@ -1,5 +1,9 @@
 #!/usr/bin/env python3
-"""Ставит таймкод на начало каждого стиха Евангелия от Иоанна по файлу озвучки.
+"""Ставит таймкод на начало каждого стиха Евангелия по файлу озвучки.
+
+Книга выбирается аргументом (по умолчанию john):
+  python3 tools/align_john_timemarks.py mark            # все дорожки Марка
+  python3 tools/align_john_timemarks.py luke SYN 3 4    # Лука, Синодальный, главы 3 и 4
 
 Дорожки — те же дикторы, что в приложении:
   Синодальный (Бондаренко), Новый русский, РБО, Кулаковых.
@@ -22,18 +26,36 @@ ROOT = Path(__file__).resolve().parents[1]
 ASSETS = ROOT / "app" / "src" / "main" / "assets"
 OUT = ASSETS / "timemark_projects"
 DOCS = ROOT / "docs" / "timemarks" / "projects"
-AUDIO = Path("/tmp/bible-align/john")
-CACHE = AUDIO / "transcripts"
 FILES_DIR = "/data/user/0/com.example.bible.sqlite/files"
-BOOK_NUM = 43
-UPDATED_AT = 1763323200000
 
-TRACKS = [
-    ("SYN", "bible/SYN/john.json", "bondarenko", "syn-bondarenko", "Синодальный · Бондаренко"),
-    ("NRT", "bible/NRT/john.json", "new-russian", "new-russian", "Новый русский"),
-    ("RBO", "bible/RBO/john.json", "rbo", "rbo-orgin", "РБО"),
-    ("BTI", "bible/BTI/john.json", "bti", "bti-prozorovsky", "Кулаковых"),
+# bookId: (номер книги в сетке канона приложения / bible.by, заголовок, подсказка Whisper, updatedAt)
+BOOKS = {
+    "matthew": (40, "От Матфея", "Евангелие от Матфея.", 1761510000000),
+    "mark": (41, "От Марка", "Евангелие от Марка.", 1794960000000),
+    "luke": (42, "От Луки", "Евангелие от Луки.", 1794960000000),
+    "john": (43, "От Иоанна", "Евангелие от Иоанна.", 1763323200000),
+}
+
+# код перевода, диктор в приложении, папка на bible.by, подпись
+TRACK_LIST = [
+    ("SYN", "bondarenko", "syn-bondarenko", "Синодальный · Бондаренко"),
+    ("NRT", "new-russian", "new-russian", "Новый русский"),
+    ("RBO", "rbo", "rbo-orgin", "РБО"),
+    ("BTI", "bti", "bti-prozorovsky", "Кулаковых"),
 ]
+
+
+def set_book(book: str) -> None:
+    """Переключает модуль на книгу: номер, папки кеша, подсказку, список дорожек."""
+    global BOOK, BOOK_NUM, BOOK_TITLE, PROMPT, UPDATED_AT, AUDIO, CACHE, TRACKS
+    BOOK = book
+    BOOK_NUM, BOOK_TITLE, PROMPT, UPDATED_AT = BOOKS[book]
+    AUDIO = Path("/tmp/bible-align") / book
+    CACHE = AUDIO / "transcripts"
+    TRACKS = [
+        (code, f"bible/{code}/{book}.json", narrator, folder, label)
+        for code, narrator, folder, label in TRACK_LIST
+    ]
 
 WORD = re.compile(r"[0-9a-zа-яё]+", re.IGNORECASE)
 LATIN = re.compile(r"^[a-z]+$")
@@ -51,7 +73,9 @@ UA = (
     "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 "
     "(KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
 )
-PROMPT = "Евангелие от Иоанна."
+
+
+set_book("john")
 
 
 def tokens(text: str) -> list[str]:
@@ -149,9 +173,21 @@ def words_from_segments(segments, offset: float = 0.0) -> list[tuple[str, float,
     return words
 
 
-def transcribe(model, path: Path, beam_size: int) -> list[tuple[str, float, float]]:
+def load_audio(path: Path, start: float | None = None, dur: float | None = None):
+    """MP3 → 16 кГц моно float32 через ffmpeg (без PyAV: новые версии av ломают faster-whisper)."""
+    import numpy as np
+
+    cmd = ["ffmpeg", "-nostdin", "-v", "error"]
+    if start is not None:
+        cmd += ["-ss", f"{start:.3f}", "-t", f"{dur:.3f}"]
+    cmd += ["-i", str(path), "-f", "s16le", "-ac", "1", "-ar", "16000", "-"]
+    raw = subprocess.run(cmd, capture_output=True, check=True).stdout
+    return np.frombuffer(raw, np.int16).astype(np.float32) / 32768.0
+
+
+def _whisper(model, audio, beam_size: int, offset: float = 0.0):
     segments, _info = model.transcribe(
-        str(path),
+        audio,
         language="ru",
         word_timestamps=True,
         vad_filter=False,
@@ -160,34 +196,16 @@ def transcribe(model, path: Path, beam_size: int) -> list[tuple[str, float, floa
         temperature=0.0,
         initial_prompt=PROMPT,
     )
-    return words_from_segments(segments)
+    return words_from_segments(segments, offset=offset)
+
+
+def transcribe(model, path: Path, beam_size: int) -> list[tuple[str, float, float]]:
+    return _whisper(model, load_audio(path), beam_size)
 
 
 def transcribe_window(model, path: Path, start: float, end: float, beam_size: int) -> list[tuple[str, float, float]]:
     dur = max(0.4, end - start)
-    wav = path.with_suffix(f".slice-{int(start * 10)}.wav")
-    subprocess.check_call(
-        [
-            "ffmpeg", "-y", "-ss", f"{start:.3f}", "-t", f"{dur:.3f}",
-            "-i", str(path), "-ar", "16000", "-ac", "1", str(wav),
-        ],
-        stdout=subprocess.DEVNULL,
-        stderr=subprocess.DEVNULL,
-    )
-    try:
-        segments, _info = model.transcribe(
-            str(wav),
-            language="ru",
-            word_timestamps=True,
-            vad_filter=False,
-            condition_on_previous_text=False,
-            beam_size=beam_size,
-            temperature=0.0,
-            initial_prompt=PROMPT,
-        )
-        return words_from_segments(segments, offset=start)
-    finally:
-        wav.unlink(missing_ok=True)
+    return _whisper(model, load_audio(path, start, dur), beam_size, offset=start)
 
 
 def merge_windows(windows: list[tuple[float, float]]) -> list[tuple[float, float]]:
@@ -522,6 +540,9 @@ def opening_hit(verses, cues, heard) -> float:
     return hits / len(verses)
 
 
+LAST_ALIGN = {"anchored": 0}
+
+
 def align(verses, heard, duration: float) -> tuple[list[dict], float]:
     verse_words = []
     verse_of = []
@@ -542,6 +563,7 @@ def align(verses, heard, duration: float) -> tuple[list[dict], float]:
     ratio = len(matched) / max(len(verse_words), 1)
     known, confidence = anchors_from_matches(verses, verse_words, verse_of, heard, matched)
     known = filter_anchors(verses, known, confidence)
+    LAST_ALIGN["anchored"] = len(known)
     cues = interpolate(verses, known, duration, heard)
     hit = opening_hit(verses, cues, heard)
     return cues, hit if ratio >= 0.35 else min(hit, ratio)
@@ -552,11 +574,11 @@ def write_project(code: str, narrator: str, chapter: int, cues: list[dict], labe
     DOCS.mkdir(parents=True, exist_ok=True)
     audio_name = f"{BOOK_NUM}_{chapter:02d}.mp3"
     project = {
-        "id": f"align-john-{code}-{chapter:02d}",
+        "id": f"align-{BOOK}-{code}-{chapter:02d}",
         "translationCode": code,
-        "bookId": "john",
+        "bookId": BOOK,
         "chapter": chapter,
-        "title": f"От Иоанна {chapter} · {label}",
+        "title": f"{BOOK_TITLE} {chapter} · {label}",
         "audioFilePath": f"{FILES_DIR}/bible_audio/{narrator}/{audio_name}",
         "updatedAt": UPDATED_AT,
         "cues": [
@@ -567,16 +589,16 @@ def write_project(code: str, narrator: str, chapter: int, cues: list[dict], labe
     dest = OUT / f"{project['id']}.json"
     dest.write_text(json.dumps(project, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
     portable = {
-        "id": f"gh_{code.lower()}_john_{chapter}",
+        "id": f"gh_{code.lower()}_{BOOK}_{chapter}",
         "translationCode": code,
-        "bookId": "john",
+        "bookId": BOOK,
         "chapter": chapter,
         "title": project["title"],
         "narratorId": narrator,
         "audioFileName": audio_name,
         "cues": [{"timeMs": cue["timeMs"], "verseStart": cue["verseStart"]} for cue in cues],
     }
-    (DOCS / f"{code.lower()}_john_{chapter}.json").write_text(
+    (DOCS / f"{code.lower()}_{BOOK}_{chapter}.json").write_text(
         json.dumps(portable, ensure_ascii=False, indent=2) + "\n",
         encoding="utf-8",
     )
@@ -613,6 +635,9 @@ def main() -> None:
 
     rehear = "--rehear" in sys.argv
     args = [arg for arg in sys.argv[1:] if arg not in {"--force", "--rehear"}]
+    books = [arg for arg in args if arg in BOOKS]
+    set_book(books[0] if books else "john")
+    args = [arg for arg in args if arg not in BOOKS]
     only = [arg for arg in args if not arg.isdigit()]
     chapters_only = {int(arg) for arg in args if arg.isdigit()}
     threads = int(os.environ.get("WHISPER_CPU_THREADS", "4"))
@@ -625,6 +650,9 @@ def main() -> None:
             if chapters_only and index not in chapters_only:
                 continue
             dest = AUDIO / narrator / f"{BOOK_NUM}_{index:02d}.mp3"
+            if (OUT / f"align-{BOOK}-{code}-{index:02d}.json").exists() and "--force" not in sys.argv:
+                print(f"{code} {index}: already done", flush=True)
+                continue
             print(f"{code} {index}: download", flush=True)
             download(audio_url(folder, index), dest)
             length = duration_sec(dest)
@@ -638,6 +666,13 @@ def main() -> None:
             if len(cues) != len(verses):
                 raise RuntimeError(f"{code} {index}: cue count {len(cues)} != verses {len(verses)}")
             write_project(code, narrator, index, cues, label)
+            AUDIO.mkdir(parents=True, exist_ok=True)
+            with open(AUDIO / "stats.jsonl", "a", encoding="utf-8") as fh:
+                fh.write(json.dumps({
+                    "book": BOOK, "code": code, "chapter": index, "verses": len(cues),
+                    "anchored": LAST_ALIGN["anchored"], "hit": round(hit, 3), "words": len(heard),
+                    "duration": round(length, 1),
+                }) + "\n")
             print(
                 f"{code} {index}: {len(cues)} verses, heard {len(heard)} words, hit {hit:.2f}",
                 flush=True,

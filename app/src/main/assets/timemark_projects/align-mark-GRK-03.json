@@ -1,0 +1,186 @@
+{
+  "id": "align-mark-GRK-03",
+  "translationCode": "PODSTR",
+  "bookId": "mark",
+  "chapter": 3,
+  "title": "От Марка 3 · Греческий (Koine)",
+  "audioFilePath": "/data/user/0/com.example.bible.sqlite/files/bible_audio/greek-nt/41_03.mp3",
+  "updatedAt": 1794873600000,
+  "cues": [
+    {
+      "timeMs": 1341,
+      "verseStart": 1,
+      "attachments": []
+    },
+    {
+      "timeMs": 8826,
+      "verseStart": 2,
+      "attachments": []
+    },
+    {
+      "timeMs": 15991,
+      "verseStart": 3,
+      "attachments": []
+    },
+    {
+      "timeMs": 21574,
+      "verseStart": 4,
+      "attachments": []
+    },
+    {
+      "timeMs": 32702,
+      "verseStart": 5,
+      "attachments": []
+    },
+    {
+      "timeMs": 47391,
+      "verseStart": 6,
+      "attachments": []
+    },
+    {
+      "timeMs": 57258,
+      "verseStart": 7,
+      "attachments": []
+    },
+    {
+      "timeMs": 67605,
+      "verseStart": 8,
+      "attachments": []
+    },
+    {
+      "timeMs": 80393,
+      "verseStart": 9,
+      "attachments": []
+    },
+    {
+      "timeMs": 88058,
+      "verseStart": 10,
+      "attachments": []
+    },
+    {
+      "timeMs": 95523,
+      "verseStart": 11,
+      "attachments": []
+    },
+    {
+      "timeMs": 106350,
+      "verseStart": 12,
+      "attachments": []
+    },
+    {
+      "timeMs": 111253,
+      "verseStart": 13,
+      "attachments": []
+    },
+    {
+      "timeMs": 117377,
+      "verseStart": 14,
+      "attachments": []
+    },
+    {
+      "timeMs": 125863,
+      "verseStart": 15,
+      "attachments": []
+    },
+    {
+      "timeMs": 129606,
+      "verseStart": 16,
+      "attachments": []
+    },
+    {
+      "timeMs": 134489,
+      "verseStart": 17,
+      "attachments": []
+    },
+    {
+      "timeMs": 146076,
+      "verseStart": 18,
+      "attachments": []
+    },
+    {
+      "timeMs": 157524,
+      "verseStart": 19,
+      "attachments": []
+    },
+    {
+      "timeMs": 163948,
+      "verseStart": 20,
+      "attachments": []
+    },
+    {
+      "timeMs": 170232,
+      "verseStart": 21,
+      "attachments": []
+    },
+    {
+      "timeMs": 176536,
+      "verseStart": 22,
+      "attachments": []
+    },
+    {
+      "timeMs": 188124,
+      "verseStart": 23,
+      "attachments": []
+    },
+    {
+      "timeMs": 195789,
+      "verseStart": 24,
+      "attachments": []
+    },
+    {
+      "timeMs": 201613,
+      "verseStart": 25,
+      "attachments": []
+    },
+    {
+      "timeMs": 207357,
+      "verseStart": 26,
+      "attachments": []
+    },
+    {
+      "timeMs": 214562,
+      "verseStart": 27,
+      "attachments": []
+    },
+    {
+      "timeMs": 226189,
+      "verseStart": 28,
+      "attachments": []
+    },
+    {
+      "timeMs": 236776,
+      "verseStart": 29,
+      "attachments": []
+    },
+    {
+      "timeMs": 244862,
+      "verseStart": 30,
+      "attachments": []
+    },
+    {
+      "timeMs": 248384,
+      "verseStart": 31,
+      "attachments": []
+    },
+    {
+      "timeMs": 255589,
+      "verseStart": 32,
+      "attachments": []
+    },
+    {
+      "timeMs": 265515,
+      "verseStart": 33,
+      "attachments": []
+    },
+    {
+      "timeMs": 271039,
+      "verseStart": 34,
+      "attachments": []
+    },
+    {
+      "timeMs": 278464,
+      "verseStart": 35,
+      "attachments": []
+    }
+  ]
+}
