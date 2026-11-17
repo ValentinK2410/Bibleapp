@@ -10,6 +10,7 @@ import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
 import org.junit.Test
 import java.io.File
+import java.nio.ByteBuffer
 
 class RedBallSkinTest {
 
@@ -69,7 +70,40 @@ class RedBallSkinTest {
         )
         assertTrue(partial.missingSlots().contains(RedBallSkinSlot.HERO_HAPPY))
         assertTrue(partial.missingSlots().contains(RedBallSkinSlot.BOSS))
+        assertTrue(partial.missingSlots().contains(RedBallSkinSlot.SPIKES))
+        assertTrue(partial.missingSlots().contains(RedBallSkinSlot.SPRING_IDLE))
+        assertTrue(partial.missingSlots().contains(RedBallSkinSlot.SPRING_COMPRESSED))
+        assertTrue(partial.missingSlots().contains(RedBallSkinSlot.WATER_SURFACE))
+        assertTrue(partial.missingSlots().contains(RedBallSkinSlot.WATER_BODY))
         assertEquals(RedBallSkinSlot.entries.size - 1, partial.missingSlots().size)
+    }
+
+    @Test
+    fun hazardSlotsUseTheShippedPngSizes() {
+        val chapter = RedBallSkins.greenHills
+        val assets = redballAssets()
+        val expected = listOf(
+            RedBallSkinSlot.SPIKES to Triple("sprites/spikes.png", 128, 128),
+            RedBallSkinSlot.SPRING_IDLE to Triple("sprites/spring_idle.png", 128, 128),
+            RedBallSkinSlot.SPRING_COMPRESSED to Triple("sprites/spring_compressed.png", 128, 128),
+            RedBallSkinSlot.WATER_SURFACE to Triple("tiles/water_surface.png", 256, 64),
+            RedBallSkinSlot.WATER_BODY to Triple("tiles/water_body.png", 256, 256),
+            RedBallSkinSlot.CONCRETE to Triple("tiles/concrete.png", 256, 256),
+        )
+        for ((slot, spec) in expected) {
+            val (relative, width, height) = spec
+            assertEquals(relative, chapter.files.getValue(slot))
+            val file = File(assets, chapter.assetPath(slot).removePrefix("redball/"))
+            val (actualW, actualH) = pngSize(file)
+            assertEquals("$slot width", width, actualW)
+            assertEquals("$slot height", height, actualH)
+        }
+        val concrete = File(assets, "green_hills/tiles/concrete.png")
+        assertTrue(
+            "бетон должен быть плоским тайлом v2, а не прежним тяжёлым PNG",
+            concrete.length() in 8_000L..30_000L,
+        )
+        assertEquals(null, RedBallSkins.chapter(RedBallSkinId.CLASSIC))
     }
 
     @Test
@@ -93,5 +127,15 @@ class RedBallSkinTest {
             left--
         }
         error("Не нашёл assets/redball от ${System.getProperty("user.dir")}")
+    }
+
+    private fun pngSize(file: File): Pair<Int, Int> {
+        val header = ByteArray(24)
+        file.inputStream().use { input -> assertEquals(24, input.read(header)) }
+        val buffer = ByteBuffer.wrap(header)
+        assertEquals(0x89.toByte(), buffer.get())
+        val width = buffer.getInt(16)
+        val height = buffer.getInt(20)
+        return width to height
     }
 }

@@ -31,6 +31,7 @@ import kotlin.math.atan2
 import kotlin.math.hypot
 import kotlin.math.max
 import kotlin.math.min
+import kotlin.math.roundToInt
 import kotlin.math.sin
 
 private const val SOIL_TILE = 128f
@@ -39,6 +40,14 @@ private const val GRASS_TILE_W = 144f
 private const val GRASS_CAP_FRACTION = 0.25f
 private const val GRASS_LIP = 26f
 private const val GRASS_EDGE_H = 34f
+private const val WATER_BODY_TILE = 160f
+private const val WATER_SURFACE_H = 34f
+private const val WATER_SURFACE_W = WATER_SURFACE_H * 4f
+private const val WATER_BODY_ALPHA = 0.85f
+/** Мировые единицы в секунду: полоска волн уезжает вбок, тело воды стоит. */
+private const val WATER_SCROLL = 26f
+/** Сколько держать сжатую пружину после того, как мяч уже отлип. */
+private const val SPRING_SQUASH_HOLD = 0.13f
 
 /** Крупный квадрат рисуется рогатым боссом. Обычный враг редактора — 80. */
 private const val BOSS_SIDE = 112f
@@ -52,6 +61,7 @@ private enum class SpritePortalMood { OPEN, EXIT, ASLEEP, LOST }
 /**
  * Кадр игры в спрайтовом скине. Небо — в пикселях экрана, мир — в координатах уровня.
  * Желе, кувырок врага, искры взрыва и цвета порталов остаются.
+ * Шипы, пружина и вода ямы — тоже спрайты главы. Классика их не вызывает.
  */
 internal fun DrawScope.drawSpritePlay(
     sim: RedBallSim,
@@ -67,7 +77,7 @@ internal fun DrawScope.drawSpritePlay(
         scale(scale, scale, pivot = Offset.Zero)
         translate(-camX, -camY)
     }) {
-        drawVoid(scene)
+        drawSpriteWater(scene, sim.anim, skin)
         val grounds = ArrayList<RedBallAabb>(scene.solids.size)
         for (solid in scene.solids) {
             if (solid.r <= scene.minX + 0.5f || solid.l >= scene.worldW - 0.5f) continue
@@ -75,8 +85,17 @@ internal fun DrawScope.drawSpritePlay(
         }
         drawSpriteTerrain(grounds, scene.slopes, scene.concrete, skin)
         for (ladder in scene.ladders) drawSpriteLadder(ladder, skin)
-        for (spike in scene.spikes) drawIronSpike(spike.x, spike.top, spike.w, spike.h)
-        for (spring in scene.springs) drawFairySpring(spring.l, spring.t, spring.r, spring.b)
+        for (spike in scene.spikes) drawSpriteSpikes(spike.x, spike.top, spike.w, spike.h, skin)
+        for ((index, spring) in scene.springs.withIndex()) {
+            drawSpriteSpring(
+                spring.l,
+                spring.t,
+                spring.r,
+                spring.b,
+                SpringSquash.showCompressed(sim, index),
+                skin,
+            )
+        }
         for (star in sim.stars) {
             if (!star.taken) drawSpriteStar(star.x, star.y, sim.anim, star.attached, skin)
         }
@@ -136,13 +155,14 @@ internal fun DrawScope.drawSpriteEditorWorld(
         val box = piece.spriteBox(cell)
         when (piece.kind) {
             RedBallPieceKind.LADDER -> drawSpriteLadder(box, skin)
-            RedBallPieceKind.SPIKE -> drawIronSpike(
+            RedBallPieceKind.SPIKE -> drawSpriteSpikes(
                 (box.l + box.r) / 2f,
                 box.t,
                 box.r - box.l,
                 box.b - box.t,
+                skin,
             )
-            RedBallPieceKind.SPRING -> drawFairySpring(box.l, box.t, box.r, box.b)
+            RedBallPieceKind.SPRING -> drawSpriteSpring(box.l, box.t, box.r, box.b, compressed = false, skin)
             RedBallPieceKind.CRATE -> drawSpriteCrate(
                 (box.l + box.r) / 2f,
                 (box.t + box.b) / 2f,
@@ -670,6 +690,114 @@ private fun DrawScope.drawHillDecor(
 }
 
 /**
+ * Шипы кладутся в ряд по ширине предмета. В PNG два шипа, период одного — половина кадра.
+ * Высота кадра равна высоте предмета, лишнее по краю обрезает сам прямоугольник.
+ */
+private fun DrawScope.drawSpriteSpikes(
+    x: Float,
+    top: Float,
+    w: Float,
+    h: Float,
+    skin: RedBallSkinBitmaps,
+) {
+    if (w < 2f || h < 2f) return
+    val image = skin.bitmap(RedBallSkinSlot.SPIKES)
+    val periods = (w / (h * 0.5f)).roundToInt().coerceAtLeast(1)
+    val tileW = w / periods * 2f
+    val left = x - w / 2f
+    fillTiled(image, left, top, left + w, top + h, tileW, h, originX = left, originY = top)
+}
+
+/**
+ * Оба кадра пружины вписаны в один прямоугольник: низ и центр совпадают,
+ * сжатый кадр короче сверху. Симулятор не сообщает длительность удара,
+ * поэтому сжатие держится, пока мяч касается пружины, и ещё короткое время после.
+ */
+private fun DrawScope.drawSpriteSpring(
+    l: Float,
+    t: Float,
+    r: Float,
+    b: Float,
+    compressed: Boolean,
+    skin: RedBallSkinBitmaps,
+) {
+    val w = r - l
+    val h = b - t
+    if (w < 4f || h < 4f) return
+    val slot = if (compressed) RedBallSkinSlot.SPRING_COMPRESSED else RedBallSkinSlot.SPRING_IDLE
+    placeCentered(skin.bitmap(slot), (l + r) / 2f, (t + b) / 2f, w, h)
+}
+
+/** Яма: тело тайлится по всей глубине, сверху полоска волн медленно едет вбок. */
+private fun DrawScope.drawSpriteWater(scene: RedBallScene, time: Float, skin: RedBallSkinBitmaps) {
+    val line = scene.voidY - 6f
+    val bottom = scene.worldH + 60f
+    if (line >= bottom) return
+    val left = scene.minX - 80f
+    val right = scene.worldW + 80f
+    fillTiled(
+        skin.bitmap(RedBallSkinSlot.WATER_BODY),
+        left,
+        line,
+        right,
+        bottom,
+        WATER_BODY_TILE,
+        WATER_BODY_TILE,
+        alpha = WATER_BODY_ALPHA,
+    )
+    val overlap = WATER_SURFACE_H * 0.42f
+    val stripTop = line - (WATER_SURFACE_H - overlap)
+    val shift = wrapShift(time * WATER_SCROLL, WATER_SURFACE_W)
+    fillTiled(
+        skin.bitmap(RedBallSkinSlot.WATER_SURFACE),
+        left,
+        stripTop,
+        right,
+        stripTop + WATER_SURFACE_H,
+        WATER_SURFACE_W,
+        WATER_SURFACE_H,
+        originX = left - shift,
+        originY = stripTop,
+    )
+}
+
+/**
+ * Пока мяч лежит на пружине, кадр сжатый. После отрыва ещё [SPRING_SQUASH_HOLD] секунд.
+ * Часы сбрасываются, когда уровень перезапустили или сцена сменилась.
+ */
+private object SpringSquash {
+    private var sceneKey = ""
+    private var lastAnim = 0f
+    private var until = FloatArray(0)
+
+    fun showCompressed(sim: RedBallSim, index: Int): Boolean {
+        val springs = sim.scene.springs
+        if (index !in springs.indices) return false
+        val first = springs.first()
+        val last = springs.last()
+        val key = sim.scene.id + ":" + springs.size + ":" +
+            first.l.toBits() + ":" + first.t.toBits() + ":" +
+            last.r.toBits() + ":" + last.b.toBits()
+        val restarted = sim.anim + 0.0001f < lastAnim
+        if (key != sceneKey || restarted || until.size != springs.size) {
+            sceneKey = key
+            until = FloatArray(springs.size)
+        }
+        lastAnim = sim.anim
+        if (ballPressesSpring(sim, springs[index])) {
+            until[index] = sim.anim + SPRING_SQUASH_HOLD
+        }
+        return sim.anim < until[index]
+    }
+}
+
+private fun ballPressesSpring(sim: RedBallSim, spring: RedBallAabb): Boolean {
+    val radius = RedBallScene.BALL_R
+    return sim.ballX + radius > spring.l && sim.ballX - radius < spring.r &&
+        sim.ballY + radius > spring.t && sim.ballY - radius < spring.b
+}
+
+/**
  * Повтор PNG. Матрица шейдера увеличивает тайл до [tileW]×[tileH] мировых единиц
  * и ставит пиксель (0, 0) картинки в ([originX], [originY]), чтобы соседние блоки
  * сходились без шва. Шейдер создаётся на один прямоугольник и не делится между вызовами.
@@ -684,6 +812,7 @@ private fun DrawScope.fillTiled(
     tileH: Float,
     originX: Float = 0f,
     originY: Float = 0f,
+    alpha: Float = 1f,
 ) {
     if (right - left < 1f || bottom - top < 1f || tileW < 1f || tileH < 1f) return
     if (image.width < 1 || image.height < 1) return
@@ -692,7 +821,12 @@ private fun DrawScope.fillTiled(
     matrix.setScale(tileW / image.width, tileH / image.height)
     matrix.postTranslate(originX, originY)
     shader.setLocalMatrix(matrix)
-    drawRect(ShaderBrush(shader), Offset(left, top), Size(right - left, bottom - top))
+    drawRect(
+        ShaderBrush(shader),
+        Offset(left, top),
+        Size(right - left, bottom - top),
+        alpha = alpha,
+    )
 }
 
 private fun DrawScope.placeCentered(

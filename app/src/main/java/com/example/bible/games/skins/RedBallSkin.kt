@@ -51,6 +51,11 @@ enum class RedBallSkinSlot {
     GRASS_EDGE,
     SOIL,
     LADDER,
+    SPIKES,
+    SPRING_IDLE,
+    SPRING_COMPRESSED,
+    WATER_SURFACE,
+    WATER_BODY,
     STAR,
     MAGNET,
     HEART,
@@ -106,7 +111,7 @@ object RedBallSkins {
         chapter = 1,
         assetRoot = "redball/green_hills",
         // Спрайты и иконки — мастера 2× (резче на плотном экране).
-        // Крупные тайлы (холмы, земля, небо, бетон, ящик) — финальные 1×.
+        // Крупные тайлы (холмы, земля, небо, бетон, вода, ящик) — финальные 1×.
         files = mapOf(
             RedBallSkinSlot.HERO_HAPPY to "sprites/hero_red_ball_happy.png",
             RedBallSkinSlot.HERO_SURPRISED to "sprites/hero_red_ball_surprised.png",
@@ -120,6 +125,11 @@ object RedBallSkins {
             RedBallSkinSlot.GRASS_EDGE to "tiles/grass_edge.png",
             RedBallSkinSlot.SOIL to "tiles/soil.png",
             RedBallSkinSlot.LADDER to "sprites/ladder.png",
+            RedBallSkinSlot.SPIKES to "sprites/spikes.png",
+            RedBallSkinSlot.SPRING_IDLE to "sprites/spring_idle.png",
+            RedBallSkinSlot.SPRING_COMPRESSED to "sprites/spring_compressed.png",
+            RedBallSkinSlot.WATER_SURFACE to "tiles/water_surface.png",
+            RedBallSkinSlot.WATER_BODY to "tiles/water_body.png",
             RedBallSkinSlot.STAR to "sprites/star.png",
             RedBallSkinSlot.MAGNET to "sprites/magnet.png",
             RedBallSkinSlot.HEART to "sprites/heart.png",
