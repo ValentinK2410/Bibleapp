@@ -1894,6 +1894,246 @@
       "file": "projects/rbo_john_9.json"
     },
     {
+      "id": "gh_rbo_luke_1",
+      "translationCode": "RBO",
+      "bookId": "luke",
+      "chapter": 1,
+      "title": "От Луки 1 · РБО",
+      "cueCount": 80,
+      "narratorId": "rbo",
+      "file": "projects/rbo_luke_1.json"
+    },
+    {
+      "id": "gh_rbo_luke_10",
+      "translationCode": "RBO",
+      "bookId": "luke",
+      "chapter": 10,
+      "title": "От Луки 10 · РБО",
+      "cueCount": 42,
+      "narratorId": "rbo",
+      "file": "projects/rbo_luke_10.json"
+    },
+    {
+      "id": "gh_rbo_luke_11",
+      "translationCode": "RBO",
+      "bookId": "luke",
+      "chapter": 11,
+      "title": "От Луки 11 · РБО",
+      "cueCount": 54,
+      "narratorId": "rbo",
+      "file": "projects/rbo_luke_11.json"
+    },
+    {
+      "id": "gh_rbo_luke_12",
+      "translationCode": "RBO",
+      "bookId": "luke",
+      "chapter": 12,
+      "title": "От Луки 12 · РБО",
+      "cueCount": 59,
+      "narratorId": "rbo",
+      "file": "projects/rbo_luke_12.json"
+    },
+    {
+      "id": "gh_rbo_luke_13",
+      "translationCode": "RBO",
+      "bookId": "luke",
+      "chapter": 13,
+      "title": "От Луки 13 · РБО",
+      "cueCount": 35,
+      "narratorId": "rbo",
+      "file": "projects/rbo_luke_13.json"
+    },
+    {
+      "id": "gh_rbo_luke_14",
+      "translationCode": "RBO",
+      "bookId": "luke",
+      "chapter": 14,
+      "title": "От Луки 14 · РБО",
+      "cueCount": 35,
+      "narratorId": "rbo",
+      "file": "projects/rbo_luke_14.json"
+    },
+    {
+      "id": "gh_rbo_luke_15",
+      "translationCode": "RBO",
+      "bookId": "luke",
+      "chapter": 15,
+      "title": "От Луки 15 · РБО",
+      "cueCount": 32,
+      "narratorId": "rbo",
+      "file": "projects/rbo_luke_15.json"
+    },
+    {
+      "id": "gh_rbo_luke_16",
+      "translationCode": "RBO",
+      "bookId": "luke",
+      "chapter": 16,
+      "title": "От Луки 16 · РБО",
+      "cueCount": 31,
+      "narratorId": "rbo",
+      "file": "projects/rbo_luke_16.json"
+    },
+    {
+      "id": "gh_rbo_luke_17",
+      "translationCode": "RBO",
+      "bookId": "luke",
+      "chapter": 17,
+      "title": "От Луки 17 · РБО",
+      "cueCount": 37,
+      "narratorId": "rbo",
+      "file": "projects/rbo_luke_17.json"
+    },
+    {
+      "id": "gh_rbo_luke_18",
+      "translationCode": "RBO",
+      "bookId": "luke",
+      "chapter": 18,
+      "title": "От Луки 18 · РБО",
+      "cueCount": 43,
+      "narratorId": "rbo",
+      "file": "projects/rbo_luke_18.json"
+    },
+    {
+      "id": "gh_rbo_luke_19",
+      "translationCode": "RBO",
+      "bookId": "luke",
+      "chapter": 19,
+      "title": "От Луки 19 · РБО",
+      "cueCount": 48,
+      "narratorId": "rbo",
+      "file": "projects/rbo_luke_19.json"
+    },
+    {
+      "id": "gh_rbo_luke_2",
+      "translationCode": "RBO",
+      "bookId": "luke",
+      "chapter": 2,
+      "title": "От Луки 2 · РБО",
+      "cueCount": 52,
+      "narratorId": "rbo",
+      "file": "projects/rbo_luke_2.json"
+    },
+    {
+      "id": "gh_rbo_luke_20",
+      "translationCode": "RBO",
+      "bookId": "luke",
+      "chapter": 20,
+      "title": "От Луки 20 · РБО",
+      "cueCount": 47,
+      "narratorId": "rbo",
+      "file": "projects/rbo_luke_20.json"
+    },
+    {
+      "id": "gh_rbo_luke_21",
+      "translationCode": "RBO",
+      "bookId": "luke",
+      "chapter": 21,
+      "title": "От Луки 21 · РБО",
+      "cueCount": 38,
+      "narratorId": "rbo",
+      "file": "projects/rbo_luke_21.json"
+    },
+    {
+      "id": "gh_rbo_luke_22",
+      "translationCode": "RBO",
+      "bookId": "luke",
+      "chapter": 22,
+      "title": "От Луки 22 · РБО",
+      "cueCount": 71,
+      "narratorId": "rbo",
+      "file": "projects/rbo_luke_22.json"
+    },
+    {
+      "id": "gh_rbo_luke_23",
+      "translationCode": "RBO",
+      "bookId": "luke",
+      "chapter": 23,
+      "title": "От Луки 23 · РБО",
+      "cueCount": 56,
+      "narratorId": "rbo",
+      "file": "projects/rbo_luke_23.json"
+    },
+    {
+      "id": "gh_rbo_luke_24",
+      "translationCode": "RBO",
+      "bookId": "luke",
+      "chapter": 24,
+      "title": "От Луки 24 · РБО",
+      "cueCount": 53,
+      "narratorId": "rbo",
+      "file": "projects/rbo_luke_24.json"
+    },
+    {
+      "id": "gh_rbo_luke_3",
+      "translationCode": "RBO",
+      "bookId": "luke",
+      "chapter": 3,
+      "title": "От Луки 3 · РБО",
+      "cueCount": 38,
+      "narratorId": "rbo",
+      "file": "projects/rbo_luke_3.json"
+    },
+    {
+      "id": "gh_rbo_luke_4",
+      "translationCode": "RBO",
+      "bookId": "luke",
+      "chapter": 4,
+      "title": "От Луки 4 · РБО",
+      "cueCount": 44,
+      "narratorId": "rbo",
+      "file": "projects/rbo_luke_4.json"
+    },
+    {
+      "id": "gh_rbo_luke_5",
+      "translationCode": "RBO",
+      "bookId": "luke",
+      "chapter": 5,
+      "title": "От Луки 5 · РБО",
+      "cueCount": 39,
+      "narratorId": "rbo",
+      "file": "projects/rbo_luke_5.json"
+    },
+    {
+      "id": "gh_rbo_luke_6",
+      "translationCode": "RBO",
+      "bookId": "luke",
+      "chapter": 6,
+      "title": "От Луки 6 · РБО",
+      "cueCount": 49,
+      "narratorId": "rbo",
+      "file": "projects/rbo_luke_6.json"
+    },
+    {
+      "id": "gh_rbo_luke_7",
+      "translationCode": "RBO",
+      "bookId": "luke",
+      "chapter": 7,
+      "title": "От Луки 7 · РБО",
+      "cueCount": 50,
+      "narratorId": "rbo",
+      "file": "projects/rbo_luke_7.json"
+    },
+    {
+      "id": "gh_rbo_luke_8",
+      "translationCode": "RBO",
+      "bookId": "luke",
+      "chapter": 8,
+      "title": "От Луки 8 · РБО",
+      "cueCount": 56,
+      "narratorId": "rbo",
+      "file": "projects/rbo_luke_8.json"
+    },
+    {
+      "id": "gh_rbo_luke_9",
+      "translationCode": "RBO",
+      "bookId": "luke",
+      "chapter": 9,
+      "title": "От Луки 9 · РБО",
+      "cueCount": 62,
+      "narratorId": "rbo",
+      "file": "projects/rbo_luke_9.json"
+    },
+    {
       "id": "gh_rbo_mark_1",
       "translationCode": "RBO",
       "bookId": "mark",

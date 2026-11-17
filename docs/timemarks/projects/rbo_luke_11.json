@@ -1,0 +1,227 @@
+{
+  "id": "gh_rbo_luke_11",
+  "translationCode": "RBO",
+  "bookId": "luke",
+  "chapter": 11,
+  "title": "От Луки 11 · РБО",
+  "narratorId": "rbo",
+  "audioFileName": "42_11.mp3",
+  "cues": [
+    {
+      "timeMs": 4543,
+      "verseStart": 1
+    },
+    {
+      "timeMs": 17872,
+      "verseStart": 2
+    },
+    {
+      "timeMs": 30320,
+      "verseStart": 3
+    },
+    {
+      "timeMs": 34263,
+      "verseStart": 4
+    },
+    {
+      "timeMs": 44990,
+      "verseStart": 5
+    },
+    {
+      "timeMs": 55997,
+      "verseStart": 6
+    },
+    {
+      "timeMs": 61080,
+      "verseStart": 7
+    },
+    {
+      "timeMs": 71267,
+      "verseStart": 8
+    },
+    {
+      "timeMs": 83195,
+      "verseStart": 9
+    },
+    {
+      "timeMs": 93942,
+      "verseStart": 10
+    },
+    {
+      "timeMs": 101467,
+      "verseStart": 11
+    },
+    {
+      "timeMs": 108252,
+      "verseStart": 12
+    },
+    {
+      "timeMs": 112194,
+      "verseStart": 13
+    },
+    {
+      "timeMs": 123462,
+      "verseStart": 14
+    },
+    {
+      "timeMs": 133168,
+      "verseStart": 15
+    },
+    {
+      "timeMs": 140873,
+      "verseStart": 16
+    },
+    {
+      "timeMs": 146557,
+      "verseStart": 17
+    },
+    {
+      "timeMs": 157884,
+      "verseStart": 18
+    },
+    {
+      "timeMs": 168631,
+      "verseStart": 19
+    },
+    {
+      "timeMs": 180339,
+      "verseStart": 20
+    },
+    {
+      "timeMs": 188685,
+      "verseStart": 21
+    },
+    {
+      "timeMs": 195669,
+      "verseStart": 22
+    },
+    {
+      "timeMs": 205956,
+      "verseStart": 23
+    },
+    {
+      "timeMs": 215042,
+      "verseStart": 24
+    },
+    {
+      "timeMs": 228711,
+      "verseStart": 25
+    },
+    {
+      "timeMs": 233214,
+      "verseStart": 26
+    },
+    {
+      "timeMs": 247444,
+      "verseStart": 27
+    },
+    {
+      "timeMs": 258031,
+      "verseStart": 28
+    },
+    {
+      "timeMs": 265816,
+      "verseStart": 29
+    },
+    {
+      "timeMs": 281566,
+      "verseStart": 30
+    },
+    {
+      "timeMs": 289671,
+      "verseStart": 31
+    },
+    {
+      "timeMs": 305262,
+      "verseStart": 32
+    },
+    {
+      "timeMs": 318831,
+      "verseStart": 33
+    },
+    {
+      "timeMs": 329358,
+      "verseStart": 34
+    },
+    {
+      "timeMs": 342166,
+      "verseStart": 35
+    },
+    {
+      "timeMs": 346329,
+      "verseStart": 36
+    },
+    {
+      "timeMs": 357776,
+      "verseStart": 37
+    },
+    {
+      "timeMs": 367063,
+      "verseStart": 38
+    },
+    {
+      "timeMs": 374608,
+      "verseStart": 39
+    },
+    {
+      "timeMs": 386435,
+      "verseStart": 40
+    },
+    {
+      "timeMs": 393680,
+      "verseStart": 41
+    },
+    {
+      "timeMs": 400785,
+      "verseStart": 42
+    },
+    {
+      "timeMs": 415815,
+      "verseStart": 43
+    },
+    {
+      "timeMs": 425461,
+      "verseStart": 44
+    },
+    {
+      "timeMs": 434927,
+      "verseStart": 45
+    },
+    {
+      "timeMs": 444414,
+      "verseStart": 46
+    },
+    {
+      "timeMs": 456962,
+      "verseStart": 47
+    },
+    {
+      "timeMs": 463586,
+      "verseStart": 48
+    },
+    {
+      "timeMs": 473333,
+      "verseStart": 49
+    },
+    {
+      "timeMs": 483960,
+      "verseStart": 50
+    },
+    {
+      "timeMs": 490344,
+      "verseStart": 51
+    },
+    {
+      "timeMs": 501912,
+      "verseStart": 52
+    },
+    {
+      "timeMs": 513960,
+      "verseStart": 53
+    },
+    {
+      "timeMs": 522605,
+      "verseStart": 54
+    }
+  ]
+}
