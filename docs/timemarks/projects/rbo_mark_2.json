@@ -1,0 +1,123 @@
+{
+  "id": "gh_rbo_mark_2",
+  "translationCode": "RBO",
+  "bookId": "mark",
+  "chapter": 2,
+  "title": "От Марка 2 · РБО",
+  "narratorId": "rbo",
+  "audioFileName": "41_02.mp3",
+  "cues": [
+    {
+      "timeMs": 4363,
+      "verseStart": 1
+    },
+    {
+      "timeMs": 10688,
+      "verseStart": 2
+    },
+    {
+      "timeMs": 19535,
+      "verseStart": 3
+    },
+    {
+      "timeMs": 24519,
+      "verseStart": 4
+    },
+    {
+      "timeMs": 38309,
+      "verseStart": 5
+    },
+    {
+      "timeMs": 47056,
+      "verseStart": 6
+    },
+    {
+      "timeMs": 52520,
+      "verseStart": 7
+    },
+    {
+      "timeMs": 61046,
+      "verseStart": 8
+    },
+    {
+      "timeMs": 68292,
+      "verseStart": 9
+    },
+    {
+      "timeMs": 77719,
+      "verseStart": 10
+    },
+    {
+      "timeMs": 85104,
+      "verseStart": 11
+    },
+    {
+      "timeMs": 95252,
+      "verseStart": 12
+    },
+    {
+      "timeMs": 108962,
+      "verseStart": 13
+    },
+    {
+      "timeMs": 114987,
+      "verseStart": 14
+    },
+    {
+      "timeMs": 126155,
+      "verseStart": 15
+    },
+    {
+      "timeMs": 140546,
+      "verseStart": 16
+    },
+    {
+      "timeMs": 153596,
+      "verseStart": 17
+    },
+    {
+      "timeMs": 164604,
+      "verseStart": 18
+    },
+    {
+      "timeMs": 179276,
+      "verseStart": 19
+    },
+    {
+      "timeMs": 188603,
+      "verseStart": 20
+    },
+    {
+      "timeMs": 195428,
+      "verseStart": 21
+    },
+    {
+      "timeMs": 205976,
+      "verseStart": 22
+    },
+    {
+      "timeMs": 219646,
+      "verseStart": 23
+    },
+    {
+      "timeMs": 226291,
+      "verseStart": 24
+    },
+    {
+      "timeMs": 233877,
+      "verseStart": 25
+    },
+    {
+      "timeMs": 244185,
+      "verseStart": 26
+    },
+    {
+      "timeMs": 257635,
+      "verseStart": 27
+    },
+    {
+      "timeMs": 264900,
+      "verseStart": 28
+    }
+  ]
+}

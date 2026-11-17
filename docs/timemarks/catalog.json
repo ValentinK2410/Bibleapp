@@ -1684,6 +1684,166 @@
       "file": "projects/rbo_john_9.json"
     },
     {
+      "id": "gh_rbo_mark_1",
+      "translationCode": "RBO",
+      "bookId": "mark",
+      "chapter": 1,
+      "title": "От Марка 1 · РБО",
+      "cueCount": 45,
+      "narratorId": "rbo",
+      "file": "projects/rbo_mark_1.json"
+    },
+    {
+      "id": "gh_rbo_mark_10",
+      "translationCode": "RBO",
+      "bookId": "mark",
+      "chapter": 10,
+      "title": "От Марка 10 · РБО",
+      "cueCount": 52,
+      "narratorId": "rbo",
+      "file": "projects/rbo_mark_10.json"
+    },
+    {
+      "id": "gh_rbo_mark_11",
+      "translationCode": "RBO",
+      "bookId": "mark",
+      "chapter": 11,
+      "title": "От Марка 11 · РБО",
+      "cueCount": 33,
+      "narratorId": "rbo",
+      "file": "projects/rbo_mark_11.json"
+    },
+    {
+      "id": "gh_rbo_mark_12",
+      "translationCode": "RBO",
+      "bookId": "mark",
+      "chapter": 12,
+      "title": "От Марка 12 · РБО",
+      "cueCount": 44,
+      "narratorId": "rbo",
+      "file": "projects/rbo_mark_12.json"
+    },
+    {
+      "id": "gh_rbo_mark_13",
+      "translationCode": "RBO",
+      "bookId": "mark",
+      "chapter": 13,
+      "title": "От Марка 13 · РБО",
+      "cueCount": 37,
+      "narratorId": "rbo",
+      "file": "projects/rbo_mark_13.json"
+    },
+    {
+      "id": "gh_rbo_mark_14",
+      "translationCode": "RBO",
+      "bookId": "mark",
+      "chapter": 14,
+      "title": "От Марка 14 · РБО",
+      "cueCount": 72,
+      "narratorId": "rbo",
+      "file": "projects/rbo_mark_14.json"
+    },
+    {
+      "id": "gh_rbo_mark_15",
+      "translationCode": "RBO",
+      "bookId": "mark",
+      "chapter": 15,
+      "title": "От Марка 15 · РБО",
+      "cueCount": 47,
+      "narratorId": "rbo",
+      "file": "projects/rbo_mark_15.json"
+    },
+    {
+      "id": "gh_rbo_mark_16",
+      "translationCode": "RBO",
+      "bookId": "mark",
+      "chapter": 16,
+      "title": "От Марка 16 · РБО",
+      "cueCount": 20,
+      "narratorId": "rbo",
+      "file": "projects/rbo_mark_16.json"
+    },
+    {
+      "id": "gh_rbo_mark_2",
+      "translationCode": "RBO",
+      "bookId": "mark",
+      "chapter": 2,
+      "title": "От Марка 2 · РБО",
+      "cueCount": 28,
+      "narratorId": "rbo",
+      "file": "projects/rbo_mark_2.json"
+    },
+    {
+      "id": "gh_rbo_mark_3",
+      "translationCode": "RBO",
+      "bookId": "mark",
+      "chapter": 3,
+      "title": "От Марка 3 · РБО",
+      "cueCount": 35,
+      "narratorId": "rbo",
+      "file": "projects/rbo_mark_3.json"
+    },
+    {
+      "id": "gh_rbo_mark_4",
+      "translationCode": "RBO",
+      "bookId": "mark",
+      "chapter": 4,
+      "title": "От Марка 4 · РБО",
+      "cueCount": 41,
+      "narratorId": "rbo",
+      "file": "projects/rbo_mark_4.json"
+    },
+    {
+      "id": "gh_rbo_mark_5",
+      "translationCode": "RBO",
+      "bookId": "mark",
+      "chapter": 5,
+      "title": "От Марка 5 · РБО",
+      "cueCount": 43,
+      "narratorId": "rbo",
+      "file": "projects/rbo_mark_5.json"
+    },
+    {
+      "id": "gh_rbo_mark_6",
+      "translationCode": "RBO",
+      "bookId": "mark",
+      "chapter": 6,
+      "title": "От Марка 6 · РБО",
+      "cueCount": 56,
+      "narratorId": "rbo",
+      "file": "projects/rbo_mark_6.json"
+    },
+    {
+      "id": "gh_rbo_mark_7",
+      "translationCode": "RBO",
+      "bookId": "mark",
+      "chapter": 7,
+      "title": "От Марка 7 · РБО",
+      "cueCount": 37,
+      "narratorId": "rbo",
+      "file": "projects/rbo_mark_7.json"
+    },
+    {
+      "id": "gh_rbo_mark_8",
+      "translationCode": "RBO",
+      "bookId": "mark",
+      "chapter": 8,
+      "title": "От Марка 8 · РБО",
+      "cueCount": 38,
+      "narratorId": "rbo",
+      "file": "projects/rbo_mark_8.json"
+    },
+    {
+      "id": "gh_rbo_mark_9",
+      "translationCode": "RBO",
+      "bookId": "mark",
+      "chapter": 9,
+      "title": "От Марка 9 · РБО",
+      "cueCount": 50,
+      "narratorId": "rbo",
+      "file": "projects/rbo_mark_9.json"
+    },
+    {
       "id": "gh_syn_john_1",
       "translationCode": "SYN",
       "bookId": "john",

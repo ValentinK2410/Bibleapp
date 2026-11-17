@@ -1,0 +1,111 @@
+{
+  "id": "align-mark-RBO-16",
+  "translationCode": "RBO",
+  "bookId": "mark",
+  "chapter": 16,
+  "title": "От Марка 16 · РБО",
+  "audioFilePath": "/data/user/0/com.example.bible.sqlite/files/bible_audio/rbo/41_16.mp3",
+  "updatedAt": 1794960000000,
+  "cues": [
+    {
+      "timeMs": 4483,
+      "verseStart": 1,
+      "attachments": []
+    },
+    {
+      "timeMs": 14491,
+      "verseStart": 2,
+      "attachments": []
+    },
+    {
+      "timeMs": 20856,
+      "verseStart": 3,
+      "attachments": []
+    },
+    {
+      "timeMs": 27060,
+      "verseStart": 4,
+      "attachments": []
+    },
+    {
+      "timeMs": 32925,
+      "verseStart": 5,
+      "attachments": []
+    },
+    {
+      "timeMs": 40671,
+      "verseStart": 6,
+      "attachments": []
+    },
+    {
+      "timeMs": 53740,
+      "verseStart": 7,
+      "attachments": []
+    },
+    {
+      "timeMs": 65009,
+      "verseStart": 8,
+      "attachments": []
+    },
+    {
+      "timeMs": 73695,
+      "verseStart": 9,
+      "attachments": []
+    },
+    {
+      "timeMs": 85024,
+      "verseStart": 10,
+      "attachments": []
+    },
+    {
+      "timeMs": 90088,
+      "verseStart": 11,
+      "attachments": []
+    },
+    {
+      "timeMs": 95532,
+      "verseStart": 12,
+      "attachments": []
+    },
+    {
+      "timeMs": 102097,
+      "verseStart": 13,
+      "attachments": []
+    },
+    {
+      "timeMs": 107821,
+      "verseStart": 14,
+      "attachments": []
+    },
+    {
+      "timeMs": 122953,
+      "verseStart": 15,
+      "attachments": []
+    },
+    {
+      "timeMs": 130778,
+      "verseStart": 16,
+      "attachments": []
+    },
+    {
+      "timeMs": 137764,
+      "verseStart": 17,
+      "attachments": []
+    },
+    {
+      "timeMs": 150413,
+      "verseStart": 18,
+      "attachments": []
+    },
+    {
+      "timeMs": 160841,
+      "verseStart": 19,
+      "attachments": []
+    },
+    {
+      "timeMs": 168687,
+      "verseStart": 20,
+      "attachments": []
+    }
+  ]
+}
