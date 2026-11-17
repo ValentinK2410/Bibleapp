@@ -1,0 +1,123 @@
+{
+  "id": "gh_bti_mark_2",
+  "translationCode": "BTI",
+  "bookId": "mark",
+  "chapter": 2,
+  "title": "От Марка 2 · Кулаковых",
+  "narratorId": "bti",
+  "audioFileName": "41_02.mp3",
+  "cues": [
+    {
+      "timeMs": 3663,
+      "verseStart": 1
+    },
+    {
+      "timeMs": 13529,
+      "verseStart": 2
+    },
+    {
+      "timeMs": 23056,
+      "verseStart": 3
+    },
+    {
+      "timeMs": 28079,
+      "verseStart": 4
+    },
+    {
+      "timeMs": 41989,
+      "verseStart": 5
+    },
+    {
+      "timeMs": 52016,
+      "verseStart": 6
+    },
+    {
+      "timeMs": 60181,
+      "verseStart": 7
+    },
+    {
+      "timeMs": 71009,
+      "verseStart": 8
+    },
+    {
+      "timeMs": 80435,
+      "verseStart": 9
+    },
+    {
+      "timeMs": 91683,
+      "verseStart": 10
+    },
+    {
+      "timeMs": 103871,
+      "verseStart": 11
+    },
+    {
+      "timeMs": 111777,
+      "verseStart": 12
+    },
+    {
+      "timeMs": 131290,
+      "verseStart": 13
+    },
+    {
+      "timeMs": 141057,
+      "verseStart": 14
+    },
+    {
+      "timeMs": 155947,
+      "verseStart": 15
+    },
+    {
+      "timeMs": 175020,
+      "verseStart": 16
+    },
+    {
+      "timeMs": 193432,
+      "verseStart": 17
+    },
+    {
+      "timeMs": 210344,
+      "verseStart": 18
+    },
+    {
+      "timeMs": 229157,
+      "verseStart": 19
+    },
+    {
+      "timeMs": 245448,
+      "verseStart": 20
+    },
+    {
+      "timeMs": 255955,
+      "verseStart": 21
+    },
+    {
+      "timeMs": 266743,
+      "verseStart": 22
+    },
+    {
+      "timeMs": 283954,
+      "verseStart": 23
+    },
+    {
+      "timeMs": 295042,
+      "verseStart": 24
+    },
+    {
+      "timeMs": 305649,
+      "verseStart": 25
+    },
+    {
+      "timeMs": 317457,
+      "verseStart": 26
+    },
+    {
+      "timeMs": 336430,
+      "verseStart": 27
+    },
+    {
+      "timeMs": 346397,
+      "verseStart": 28
+    }
+  ]
+}

@@ -214,6 +214,166 @@
       "file": "projects/bti_john_9.json"
     },
     {
+      "id": "gh_bti_mark_1",
+      "translationCode": "BTI",
+      "bookId": "mark",
+      "chapter": 1,
+      "title": "От Марка 1 · Кулаковых",
+      "cueCount": 45,
+      "narratorId": "bti",
+      "file": "projects/bti_mark_1.json"
+    },
+    {
+      "id": "gh_bti_mark_10",
+      "translationCode": "BTI",
+      "bookId": "mark",
+      "chapter": 10,
+      "title": "От Марка 10 · Кулаковых",
+      "cueCount": 52,
+      "narratorId": "bti",
+      "file": "projects/bti_mark_10.json"
+    },
+    {
+      "id": "gh_bti_mark_11",
+      "translationCode": "BTI",
+      "bookId": "mark",
+      "chapter": 11,
+      "title": "От Марка 11 · Кулаковых",
+      "cueCount": 33,
+      "narratorId": "bti",
+      "file": "projects/bti_mark_11.json"
+    },
+    {
+      "id": "gh_bti_mark_12",
+      "translationCode": "BTI",
+      "bookId": "mark",
+      "chapter": 12,
+      "title": "От Марка 12 · Кулаковых",
+      "cueCount": 44,
+      "narratorId": "bti",
+      "file": "projects/bti_mark_12.json"
+    },
+    {
+      "id": "gh_bti_mark_13",
+      "translationCode": "BTI",
+      "bookId": "mark",
+      "chapter": 13,
+      "title": "От Марка 13 · Кулаковых",
+      "cueCount": 37,
+      "narratorId": "bti",
+      "file": "projects/bti_mark_13.json"
+    },
+    {
+      "id": "gh_bti_mark_14",
+      "translationCode": "BTI",
+      "bookId": "mark",
+      "chapter": 14,
+      "title": "От Марка 14 · Кулаковых",
+      "cueCount": 72,
+      "narratorId": "bti",
+      "file": "projects/bti_mark_14.json"
+    },
+    {
+      "id": "gh_bti_mark_15",
+      "translationCode": "BTI",
+      "bookId": "mark",
+      "chapter": 15,
+      "title": "От Марка 15 · Кулаковых",
+      "cueCount": 47,
+      "narratorId": "bti",
+      "file": "projects/bti_mark_15.json"
+    },
+    {
+      "id": "gh_bti_mark_16",
+      "translationCode": "BTI",
+      "bookId": "mark",
+      "chapter": 16,
+      "title": "От Марка 16 · Кулаковых",
+      "cueCount": 20,
+      "narratorId": "bti",
+      "file": "projects/bti_mark_16.json"
+    },
+    {
+      "id": "gh_bti_mark_2",
+      "translationCode": "BTI",
+      "bookId": "mark",
+      "chapter": 2,
+      "title": "От Марка 2 · Кулаковых",
+      "cueCount": 28,
+      "narratorId": "bti",
+      "file": "projects/bti_mark_2.json"
+    },
+    {
+      "id": "gh_bti_mark_3",
+      "translationCode": "BTI",
+      "bookId": "mark",
+      "chapter": 3,
+      "title": "От Марка 3 · Кулаковых",
+      "cueCount": 34,
+      "narratorId": "bti",
+      "file": "projects/bti_mark_3.json"
+    },
+    {
+      "id": "gh_bti_mark_4",
+      "translationCode": "BTI",
+      "bookId": "mark",
+      "chapter": 4,
+      "title": "От Марка 4 · Кулаковых",
+      "cueCount": 41,
+      "narratorId": "bti",
+      "file": "projects/bti_mark_4.json"
+    },
+    {
+      "id": "gh_bti_mark_5",
+      "translationCode": "BTI",
+      "bookId": "mark",
+      "chapter": 5,
+      "title": "От Марка 5 · Кулаковых",
+      "cueCount": 43,
+      "narratorId": "bti",
+      "file": "projects/bti_mark_5.json"
+    },
+    {
+      "id": "gh_bti_mark_6",
+      "translationCode": "BTI",
+      "bookId": "mark",
+      "chapter": 6,
+      "title": "От Марка 6 · Кулаковых",
+      "cueCount": 56,
+      "narratorId": "bti",
+      "file": "projects/bti_mark_6.json"
+    },
+    {
+      "id": "gh_bti_mark_7",
+      "translationCode": "BTI",
+      "bookId": "mark",
+      "chapter": 7,
+      "title": "От Марка 7 · Кулаковых",
+      "cueCount": 37,
+      "narratorId": "bti",
+      "file": "projects/bti_mark_7.json"
+    },
+    {
+      "id": "gh_bti_mark_8",
+      "translationCode": "BTI",
+      "bookId": "mark",
+      "chapter": 8,
+      "title": "От Марка 8 · Кулаковых",
+      "cueCount": 38,
+      "narratorId": "bti",
+      "file": "projects/bti_mark_8.json"
+    },
+    {
+      "id": "gh_bti_mark_9",
+      "translationCode": "BTI",
+      "bookId": "mark",
+      "chapter": 9,
+      "title": "От Марка 9 · Кулаковых",
+      "cueCount": 50,
+      "narratorId": "bti",
+      "file": "projects/bti_mark_9.json"
+    },
+    {
       "id": "gh_grk_john_1",
       "translationCode": "PODSTR",
       "bookId": "john",

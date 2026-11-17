@@ -1,0 +1,91 @@
+{
+  "id": "gh_bti_mark_16",
+  "translationCode": "BTI",
+  "bookId": "mark",
+  "chapter": 16,
+  "title": "От Марка 16 · Кулаковых",
+  "narratorId": "bti",
+  "audioFileName": "41_16.mp3",
+  "cues": [
+    {
+      "timeMs": 5224,
+      "verseStart": 1
+    },
+    {
+      "timeMs": 16632,
+      "verseStart": 2
+    },
+    {
+      "timeMs": 24097,
+      "verseStart": 3
+    },
+    {
+      "timeMs": 30942,
+      "verseStart": 4
+    },
+    {
+      "timeMs": 38567,
+      "verseStart": 5
+    },
+    {
+      "timeMs": 48574,
+      "verseStart": 6
+    },
+    {
+      "timeMs": 64505,
+      "verseStart": 7
+    },
+    {
+      "timeMs": 109116,
+      "verseStart": 8
+    },
+    {
+      "timeMs": 144201,
+      "verseStart": 9
+    },
+    {
+      "timeMs": 153968,
+      "verseStart": 10
+    },
+    {
+      "timeMs": 160132,
+      "verseStart": 11
+    },
+    {
+      "timeMs": 168798,
+      "verseStart": 12
+    },
+    {
+      "timeMs": 176343,
+      "verseStart": 13
+    },
+    {
+      "timeMs": 185710,
+      "verseStart": 14
+    },
+    {
+      "timeMs": 201141,
+      "verseStart": 15
+    },
+    {
+      "timeMs": 210567,
+      "verseStart": 16
+    },
+    {
+      "timeMs": 222516,
+      "verseStart": 17
+    },
+    {
+      "timeMs": 237206,
+      "verseStart": 18
+    },
+    {
+      "timeMs": 252497,
+      "verseStart": 19
+    },
+    {
+      "timeMs": 264445,
+      "verseStart": 20
+    }
+  ]
+}

@@ -1,0 +1,163 @@
+{
+  "id": "gh_bti_mark_8",
+  "translationCode": "BTI",
+  "bookId": "mark",
+  "chapter": 8,
+  "title": "От Марка 8 · Кулаковых",
+  "narratorId": "bti",
+  "audioFileName": "41_08.mp3",
+  "cues": [
+    {
+      "timeMs": 4403,
+      "verseStart": 1
+    },
+    {
+      "timeMs": 16131,
+      "verseStart": 2
+    },
+    {
+      "timeMs": 22435,
+      "verseStart": 3
+    },
+    {
+      "timeMs": 31340,
+      "verseStart": 4
+    },
+    {
+      "timeMs": 39406,
+      "verseStart": 5
+    },
+    {
+      "timeMs": 47931,
+      "verseStart": 6
+    },
+    {
+      "timeMs": 68324,
+      "verseStart": 7
+    },
+    {
+      "timeMs": 78211,
+      "verseStart": 8
+    },
+    {
+      "timeMs": 85475,
+      "verseStart": 9
+    },
+    {
+      "timeMs": 90679,
+      "verseStart": 10
+    },
+    {
+      "timeMs": 98864,
+      "verseStart": 11
+    },
+    {
+      "timeMs": 110912,
+      "verseStart": 12
+    },
+    {
+      "timeMs": 128143,
+      "verseStart": 13
+    },
+    {
+      "timeMs": 136649,
+      "verseStart": 14
+    },
+    {
+      "timeMs": 145494,
+      "verseStart": 15
+    },
+    {
+      "timeMs": 158143,
+      "verseStart": 16
+    },
+    {
+      "timeMs": 165748,
+      "verseStart": 17
+    },
+    {
+      "timeMs": 182598,
+      "verseStart": 18
+    },
+    {
+      "timeMs": 193966,
+      "verseStart": 19
+    },
+    {
+      "timeMs": 206754,
+      "verseStart": 20
+    },
+    {
+      "timeMs": 217881,
+      "verseStart": 21
+    },
+    {
+      "timeMs": 227207,
+      "verseStart": 22
+    },
+    {
+      "timeMs": 235753,
+      "verseStart": 23
+    },
+    {
+      "timeMs": 248881,
+      "verseStart": 24
+    },
+    {
+      "timeMs": 259929,
+      "verseStart": 25
+    },
+    {
+      "timeMs": 271776,
+      "verseStart": 26
+    },
+    {
+      "timeMs": 281242,
+      "verseStart": 27
+    },
+    {
+      "timeMs": 297013,
+      "verseStart": 28
+    },
+    {
+      "timeMs": 308580,
+      "verseStart": 29
+    },
+    {
+      "timeMs": 320168,
+      "verseStart": 30
+    },
+    {
+      "timeMs": 326572,
+      "verseStart": 31
+    },
+    {
+      "timeMs": 347225,
+      "verseStart": 32
+    },
+    {
+      "timeMs": 357452,
+      "verseStart": 33
+    },
+    {
+      "timeMs": 375804,
+      "verseStart": 34
+    },
+    {
+      "timeMs": 393535,
+      "verseStart": 35
+    },
+    {
+      "timeMs": 407925,
+      "verseStart": 36
+    },
+    {
+      "timeMs": 419112,
+      "verseStart": 37
+    },
+    {
+      "timeMs": 424355,
+      "verseStart": 38
+    }
+  ]
+}
