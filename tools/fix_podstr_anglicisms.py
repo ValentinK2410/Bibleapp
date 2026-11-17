@@ -178,7 +178,7 @@ class Detector:
 
     def flagged(self, token: str, strong: str) -> bool:
         low = token.lower()
-        if self.known(low) or low in self.names:
+        if keep_name(token) or self.known(low) or low in self.names:
             return False
         eng, in_strongs = self.english(token, strong)
         if eng is None or eng in FUNCTION:
@@ -198,7 +198,10 @@ class Detector:
                     current.append((start, end, token, True))
                     continue
                 eng, _ = self.english(token, strong)
-                if eng in FUNCTION and not self.known(token):
+                if keep_name(token):
+                    out.extend(self.close(current, gloss, strong))
+                    current = []
+                elif eng in FUNCTION and not self.known(token):
                     current.append((start, end, token, False))  # «фе», «оф», «йу»
                 elif eng in FUNCTION and current:
                     current.append((start, end, token, False))  # «ит», «ас» внутри фразы
@@ -250,8 +253,27 @@ EXACT = {
 }
 
 
+# Имена собственные, которые совпадают с английскими словами (Mark, Kedar ~ cedar,
+# Ur ~ our, Lo-debar, Me-zahab, Saraph, Lair, Kitron ~ citron, Shear-jashub, Hen):
+# с заглавной буквы их не трогаем.
+NAMES_KEEP = {"марк", "кедар", "ур", "ло", "сараф", "лаир", "китрон", "шеар", "хен"}
+
+# Слова, перевод которых зависит от номера Стронга.
+STRONG_FIX = {
+    "G4978": {"череда": "разделение", "череды": "разделения", "Череда": "Разделение"},  # σχίσμα — раскол, не «череда»
+    "G518": {"Родственный": "Рассказали"},  # ἀπαγγέλλω (Лк 8:36) — related = рассказали
+    "G2304": {"Гадать": "Божество"},  # θεῖος (Деян 17:29) — Divine being
+}
+
+
+def keep_name(word: str) -> bool:
+    return word[:1].isupper() and word.lower() in NAMES_KEEP
+
+
 def _cyrillic(m):
     word = m.group(0)
+    if keep_name(word):
+        return word
     ru = CYRILLIC[word.lower()]
     return ru[:1].upper() + ru[1:] if word[:1].isupper() else ru
 
@@ -386,6 +408,8 @@ def main():
                     tail = re.sub(r"^<(?:с|ес)>", "", new[end:])
                     new = new[:start] + ru + tail
                 new = EXACT.get((path.stem, f"{ch}:{vs}", gloss), new)
+                for src, dst in STRONG_FIX.get(norm_strong(strong), {}).items():
+                    new = re.sub(rf"(?<![А-Яа-яЁё]){src}(?![А-Яа-яЁё])", dst, new)
                 new = re.sub(r"\s{2,}", " ", new)
                 new = re.sub(r"\s+([,.;:!?])", r"\1", new)
                 new = re.sub(r"^[\s,]+", "", new).strip()
