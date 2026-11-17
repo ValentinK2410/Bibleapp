@@ -8,9 +8,11 @@ import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.awaitEachGesture
 import androidx.compose.foundation.gestures.awaitFirstDown
 import androidx.compose.foundation.gestures.waitForUpOrCancellation
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -74,9 +76,14 @@ import com.example.bible.games.RedBallDraft
 import com.example.bible.games.RedBallLevelMeta
 import com.example.bible.games.RedBallLevelStore
 import com.example.bible.games.RedBallPiece
+import com.example.bible.games.RedBallPieceKind
 import com.example.bible.games.RedBallPortal
+import com.example.bible.games.RedBallPortalRole
 import com.example.bible.games.RedBallScene
+import com.example.bible.games.RedBallSceneKind
 import com.example.bible.games.RedBallSim
+import com.example.bible.games.allowedPortalTargetIds
+import com.example.bible.games.familyScenes
 import com.example.bible.ui.theme.OutlinedTextField
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.coroutineScope
@@ -86,7 +93,12 @@ import kotlinx.coroutines.withContext
 
 private enum class RedBallPage { MENU, LEVELS, EDITOR, PLAY }
 
-private class PlayRequest(val scene: RedBallScene, val test: Boolean)
+private class PlayRequest(
+    val scene: RedBallScene,
+    val test: Boolean,
+    val familyRoot: String,
+    val backToEditor: Boolean,
+)
 
 @Composable
 fun KidsRedBallGameScreen(onBack: () -> Unit) {
@@ -105,23 +117,77 @@ fun KidsRedBallGameScreen(onBack: () -> Unit) {
     var play by remember { mutableStateOf<PlayRequest?>(null) }
     var listRev by remember { mutableIntStateOf(0) }
     var warning by remember { mutableStateOf<String?>(null) }
+    var familyOpen by remember { mutableStateOf(false) }
     val savedLevels by produceState<List<RedBallLevelMeta>?>(null, listRev, store) {
-        value = withContext(Dispatchers.IO) { store.list() }
+        value = withContext(Dispatchers.IO) { store.listAll() }
     }
-    val destinations = remember(savedLevels, draft.id) {
+    val destinations = remember(savedLevels, draft.id, draft.sceneKind, draft.parentId) {
+        val catalog = savedLevels.orEmpty()
+        val root = draft.familyRootId()
         buildList {
+            add(RedBallDestination(draft.id, "Эта сцена"))
+            if (root != draft.id) {
+                val parent = catalog.firstOrNull { it.id == root }
+                add(RedBallDestination(root, parent?.name?.ifBlank { "Главная" } ?: "Главная"))
+            }
+            catalog.filter { it.sceneKind == RedBallSceneKind.NESTED && it.parentId == root && it.id != draft.id }
+                .sortedBy { it.name }
+                .forEach { level ->
+                    add(RedBallDestination(level.id, "↳ ${level.name.ifBlank { "Без имени" }}"))
+                }
             add(RedBallDestination(RedBallScene.BUILTIN_ID, "Горка"))
-            add(RedBallDestination(draft.id, "Этот уровень"))
-            for (level in savedLevels.orEmpty()) {
-                if (level.id != draft.id) {
+            catalog.filter { it.sceneKind == RedBallSceneKind.MAIN && it.id != draft.id && it.id != root }
+                .sortedByDescending { it.updatedAt }
+                .forEach { level ->
                     add(RedBallDestination(level.id, level.name.ifBlank { "Без имени" }))
                 }
-            }
         }
     }
-    val portalCaution = savedLevels?.let { levels ->
-        val known = levels.map { it.id }.toSet() + RedBallScene.BUILTIN_ID + draft.id
-        draft.portalWarning(known)
+    val portalCaution by produceState<String?>(
+        null,
+        draft.pieces,
+        draft.id,
+        draft.sceneKind,
+        draft.parentId,
+        listRev,
+    ) {
+        val snapshot = draft
+        value = withContext(Dispatchers.IO) {
+            val catalog = store.listAll()
+            val known = allowedPortalTargetIds(snapshot.id, snapshot.sceneKind, snapshot.parentId, catalog)
+            val root = snapshot.familyRootId()
+            val familyNames = catalog
+                .filter { meta ->
+                    meta.id != snapshot.id &&
+                        (meta.id == root || (meta.sceneKind == RedBallSceneKind.NESTED && meta.parentId == root))
+                }
+                .flatMap { meta -> store.load(meta.id)?.portalNames().orEmpty() }
+                .toSet()
+            snapshot.portalWarning(known, linkedExitNames(store, snapshot), familyNames)
+        }
+    }
+    val familyRootNow = draft.familyRootId()
+    val reservedPortalNames by produceState(emptySet<String>(), familyRootNow, draft.id, listRev) {
+        val selfId = draft.id
+        val root = familyRootNow
+        value = withContext(Dispatchers.IO) {
+            store.listAll()
+                .filter { meta ->
+                    meta.id != selfId &&
+                        (meta.id == root || (meta.sceneKind == RedBallSceneKind.NESTED && meta.parentId == root))
+                }
+                .flatMap { meta -> store.load(meta.id)?.portalNames().orEmpty() }
+                .toSet()
+        }
+    }
+    val familyCaption = if (draft.sceneKind == RedBallSceneKind.NESTED) {
+        val parentName = savedLevels?.firstOrNull { it.id == draft.parentId }?.name ?: "главную"
+        "Вложенная сцена · внутри «$parentName»"
+    } else {
+        "Главная сцена"
+    }
+    val nestedCount = savedLevels.orEmpty().count { meta ->
+        meta.sceneKind == RedBallSceneKind.NESTED && meta.parentId == familyRootNow
     }
 
     fun cleanName(raw: String) = raw.trim().ifBlank { "Без имени" }.take(32)
@@ -160,16 +226,34 @@ fun KidsRedBallGameScreen(onBack: () -> Unit) {
     }
 
     fun closeEditor() {
+        familyOpen = false
         if (dirty() && !persist(showToast = true)) return
+        if (draft.sceneKind == RedBallSceneKind.NESTED && draft.parentId.isNotBlank()) {
+            val parentId = draft.parentId
+            scope.launch {
+                val parent = withContext(Dispatchers.IO) { store.load(parentId) }
+                if (parent != null) openDraft(parent, listed = true) else page = RedBallPage.LEVELS
+            }
+            return
+        }
         page = if (fromList) RedBallPage.LEVELS else RedBallPage.MENU
     }
 
-    fun beginPlay(scene: RedBallScene, test: Boolean) {
+    fun beginPlay(scene: RedBallScene, test: Boolean, backToEditor: Boolean = test) {
         scope.launch {
-            val known = withContext(Dispatchers.IO) {
-                store.list().map { it.id }.toSet() + RedBallScene.BUILTIN_ID + scene.id
+            val prepared = withContext(Dispatchers.IO) {
+                val catalog = store.listAll()
+                val meta = catalog.firstOrNull { it.id == scene.id }
+                val root = meta?.familyRootId() ?: scene.id
+                val known = allowedPortalTargetIds(
+                    scene.id,
+                    meta?.sceneKind ?: RedBallSceneKind.MAIN,
+                    meta?.parentId.orEmpty(),
+                    catalog,
+                )
+                PlayRequest(scene.withKnownPortals(known), test, root, backToEditor)
             }
-            play = PlayRequest(scene.withKnownPortals(known), test)
+            play = prepared
             page = RedBallPage.PLAY
         }
     }
@@ -177,19 +261,79 @@ fun KidsRedBallGameScreen(onBack: () -> Unit) {
     fun leavePlay() {
         val current = play
         page = when {
-            current?.test == true -> RedBallPage.EDITOR
+            current?.test == true || current?.backToEditor == true -> RedBallPage.EDITOR
             current?.scene?.builtin == false -> RedBallPage.LEVELS
             else -> RedBallPage.MENU
         }
     }
 
+    fun createNested() {
+        scope.launch {
+            val root = draft.familyRootId()
+            val parentMissing = withContext(Dispatchers.IO) { store.load(root) == null }
+            if ((parentMissing || dirty()) && !persist(showToast = false)) return@launch
+            val parentId = draft.familyRootId()
+            val child = withContext(Dispatchers.IO) {
+                val names = store.listAll().filter { it.parentId == parentId }.map { it.name }.toSet()
+                var n = 1
+                var name = "Вложенная $n"
+                while (name in names) {
+                    n++
+                    name = "Вложенная $n"
+                }
+                RedBallDraft.freshNested(parentId, name).copy(updatedAt = System.currentTimeMillis()).also { store.save(it) }
+            }
+            listRev++
+            openDraft(child, listed = true)
+            familyOpen = false
+        }
+    }
+
+    fun openFamilyScene(id: String) {
+        if (id == draft.id) {
+            familyOpen = false
+            return
+        }
+        scope.launch {
+            if (dirty() && !persist(showToast = false)) return@launch
+            val loaded = withContext(Dispatchers.IO) { store.load(id) }
+            if (loaded == null) {
+                Toast.makeText(context, "Сцена не открылась", Toast.LENGTH_SHORT).show()
+                listRev++
+                return@launch
+            }
+            openDraft(loaded, listed = true)
+            familyOpen = false
+        }
+    }
+
+    fun playFamilyScene(id: String) {
+        scope.launch {
+            if (dirty() && !persist(showToast = false)) return@launch
+            val loaded = if (id == draft.id) draft else withContext(Dispatchers.IO) { store.load(id) }
+            if (loaded == null) {
+                Toast.makeText(context, "Сцена не открылась", Toast.LENGTH_SHORT).show()
+                listRev++
+                return@launch
+            }
+            val reason = loaded.playBlockReason()
+            if (reason != null) {
+                Toast.makeText(context, reason, Toast.LENGTH_SHORT).show()
+                return@launch
+            }
+            familyOpen = false
+            beginPlay(loaded.toScene(), test = false, backToEditor = true)
+        }
+    }
+
     KidsGameMusic(com.example.bible.games.KidsMusicTrack.GAMES)
     BackHandler {
-        when (page) {
-            RedBallPage.MENU -> onBack()
-            RedBallPage.LEVELS -> page = RedBallPage.MENU
-            RedBallPage.EDITOR -> closeEditor()
-            RedBallPage.PLAY -> leavePlay()
+        when {
+            page == RedBallPage.EDITOR && familyOpen -> familyOpen = false
+            page == RedBallPage.MENU -> onBack()
+            page == RedBallPage.LEVELS -> page = RedBallPage.MENU
+            page == RedBallPage.EDITOR -> closeEditor()
+            page == RedBallPage.PLAY -> leavePlay()
         }
     }
 
@@ -233,52 +377,85 @@ fun KidsRedBallGameScreen(onBack: () -> Unit) {
             },
             onChanged = { listRev++ },
         )
-        RedBallPage.EDITOR -> KidsRedBallEditor(
-            draft = draft,
-            tool = tool,
-            onTool = { tool = it },
-            camX = camX,
-            onCamX = { camX = it },
-            camY = camY,
-            onCamY = { camY = it },
-            canUndo = undo.isNotEmpty(),
-            onUndo = {
-                val prev = undo.removeLastOrNull() ?: return@KidsRedBallEditor
-                draft = draft.copy(pieces = prev)
-                warning = null
-            },
-            onDraft = { draft = it },
-            onCommit = { updated, snapshot ->
-                if (snapshot != null && snapshot != updated.pieces) {
-                    undo.addLast(snapshot)
-                    while (undo.size > 40) undo.removeFirst()
-                }
-                draft = updated
-                warning = null
-            },
-            warning = warning,
-            caution = portalCaution,
-            destinations = destinations,
-            catalogReady = savedLevels != null,
-            store = store,
-            onBack = { closeEditor() },
-            onTest = {
-                val reason = draft.playBlockReason()
-                if (reason != null) {
-                    warning = reason
-                    return@KidsRedBallEditor
-                }
-                if (dirty() && !persist(showToast = false)) return@KidsRedBallEditor
-                beginPlay(draft.toScene(), test = true)
-            },
-            onSave = { persist(showToast = true) },
-        )
+        RedBallPage.EDITOR -> Box(Modifier.fillMaxSize()) {
+            KidsRedBallEditor(
+                draft = draft,
+                tool = tool,
+                onTool = { tool = it },
+                camX = camX,
+                onCamX = { camX = it },
+                camY = camY,
+                onCamY = { camY = it },
+                canUndo = undo.isNotEmpty(),
+                onUndo = {
+                    val prev = undo.removeLastOrNull() ?: return@KidsRedBallEditor
+                    draft = draft.copy(pieces = prev)
+                    warning = null
+                },
+                onDraft = { draft = it },
+                onCommit = { updated, snapshot ->
+                    if (snapshot != null && snapshot != updated.pieces) {
+                        undo.addLast(snapshot)
+                        while (undo.size > 40) undo.removeFirst()
+                    }
+                    draft = updated
+                    warning = null
+                },
+                warning = warning,
+                caution = portalCaution,
+                destinations = destinations,
+                catalogReady = savedLevels != null,
+                familyCaption = familyCaption,
+                nestedCount = nestedCount,
+                reservedPortalNames = reservedPortalNames,
+                store = store,
+                onManageScenes = { familyOpen = true },
+                onBack = { closeEditor() },
+                onTest = {
+                    val reason = draft.playBlockReason()
+                    if (reason != null) {
+                        warning = reason
+                        return@KidsRedBallEditor
+                    }
+                    if (dirty() && !persist(showToast = false)) return@KidsRedBallEditor
+                    beginPlay(draft.toScene(), test = true)
+                },
+                onSave = { persist(showToast = true) },
+            )
+            if (familyOpen) {
+                RedBallFamilySheet(
+                    store = store,
+                    revision = listRev,
+                    currentId = draft.id,
+                    currentName = draft.name,
+                    rootId = draft.familyRootId(),
+                    onClose = { familyOpen = false },
+                    onOpen = { id -> openFamilyScene(id) },
+                    onPlay = { id -> playFamilyScene(id) },
+                    onCreate = { createNested() },
+                    onChanged = { listRev++ },
+                    onRenamedCurrent = { name ->
+                        draft = draft.copy(name = name)
+                        savedName = name
+                    },
+                    onDeletedCurrent = {
+                        familyOpen = false
+                        val parentId = draft.parentId
+                        scope.launch {
+                            val parent = withContext(Dispatchers.IO) { store.load(parentId) }
+                            if (parent != null) openDraft(parent, listed = true) else page = RedBallPage.LEVELS
+                        }
+                    },
+                )
+            }
+        }
         RedBallPage.PLAY -> {
             val request = play
             if (request != null) {
                 RedBallPlay(
                     scene = request.scene,
                     testMode = request.test,
+                    familyRoot = request.familyRoot,
                     store = store,
                     onExit = { leavePlay() },
                 )
@@ -324,7 +501,7 @@ private fun RedBallMenu(
             Spacer(Modifier.height(22.dp))
             MenuCard("Играть", "Готовая горка: ящик, пружина и дверь", Color(0xFFDC2626), onPlayBuiltin)
             Spacer(Modifier.height(12.dp))
-            MenuCard("Мои уровни", "Сыграть, поправить, переименовать или удалить", Color(0xFFC2410C), onMyLevels)
+            MenuCard("Мои уровни", "Главные сцены: сыграть, поправить или открыть вложенные", Color(0xFFC2410C), onMyLevels)
             Spacer(Modifier.height(12.dp))
             MenuCard("Создать уровень", "Земля, горки, ящики, шипы, дверь и портал", Color(0xFF15803D), onCreate)
         }
@@ -357,9 +534,10 @@ private fun RedBallLevelList(
     onEdit: (String) -> Unit,
     onChanged: () -> Unit,
 ) {
-    val levels by produceState(emptyList<RedBallLevelMeta>(), revision, store) {
-        value = withContext(Dispatchers.IO) { store.list() }
+    val catalog by produceState(emptyList<RedBallLevelMeta>(), revision, store) {
+        value = withContext(Dispatchers.IO) { store.listAll() }
     }
+    val levels = catalog.filter { it.sceneKind == RedBallSceneKind.MAIN }
     var rename by remember { mutableStateOf<RedBallLevelMeta?>(null) }
     var renameText by remember { mutableStateOf("") }
     var remove by remember { mutableStateOf<RedBallLevelMeta?>(null) }
@@ -382,6 +560,12 @@ private fun RedBallLevelList(
                 }
                 Text("Мои уровни", fontWeight = FontWeight.Black, fontSize = 26.sp, color = Color(0xFF7C2D12))
             }
+            Text(
+                "Здесь только главные сцены. Вложенные открываются кнопкой «Сцены» внутри редактора.",
+                modifier = Modifier.padding(horizontal = 20.dp, vertical = 4.dp),
+                color = Color(0xFF9A3412),
+                fontSize = 14.sp,
+            )
             if (levels.isEmpty()) {
                 Text(
                     "Пока пусто. Нажми «Создать уровень» и собери свою горку.",
@@ -450,7 +634,15 @@ private fun RedBallLevelList(
         AlertDialog(
             onDismissRequest = { remove = null },
             title = { Text("Удалить уровень?", fontWeight = FontWeight.Black) },
-            text = { Text("«${removing.name}» пропадёт с этого телефона.") },
+            text = {
+                val kids = catalog.count { it.sceneKind == RedBallSceneKind.NESTED && it.parentId == removing.id }
+                val line = if (kids > 0) {
+                    "«${removing.name}» и вложенные сцены ($kids) пропадут с этого телефона."
+                } else {
+                    "«${removing.name}» пропадёт с этого телефона."
+                }
+                Text(line)
+            },
             confirmButton = {
                 TextButton(onClick = {
                     val id = removing.id
@@ -479,17 +671,197 @@ private fun LevelChip(label: String, color: Color, onClick: () -> Unit) {
     }
 }
 
+@OptIn(ExperimentalLayoutApi::class)
+@Composable
+private fun RedBallFamilySheet(
+    store: RedBallLevelStore,
+    revision: Int,
+    currentId: String,
+    currentName: String,
+    rootId: String,
+    onClose: () -> Unit,
+    onOpen: (String) -> Unit,
+    onPlay: (String) -> Unit,
+    onCreate: () -> Unit,
+    onChanged: () -> Unit,
+    onRenamedCurrent: (String) -> Unit,
+    onDeletedCurrent: () -> Unit,
+) {
+    val catalog by produceState(emptyList<RedBallLevelMeta>(), revision, store, rootId) {
+        value = withContext(Dispatchers.IO) { store.listAll() }
+    }
+    val scenes = buildList {
+        val stored = familyScenes(rootId, catalog)
+        if (stored.none { it.id == rootId }) {
+            add(
+                RedBallLevelMeta(
+                    id = rootId,
+                    name = if (currentId == rootId) currentName.ifBlank { "Эта сцена" } else "Главная",
+                    updatedAt = 0L,
+                    sceneKind = RedBallSceneKind.MAIN,
+                ),
+            )
+        }
+        addAll(stored.sortedWith(compareBy<RedBallLevelMeta>({ it.sceneKind != RedBallSceneKind.MAIN }, { it.name })))
+    }
+    var rename by remember { mutableStateOf<RedBallLevelMeta?>(null) }
+    var renameText by remember { mutableStateOf("") }
+    var remove by remember { mutableStateOf<RedBallLevelMeta?>(null) }
+    val scope = rememberCoroutineScope()
+    Box(
+        Modifier
+            .fillMaxSize()
+            .background(Color(0xFFFFF7ED))
+            .clickable(
+                interactionSource = remember { MutableInteractionSource() },
+                indication = null,
+                onClick = {},
+            ),
+    ) {
+        Column(
+            Modifier
+                .fillMaxSize()
+                .statusBarsPadding()
+                .navigationBarsPadding(),
+        ) {
+            Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.padding(end = 12.dp)) {
+                IconButton(onClick = onClose) {
+                    Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Назад", tint = Color(0xFF7C2D12))
+                }
+                Text("Сцены семьи", fontWeight = FontWeight.Black, fontSize = 26.sp, color = Color(0xFF7C2D12))
+            }
+            Text(
+                "Главная видна в общем списке. Вложенные — только здесь. Портал внутри семьи может вести в них, в главную и в другие главные сцены.",
+                modifier = Modifier.padding(horizontal = 20.dp, vertical = 4.dp),
+                color = Color(0xFF9A3412),
+                fontSize = 14.sp,
+            )
+            LazyColumn(
+                modifier = Modifier.weight(1f),
+                contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp),
+                verticalArrangement = Arrangement.spacedBy(12.dp),
+            ) {
+                items(scenes, key = { it.id }) { scene ->
+                    val here = scene.id == currentId
+                    val nested = scene.sceneKind == RedBallSceneKind.NESTED
+                    Column(
+                        Modifier
+                            .fillMaxWidth()
+                            .clip(RoundedCornerShape(24.dp))
+                            .background(Color.White)
+                            .padding(16.dp),
+                    ) {
+                        Text(scene.name, fontWeight = FontWeight.Black, fontSize = 20.sp, color = Color(0xFF7C2D12))
+                        Text(
+                            (if (nested) "Вложенная" else "Главная") + if (here) " · сейчас" else "",
+                            color = Color(0xFF9A3412),
+                            fontSize = 13.sp,
+                            fontWeight = FontWeight.Bold,
+                        )
+                        Spacer(Modifier.height(10.dp))
+                        FlowRow(
+                            horizontalArrangement = Arrangement.spacedBy(8.dp),
+                            verticalArrangement = Arrangement.spacedBy(8.dp),
+                        ) {
+                            if (!here) {
+                                LevelChip("Открыть", Color(0xFFC2410C)) { onOpen(scene.id) }
+                            } else {
+                                LevelChip("Здесь", Color(0xFF9A3412)) { onClose() }
+                            }
+                            LevelChip("Играть", Color(0xFF15803D)) { onPlay(scene.id) }
+                            LevelChip("Имя", Color(0xFFB45309)) {
+                                rename = scene
+                                renameText = scene.name
+                            }
+                            if (nested) LevelChip("Удалить", Color(0xFFBE123C)) { remove = scene }
+                        }
+                    }
+                }
+            }
+            Box(
+                Modifier
+                    .padding(horizontal = 16.dp, vertical = 12.dp)
+                    .fillMaxWidth()
+                    .clip(RoundedCornerShape(999.dp))
+                    .background(Color(0xFF6D28D9))
+                    .kidsPressable(onClick = onCreate)
+                    .padding(vertical = 14.dp),
+                contentAlignment = Alignment.Center,
+            ) {
+                Text("Новая вложенная", color = Color.White, fontWeight = FontWeight.Black, fontSize = 17.sp)
+            }
+        }
+    }
+    val renaming = rename
+    if (renaming != null) {
+        AlertDialog(
+            onDismissRequest = { rename = null },
+            title = { Text("Новое имя", fontWeight = FontWeight.Black) },
+            text = {
+                OutlinedTextField(
+                    value = renameText,
+                    onValueChange = { renameText = it.take(32) },
+                    singleLine = true,
+                    modifier = Modifier.fillMaxWidth(),
+                )
+            },
+            confirmButton = {
+                TextButton(onClick = {
+                    val id = renaming.id
+                    val name = renameText.trim().ifBlank { "Без имени" }.take(32)
+                    rename = null
+                    scope.launch {
+                        withContext(Dispatchers.IO) { store.rename(id, name) }
+                        if (id == currentId) onRenamedCurrent(name)
+                        onChanged()
+                    }
+                }) { Text("Сохранить") }
+            },
+            dismissButton = { TextButton(onClick = { rename = null }) { Text("Отмена") } },
+        )
+    }
+    val removing = remove
+    if (removing != null) {
+        AlertDialog(
+            onDismissRequest = { remove = null },
+            title = { Text("Удалить вложенную сцену?", fontWeight = FontWeight.Black) },
+            text = { Text("«${removing.name}» пропадёт. Главная сцена останется.") },
+            confirmButton = {
+                TextButton(onClick = {
+                    val id = removing.id
+                    remove = null
+                    scope.launch {
+                        withContext(Dispatchers.IO) { store.delete(id) }
+                        onChanged()
+                        if (id == currentId) onDeletedCurrent()
+                    }
+                }) { Text("Удалить") }
+            },
+            dismissButton = { TextButton(onClick = { remove = null }) { Text("Оставить") } },
+        )
+    }
+}
+
 private data class PortalArrival(
     val scene: RedBallScene,
     val x: Float,
     val y: Float,
     val token: Long,
+    val familyRoot: String,
 )
 
-private fun resolveTravel(store: RedBallLevelStore, portal: RedBallPortal): PortalArrival? {
-    if (portal.linkId.isBlank()) return null
-    val known = store.list().map { it.id }.toSet() + RedBallScene.BUILTIN_ID
-    if (portal.linkId !in known) return null
+private fun resolveTravel(
+    store: RedBallLevelStore,
+    portal: RedBallPortal,
+    sourceSceneId: String,
+    sourceRoot: String,
+): PortalArrival? {
+    if (portal.role != RedBallPortalRole.ENTRY || portal.linkId.isBlank()) return null
+    val catalog = store.listAll()
+    val sourceKind = if (sourceRoot == sourceSceneId) RedBallSceneKind.MAIN else RedBallSceneKind.NESTED
+    val sourceParent = if (sourceKind == RedBallSceneKind.NESTED) sourceRoot else ""
+    val allowed = allowedPortalTargetIds(sourceSceneId, sourceKind, sourceParent, catalog)
+    if (portal.linkId !in allowed) return null
     val draft: RedBallDraft?
     val loaded = if (portal.linkId == RedBallScene.BUILTIN_ID) {
         draft = null
@@ -499,21 +871,47 @@ private fun resolveTravel(store: RedBallLevelStore, portal: RedBallPortal): Port
         draft = found
         found.toScene()
     }
-    val ready = loaded.withKnownPortals(known)
+    val destMeta = catalog.firstOrNull { it.id == portal.linkId }
+    val destRoot = destMeta?.familyRootId() ?: portal.linkId
+    val destAllowed = allowedPortalTargetIds(
+        loaded.id,
+        destMeta?.sceneKind ?: RedBallSceneKind.MAIN,
+        destMeta?.parentId.orEmpty(),
+        catalog,
+    )
+    val ready = loaded.withKnownPortals(destAllowed)
     val (x, y) = portal.arrivalIn(ready, draft)
-    return PortalArrival(ready, x, y, System.nanoTime())
+    return PortalArrival(ready, x, y, System.nanoTime(), destRoot)
+}
+
+private fun linkedExitNames(store: RedBallLevelStore, draft: RedBallDraft): Map<String, Set<String>> {
+    val exits = mutableMapOf<String, Set<String>>()
+    for (piece in draft.pieces) {
+        if (piece.kind != RedBallPieceKind.PORTAL) continue
+        if (piece.role != RedBallPortalRole.ENTRY || piece.exitId.isBlank() || piece.linkId.isBlank()) continue
+        if (piece.linkId in exits) continue
+        val names = when {
+            piece.linkId == RedBallScene.BUILTIN_ID -> emptySet()
+            piece.linkId == draft.id -> draft.exitPortalNames()
+            else -> store.load(piece.linkId)?.exitPortalNames().orEmpty()
+        }
+        exits[piece.linkId] = names
+    }
+    return exits
 }
 
 @Composable
 private fun RedBallPlay(
     scene: RedBallScene,
     testMode: Boolean,
+    familyRoot: String,
     store: RedBallLevelStore,
     onExit: () -> Unit,
 ) {
     val context = LocalContext.current
     var arrival by remember { mutableStateOf<PortalArrival?>(null) }
     var travel by remember { mutableStateOf<RedBallPortal?>(null) }
+    var rootId by remember(scene) { mutableStateOf(familyRoot) }
     val fade = remember { Animatable(0f) }
     val zoom = remember { Animatable(1f) }
     val shown = arrival?.scene ?: scene
@@ -553,7 +951,7 @@ private fun RedBallPlay(
     }
     androidx.compose.runtime.LaunchedEffect(travel) {
         val portal = travel ?: return@LaunchedEffect
-        val resolved = withContext(Dispatchers.IO) { resolveTravel(store, portal) }
+        val resolved = withContext(Dispatchers.IO) { resolveTravel(store, portal, shown.id, rootId) }
         if (!isActive) return@LaunchedEffect
         if (resolved == null) {
             sim.dismissPortal()
@@ -566,6 +964,7 @@ private fun RedBallPlay(
             launch { fade.animateTo(1f, tween(340, easing = FastOutSlowInEasing)) }
             launch { zoom.animateTo(1.18f, tween(340, easing = FastOutSlowInEasing)) }
         }
+        rootId = resolved.familyRoot
         arrival = resolved
         zoom.snapTo(0.86f)
         coroutineScope {

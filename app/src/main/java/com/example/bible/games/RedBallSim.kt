@@ -61,7 +61,6 @@ class RedBallSim(val scene: RedBallScene = RedBallScene.builtin()) {
     private var pendingMagnet = false
     private val portalArmed = BooleanArray(scene.portals.size)
     private val portalAsleep = BooleanArray(scene.portals.size)
-    private var portalCooldown = 0f
     private var portalHold = false
     private var pendingPortalIndex = -1
     private val fx = ArrayList<RedBallParticle>(80)
@@ -113,12 +112,13 @@ class RedBallSim(val scene: RedBallScene = RedBallScene.builtin()) {
         pendingStar = 0
         pendingMagnet = false
         portalHold = false
-        portalCooldown = 0f
         pendingPortalIndex = -1
         for (i in portalArmed.indices) {
             portalAsleep[i] = false
             val portal = scene.portals[i]
-            portalArmed[i] = portal.linkId.isBlank() || !overlaps(portal.box)
+            portalArmed[i] = portal.role != RedBallPortalRole.ENTRY ||
+                portal.linkId.isBlank() ||
+                !overlaps(portal.box)
         }
         jumpHeld = false
         jumpBuffer = 0f
@@ -147,8 +147,8 @@ class RedBallSim(val scene: RedBallScene = RedBallScene.builtin()) {
     }
 
     /**
-     * Появление в другой сцене. Короткий запрет и необходимость выйти из портала
-     * не дают сразу уехать обратно, если точка появления стоит в проходе.
+     * Появление в другой сцене. Выход сам по себе не срабатывает.
+     * Вход, внутри которого мяч оказался, молчит, пока мяч из него не выйдет.
      */
     fun arrive(x: Float, y: Float) {
         ballX = x
@@ -163,7 +163,6 @@ class RedBallSim(val scene: RedBallScene = RedBallScene.builtin()) {
         coyote = 0f
         portalHold = false
         pendingPortalIndex = -1
-        portalCooldown = PORTAL_COOLDOWN
         for (i in portalArmed.indices) portalArmed[i] = false
     }
 
@@ -172,7 +171,6 @@ class RedBallSim(val scene: RedBallScene = RedBallScene.builtin()) {
         if (pendingPortalIndex >= 0) portalAsleep[pendingPortalIndex] = true
         pendingPortalIndex = -1
         portalHold = false
-        portalCooldown = PORTAL_COOLDOWN
         for (i in portalArmed.indices) portalArmed[i] = false
     }
 
@@ -309,24 +307,20 @@ class RedBallSim(val scene: RedBallScene = RedBallScene.builtin()) {
             ballVy = 0f
             return
         }
-        touchPortals(dt)
+        touchPortals()
     }
 
-    private fun touchPortals(dt: Float) {
+    private fun touchPortals() {
         if (portalHold || scene.portals.isEmpty()) return
-        if (portalCooldown > 0f) portalCooldown = (portalCooldown - dt).coerceAtLeast(0f)
         for (i in scene.portals.indices) {
             val portal = scene.portals[i]
-            if (portal.linkId.isBlank() || portalAsleep[i]) continue
+            if (portal.role != RedBallPortalRole.ENTRY || portal.linkId.isBlank() || portalAsleep[i]) continue
             val hit = overlaps(portal.box)
             if (!hit) {
-                if (portalCooldown <= 0f) portalArmed[i] = true
+                portalArmed[i] = true
                 continue
             }
-            if (portalCooldown > 0f || !portalArmed[i]) {
-                portalArmed[i] = false
-                continue
-            }
+            if (!portalArmed[i]) continue
             portalArmed[i] = false
             portalHold = true
             pendingPortalIndex = i
@@ -971,7 +965,6 @@ class RedBallSim(val scene: RedBallScene = RedBallScene.builtin()) {
         private const val CLIMB_SPEED = 250f
         private const val LADDER_FALL = 150f
         private const val ENEMY_SPEED = 86f
-        const val PORTAL_COOLDOWN = 0.75f
     }
 }
 

@@ -55,8 +55,11 @@ import com.example.bible.games.RedBallDraft
 import com.example.bible.games.RedBallLevelStore
 import com.example.bible.games.RedBallPiece
 import com.example.bible.games.RedBallPieceKind
+import com.example.bible.games.RedBallPortalRole
 import com.example.bible.games.RedBallScene
 import com.example.bible.games.RedBallTune
+import com.example.bible.games.nextPortalName
+import com.example.bible.games.normalizePortalName
 import com.example.bible.games.snapAnchor
 import com.example.bible.games.tune
 import com.example.bible.ui.theme.OutlinedTextField
@@ -102,7 +105,11 @@ internal fun KidsRedBallEditor(
     caution: String?,
     destinations: List<RedBallDestination>,
     catalogReady: Boolean,
+    familyCaption: String,
+    nestedCount: Int,
+    reservedPortalNames: Set<String>,
     store: RedBallLevelStore,
+    onManageScenes: () -> Unit,
     onBack: () -> Unit,
     onTest: () -> Unit,
     onSave: () -> Unit,
@@ -115,6 +122,7 @@ internal fun KidsRedBallEditor(
     val onToolState = rememberUpdatedState(onTool)
     val camXState = rememberUpdatedState(camX)
     val camYState = rememberUpdatedState(camY)
+    val reservedNames = rememberUpdatedState(reservedPortalNames)
     var canvasSize by remember { mutableStateOf(IntSize.Zero) }
     var hover by remember { mutableStateOf(Hover(0, 0, 0, 0, false)) }
     var selectedId by remember { mutableStateOf<Long?>(null) }
@@ -148,6 +156,32 @@ internal fun KidsRedBallEditor(
             }
         }.toSet()
     }
+    val brokenExitIds by produceState(emptySet<Long>(), draft.pieces, catalogReady, draft.id) {
+        if (!catalogReady) {
+            value = emptySet()
+            return@produceState
+        }
+        val snapshot = draft
+        value = withContext(Dispatchers.IO) {
+            val ids = mutableSetOf<Long>()
+            for (piece in snapshot.pieces) {
+                if (piece.kind != RedBallPieceKind.PORTAL || piece.role != RedBallPortalRole.ENTRY) continue
+                if (piece.exitId.isBlank()) continue
+                if (piece.linkId.isBlank() || piece.linkId == RedBallScene.BUILTIN_ID) {
+                    ids += piece.id
+                    continue
+                }
+                val names = if (piece.linkId == snapshot.id) {
+                    snapshot.exitPortalNames()
+                } else {
+                    store.load(piece.linkId)?.exitPortalNames().orEmpty()
+                }
+                if (piece.exitId !in names) ids += piece.id
+            }
+            ids
+        }
+    }
+    val markedPortals = lostPortalIds + brokenExitIds
 
     Box(
         Modifier
@@ -186,12 +220,40 @@ internal fun KidsRedBallEditor(
                 }
             }
             Text(
-                "Землю, бетон, лестницы и шипы веди пальцем. Портал поставь касанием и в «Свойствах» выбери, в какую готовую сцену он ведёт.",
+                "Вход ведёт в сцену и в её выход. Выход — место, куда мяч появляется: зайти в него нельзя. Вложенные сцены — кнопка «Сцены».",
                 modifier = Modifier.padding(horizontal = 16.dp),
                 color = Color(0xFF7C2D12),
                 fontSize = 13.sp,
                 lineHeight = 16.sp,
             )
+            Row(
+                Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 16.dp, vertical = 4.dp),
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                Text(
+                    familyCaption,
+                    modifier = Modifier.weight(1f),
+                    color = Color(0xFF9A3412),
+                    fontSize = 13.sp,
+                    fontWeight = FontWeight.Bold,
+                )
+                Box(
+                    Modifier
+                        .clip(RoundedCornerShape(999.dp))
+                        .background(Color(0xFF6D28D9))
+                        .kidsPressable(onClick = onManageScenes)
+                        .padding(horizontal = 12.dp, vertical = 6.dp),
+                ) {
+                    Text(
+                        if (nestedCount > 0) "Сцены · $nestedCount" else "Сцены",
+                        color = Color.White,
+                        fontWeight = FontWeight.Black,
+                        fontSize = 13.sp,
+                    )
+                }
+            }
             if (warning != null) {
                 Text(
                     warning,
@@ -303,7 +365,13 @@ internal fun KidsRedBallEditor(
                                     val cell = start.cellOf(at.x, at.y)
                                     val (cc, rr) = kind.snapAnchor(cell.first, cell.second)
                                     hover = Hover(cc, rr, kind.w, kind.h, true)
-                                    val next = working.withPlaced(kind, cell.first, cell.second, tool.flip)
+                                    val next = working.withPlaced(
+                                        kind,
+                                        cell.first,
+                                        cell.second,
+                                        tool.flip,
+                                        reservedNames.value,
+                                    )
                                     if (next.pieces != working.pieces) {
                                         working = next
                                         onDraftState.value(working)
@@ -330,7 +398,13 @@ internal fun KidsRedBallEditor(
                                 }
                                 if (!moved && kind != null) {
                                     val cell = start.cellOf(startWorld.x, startWorld.y)
-                                    val placed = start.withPlaced(kind, cell.first, cell.second, tool.flip)
+                                    val placed = start.withPlaced(
+                                        kind,
+                                        cell.first,
+                                        cell.second,
+                                        tool.flip,
+                                        reservedNames.value,
+                                    )
                                     if (placed.pieces != start.pieces) {
                                         onCommitState.value(placed, start.pieces)
                                         if (kind == RedBallPieceKind.PORTAL) {
@@ -361,7 +435,7 @@ internal fun KidsRedBallEditor(
                         hover.show,
                         if (tool == RedBallTool.PROPS) selectedId else null,
                         portalTime,
-                        lostPortalIds,
+                        lostPortalIds = markedPortals,
                     )
                 }
                 ScrollNub("▲", "Вверх", Modifier.align(Alignment.TopCenter)) {
@@ -385,6 +459,7 @@ internal fun KidsRedBallEditor(
                         selected = selected,
                         destinations = destinations,
                         catalogReady = catalogReady,
+                        reservedPortalNames = reservedPortalNames,
                         store = store,
                         onCommit = onCommit,
                     )
@@ -560,24 +635,33 @@ private fun RedBallPieceKind.label(): String = when (this) {
     RedBallPieceKind.PORTAL -> "Портал"
 }
 
+private data class PortalTarget(val draft: RedBallDraft?, val ready: Boolean)
+
 @Composable
 private fun PortalLinkPanel(
     draft: RedBallDraft,
     selected: RedBallPiece,
     destinations: List<RedBallDestination>,
     catalogReady: Boolean,
+    reservedPortalNames: Set<String>,
     store: RedBallLevelStore,
     onCommit: (RedBallDraft, List<RedBallPiece>?) -> Unit,
 ) {
     val link = selected.linkId
     val known = destinations.any { it.id == link }
-    val targetDraft by produceState<RedBallDraft?>(null, link, draft.id, draft.pieces) {
+    val entry = selected.role != RedBallPortalRole.EXIT
+    var nameText by remember(selected.id) { mutableStateOf(selected.portalName) }
+    val target by produceState(PortalTarget(null, false), link, draft.id, draft.pieces) {
         value = when {
-            link.isBlank() || link == RedBallScene.BUILTIN_ID -> null
-            link == draft.id -> draft
-            else -> withContext(Dispatchers.IO) { store.load(link) }
+            link.isBlank() || link == RedBallScene.BUILTIN_ID -> PortalTarget(null, true)
+            link == draft.id -> PortalTarget(draft, true)
+            else -> PortalTarget(withContext(Dispatchers.IO) { store.load(link) }, true)
         }
     }
+    val cleanName = normalizePortalName(nameText)
+    val nameClash = cleanName.isNotBlank() &&
+        cleanName != selected.portalName &&
+        portalNameClash(draft, selected.id, cleanName, reservedPortalNames)
     Column(
         Modifier
             .fillMaxWidth()
@@ -586,7 +670,83 @@ private fun PortalLinkPanel(
             .background(Color.White.copy(alpha = 0.92f))
             .padding(horizontal = 12.dp, vertical = 8.dp),
     ) {
-        Text("Куда ведёт портал", color = Color(0xFF5B21B6), fontWeight = FontWeight.Black, fontSize = 14.sp)
+        Text("Портал", color = Color(0xFF5B21B6), fontWeight = FontWeight.Black, fontSize = 14.sp)
+        OutlinedTextField(
+            value = nameText,
+            onValueChange = { raw ->
+                val shown = raw.take(24)
+                nameText = shown
+                val clean = normalizePortalName(shown)
+                if (clean.isBlank() || clean == selected.portalName) return@OutlinedTextField
+                if (portalNameClash(draft, selected.id, clean, reservedPortalNames)) return@OutlinedTextField
+                onCommit(draft.withPiece(selected.id) { it.copy(portalName = clean) }, draft.pieces)
+            },
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(top = 4.dp),
+            singleLine = true,
+            placeholder = { Text("Имя в этой семье") },
+        )
+        if (nameClash) {
+            Text(
+                "Такое имя уже есть в этой семье",
+                color = Color(0xFF991B1B),
+                fontSize = 13.sp,
+                fontWeight = FontWeight.Bold,
+            )
+        }
+        Row(
+            Modifier.padding(top = 6.dp),
+            horizontalArrangement = Arrangement.spacedBy(6.dp),
+        ) {
+            SpawnChip("Вход", entry) {
+                if (!entry) {
+                    val renamed = renamedForRole(draft, selected, RedBallPortalRole.ENTRY, reservedPortalNames)
+                    nameText = renamed
+                    onCommit(
+                        draft.withPiece(selected.id) {
+                            it.copy(role = RedBallPortalRole.ENTRY, portalName = renamed)
+                        },
+                        draft.pieces,
+                    )
+                }
+            }
+            SpawnChip("Выход", !entry) {
+                if (entry) {
+                    val renamed = renamedForRole(draft, selected, RedBallPortalRole.EXIT, reservedPortalNames)
+                    nameText = renamed
+                    onCommit(
+                        draft.withPiece(selected.id) {
+                            it.copy(
+                                role = RedBallPortalRole.EXIT,
+                                portalName = renamed,
+                                linkId = "",
+                                exitId = "",
+                                spawnC = null,
+                                spawnR = null,
+                            )
+                        },
+                        draft.pieces,
+                    )
+                }
+            }
+        }
+        if (!entry) {
+            Text(
+                "Сюда мяч появляется из входа. В выход зайти нельзя.",
+                modifier = Modifier.padding(top = 6.dp),
+                color = Color(0xFF115E59),
+                fontSize = 13.sp,
+            )
+            return@Column
+        }
+        Text(
+            "Куда ведёт вход",
+            modifier = Modifier.padding(top = 8.dp),
+            color = Color(0xFF5B21B6),
+            fontWeight = FontWeight.Bold,
+            fontSize = 13.sp,
+        )
         if (!catalogReady) {
             Text("Сцены ещё читаются…", color = Color(0xFF57534E), fontSize = 13.sp)
         }
@@ -607,7 +767,7 @@ private fun PortalLinkPanel(
                             if (!on) {
                                 onCommit(
                                     draft.withPiece(selected.id) {
-                                        it.copy(linkId = dest.id, spawnC = null, spawnR = null)
+                                        it.copy(linkId = dest.id, exitId = "", spawnC = null, spawnR = null)
                                     },
                                     draft.pieces,
                                 )
@@ -616,7 +776,7 @@ private fun PortalLinkPanel(
                         .padding(horizontal = 12.dp, vertical = 8.dp),
                 ) {
                     Text(
-                        dest.title.take(18),
+                        dest.title.take(22),
                         color = if (on) Color.White else Color(0xFF5B21B6),
                         fontWeight = FontWeight.Black,
                         fontSize = 13.sp,
@@ -625,54 +785,115 @@ private fun PortalLinkPanel(
                 }
             }
         }
-        val custom = selected.spawnC != null && selected.spawnR != null
+        val legacyCell = selected.spawnC != null && selected.spawnR != null && selected.exitId.isBlank()
+        val exits = target.draft?.pieces?.filter {
+            it.kind == RedBallPieceKind.PORTAL &&
+                it.role == RedBallPortalRole.EXIT &&
+                it.portalName.isNotBlank()
+        }.orEmpty()
+        val exitKnown = selected.exitId.isNotBlank() && exits.any { it.portalName == selected.exitId }
         val hint = when {
             link.isBlank() -> "Портал спит, пока не выбрана сцена"
             !known && catalogReady -> "Этой сцены больше нет. Портал спит"
             link == RedBallScene.BUILTIN_ID -> "Мяч появится на старте горки"
-            !custom -> "Мяч появится на старте выбранной сцены"
-            else -> "Мяч появится в клетке ${selected.spawnC}, ${selected.spawnR} той сцены"
+            selected.exitId.isNotBlank() && target.ready && !exitKnown ->
+                "Выхода «${selected.exitId}» больше нет — мяч появится на старте"
+            exitKnown -> "Мяч появится у выхода «${selected.exitId}»"
+            legacyCell -> "Раньше мяч появлялся в клетке ${selected.spawnC}, ${selected.spawnR}. Выбери выход или старт"
+            else -> "Мяч появится на старте выбранной сцены"
         }
+        val hintAlert = (link.isNotBlank() && !known && catalogReady) ||
+            (selected.exitId.isNotBlank() && target.ready && !exitKnown && link != RedBallScene.BUILTIN_ID)
         Text(
             hint,
             modifier = Modifier.padding(top = 6.dp),
-            color = if (link.isNotBlank() && !known && catalogReady) Color(0xFF991B1B) else Color(0xFF57534E),
+            color = if (hintAlert) Color(0xFF991B1B) else Color(0xFF57534E),
             fontSize = 13.sp,
         )
         if (link.isNotBlank() && link != RedBallScene.BUILTIN_ID && (known || link == draft.id)) {
-            Row(
-                Modifier.padding(top = 6.dp),
-                horizontalArrangement = Arrangement.spacedBy(6.dp),
-            ) {
-                SpawnChip("На старте", !custom) {
-                    if (custom) {
-                        onCommit(
-                            draft.withPiece(selected.id) { it.copy(spawnC = null, spawnR = null) },
-                            draft.pieces,
-                        )
+            if (!target.ready) {
+                Text("Выходы читаются…", color = Color(0xFF57534E), fontSize = 13.sp)
+            } else {
+                Text(
+                    "Где появиться",
+                    modifier = Modifier.padding(top = 6.dp),
+                    color = Color(0xFF115E59),
+                    fontWeight = FontWeight.Bold,
+                    fontSize = 13.sp,
+                )
+                Row(
+                    Modifier
+                        .fillMaxWidth()
+                        .horizontalScroll(rememberScrollState())
+                        .padding(top = 6.dp),
+                    horizontalArrangement = Arrangement.spacedBy(6.dp),
+                ) {
+                    val atStart = selected.exitId.isBlank() && !legacyCell
+                    SpawnChip("На старте", atStart) {
+                        if (!atStart) {
+                            onCommit(
+                                draft.withPiece(selected.id) {
+                                    it.copy(exitId = "", spawnC = null, spawnR = null)
+                                },
+                                draft.pieces,
+                            )
+                        }
+                    }
+                    for (exit in exits) {
+                        val on = exit.portalName == selected.exitId
+                        SpawnChip(exit.portalName, on) {
+                            if (!on) {
+                                onCommit(
+                                    draft.withPiece(selected.id) {
+                                        it.copy(exitId = exit.portalName, spawnC = null, spawnR = null)
+                                    },
+                                    draft.pieces,
+                                )
+                            }
+                        }
                     }
                 }
-                SpawnChip("Своя клетка", custom) {
-                    if (!custom) {
-                        val start = targetDraft?.pieces?.firstOrNull { it.kind == RedBallPieceKind.START }
-                        onCommit(
-                            draft.withPiece(selected.id) {
-                                it.copy(spawnC = start?.c ?: 2, spawnR = start?.r ?: 2)
-                            },
-                            draft.pieces,
-                        )
-                    }
-                }
-            }
-            if (custom) {
-                SpawnStepper("Колонка", selected.spawnC ?: 0) { value ->
-                    onCommit(draft.withPiece(selected.id) { it.copy(spawnC = value) }, draft.pieces)
-                }
-                SpawnStepper("Ряд", selected.spawnR ?: 0) { value ->
-                    onCommit(draft.withPiece(selected.id) { it.copy(spawnR = value) }, draft.pieces)
+                if (exits.isEmpty()) {
+                    Text(
+                        "В этой сцене нет выходов — мяч появится на старте",
+                        modifier = Modifier.padding(top = 4.dp),
+                        color = Color(0xFF57534E),
+                        fontSize = 13.sp,
+                    )
                 }
             }
         }
+    }
+}
+
+private fun portalNameClash(
+    draft: RedBallDraft,
+    pieceId: Long,
+    name: String,
+    reserved: Set<String>,
+): Boolean {
+    if (name.isBlank()) return false
+    if (name in reserved) return true
+    return draft.pieces.any { piece ->
+        piece.kind == RedBallPieceKind.PORTAL && piece.id != pieceId && piece.portalName == name
+    }
+}
+
+private fun renamedForRole(
+    draft: RedBallDraft,
+    piece: RedBallPiece,
+    role: RedBallPortalRole,
+    reserved: Set<String>,
+): String {
+    val current = piece.portalName
+    val from = if (role == RedBallPortalRole.EXIT) "Вход " else "Выход "
+    val prefix = if (role == RedBallPortalRole.EXIT) "Выход " else "Вход "
+    val candidate = if (current.startsWith(from)) prefix + current.removePrefix(from) else current
+    val resolved = candidate.ifBlank { nextPortalName(draft.portalNames() + reserved, role) }
+    return if (portalNameClash(draft, piece.id, resolved, reserved)) {
+        current.ifBlank { nextPortalName(draft.portalNames() + reserved + resolved, role) }
+    } else {
+        resolved
     }
 }
 
@@ -691,39 +912,6 @@ private fun SpawnChip(label: String, on: Boolean, onClick: () -> Unit) {
             fontWeight = FontWeight.Black,
             fontSize = 13.sp,
         )
-    }
-}
-
-@Composable
-private fun SpawnStepper(label: String, value: Int, onChange: (Int) -> Unit) {
-    Row(
-        Modifier.fillMaxWidth().padding(top = 4.dp),
-        verticalAlignment = Alignment.CenterVertically,
-    ) {
-        Text(label, modifier = Modifier.weight(1f), color = Color(0xFF44403C), fontSize = 14.sp)
-        StepButton("−") { onChange((value - 1).coerceIn(-RedBallDraft.CELL_LIMIT, RedBallDraft.CELL_LIMIT)) }
-        Text(
-            value.toString(),
-            modifier = Modifier.padding(horizontal = 10.dp),
-            color = Color(0xFF7C2D12),
-            fontWeight = FontWeight.Black,
-            fontSize = 16.sp,
-        )
-        StepButton("+") { onChange((value + 1).coerceIn(-RedBallDraft.CELL_LIMIT, RedBallDraft.CELL_LIMIT)) }
-    }
-}
-
-@Composable
-private fun StepButton(label: String, onClick: () -> Unit) {
-    Box(
-        Modifier
-            .size(36.dp)
-            .clip(CircleShape)
-            .background(Color(0xFFFFEDD5))
-            .kidsPressable(onClick = onClick),
-        contentAlignment = Alignment.Center,
-    ) {
-        Text(label, color = Color(0xFF9A3412), fontWeight = FontWeight.Black, fontSize = 18.sp)
     }
 }
 

@@ -10,8 +10,11 @@ import com.example.bible.games.RedBallMagnetSpawn
 import com.example.bible.games.RedBallPiece
 import com.example.bible.games.RedBallPieceKind
 import com.example.bible.games.RedBallPortal
+import com.example.bible.games.RedBallPortalRole
 import com.example.bible.games.RedBallScene
+import com.example.bible.games.RedBallSceneKind
 import com.example.bible.games.RedBallSim
+import com.example.bible.games.allowedPortalTargetIds
 import com.example.bible.games.RedBallStarSpawn
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
@@ -443,6 +446,11 @@ class RedBallSimTest {
         assertEquals("", legacyPortal.linkId)
         assertNull(legacyPortal.spawnC)
         assertNull(legacyPortal.spawnR)
+        assertEquals(RedBallPortalRole.ENTRY, legacyPortal.role)
+        assertEquals("", legacyPortal.portalName)
+        assertEquals("", legacyPortal.exitId)
+        assertEquals(RedBallSceneKind.MAIN, parsed.sceneKind)
+        assertEquals("", parsed.parentId)
         assertEquals("", parsed.toScene().portals.single().linkId)
         assertTrue(parsed.pieces.none { it.id == 15L })
         val sim = RedBallSim(parsed.toScene())
@@ -519,8 +527,7 @@ class RedBallSimTest {
         assertEquals("back", sim.consumePortal()?.linkId)
 
         sim.arrive(850f, 472f)
-        val inside = (RedBallSim.PORTAL_COOLDOWN * 60f).toInt() + 25
-        repeat(inside) { sim.step(1f / 60f, 0f) }
+        repeat(80) { sim.step(1f / 60f, 0f) }
         assertNull(sim.consumePortal())
         assertFalse(sim.dead)
 
@@ -592,6 +599,197 @@ class RedBallSimTest {
         val atStart = portal.copy(spawnC = null, spawnR = null).arrivalIn(scene, null)
         assertEquals(scene.startX, atStart.first, 0.01f)
         assertEquals(scene.startY, atStart.second, 0.01f)
+    }
+
+    @Test
+    fun sceneHierarchyFiltersPickerAndPortalTargets() {
+        val dir = Files.createTempDirectory("redball-family").toFile()
+        val store = RedBallLevelStore(dir)
+        val mainA = RedBallDraft.fresh("Дом").copy(id = "main-a", updatedAt = 10L)
+        val nested = RedBallDraft.freshNested("main-a", "Чердак").copy(id = "nest-a", updatedAt = 20L)
+        val mainB = RedBallDraft.fresh("Сад").copy(id = "main-b", updatedAt = 30L)
+        val foreign = RedBallDraft.freshNested("main-b", "Чулан").copy(id = "nest-b", updatedAt = 40L)
+        store.save(mainA)
+        store.save(nested)
+        store.save(mainB)
+        store.save(foreign)
+
+        assertEquals(listOf("main-b", "main-a"), store.list().map { it.id })
+        val loadedNest = store.load("nest-a")
+        assertEquals(RedBallSceneKind.NESTED, loadedNest?.sceneKind)
+        assertEquals("main-a", loadedNest?.parentId)
+        val round = RedBallDraft.fromJson(nested.toJson())
+        assertEquals(RedBallSceneKind.NESTED, round?.sceneKind)
+        assertEquals("main-a", round?.parentId)
+
+        val catalog = store.listAll()
+        val fromMain = allowedPortalTargetIds("main-a", RedBallSceneKind.MAIN, "", catalog)
+        assertTrue(fromMain.contains("nest-a"))
+        assertTrue(fromMain.contains("main-b"))
+        assertTrue(fromMain.contains(RedBallScene.BUILTIN_ID))
+        assertFalse(fromMain.contains("nest-b"))
+        val fromNest = allowedPortalTargetIds("nest-a", RedBallSceneKind.NESTED, "main-a", catalog)
+        assertTrue(fromNest.contains("main-a"))
+        assertTrue(fromNest.contains("nest-a"))
+        assertTrue(fromNest.contains("main-b"))
+        assertFalse(fromNest.contains("nest-b"))
+
+        java.io.File(dir, "legacy-main.json").writeText(
+            """{"version":1,"id":"legacy-main","name":"Старый дом","cols":20,"rows":12,"cell":40,"originY":100,"nextId":2,"updatedAt":8,"pieces":[]}""",
+        )
+        assertEquals(RedBallSceneKind.MAIN, store.load("legacy-main")?.sceneKind)
+        assertTrue(store.list().any { it.id == "legacy-main" && it.sceneKind == RedBallSceneKind.MAIN })
+
+        val orphan = RedBallDraft.fresh("Сирота").copy(
+            id = "orphan",
+            sceneKind = RedBallSceneKind.NESTED,
+            parentId = "missing",
+            updatedAt = 4L,
+        )
+        java.io.File(dir, "orphan.json").writeText(orphan.toJson())
+        assertEquals(RedBallSceneKind.MAIN, store.load("orphan")?.sceneKind)
+        assertEquals("", store.load("orphan")?.parentId)
+        assertTrue(store.list().any { it.id == "orphan" })
+
+        store.delete("main-a")
+        assertNull(store.load("main-a"))
+        assertNull(store.load("nest-a"))
+        assertNotNull(store.load("main-b"))
+        assertNotNull(store.load("nest-b"))
+        assertFalse(store.list().any { it.id == "nest-b" })
+    }
+
+    @Test
+    fun entryLandsOnNamedExitAndExitNeverTriggers() {
+        val exit = RedBallPiece(
+            id = 80,
+            kind = RedBallPieceKind.PORTAL,
+            c = 12,
+            r = 7,
+            w = 2,
+            h = 3,
+            portalName = "У двери",
+            role = RedBallPortalRole.EXIT,
+        )
+        val entry = RedBallPiece(
+            id = 81,
+            kind = RedBallPieceKind.PORTAL,
+            c = 4,
+            r = 7,
+            w = 2,
+            h = 3,
+            portalName = "В подвал",
+            role = RedBallPortalRole.ENTRY,
+            linkId = "flat",
+            exitId = "У двери",
+        )
+        val base = flatDraft()
+        val draft = base.copy(pieces = base.pieces + exit + entry)
+        val scene = draft.toScene()
+        val gate = scene.portals.first { it.role == RedBallPortalRole.ENTRY }
+        val spot = draft.portalExitSpot("У двери")
+        assertNotNull(spot)
+        val (x, y) = gate.arrivalIn(scene, draft)
+        assertEquals(spot!!.first, x, 0.01f)
+        assertEquals(spot.second, y, 0.01f)
+        assertEquals("У двери", gate.exitId)
+
+        val renamed = gate.copy(exitId = "Пропал", spawnC = 4, spawnR = 9)
+        val fallback = renamed.arrivalIn(scene, draft)
+        assertEquals(scene.startX, fallback.first, 0.01f)
+        assertEquals(scene.startY, fallback.second, 0.01f)
+        val broken = draft.copy(pieces = draft.pieces.map { piece ->
+            if (piece.id == 81L) piece.copy(exitId = "Пропал") else piece
+        })
+        assertEquals(
+            "Выход «Пропал» пропал — мяч появится на старте",
+            broken.portalWarning(
+                setOf(RedBallScene.BUILTIN_ID, broken.id),
+                mapOf(broken.id to setOf("У двери")),
+            ),
+        )
+
+        val quiet = RedBallSim(scene)
+        val exitBox = scene.portals.first { it.role == RedBallPortalRole.EXIT }.box
+        quiet.ballX = (exitBox.l + exitBox.r) / 2f
+        quiet.ballY = (exitBox.t + exitBox.b) / 2f
+        quiet.ballVx = 0f
+        quiet.ballVy = 0f
+        val before = quiet.ballX
+        repeat(25) { quiet.step(1f / 60f, 1f) }
+        assertNull(quiet.consumePortal())
+        assertFalse(quiet.dead)
+        assertTrue("выход заморозил мяч: x=${quiet.ballX}", quiet.ballX > before + 1f)
+
+        val sim = RedBallSim(scene)
+        sim.ballX = (gate.box.l + gate.box.r) / 2f
+        sim.ballY = (gate.box.t + gate.box.b) / 2f
+        sim.ballVx = 0f
+        sim.ballVy = 0f
+        sim.step(1f / 60f, 0f)
+        val hit = sim.consumePortal()
+        assertEquals("flat", hit?.linkId)
+        assertEquals("У двери", hit?.exitId)
+        assertEquals(RedBallPortalRole.ENTRY, hit?.role)
+
+        val arrived = RedBallSim(scene)
+        arrived.arrive(x, y)
+        repeat(40) { arrived.step(1f / 60f, 1f) }
+        assertNull(arrived.consumePortal())
+        assertFalse(arrived.dead)
+        assertTrue(arrived.ballX > x + 1f)
+
+        val linkedExit = RedBallPortal(
+            RedBallAabb(400f, 400f, 500f, 530f),
+            linkId = "should-not-fire",
+            portalName = "Выход 1",
+            role = RedBallPortalRole.EXIT,
+        )
+        val blocked = RedBallSim(arena(portals = listOf(linkedExit)))
+        blocked.ballX = 450f
+        blocked.ballY = 465f
+        val startX = blocked.ballX
+        repeat(20) { blocked.step(1f / 60f, 1f) }
+        assertNull(blocked.consumePortal())
+        assertTrue(blocked.ballX > startX)
+
+        val named = flatDraft()
+            .withPlaced(RedBallPieceKind.PORTAL, 2, 2, false)
+            .let { placed -> placed.withPlaced(RedBallPieceKind.PORTAL, 8, 2, false, setOf("Вход 2")) }
+        val portalNames = named.pieces.filter { it.kind == RedBallPieceKind.PORTAL }.map { it.portalName }.sorted()
+        assertEquals(listOf("Вход 1", "Вход 3"), portalNames)
+        val duplicated = named.copy(
+            pieces = named.pieces.map { piece ->
+                if (piece.kind == RedBallPieceKind.PORTAL) piece.copy(portalName = "Вход 1") else piece
+            },
+        )
+        assertEquals(
+            "Имена порталов в одной семье должны быть разными",
+            duplicated.portalWarning(setOf(RedBallScene.BUILTIN_ID, duplicated.id)),
+        )
+    }
+
+    @Test
+    fun exitOnThePathDoesNotStealTheDoor() {
+        val draft = flatDraft(
+            RedBallPiece(
+                100,
+                RedBallPieceKind.PORTAL,
+                8,
+                7,
+                2,
+                3,
+                false,
+                portalName = "Мимо",
+                role = RedBallPortalRole.EXIT,
+                linkId = "next",
+            ),
+        )
+        val sim = RedBallSim(draft.toScene())
+        repeat(60 * 8) { sim.step(1f / 60f, 1f) }
+        assertNull(sim.consumePortal())
+        assertTrue(sim.won)
+        assertFalse(sim.dead)
     }
 
     private fun arena(

@@ -56,17 +56,41 @@ data class RedBallEnemySpawn(
     val mass: Float = 1f,
 )
 
+/** Вход уводит мяч в другую сцену. Выход только принимает: в него зайти нельзя. */
+enum class RedBallPortalRole {
+    ENTRY,
+    EXIT,
+}
+
 /**
- * Проход в другую готовую сцену. Пустой [linkId] — портал спит.
- * [spawnC] и [spawnR] вместе задают клетку появления; иначе мяч встаёт на старт цели.
+ * Главная сцена видна в общем списке уровней.
+ * Вложенная живёт внутри ровно одной главной и в общий список не попадает.
+ */
+enum class RedBallSceneKind {
+    MAIN,
+    NESTED,
+}
+
+/**
+ * Проход между сценами. Пустой [linkId] у входа — портал спит.
+ * [exitId] — имя выхода в целевой сцене; пустое имя или пропавший выход ставят мяч на старт.
+ * [spawnC] и [spawnR] — старый способ указать клетку. Новые порталы ими не пользуются.
  */
 data class RedBallPortal(
     val box: RedBallAabb,
     val linkId: String = "",
     val spawnC: Int? = null,
     val spawnR: Int? = null,
+    val portalName: String = "",
+    val role: RedBallPortalRole = RedBallPortalRole.ENTRY,
+    val exitId: String = "",
 ) {
     fun arrivalIn(scene: RedBallScene, draft: RedBallDraft?): Pair<Float, Float> {
+        if (exitId.isNotBlank()) {
+            val spot = draft?.portalExitSpot(exitId)
+            if (spot != null) return clampArrival(scene, spot.first, spot.second)
+            return scene.startX to scene.startY
+        }
         val column = spawnC
         val row = spawnR
         if (draft == null || column == null || row == null) return scene.startX to scene.startY
@@ -77,6 +101,13 @@ data class RedBallPortal(
         val y = (draft.originY + (row + 1f) * draft.cell - RedBallScene.BALL_R).coerceIn(scene.minY, floor)
         return x to y
     }
+}
+
+private fun clampArrival(scene: RedBallScene, rawX: Float, rawY: Float): Pair<Float, Float> {
+    val minX = scene.minX + RedBallScene.BALL_R
+    val maxX = (scene.worldW - RedBallScene.BALL_R).coerceAtLeast(minX)
+    val floor = (scene.voidY - RedBallScene.BALL_R - 1f).coerceAtLeast(scene.minY)
+    return rawX.coerceIn(minX, maxX) to rawY.coerceIn(scene.minY, floor)
 }
 
 /**
@@ -195,6 +226,9 @@ data class RedBallPiece(
     val linkId: String = "",
     val spawnC: Int? = null,
     val spawnR: Int? = null,
+    val portalName: String = "",
+    val role: RedBallPortalRole = RedBallPortalRole.ENTRY,
+    val exitId: String = "",
 )
 
 /** Какие поля физики имеют смысл у предмета. */
@@ -241,7 +275,56 @@ data class RedBallDraft(
     val pieces: List<RedBallPiece> = emptyList(),
     val nextId: Long = 1L,
     val updatedAt: Long = 0L,
+    val sceneKind: RedBallSceneKind = RedBallSceneKind.MAIN,
+    val parentId: String = "",
 ) {
+    /** Корень семьи: сама главная сцена или родитель вложенной. */
+    fun familyRootId(): String =
+        if (sceneKind == RedBallSceneKind.NESTED && parentId.isNotBlank()) parentId else id
+
+    fun portalNames(): Set<String> = pieces.mapNotNull { piece ->
+        if (piece.kind == RedBallPieceKind.PORTAL && piece.portalName.isNotBlank()) piece.portalName else null
+    }.toSet()
+
+    fun exitPortalNames(): Set<String> = pieces.mapNotNull { piece ->
+        if (
+            piece.kind == RedBallPieceKind.PORTAL &&
+            piece.role == RedBallPortalRole.EXIT &&
+            piece.portalName.isNotBlank()
+        ) {
+            piece.portalName
+        } else {
+            null
+        }
+    }.toSet()
+
+    /** Точка появления у именованного выхода: низ арки, мяч стоит на полу портала. */
+    fun portalExitSpot(name: String): Pair<Float, Float>? {
+        if (name.isBlank()) return null
+        val piece = pieces.firstOrNull {
+            it.kind == RedBallPieceKind.PORTAL &&
+                it.role == RedBallPortalRole.EXIT &&
+                it.portalName == name
+        } ?: return null
+        val box = aabb(piece)
+        return (box.l + box.r) / 2f to (box.b - RedBallScene.BALL_R)
+    }
+
+    /**
+     * Вложенная сцена остаётся вложенной, только если родитель есть и сам главная.
+     * Старые сохранения и сироты без родителя становятся главными.
+     */
+    fun normalizeHierarchy(parent: RedBallDraft?): RedBallDraft {
+        if (sceneKind != RedBallSceneKind.NESTED || parentId.isBlank()) {
+            return if (sceneKind == RedBallSceneKind.MAIN && parentId.isEmpty()) this
+            else copy(sceneKind = RedBallSceneKind.MAIN, parentId = "")
+        }
+        if (parent == null || parent.id == id) return copy(sceneKind = RedBallSceneKind.MAIN, parentId = "")
+        val parentIsMain = parent.sceneKind != RedBallSceneKind.NESTED || parent.parentId.isBlank()
+        if (!parentIsMain || parent.id != parentId) return copy(sceneKind = RedBallSceneKind.MAIN, parentId = "")
+        return copy(sceneKind = RedBallSceneKind.NESTED, parentId = parent.id)
+    }
+
     fun playBlockReason(): String? {
         val starts = pieces.count { it.kind == RedBallPieceKind.START }
         val doors = pieces.count { it.kind == RedBallPieceKind.DOOR }
@@ -253,16 +336,36 @@ data class RedBallDraft(
         }
     }
 
-    /** Предупреждение редактора: портал без цели или с удалённой сценой не срабатывает. */
-    fun portalWarning(knownIds: Set<String>): String? {
+    /**
+     * Предупреждение редактора.
+     * [exitNames] — имена выходов по id сцены. Нет ключа — каталог ещё не прочитан, пропавший выход не ругаем.
+     * [familyPortalNames] — имена порталов в других сценах той же семьи.
+     */
+    fun portalWarning(
+        knownIds: Set<String>,
+        exitNames: Map<String, Set<String>> = emptyMap(),
+        familyPortalNames: Set<String> = emptySet(),
+    ): String? {
         val portals = pieces.filter { it.kind == RedBallPieceKind.PORTAL }
         if (portals.isEmpty()) return null
-        if (portals.any { it.linkId.isNotBlank() && it.linkId !in knownIds }) {
+        val named = portals.filter { it.portalName.isNotBlank() }
+        val duplicate = named.groupBy { it.portalName }.any { it.value.size > 1 }
+        val clash = named.any { it.portalName in familyPortalNames }
+        if (duplicate || clash) return "Имена порталов в одной семье должны быть разными"
+        val entries = portals.filter { it.role == RedBallPortalRole.ENTRY }
+        if (entries.any { it.linkId.isNotBlank() && it.linkId !in knownIds }) {
             return "Портал ведёт в удалённую сцену — пока он спит"
         }
-        if (portals.any { it.linkId.isBlank() }) {
+        if (entries.any { it.linkId.isBlank() }) {
             return "Выбери сцену у портала, иначе он спит"
         }
+        val broken = entries.firstOrNull { entry ->
+            entry.exitId.isNotBlank() &&
+                entry.linkId.isNotBlank() &&
+                entry.linkId in exitNames &&
+                entry.exitId !in exitNames.getValue(entry.linkId)
+        }
+        if (broken != null) return "Выход «${broken.exitId}» пропал — мяч появится на старте"
         return null
     }
 
@@ -278,17 +381,28 @@ data class RedBallDraft(
         return null
     }
 
-    fun withPlaced(kind: RedBallPieceKind, c: Int, r: Int, flip: Boolean): RedBallDraft {
+    fun withPlaced(
+        kind: RedBallPieceKind,
+        c: Int,
+        r: Int,
+        flip: Boolean,
+        reservedPortalNames: Set<String> = emptySet(),
+    ): RedBallDraft {
         if (pieces.size >= MAX_PIECES && kind != RedBallPieceKind.START && kind != RedBallPieceKind.DOOR) {
             return this
         }
         val (cc, rr) = kind.snapAnchor(c, r)
         val slopeFlip = flip && kind == RedBallPieceKind.SLOPE
         val props = kind.placedProps()
-        fun make(id: Long) = RedBallPiece(
-            id, kind, cc, rr, kind.w, kind.h, slopeFlip,
-            props.gravity, props.movable, props.friction, props.mass,
-        )
+        fun make(id: Long): RedBallPiece {
+            val base = RedBallPiece(
+                id, kind, cc, rr, kind.w, kind.h, slopeFlip,
+                props.gravity, props.movable, props.friction, props.mass,
+            )
+            if (kind != RedBallPieceKind.PORTAL) return base
+            val used = portalNames() + reservedPortalNames
+            return base.copy(portalName = nextPortalName(used), role = RedBallPortalRole.ENTRY)
+        }
         if (kind == RedBallPieceKind.SLOPE) {
             if (pieces.any { it.kind == kind && it.c == cc && it.r == rr && it.flip == slopeFlip }) return this
             val next = pieces.filter { !(it.kind == kind && it.c == cc && it.r == rr) }
@@ -397,6 +511,9 @@ data class RedBallDraft(
                     linkId = piece.linkId,
                     spawnC = piece.spawnC,
                     spawnR = piece.spawnR,
+                    portalName = piece.portalName,
+                    role = piece.role,
+                    exitId = piece.exitId,
                 )
             }
         }
@@ -447,7 +564,7 @@ data class RedBallDraft(
 
     fun toJson(): String {
         val root = JSONObject()
-        root.put("version", 2)
+        root.put("version", 3)
         root.put("id", id)
         root.put("name", name)
         root.put("cols", cols)
@@ -456,6 +573,8 @@ data class RedBallDraft(
         root.put("originY", originY.toDouble())
         root.put("nextId", nextId)
         root.put("updatedAt", updatedAt)
+        root.put("sceneKind", sceneKind.name.lowercase())
+        root.put("parentId", parentId)
         val array = JSONArray()
         for (piece in pieces) {
             array.put(JSONObject().apply {
@@ -472,6 +591,9 @@ data class RedBallDraft(
                 put("mass", piece.mass.toDouble())
                 if (piece.kind == RedBallPieceKind.PORTAL) {
                     put("linkId", piece.linkId)
+                    put("portalName", piece.portalName)
+                    put("role", piece.role.name.lowercase())
+                    put("exitId", piece.exitId)
                     val column = piece.spawnC
                     val row = piece.spawnR
                     if (column != null && row != null) {
@@ -551,6 +673,10 @@ data class RedBallDraft(
             )
         }
 
+        /** Новая вложенная сцена внутри уже сохранённой главной. */
+        fun freshNested(parentId: String, name: String = "Вложенная"): RedBallDraft =
+            fresh(name).copy(sceneKind = RedBallSceneKind.NESTED, parentId = parentId)
+
         fun fromJson(text: String): RedBallDraft? = try {
             parse(JSONObject(text))
         } catch (_: Exception) {
@@ -596,6 +722,21 @@ data class RedBallDraft(
                     1f
                 }
                 val linkId = if (kind == RedBallPieceKind.PORTAL) linkIdOf(item.optString("linkId")) else ""
+                val portalName = if (kind == RedBallPieceKind.PORTAL) {
+                    normalizePortalName(item.optString("portalName"))
+                } else {
+                    ""
+                }
+                val portalRole = if (kind == RedBallPieceKind.PORTAL) {
+                    portalRoleOf(item.optString("role"))
+                } else {
+                    RedBallPortalRole.ENTRY
+                }
+                val exitId = if (kind == RedBallPieceKind.PORTAL) {
+                    normalizePortalName(item.optString("exitId"))
+                } else {
+                    ""
+                }
                 val spawn = if (kind == RedBallPieceKind.PORTAL && item.has("spawnC") && item.has("spawnR")) {
                     val column = item.optInt("spawnC")
                     val row = item.optInt("spawnR")
@@ -608,7 +749,7 @@ data class RedBallDraft(
                 }
                 pieces += RedBallPiece(
                     id, kind, c, r, w, h, flip, gravity, movable, friction, mass,
-                    linkId, spawn?.first, spawn?.second,
+                    linkId, spawn?.first, spawn?.second, portalName, portalRole, exitId,
                 )
             }
             val nextId = root.optLong("nextId", maxId + 1L).coerceAtLeast(maxId + 1L)
@@ -622,6 +763,8 @@ data class RedBallDraft(
                 pieces = pieces,
                 nextId = nextId,
                 updatedAt = root.optLong("updatedAt"),
+                sceneKind = sceneKindOf(root.optString("sceneKind")),
+                parentId = linkIdOf(root.optString("parentId")),
             )
         }
 
@@ -644,7 +787,36 @@ data class RedBallDraft(
 
         private fun linkIdOf(raw: String): String =
             raw.filter { it.isLetterOrDigit() || it == '-' || it == '_' }.take(64)
+
+        private fun sceneKindOf(raw: String): RedBallSceneKind = when (raw.lowercase()) {
+            "nested" -> RedBallSceneKind.NESTED
+            else -> RedBallSceneKind.MAIN
+        }
+
+        private fun portalRoleOf(raw: String): RedBallPortalRole = when (raw.lowercase()) {
+            "exit" -> RedBallPortalRole.EXIT
+            else -> RedBallPortalRole.ENTRY
+        }
     }
+}
+
+/** Имя портала: буквы, цифры, пробел, дефис. Пустая строка — имя не задано. */
+fun normalizePortalName(raw: String): String {
+    val cleaned = buildString {
+        for (ch in raw.trim()) {
+            if (ch.isLetterOrDigit() || ch == '-' || ch == '_' || ch == ' ') append(ch)
+        }
+    }
+    return cleaned.replace(Regex(" +"), " ").trim().take(24).trim()
+}
+
+/** Первое свободное «Вход N» или «Выход N». */
+fun nextPortalName(used: Collection<String>, role: RedBallPortalRole = RedBallPortalRole.ENTRY): String {
+    val prefix = if (role == RedBallPortalRole.EXIT) "Выход" else "Вход"
+    val taken = used.toSet()
+    var n = 1
+    while ("$prefix $n" in taken) n++
+    return "$prefix $n"
 }
 
 internal fun RedBallPieceKind.snapAnchor(c: Int, r: Int): Pair<Int, Int> {
