@@ -58,6 +58,8 @@ import com.example.bible.games.RedBallPieceKind
 import com.example.bible.games.RedBallPortalRole
 import com.example.bible.games.RedBallScene
 import com.example.bible.games.RedBallTune
+import com.example.bible.games.skins.RedBallSkinBitmaps
+import com.example.bible.games.skins.RedBallSkinId
 import com.example.bible.games.nextPortalName
 import com.example.bible.games.normalizePortalName
 import com.example.bible.games.snapAnchor
@@ -111,6 +113,9 @@ internal fun KidsRedBallEditor(
     store: RedBallLevelStore,
     onManageScenes: () -> Unit,
     onBack: () -> Unit,
+    skinId: RedBallSkinId,
+    skin: RedBallSkinBitmaps?,
+    onSkin: (RedBallSkinId) -> Unit,
     onTest: () -> Unit,
     onSave: () -> Unit,
 ) {
@@ -254,6 +259,11 @@ internal fun KidsRedBallEditor(
                     )
                 }
             }
+            RedBallSkinPicker(
+                selected = skinId,
+                onSelect = onSkin,
+                modifier = Modifier.padding(horizontal = 16.dp, vertical = 2.dp),
+            )
             if (warning != null) {
                 Text(
                     warning,
@@ -436,6 +446,7 @@ internal fun KidsRedBallEditor(
                         if (tool == RedBallTool.PROPS) selectedId else null,
                         portalTime,
                         lostPortalIds = markedPortals,
+                        skin = skin,
                     )
                 }
                 ScrollNub("▲", "Вверх", Modifier.align(Alignment.TopCenter)) {

@@ -1,0 +1,151 @@
+package com.example.bible.games.skins
+
+/**
+ * Оформление «Красного мяча».
+ *
+ * [RedBallSkinId.CLASSIC] рисуется процедурами, как раньше.
+ * Главы 1–5 — наборы PNG. Сейчас собрана глава 1, «Зелёные холмы».
+ * Выбор хранится отдельно от JSON уровня, старые сохранения не меняются.
+ *
+ * Как добавить главу 2–5:
+ * 1. Положить PNG в `assets/redball/<ключ>/` и закрыть каждый [RedBallSkinSlot].
+ *    Спрайты и иконки лучше брать из `src/2x` пакета (на экране они крупнее тайла),
+ *    холмы, землю и небо — из финальной 1× папки: так APK не раздувается.
+ * 2. Добавить значение в [RedBallSkinId] со стабильным [RedBallSkinId.storageKey].
+ * 3. Собрать [RedBallSkin] и дописать его в [RedBallSkins.chapters].
+ * Редактор и игра подхватят главу сами: список чипов строится из [RedBallSkins.selectable].
+ */
+enum class RedBallSkinId(
+    val storageKey: String,
+    val title: String,
+    val procedural: Boolean,
+) {
+    GREEN_HILLS("green_hills", "Зелёные холмы", procedural = false),
+    CLASSIC("classic", "Классика", procedural = true),
+    ;
+
+    companion object {
+        val DEFAULT = GREEN_HILLS
+
+        fun fromStored(raw: String?): RedBallSkinId {
+            if (raw.isNullOrBlank()) return DEFAULT
+            return entries.firstOrNull { it.storageKey == raw } ?: DEFAULT
+        }
+    }
+}
+
+/**
+ * Всё, что глава обязана нарисовать. Имена совпадают с игровыми предметами,
+ * а не с именами файлов: следующая глава закрывает те же слоты своими PNG.
+ */
+enum class RedBallSkinSlot {
+    HERO_HAPPY,
+    HERO_SURPRISED,
+    HERO_SCARED,
+    ENEMY_SQUARE,
+    BOSS,
+    BOULDER,
+    CRATE,
+    CONCRETE,
+    GRASS_TOP,
+    GRASS_EDGE,
+    SOIL,
+    LADDER,
+    STAR,
+    MAGNET,
+    HEART,
+    FLAG,
+    PORTAL_ENTRY,
+    PORTAL_EXIT,
+    BUSH,
+    TREE,
+    SKY,
+    HILLS_FAR,
+    HILLS_NEAR,
+    CLOUD_A,
+    CLOUD_B,
+    CLOUD_C,
+    ICON_HEART,
+    ICON_STAR,
+    ICON_PAUSE,
+    ICON_COIN,
+}
+
+/**
+ * Описание главы: какие файлы в `assets/` закрывают слоты.
+ * Сами картинки грузит [RedBallSkinCache] и держит их в памяти.
+ */
+class RedBallSkin(
+    val id: RedBallSkinId,
+    val title: String,
+    val chapter: Int,
+    /** Каталог внутри assets, без ведущего слэша. Пример: `redball/green_hills`. */
+    val assetRoot: String,
+    val files: Map<RedBallSkinSlot, String>,
+) {
+    init {
+        require(assetRoot.isNotBlank() && !assetRoot.contains("..") && !assetRoot.startsWith("/")) {
+            "плохой корень ассетов: $assetRoot"
+        }
+        for (path in files.values) {
+            require(path.isNotBlank() && !path.contains("..") && !path.startsWith("/")) {
+                "плохой путь скина: $path"
+            }
+        }
+    }
+
+    fun assetPath(slot: RedBallSkinSlot): String = "$assetRoot/${files.getValue(slot)}"
+
+    fun missingSlots(): List<RedBallSkinSlot> = RedBallSkinSlot.entries.filter { it !in files }
+}
+
+object RedBallSkins {
+    val greenHills: RedBallSkin = RedBallSkin(
+        id = RedBallSkinId.GREEN_HILLS,
+        title = RedBallSkinId.GREEN_HILLS.title,
+        chapter = 1,
+        assetRoot = "redball/green_hills",
+        // Спрайты и иконки — мастера 2× (резче на плотном экране).
+        // Крупные тайлы (холмы, земля, небо, бетон, ящик) — финальные 1×.
+        files = mapOf(
+            RedBallSkinSlot.HERO_HAPPY to "sprites/hero_red_ball_happy.png",
+            RedBallSkinSlot.HERO_SURPRISED to "sprites/hero_red_ball_surprised.png",
+            RedBallSkinSlot.HERO_SCARED to "sprites/hero_red_ball_scared.png",
+            RedBallSkinSlot.ENEMY_SQUARE to "sprites/enemy_square.png",
+            RedBallSkinSlot.BOSS to "sprites/enemy_square_boss.png",
+            RedBallSkinSlot.BOULDER to "sprites/boulder.png",
+            RedBallSkinSlot.CRATE to "tiles/wood_crate.png",
+            RedBallSkinSlot.CONCRETE to "tiles/concrete.png",
+            RedBallSkinSlot.GRASS_TOP to "tiles/grass_top.png",
+            RedBallSkinSlot.GRASS_EDGE to "tiles/grass_edge.png",
+            RedBallSkinSlot.SOIL to "tiles/soil.png",
+            RedBallSkinSlot.LADDER to "sprites/ladder.png",
+            RedBallSkinSlot.STAR to "sprites/star.png",
+            RedBallSkinSlot.MAGNET to "sprites/magnet.png",
+            RedBallSkinSlot.HEART to "sprites/heart.png",
+            RedBallSkinSlot.FLAG to "sprites/flag.png",
+            RedBallSkinSlot.PORTAL_ENTRY to "sprites/portal_entry.png",
+            RedBallSkinSlot.PORTAL_EXIT to "sprites/portal_exit.png",
+            RedBallSkinSlot.BUSH to "sprites/bush.png",
+            RedBallSkinSlot.TREE to "sprites/tree.png",
+            RedBallSkinSlot.SKY to "tiles/sky_gradient.png",
+            RedBallSkinSlot.HILLS_FAR to "tiles/hills_far.png",
+            RedBallSkinSlot.HILLS_NEAR to "tiles/hills_near.png",
+            RedBallSkinSlot.CLOUD_A to "sprites/cloud_a.png",
+            RedBallSkinSlot.CLOUD_B to "sprites/cloud_b.png",
+            RedBallSkinSlot.CLOUD_C to "sprites/cloud_c.png",
+            RedBallSkinSlot.ICON_HEART to "icons/heart.png",
+            RedBallSkinSlot.ICON_STAR to "icons/star.png",
+            RedBallSkinSlot.ICON_PAUSE to "icons/pause.png",
+            RedBallSkinSlot.ICON_COIN to "icons/coin.png",
+        ),
+    )
+
+    /** Главы со спрайтами. Классика сюда не входит: у неё нет файлов. */
+    val chapters: List<RedBallSkin> = listOf(greenHills)
+
+    /** Порядок чипов. Первой идёт глава по умолчанию. */
+    val selectable: List<RedBallSkinId> = listOf(RedBallSkinId.GREEN_HILLS, RedBallSkinId.CLASSIC)
+
+    fun chapter(id: RedBallSkinId): RedBallSkin? = chapters.firstOrNull { it.id == id }
+}

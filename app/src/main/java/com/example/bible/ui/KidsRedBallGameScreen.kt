@@ -9,6 +9,7 @@ import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.gestures.awaitEachGesture
 import androidx.compose.foundation.gestures.awaitFirstDown
 import androidx.compose.foundation.gestures.waitForUpOrCancellation
@@ -48,6 +49,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.produceState
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.withFrameNanos
@@ -56,6 +58,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.FilterQuality
+import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.StrokeCap
@@ -67,9 +71,16 @@ import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.bible.data.KidsGames
+import com.example.bible.games.skins.RedBallSkinBitmaps
+import com.example.bible.games.skins.RedBallSkinCache
+import com.example.bible.games.skins.RedBallSkinId
+import com.example.bible.games.skins.RedBallSkinSettings
+import com.example.bible.games.skins.RedBallSkinSlot
+import com.example.bible.games.skins.RedBallSkins
 import com.example.bible.games.KidsGameAudio
 import com.example.bible.games.KidsSfx
 import com.example.bible.games.RedBallDraft
@@ -104,6 +115,13 @@ private class PlayRequest(
 fun KidsRedBallGameScreen(onBack: () -> Unit) {
     val context = LocalContext.current
     val store = remember { RedBallLevelStore(context.applicationContext) }
+    val skinSettings = remember { RedBallSkinSettings(context.applicationContext) }
+    var skinId by remember { mutableStateOf(skinSettings.current()) }
+    val skin = remember(skinId) { RedBallSkinCache.load(context.applicationContext, skinId) }
+    fun pickSkin(id: RedBallSkinId) {
+        skinId = id
+        skinSettings.save(id)
+    }
     val scope = rememberCoroutineScope()
     var page by remember { mutableStateOf(RedBallPage.MENU) }
     var draft by remember { mutableStateOf(RedBallDraft.fresh()) }
@@ -343,6 +361,9 @@ fun KidsRedBallGameScreen(onBack: () -> Unit) {
             onPlayBuiltin = { beginPlay(RedBallScene.builtin(), test = false) },
             onMyLevels = { page = RedBallPage.LEVELS },
             onCreate = { openDraft(RedBallDraft.fresh(), listed = false) },
+            skinId = skinId,
+            skin = skin,
+            onSkin = ::pickSkin,
         )
         RedBallPage.LEVELS -> RedBallLevelList(
             store = store,
@@ -411,6 +432,9 @@ fun KidsRedBallGameScreen(onBack: () -> Unit) {
                 store = store,
                 onManageScenes = { familyOpen = true },
                 onBack = { closeEditor() },
+                skinId = skinId,
+                skin = skin,
+                onSkin = ::pickSkin,
                 onTest = {
                     val reason = draft.playBlockReason()
                     if (reason != null) {
@@ -457,6 +481,9 @@ fun KidsRedBallGameScreen(onBack: () -> Unit) {
                     testMode = request.test,
                     familyRoot = request.familyRoot,
                     store = store,
+                    skin = skin,
+                    skinId = skinId,
+                    onSkin = ::pickSkin,
                     onExit = { leavePlay() },
                 )
             }
@@ -470,13 +497,19 @@ private fun RedBallMenu(
     onPlayBuiltin: () -> Unit,
     onMyLevels: () -> Unit,
     onCreate: () -> Unit,
+    skinId: RedBallSkinId,
+    skin: RedBallSkinBitmaps?,
+    onSkin: (RedBallSkinId) -> Unit,
 ) {
     Box(
         Modifier
             .fillMaxSize()
             .background(Color(0xFF7EC8F5)),
     ) {
-        Canvas(Modifier.fillMaxSize()) { drawFairySky(0f, 1f) }
+        Canvas(Modifier.fillMaxSize()) {
+            val backdrop = skin
+            if (backdrop != null) drawSpriteSky(0f, 1f, 0f, backdrop) else drawFairySky(0f, 1f)
+        }
         Column(
             Modifier
                 .fillMaxSize()
@@ -498,7 +531,9 @@ private fun RedBallMenu(
                 color = Color(0xFF9A3412),
                 fontSize = 16.sp,
             )
-            Spacer(Modifier.height(22.dp))
+            Spacer(Modifier.height(12.dp))
+            RedBallSkinPicker(skinId, onSkin)
+            Spacer(Modifier.height(16.dp))
             MenuCard("Играть", "Готовая горка: ящик, пружина и дверь", Color(0xFFDC2626), onPlayBuiltin)
             Spacer(Modifier.height(12.dp))
             MenuCard("Мои уровни", "Главные сцены: сыграть, поправить или открыть вложенные", Color(0xFFC2410C), onMyLevels)
@@ -906,6 +941,9 @@ private fun RedBallPlay(
     testMode: Boolean,
     familyRoot: String,
     store: RedBallLevelStore,
+    skin: RedBallSkinBitmaps?,
+    skinId: RedBallSkinId,
+    onSkin: (RedBallSkinId) -> Unit,
     onExit: () -> Unit,
 ) {
     val context = LocalContext.current
@@ -999,7 +1037,7 @@ private fun RedBallPlay(
         ) {
             @Suppress("UNUSED_VARIABLE")
             val frame = tick
-            drawRedBallPlay(sim)
+            drawRedBallPlay(sim, skin)
         }
         if (fade.value > 0.01f) {
             Canvas(Modifier.fillMaxSize()) {
@@ -1026,9 +1064,10 @@ private fun RedBallPlay(
                 .align(Alignment.TopStart),
             horizontalArrangement = Arrangement.spacedBy(4.dp),
         ) {
+            val heartIcon = skin?.bitmap(RedBallSkinSlot.ICON_HEART)
             repeat(3) {
                 Canvas(Modifier.size(width = 36.dp, height = 32.dp)) {
-                    drawHudHeart(filled = !sim.dead)
+                    drawHudHeart(filled = !sim.dead, icon = heartIcon)
                 }
             }
         }
@@ -1038,12 +1077,15 @@ private fun RedBallPlay(
                     .statusBarsPadding()
                     .padding(top = 6.dp)
                     .align(Alignment.TopCenter),
+                icon = skin?.bitmap(RedBallSkinSlot.ICON_PAUSE),
                 onClick = { paused.value = true },
             )
         }
         StarBar(
             progress = progress,
             magnetOn = sim.magnetTime > 0f,
+            starIcon = skin?.bitmap(RedBallSkinSlot.ICON_STAR),
+            coinIcon = skin?.bitmap(RedBallSkinSlot.ICON_COIN),
             modifier = Modifier
                 .statusBarsPadding()
                 .padding(top = 10.dp, end = 12.dp)
@@ -1148,6 +1190,8 @@ private fun RedBallPlay(
                     Text(title, fontWeight = FontWeight.Black, fontSize = 22.sp, color = Color(0xFF7C2D12))
                     Spacer(Modifier.height(6.dp))
                     Text("Пауза", fontWeight = FontWeight.Black, fontSize = 28.sp, color = Color(0xFFE11D2E))
+                    Spacer(Modifier.height(12.dp))
+                    RedBallSkinPicker(skinId, onSkin)
                     Spacer(Modifier.height(16.dp))
                     PauseChoice("Дальше", Color(0xFF15803D)) { paused.value = false }
                     Spacer(Modifier.height(8.dp))
@@ -1164,17 +1208,37 @@ private fun RedBallPlay(
 }
 
 @Composable
-private fun PauseButton(modifier: Modifier, onClick: () -> Unit) {
+private fun PauseButton(
+    modifier: Modifier,
+    icon: ImageBitmap?,
+    onClick: () -> Unit,
+) {
     Box(
         modifier
             .size(54.dp)
             .clip(CircleShape)
-            .border(3.dp, Color.White.copy(alpha = 0.95f), CircleShape)
-            .background(Color.White.copy(alpha = 0.16f))
+            .then(
+                if (icon == null) {
+                    Modifier.border(3.dp, Color.White.copy(alpha = 0.95f), CircleShape)
+                        .background(Color.White.copy(alpha = 0.16f))
+                } else {
+                    Modifier
+                },
+            )
             .semantics { contentDescription = "Пауза" }
             .kidsPressable(onClick = onClick),
         contentAlignment = Alignment.Center,
     ) {
+        if (icon != null) {
+            Canvas(Modifier.fillMaxSize()) {
+                drawImage(
+                    icon,
+                    dstSize = IntSize(size.width.toInt().coerceAtLeast(1), size.height.toInt().coerceAtLeast(1)),
+                    filterQuality = FilterQuality.Medium,
+                )
+            }
+            return@Box
+        }
         Row(horizontalArrangement = Arrangement.spacedBy(5.dp)) {
             Box(
                 Modifier
@@ -1193,9 +1257,15 @@ private fun PauseButton(modifier: Modifier, onClick: () -> Unit) {
 }
 
 @Composable
-private fun StarBar(progress: Float, magnetOn: Boolean, modifier: Modifier) {
+private fun StarBar(
+    progress: Float,
+    magnetOn: Boolean,
+    starIcon: ImageBitmap?,
+    coinIcon: ImageBitmap?,
+    modifier: Modifier,
+) {
     Row(modifier, verticalAlignment = Alignment.CenterVertically) {
-        Canvas(Modifier.size(40.dp)) { drawHudStarMedal(magnetOn) }
+        Canvas(Modifier.size(40.dp)) { drawHudStarMedal(magnetOn, starIcon) }
         Box(
             Modifier
                 .padding(start = 4.dp)
@@ -1217,6 +1287,53 @@ private fun StarBar(progress: Float, magnetOn: Boolean, modifier: Modifier) {
                         Brush.horizontalGradient(listOf(Color(0xFFFFE38A), Color(0xFFF5B431))),
                     ),
             )
+        }
+        if (coinIcon != null) {
+            Canvas(
+                Modifier
+                    .padding(start = 6.dp)
+                    .size(30.dp)
+                    .semantics { contentDescription = "Монета" },
+            ) {
+                drawImage(
+                    coinIcon,
+                    dstSize = IntSize(size.width.toInt().coerceAtLeast(1), size.height.toInt().coerceAtLeast(1)),
+                    filterQuality = FilterQuality.Medium,
+                )
+            }
+        }
+    }
+}
+
+@Composable
+internal fun RedBallSkinPicker(
+    selected: RedBallSkinId,
+    onSelect: (RedBallSkinId) -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    Row(
+        modifier.horizontalScroll(rememberScrollState()),
+        horizontalArrangement = Arrangement.spacedBy(8.dp),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        Text("Вид", color = Color(0xFF7C2D12), fontWeight = FontWeight.Black, fontSize = 14.sp)
+        for (id in RedBallSkins.selectable) {
+            val on = id == selected
+            Box(
+                Modifier
+                    .clip(RoundedCornerShape(999.dp))
+                    .background(if (on) Color(0xFF15803D) else Color.White.copy(alpha = 0.92f))
+                    .semantics { contentDescription = id.title }
+                    .kidsPressable(onClick = { onSelect(id) })
+                    .padding(horizontal = 12.dp, vertical = 6.dp),
+            ) {
+                Text(
+                    id.title,
+                    color = if (on) Color.White else Color(0xFF7C2D12),
+                    fontWeight = FontWeight.Black,
+                    fontSize = 13.sp,
+                )
+            }
         }
     }
 }
