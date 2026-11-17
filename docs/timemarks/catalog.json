@@ -2214,6 +2214,246 @@
       "file": "projects/syn_john_9.json"
     },
     {
+      "id": "gh_syn_luke_1",
+      "translationCode": "SYN",
+      "bookId": "luke",
+      "chapter": 1,
+      "title": "От Луки 1 · Синодальный · Бондаренко",
+      "cueCount": 80,
+      "narratorId": "bondarenko",
+      "file": "projects/syn_luke_1.json"
+    },
+    {
+      "id": "gh_syn_luke_10",
+      "translationCode": "SYN",
+      "bookId": "luke",
+      "chapter": 10,
+      "title": "От Луки 10 · Синодальный · Бондаренко",
+      "cueCount": 42,
+      "narratorId": "bondarenko",
+      "file": "projects/syn_luke_10.json"
+    },
+    {
+      "id": "gh_syn_luke_11",
+      "translationCode": "SYN",
+      "bookId": "luke",
+      "chapter": 11,
+      "title": "От Луки 11 · Синодальный · Бондаренко",
+      "cueCount": 54,
+      "narratorId": "bondarenko",
+      "file": "projects/syn_luke_11.json"
+    },
+    {
+      "id": "gh_syn_luke_12",
+      "translationCode": "SYN",
+      "bookId": "luke",
+      "chapter": 12,
+      "title": "От Луки 12 · Синодальный · Бондаренко",
+      "cueCount": 59,
+      "narratorId": "bondarenko",
+      "file": "projects/syn_luke_12.json"
+    },
+    {
+      "id": "gh_syn_luke_13",
+      "translationCode": "SYN",
+      "bookId": "luke",
+      "chapter": 13,
+      "title": "От Луки 13 · Синодальный · Бондаренко",
+      "cueCount": 35,
+      "narratorId": "bondarenko",
+      "file": "projects/syn_luke_13.json"
+    },
+    {
+      "id": "gh_syn_luke_14",
+      "translationCode": "SYN",
+      "bookId": "luke",
+      "chapter": 14,
+      "title": "От Луки 14 · Синодальный · Бондаренко",
+      "cueCount": 35,
+      "narratorId": "bondarenko",
+      "file": "projects/syn_luke_14.json"
+    },
+    {
+      "id": "gh_syn_luke_15",
+      "translationCode": "SYN",
+      "bookId": "luke",
+      "chapter": 15,
+      "title": "От Луки 15 · Синодальный · Бондаренко",
+      "cueCount": 32,
+      "narratorId": "bondarenko",
+      "file": "projects/syn_luke_15.json"
+    },
+    {
+      "id": "gh_syn_luke_16",
+      "translationCode": "SYN",
+      "bookId": "luke",
+      "chapter": 16,
+      "title": "От Луки 16 · Синодальный · Бондаренко",
+      "cueCount": 31,
+      "narratorId": "bondarenko",
+      "file": "projects/syn_luke_16.json"
+    },
+    {
+      "id": "gh_syn_luke_17",
+      "translationCode": "SYN",
+      "bookId": "luke",
+      "chapter": 17,
+      "title": "От Луки 17 · Синодальный · Бондаренко",
+      "cueCount": 37,
+      "narratorId": "bondarenko",
+      "file": "projects/syn_luke_17.json"
+    },
+    {
+      "id": "gh_syn_luke_18",
+      "translationCode": "SYN",
+      "bookId": "luke",
+      "chapter": 18,
+      "title": "От Луки 18 · Синодальный · Бондаренко",
+      "cueCount": 43,
+      "narratorId": "bondarenko",
+      "file": "projects/syn_luke_18.json"
+    },
+    {
+      "id": "gh_syn_luke_19",
+      "translationCode": "SYN",
+      "bookId": "luke",
+      "chapter": 19,
+      "title": "От Луки 19 · Синодальный · Бондаренко",
+      "cueCount": 48,
+      "narratorId": "bondarenko",
+      "file": "projects/syn_luke_19.json"
+    },
+    {
+      "id": "gh_syn_luke_2",
+      "translationCode": "SYN",
+      "bookId": "luke",
+      "chapter": 2,
+      "title": "От Луки 2 · Синодальный · Бондаренко",
+      "cueCount": 52,
+      "narratorId": "bondarenko",
+      "file": "projects/syn_luke_2.json"
+    },
+    {
+      "id": "gh_syn_luke_20",
+      "translationCode": "SYN",
+      "bookId": "luke",
+      "chapter": 20,
+      "title": "От Луки 20 · Синодальный · Бондаренко",
+      "cueCount": 47,
+      "narratorId": "bondarenko",
+      "file": "projects/syn_luke_20.json"
+    },
+    {
+      "id": "gh_syn_luke_21",
+      "translationCode": "SYN",
+      "bookId": "luke",
+      "chapter": 21,
+      "title": "От Луки 21 · Синодальный · Бондаренко",
+      "cueCount": 38,
+      "narratorId": "bondarenko",
+      "file": "projects/syn_luke_21.json"
+    },
+    {
+      "id": "gh_syn_luke_22",
+      "translationCode": "SYN",
+      "bookId": "luke",
+      "chapter": 22,
+      "title": "От Луки 22 · Синодальный · Бондаренко",
+      "cueCount": 71,
+      "narratorId": "bondarenko",
+      "file": "projects/syn_luke_22.json"
+    },
+    {
+      "id": "gh_syn_luke_23",
+      "translationCode": "SYN",
+      "bookId": "luke",
+      "chapter": 23,
+      "title": "От Луки 23 · Синодальный · Бондаренко",
+      "cueCount": 56,
+      "narratorId": "bondarenko",
+      "file": "projects/syn_luke_23.json"
+    },
+    {
+      "id": "gh_syn_luke_24",
+      "translationCode": "SYN",
+      "bookId": "luke",
+      "chapter": 24,
+      "title": "От Луки 24 · Синодальный · Бондаренко",
+      "cueCount": 53,
+      "narratorId": "bondarenko",
+      "file": "projects/syn_luke_24.json"
+    },
+    {
+      "id": "gh_syn_luke_3",
+      "translationCode": "SYN",
+      "bookId": "luke",
+      "chapter": 3,
+      "title": "От Луки 3 · Синодальный · Бондаренко",
+      "cueCount": 38,
+      "narratorId": "bondarenko",
+      "file": "projects/syn_luke_3.json"
+    },
+    {
+      "id": "gh_syn_luke_4",
+      "translationCode": "SYN",
+      "bookId": "luke",
+      "chapter": 4,
+      "title": "От Луки 4 · Синодальный · Бондаренко",
+      "cueCount": 44,
+      "narratorId": "bondarenko",
+      "file": "projects/syn_luke_4.json"
+    },
+    {
+      "id": "gh_syn_luke_5",
+      "translationCode": "SYN",
+      "bookId": "luke",
+      "chapter": 5,
+      "title": "От Луки 5 · Синодальный · Бондаренко",
+      "cueCount": 39,
+      "narratorId": "bondarenko",
+      "file": "projects/syn_luke_5.json"
+    },
+    {
+      "id": "gh_syn_luke_6",
+      "translationCode": "SYN",
+      "bookId": "luke",
+      "chapter": 6,
+      "title": "От Луки 6 · Синодальный · Бондаренко",
+      "cueCount": 49,
+      "narratorId": "bondarenko",
+      "file": "projects/syn_luke_6.json"
+    },
+    {
+      "id": "gh_syn_luke_7",
+      "translationCode": "SYN",
+      "bookId": "luke",
+      "chapter": 7,
+      "title": "От Луки 7 · Синодальный · Бондаренко",
+      "cueCount": 50,
+      "narratorId": "bondarenko",
+      "file": "projects/syn_luke_7.json"
+    },
+    {
+      "id": "gh_syn_luke_8",
+      "translationCode": "SYN",
+      "bookId": "luke",
+      "chapter": 8,
+      "title": "От Луки 8 · Синодальный · Бондаренко",
+      "cueCount": 56,
+      "narratorId": "bondarenko",
+      "file": "projects/syn_luke_8.json"
+    },
+    {
+      "id": "gh_syn_luke_9",
+      "translationCode": "SYN",
+      "bookId": "luke",
+      "chapter": 9,
+      "title": "От Луки 9 · Синодальный · Бондаренко",
+      "cueCount": 62,
+      "narratorId": "bondarenko",
+      "file": "projects/syn_luke_9.json"
+    },
+    {
       "id": "gh_syn_mark_1",
       "translationCode": "SYN",
       "bookId": "mark",
