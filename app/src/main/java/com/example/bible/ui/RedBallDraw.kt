@@ -6,6 +6,8 @@ import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Canvas
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.ColorFilter
+import androidx.compose.ui.graphics.ColorMatrix
 import androidx.compose.ui.graphics.FilterQuality
 import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.ImageBitmapConfig
@@ -20,6 +22,7 @@ import androidx.compose.ui.graphics.drawscope.draw
 import androidx.compose.ui.graphics.drawscope.rotate
 import androidx.compose.ui.graphics.drawscope.withTransform
 import androidx.compose.ui.unit.Density
+import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.LayoutDirection
 import com.example.bible.games.RedBallAabb
 import com.example.bible.games.RedBallDraft
@@ -31,6 +34,7 @@ import com.example.bible.games.RedBallPortalRole
 import com.example.bible.games.RedBallScene
 import com.example.bible.games.RedBallSim
 import com.example.bible.games.RedBallSlope
+import com.example.bible.games.skins.RedBallSkinBitmaps
 import kotlin.math.PI
 import kotlin.math.abs
 import kotlin.math.cos
@@ -81,7 +85,7 @@ internal fun editorCamRange(widthPx: Float, heightPx: Float, draft: RedBallDraft
     )
 }
 
-internal fun DrawScope.drawRedBallPlay(sim: RedBallSim) {
+internal fun DrawScope.drawRedBallPlay(sim: RedBallSim, skin: RedBallSkinBitmaps? = null) {
     val scene = sim.scene
     val viewH = 620f
     val scale = size.height / viewH
@@ -90,6 +94,10 @@ internal fun DrawScope.drawRedBallPlay(sim: RedBallSim) {
     val camX = (sim.ballX - viewW * 0.38f).coerceIn(scene.minX, maxCamX)
     val restCamY = (scene.worldH - viewH).coerceAtLeast(scene.minY)
     val camY = (sim.ballY - viewH * 0.58f).coerceIn(scene.minY - viewH * 1.5f, restCamY)
+    if (skin != null) {
+        drawSpritePlay(sim, camX, camY, scale, (restCamY - camY) * scale, skin)
+        return
+    }
     drawFairySky(camX, scale, liftPx = (restCamY - camY) * scale)
     val art = playArt(scene)
     val picture = terrainPicture(scene, art, scale)
@@ -147,6 +155,7 @@ internal fun DrawScope.drawRedBallEditor(
     selectedId: Long?,
     portalTime: Float = 0.8f,
     lostPortalIds: Set<Long> = emptySet(),
+    skin: RedBallSkinBitmaps? = null,
 ) {
     val scale = editorScale(size.height, draft.cell)
     val range = editorCamRange(size.width, size.height, draft)
@@ -154,8 +163,12 @@ internal fun DrawScope.drawRedBallEditor(
     val camDown = camY.coerceIn(range.minY, range.maxY)
     val viewW = size.width / scale
     val viewH = size.height / scale
-    drawFairySky(cam, scale, liftPx = -camDown * scale * 0.15f)
-    val art = editorArt(draft)
+    if (skin != null) {
+        drawSpriteSky(cam, scale, -camDown * scale * 0.15f, skin)
+    } else {
+        drawFairySky(cam, scale, liftPx = -camDown * scale * 0.15f)
+    }
+    val art = if (skin == null) editorArt(draft) else null
     withTransform({
         scale(scale, scale, pivot = Offset.Zero)
         translate(-cam, -camDown)
@@ -175,49 +188,54 @@ internal fun DrawScope.drawRedBallEditor(
             val y = r * cell
             drawLine(if (r % 2 == 0) bold else line, Offset(minC * cell, y), Offset(maxC * cell, y), if (r % 2 == 0) 2f else 1f)
         }
-        for (ground in art.grounds) drawGroundArt(ground)
-        for (piece in draft.pieces) {
-            if (piece.kind != RedBallPieceKind.CONCRETE) continue
-            val box = piece.box(cell)
-            drawConcreteBlock(box, topIsOpen(box, art.concreteBoxes, emptyList()))
-        }
-        for (slope in art.slopes) drawSlopeArt(slope)
-        for (piece in draft.pieces) {
-            val box = piece.box(cell)
-            when (piece.kind) {
-                RedBallPieceKind.GROUND, RedBallPieceKind.SLOPE, RedBallPieceKind.CONCRETE -> Unit
-                RedBallPieceKind.LADDER -> drawLadder(box)
-                RedBallPieceKind.SPIKE -> drawIronSpike(
-                    (box.l + box.r) / 2f,
-                    box.t,
-                    box.r - box.l,
-                    box.b - box.t,
-                )
-                RedBallPieceKind.SPRING -> drawFairySpring(box.l, box.t, box.r, box.b)
-                RedBallPieceKind.CRATE -> drawWoodCrate((box.l + box.r) / 2f, (box.t + box.b) / 2f, min(piece.w, piece.h) * cell)
-                RedBallPieceKind.STAR -> drawCollectStar((box.l + box.r) / 2f, (box.t + box.b) / 2f, 16f, 0.6f, false)
-                RedBallPieceKind.MAGNET -> drawMagnet((box.l + box.r) / 2f, (box.t + box.b) / 2f, 0.4f)
-                RedBallPieceKind.ENEMY -> drawAngrySquare((box.l + box.r) / 2f, (box.t + box.b) / 2f, min(piece.w, piece.h) * cell, 0.15f)
-                RedBallPieceKind.DOOR -> drawFinishFlag(box.l, box.t, box.r, box.b, 0.8f)
-                RedBallPieceKind.PORTAL -> {
-                    val mood = when {
-                        piece.role == RedBallPortalRole.EXIT -> PortalMood.EXIT
-                        piece.id in lostPortalIds -> PortalMood.LOST
-                        piece.linkId.isBlank() -> PortalMood.ASLEEP
-                        else -> PortalMood.OPEN
-                    }
-                    drawFairyPortal(box.l, box.t, box.r, box.b, portalTime, mood)
-                }
-                RedBallPieceKind.START -> {
-                    val x = (box.l + box.r) / 2f
-                    val y = box.b - RedBallScene.BALL_R
-                    drawGlossyBall(x, y, RedBallScene.BALL_R, 0.4f, y + RedBallScene.BALL_R)
-                    drawCircle(
-                        Color.White,
-                        RedBallScene.BALL_R + 5f,
-                        Offset(x, y),
-                        style = Stroke(width = 3f),
+        if (skin != null) {
+            drawSpriteEditorWorld(draft, skin, portalTime, lostPortalIds)
+        } else {
+            val terrain = art ?: return@withTransform
+            for (ground in terrain.grounds) drawGroundArt(ground)
+            for (piece in draft.pieces) {
+                if (piece.kind != RedBallPieceKind.CONCRETE) continue
+                val box = piece.box(cell)
+                drawConcreteBlock(box, topIsOpen(box, terrain.concreteBoxes, emptyList()))
+            }
+            for (slope in terrain.slopes) drawSlopeArt(slope)
+            for (piece in draft.pieces) {
+                val box = piece.box(cell)
+                when (piece.kind) {
+                    RedBallPieceKind.GROUND, RedBallPieceKind.SLOPE, RedBallPieceKind.CONCRETE -> Unit
+                    RedBallPieceKind.LADDER -> drawLadder(box)
+                    RedBallPieceKind.SPIKE -> drawIronSpike(
+                        (box.l + box.r) / 2f,
+                        box.t,
+                        box.r - box.l,
+                        box.b - box.t,
                     )
+                    RedBallPieceKind.SPRING -> drawFairySpring(box.l, box.t, box.r, box.b)
+                    RedBallPieceKind.CRATE -> drawWoodCrate((box.l + box.r) / 2f, (box.t + box.b) / 2f, min(piece.w, piece.h) * cell)
+                    RedBallPieceKind.STAR -> drawCollectStar((box.l + box.r) / 2f, (box.t + box.b) / 2f, 16f, 0.6f, false)
+                    RedBallPieceKind.MAGNET -> drawMagnet((box.l + box.r) / 2f, (box.t + box.b) / 2f, 0.4f)
+                    RedBallPieceKind.ENEMY -> drawAngrySquare((box.l + box.r) / 2f, (box.t + box.b) / 2f, min(piece.w, piece.h) * cell, 0.15f)
+                    RedBallPieceKind.DOOR -> drawFinishFlag(box.l, box.t, box.r, box.b, 0.8f)
+                    RedBallPieceKind.PORTAL -> {
+                        val mood = when {
+                            piece.role == RedBallPortalRole.EXIT -> PortalMood.EXIT
+                            piece.id in lostPortalIds -> PortalMood.LOST
+                            piece.linkId.isBlank() -> PortalMood.ASLEEP
+                            else -> PortalMood.OPEN
+                        }
+                        drawFairyPortal(box.l, box.t, box.r, box.b, portalTime, mood)
+                    }
+                    RedBallPieceKind.START -> {
+                        val x = (box.l + box.r) / 2f
+                        val y = box.b - RedBallScene.BALL_R
+                        drawGlossyBall(x, y, RedBallScene.BALL_R, 0.4f, y + RedBallScene.BALL_R)
+                        drawCircle(
+                            Color.White,
+                            RedBallScene.BALL_R + 5f,
+                            Offset(x, y),
+                            style = Stroke(width = 3f),
+                        )
+                    }
                 }
             }
         }
@@ -623,7 +641,7 @@ private fun buildGroundArt(box: RedBallAabb, solids: List<RedBallAabb>, slopes: 
     return GroundArt(box.l, box.t, box.r, box.b, bands, edges, shades, seams, stones)
 }
 
-private fun grassIntervals(
+internal fun grassIntervals(
     box: RedBallAabb,
     solids: List<RedBallAabb>,
     slopes: List<RedBallSlope>,
@@ -1046,7 +1064,7 @@ private fun topIsOpen(solid: RedBallAabb, solids: List<RedBallAabb>, slopes: Lis
 private val waterPath = Path()
 private val reedPath = Path()
 
-private fun DrawScope.drawVoid(scene: RedBallScene) {
+internal fun DrawScope.drawVoid(scene: RedBallScene) {
     val surface = scene.voidY - 6f
     val bottom = scene.worldH + 60f
     if (surface >= bottom) return
@@ -1093,7 +1111,7 @@ private fun DrawScope.drawVoid(scene: RedBallScene) {
     }
 }
 
-private fun DrawScope.drawIronSpike(x: Float, top: Float, w: Float, h: Float) {
+internal fun DrawScope.drawIronSpike(x: Float, top: Float, w: Float, h: Float) {
     val count = (w / 28f).toInt().coerceIn(1, 6)
     val tw = w / count
     for (i in 0 until count) {
@@ -1123,7 +1141,7 @@ private fun DrawScope.drawIronSpike(x: Float, top: Float, w: Float, h: Float) {
     }
 }
 
-private fun DrawScope.drawFairySpring(l: Float, t: Float, r: Float, b: Float) {
+internal fun DrawScope.drawFairySpring(l: Float, t: Float, r: Float, b: Float) {
     val w = r - l
     val h = b - t
     if (w < 4f || h < 4f) return
@@ -2077,7 +2095,7 @@ private fun DrawScope.drawMagnet(cx: Float, cy: Float, time: Float) {
     drawLine(Color.White.copy(alpha = 0.75f), Offset(cx - 10f, y - 14f), Offset(cx - 2f, y - 16f), 2.4f, StrokeCap.Round)
 }
 
-private fun DrawScope.drawMagnetAura(x: Float, y: Float, time: Float) {
+internal fun DrawScope.drawMagnetAura(x: Float, y: Float, time: Float) {
     val pulse = 0.92f + 0.08f * sin(time * 6f)
     val radius = RedBallSim.MAGNET_RADIUS * pulse
     drawCircle(Color(0xFFFF6B6B).copy(alpha = 0.1f), radius, Offset(x, y))
@@ -2187,7 +2205,7 @@ private fun DrawScope.drawAngrySquare(cx: Float, cy: Float, side: Float, angle: 
     }
 }
 
-private fun DrawScope.drawParticle(particle: RedBallParticle) {
+internal fun DrawScope.drawParticle(particle: RedBallParticle) {
     val t = (particle.life / particle.maxLife).coerceIn(0f, 1f)
     val c = Offset(particle.x, particle.y)
     val rad = particle.size * (0.55f + 0.55f * t)
@@ -2218,7 +2236,20 @@ private fun DrawScope.drawParticle(particle: RedBallParticle) {
     }
 }
 
-internal fun DrawScope.drawHudHeart(filled: Boolean) {
+private val emptyHudHeart = ColorFilter.colorMatrix(ColorMatrix().apply { setToSaturation(0f) })
+
+internal fun DrawScope.drawHudHeart(filled: Boolean, icon: ImageBitmap? = null) {
+    if (icon != null) {
+        val side = size
+        drawImage(
+            icon,
+            dstSize = IntSize(side.width.toInt().coerceAtLeast(1), side.height.toInt().coerceAtLeast(1)),
+            alpha = if (filled) 1f else 0.72f,
+            colorFilter = if (filled) null else emptyHudHeart,
+            filterQuality = FilterQuality.Medium,
+        )
+        return
+    }
     val w = size.width
     val h = size.height
     val path = heartPath(w, h)
@@ -2239,9 +2270,20 @@ internal fun DrawScope.drawHudHeart(filled: Boolean) {
     drawPath(path, Color.White, style = Stroke(width = w * 0.045f, join = StrokeJoin.Round))
 }
 
-internal fun DrawScope.drawHudStarMedal(magnetOn: Boolean) {
+internal fun DrawScope.drawHudStarMedal(magnetOn: Boolean, icon: ImageBitmap? = null) {
     val c = Offset(size.width / 2f, size.height / 2f)
     val r = size.minDimension / 2f
+    if (icon != null) {
+        drawImage(
+            icon,
+            dstSize = IntSize(size.width.toInt().coerceAtLeast(1), size.height.toInt().coerceAtLeast(1)),
+            filterQuality = FilterQuality.Medium,
+        )
+        if (magnetOn) {
+            drawCircle(Color(0xFF7DD3FC), r * 0.92f, c, style = Stroke(width = r * 0.12f))
+        }
+        return
+    }
     drawCircle(Color(0xFF8A5A12), r, c)
     drawCircle(
         Brush.radialGradient(
