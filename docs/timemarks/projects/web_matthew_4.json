@@ -1,0 +1,111 @@
+{
+  "id": "gh_web_matthew_4",
+  "translationCode": "WEB",
+  "bookId": "matthew",
+  "chapter": 4,
+  "title": "От Матфея 4 · WEB (англ.)",
+  "narratorId": "web",
+  "audioFileName": "40_04.mp3",
+  "cues": [
+    {
+      "timeMs": 3000,
+      "verseStart": 1
+    },
+    {
+      "timeMs": 9200,
+      "verseStart": 2
+    },
+    {
+      "timeMs": 14740,
+      "verseStart": 3
+    },
+    {
+      "timeMs": 23640,
+      "verseStart": 4
+    },
+    {
+      "timeMs": 32820,
+      "verseStart": 5
+    },
+    {
+      "timeMs": 38160,
+      "verseStart": 6
+    },
+    {
+      "timeMs": 58340,
+      "verseStart": 7
+    },
+    {
+      "timeMs": 63500,
+      "verseStart": 8
+    },
+    {
+      "timeMs": 70940,
+      "verseStart": 9
+    },
+    {
+      "timeMs": 79480,
+      "verseStart": 10
+    },
+    {
+      "timeMs": 91360,
+      "verseStart": 11
+    },
+    {
+      "timeMs": 98560,
+      "verseStart": 12
+    },
+    {
+      "timeMs": 104300,
+      "verseStart": 13
+    },
+    {
+      "timeMs": 111020,
+      "verseStart": 14
+    },
+    {
+      "timeMs": 115260,
+      "verseStart": 15
+    },
+    {
+      "timeMs": 123020,
+      "verseStart": 16
+    },
+    {
+      "timeMs": 134300,
+      "verseStart": 17
+    },
+    {
+      "timeMs": 142960,
+      "verseStart": 18
+    },
+    {
+      "timeMs": 152500,
+      "verseStart": 19
+    },
+    {
+      "timeMs": 158040,
+      "verseStart": 20
+    },
+    {
+      "timeMs": 162980,
+      "verseStart": 21
+    },
+    {
+      "timeMs": 173340,
+      "verseStart": 22
+    },
+    {
+      "timeMs": 178360,
+      "verseStart": 23
+    },
+    {
+      "timeMs": 188900,
+      "verseStart": 24
+    },
+    {
+      "timeMs": 206100,
+      "verseStart": 25
+    }
+  ]
+}

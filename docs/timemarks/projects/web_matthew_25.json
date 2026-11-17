@@ -1,0 +1,195 @@
+{
+  "id": "gh_web_matthew_25",
+  "translationCode": "WEB",
+  "bookId": "matthew",
+  "chapter": 25,
+  "title": "От Матфея 25 · WEB (англ.)",
+  "narratorId": "web",
+  "audioFileName": "40_25.mp3",
+  "cues": [
+    {
+      "timeMs": 2340,
+      "verseStart": 1
+    },
+    {
+      "timeMs": 9500,
+      "verseStart": 2
+    },
+    {
+      "timeMs": 13380,
+      "verseStart": 3
+    },
+    {
+      "timeMs": 16840,
+      "verseStart": 4
+    },
+    {
+      "timeMs": 20740,
+      "verseStart": 5
+    },
+    {
+      "timeMs": 24480,
+      "verseStart": 6
+    },
+    {
+      "timeMs": 31380,
+      "verseStart": 7
+    },
+    {
+      "timeMs": 34700,
+      "verseStart": 8
+    },
+    {
+      "timeMs": 39760,
+      "verseStart": 9
+    },
+    {
+      "timeMs": 49880,
+      "verseStart": 10
+    },
+    {
+      "timeMs": 59240,
+      "verseStart": 11
+    },
+    {
+      "timeMs": 63440,
+      "verseStart": 12
+    },
+    {
+      "timeMs": 70460,
+      "verseStart": 13
+    },
+    {
+      "timeMs": 77720,
+      "verseStart": 14
+    },
+    {
+      "timeMs": 85600,
+      "verseStart": 15
+    },
+    {
+      "timeMs": 95420,
+      "verseStart": 16
+    },
+    {
+      "timeMs": 101020,
+      "verseStart": 17
+    },
+    {
+      "timeMs": 105860,
+      "verseStart": 18
+    },
+    {
+      "timeMs": 111580,
+      "verseStart": 19
+    },
+    {
+      "timeMs": 116860,
+      "verseStart": 20
+    },
+    {
+      "timeMs": 128770,
+      "verseStart": 21
+    },
+    {
+      "timeMs": 140940,
+      "verseStart": 22
+    },
+    {
+      "timeMs": 150800,
+      "verseStart": 23
+    },
+    {
+      "timeMs": 161520,
+      "verseStart": 24
+    },
+    {
+      "timeMs": 174560,
+      "verseStart": 25
+    },
+    {
+      "timeMs": 182480,
+      "verseStart": 26
+    },
+    {
+      "timeMs": 191600,
+      "verseStart": 27
+    },
+    {
+      "timeMs": 199140,
+      "verseStart": 28
+    },
+    {
+      "timeMs": 204680,
+      "verseStart": 29
+    },
+    {
+      "timeMs": 212980,
+      "verseStart": 30
+    },
+    {
+      "timeMs": 222680,
+      "verseStart": 31
+    },
+    {
+      "timeMs": 230560,
+      "verseStart": 32
+    },
+    {
+      "timeMs": 239080,
+      "verseStart": 33
+    },
+    {
+      "timeMs": 243960,
+      "verseStart": 34
+    },
+    {
+      "timeMs": 253680,
+      "verseStart": 35
+    },
+    {
+      "timeMs": 262540,
+      "verseStart": 36
+    },
+    {
+      "timeMs": 271720,
+      "verseStart": 37
+    },
+    {
+      "timeMs": 280160,
+      "verseStart": 38
+    },
+    {
+      "timeMs": 284820,
+      "verseStart": 39
+    },
+    {
+      "timeMs": 289040,
+      "verseStart": 40
+    },
+    {
+      "timeMs": 301120,
+      "verseStart": 41
+    },
+    {
+      "timeMs": 311220,
+      "verseStart": 42
+    },
+    {
+      "timeMs": 317320,
+      "verseStart": 43
+    },
+    {
+      "timeMs": 326700,
+      "verseStart": 44
+    },
+    {
+      "timeMs": 338040,
+      "verseStart": 45
+    },
+    {
+      "timeMs": 350160,
+      "verseStart": 46
+    }
+  ]
+}

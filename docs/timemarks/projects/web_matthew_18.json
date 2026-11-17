@@ -1,0 +1,151 @@
+{
+  "id": "gh_web_matthew_18",
+  "translationCode": "WEB",
+  "bookId": "matthew",
+  "chapter": 18,
+  "title": "От Матфея 18 · WEB (англ.)",
+  "narratorId": "web",
+  "audioFileName": "40_18.mp3",
+  "cues": [
+    {
+      "timeMs": 4500,
+      "verseStart": 1
+    },
+    {
+      "timeMs": 10160,
+      "verseStart": 2
+    },
+    {
+      "timeMs": 13920,
+      "verseStart": 3
+    },
+    {
+      "timeMs": 23740,
+      "verseStart": 4
+    },
+    {
+      "timeMs": 31940,
+      "verseStart": 5
+    },
+    {
+      "timeMs": 37880,
+      "verseStart": 6
+    },
+    {
+      "timeMs": 49800,
+      "verseStart": 7
+    },
+    {
+      "timeMs": 61080,
+      "verseStart": 8
+    },
+    {
+      "timeMs": 75540,
+      "verseStart": 9
+    },
+    {
+      "timeMs": 87740,
+      "verseStart": 10
+    },
+    {
+      "timeMs": 98940,
+      "verseStart": 11
+    },
+    {
+      "timeMs": 105760,
+      "verseStart": 12
+    },
+    {
+      "timeMs": 118020,
+      "verseStart": 13
+    },
+    {
+      "timeMs": 128700,
+      "verseStart": 14
+    },
+    {
+      "timeMs": 137820,
+      "verseStart": 15
+    },
+    {
+      "timeMs": 147700,
+      "verseStart": 16
+    },
+    {
+      "timeMs": 156640,
+      "verseStart": 17
+    },
+    {
+      "timeMs": 169080,
+      "verseStart": 18
+    },
+    {
+      "timeMs": 178900,
+      "verseStart": 19
+    },
+    {
+      "timeMs": 189360,
+      "verseStart": 20
+    },
+    {
+      "timeMs": 198160,
+      "verseStart": 21
+    },
+    {
+      "timeMs": 207440,
+      "verseStart": 22
+    },
+    {
+      "timeMs": 215440,
+      "verseStart": 23
+    },
+    {
+      "timeMs": 221360,
+      "verseStart": 24
+    },
+    {
+      "timeMs": 227060,
+      "verseStart": 25
+    },
+    {
+      "timeMs": 236220,
+      "verseStart": 26
+    },
+    {
+      "timeMs": 242300,
+      "verseStart": 27
+    },
+    {
+      "timeMs": 249180,
+      "verseStart": 28
+    },
+    {
+      "timeMs": 259190,
+      "verseStart": 29
+    },
+    {
+      "timeMs": 265540,
+      "verseStart": 30
+    },
+    {
+      "timeMs": 270940,
+      "verseStart": 31
+    },
+    {
+      "timeMs": 278960,
+      "verseStart": 32
+    },
+    {
+      "timeMs": 289660,
+      "verseStart": 33
+    },
+    {
+      "timeMs": 296960,
+      "verseStart": 34
+    },
+    {
+      "timeMs": 304540,
+      "verseStart": 35
+    }
+  ]
+}

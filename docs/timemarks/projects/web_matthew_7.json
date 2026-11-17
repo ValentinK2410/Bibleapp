@@ -1,0 +1,127 @@
+{
+  "id": "gh_web_matthew_7",
+  "translationCode": "WEB",
+  "bookId": "matthew",
+  "chapter": 7,
+  "title": "От Матфея 7 · WEB (англ.)",
+  "narratorId": "web",
+  "audioFileName": "40_07.mp3",
+  "cues": [
+    {
+      "timeMs": 2680,
+      "verseStart": 1
+    },
+    {
+      "timeMs": 5160,
+      "verseStart": 2
+    },
+    {
+      "timeMs": 13140,
+      "verseStart": 3
+    },
+    {
+      "timeMs": 20920,
+      "verseStart": 4
+    },
+    {
+      "timeMs": 28420,
+      "verseStart": 5
+    },
+    {
+      "timeMs": 40140,
+      "verseStart": 6
+    },
+    {
+      "timeMs": 51360,
+      "verseStart": 7
+    },
+    {
+      "timeMs": 58280,
+      "verseStart": 8
+    },
+    {
+      "timeMs": 65720,
+      "verseStart": 9
+    },
+    {
+      "timeMs": 71300,
+      "verseStart": 10
+    },
+    {
+      "timeMs": 75280,
+      "verseStart": 11
+    },
+    {
+      "timeMs": 85040,
+      "verseStart": 12
+    },
+    {
+      "timeMs": 97200,
+      "verseStart": 13
+    },
+    {
+      "timeMs": 106120,
+      "verseStart": 14
+    },
+    {
+      "timeMs": 113700,
+      "verseStart": 15
+    },
+    {
+      "timeMs": 120280,
+      "verseStart": 16
+    },
+    {
+      "timeMs": 127000,
+      "verseStart": 17
+    },
+    {
+      "timeMs": 133380,
+      "verseStart": 18
+    },
+    {
+      "timeMs": 138880,
+      "verseStart": 19
+    },
+    {
+      "timeMs": 145740,
+      "verseStart": 20
+    },
+    {
+      "timeMs": 150200,
+      "verseStart": 21
+    },
+    {
+      "timeMs": 158920,
+      "verseStart": 22
+    },
+    {
+      "timeMs": 170480,
+      "verseStart": 23
+    },
+    {
+      "timeMs": 179800,
+      "verseStart": 24
+    },
+    {
+      "timeMs": 188700,
+      "verseStart": 25
+    },
+    {
+      "timeMs": 198760,
+      "verseStart": 26
+    },
+    {
+      "timeMs": 206380,
+      "verseStart": 27
+    },
+    {
+      "timeMs": 218600,
+      "verseStart": 28
+    },
+    {
+      "timeMs": 224340,
+      "verseStart": 29
+    }
+  ]
+}

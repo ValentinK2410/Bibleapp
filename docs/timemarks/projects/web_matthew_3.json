@@ -1,0 +1,79 @@
+{
+  "id": "gh_web_matthew_3",
+  "translationCode": "WEB",
+  "bookId": "matthew",
+  "chapter": 3,
+  "title": "От Матфея 3 · WEB (англ.)",
+  "narratorId": "web",
+  "audioFileName": "40_03.mp3",
+  "cues": [
+    {
+      "timeMs": 2400,
+      "verseStart": 1
+    },
+    {
+      "timeMs": 6900,
+      "verseStart": 2
+    },
+    {
+      "timeMs": 12620,
+      "verseStart": 3
+    },
+    {
+      "timeMs": 23120,
+      "verseStart": 4
+    },
+    {
+      "timeMs": 32240,
+      "verseStart": 5
+    },
+    {
+      "timeMs": 37300,
+      "verseStart": 6
+    },
+    {
+      "timeMs": 42140,
+      "verseStart": 7
+    },
+    {
+      "timeMs": 54240,
+      "verseStart": 8
+    },
+    {
+      "timeMs": 57480,
+      "verseStart": 9
+    },
+    {
+      "timeMs": 69000,
+      "verseStart": 10
+    },
+    {
+      "timeMs": 80940,
+      "verseStart": 11
+    },
+    {
+      "timeMs": 96440,
+      "verseStart": 12
+    },
+    {
+      "timeMs": 109040,
+      "verseStart": 13
+    },
+    {
+      "timeMs": 114520,
+      "verseStart": 14
+    },
+    {
+      "timeMs": 122600,
+      "verseStart": 15
+    },
+    {
+      "timeMs": 134560,
+      "verseStart": 16
+    },
+    {
+      "timeMs": 146580,
+      "verseStart": 17
+    }
+  ]
+}

@@ -1,0 +1,96 @@
+{
+  "id": "align-matthew-WEB-03",
+  "translationCode": "WEB",
+  "bookId": "matthew",
+  "chapter": 3,
+  "title": "От Матфея 3 · WEB (англ.)",
+  "audioFilePath": "/data/user/0/com.example.bible.sqlite/files/bible_audio/web/40_03.mp3",
+  "updatedAt": 1794873600000,
+  "cues": [
+    {
+      "timeMs": 2400,
+      "verseStart": 1,
+      "attachments": []
+    },
+    {
+      "timeMs": 6900,
+      "verseStart": 2,
+      "attachments": []
+    },
+    {
+      "timeMs": 12620,
+      "verseStart": 3,
+      "attachments": []
+    },
+    {
+      "timeMs": 23120,
+      "verseStart": 4,
+      "attachments": []
+    },
+    {
+      "timeMs": 32240,
+      "verseStart": 5,
+      "attachments": []
+    },
+    {
+      "timeMs": 37300,
+      "verseStart": 6,
+      "attachments": []
+    },
+    {
+      "timeMs": 42140,
+      "verseStart": 7,
+      "attachments": []
+    },
+    {
+      "timeMs": 54240,
+      "verseStart": 8,
+      "attachments": []
+    },
+    {
+      "timeMs": 57480,
+      "verseStart": 9,
+      "attachments": []
+    },
+    {
+      "timeMs": 69000,
+      "verseStart": 10,
+      "attachments": []
+    },
+    {
+      "timeMs": 80940,
+      "verseStart": 11,
+      "attachments": []
+    },
+    {
+      "timeMs": 96440,
+      "verseStart": 12,
+      "attachments": []
+    },
+    {
+      "timeMs": 109040,
+      "verseStart": 13,
+      "attachments": []
+    },
+    {
+      "timeMs": 114520,
+      "verseStart": 14,
+      "attachments": []
+    },
+    {
+      "timeMs": 122600,
+      "verseStart": 15,
+      "attachments": []
+    },
+    {
+      "timeMs": 134560,
+      "verseStart": 16,
+      "attachments": []
+    },
+    {
+      "timeMs": 146580,
+      "verseStart": 17,
+      "attachments": []
+    }
+  ]
+}

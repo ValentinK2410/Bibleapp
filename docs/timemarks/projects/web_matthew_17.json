@@ -1,0 +1,119 @@
+{
+  "id": "gh_web_matthew_17",
+  "translationCode": "WEB",
+  "bookId": "matthew",
+  "chapter": 17,
+  "title": "От Матфея 17 · WEB (англ.)",
+  "narratorId": "web",
+  "audioFileName": "40_17.mp3",
+  "cues": [
+    {
+      "timeMs": 2440,
+      "verseStart": 1
+    },
+    {
+      "timeMs": 10687,
+      "verseStart": 2
+    },
+    {
+      "timeMs": 18300,
+      "verseStart": 3
+    },
+    {
+      "timeMs": 24700,
+      "verseStart": 4
+    },
+    {
+      "timeMs": 36720,
+      "verseStart": 5
+    },
+    {
+      "timeMs": 50760,
+      "verseStart": 6
+    },
+    {
+      "timeMs": 57776,
+      "verseStart": 7
+    },
+    {
+      "timeMs": 63740,
+      "verseStart": 8
+    },
+    {
+      "timeMs": 67460,
+      "verseStart": 9
+    },
+    {
+      "timeMs": 78260,
+      "verseStart": 10
+    },
+    {
+      "timeMs": 84620,
+      "verseStart": 11
+    },
+    {
+      "timeMs": 92440,
+      "verseStart": 12
+    },
+    {
+      "timeMs": 107040,
+      "verseStart": 13
+    },
+    {
+      "timeMs": 112460,
+      "verseStart": 14
+    },
+    {
+      "timeMs": 118140,
+      "verseStart": 15
+    },
+    {
+      "timeMs": 127400,
+      "verseStart": 16
+    },
+    {
+      "timeMs": 131660,
+      "verseStart": 17
+    },
+    {
+      "timeMs": 143740,
+      "verseStart": 18
+    },
+    {
+      "timeMs": 151020,
+      "verseStart": 19
+    },
+    {
+      "timeMs": 156840,
+      "verseStart": 20
+    },
+    {
+      "timeMs": 177340,
+      "verseStart": 21
+    },
+    {
+      "timeMs": 183640,
+      "verseStart": 22
+    },
+    {
+      "timeMs": 191220,
+      "verseStart": 23
+    },
+    {
+      "timeMs": 199660,
+      "verseStart": 24
+    },
+    {
+      "timeMs": 207580,
+      "verseStart": 25
+    },
+    {
+      "timeMs": 223220,
+      "verseStart": 26
+    },
+    {
+      "timeMs": 231460,
+      "verseStart": 27
+    }
+  ]
+}

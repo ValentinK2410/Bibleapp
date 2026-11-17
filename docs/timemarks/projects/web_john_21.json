@@ -1,0 +1,111 @@
+{
+  "id": "gh_web_john_21",
+  "translationCode": "WEB",
+  "bookId": "john",
+  "chapter": 21,
+  "title": "От Иоанна 21 · WEB (англ.)",
+  "narratorId": "web",
+  "audioFileName": "43_21.mp3",
+  "cues": [
+    {
+      "timeMs": 3640,
+      "verseStart": 1
+    },
+    {
+      "timeMs": 11800,
+      "verseStart": 2
+    },
+    {
+      "timeMs": 21180,
+      "verseStart": 3
+    },
+    {
+      "timeMs": 32980,
+      "verseStart": 4
+    },
+    {
+      "timeMs": 39960,
+      "verseStart": 5
+    },
+    {
+      "timeMs": 46260,
+      "verseStart": 6
+    },
+    {
+      "timeMs": 58740,
+      "verseStart": 7
+    },
+    {
+      "timeMs": 72760,
+      "verseStart": 8
+    },
+    {
+      "timeMs": 81840,
+      "verseStart": 9
+    },
+    {
+      "timeMs": 89480,
+      "verseStart": 10
+    },
+    {
+      "timeMs": 94560,
+      "verseStart": 11
+    },
+    {
+      "timeMs": 105140,
+      "verseStart": 12
+    },
+    {
+      "timeMs": 114780,
+      "verseStart": 13
+    },
+    {
+      "timeMs": 120680,
+      "verseStart": 14
+    },
+    {
+      "timeMs": 128100,
+      "verseStart": 15
+    },
+    {
+      "timeMs": 142940,
+      "verseStart": 16
+    },
+    {
+      "timeMs": 155480,
+      "verseStart": 17
+    },
+    {
+      "timeMs": 175660,
+      "verseStart": 18
+    },
+    {
+      "timeMs": 192380,
+      "verseStart": 19
+    },
+    {
+      "timeMs": 202060,
+      "verseStart": 20
+    },
+    {
+      "timeMs": 212000,
+      "verseStart": 21
+    },
+    {
+      "timeMs": 217580,
+      "verseStart": 22
+    },
+    {
+      "timeMs": 226140,
+      "verseStart": 23
+    },
+    {
+      "timeMs": 236100,
+      "verseStart": 24
+    },
+    {
+      "timeMs": 248840,
+      "verseStart": 25
+    }
+  ]
+}

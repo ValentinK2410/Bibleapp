@@ -1,0 +1,111 @@
+{
+  "id": "align-matthew-WEB-28",
+  "translationCode": "WEB",
+  "bookId": "matthew",
+  "chapter": 28,
+  "title": "От Матфея 28 · WEB (англ.)",
+  "audioFilePath": "/data/user/0/com.example.bible.sqlite/files/bible_audio/web/40_28.mp3",
+  "updatedAt": 1794873600000,
+  "cues": [
+    {
+      "timeMs": 2060,
+      "verseStart": 1,
+      "attachments": []
+    },
+    {
+      "timeMs": 10940,
+      "verseStart": 2,
+      "attachments": []
+    },
+    {
+      "timeMs": 19900,
+      "verseStart": 3,
+      "attachments": []
+    },
+    {
+      "timeMs": 24780,
+      "verseStart": 4,
+      "attachments": []
+    },
+    {
+      "timeMs": 29720,
+      "verseStart": 5,
+      "attachments": []
+    },
+    {
+      "timeMs": 38400,
+      "verseStart": 6,
+      "attachments": []
+    },
+    {
+      "timeMs": 45100,
+      "verseStart": 7,
+      "attachments": []
+    },
+    {
+      "timeMs": 58020,
+      "verseStart": 8,
+      "attachments": []
+    },
+    {
+      "timeMs": 66420,
+      "verseStart": 9,
+      "attachments": []
+    },
+    {
+      "timeMs": 76900,
+      "verseStart": 10,
+      "attachments": []
+    },
+    {
+      "timeMs": 87440,
+      "verseStart": 11,
+      "attachments": []
+    },
+    {
+      "timeMs": 95000,
+      "verseStart": 12,
+      "attachments": []
+    },
+    {
+      "timeMs": 100820,
+      "verseStart": 13,
+      "attachments": []
+    },
+    {
+      "timeMs": 107320,
+      "verseStart": 14,
+      "attachments": []
+    },
+    {
+      "timeMs": 112580,
+      "verseStart": 15,
+      "attachments": []
+    },
+    {
+      "timeMs": 121660,
+      "verseStart": 16,
+      "attachments": []
+    },
+    {
+      "timeMs": 127360,
+      "verseStart": 17,
+      "attachments": []
+    },
+    {
+      "timeMs": 132060,
+      "verseStart": 18,
+      "attachments": []
+    },
+    {
+      "timeMs": 139140,
+      "verseStart": 19,
+      "attachments": []
+    },
+    {
+      "timeMs": 148100,
+      "verseStart": 20,
+      "attachments": []
+    }
+  ]
+}

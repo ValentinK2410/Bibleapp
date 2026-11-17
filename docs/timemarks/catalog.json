@@ -1,7 +1,7 @@
 {
   "format": "bible_timemark_catalog",
   "version": 1,
-  "updatedAt": "2026-11-16",
+  "updatedAt": "2026-11-17",
   "items": [
     {
       "id": "gh_bti_john_1",
@@ -842,6 +842,496 @@
       "cueCount": 41,
       "narratorId": "bondarenko",
       "file": "projects/syn_john_9.json"
+    },
+    {
+      "id": "gh_web_john_1",
+      "translationCode": "WEB",
+      "bookId": "john",
+      "chapter": 1,
+      "title": "От Иоанна 1 · WEB (англ.)",
+      "cueCount": 51,
+      "narratorId": "web",
+      "file": "projects/web_john_1.json"
+    },
+    {
+      "id": "gh_web_john_10",
+      "translationCode": "WEB",
+      "bookId": "john",
+      "chapter": 10,
+      "title": "От Иоанна 10 · WEB (англ.)",
+      "cueCount": 42,
+      "narratorId": "web",
+      "file": "projects/web_john_10.json"
+    },
+    {
+      "id": "gh_web_john_11",
+      "translationCode": "WEB",
+      "bookId": "john",
+      "chapter": 11,
+      "title": "От Иоанна 11 · WEB (англ.)",
+      "cueCount": 57,
+      "narratorId": "web",
+      "file": "projects/web_john_11.json"
+    },
+    {
+      "id": "gh_web_john_12",
+      "translationCode": "WEB",
+      "bookId": "john",
+      "chapter": 12,
+      "title": "От Иоанна 12 · WEB (англ.)",
+      "cueCount": 50,
+      "narratorId": "web",
+      "file": "projects/web_john_12.json"
+    },
+    {
+      "id": "gh_web_john_13",
+      "translationCode": "WEB",
+      "bookId": "john",
+      "chapter": 13,
+      "title": "От Иоанна 13 · WEB (англ.)",
+      "cueCount": 38,
+      "narratorId": "web",
+      "file": "projects/web_john_13.json"
+    },
+    {
+      "id": "gh_web_john_14",
+      "translationCode": "WEB",
+      "bookId": "john",
+      "chapter": 14,
+      "title": "От Иоанна 14 · WEB (англ.)",
+      "cueCount": 31,
+      "narratorId": "web",
+      "file": "projects/web_john_14.json"
+    },
+    {
+      "id": "gh_web_john_15",
+      "translationCode": "WEB",
+      "bookId": "john",
+      "chapter": 15,
+      "title": "От Иоанна 15 · WEB (англ.)",
+      "cueCount": 27,
+      "narratorId": "web",
+      "file": "projects/web_john_15.json"
+    },
+    {
+      "id": "gh_web_john_16",
+      "translationCode": "WEB",
+      "bookId": "john",
+      "chapter": 16,
+      "title": "От Иоанна 16 · WEB (англ.)",
+      "cueCount": 33,
+      "narratorId": "web",
+      "file": "projects/web_john_16.json"
+    },
+    {
+      "id": "gh_web_john_17",
+      "translationCode": "WEB",
+      "bookId": "john",
+      "chapter": 17,
+      "title": "От Иоанна 17 · WEB (англ.)",
+      "cueCount": 26,
+      "narratorId": "web",
+      "file": "projects/web_john_17.json"
+    },
+    {
+      "id": "gh_web_john_18",
+      "translationCode": "WEB",
+      "bookId": "john",
+      "chapter": 18,
+      "title": "От Иоанна 18 · WEB (англ.)",
+      "cueCount": 40,
+      "narratorId": "web",
+      "file": "projects/web_john_18.json"
+    },
+    {
+      "id": "gh_web_john_19",
+      "translationCode": "WEB",
+      "bookId": "john",
+      "chapter": 19,
+      "title": "От Иоанна 19 · WEB (англ.)",
+      "cueCount": 42,
+      "narratorId": "web",
+      "file": "projects/web_john_19.json"
+    },
+    {
+      "id": "gh_web_john_2",
+      "translationCode": "WEB",
+      "bookId": "john",
+      "chapter": 2,
+      "title": "От Иоанна 2 · WEB (англ.)",
+      "cueCount": 25,
+      "narratorId": "web",
+      "file": "projects/web_john_2.json"
+    },
+    {
+      "id": "gh_web_john_20",
+      "translationCode": "WEB",
+      "bookId": "john",
+      "chapter": 20,
+      "title": "От Иоанна 20 · WEB (англ.)",
+      "cueCount": 31,
+      "narratorId": "web",
+      "file": "projects/web_john_20.json"
+    },
+    {
+      "id": "gh_web_john_21",
+      "translationCode": "WEB",
+      "bookId": "john",
+      "chapter": 21,
+      "title": "От Иоанна 21 · WEB (англ.)",
+      "cueCount": 25,
+      "narratorId": "web",
+      "file": "projects/web_john_21.json"
+    },
+    {
+      "id": "gh_web_john_3",
+      "translationCode": "WEB",
+      "bookId": "john",
+      "chapter": 3,
+      "title": "От Иоанна 3 · WEB (англ.)",
+      "cueCount": 36,
+      "narratorId": "web",
+      "file": "projects/web_john_3.json"
+    },
+    {
+      "id": "gh_web_john_4",
+      "translationCode": "WEB",
+      "bookId": "john",
+      "chapter": 4,
+      "title": "От Иоанна 4 · WEB (англ.)",
+      "cueCount": 54,
+      "narratorId": "web",
+      "file": "projects/web_john_4.json"
+    },
+    {
+      "id": "gh_web_john_5",
+      "translationCode": "WEB",
+      "bookId": "john",
+      "chapter": 5,
+      "title": "От Иоанна 5 · WEB (англ.)",
+      "cueCount": 47,
+      "narratorId": "web",
+      "file": "projects/web_john_5.json"
+    },
+    {
+      "id": "gh_web_john_6",
+      "translationCode": "WEB",
+      "bookId": "john",
+      "chapter": 6,
+      "title": "От Иоанна 6 · WEB (англ.)",
+      "cueCount": 71,
+      "narratorId": "web",
+      "file": "projects/web_john_6.json"
+    },
+    {
+      "id": "gh_web_john_7",
+      "translationCode": "WEB",
+      "bookId": "john",
+      "chapter": 7,
+      "title": "От Иоанна 7 · WEB (англ.)",
+      "cueCount": 53,
+      "narratorId": "web",
+      "file": "projects/web_john_7.json"
+    },
+    {
+      "id": "gh_web_john_8",
+      "translationCode": "WEB",
+      "bookId": "john",
+      "chapter": 8,
+      "title": "От Иоанна 8 · WEB (англ.)",
+      "cueCount": 59,
+      "narratorId": "web",
+      "file": "projects/web_john_8.json"
+    },
+    {
+      "id": "gh_web_john_9",
+      "translationCode": "WEB",
+      "bookId": "john",
+      "chapter": 9,
+      "title": "От Иоанна 9 · WEB (англ.)",
+      "cueCount": 41,
+      "narratorId": "web",
+      "file": "projects/web_john_9.json"
+    },
+    {
+      "id": "gh_web_matthew_1",
+      "translationCode": "WEB",
+      "bookId": "matthew",
+      "chapter": 1,
+      "title": "От Матфея 1 · WEB (англ.)",
+      "cueCount": 25,
+      "narratorId": "web",
+      "file": "projects/web_matthew_1.json"
+    },
+    {
+      "id": "gh_web_matthew_10",
+      "translationCode": "WEB",
+      "bookId": "matthew",
+      "chapter": 10,
+      "title": "От Матфея 10 · WEB (англ.)",
+      "cueCount": 42,
+      "narratorId": "web",
+      "file": "projects/web_matthew_10.json"
+    },
+    {
+      "id": "gh_web_matthew_11",
+      "translationCode": "WEB",
+      "bookId": "matthew",
+      "chapter": 11,
+      "title": "От Матфея 11 · WEB (англ.)",
+      "cueCount": 30,
+      "narratorId": "web",
+      "file": "projects/web_matthew_11.json"
+    },
+    {
+      "id": "gh_web_matthew_12",
+      "translationCode": "WEB",
+      "bookId": "matthew",
+      "chapter": 12,
+      "title": "От Матфея 12 · WEB (англ.)",
+      "cueCount": 50,
+      "narratorId": "web",
+      "file": "projects/web_matthew_12.json"
+    },
+    {
+      "id": "gh_web_matthew_13",
+      "translationCode": "WEB",
+      "bookId": "matthew",
+      "chapter": 13,
+      "title": "От Матфея 13 · WEB (англ.)",
+      "cueCount": 58,
+      "narratorId": "web",
+      "file": "projects/web_matthew_13.json"
+    },
+    {
+      "id": "gh_web_matthew_14",
+      "translationCode": "WEB",
+      "bookId": "matthew",
+      "chapter": 14,
+      "title": "От Матфея 14 · WEB (англ.)",
+      "cueCount": 36,
+      "narratorId": "web",
+      "file": "projects/web_matthew_14.json"
+    },
+    {
+      "id": "gh_web_matthew_15",
+      "translationCode": "WEB",
+      "bookId": "matthew",
+      "chapter": 15,
+      "title": "От Матфея 15 · WEB (англ.)",
+      "cueCount": 39,
+      "narratorId": "web",
+      "file": "projects/web_matthew_15.json"
+    },
+    {
+      "id": "gh_web_matthew_16",
+      "translationCode": "WEB",
+      "bookId": "matthew",
+      "chapter": 16,
+      "title": "От Матфея 16 · WEB (англ.)",
+      "cueCount": 28,
+      "narratorId": "web",
+      "file": "projects/web_matthew_16.json"
+    },
+    {
+      "id": "gh_web_matthew_17",
+      "translationCode": "WEB",
+      "bookId": "matthew",
+      "chapter": 17,
+      "title": "От Матфея 17 · WEB (англ.)",
+      "cueCount": 27,
+      "narratorId": "web",
+      "file": "projects/web_matthew_17.json"
+    },
+    {
+      "id": "gh_web_matthew_18",
+      "translationCode": "WEB",
+      "bookId": "matthew",
+      "chapter": 18,
+      "title": "От Матфея 18 · WEB (англ.)",
+      "cueCount": 35,
+      "narratorId": "web",
+      "file": "projects/web_matthew_18.json"
+    },
+    {
+      "id": "gh_web_matthew_19",
+      "translationCode": "WEB",
+      "bookId": "matthew",
+      "chapter": 19,
+      "title": "От Матфея 19 · WEB (англ.)",
+      "cueCount": 30,
+      "narratorId": "web",
+      "file": "projects/web_matthew_19.json"
+    },
+    {
+      "id": "gh_web_matthew_2",
+      "translationCode": "WEB",
+      "bookId": "matthew",
+      "chapter": 2,
+      "title": "От Матфея 2 · WEB (англ.)",
+      "cueCount": 23,
+      "narratorId": "web",
+      "file": "projects/web_matthew_2.json"
+    },
+    {
+      "id": "gh_web_matthew_20",
+      "translationCode": "WEB",
+      "bookId": "matthew",
+      "chapter": 20,
+      "title": "От Матфея 20 · WEB (англ.)",
+      "cueCount": 34,
+      "narratorId": "web",
+      "file": "projects/web_matthew_20.json"
+    },
+    {
+      "id": "gh_web_matthew_21",
+      "translationCode": "WEB",
+      "bookId": "matthew",
+      "chapter": 21,
+      "title": "От Матфея 21 · WEB (англ.)",
+      "cueCount": 46,
+      "narratorId": "web",
+      "file": "projects/web_matthew_21.json"
+    },
+    {
+      "id": "gh_web_matthew_22",
+      "translationCode": "WEB",
+      "bookId": "matthew",
+      "chapter": 22,
+      "title": "От Матфея 22 · WEB (англ.)",
+      "cueCount": 46,
+      "narratorId": "web",
+      "file": "projects/web_matthew_22.json"
+    },
+    {
+      "id": "gh_web_matthew_23",
+      "translationCode": "WEB",
+      "bookId": "matthew",
+      "chapter": 23,
+      "title": "От Матфея 23 · WEB (англ.)",
+      "cueCount": 39,
+      "narratorId": "web",
+      "file": "projects/web_matthew_23.json"
+    },
+    {
+      "id": "gh_web_matthew_24",
+      "translationCode": "WEB",
+      "bookId": "matthew",
+      "chapter": 24,
+      "title": "От Матфея 24 · WEB (англ.)",
+      "cueCount": 51,
+      "narratorId": "web",
+      "file": "projects/web_matthew_24.json"
+    },
+    {
+      "id": "gh_web_matthew_25",
+      "translationCode": "WEB",
+      "bookId": "matthew",
+      "chapter": 25,
+      "title": "От Матфея 25 · WEB (англ.)",
+      "cueCount": 46,
+      "narratorId": "web",
+      "file": "projects/web_matthew_25.json"
+    },
+    {
+      "id": "gh_web_matthew_26",
+      "translationCode": "WEB",
+      "bookId": "matthew",
+      "chapter": 26,
+      "title": "От Матфея 26 · WEB (англ.)",
+      "cueCount": 75,
+      "narratorId": "web",
+      "file": "projects/web_matthew_26.json"
+    },
+    {
+      "id": "gh_web_matthew_27",
+      "translationCode": "WEB",
+      "bookId": "matthew",
+      "chapter": 27,
+      "title": "От Матфея 27 · WEB (англ.)",
+      "cueCount": 66,
+      "narratorId": "web",
+      "file": "projects/web_matthew_27.json"
+    },
+    {
+      "id": "gh_web_matthew_28",
+      "translationCode": "WEB",
+      "bookId": "matthew",
+      "chapter": 28,
+      "title": "От Матфея 28 · WEB (англ.)",
+      "cueCount": 20,
+      "narratorId": "web",
+      "file": "projects/web_matthew_28.json"
+    },
+    {
+      "id": "gh_web_matthew_3",
+      "translationCode": "WEB",
+      "bookId": "matthew",
+      "chapter": 3,
+      "title": "От Матфея 3 · WEB (англ.)",
+      "cueCount": 17,
+      "narratorId": "web",
+      "file": "projects/web_matthew_3.json"
+    },
+    {
+      "id": "gh_web_matthew_4",
+      "translationCode": "WEB",
+      "bookId": "matthew",
+      "chapter": 4,
+      "title": "От Матфея 4 · WEB (англ.)",
+      "cueCount": 25,
+      "narratorId": "web",
+      "file": "projects/web_matthew_4.json"
+    },
+    {
+      "id": "gh_web_matthew_5",
+      "translationCode": "WEB",
+      "bookId": "matthew",
+      "chapter": 5,
+      "title": "От Матфея 5 · WEB (англ.)",
+      "cueCount": 48,
+      "narratorId": "web",
+      "file": "projects/web_matthew_5.json"
+    },
+    {
+      "id": "gh_web_matthew_6",
+      "translationCode": "WEB",
+      "bookId": "matthew",
+      "chapter": 6,
+      "title": "От Матфея 6 · WEB (англ.)",
+      "cueCount": 34,
+      "narratorId": "web",
+      "file": "projects/web_matthew_6.json"
+    },
+    {
+      "id": "gh_web_matthew_7",
+      "translationCode": "WEB",
+      "bookId": "matthew",
+      "chapter": 7,
+      "title": "От Матфея 7 · WEB (англ.)",
+      "cueCount": 29,
+      "narratorId": "web",
+      "file": "projects/web_matthew_7.json"
+    },
+    {
+      "id": "gh_web_matthew_8",
+      "translationCode": "WEB",
+      "bookId": "matthew",
+      "chapter": 8,
+      "title": "От Матфея 8 · WEB (англ.)",
+      "cueCount": 34,
+      "narratorId": "web",
+      "file": "projects/web_matthew_8.json"
+    },
+    {
+      "id": "gh_web_matthew_9",
+      "translationCode": "WEB",
+      "bookId": "matthew",
+      "chapter": 9,
+      "title": "От Матфея 9 · WEB (англ.)",
+      "cueCount": 38,
+      "narratorId": "web",
+      "file": "projects/web_matthew_9.json"
     }
   ]
 }

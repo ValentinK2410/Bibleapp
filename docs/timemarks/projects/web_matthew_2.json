@@ -1,0 +1,103 @@
+{
+  "id": "gh_web_matthew_2",
+  "translationCode": "WEB",
+  "bookId": "matthew",
+  "chapter": 2,
+  "title": "От Матфея 2 · WEB (англ.)",
+  "narratorId": "web",
+  "audioFileName": "40_02.mp3",
+  "cues": [
+    {
+      "timeMs": 1380,
+      "verseStart": 1
+    },
+    {
+      "timeMs": 9820,
+      "verseStart": 2
+    },
+    {
+      "timeMs": 17520,
+      "verseStart": 3
+    },
+    {
+      "timeMs": 22640,
+      "verseStart": 4
+    },
+    {
+      "timeMs": 29740,
+      "verseStart": 5
+    },
+    {
+      "timeMs": 35360,
+      "verseStart": 6
+    },
+    {
+      "timeMs": 48080,
+      "verseStart": 7
+    },
+    {
+      "timeMs": 55260,
+      "verseStart": 8
+    },
+    {
+      "timeMs": 69100,
+      "verseStart": 9
+    },
+    {
+      "timeMs": 79480,
+      "verseStart": 10
+    },
+    {
+      "timeMs": 84600,
+      "verseStart": 11
+    },
+    {
+      "timeMs": 99700,
+      "verseStart": 12
+    },
+    {
+      "timeMs": 108160,
+      "verseStart": 13
+    },
+    {
+      "timeMs": 126740,
+      "verseStart": 14
+    },
+    {
+      "timeMs": 131640,
+      "verseStart": 15
+    },
+    {
+      "timeMs": 142600,
+      "verseStart": 16
+    },
+    {
+      "timeMs": 159760,
+      "verseStart": 17
+    },
+    {
+      "timeMs": 164600,
+      "verseStart": 18
+    },
+    {
+      "timeMs": 177340,
+      "verseStart": 19
+    },
+    {
+      "timeMs": 184340,
+      "verseStart": 20
+    },
+    {
+      "timeMs": 193840,
+      "verseStart": 21
+    },
+    {
+      "timeMs": 199600,
+      "verseStart": 22
+    },
+    {
+      "timeMs": 213560,
+      "verseStart": 23
+    }
+  ]
+}

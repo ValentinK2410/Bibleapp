@@ -1,0 +1,131 @@
+{
+  "id": "gh_web_matthew_11",
+  "translationCode": "WEB",
+  "bookId": "matthew",
+  "chapter": 11,
+  "title": "От Матфея 11 · WEB (англ.)",
+  "narratorId": "web",
+  "audioFileName": "40_11.mp3",
+  "cues": [
+    {
+      "timeMs": 1680,
+      "verseStart": 1
+    },
+    {
+      "timeMs": 10680,
+      "verseStart": 2
+    },
+    {
+      "timeMs": 15480,
+      "verseStart": 3
+    },
+    {
+      "timeMs": 21280,
+      "verseStart": 4
+    },
+    {
+      "timeMs": 27490,
+      "verseStart": 5
+    },
+    {
+      "timeMs": 38100,
+      "verseStart": 6
+    },
+    {
+      "timeMs": 42820,
+      "verseStart": 7
+    },
+    {
+      "timeMs": 54520,
+      "verseStart": 8
+    },
+    {
+      "timeMs": 64200,
+      "verseStart": 9
+    },
+    {
+      "timeMs": 72320,
+      "verseStart": 10
+    },
+    {
+      "timeMs": 81340,
+      "verseStart": 11
+    },
+    {
+      "timeMs": 94540,
+      "verseStart": 12
+    },
+    {
+      "timeMs": 103020,
+      "verseStart": 13
+    },
+    {
+      "timeMs": 107960,
+      "verseStart": 14
+    },
+    {
+      "timeMs": 113180,
+      "verseStart": 15
+    },
+    {
+      "timeMs": 116940,
+      "verseStart": 16
+    },
+    {
+      "timeMs": 123800,
+      "verseStart": 17
+    },
+    {
+      "timeMs": 131900,
+      "verseStart": 18
+    },
+    {
+      "timeMs": 137580,
+      "verseStart": 19
+    },
+    {
+      "timeMs": 151520,
+      "verseStart": 20
+    },
+    {
+      "timeMs": 158860,
+      "verseStart": 21
+    },
+    {
+      "timeMs": 171380,
+      "verseStart": 22
+    },
+    {
+      "timeMs": 179380,
+      "verseStart": 23
+    },
+    {
+      "timeMs": 191700,
+      "verseStart": 24
+    },
+    {
+      "timeMs": 199860,
+      "verseStart": 25
+    },
+    {
+      "timeMs": 212580,
+      "verseStart": 26
+    },
+    {
+      "timeMs": 217060,
+      "verseStart": 27
+    },
+    {
+      "timeMs": 231280,
+      "verseStart": 28
+    },
+    {
+      "timeMs": 238240,
+      "verseStart": 29
+    },
+    {
+      "timeMs": 247640,
+      "verseStart": 30
+    }
+  ]
+}

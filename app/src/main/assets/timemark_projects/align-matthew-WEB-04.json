@@ -1,0 +1,136 @@
+{
+  "id": "align-matthew-WEB-04",
+  "translationCode": "WEB",
+  "bookId": "matthew",
+  "chapter": 4,
+  "title": "От Матфея 4 · WEB (англ.)",
+  "audioFilePath": "/data/user/0/com.example.bible.sqlite/files/bible_audio/web/40_04.mp3",
+  "updatedAt": 1794873600000,
+  "cues": [
+    {
+      "timeMs": 3000,
+      "verseStart": 1,
+      "attachments": []
+    },
+    {
+      "timeMs": 9200,
+      "verseStart": 2,
+      "attachments": []
+    },
+    {
+      "timeMs": 14740,
+      "verseStart": 3,
+      "attachments": []
+    },
+    {
+      "timeMs": 23640,
+      "verseStart": 4,
+      "attachments": []
+    },
+    {
+      "timeMs": 32820,
+      "verseStart": 5,
+      "attachments": []
+    },
+    {
+      "timeMs": 38160,
+      "verseStart": 6,
+      "attachments": []
+    },
+    {
+      "timeMs": 58340,
+      "verseStart": 7,
+      "attachments": []
+    },
+    {
+      "timeMs": 63500,
+      "verseStart": 8,
+      "attachments": []
+    },
+    {
+      "timeMs": 70940,
+      "verseStart": 9,
+      "attachments": []
+    },
+    {
+      "timeMs": 79480,
+      "verseStart": 10,
+      "attachments": []
+    },
+    {
+      "timeMs": 91360,
+      "verseStart": 11,
+      "attachments": []
+    },
+    {
+      "timeMs": 98560,
+      "verseStart": 12,
+      "attachments": []
+    },
+    {
+      "timeMs": 104300,
+      "verseStart": 13,
+      "attachments": []
+    },
+    {
+      "timeMs": 111020,
+      "verseStart": 14,
+      "attachments": []
+    },
+    {
+      "timeMs": 115260,
+      "verseStart": 15,
+      "attachments": []
+    },
+    {
+      "timeMs": 123020,
+      "verseStart": 16,
+      "attachments": []
+    },
+    {
+      "timeMs": 134300,
+      "verseStart": 17,
+      "attachments": []
+    },
+    {
+      "timeMs": 142960,
+      "verseStart": 18,
+      "attachments": []
+    },
+    {
+      "timeMs": 152500,
+      "verseStart": 19,
+      "attachments": []
+    },
+    {
+      "timeMs": 158040,
+      "verseStart": 20,
+      "attachments": []
+    },
+    {
+      "timeMs": 162980,
+      "verseStart": 21,
+      "attachments": []
+    },
+    {
+      "timeMs": 173340,
+      "verseStart": 22,
+      "attachments": []
+    },
+    {
+      "timeMs": 178360,
+      "verseStart": 23,
+      "attachments": []
+    },
+    {
+      "timeMs": 188900,
+      "verseStart": 24,
+      "attachments": []
+    },
+    {
+      "timeMs": 206100,
+      "verseStart": 25,
+      "attachments": []
+    }
+  ]
+}

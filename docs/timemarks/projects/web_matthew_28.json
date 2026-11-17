@@ -1,0 +1,91 @@
+{
+  "id": "gh_web_matthew_28",
+  "translationCode": "WEB",
+  "bookId": "matthew",
+  "chapter": 28,
+  "title": "От Матфея 28 · WEB (англ.)",
+  "narratorId": "web",
+  "audioFileName": "40_28.mp3",
+  "cues": [
+    {
+      "timeMs": 2060,
+      "verseStart": 1
+    },
+    {
+      "timeMs": 10940,
+      "verseStart": 2
+    },
+    {
+      "timeMs": 19900,
+      "verseStart": 3
+    },
+    {
+      "timeMs": 24780,
+      "verseStart": 4
+    },
+    {
+      "timeMs": 29720,
+      "verseStart": 5
+    },
+    {
+      "timeMs": 38400,
+      "verseStart": 6
+    },
+    {
+      "timeMs": 45100,
+      "verseStart": 7
+    },
+    {
+      "timeMs": 58020,
+      "verseStart": 8
+    },
+    {
+      "timeMs": 66420,
+      "verseStart": 9
+    },
+    {
+      "timeMs": 76900,
+      "verseStart": 10
+    },
+    {
+      "timeMs": 87440,
+      "verseStart": 11
+    },
+    {
+      "timeMs": 95000,
+      "verseStart": 12
+    },
+    {
+      "timeMs": 100820,
+      "verseStart": 13
+    },
+    {
+      "timeMs": 107320,
+      "verseStart": 14
+    },
+    {
+      "timeMs": 112580,
+      "verseStart": 15
+    },
+    {
+      "timeMs": 121660,
+      "verseStart": 16
+    },
+    {
+      "timeMs": 127360,
+      "verseStart": 17
+    },
+    {
+      "timeMs": 132060,
+      "verseStart": 18
+    },
+    {
+      "timeMs": 139140,
+      "verseStart": 19
+    },
+    {
+      "timeMs": 148100,
+      "verseStart": 20
+    }
+  ]
+}

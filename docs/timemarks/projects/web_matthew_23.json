@@ -1,0 +1,167 @@
+{
+  "id": "gh_web_matthew_23",
+  "translationCode": "WEB",
+  "bookId": "matthew",
+  "chapter": 23,
+  "title": "От Матфея 23 · WEB (англ.)",
+  "narratorId": "web",
+  "audioFileName": "40_23.mp3",
+  "cues": [
+    {
+      "timeMs": 1440,
+      "verseStart": 1
+    },
+    {
+      "timeMs": 7140,
+      "verseStart": 2
+    },
+    {
+      "timeMs": 11740,
+      "verseStart": 3
+    },
+    {
+      "timeMs": 23540,
+      "verseStart": 4
+    },
+    {
+      "timeMs": 32440,
+      "verseStart": 5
+    },
+    {
+      "timeMs": 41260,
+      "verseStart": 6
+    },
+    {
+      "timeMs": 46300,
+      "verseStart": 7
+    },
+    {
+      "timeMs": 52460,
+      "verseStart": 8
+    },
+    {
+      "timeMs": 61220,
+      "verseStart": 9
+    },
+    {
+      "timeMs": 68020,
+      "verseStart": 10
+    },
+    {
+      "timeMs": 73380,
+      "verseStart": 11
+    },
+    {
+      "timeMs": 76880,
+      "verseStart": 12
+    },
+    {
+      "timeMs": 84940,
+      "verseStart": 13
+    },
+    {
+      "timeMs": 99200,
+      "verseStart": 14
+    },
+    {
+      "timeMs": 112140,
+      "verseStart": 15
+    },
+    {
+      "timeMs": 126600,
+      "verseStart": 16
+    },
+    {
+      "timeMs": 137760,
+      "verseStart": 17
+    },
+    {
+      "timeMs": 146500,
+      "verseStart": 18
+    },
+    {
+      "timeMs": 154580,
+      "verseStart": 19
+    },
+    {
+      "timeMs": 159389,
+      "verseStart": 20
+    },
+    {
+      "timeMs": 163733,
+      "verseStart": 21
+    },
+    {
+      "timeMs": 168180,
+      "verseStart": 22
+    },
+    {
+      "timeMs": 181220,
+      "verseStart": 23
+    },
+    {
+      "timeMs": 201420,
+      "verseStart": 24
+    },
+    {
+      "timeMs": 208180,
+      "verseStart": 25
+    },
+    {
+      "timeMs": 217834,
+      "verseStart": 26
+    },
+    {
+      "timeMs": 225120,
+      "verseStart": 27
+    },
+    {
+      "timeMs": 244740,
+      "verseStart": 28
+    },
+    {
+      "timeMs": 253780,
+      "verseStart": 29
+    },
+    {
+      "timeMs": 263860,
+      "verseStart": 30
+    },
+    {
+      "timeMs": 272408,
+      "verseStart": 31
+    },
+    {
+      "timeMs": 279440,
+      "verseStart": 32
+    },
+    {
+      "timeMs": 283620,
+      "verseStart": 33
+    },
+    {
+      "timeMs": 290580,
+      "verseStart": 34
+    },
+    {
+      "timeMs": 305200,
+      "verseStart": 35
+    },
+    {
+      "timeMs": 317400,
+      "verseStart": 36
+    },
+    {
+      "timeMs": 324720,
+      "verseStart": 37
+    },
+    {
+      "timeMs": 344980,
+      "verseStart": 38
+    },
+    {
+      "timeMs": 349540,
+      "verseStart": 39
+    }
+  ]
+}
