@@ -258,36 +258,15 @@ class RedBallSim(val scene: RedBallScene = RedBallScene.builtin()) {
     }
 
     private fun bounceSlope(slope: RedBallSlope) {
-        val dx = slope.x1 - slope.x0
-        val dy = slope.y1 - slope.y0
-        val len2 = dx * dx + dy * dy
-        if (len2 < 1f) return
-        val t = (((ballX - slope.x0) * dx + (ballY - slope.y0) * dy) / len2).coerceIn(0f, 1f)
-        val px = slope.x0 + dx * t
-        val py = slope.y0 + dy * t
-        var nx = -dy
-        var ny = dx
-        if (ny > 0f) {
-            nx = -nx
-            ny = -ny
-        }
-        val nLen = kotlin.math.sqrt(nx * nx + ny * ny)
-        nx /= nLen
-        ny /= nLen
-        val ox = ballX - px
-        val oy = ballY - py
-        val side = ox * nx + oy * ny
-        val radius = RedBallScene.BALL_R
-        if (side >= radius || side < -radius) return
-        val pen = radius - side
-        ballX += nx * pen
-        ballY += ny * pen
-        val vn = ballVx * nx + ballVy * ny
+        val hit = slopeHit(slope, ballX, ballY, RedBallScene.BALL_R, RedBallScene.BALL_R) ?: return
+        ballX += hit.nx * hit.pen
+        ballY += hit.ny * hit.pen
+        val vn = ballVx * hit.nx + ballVy * hit.ny
         if (vn < 0f) {
-            ballVx -= (1f + 0.05f) * vn * nx
-            ballVy -= (1f + 0.05f) * vn * ny
+            ballVx -= (1f + 0.05f) * vn * hit.nx
+            ballVy -= (1f + 0.05f) * vn * hit.ny
         }
-        if (ny < -0.25f) grounded = true
+        if (hit.ny < -0.25f) grounded = true
     }
 
     private fun resolveBallAgainstCrates() {
@@ -375,36 +354,69 @@ class RedBallSim(val scene: RedBallScene = RedBallScene.builtin()) {
     private fun resolveCrateAgainstSlopes(crate: RedBallCrate) {
         val radius = crate.size * 0.5f
         for (slope in scene.slopes) {
-            val dx = slope.x1 - slope.x0
-            val dy = slope.y1 - slope.y0
-            val len2 = dx * dx + dy * dy
-            if (len2 < 1f) continue
-            val t = (((crate.x - slope.x0) * dx + (crate.y - slope.y0) * dy) / len2).coerceIn(0f, 1f)
-            val px = slope.x0 + dx * t
-            val py = slope.y0 + dy * t
-            var nx = -dy
-            var ny = dx
-            if (ny > 0f) {
-                nx = -nx
-                ny = -ny
-            }
-            val nLen = kotlin.math.sqrt(nx * nx + ny * ny)
-            if (nLen < 1e-4f) continue
-            nx /= nLen
-            ny /= nLen
-            val side = (crate.x - px) * nx + (crate.y - py) * ny
-            if (side >= radius || side < -radius * 0.25f) continue
-            val pen = radius - side
-            crate.x += nx * pen
-            crate.y += ny * pen
-            val vn = crate.vx * nx + crate.vy * ny
+            val hit = slopeHit(slope, crate.x, crate.y, radius, radius * 0.25f) ?: continue
+            crate.x += hit.nx * hit.pen
+            crate.y += hit.ny * hit.pen
+            val vn = crate.vx * hit.nx + crate.vy * hit.ny
             if (vn < 0f) {
-                crate.vx -= vn * nx
-                crate.vy -= vn * ny
+                crate.vx -= vn * hit.nx
+                crate.vy -= vn * hit.ny
             }
-            if (ny < -0.25f) crate.onGround = true
+            if (hit.ny < -0.25f) crate.onGround = true
         }
     }
+
+    /**
+     * Контакт с отрезком склона.
+     * На самом отрезке это односторонняя плоскость. За торцом опора только
+     * в радиусе вокруг вершины: иначе прямая продолжается бесконечно, и мяч
+     * едет вверх по невидимой горке либо цепляется за неё в прыжке.
+     */
+    private fun slopeHit(
+        slope: RedBallSlope,
+        x: Float,
+        y: Float,
+        radius: Float,
+        underside: Float,
+    ): SlopeHit? {
+        val dx = slope.x1 - slope.x0
+        val dy = slope.y1 - slope.y0
+        val len2 = dx * dx + dy * dy
+        if (len2 < 1f) return null
+        var nx = -dy
+        var ny = dx
+        if (ny > 0f) {
+            nx = -nx
+            ny = -ny
+        }
+        val nLen = kotlin.math.sqrt(nx * nx + ny * ny)
+        if (nLen < 1e-4f) return null
+        nx /= nLen
+        ny /= nLen
+        val t = ((x - slope.x0) * dx + (y - slope.y0) * dy) / len2
+        if (t < 0f || t > 1f) {
+            val ex = if (t < 0f) slope.x0 else slope.x1
+            val ey = if (t < 0f) slope.y0 else slope.y1
+            var rx = x - ex
+            var ry = y - ey
+            val dist2 = rx * rx + ry * ry
+            if (dist2 > radius * radius) return null
+            val dist = kotlin.math.sqrt(dist2)
+            if (dist < 1e-3f) {
+                rx = nx
+                ry = ny
+            } else {
+                rx /= dist
+                ry /= dist
+            }
+            return SlopeHit(rx, ry, radius - dist)
+        }
+        val side = (x - (slope.x0 + dx * t)) * nx + (y - (slope.y0 + dy * t)) * ny
+        if (side >= radius || side < -underside) return null
+        return SlopeHit(nx, ny, radius - side)
+    }
+
+    private data class SlopeHit(val nx: Float, val ny: Float, val pen: Float)
 
     private fun resolveCratesAgainstEachOther() {
         for (i in crates.indices) {

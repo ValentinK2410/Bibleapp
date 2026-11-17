@@ -176,6 +176,73 @@ class RedBallSimTest {
     }
 
     @Test
+    fun ballPastTheSlopeEndFallsOntoThePlatform() {
+        val sim = RedBallSim()
+        // x=400 левее кромки склона (470): точка на продолжении прямой,
+        // но уже над плоской верхней площадкой, а не на самом отрезке.
+        placeBallOnSlopeLine(sim, 400f)
+        val startY = sim.ballY
+        assertTrue("старт должен быть выше площадки, y=$startY", startY < 600f)
+        repeat(90) { sim.step(1f / 60f, 0f) }
+        assertFalse("мяч погиб, x=${sim.ballX} y=${sim.ballY}", sim.dead)
+        assertTrue(
+            "мяч уехал по невидимому склону: x=${sim.ballX} y=${sim.ballY}",
+            sim.ballX > 300f && sim.ballX < 450f,
+        )
+        assertTrue(
+            "мяч не спустился на площадку: start=$startY y=${sim.ballY}",
+            sim.ballY > startY + 10f && sim.ballY > 600f && sim.ballY < 645f,
+        )
+    }
+
+    @Test
+    fun rollingUpTheSlopeComesDownAfterTheCrest() {
+        val sim = RedBallSim()
+        placeBallOnSlopeLine(sim, 700f)
+        sim.ballVx = -80f
+        var passedCrest = false
+        var minYAfterCrest = Float.POSITIVE_INFINITY
+        repeat(60 * 4) {
+            sim.step(1f / 60f, -1f)
+            if (sim.ballX < 440f) {
+                passedCrest = true
+                if (sim.ballY < minYAfterCrest) minYAfterCrest = sim.ballY
+            }
+        }
+        assertFalse("мяч погиб, x=${sim.ballX} y=${sim.ballY}", sim.dead)
+        assertTrue("мяч не пересёк кромку склона, x=${sim.ballX}", passedCrest)
+        assertTrue(
+            "за кромкой мяч продолжил ехать вверх: minY=$minYAfterCrest x=${sim.ballX}",
+            minYAfterCrest > 590f,
+        )
+        assertTrue(
+            "после склона мяч не оказался на верхней площадке: x=${sim.ballX} y=${sim.ballY}",
+            sim.ballX < 470f && sim.ballY > 600f && sim.ballY < 645f,
+        )
+    }
+
+    /** Центр мяча на бесконечной прямой склона в точке с заданным x (в том числе за торцом). */
+    private fun placeBallOnSlopeLine(sim: RedBallSim, surfaceX: Float) {
+        val slope = sim.scene.slopes.first()
+        val dx = slope.x1 - slope.x0
+        val dy = slope.y1 - slope.y0
+        val along = (surfaceX - slope.x0) / dx
+        val sx = slope.x0 + dx * along
+        val sy = slope.y0 + dy * along
+        var nx = -dy
+        var ny = dx
+        if (ny > 0f) {
+            nx = -nx
+            ny = -ny
+        }
+        val nLen = kotlin.math.sqrt(nx * nx + ny * ny)
+        sim.ballX = sx + nx / nLen * RedBallScene.BALL_R
+        sim.ballY = sy + ny / nLen * RedBallScene.BALL_R
+        sim.ballVx = 0f
+        sim.ballVy = 0f
+    }
+
+    @Test
     fun levelsSurviveAFileRoundTrip() {
         val dir = Files.createTempDirectory("redball-levels").toFile()
         val store = RedBallLevelStore(dir)
