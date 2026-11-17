@@ -30,10 +30,13 @@ import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.produceState
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.withFrameNanos
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -49,12 +52,19 @@ import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.bible.games.RedBallDraft
+import com.example.bible.games.RedBallLevelStore
 import com.example.bible.games.RedBallPiece
 import com.example.bible.games.RedBallPieceKind
+import com.example.bible.games.RedBallScene
 import com.example.bible.games.RedBallTune
 import com.example.bible.games.snapAnchor
 import com.example.bible.games.tune
 import com.example.bible.ui.theme.OutlinedTextField
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.isActive
+import kotlinx.coroutines.withContext
+
+internal data class RedBallDestination(val id: String, val title: String)
 
 internal enum class RedBallTool(val kind: RedBallPieceKind?, val flip: Boolean, val emoji: String, val label: String, val tint: Color) {
     GROUND(RedBallPieceKind.GROUND, false, "🟩", "Земля", Color(0xFF15803D)),
@@ -70,6 +80,7 @@ internal enum class RedBallTool(val kind: RedBallPieceKind?, val flip: Boolean, 
     ENEMY(RedBallPieceKind.ENEMY, false, "😡", "Враг", Color(0xFFBE123C)),
     START(RedBallPieceKind.START, false, "🔴", "Старт", Color(0xFFDC2626)),
     DOOR(RedBallPieceKind.DOOR, false, "🚪", "Дверь", Color(0xFF7C3AED)),
+    PORTAL(RedBallPieceKind.PORTAL, false, "🟣", "Портал", Color(0xFF6D28D9)),
     PROPS(null, false, "⚙️", "Свойства", Color(0xFF0F766E)),
     ERASE(null, false, "🧽", "Ластик", Color(0xFFBE185D)),
 }
@@ -88,6 +99,10 @@ internal fun KidsRedBallEditor(
     onDraft: (RedBallDraft) -> Unit,
     onCommit: (RedBallDraft, List<RedBallPiece>?) -> Unit,
     warning: String?,
+    caution: String?,
+    destinations: List<RedBallDestination>,
+    catalogReady: Boolean,
+    store: RedBallLevelStore,
     onBack: () -> Unit,
     onTest: () -> Unit,
     onSave: () -> Unit,
@@ -97,11 +112,42 @@ internal fun KidsRedBallEditor(
     val onCommitState = rememberUpdatedState(onCommit)
     val onCamXState = rememberUpdatedState(onCamX)
     val onCamYState = rememberUpdatedState(onCamY)
+    val onToolState = rememberUpdatedState(onTool)
     val camXState = rememberUpdatedState(camX)
     val camYState = rememberUpdatedState(camY)
     var canvasSize by remember { mutableStateOf(IntSize.Zero) }
     var hover by remember { mutableStateOf(Hover(0, 0, 0, 0, false)) }
     var selectedId by remember { mutableStateOf<Long?>(null) }
+    var portalTime by remember { mutableFloatStateOf(0.8f) }
+    val hasPortal = draft.pieces.any { it.kind == RedBallPieceKind.PORTAL }
+    if (hasPortal) {
+        androidx.compose.runtime.LaunchedEffect(Unit) {
+            var last = 0L
+            while (isActive) {
+                withFrameNanos { now ->
+                    if (last != 0L) {
+                        portalTime += ((now - last) / 1_000_000_000f).coerceIn(0f, 0.05f)
+                    }
+                    last = now
+                }
+            }
+        }
+    }
+    val lostPortalIds = if (!catalogReady) {
+        emptySet()
+    } else {
+        draft.pieces.mapNotNull { piece ->
+            if (
+                piece.kind == RedBallPieceKind.PORTAL &&
+                piece.linkId.isNotBlank() &&
+                destinations.none { it.id == piece.linkId }
+            ) {
+                piece.id
+            } else {
+                null
+            }
+        }.toSet()
+    }
 
     Box(
         Modifier
@@ -140,7 +186,7 @@ internal fun KidsRedBallEditor(
                 }
             }
             Text(
-                "Землю, бетон, лестницы и шипы веди пальцем. Стрелки листают поле во все стороны. «Свойства» — гравитация, толчок, трение и масса.",
+                "Землю, бетон, лестницы и шипы веди пальцем. Портал поставь касанием и в «Свойствах» выбери, в какую готовую сцену он ведёт.",
                 modifier = Modifier.padding(horizontal = 16.dp),
                 color = Color(0xFF7C2D12),
                 fontSize = 13.sp,
@@ -155,6 +201,19 @@ internal fun KidsRedBallEditor(
                         .background(Color(0xFFFEE2E2))
                         .padding(horizontal = 12.dp, vertical = 6.dp),
                     color = Color(0xFF991B1B),
+                    fontWeight = FontWeight.Bold,
+                    fontSize = 14.sp,
+                )
+            }
+            if (caution != null) {
+                Text(
+                    caution,
+                    modifier = Modifier
+                        .padding(horizontal = 16.dp, vertical = 4.dp)
+                        .clip(RoundedCornerShape(12.dp))
+                        .background(Color(0xFFFEF3C7))
+                        .padding(horizontal = 12.dp, vertical = 6.dp),
+                    color = Color(0xFF92400E),
                     fontWeight = FontWeight.Bold,
                     fontSize = 14.sp,
                 )
@@ -228,6 +287,10 @@ internal fun KidsRedBallEditor(
                                         }
                                     }
                                     if (working.pieces != start.pieces) onCommitState.value(working, start.pieces)
+                                    else if (hit.kind == RedBallPieceKind.PORTAL) {
+                                        selectedId = hit.id
+                                        onToolState.value(RedBallTool.PROPS)
+                                    }
                                     hover = Hover(0, 0, 0, 0, false)
                                     return@awaitEachGesture
                                 }
@@ -268,7 +331,18 @@ internal fun KidsRedBallEditor(
                                 if (!moved && kind != null) {
                                     val cell = start.cellOf(startWorld.x, startWorld.y)
                                     val placed = start.withPlaced(kind, cell.first, cell.second, tool.flip)
-                                    if (placed.pieces != start.pieces) onCommitState.value(placed, start.pieces)
+                                    if (placed.pieces != start.pieces) {
+                                        onCommitState.value(placed, start.pieces)
+                                        if (kind == RedBallPieceKind.PORTAL) {
+                                            val added = placed.pieces.firstOrNull { piece ->
+                                                start.pieces.none { it.id == piece.id }
+                                            }
+                                            if (added != null) {
+                                                selectedId = added.id
+                                                onToolState.value(RedBallTool.PROPS)
+                                            }
+                                        }
+                                    }
                                 } else if (working.pieces != start.pieces) {
                                     onCommitState.value(working, start.pieces)
                                 }
@@ -286,6 +360,8 @@ internal fun KidsRedBallEditor(
                         hover.h,
                         hover.show,
                         if (tool == RedBallTool.PROPS) selectedId else null,
+                        portalTime,
+                        lostPortalIds,
                     )
                 }
                 ScrollNub("▲", "Вверх", Modifier.align(Alignment.TopCenter)) {
@@ -302,12 +378,24 @@ internal fun KidsRedBallEditor(
                 }
             }
             if (tool == RedBallTool.PROPS) {
-                PropsPanel(
-                    draft = draft,
-                    selected = draft.pieces.firstOrNull { it.id == selectedId },
-                    onDraft = onDraft,
-                    onCommit = onCommit,
-                )
+                val selected = draft.pieces.firstOrNull { it.id == selectedId }
+                if (selected?.kind == RedBallPieceKind.PORTAL) {
+                    PortalLinkPanel(
+                        draft = draft,
+                        selected = selected,
+                        destinations = destinations,
+                        catalogReady = catalogReady,
+                        store = store,
+                        onCommit = onCommit,
+                    )
+                } else {
+                    PropsPanel(
+                        draft = draft,
+                        selected = selected,
+                        onDraft = onDraft,
+                        onCommit = onCommit,
+                    )
+                }
             }
             Row(
                 Modifier
@@ -469,6 +557,174 @@ private fun RedBallPieceKind.label(): String = when (this) {
     RedBallPieceKind.ENEMY -> "Злой квадрат"
     RedBallPieceKind.START -> "Старт"
     RedBallPieceKind.DOOR -> "Дверь"
+    RedBallPieceKind.PORTAL -> "Портал"
+}
+
+@Composable
+private fun PortalLinkPanel(
+    draft: RedBallDraft,
+    selected: RedBallPiece,
+    destinations: List<RedBallDestination>,
+    catalogReady: Boolean,
+    store: RedBallLevelStore,
+    onCommit: (RedBallDraft, List<RedBallPiece>?) -> Unit,
+) {
+    val link = selected.linkId
+    val known = destinations.any { it.id == link }
+    val targetDraft by produceState<RedBallDraft?>(null, link, draft.id, draft.pieces) {
+        value = when {
+            link.isBlank() || link == RedBallScene.BUILTIN_ID -> null
+            link == draft.id -> draft
+            else -> withContext(Dispatchers.IO) { store.load(link) }
+        }
+    }
+    Column(
+        Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 12.dp, vertical = 2.dp)
+            .clip(RoundedCornerShape(16.dp))
+            .background(Color.White.copy(alpha = 0.92f))
+            .padding(horizontal = 12.dp, vertical = 8.dp),
+    ) {
+        Text("Куда ведёт портал", color = Color(0xFF5B21B6), fontWeight = FontWeight.Black, fontSize = 14.sp)
+        if (!catalogReady) {
+            Text("Сцены ещё читаются…", color = Color(0xFF57534E), fontSize = 13.sp)
+        }
+        Row(
+            Modifier
+                .fillMaxWidth()
+                .horizontalScroll(rememberScrollState())
+                .padding(top = 6.dp),
+            horizontalArrangement = Arrangement.spacedBy(6.dp),
+        ) {
+            for (dest in destinations) {
+                val on = dest.id == link
+                Box(
+                    Modifier
+                        .clip(RoundedCornerShape(999.dp))
+                        .background(if (on) Color(0xFF6D28D9) else Color(0xFFEDE9FE))
+                        .kidsPressable(onClick = {
+                            if (!on) {
+                                onCommit(
+                                    draft.withPiece(selected.id) {
+                                        it.copy(linkId = dest.id, spawnC = null, spawnR = null)
+                                    },
+                                    draft.pieces,
+                                )
+                            }
+                        })
+                        .padding(horizontal = 12.dp, vertical = 8.dp),
+                ) {
+                    Text(
+                        dest.title.take(18),
+                        color = if (on) Color.White else Color(0xFF5B21B6),
+                        fontWeight = FontWeight.Black,
+                        fontSize = 13.sp,
+                        maxLines = 1,
+                    )
+                }
+            }
+        }
+        val custom = selected.spawnC != null && selected.spawnR != null
+        val hint = when {
+            link.isBlank() -> "Портал спит, пока не выбрана сцена"
+            !known && catalogReady -> "Этой сцены больше нет. Портал спит"
+            link == RedBallScene.BUILTIN_ID -> "Мяч появится на старте горки"
+            !custom -> "Мяч появится на старте выбранной сцены"
+            else -> "Мяч появится в клетке ${selected.spawnC}, ${selected.spawnR} той сцены"
+        }
+        Text(
+            hint,
+            modifier = Modifier.padding(top = 6.dp),
+            color = if (link.isNotBlank() && !known && catalogReady) Color(0xFF991B1B) else Color(0xFF57534E),
+            fontSize = 13.sp,
+        )
+        if (link.isNotBlank() && link != RedBallScene.BUILTIN_ID && (known || link == draft.id)) {
+            Row(
+                Modifier.padding(top = 6.dp),
+                horizontalArrangement = Arrangement.spacedBy(6.dp),
+            ) {
+                SpawnChip("На старте", !custom) {
+                    if (custom) {
+                        onCommit(
+                            draft.withPiece(selected.id) { it.copy(spawnC = null, spawnR = null) },
+                            draft.pieces,
+                        )
+                    }
+                }
+                SpawnChip("Своя клетка", custom) {
+                    if (!custom) {
+                        val start = targetDraft?.pieces?.firstOrNull { it.kind == RedBallPieceKind.START }
+                        onCommit(
+                            draft.withPiece(selected.id) {
+                                it.copy(spawnC = start?.c ?: 2, spawnR = start?.r ?: 2)
+                            },
+                            draft.pieces,
+                        )
+                    }
+                }
+            }
+            if (custom) {
+                SpawnStepper("Колонка", selected.spawnC ?: 0) { value ->
+                    onCommit(draft.withPiece(selected.id) { it.copy(spawnC = value) }, draft.pieces)
+                }
+                SpawnStepper("Ряд", selected.spawnR ?: 0) { value ->
+                    onCommit(draft.withPiece(selected.id) { it.copy(spawnR = value) }, draft.pieces)
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun SpawnChip(label: String, on: Boolean, onClick: () -> Unit) {
+    Box(
+        Modifier
+            .clip(RoundedCornerShape(999.dp))
+            .background(if (on) Color(0xFF0F766E) else Color(0xFFCCFBF1))
+            .kidsPressable(onClick = onClick)
+            .padding(horizontal = 12.dp, vertical = 7.dp),
+    ) {
+        Text(
+            label,
+            color = if (on) Color.White else Color(0xFF115E59),
+            fontWeight = FontWeight.Black,
+            fontSize = 13.sp,
+        )
+    }
+}
+
+@Composable
+private fun SpawnStepper(label: String, value: Int, onChange: (Int) -> Unit) {
+    Row(
+        Modifier.fillMaxWidth().padding(top = 4.dp),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        Text(label, modifier = Modifier.weight(1f), color = Color(0xFF44403C), fontSize = 14.sp)
+        StepButton("−") { onChange((value - 1).coerceIn(-RedBallDraft.CELL_LIMIT, RedBallDraft.CELL_LIMIT)) }
+        Text(
+            value.toString(),
+            modifier = Modifier.padding(horizontal = 10.dp),
+            color = Color(0xFF7C2D12),
+            fontWeight = FontWeight.Black,
+            fontSize = 16.sp,
+        )
+        StepButton("+") { onChange((value + 1).coerceIn(-RedBallDraft.CELL_LIMIT, RedBallDraft.CELL_LIMIT)) }
+    }
+}
+
+@Composable
+private fun StepButton(label: String, onClick: () -> Unit) {
+    Box(
+        Modifier
+            .size(36.dp)
+            .clip(CircleShape)
+            .background(Color(0xFFFFEDD5))
+            .kidsPressable(onClick = onClick),
+        contentAlignment = Alignment.Center,
+    ) {
+        Text(label, color = Color(0xFF9A3412), fontWeight = FontWeight.Black, fontSize = 18.sp)
+    }
 }
 
 private fun nudgeCam(

@@ -9,6 +9,7 @@ import com.example.bible.games.RedBallLevelStore
 import com.example.bible.games.RedBallMagnetSpawn
 import com.example.bible.games.RedBallPiece
 import com.example.bible.games.RedBallPieceKind
+import com.example.bible.games.RedBallPortal
 import com.example.bible.games.RedBallScene
 import com.example.bible.games.RedBallSim
 import com.example.bible.games.RedBallStarSpawn
@@ -425,7 +426,8 @@ class RedBallSimTest {
               {"id":11,"kind":"crate","c":6,"r":8,"w":2,"h":2,"flip":false},
               {"id":12,"kind":"start","c":1,"r":9,"w":1,"h":1,"flip":false},
               {"id":13,"kind":"door","c":16,"r":6,"w":2,"h":4,"flip":false},
-              {"id":14,"kind":"portal","c":3,"r":3,"w":1,"h":1,"flip":false}
+              {"id":14,"kind":"portal","c":3,"r":3,"w":1,"h":1,"flip":false},
+              {"id":15,"kind":"lantern","c":4,"r":4,"w":1,"h":1,"flip":false}
             ]}
         """.trimIndent()
         val parsed = RedBallDraft.fromJson(old)
@@ -437,7 +439,12 @@ class RedBallSimTest {
         assertEquals(1f, crate.mass, 0.0001f)
         assertEquals(6, crate.c)
         assertNull(parsed.playBlockReason())
-        assertTrue(parsed.pieces.none { it.kind.name == "PORTAL" })
+        val legacyPortal = parsed.pieces.single { it.kind == RedBallPieceKind.PORTAL }
+        assertEquals("", legacyPortal.linkId)
+        assertNull(legacyPortal.spawnC)
+        assertNull(legacyPortal.spawnR)
+        assertEquals("", parsed.toScene().portals.single().linkId)
+        assertTrue(parsed.pieces.none { it.id == 15L })
         val sim = RedBallSim(parsed.toScene())
         val x = sim.crateX
         repeat(60 * 3) { sim.step(1f / 60f, 1f) }
@@ -454,6 +461,139 @@ class RedBallSimTest {
         assertEquals(2.5f, saved.mass, 0.0001f)
     }
 
+    @Test
+    fun portalTouchFiresOnceAndBlankLinkStaysQuiet() {
+        val gate = RedBallPortal(RedBallAabb(400f, 400f, 500f, 530f), "next-scene", spawnC = 4, spawnR = 9)
+        val sim = RedBallSim(arena(portals = listOf(gate)))
+        sim.ballX = 450f
+        sim.ballY = 472f
+        sim.ballVx = 0f
+        sim.ballVy = 0f
+        sim.step(1f / 60f, 0f)
+        val hit = sim.consumePortal()
+        assertEquals("next-scene", hit?.linkId)
+        assertEquals(4, hit?.spawnC)
+        assertEquals(9, hit?.spawnR)
+        assertFalse(sim.won)
+        assertFalse(sim.dead)
+        assertNull(sim.consumePortal())
+        val frozen = sim.ballX
+        sim.step(1f / 60f, 1f)
+        assertEquals(frozen, sim.ballX, 0.01f)
+
+        val asleep = RedBallSim(arena(portals = listOf(gate.copy(linkId = ""))))
+        asleep.ballX = 450f
+        asleep.ballY = 472f
+        repeat(20) { asleep.step(1f / 60f, 0f) }
+        assertNull(asleep.consumePortal())
+        assertFalse(asleep.dead)
+    }
+
+    @Test
+    fun portalOnThePathLeavesBeforeTheDoor() {
+        val draft = flatDraft(
+            RedBallPiece(100, RedBallPieceKind.PORTAL, 8, 7, 2, 3, false, linkId = "next"),
+        )
+        val sim = RedBallSim(draft.toScene())
+        var hit: RedBallPortal? = null
+        repeat(60 * 8) {
+            if (hit != null) return@repeat
+            sim.step(1f / 60f, 1f)
+            hit = sim.consumePortal()
+        }
+        assertEquals("next", hit?.linkId)
+        assertFalse(sim.won)
+        assertFalse(sim.dead)
+    }
+
+    @Test
+    fun portalArrivalDoesNotBounceStraightBack() {
+        val back = RedBallPortal(RedBallAabb(400f, 400f, 500f, 530f), "back")
+        val forth = RedBallPortal(RedBallAabb(800f, 400f, 900f, 530f), "forth")
+        val sim = RedBallSim(arena(portals = listOf(back, forth)))
+        sim.ballX = 450f
+        sim.ballY = 472f
+        sim.ballVx = 0f
+        sim.ballVy = 0f
+        sim.step(1f / 60f, 0f)
+        assertEquals("back", sim.consumePortal()?.linkId)
+
+        sim.arrive(850f, 472f)
+        val inside = (RedBallSim.PORTAL_COOLDOWN * 60f).toInt() + 25
+        repeat(inside) { sim.step(1f / 60f, 0f) }
+        assertNull(sim.consumePortal())
+        assertFalse(sim.dead)
+
+        sim.ballX = 180f
+        sim.ballY = 472f
+        sim.ballVx = 0f
+        sim.ballVy = 0f
+        repeat(30) { sim.step(1f / 60f, 0f) }
+        assertNull(sim.consumePortal())
+
+        sim.ballX = 850f
+        sim.ballY = 472f
+        sim.ballVx = 0f
+        sim.ballVy = 0f
+        sim.step(1f / 60f, 0f)
+        assertEquals("forth", sim.consumePortal()?.linkId)
+    }
+
+    @Test
+    fun portalFieldsRoundTripAndMissingTargetGoesQuiet() {
+        val piece = RedBallPiece(
+            id = 50,
+            kind = RedBallPieceKind.PORTAL,
+            c = 8,
+            r = 7,
+            w = 2,
+            h = 3,
+            linkId = "level-b",
+            spawnC = 4,
+            spawnR = 9,
+        )
+        val draft = flatDraft(piece)
+        val scene = draft.toScene()
+        val portal = scene.portals.single()
+        assertEquals("level-b", portal.linkId)
+        assertEquals(4, portal.spawnC)
+        assertEquals(320f, portal.box.l, 0.01f)
+        assertEquals(380f, portal.box.t, 0.01f)
+        assertEquals(500f, portal.box.b, 0.01f)
+        assertEquals(draft.pieces, RedBallDraft.fromJson(draft.toJson())!!.pieces)
+
+        val moved = draft.withMoved(50, 10, 6)
+        val movedPortal = moved.pieces.first { it.id == 50L }
+        assertEquals("level-b", movedPortal.linkId)
+        assertEquals(4, movedPortal.spawnC)
+        assertEquals(10, movedPortal.c)
+
+        val bare = flatDraft(RedBallPiece(51, RedBallPieceKind.PORTAL, 8, 7, 2, 3, false))
+        val stored = RedBallDraft.fromJson(bare.toJson())!!.pieces.first { it.kind == RedBallPieceKind.PORTAL }
+        assertEquals("", stored.linkId)
+        assertNull(stored.spawnC)
+        assertNull(stored.spawnR)
+
+        assertEquals("", scene.withKnownPortals(setOf(RedBallScene.BUILTIN_ID)).portals.single().linkId)
+        assertEquals("level-b", scene.withKnownPortals(setOf("level-b")).portals.single().linkId)
+        assertEquals(
+            "Выбери сцену у портала, иначе он спит",
+            bare.portalWarning(setOf(RedBallScene.BUILTIN_ID, bare.id)),
+        )
+        assertEquals(
+            "Портал ведёт в удалённую сцену — пока он спит",
+            draft.portalWarning(setOf(RedBallScene.BUILTIN_ID, draft.id)),
+        )
+        assertNull(draft.portalWarning(setOf(RedBallScene.BUILTIN_ID, draft.id, "level-b")))
+
+        val (x, y) = portal.arrivalIn(scene, draft)
+        assertEquals(4.5f * draft.cell, x, 0.01f)
+        assertEquals(draft.originY + 10f * draft.cell - RedBallScene.BALL_R, y, 0.01f)
+        val atStart = portal.copy(spawnC = null, spawnR = null).arrivalIn(scene, null)
+        assertEquals(scene.startX, atStart.first, 0.01f)
+        assertEquals(scene.startY, atStart.second, 0.01f)
+    }
+
     private fun arena(
         friction: Float = RED_BALL_FRICTION,
         crates: List<RedBallCrateSpawn> = emptyList(),
@@ -461,6 +601,7 @@ class RedBallSimTest {
         stars: List<RedBallStarSpawn> = emptyList(),
         magnets: List<RedBallMagnetSpawn> = emptyList(),
         enemies: List<RedBallEnemySpawn> = emptyList(),
+        portals: List<RedBallPortal> = emptyList(),
     ): RedBallScene {
         return RedBallScene(
             id = "arena",
@@ -481,6 +622,7 @@ class RedBallSimTest {
             stars = stars,
             magnets = magnets,
             enemies = enemies,
+            portals = portals,
         )
     }
 

@@ -57,6 +57,29 @@ data class RedBallEnemySpawn(
 )
 
 /**
+ * Проход в другую готовую сцену. Пустой [linkId] — портал спит.
+ * [spawnC] и [spawnR] вместе задают клетку появления; иначе мяч встаёт на старт цели.
+ */
+data class RedBallPortal(
+    val box: RedBallAabb,
+    val linkId: String = "",
+    val spawnC: Int? = null,
+    val spawnR: Int? = null,
+) {
+    fun arrivalIn(scene: RedBallScene, draft: RedBallDraft?): Pair<Float, Float> {
+        val column = spawnC
+        val row = spawnR
+        if (draft == null || column == null || row == null) return scene.startX to scene.startY
+        val minX = scene.minX + RedBallScene.BALL_R
+        val maxX = (scene.worldW - RedBallScene.BALL_R).coerceAtLeast(minX)
+        val x = ((column + 0.5f) * draft.cell).coerceIn(minX, maxX)
+        val floor = (scene.voidY - RedBallScene.BALL_R - 1f).coerceAtLeast(scene.minY)
+        val y = (draft.originY + (row + 1f) * draft.cell - RedBallScene.BALL_R).coerceIn(scene.minY, floor)
+        return x to y
+    }
+}
+
+/**
  * Готовая сцена для [RedBallSim]: и встроенная горка, и уровень из редактора
  * приходят сюда одним и тем же набором фигур.
  *
@@ -87,8 +110,20 @@ data class RedBallScene(
     val stars: List<RedBallStarSpawn> = emptyList(),
     val magnets: List<RedBallMagnetSpawn> = emptyList(),
     val enemies: List<RedBallEnemySpawn> = emptyList(),
+    val portals: List<RedBallPortal> = emptyList(),
 ) {
+    /** Порталы с неизвестной целью засыпают: мяч проходит сквозь них. */
+    fun withKnownPortals(knownIds: Set<String>): RedBallScene {
+        if (portals.none { it.linkId.isNotBlank() && it.linkId !in knownIds }) return this
+        return copy(
+            portals = portals.map { portal ->
+                if (portal.linkId.isNotBlank() && portal.linkId !in knownIds) portal.copy(linkId = "") else portal
+            },
+        )
+    }
+
     companion object {
+        const val BUILTIN_ID = "builtin"
         const val BALL_R = 28f
 
         /** Та самая горка, с которой игра начиналась: числа не сдвинуты. */
@@ -97,7 +132,7 @@ data class RedBallScene(
             val ledge = 430f
             val crate = 96f
             return RedBallScene(
-                id = "builtin",
+                id = BUILTIN_ID,
                 name = "Горка",
                 builtin = true,
                 worldW = 2680f,
@@ -142,6 +177,7 @@ enum class RedBallPieceKind(val w: Int, val h: Int) {
     ENEMY(2, 2),
     START(1, 1),
     DOOR(2, 4),
+    PORTAL(2, 3),
 }
 
 data class RedBallPiece(
@@ -156,6 +192,9 @@ data class RedBallPiece(
     val movable: Boolean = true,
     val friction: Float = RED_BALL_FRICTION,
     val mass: Float = 1f,
+    val linkId: String = "",
+    val spawnC: Int? = null,
+    val spawnR: Int? = null,
 )
 
 /** Какие поля физики имеют смысл у предмета. */
@@ -212,6 +251,19 @@ data class RedBallDraft(
             starts != 1 -> "Поставь один старт — откуда катится мяч"
             else -> "Поставь одну дверь — куда нужно докатиться"
         }
+    }
+
+    /** Предупреждение редактора: портал без цели или с удалённой сценой не срабатывает. */
+    fun portalWarning(knownIds: Set<String>): String? {
+        val portals = pieces.filter { it.kind == RedBallPieceKind.PORTAL }
+        if (portals.isEmpty()) return null
+        if (portals.any { it.linkId.isNotBlank() && it.linkId !in knownIds }) {
+            return "Портал ведёт в удалённую сцену — пока он спит"
+        }
+        if (portals.any { it.linkId.isBlank() }) {
+            return "Выбери сцену у портала, иначе он спит"
+        }
+        return null
     }
 
     fun cellOf(x: Float, y: Float): Pair<Int, Int> {
@@ -281,6 +333,7 @@ data class RedBallDraft(
         val stars = mutableListOf<RedBallStarSpawn>()
         val magnets = mutableListOf<RedBallMagnetSpawn>()
         val enemies = mutableListOf<RedBallEnemySpawn>()
+        val portals = mutableListOf<RedBallPortal>()
         var startX = cell * 2f
         var startY = originY + cell
         var door: RedBallAabb? = null
@@ -339,6 +392,12 @@ data class RedBallDraft(
                     startY = box.b - RedBallScene.BALL_R
                 }
                 RedBallPieceKind.DOOR -> door = box
+                RedBallPieceKind.PORTAL -> portals += RedBallPortal(
+                    box = box,
+                    linkId = piece.linkId,
+                    spawnC = piece.spawnC,
+                    spawnR = piece.spawnR,
+                )
             }
         }
         if (pieces.isEmpty()) {
@@ -380,6 +439,7 @@ data class RedBallDraft(
             stars = stars,
             magnets = magnets,
             enemies = enemies,
+            portals = portals,
         )
     }
 
@@ -410,6 +470,15 @@ data class RedBallDraft(
                 put("movable", piece.movable)
                 put("friction", piece.friction.toDouble())
                 put("mass", piece.mass.toDouble())
+                if (piece.kind == RedBallPieceKind.PORTAL) {
+                    put("linkId", piece.linkId)
+                    val column = piece.spawnC
+                    val row = piece.spawnR
+                    if (column != null && row != null) {
+                        put("spawnC", column)
+                        put("spawnR", row)
+                    }
+                }
             })
         }
         root.put("pieces", array)
@@ -446,6 +515,7 @@ data class RedBallDraft(
             RedBallPieceKind.CRATE,
             RedBallPieceKind.STAR,
             RedBallPieceKind.MAGNET,
+            RedBallPieceKind.PORTAL,
             RedBallPieceKind.DOOR,
             RedBallPieceKind.SPRING,
             RedBallPieceKind.SPIKE,
@@ -525,10 +595,21 @@ data class RedBallDraft(
                 } else {
                     1f
                 }
+                val linkId = if (kind == RedBallPieceKind.PORTAL) linkIdOf(item.optString("linkId")) else ""
+                val spawn = if (kind == RedBallPieceKind.PORTAL && item.has("spawnC") && item.has("spawnR")) {
+                    val column = item.optInt("spawnC")
+                    val row = item.optInt("spawnR")
+                    if (column in -CELL_LIMIT..CELL_LIMIT && row in -CELL_LIMIT..CELL_LIMIT) column to row else null
+                } else {
+                    null
+                }
                 if (kind == RedBallPieceKind.START || kind == RedBallPieceKind.DOOR) {
                     pieces.removeAll { it.kind == kind }
                 }
-                pieces += RedBallPiece(id, kind, c, r, w, h, flip, gravity, movable, friction, mass)
+                pieces += RedBallPiece(
+                    id, kind, c, r, w, h, flip, gravity, movable, friction, mass,
+                    linkId, spawn?.first, spawn?.second,
+                )
             }
             val nextId = root.optLong("nextId", maxId + 1L).coerceAtLeast(maxId + 1L)
             return RedBallDraft(
@@ -557,21 +638,27 @@ data class RedBallDraft(
             "enemy" -> RedBallPieceKind.ENEMY
             "start" -> RedBallPieceKind.START
             "door" -> RedBallPieceKind.DOOR
+            "portal" -> RedBallPieceKind.PORTAL
             else -> null
         }
+
+        private fun linkIdOf(raw: String): String =
+            raw.filter { it.isLetterOrDigit() || it == '-' || it == '_' }.take(64)
     }
 }
 
 internal fun RedBallPieceKind.snapAnchor(c: Int, r: Int): Pair<Int, Int> {
     val stepC = when (this) {
-        RedBallPieceKind.START, RedBallPieceKind.DOOR, RedBallPieceKind.SPIKE,
-        RedBallPieceKind.LADDER, RedBallPieceKind.STAR, RedBallPieceKind.MAGNET,
+        RedBallPieceKind.START, RedBallPieceKind.DOOR, RedBallPieceKind.PORTAL,
+        RedBallPieceKind.SPIKE, RedBallPieceKind.LADDER, RedBallPieceKind.STAR,
+        RedBallPieceKind.MAGNET,
         -> 1
         else -> w
     }
     val stepR = when (this) {
-        RedBallPieceKind.START, RedBallPieceKind.DOOR, RedBallPieceKind.SPRING,
-        RedBallPieceKind.LADDER, RedBallPieceKind.STAR, RedBallPieceKind.MAGNET,
+        RedBallPieceKind.START, RedBallPieceKind.DOOR, RedBallPieceKind.PORTAL,
+        RedBallPieceKind.SPRING, RedBallPieceKind.LADDER, RedBallPieceKind.STAR,
+        RedBallPieceKind.MAGNET,
         -> 1
         else -> h
     }

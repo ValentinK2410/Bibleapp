@@ -105,6 +105,10 @@ internal fun DrawScope.drawRedBallPlay(sim: RedBallSim) {
             if (!star.taken) drawCollectStar(star.x, star.y, 16f, sim.anim, star.attached)
         }
         for (magnet in sim.magnets) if (!magnet.taken) drawMagnet(magnet.x, magnet.y, sim.anim)
+        for (portal in scene.portals) {
+            val mood = if (portal.linkId.isBlank()) PortalMood.ASLEEP else PortalMood.OPEN
+            drawFairyPortal(portal.box.l, portal.box.t, portal.box.r, portal.box.b, sim.anim, mood)
+        }
         drawFinishFlag(scene.door.l, scene.door.t, scene.door.r, scene.door.b, sim.anim)
         for (crate in sim.crates) drawWoodCrate(crate.x, crate.y, crate.size)
         for (block in sim.blocks) drawRockBoulder(block.x, block.y, block.size)
@@ -136,6 +140,8 @@ internal fun DrawScope.drawRedBallEditor(
     hoverH: Int,
     showHover: Boolean,
     selectedId: Long?,
+    portalTime: Float = 0.8f,
+    lostPortalIds: Set<Long> = emptySet(),
 ) {
     val scale = editorScale(size.height, draft.cell)
     val range = editorCamRange(size.width, size.height, draft)
@@ -188,6 +194,14 @@ internal fun DrawScope.drawRedBallEditor(
                 RedBallPieceKind.MAGNET -> drawMagnet((box.l + box.r) / 2f, (box.t + box.b) / 2f, 0.4f)
                 RedBallPieceKind.ENEMY -> drawAngrySquare((box.l + box.r) / 2f, (box.t + box.b) / 2f, min(piece.w, piece.h) * cell, 0.15f)
                 RedBallPieceKind.DOOR -> drawFinishFlag(box.l, box.t, box.r, box.b, 0.8f)
+                RedBallPieceKind.PORTAL -> {
+                    val mood = when {
+                        piece.id in lostPortalIds -> PortalMood.LOST
+                        piece.linkId.isBlank() -> PortalMood.ASLEEP
+                        else -> PortalMood.OPEN
+                    }
+                    drawFairyPortal(box.l, box.t, box.r, box.b, portalTime, mood)
+                }
                 RedBallPieceKind.START -> {
                     val x = (box.l + box.r) / 2f
                     val y = box.b - RedBallScene.BALL_R
@@ -1217,6 +1231,127 @@ private fun DrawScope.drawFinishFlag(l: Float, t: Float, r: Float, b: Float, wav
         2.2f,
         StrokeCap.Round,
     )
+}
+
+private enum class PortalMood { OPEN, ASLEEP, LOST }
+
+/** Каменная арка со светящимся вихрем. Спящий портал серый, потерянная цель помечена красным. */
+private fun DrawScope.drawFairyPortal(
+    l: Float,
+    t: Float,
+    r: Float,
+    b: Float,
+    time: Float,
+    mood: PortalMood,
+) {
+    val w = r - l
+    val h = b - t
+    if (w < 4f || h < 4f) return
+    val cx = (l + r) / 2f
+    val cy = t + h * 0.58f
+    val open = mood == PortalMood.OPEN
+    val arch = min(w * 0.52f, h * 0.36f)
+    if (open) {
+        val pulse = 0.88f + 0.12f * sin(time * 3.2f)
+        drawCircle(Color(0xFFC4B5FD).copy(alpha = 0.28f), w * 0.72f * pulse, Offset(cx, cy))
+    }
+    val frame = Path().apply {
+        moveTo(l, b)
+        lineTo(l, t + arch)
+        quadraticBezierTo(cx, t - arch * 0.05f, r, t + arch)
+        lineTo(r, b)
+        close()
+    }
+    val stoneTop = if (open) Color(0xFFE9D5FF) else Color(0xFFE7E5E4)
+    val stoneMid = if (open) Color(0xFF7C3AED) else Color(0xFFA8A29E)
+    val stoneBot = if (open) Color(0xFF4C1D95) else Color(0xFF57534E)
+    drawPath(frame, Brush.verticalGradient(listOf(stoneTop, stoneMid, stoneBot), startY = t, endY = b))
+    drawPath(frame, Color(0xFF3B0764).copy(alpha = if (open) 0.9f else 0.45f), style = Stroke(w * 0.045f, cap = StrokeCap.Round, join = StrokeJoin.Round))
+    val inset = w * 0.2f
+    val inner = Path().apply {
+        moveTo(l + inset, b - h * 0.04f)
+        lineTo(l + inset, t + arch * 1.2f)
+        quadraticBezierTo(cx, t + arch * 0.35f, r - inset, t + arch * 1.2f)
+        lineTo(r - inset, b - h * 0.04f)
+        close()
+    }
+    if (open) {
+        drawPath(
+            inner,
+            Brush.radialGradient(
+                listOf(Color(0xFFF5F3FF), Color(0xFF67E8F9), Color(0xFF7C3AED), Color(0xFF1E1B4B)),
+                center = Offset(cx - w * 0.06f, cy - h * 0.06f),
+                radius = w * 0.62f,
+            ),
+        )
+        val spin = time * 130f
+        rotate(spin, Offset(cx, cy)) {
+            drawArc(
+                Color.White.copy(alpha = 0.9f),
+                startAngle = 18f,
+                sweepAngle = 86f,
+                useCenter = false,
+                topLeft = Offset(cx - w * 0.22f, cy - h * 0.16f),
+                size = Size(w * 0.44f, h * 0.3f),
+                style = Stroke(width = (w * 0.055f).coerceIn(2.5f, 6f), cap = StrokeCap.Round),
+            )
+        }
+        rotate(-spin * 0.65f, Offset(cx, cy)) {
+            drawArc(
+                Color(0xFFFDE68A).copy(alpha = 0.95f),
+                startAngle = 200f,
+                sweepAngle = 70f,
+                useCenter = false,
+                topLeft = Offset(cx - w * 0.15f, cy - h * 0.1f),
+                size = Size(w * 0.3f, h * 0.2f),
+                style = Stroke(width = (w * 0.04f).coerceIn(2f, 5f), cap = StrokeCap.Round),
+            )
+        }
+        drawCircle(Color.White.copy(alpha = 0.85f), w * 0.045f, Offset(cx - w * 0.08f, cy - h * 0.04f))
+        drawSparkle(cx - w * 0.02f, cy - h * 0.12f, w * 0.07f, Color.White)
+        drawSparkle(cx + w * 0.12f, cy + h * 0.02f, w * 0.05f, Color(0xFFFDE68A))
+    } else {
+        drawPath(
+            inner,
+            Brush.verticalGradient(listOf(Color(0xFF57534E), Color(0xFF1C1917)), startY = t, endY = b),
+        )
+        drawLine(
+            Color(0xFFD6D3D1).copy(alpha = 0.75f),
+            Offset(l + inset * 1.2f, t + arch * 1.1f),
+            Offset(r - inset * 1.2f, b - h * 0.12f),
+            (w * 0.035f).coerceIn(2f, 4f),
+            StrokeCap.Round,
+        )
+        drawLine(
+            Color(0xFFD6D3D1).copy(alpha = 0.75f),
+            Offset(r - inset * 1.2f, t + arch * 1.1f),
+            Offset(l + inset * 1.2f, b - h * 0.12f),
+            (w * 0.035f).coerceIn(2f, 4f),
+            StrokeCap.Round,
+        )
+    }
+    val cap = w * 0.09f
+    drawCircle(stoneTop, cap, Offset(l + cap * 1.3f, b - cap))
+    drawCircle(stoneTop, cap, Offset(r - cap * 1.3f, b - cap))
+    if (mood == PortalMood.LOST) {
+        val badge = Offset(r - w * 0.08f, t + h * 0.08f)
+        drawCircle(Color(0xFFDC2626), w * 0.16f, badge)
+        drawCircle(Color.White, w * 0.12f, badge)
+        drawLine(
+            Color(0xFFDC2626),
+            badge + Offset(0f, -w * 0.05f),
+            badge + Offset(0f, w * 0.02f),
+            (w * 0.035f).coerceAtLeast(2f),
+            StrokeCap.Round,
+        )
+        drawCircle(Color(0xFFDC2626), (w * 0.018f).coerceAtLeast(1.4f), badge + Offset(0f, w * 0.055f))
+    }
+}
+
+private fun DrawScope.drawSparkle(cx: Float, cy: Float, s: Float, color: Color) {
+    drawLine(color, Offset(cx - s, cy), Offset(cx + s, cy), s * 0.28f, StrokeCap.Round)
+    drawLine(color, Offset(cx, cy - s), Offset(cx, cy + s), s * 0.28f, StrokeCap.Round)
+    drawCircle(color, s * 0.22f, Offset(cx, cy))
 }
 
 private fun DrawScope.drawWoodCrate(cx: Float, cy: Float, side: Float) {

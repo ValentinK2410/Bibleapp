@@ -2,6 +2,9 @@ package com.example.bible.ui
 
 import android.widget.Toast
 import androidx.activity.compose.BackHandler
+import androidx.compose.animation.core.Animatable
+import androidx.compose.animation.core.FastOutSlowInEasing
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -51,6 +54,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.StrokeJoin
@@ -70,10 +74,12 @@ import com.example.bible.games.RedBallDraft
 import com.example.bible.games.RedBallLevelMeta
 import com.example.bible.games.RedBallLevelStore
 import com.example.bible.games.RedBallPiece
+import com.example.bible.games.RedBallPortal
 import com.example.bible.games.RedBallScene
 import com.example.bible.games.RedBallSim
 import com.example.bible.ui.theme.OutlinedTextField
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -99,6 +105,24 @@ fun KidsRedBallGameScreen(onBack: () -> Unit) {
     var play by remember { mutableStateOf<PlayRequest?>(null) }
     var listRev by remember { mutableIntStateOf(0) }
     var warning by remember { mutableStateOf<String?>(null) }
+    val savedLevels by produceState<List<RedBallLevelMeta>?>(null, listRev, store) {
+        value = withContext(Dispatchers.IO) { store.list() }
+    }
+    val destinations = remember(savedLevels, draft.id) {
+        buildList {
+            add(RedBallDestination(RedBallScene.BUILTIN_ID, "Горка"))
+            add(RedBallDestination(draft.id, "Этот уровень"))
+            for (level in savedLevels.orEmpty()) {
+                if (level.id != draft.id) {
+                    add(RedBallDestination(level.id, level.name.ifBlank { "Без имени" }))
+                }
+            }
+        }
+    }
+    val portalCaution = savedLevels?.let { levels ->
+        val known = levels.map { it.id }.toSet() + RedBallScene.BUILTIN_ID + draft.id
+        draft.portalWarning(known)
+    }
 
     fun cleanName(raw: String) = raw.trim().ifBlank { "Без имени" }.take(32)
     fun dirty() = draft.pieces != savedPieces || cleanName(draft.name) != cleanName(savedName)
@@ -141,8 +165,13 @@ fun KidsRedBallGameScreen(onBack: () -> Unit) {
     }
 
     fun beginPlay(scene: RedBallScene, test: Boolean) {
-        play = PlayRequest(scene, test)
-        page = RedBallPage.PLAY
+        scope.launch {
+            val known = withContext(Dispatchers.IO) {
+                store.list().map { it.id }.toSet() + RedBallScene.BUILTIN_ID + scene.id
+            }
+            play = PlayRequest(scene.withKnownPortals(known), test)
+            page = RedBallPage.PLAY
+        }
     }
 
     fun leavePlay() {
@@ -228,6 +257,10 @@ fun KidsRedBallGameScreen(onBack: () -> Unit) {
                 warning = null
             },
             warning = warning,
+            caution = portalCaution,
+            destinations = destinations,
+            catalogReady = savedLevels != null,
+            store = store,
             onBack = { closeEditor() },
             onTest = {
                 val reason = draft.playBlockReason()
@@ -246,6 +279,7 @@ fun KidsRedBallGameScreen(onBack: () -> Unit) {
                 RedBallPlay(
                     scene = request.scene,
                     testMode = request.test,
+                    store = store,
                     onExit = { leavePlay() },
                 )
             }
@@ -283,7 +317,7 @@ private fun RedBallMenu(
                 color = Color(0xFF7C2D12),
             )
             Text(
-                "Кати мяч до двери или собери свою сказочную горку.",
+                "Кати мяч до двери, шагни в портал или собери свою горку.",
                 color = Color(0xFF9A3412),
                 fontSize = 16.sp,
             )
@@ -292,7 +326,7 @@ private fun RedBallMenu(
             Spacer(Modifier.height(12.dp))
             MenuCard("Мои уровни", "Сыграть, поправить, переименовать или удалить", Color(0xFFC2410C), onMyLevels)
             Spacer(Modifier.height(12.dp))
-            MenuCard("Создать уровень", "Земля, горки, ящики, шипы и дверь", Color(0xFF15803D), onCreate)
+            MenuCard("Создать уровень", "Земля, горки, ящики, шипы, дверь и портал", Color(0xFF15803D), onCreate)
         }
     }
 }
@@ -445,11 +479,50 @@ private fun LevelChip(label: String, color: Color, onClick: () -> Unit) {
     }
 }
 
+private data class PortalArrival(
+    val scene: RedBallScene,
+    val x: Float,
+    val y: Float,
+    val token: Long,
+)
+
+private fun resolveTravel(store: RedBallLevelStore, portal: RedBallPortal): PortalArrival? {
+    if (portal.linkId.isBlank()) return null
+    val known = store.list().map { it.id }.toSet() + RedBallScene.BUILTIN_ID
+    if (portal.linkId !in known) return null
+    val draft: RedBallDraft?
+    val loaded = if (portal.linkId == RedBallScene.BUILTIN_ID) {
+        draft = null
+        RedBallScene.builtin()
+    } else {
+        val found = store.load(portal.linkId) ?: return null
+        draft = found
+        found.toScene()
+    }
+    val ready = loaded.withKnownPortals(known)
+    val (x, y) = portal.arrivalIn(ready, draft)
+    return PortalArrival(ready, x, y, System.nanoTime())
+}
+
 @Composable
-private fun RedBallPlay(scene: RedBallScene, testMode: Boolean, onExit: () -> Unit) {
-    val sim = remember(scene) { RedBallSim(scene) }
+private fun RedBallPlay(
+    scene: RedBallScene,
+    testMode: Boolean,
+    store: RedBallLevelStore,
+    onExit: () -> Unit,
+) {
+    val context = LocalContext.current
+    var arrival by remember { mutableStateOf<PortalArrival?>(null) }
+    var travel by remember { mutableStateOf<RedBallPortal?>(null) }
+    val fade = remember { Animatable(0f) }
+    val zoom = remember { Animatable(1f) }
+    val shown = arrival?.scene ?: scene
+    val sim = remember(shown, arrival?.token) {
+        val spot = arrival
+        if (spot == null) RedBallSim(shown) else RedBallSim(spot.scene).also { it.arrive(spot.x, spot.y) }
+    }
     val held = remember { intArrayOf(0, 0) }
-    val paused = remember(scene) { mutableStateOf(false) }
+    val paused = remember(sim) { mutableStateOf(false) }
     var tick by remember { mutableIntStateOf(0) }
     androidx.compose.runtime.LaunchedEffect(sim) {
         var last = 0L
@@ -473,26 +546,79 @@ private fun RedBallPlay(scene: RedBallScene, testMode: Boolean, onExit: () -> Un
         if (sim.consumeStars() > 0) KidsGameAudio.play(KidsSfx.CORRECT)
         if (sim.consumeMagnet()) KidsGameAudio.play(KidsSfx.PLACE)
         sim.consumeJump()
+        if (travel == null && fade.value == 0f) {
+            val hit = sim.consumePortal()
+            if (hit != null) travel = hit
+        }
+    }
+    androidx.compose.runtime.LaunchedEffect(travel) {
+        val portal = travel ?: return@LaunchedEffect
+        val resolved = withContext(Dispatchers.IO) { resolveTravel(store, portal) }
+        if (!isActive) return@LaunchedEffect
+        if (resolved == null) {
+            sim.dismissPortal()
+            Toast.makeText(context, "Эта сцена пропала. Портал уснул", Toast.LENGTH_SHORT).show()
+            travel = null
+            return@LaunchedEffect
+        }
+        KidsGameAudio.play(KidsSfx.PLACE)
+        coroutineScope {
+            launch { fade.animateTo(1f, tween(340, easing = FastOutSlowInEasing)) }
+            launch { zoom.animateTo(1.18f, tween(340, easing = FastOutSlowInEasing)) }
+        }
+        arrival = resolved
+        zoom.snapTo(0.86f)
+        coroutineScope {
+            launch { fade.animateTo(0f, tween(380, easing = FastOutSlowInEasing)) }
+            launch { zoom.animateTo(1f, tween(380, easing = FastOutSlowInEasing)) }
+        }
+        travel = null
     }
     if (!testMode) {
-        KidsGameWinReward(KidsGames.RED_BALL, sim.won, points = 20, round = if (sim.won) scene.id.hashCode() else 0)
+        KidsGameWinReward(KidsGames.RED_BALL, sim.won, points = 20, round = if (sim.won) shown.id.hashCode() else 0)
     }
     val title = when {
-        testMode -> "Проверка · ${scene.name}"
-        scene.builtin -> "Красный мяч"
-        else -> scene.name
+        testMode -> "Проверка · ${shown.name}"
+        shown.builtin -> "Красный мяч"
+        else -> shown.name
     }
     val progress = if (sim.stars.isNotEmpty()) {
         sim.starsCollected / sim.stars.size.toFloat()
     } else {
-        val span = (scene.door.l + scene.door.r) * 0.5f - scene.startX
-        if (kotlin.math.abs(span) < 1f) 0f else ((sim.ballX - scene.startX) / span).coerceIn(0f, 1f)
+        val span = (shown.door.l + shown.door.r) * 0.5f - shown.startX
+        if (kotlin.math.abs(span) < 1f) 0f else ((sim.ballX - shown.startX) / span).coerceIn(0f, 1f)
     }
     Box(Modifier.fillMaxSize().background(Color(0xFF7EC8F5))) {
-        Canvas(Modifier.fillMaxSize()) {
+        Canvas(
+            Modifier
+                .fillMaxSize()
+                .graphicsLayer {
+                    scaleX = zoom.value
+                    scaleY = zoom.value
+                    alpha = 1f - 0.2f * fade.value
+                },
+        ) {
             @Suppress("UNUSED_VARIABLE")
             val frame = tick
             drawRedBallPlay(sim)
+        }
+        if (fade.value > 0.01f) {
+            Canvas(Modifier.fillMaxSize()) {
+                val cover = fade.value
+                drawCircle(
+                    Brush.radialGradient(
+                        listOf(
+                            Color(0xFFE9D5FF).copy(alpha = 0.08f * cover),
+                            Color(0xFF6D28D9).copy(alpha = 0.55f * cover),
+                            Color(0xFF1E1B4B).copy(alpha = 0.94f * cover),
+                        ),
+                        center = center,
+                        radius = size.minDimension * (0.18f + 0.9f * cover),
+                    ),
+                    radius = size.maxDimension,
+                    center = center,
+                )
+            }
         }
         Row(
             Modifier
@@ -507,7 +633,7 @@ private fun RedBallPlay(scene: RedBallScene, testMode: Boolean, onExit: () -> Un
                 }
             }
         }
-        if (!sim.won && !sim.dead) {
+        if (!sim.won && !sim.dead && travel == null) {
             PauseButton(
                 Modifier
                     .statusBarsPadding()
@@ -564,9 +690,9 @@ private fun RedBallPlay(scene: RedBallScene, testMode: Boolean, onExit: () -> Un
                 Spacer(Modifier.height(8.dp))
                 Text(
                     when {
-                        sim.won && scene.builtin -> "Мяч докатился сам, как надо"
+                        sim.won && shown.builtin -> "Мяч докатился сам, как надо"
                         sim.won -> "Получилось! Мяч добрался до двери"
-                        scene.builtin -> "Ящик закрывает яму, пружина подбрасывает наверх"
+                        shown.builtin -> "Ящик закрывает яму, пружина подбрасывает наверх"
                         else -> "Шипы и злые квадраты сбоку опасны. Сверху квадрат можно раздавить"
                     },
                     color = Color(0xFF44403C),
