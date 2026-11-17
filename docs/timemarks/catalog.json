@@ -1314,6 +1314,166 @@
       "file": "projects/nrt_john_9.json"
     },
     {
+      "id": "gh_nrt_mark_1",
+      "translationCode": "NRT",
+      "bookId": "mark",
+      "chapter": 1,
+      "title": "От Марка 1 · Новый русский",
+      "cueCount": 45,
+      "narratorId": "new-russian",
+      "file": "projects/nrt_mark_1.json"
+    },
+    {
+      "id": "gh_nrt_mark_10",
+      "translationCode": "NRT",
+      "bookId": "mark",
+      "chapter": 10,
+      "title": "От Марка 10 · Новый русский",
+      "cueCount": 52,
+      "narratorId": "new-russian",
+      "file": "projects/nrt_mark_10.json"
+    },
+    {
+      "id": "gh_nrt_mark_11",
+      "translationCode": "NRT",
+      "bookId": "mark",
+      "chapter": 11,
+      "title": "От Марка 11 · Новый русский",
+      "cueCount": 33,
+      "narratorId": "new-russian",
+      "file": "projects/nrt_mark_11.json"
+    },
+    {
+      "id": "gh_nrt_mark_12",
+      "translationCode": "NRT",
+      "bookId": "mark",
+      "chapter": 12,
+      "title": "От Марка 12 · Новый русский",
+      "cueCount": 44,
+      "narratorId": "new-russian",
+      "file": "projects/nrt_mark_12.json"
+    },
+    {
+      "id": "gh_nrt_mark_13",
+      "translationCode": "NRT",
+      "bookId": "mark",
+      "chapter": 13,
+      "title": "От Марка 13 · Новый русский",
+      "cueCount": 37,
+      "narratorId": "new-russian",
+      "file": "projects/nrt_mark_13.json"
+    },
+    {
+      "id": "gh_nrt_mark_14",
+      "translationCode": "NRT",
+      "bookId": "mark",
+      "chapter": 14,
+      "title": "От Марка 14 · Новый русский",
+      "cueCount": 72,
+      "narratorId": "new-russian",
+      "file": "projects/nrt_mark_14.json"
+    },
+    {
+      "id": "gh_nrt_mark_15",
+      "translationCode": "NRT",
+      "bookId": "mark",
+      "chapter": 15,
+      "title": "От Марка 15 · Новый русский",
+      "cueCount": 47,
+      "narratorId": "new-russian",
+      "file": "projects/nrt_mark_15.json"
+    },
+    {
+      "id": "gh_nrt_mark_16",
+      "translationCode": "NRT",
+      "bookId": "mark",
+      "chapter": 16,
+      "title": "От Марка 16 · Новый русский",
+      "cueCount": 20,
+      "narratorId": "new-russian",
+      "file": "projects/nrt_mark_16.json"
+    },
+    {
+      "id": "gh_nrt_mark_2",
+      "translationCode": "NRT",
+      "bookId": "mark",
+      "chapter": 2,
+      "title": "От Марка 2 · Новый русский",
+      "cueCount": 28,
+      "narratorId": "new-russian",
+      "file": "projects/nrt_mark_2.json"
+    },
+    {
+      "id": "gh_nrt_mark_3",
+      "translationCode": "NRT",
+      "bookId": "mark",
+      "chapter": 3,
+      "title": "От Марка 3 · Новый русский",
+      "cueCount": 35,
+      "narratorId": "new-russian",
+      "file": "projects/nrt_mark_3.json"
+    },
+    {
+      "id": "gh_nrt_mark_4",
+      "translationCode": "NRT",
+      "bookId": "mark",
+      "chapter": 4,
+      "title": "От Марка 4 · Новый русский",
+      "cueCount": 41,
+      "narratorId": "new-russian",
+      "file": "projects/nrt_mark_4.json"
+    },
+    {
+      "id": "gh_nrt_mark_5",
+      "translationCode": "NRT",
+      "bookId": "mark",
+      "chapter": 5,
+      "title": "От Марка 5 · Новый русский",
+      "cueCount": 43,
+      "narratorId": "new-russian",
+      "file": "projects/nrt_mark_5.json"
+    },
+    {
+      "id": "gh_nrt_mark_6",
+      "translationCode": "NRT",
+      "bookId": "mark",
+      "chapter": 6,
+      "title": "От Марка 6 · Новый русский",
+      "cueCount": 56,
+      "narratorId": "new-russian",
+      "file": "projects/nrt_mark_6.json"
+    },
+    {
+      "id": "gh_nrt_mark_7",
+      "translationCode": "NRT",
+      "bookId": "mark",
+      "chapter": 7,
+      "title": "От Марка 7 · Новый русский",
+      "cueCount": 37,
+      "narratorId": "new-russian",
+      "file": "projects/nrt_mark_7.json"
+    },
+    {
+      "id": "gh_nrt_mark_8",
+      "translationCode": "NRT",
+      "bookId": "mark",
+      "chapter": 8,
+      "title": "От Марка 8 · Новый русский",
+      "cueCount": 38,
+      "narratorId": "new-russian",
+      "file": "projects/nrt_mark_8.json"
+    },
+    {
+      "id": "gh_nrt_mark_9",
+      "translationCode": "NRT",
+      "bookId": "mark",
+      "chapter": 9,
+      "title": "От Марка 9 · Новый русский",
+      "cueCount": 50,
+      "narratorId": "new-russian",
+      "file": "projects/nrt_mark_9.json"
+    },
+    {
       "id": "gh_rbo_john_1",
       "translationCode": "RBO",
       "bookId": "john",

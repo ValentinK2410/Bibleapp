@@ -1,0 +1,183 @@
+{
+  "id": "gh_nrt_mark_5",
+  "translationCode": "NRT",
+  "bookId": "mark",
+  "chapter": 5,
+  "title": "От Марка 5 · Новый русский",
+  "narratorId": "new-russian",
+  "audioFileName": "41_05.mp3",
+  "cues": [
+    {
+      "timeMs": 4163,
+      "verseStart": 1
+    },
+    {
+      "timeMs": 8826,
+      "verseStart": 2
+    },
+    {
+      "timeMs": 16672,
+      "verseStart": 3
+    },
+    {
+      "timeMs": 21715,
+      "verseStart": 4
+    },
+    {
+      "timeMs": 31602,
+      "verseStart": 5
+    },
+    {
+      "timeMs": 37466,
+      "verseStart": 6
+    },
+    {
+      "timeMs": 41949,
+      "verseStart": 7
+    },
+    {
+      "timeMs": 52536,
+      "verseStart": 8
+    },
+    {
+      "timeMs": 58901,
+      "verseStart": 9
+    },
+    {
+      "timeMs": 66626,
+      "verseStart": 10
+    },
+    {
+      "timeMs": 71089,
+      "verseStart": 11
+    },
+    {
+      "timeMs": 74632,
+      "verseStart": 12
+    },
+    {
+      "timeMs": 80095,
+      "verseStart": 13
+    },
+    {
+      "timeMs": 92804,
+      "verseStart": 14
+    },
+    {
+      "timeMs": 102971,
+      "verseStart": 15
+    },
+    {
+      "timeMs": 112878,
+      "verseStart": 16
+    },
+    {
+      "timeMs": 118682,
+      "verseStart": 17
+    },
+    {
+      "timeMs": 124126,
+      "verseStart": 18
+    },
+    {
+      "timeMs": 132492,
+      "verseStart": 19
+    },
+    {
+      "timeMs": 144180,
+      "verseStart": 20
+    },
+    {
+      "timeMs": 158590,
+      "verseStart": 21
+    },
+    {
+      "timeMs": 166815,
+      "verseStart": 22
+    },
+    {
+      "timeMs": 174020,
+      "verseStart": 23
+    },
+    {
+      "timeMs": 183167,
+      "verseStart": 24
+    },
+    {
+      "timeMs": 189851,
+      "verseStart": 25
+    },
+    {
+      "timeMs": 194515,
+      "verseStart": 26
+    },
+    {
+      "timeMs": 207183,
+      "verseStart": 27
+    },
+    {
+      "timeMs": 214348,
+      "verseStart": 28
+    },
+    {
+      "timeMs": 220052,
+      "verseStart": 29
+    },
+    {
+      "timeMs": 226377,
+      "verseStart": 30
+    },
+    {
+      "timeMs": 235583,
+      "verseStart": 31
+    },
+    {
+      "timeMs": 244149,
+      "verseStart": 32
+    },
+    {
+      "timeMs": 250433,
+      "verseStart": 33
+    },
+    {
+      "timeMs": 260500,
+      "verseStart": 34
+    },
+    {
+      "timeMs": 270127,
+      "verseStart": 35
+    },
+    {
+      "timeMs": 280714,
+      "verseStart": 36
+    },
+    {
+      "timeMs": 289400,
+      "verseStart": 37
+    },
+    {
+      "timeMs": 295825,
+      "verseStart": 38
+    },
+    {
+      "timeMs": 302309,
+      "verseStart": 39
+    },
+    {
+      "timeMs": 309934,
+      "verseStart": 40
+    },
+    {
+      "timeMs": 320982,
+      "verseStart": 41
+    },
+    {
+      "timeMs": 331169,
+      "verseStart": 42
+    },
+    {
+      "timeMs": 338614,
+      "verseStart": 43
+    }
+  ]
+}

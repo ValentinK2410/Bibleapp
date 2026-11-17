@@ -1,0 +1,91 @@
+{
+  "id": "gh_nrt_mark_16",
+  "translationCode": "NRT",
+  "bookId": "mark",
+  "chapter": 16,
+  "title": "От Марка 16 · Новый русский",
+  "narratorId": "new-russian",
+  "audioFileName": "41_16.mp3",
+  "cues": [
+    {
+      "timeMs": 4423,
+      "verseStart": 1
+    },
+    {
+      "timeMs": 14851,
+      "verseStart": 2
+    },
+    {
+      "timeMs": 21216,
+      "verseStart": 3
+    },
+    {
+      "timeMs": 27360,
+      "verseStart": 4
+    },
+    {
+      "timeMs": 34666,
+      "verseStart": 5
+    },
+    {
+      "timeMs": 43192,
+      "verseStart": 6
+    },
+    {
+      "timeMs": 56102,
+      "verseStart": 7
+    },
+    {
+      "timeMs": 68611,
+      "verseStart": 8
+    },
+    {
+      "timeMs": 83682,
+      "verseStart": 9
+    },
+    {
+      "timeMs": 93369,
+      "verseStart": 10
+    },
+    {
+      "timeMs": 98853,
+      "verseStart": 11
+    },
+    {
+      "timeMs": 105298,
+      "verseStart": 12
+    },
+    {
+      "timeMs": 112223,
+      "verseStart": 13
+    },
+    {
+      "timeMs": 118528,
+      "verseStart": 14
+    },
+    {
+      "timeMs": 137102,
+      "verseStart": 15
+    },
+    {
+      "timeMs": 144127,
+      "verseStart": 16
+    },
+    {
+      "timeMs": 153134,
+      "verseStart": 17
+    },
+    {
+      "timeMs": 162821,
+      "verseStart": 18
+    },
+    {
+      "timeMs": 176251,
+      "verseStart": 19
+    },
+    {
+      "timeMs": 184777,
+      "verseStart": 20
+    }
+  ]
+}

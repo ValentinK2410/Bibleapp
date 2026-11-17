@@ -1,0 +1,111 @@
+{
+  "id": "align-mark-NRT-16",
+  "translationCode": "NRT",
+  "bookId": "mark",
+  "chapter": 16,
+  "title": "От Марка 16 · Новый русский",
+  "audioFilePath": "/data/user/0/com.example.bible.sqlite/files/bible_audio/new-russian/41_16.mp3",
+  "updatedAt": 1794960000000,
+  "cues": [
+    {
+      "timeMs": 4423,
+      "verseStart": 1,
+      "attachments": []
+    },
+    {
+      "timeMs": 14851,
+      "verseStart": 2,
+      "attachments": []
+    },
+    {
+      "timeMs": 21216,
+      "verseStart": 3,
+      "attachments": []
+    },
+    {
+      "timeMs": 27360,
+      "verseStart": 4,
+      "attachments": []
+    },
+    {
+      "timeMs": 34666,
+      "verseStart": 5,
+      "attachments": []
+    },
+    {
+      "timeMs": 43192,
+      "verseStart": 6,
+      "attachments": []
+    },
+    {
+      "timeMs": 56102,
+      "verseStart": 7,
+      "attachments": []
+    },
+    {
+      "timeMs": 68611,
+      "verseStart": 8,
+      "attachments": []
+    },
+    {
+      "timeMs": 83682,
+      "verseStart": 9,
+      "attachments": []
+    },
+    {
+      "timeMs": 93369,
+      "verseStart": 10,
+      "attachments": []
+    },
+    {
+      "timeMs": 98853,
+      "verseStart": 11,
+      "attachments": []
+    },
+    {
+      "timeMs": 105298,
+      "verseStart": 12,
+      "attachments": []
+    },
+    {
+      "timeMs": 112223,
+      "verseStart": 13,
+      "attachments": []
+    },
+    {
+      "timeMs": 118528,
+      "verseStart": 14,
+      "attachments": []
+    },
+    {
+      "timeMs": 137102,
+      "verseStart": 15,
+      "attachments": []
+    },
+    {
+      "timeMs": 144127,
+      "verseStart": 16,
+      "attachments": []
+    },
+    {
+      "timeMs": 153134,
+      "verseStart": 17,
+      "attachments": []
+    },
+    {
+      "timeMs": 162821,
+      "verseStart": 18,
+      "attachments": []
+    },
+    {
+      "timeMs": 176251,
+      "verseStart": 19,
+      "attachments": []
+    },
+    {
+      "timeMs": 184777,
+      "verseStart": 20,
+      "attachments": []
+    }
+  ]
+}

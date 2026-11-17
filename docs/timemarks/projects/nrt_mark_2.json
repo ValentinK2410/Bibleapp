@@ -1,0 +1,123 @@
+{
+  "id": "gh_nrt_mark_2",
+  "translationCode": "NRT",
+  "bookId": "mark",
+  "chapter": 2,
+  "title": "От Марка 2 · Новый русский",
+  "narratorId": "new-russian",
+  "audioFileName": "41_02.mp3",
+  "cues": [
+    {
+      "timeMs": 5003,
+      "verseStart": 1
+    },
+    {
+      "timeMs": 11888,
+      "verseStart": 2
+    },
+    {
+      "timeMs": 18893,
+      "verseStart": 3
+    },
+    {
+      "timeMs": 22115,
+      "verseStart": 4
+    },
+    {
+      "timeMs": 32943,
+      "verseStart": 5
+    },
+    {
+      "timeMs": 40368,
+      "verseStart": 6
+    },
+    {
+      "timeMs": 45111,
+      "verseStart": 7
+    },
+    {
+      "timeMs": 50775,
+      "verseStart": 8
+    },
+    {
+      "timeMs": 58480,
+      "verseStart": 9
+    },
+    {
+      "timeMs": 67246,
+      "verseStart": 10
+    },
+    {
+      "timeMs": 75552,
+      "verseStart": 11
+    },
+    {
+      "timeMs": 80555,
+      "verseStart": 12
+    },
+    {
+      "timeMs": 96607,
+      "verseStart": 13
+    },
+    {
+      "timeMs": 103251,
+      "verseStart": 14
+    },
+    {
+      "timeMs": 115059,
+      "verseStart": 15
+    },
+    {
+      "timeMs": 127888,
+      "verseStart": 16
+    },
+    {
+      "timeMs": 141257,
+      "verseStart": 17
+    },
+    {
+      "timeMs": 154106,
+      "verseStart": 18
+    },
+    {
+      "timeMs": 167655,
+      "verseStart": 19
+    },
+    {
+      "timeMs": 178503,
+      "verseStart": 20
+    },
+    {
+      "timeMs": 185027,
+      "verseStart": 21
+    },
+    {
+      "timeMs": 194794,
+      "verseStart": 22
+    },
+    {
+      "timeMs": 209985,
+      "verseStart": 23
+    },
+    {
+      "timeMs": 217210,
+      "verseStart": 24
+    },
+    {
+      "timeMs": 223994,
+      "verseStart": 25
+    },
+    {
+      "timeMs": 233561,
+      "verseStart": 26
+    },
+    {
+      "timeMs": 246590,
+      "verseStart": 27
+    },
+    {
+      "timeMs": 252754,
+      "verseStart": 28
+    }
+  ]
+}
