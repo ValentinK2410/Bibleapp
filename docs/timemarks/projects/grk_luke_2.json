@@ -1,0 +1,219 @@
+{
+  "id": "gh_grk_luke_2",
+  "translationCode": "PODSTR",
+  "bookId": "luke",
+  "chapter": 2,
+  "title": "От Луки 2 · Греческий (Koine)",
+  "narratorId": "greek-nt",
+  "audioFileName": "42_02.mp3",
+  "cues": [
+    {
+      "timeMs": 861,
+      "verseStart": 1
+    },
+    {
+      "timeMs": 9406,
+      "verseStart": 2
+    },
+    {
+      "timeMs": 14930,
+      "verseStart": 3
+    },
+    {
+      "timeMs": 19933,
+      "verseStart": 4
+    },
+    {
+      "timeMs": 31360,
+      "verseStart": 5
+    },
+    {
+      "timeMs": 36804,
+      "verseStart": 6
+    },
+    {
+      "timeMs": 42527,
+      "verseStart": 7
+    },
+    {
+      "timeMs": 53634,
+      "verseStart": 8
+    },
+    {
+      "timeMs": 62360,
+      "verseStart": 9
+    },
+    {
+      "timeMs": 70545,
+      "verseStart": 10
+    },
+    {
+      "timeMs": 79331,
+      "verseStart": 11
+    },
+    {
+      "timeMs": 85455,
+      "verseStart": 12
+    },
+    {
+      "timeMs": 91759,
+      "verseStart": 13
+    },
+    {
+      "timeMs": 98923,
+      "verseStart": 14
+    },
+    {
+      "timeMs": 105067,
+      "verseStart": 15
+    },
+    {
+      "timeMs": 119036,
+      "verseStart": 16
+    },
+    {
+      "timeMs": 128162,
+      "verseStart": 17
+    },
+    {
+      "timeMs": 134506,
+      "verseStart": 18
+    },
+    {
+      "timeMs": 141130,
+      "verseStart": 19
+    },
+    {
+      "timeMs": 147755,
+      "verseStart": 20
+    },
+    {
+      "timeMs": 157461,
+      "verseStart": 21
+    },
+    {
+      "timeMs": 169248,
+      "verseStart": 22
+    },
+    {
+      "timeMs": 179115,
+      "verseStart": 23
+    },
+    {
+      "timeMs": 186399,
+      "verseStart": 24
+    },
+    {
+      "timeMs": 194885,
+      "verseStart": 25
+    },
+    {
+      "timeMs": 208293,
+      "verseStart": 26
+    },
+    {
+      "timeMs": 215898,
+      "verseStart": 27
+    },
+    {
+      "timeMs": 226365,
+      "verseStart": 28
+    },
+    {
+      "timeMs": 232129,
+      "verseStart": 29
+    },
+    {
+      "timeMs": 237472,
+      "verseStart": 30
+    },
+    {
+      "timeMs": 240674,
+      "verseStart": 31
+    },
+    {
+      "timeMs": 243956,
+      "verseStart": 32
+    },
+    {
+      "timeMs": 249080,
+      "verseStart": 33
+    },
+    {
+      "timeMs": 254543,
+      "verseStart": 34
+    },
+    {
+      "timeMs": 266911,
+      "verseStart": 35
+    },
+    {
+      "timeMs": 275236,
+      "verseStart": 36
+    },
+    {
+      "timeMs": 286804,
+      "verseStart": 37
+    },
+    {
+      "timeMs": 296890,
+      "verseStart": 38
+    },
+    {
+      "timeMs": 306136,
+      "verseStart": 39
+    },
+    {
+      "timeMs": 314561,
+      "verseStart": 40
+    },
+    {
+      "timeMs": 322126,
+      "verseStart": 41
+    },
+    {
+      "timeMs": 327790,
+      "verseStart": 42
+    },
+    {
+      "timeMs": 333113,
+      "verseStart": 43
+    },
+    {
+      "timeMs": 342780,
+      "verseStart": 44
+    },
+    {
+      "timeMs": 351905,
+      "verseStart": 45
+    },
+    {
+      "timeMs": 357449,
+      "verseStart": 46
+    },
+    {
+      "timeMs": 367836,
+      "verseStart": 47
+    },
+    {
+      "timeMs": 373719,
+      "verseStart": 48
+    },
+    {
+      "timeMs": 386187,
+      "verseStart": 49
+    },
+    {
+      "timeMs": 393152,
+      "verseStart": 50
+    },
+    {
+      "timeMs": 396914,
+      "verseStart": 51
+    },
+    {
+      "timeMs": 407761,
+      "verseStart": 52
+    }
+  ]
+}
