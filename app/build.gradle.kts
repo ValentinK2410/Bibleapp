@@ -37,6 +37,14 @@ android {
         val mapkitKey = localProperties.getProperty("MAPKIT_API_KEY", "")
         buildConfigField("String", "MAPKIT_API_KEY", "\"${mapkitKey.replace("\"", "\\\"")}\"")
 
+        // Хост Android App Links. Заглушка: без своего домена и файла
+        // https://<хост>/.well-known/assetlinks.json (пакет com.example.bible.sqlite
+        // и SHA-256 сертификата) https-ссылки не открывают приложение.
+        // Держите строку в синхроне с BibleDeepLinks.DEFAULT_HTTPS_HOST.
+        val deepLinkHost = "bible.example.com"
+        manifestPlaceholders["deepLinkHost"] = deepLinkHost
+        buildConfigField("String", "DEEP_LINK_HOST", "\"$deepLinkHost\"")
+
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
 
         ndk {

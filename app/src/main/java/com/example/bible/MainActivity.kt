@@ -9,27 +9,28 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import com.example.bible.data.BiblePreferences
 import com.example.bible.data.BibleRepository
+import com.example.bible.deeplink.BibleDeepLinks
+import com.example.bible.deeplink.DeepLinkRequest
 import com.example.bible.ui.BibleApp
 import com.example.bible.ui.SharedMediaImportQueue
 import com.example.bible.ui.extractShareIntentUri
 
 class MainActivity : ComponentActivity() {
-    private val pendingStartRoute = mutableStateOf<String?>(null)
+    private val pendingDeepLink = mutableStateOf<DeepLinkRequest?>(null)
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
-        extractShareIntentUri(intent)?.let { SharedMediaImportQueue.offer(it) }
-        pendingStartRoute.value = intent.getStringExtra(EXTRA_START_ROUTE)
+        acceptIntent(intent)
         val repository = BibleRepository(applicationContext)
         val preferences = BiblePreferences(applicationContext)
         setContent {
-            val startRoute by pendingStartRoute
+            val deepLink by pendingDeepLink
             BibleApp(
                 repository = repository,
                 preferences = preferences,
-                startRoute = startRoute,
-                onStartRouteConsumed = { pendingStartRoute.value = null },
+                deepLink = deepLink,
+                onDeepLinkConsumed = { pendingDeepLink.value = null },
             )
         }
     }
@@ -37,8 +38,25 @@ class MainActivity : ComponentActivity() {
     override fun onNewIntent(intent: Intent) {
         super.onNewIntent(intent)
         setIntent(intent)
-        extractShareIntentUri(intent)?.let { SharedMediaImportQueue.offer(it) }
-        pendingStartRoute.value = intent.getStringExtra(EXTRA_START_ROUTE)
+        acceptIntent(intent)
+    }
+
+    /**
+     * Холодный старт приходит в [onCreate], повторное открытие при уже живой
+     * activity (launchMode=singleTop) — в [onNewIntent].
+     */
+    private fun acceptIntent(intent: Intent?) {
+        if (intent == null) return
+        val data = intent.dataString
+        val appLink = BibleDeepLinks.isAppLink(data, BuildConfig.DEEP_LINK_HOST)
+        if (!appLink) {
+            extractShareIntentUri(intent)?.let { SharedMediaImportQueue.offer(it) }
+        }
+        pendingDeepLink.value = BibleDeepLinks.requestFrom(
+            dataString = if (appLink) data else null,
+            startRouteExtra = intent.getStringExtra(EXTRA_START_ROUTE),
+            httpsHost = BuildConfig.DEEP_LINK_HOST,
+        )
     }
 
     companion object {
