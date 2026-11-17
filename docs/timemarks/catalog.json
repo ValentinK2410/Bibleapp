@@ -1494,6 +1494,36 @@
       "file": "projects/nrt_luke_2.json"
     },
     {
+      "id": "gh_nrt_luke_3",
+      "translationCode": "NRT",
+      "bookId": "luke",
+      "chapter": 3,
+      "title": "От Луки 3 · Новый русский",
+      "cueCount": 38,
+      "narratorId": "new-russian",
+      "file": "projects/nrt_luke_3.json"
+    },
+    {
+      "id": "gh_nrt_luke_4",
+      "translationCode": "NRT",
+      "bookId": "luke",
+      "chapter": 4,
+      "title": "От Луки 4 · Новый русский",
+      "cueCount": 44,
+      "narratorId": "new-russian",
+      "file": "projects/nrt_luke_4.json"
+    },
+    {
+      "id": "gh_nrt_luke_5",
+      "translationCode": "NRT",
+      "bookId": "luke",
+      "chapter": 5,
+      "title": "От Луки 5 · Новый русский",
+      "cueCount": 39,
+      "narratorId": "new-russian",
+      "file": "projects/nrt_luke_5.json"
+    },
+    {
       "id": "gh_nrt_mark_1",
       "translationCode": "NRT",
       "bookId": "mark",
