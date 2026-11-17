@@ -106,7 +106,7 @@ internal fun KidsRedBallEditor(
     Box(
         Modifier
             .fillMaxSize()
-            .background(Color(0xFFBFDBFE)),
+            .background(Color(0xFF7EC8F5)),
     ) {
         Column(
             Modifier
