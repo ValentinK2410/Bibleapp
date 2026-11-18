@@ -25,10 +25,12 @@ class RedBallSkinTest {
         assertEquals(RedBallSkinId.GREEN_HILLS, RedBallSkinId.fromStored("green_hills"))
         assertEquals(RedBallSkinId.DEEP_FOREST, RedBallSkinId.fromStored("deep_forest"))
         assertEquals(RedBallSkinId.SUNNY_DESERT, RedBallSkinId.fromStored("sunny_desert"))
+        assertEquals(RedBallSkinId.WATER_WORLD, RedBallSkinId.fromStored("water_world"))
         assertTrue(RedBallSkinId.CLASSIC.procedural)
         assertFalse(RedBallSkinId.GREEN_HILLS.procedural)
         assertFalse(RedBallSkinId.DEEP_FOREST.procedural)
         assertFalse(RedBallSkinId.SUNNY_DESERT.procedural)
+        assertFalse(RedBallSkinId.WATER_WORLD.procedural)
         assertEquals(null, RedBallSkins.chapter(RedBallSkinId.CLASSIC))
         assertEquals(RedBallSkinId.GREEN_HILLS, RedBallSkins.selectable.first())
         assertEquals(
@@ -36,12 +38,18 @@ class RedBallSkinTest {
                 RedBallSkinId.GREEN_HILLS,
                 RedBallSkinId.DEEP_FOREST,
                 RedBallSkinId.SUNNY_DESERT,
+                RedBallSkinId.WATER_WORLD,
                 RedBallSkinId.CLASSIC,
             ),
             RedBallSkins.selectable,
         )
         assertEquals(
-            listOf(RedBallSkinId.GREEN_HILLS, RedBallSkinId.DEEP_FOREST, RedBallSkinId.SUNNY_DESERT),
+            listOf(
+                RedBallSkinId.GREEN_HILLS,
+                RedBallSkinId.DEEP_FOREST,
+                RedBallSkinId.SUNNY_DESERT,
+                RedBallSkinId.WATER_WORLD,
+            ),
             RedBallSkins.chapters.map { it.id },
         )
         assertEquals(0L, RedBallSkinId.GREEN_HILLS.menuInk)
@@ -59,7 +67,13 @@ class RedBallSkinTest {
         assertFalse(RedBallSkinId.GREEN_HILLS.flatSun)
         assertFalse(RedBallSkinId.DEEP_FOREST.flatSun)
         assertFalse(RedBallSkinId.CLASSIC.flatSun)
+        assertFalse(RedBallSkinId.WATER_WORLD.flatSun)
         assertTrue(RedBallSkinId.SUNNY_DESERT.flatSun)
+        assertEquals(0xFFFFFFFF, RedBallSkinId.WATER_WORLD.menuInk)
+        assertLightInk(RedBallSkinId.WATER_WORLD.menuInk)
+        assertLightInk(RedBallSkinId.WATER_WORLD.menuInkSoft)
+        assertEquals(0xE6101824, RedBallSkinId.WATER_WORLD.menuHalo)
+        assertDarkInk(RedBallSkinId.WATER_WORLD.menuHalo)
         val forest = RedBallSkins.chapter(RedBallSkinId.DEEP_FOREST)
         assertEquals(2, forest!!.chapter)
         assertEquals("Тёмный лес", forest.title)
@@ -68,6 +82,11 @@ class RedBallSkinTest {
         assertEquals(3, desert!!.chapter)
         assertEquals("Солнечная пустыня", desert.title)
         assertEquals("redball/sunny_desert", desert.assetRoot)
+        val water = RedBallSkins.chapter(RedBallSkinId.WATER_WORLD)
+        assertEquals(4, water!!.chapter)
+        assertEquals("Водный мир", water.title)
+        assertEquals("redball/water_world", water.assetRoot)
+        assertFalse(water.files.containsKey(RedBallSkinSlot.CART))
     }
 
     @Test
@@ -157,7 +176,12 @@ class RedBallSkinTest {
         assertEquals(required, expectedPng.keys)
         val packed = RedBallSkins.chapters.associate { it.id to fileBytes(assets, it) }
         assertEquals(
-            setOf(RedBallSkinId.GREEN_HILLS, RedBallSkinId.DEEP_FOREST, RedBallSkinId.SUNNY_DESERT),
+            setOf(
+                RedBallSkinId.GREEN_HILLS,
+                RedBallSkinId.DEEP_FOREST,
+                RedBallSkinId.SUNNY_DESERT,
+                RedBallSkinId.WATER_WORLD,
+            ),
             packed.keys,
         )
         val green = packed.getValue(RedBallSkinId.GREEN_HILLS)
@@ -175,6 +199,7 @@ class RedBallSkinTest {
                     RedBallSkinId.GREEN_HILLS -> spec.greenBytes
                     RedBallSkinId.DEEP_FOREST -> spec.forestBytes
                     RedBallSkinId.SUNNY_DESERT -> spec.desertBytes
+                    RedBallSkinId.WATER_WORLD -> spec.waterBytes
                     else -> error("нет ожидаемых байтов для ${chapter.id}")
                 }
                 assertEquals("$slot ${chapter.id} width", spec.width, file.width)
@@ -203,6 +228,7 @@ class RedBallSkinTest {
         assertFalse(json.contains("green_hills"))
         assertFalse(json.contains("deep_forest"))
         assertFalse(json.contains("sunny_desert"))
+        assertFalse(json.contains("water_world"))
         assertFalse(json.contains("\"skin\""))
         assertEquals(RedBallDraft.fresh().name, RedBallDraft.fromJson(json)!!.name)
     }
@@ -272,48 +298,49 @@ class RedBallSkinTest {
         val greenBytes: Long,
         val forestBytes: Long,
         val desertBytes: Long,
+        val waterBytes: Long,
     )
 
     /**
      * Пиксели совпадают у всех глав: спрайты и иконки — 2×, крупные тайлы — 1×.
-     * Байты леса и пустыни — это как раз те файлы, которые лежат в APK.
+     * Байты леса, пустыни и водного мира — это как раз те файлы, которые лежат в APK.
      */
     private val expectedPng = mapOf(
-        RedBallSkinSlot.HERO_HAPPY to ExpectedPng(128, 128, 19724, 19724, 19724),
-        RedBallSkinSlot.HERO_SURPRISED to ExpectedPng(128, 128, 19672, 19672, 19672),
-        RedBallSkinSlot.HERO_SCARED to ExpectedPng(128, 128, 19371, 19371, 19371),
-        RedBallSkinSlot.ENEMY_SQUARE to ExpectedPng(128, 128, 21880, 26251, 27904),
-        RedBallSkinSlot.BOSS to ExpectedPng(256, 256, 58220, 73002, 84725),
-        RedBallSkinSlot.BOULDER to ExpectedPng(128, 128, 19545, 22518, 23802),
-        RedBallSkinSlot.CRATE to ExpectedPng(256, 256, 59025, 79467, 103070),
-        RedBallSkinSlot.CONCRETE to ExpectedPng(256, 256, 12315, 42961, 82810),
-        RedBallSkinSlot.GRASS_TOP to ExpectedPng(256, 256, 91524, 90378, 78277),
-        RedBallSkinSlot.GRASS_EDGE to ExpectedPng(256, 64, 20558, 22233, 11672),
-        RedBallSkinSlot.SOIL to ExpectedPng(256, 256, 116862, 98530, 103900),
-        RedBallSkinSlot.LADDER to ExpectedPng(128, 128, 9041, 5004, 4034),
-        RedBallSkinSlot.SPIKES to ExpectedPng(128, 128, 17986, 21040, 27383),
-        RedBallSkinSlot.SPRING_IDLE to ExpectedPng(128, 128, 19313, 19441, 19201),
-        RedBallSkinSlot.SPRING_COMPRESSED to ExpectedPng(128, 128, 14527, 15540, 16645),
-        RedBallSkinSlot.WATER_SURFACE to ExpectedPng(256, 64, 17849, 20698, 19982),
-        RedBallSkinSlot.WATER_BODY to ExpectedPng(256, 256, 59516, 62014, 94562),
-        RedBallSkinSlot.STAR to ExpectedPng(64, 64, 5032, 5032, 5032),
-        RedBallSkinSlot.MAGNET to ExpectedPng(64, 64, 5380, 5380, 5380),
-        RedBallSkinSlot.HEART to ExpectedPng(64, 64, 4931, 4931, 4931),
-        RedBallSkinSlot.FLAG to ExpectedPng(128, 128, 11998, 11998, 11998),
-        RedBallSkinSlot.PORTAL_ENTRY to ExpectedPng(128, 128, 28008, 28008, 28008),
-        RedBallSkinSlot.PORTAL_EXIT to ExpectedPng(128, 128, 30742, 30742, 30742),
-        RedBallSkinSlot.BUSH to ExpectedPng(256, 256, 43723, 58499, 60053),
-        RedBallSkinSlot.TREE to ExpectedPng(256, 256, 52559, 57696, 58784),
-        RedBallSkinSlot.SKY to ExpectedPng(256, 512, 1589, 5902, 1448),
-        RedBallSkinSlot.HILLS_FAR to ExpectedPng(1024, 256, 239534, 265165, 167125),
-        RedBallSkinSlot.HILLS_NEAR to ExpectedPng(1024, 256, 312512, 353349, 224355),
-        RedBallSkinSlot.CLOUD_A to ExpectedPng(216, 128, 21725, 24407, 24540),
-        RedBallSkinSlot.CLOUD_B to ExpectedPng(216, 128, 20728, 22917, 22586),
-        RedBallSkinSlot.CLOUD_C to ExpectedPng(218, 128, 20459, 25339, 24474),
-        RedBallSkinSlot.ICON_HEART to ExpectedPng(64, 64, 4931, 4931, 4931),
-        RedBallSkinSlot.ICON_STAR to ExpectedPng(64, 64, 5032, 5032, 5032),
-        RedBallSkinSlot.ICON_PAUSE to ExpectedPng(64, 64, 6194, 6194, 6194),
-        RedBallSkinSlot.ICON_COIN to ExpectedPng(64, 64, 8109, 8109, 8109),
+        RedBallSkinSlot.HERO_HAPPY to ExpectedPng(128, 128, 19724, 19724, 19724, 19724),
+        RedBallSkinSlot.HERO_SURPRISED to ExpectedPng(128, 128, 19672, 19672, 19672, 19672),
+        RedBallSkinSlot.HERO_SCARED to ExpectedPng(128, 128, 19371, 19371, 19371, 19371),
+        RedBallSkinSlot.ENEMY_SQUARE to ExpectedPng(128, 128, 21880, 26251, 27904, 26519),
+        RedBallSkinSlot.BOSS to ExpectedPng(256, 256, 58220, 73002, 84725, 95108),
+        RedBallSkinSlot.BOULDER to ExpectedPng(128, 128, 19545, 22518, 23802, 35291),
+        RedBallSkinSlot.CRATE to ExpectedPng(256, 256, 59025, 79467, 103070, 97918),
+        RedBallSkinSlot.CONCRETE to ExpectedPng(256, 256, 12315, 42961, 82810, 59420),
+        RedBallSkinSlot.GRASS_TOP to ExpectedPng(256, 256, 91524, 90378, 78277, 82686),
+        RedBallSkinSlot.GRASS_EDGE to ExpectedPng(256, 64, 20558, 22233, 11672, 14167),
+        RedBallSkinSlot.SOIL to ExpectedPng(256, 256, 116862, 98530, 103900, 106133),
+        RedBallSkinSlot.LADDER to ExpectedPng(128, 128, 9041, 5004, 4034, 3702),
+        RedBallSkinSlot.SPIKES to ExpectedPng(128, 128, 17986, 21040, 27383, 32159),
+        RedBallSkinSlot.SPRING_IDLE to ExpectedPng(128, 128, 19313, 19441, 19201, 18567),
+        RedBallSkinSlot.SPRING_COMPRESSED to ExpectedPng(128, 128, 14527, 15540, 16645, 14628),
+        RedBallSkinSlot.WATER_SURFACE to ExpectedPng(256, 64, 17849, 20698, 19982, 19610),
+        RedBallSkinSlot.WATER_BODY to ExpectedPng(256, 256, 59516, 62014, 94562, 97182),
+        RedBallSkinSlot.STAR to ExpectedPng(64, 64, 5032, 5032, 5032, 5032),
+        RedBallSkinSlot.MAGNET to ExpectedPng(64, 64, 5380, 5380, 5380, 5380),
+        RedBallSkinSlot.HEART to ExpectedPng(64, 64, 4931, 4931, 4931, 4931),
+        RedBallSkinSlot.FLAG to ExpectedPng(128, 128, 11998, 11998, 11998, 11998),
+        RedBallSkinSlot.PORTAL_ENTRY to ExpectedPng(128, 128, 28008, 28008, 28008, 28008),
+        RedBallSkinSlot.PORTAL_EXIT to ExpectedPng(128, 128, 30742, 30742, 30742, 30742),
+        RedBallSkinSlot.BUSH to ExpectedPng(256, 256, 43723, 58499, 60053, 103607),
+        RedBallSkinSlot.TREE to ExpectedPng(256, 256, 52559, 57696, 58784, 58603),
+        RedBallSkinSlot.SKY to ExpectedPng(256, 512, 1589, 5902, 1448, 12435),
+        RedBallSkinSlot.HILLS_FAR to ExpectedPng(1024, 256, 239534, 265165, 167125, 177140),
+        RedBallSkinSlot.HILLS_NEAR to ExpectedPng(1024, 256, 312512, 353349, 224355, 273340),
+        RedBallSkinSlot.CLOUD_A to ExpectedPng(216, 128, 21725, 24407, 24540, 25617),
+        RedBallSkinSlot.CLOUD_B to ExpectedPng(216, 128, 20728, 22917, 22586, 26627),
+        RedBallSkinSlot.CLOUD_C to ExpectedPng(218, 128, 20459, 25339, 24474, 25826),
+        RedBallSkinSlot.ICON_HEART to ExpectedPng(64, 64, 4931, 4931, 4931, 4931),
+        RedBallSkinSlot.ICON_STAR to ExpectedPng(64, 64, 5032, 5032, 5032, 5032),
+        RedBallSkinSlot.ICON_PAUSE to ExpectedPng(64, 64, 6194, 6194, 6194, 6194),
+        RedBallSkinSlot.ICON_COIN to ExpectedPng(64, 64, 8109, 8109, 8109, 8109),
     )
 
     /** Герой, звезда, магнит, сердце, флаг, порталы и иконки — побайтовые копии «Зелёных холмов». */
