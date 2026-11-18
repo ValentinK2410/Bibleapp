@@ -35,6 +35,9 @@ class RedBallSim(val scene: RedBallScene = RedBallScene.builtin()) {
     val magnets: List<RedBallMagnet> = scene.magnets.map { RedBallMagnet(it.x, it.y) }
     val particles: List<RedBallParticle> get() = fx
 
+    /** Сценарий уровня. У горки он пустой и физику не двигает. */
+    val director = RedBallDirector(scene)
+
     val starsCollected: Int get() = stars.count { it.taken || it.attached }
 
     /** Первый ящик. Встроенный уровень один, тесты читают его отсюда. */
@@ -134,6 +137,7 @@ class RedBallSim(val scene: RedBallScene = RedBallScene.builtin()) {
         for (block in blocks) block.reset()
         for (cart in carts) cart.reset()
         for (enemy in enemies) enemy.reset()
+        director.reset()
         for (star in stars) star.reset()
         for (magnet in magnets) magnet.taken = false
         fx.clear()
@@ -274,6 +278,8 @@ class RedBallSim(val scene: RedBallScene = RedBallScene.builtin()) {
 
     private fun substep(dt: Float, move: Float) {
         if (invuln > 0f) invuln = (invuln - dt).coerceAtLeast(0f)
+        advanceDirector(dt)
+        if (dead || won) return
         if (rideLock > 0f) rideLock = (rideLock - dt).coerceAtLeast(0f)
         if (rideIndex >= 0 && jumpBuffer > 0f) leaveCart()
         if (rideIndex >= 0) {
@@ -283,7 +289,8 @@ class RedBallSim(val scene: RedBallScene = RedBallScene.builtin()) {
             wasGrounded = true
             contactFriction = RED_BALL_FRICTION
             ballAngle += ballVx / RedBallScene.BALL_R * dt
-            for (enemy in enemies) if (enemy.alive && enemy.gravity) enemy.vy += GRAVITY * dt
+            val g = director.gravityScale
+            for (enemy in enemies) if (enemy.alive && enemy.gravity && !enemy.asleep) enemy.vy += GRAVITY * g * dt
             stepEnemies(dt)
             afterMotion(dt, riding = true)
             return
@@ -309,6 +316,7 @@ class RedBallSim(val scene: RedBallScene = RedBallScene.builtin()) {
                 rising = false
             }
         }
+        val gScale = director.gravityScale
         val swimming = swimProbe() != null
         val climbing = overlapsLadder()
         if (swimming) {
@@ -320,14 +328,14 @@ class RedBallSim(val scene: RedBallScene = RedBallScene.builtin()) {
             rising = false
             jumpBuffer = 0f
         } else if (climbing && !wasGrounded) {
-            ballVy += GRAVITY * 0.2f * dt
+            ballVy += GRAVITY * gScale * 0.2f * dt
             if (ballVy > LADDER_FALL) ballVy = LADDER_FALL
         } else {
-            ballVy += GRAVITY * dt
+            ballVy += GRAVITY * gScale * dt
         }
-        for (crate in crates) if (crate.gravity) crate.vy += GRAVITY * dt
-        for (block in blocks) if (block.gravity) block.vy += GRAVITY * dt
-        for (enemy in enemies) if (enemy.alive && enemy.gravity) enemy.vy += GRAVITY * dt
+        for (crate in crates) if (crate.gravity) crate.vy += GRAVITY * gScale * dt
+        for (block in blocks) if (block.gravity) block.vy += GRAVITY * gScale * dt
+        for (enemy in enemies) if (enemy.alive && enemy.gravity && !enemy.asleep) enemy.vy += GRAVITY * gScale * dt
         val accel = when {
             swimming -> WATER_ACCEL
             wasGrounded -> RUN_ACCEL
@@ -527,14 +535,14 @@ class RedBallSim(val scene: RedBallScene = RedBallScene.builtin()) {
     }
 
     private fun moveEnemy(enemy: RedBallEnemy, dt: Float) {
-        if (!enemy.alive) return
+        if (!enemy.alive || enemy.asleep) return
         enemy.onGround = false
         val speed = ENEMY_SPEED
         enemy.vx = enemy.dir * speed
         val prevX = enemy.x
         enemy.x += enemy.vx * dt
         enemy.y += enemy.vy * dt
-        for (solid in scene.solids) resolveEnemySolid(enemy, solid)
+        for (solid in liveSolids()) resolveEnemySolid(enemy, solid)
         for (solid in scene.concrete) resolveEnemySolid(enemy, solid)
         for (crate in crates) resolveEnemySolid(enemy, crateAabb(crate))
         for (block in blocks) resolveEnemySolid(enemy, crateAabb(block))
@@ -575,7 +583,7 @@ class RedBallSim(val scene: RedBallScene = RedBallScene.builtin()) {
         val foot = enemy.y + half
         fun covers(s: RedBallAabb): Boolean =
             front >= s.l && front <= s.r && s.t >= foot - 6f && s.t <= foot + 18f
-        if (scene.solids.any { covers(it) }) return true
+        if (liveSolids().any { covers(it) }) return true
         if (scene.concrete.any { covers(it) }) return true
         for (crate in crates) if (covers(crateAabb(crate))) return true
         for (block in blocks) if (covers(crateAabb(block))) return true
@@ -627,19 +635,23 @@ class RedBallSim(val scene: RedBallScene = RedBallScene.builtin()) {
         if (dead || won) return
         val radius = RedBallScene.BALL_R
         for (enemy in enemies) {
-            if (!enemy.alive) continue
+            if (!enemy.alive || enemy.asleep) continue
             val half = enemy.size / 2f
             val box = RedBallAabb(enemy.x - half, enemy.y - half, enemy.x + half, enemy.y + half)
             if (!overlaps(box)) continue
             val stomp = ballY < enemy.y - half * 0.25f && ballVy > 20f
             if (stomp) {
-                enemy.alive = false
+                enemy.hitsLeft -= 1
                 ballVy = min(ballVy, -560f)
                 ballY = min(ballY, enemy.y - half - radius - 0.8f)
                 grounded = false
                 rising = false
                 pendingStomp = true
                 puff(enemy.x, enemy.y, RedBallParticle.BOOM, 16, 280f, 0.55f, 8f)
+                if (enemy.hitsLeft <= 0) {
+                    enemy.alive = false
+                    if (enemy.defeatTrigger.isNotBlank()) director.fire(enemy.defeatTrigger)
+                }
             } else if (invuln <= 0f) {
                 val away = if (ballX >= enemy.x) 1f else -1f
                 ballX += away * 8f
@@ -741,7 +753,7 @@ class RedBallSim(val scene: RedBallScene = RedBallScene.builtin()) {
         fun take(y: Float) {
             if (y >= from && y < best) best = y
         }
-        for (s in scene.solids) if (x >= s.l && x <= s.r) take(s.t)
+        for (s in liveSolids()) if (x >= s.l && x <= s.r) take(s.t)
         for (s in scene.concrete) if (x >= s.l && x <= s.r) take(s.t)
         for (sl in scene.slopes) {
             val lo = min(sl.x0, sl.x1)
@@ -763,7 +775,7 @@ class RedBallSim(val scene: RedBallScene = RedBallScene.builtin()) {
     }
 
     private fun resolveBallAgainstSolids() {
-        for (solid in scene.solids) {
+        for (solid in liveSolids()) {
             bounceCircle(solid, RedBallScene.BALL_R)
         }
         for (solid in scene.concrete) {
@@ -890,7 +902,7 @@ class RedBallSim(val scene: RedBallScene = RedBallScene.builtin()) {
     }
 
     private fun resolveCrateAgainstSolids(crate: RedBallCrate) {
-        resolveCrateAgainstList(crate, scene.solids)
+        resolveCrateAgainstList(crate, liveSolids())
         if (scene.concrete.isNotEmpty()) resolveCrateAgainstList(crate, scene.concrete)
     }
 
@@ -1042,6 +1054,47 @@ class RedBallSim(val scene: RedBallScene = RedBallScene.builtin()) {
         return RedBallAabb(crate.x - h, crate.y - h, crate.x + h, crate.y + h, crate.friction)
     }
 
+    private fun liveSolids(): List<RedBallAabb> = director.solids()
+
+    private fun liveWaters(): List<RedBallWater> = director.waters()
+
+    /**
+     * Сценарий раньше физики: обвал, вода, телепорт, погоня.
+     * Пустой сценарий горки ничего не двигает.
+     */
+    private fun advanceDirector(dt: Float) {
+        director.step(dt, ballX, ballY, RedBallScene.BALL_R)
+        val jump = director.drainTeleport()
+        if (jump != null) {
+            rideIndex = -1
+            ballX = jump.first
+            ballY = jump.second
+            ballVx = 0f
+            ballVy = 0f
+            grounded = false
+            wasGrounded = false
+            rising = false
+            afloat = false
+            submerged = false
+        }
+        for (index in director.drainWake()) {
+            enemies.getOrNull(index)?.asleep = false
+        }
+        if (dead || won) return
+        val radius = RedBallScene.BALL_R
+        for (chaser in director.chasers()) {
+            if (!chaser.active) continue
+            val dx = ballX - chaser.x
+            val dy = ballY - chaser.y
+            val reach = radius + chaser.size * 0.42f
+            if (dx * dx + dy * dy > reach * reach) continue
+            val away = if (ballX >= chaser.x) 1f else -1f
+            ballX += away * 6f
+            takeHit(away * 260f, -180f, respawn = false)
+            if (dead) return
+        }
+    }
+
     private fun overlaps(s: RedBallAabb): Boolean {
         val radius = RedBallScene.BALL_R
         return ballX + radius > s.l && ballX - radius < s.r &&
@@ -1055,6 +1108,7 @@ class RedBallSim(val scene: RedBallScene = RedBallScene.builtin()) {
     }
 
     private fun overlapsDoor(): Boolean {
+        if (!director.doorVisible) return false
         val d = scene.door
         return ballX > d.l && ballX < d.r && ballY > d.t && ballY < d.b
     }
@@ -1106,6 +1160,7 @@ class RedBallSim(val scene: RedBallScene = RedBallScene.builtin()) {
     private fun hitsSpike(): Boolean {
         val radius = RedBallScene.BALL_R
         for (spike in scene.spikes) {
+            if (!director.spikeEnabled(spike)) continue
             if (abs(ballX - spike.x) > spike.w / 2f + radius * 0.4f) continue
             if (ballY + radius < spike.top || ballY - radius > spike.top + spike.h) continue
             val depth = ((ballY - spike.top) / spike.h).coerceIn(0f, 1f)
@@ -1196,7 +1251,7 @@ class RedBallSim(val scene: RedBallScene = RedBallScene.builtin()) {
             val cart = carts[i]
             val driven = i == rideIndex
             cart.onGround = false
-            cart.vy += GRAVITY * dt
+            cart.vy += GRAVITY * director.gravityScale * dt
             if (driven) {
                 cart.vx += move * CART_ACCEL * dt
                 cart.vx = cart.vx.coerceIn(-CART_MAX, CART_MAX)
@@ -1216,7 +1271,7 @@ class RedBallSim(val scene: RedBallScene = RedBallScene.builtin()) {
     }
 
     private fun resolveCartAgainstSolids(cart: RedBallCart) {
-        resolveCartAgainstList(cart, scene.solids)
+        resolveCartAgainstList(cart, liveSolids())
         if (scene.concrete.isNotEmpty()) resolveCartAgainstList(cart, scene.concrete)
     }
 
@@ -1272,7 +1327,7 @@ class RedBallSim(val scene: RedBallScene = RedBallScene.builtin()) {
     }
 
     private fun poolAt(x: Float, y: Float): RedBallWater? {
-        for (pool in scene.waters) {
+        for (pool in liveWaters()) {
             if (x >= pool.l && x <= pool.r && y >= pool.t && y <= pool.b) return pool
         }
         return null
@@ -1293,7 +1348,7 @@ class RedBallSim(val scene: RedBallScene = RedBallScene.builtin()) {
             return
         }
         val radius = RedBallScene.BALL_R
-        for (pool in scene.waters) {
+        for (pool in liveWaters()) {
             if (ballX < pool.l + 2f || ballX > pool.r - 2f) continue
             val feet = ballY + radius
             val crossed = prevFeet <= pool.t + 4f && feet >= pool.t - 1f
@@ -1484,6 +1539,10 @@ private fun RedBallEnemySpawn.toEnemy() = RedBallEnemy(
     gravity = gravity,
     friction = friction,
     mass = mass,
+    hits = hits,
+    asleepAtStart = asleep,
+    disguised = disguised,
+    defeatTrigger = defeatTrigger,
 )
 
 class RedBallCrate(
@@ -1544,7 +1603,15 @@ class RedBallEnemy(
     val gravity: Boolean,
     val friction: Float,
     val mass: Float,
+    hits: Int = 1,
+    asleepAtStart: Boolean = false,
+    val disguised: Boolean = false,
+    val defeatTrigger: String = "",
 ) {
+    val maxHits: Int = hits.coerceAtLeast(1)
+    var hitsLeft: Int = maxHits
+    private val homeAsleep: Boolean = asleepAtStart
+    var asleep: Boolean = asleepAtStart
     var vx: Float = 0f
     var vy: Float = 0f
     var dir: Int = 1
@@ -1561,6 +1628,8 @@ class RedBallEnemy(
         angle = 0f
         alive = true
         onGround = false
+        hitsLeft = maxHits
+        asleep = homeAsleep
     }
 }
 

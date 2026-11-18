@@ -11,6 +11,8 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.horizontalScroll
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.gestures.awaitEachGesture
 import androidx.compose.foundation.gestures.awaitFirstDown
 import androidx.compose.foundation.gestures.waitForUpOrCancellation
@@ -92,6 +94,10 @@ import com.example.bible.games.skins.RedBallSkinSlot
 import com.example.bible.games.skins.RedBallSkins
 import com.example.bible.games.KidsGameAudio
 import com.example.bible.games.KidsSfx
+import com.example.bible.games.PrefsCampaignMemory
+import com.example.bible.games.RedBallCampaign
+import com.example.bible.games.RedBallCampaignLevel
+import com.example.bible.games.RedBallCampaignProgress
 import com.example.bible.games.RedBallDraft
 import com.example.bible.games.RedBallLevelMeta
 import com.example.bible.games.RedBallLevelStore
@@ -115,13 +121,14 @@ import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
-private enum class RedBallPage { MENU, LEVELS, EDITOR, PLAY }
+private enum class RedBallPage { MENU, LEVELS, CAMPAIGN, EDITOR, PLAY }
 
 private class PlayRequest(
     val scene: RedBallScene,
     val test: Boolean,
     val familyRoot: String,
     val backToEditor: Boolean,
+    val campaign: RedBallCampaignLevel? = null,
 )
 
 @Composable
@@ -149,6 +156,8 @@ fun KidsRedBallGameScreen(onBack: () -> Unit) {
     var listRev by remember { mutableIntStateOf(0) }
     var warning by remember { mutableStateOf<String?>(null) }
     var familyOpen by remember { mutableStateOf(false) }
+    var campaignRev by remember { mutableIntStateOf(0) }
+    val campaignProgress = remember { RedBallCampaignProgress(PrefsCampaignMemory(context.applicationContext)) }
     val savedLevels by produceState<List<RedBallLevelMeta>?>(null, listRev, store) {
         value = withContext(Dispatchers.IO) { store.listAll() }
     }
@@ -282,17 +291,37 @@ fun KidsRedBallGameScreen(onBack: () -> Unit) {
                     meta?.parentId.orEmpty(),
                     catalog,
                 )
-                PlayRequest(scene.withKnownPortals(known), test, root, backToEditor)
+                val campaignLinks = scene.portals.map { it.linkId }.filter { RedBallCampaign.isCampaignId(it) }.toSet()
+                PlayRequest(scene.withKnownPortals(known + campaignLinks), test, root, backToEditor)
             }
             play = prepared
             page = RedBallPage.PLAY
         }
     }
 
+    fun beginCampaign(level: RedBallCampaignLevel) {
+        if (!campaignProgress.isUnlocked(level.index)) return
+        skinId = level.skin
+        val links = level.scene.portals.map { it.linkId }.filter { RedBallCampaign.isCampaignId(it) }.toSet()
+        play = PlayRequest(
+            scene = level.scene.withKnownPortals(links + setOf(level.scene.id)),
+            test = false,
+            familyRoot = level.scene.id,
+            backToEditor = false,
+            campaign = level,
+        )
+        page = RedBallPage.PLAY
+    }
+
     fun leavePlay() {
         val current = play
+        if (current?.campaign != null) {
+            skinId = skinSettings.current()
+            campaignRev++
+        }
         page = when {
             current?.test == true || current?.backToEditor == true -> RedBallPage.EDITOR
+            current?.campaign != null -> RedBallPage.CAMPAIGN
             current?.scene?.builtin == false -> RedBallPage.LEVELS
             else -> RedBallPage.MENU
         }
@@ -362,6 +391,7 @@ fun KidsRedBallGameScreen(onBack: () -> Unit) {
         when {
             page == RedBallPage.EDITOR && familyOpen -> familyOpen = false
             page == RedBallPage.MENU -> onBack()
+            page == RedBallPage.CAMPAIGN -> page = RedBallPage.MENU
             page == RedBallPage.LEVELS -> page = RedBallPage.MENU
             page == RedBallPage.EDITOR -> closeEditor()
             page == RedBallPage.PLAY -> leavePlay()
@@ -371,6 +401,7 @@ fun KidsRedBallGameScreen(onBack: () -> Unit) {
     when (page) {
         RedBallPage.MENU -> RedBallMenu(
             onBack = onBack,
+            onCampaign = { page = RedBallPage.CAMPAIGN },
             onPlayBuiltin = { beginPlay(RedBallScene.builtin(), test = false) },
             onMyLevels = { page = RedBallPage.LEVELS },
             onCreate = { openDraft(RedBallDraft.fresh(), listed = false) },
@@ -410,6 +441,12 @@ fun KidsRedBallGameScreen(onBack: () -> Unit) {
                 }
             },
             onChanged = { listRev++ },
+        )
+        RedBallPage.CAMPAIGN -> RedBallCampaignSelect(
+            progress = campaignProgress,
+            revision = campaignRev,
+            onBack = { page = RedBallPage.MENU },
+            onPlay = { level -> beginCampaign(level) },
         )
         RedBallPage.EDITOR -> Box(Modifier.fillMaxSize()) {
             KidsRedBallEditor(
@@ -498,6 +535,8 @@ fun KidsRedBallGameScreen(onBack: () -> Unit) {
                     skinId = skinId,
                     onSkin = ::pickSkin,
                     onExit = { leavePlay() },
+                    campaign = request.campaign,
+                    progress = campaignProgress,
                 )
             }
         }
@@ -507,6 +546,7 @@ fun KidsRedBallGameScreen(onBack: () -> Unit) {
 @Composable
 private fun RedBallMenu(
     onBack: () -> Unit,
+    onCampaign: () -> Unit,
     onPlayBuiltin: () -> Unit,
     onMyLevels: () -> Unit,
     onCreate: () -> Unit,
@@ -528,6 +568,7 @@ private fun RedBallMenu(
                 .fillMaxSize()
                 .statusBarsPadding()
                 .navigationBarsPadding()
+                .verticalScroll(rememberScrollState())
                 .padding(horizontal = 22.dp, vertical = 8.dp),
         ) {
             val titleColor = skinId.menuTitleColor()
@@ -561,6 +602,8 @@ private fun RedBallMenu(
             Spacer(Modifier.height(12.dp))
             RedBallSkinPicker(skinId, onSkin, labelColor = titleColor, labelHalo = halo)
             Spacer(Modifier.height(16.dp))
+            MenuCard("Сказка", "Десять уровней. Следующий откроется у флага", Color(0xFF7C3AED), onCampaign)
+            Spacer(Modifier.height(12.dp))
             MenuCard("Играть", "Готовая горка: ящик, пружина и дверь", Color(0xFFDC2626), onPlayBuiltin)
             Spacer(Modifier.height(12.dp))
             MenuCard("Мои уровни", "Главные сцены: сыграть, поправить или открыть вложенные", Color(0xFFC2410C), onMyLevels)
@@ -717,6 +760,93 @@ private fun RedBallLevelList(
             },
             dismissButton = { TextButton(onClick = { remove = null }) { Text("Оставить") } },
         )
+    }
+}
+
+private fun campaignClearLine(level: RedBallCampaignLevel, stars: Int): String {
+    val shown = stars.coerceIn(0, 3)
+    val marks = "★".repeat(shown) + "☆".repeat(3 - shown)
+    val next = if (level.index < RedBallCampaign.COUNT) " Следующий уровень открыт." else " Квадратный король побеждён."
+    return "Звёзды: $marks.$next"
+}
+
+private fun campaignStars(progress: RedBallCampaignProgress, index: Int): String {
+    val shown = if (progress.isCleared(index)) progress.bestStars(index) else 0
+    return "★".repeat(shown.coerceIn(0, 3)) + "☆".repeat(3 - shown.coerceIn(0, 3))
+}
+
+@Composable
+private fun RedBallCampaignSelect(
+    progress: RedBallCampaignProgress,
+    revision: Int,
+    onBack: () -> Unit,
+    onPlay: (RedBallCampaignLevel) -> Unit,
+) {
+    val levels = RedBallCampaign.levels
+    Box(
+        Modifier
+            .fillMaxSize()
+            .background(Color(0xFFFFF7ED)),
+    ) {
+        Column(
+            Modifier
+                .fillMaxSize()
+                .statusBarsPadding()
+                .navigationBarsPadding(),
+        ) {
+            Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.padding(end = 12.dp)) {
+                IconButton(onClick = onBack) {
+                    Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Назад", tint = Color(0xFF7C2D12))
+                }
+                Text("Сказка", fontWeight = FontWeight.Black, fontSize = 26.sp, color = Color(0xFF7C2D12))
+            }
+            Text(
+                "Квадраты квадратят мир. Холмы, лес, пустыня и вода — по порядку.",
+                modifier = Modifier.padding(horizontal = 20.dp, vertical = 4.dp),
+                color = Color(0xFF9A3412),
+                fontSize = 14.sp,
+            )
+            LazyColumn(
+                contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp),
+                verticalArrangement = Arrangement.spacedBy(10.dp),
+            ) {
+                items(levels, key = { "${revision}:${it.id}" }) { level ->
+                    val open = progress.isUnlocked(level.index)
+                    val cleared = progress.isCleared(level.index)
+                    Column(
+                        Modifier
+                            .fillMaxWidth()
+                            .clip(RoundedCornerShape(24.dp))
+                            .background(if (open) Color.White else Color(0xFFE7E5E4))
+                            .then(
+                                if (open) {
+                                    Modifier.kidsPressable(onClick = { onPlay(level) })
+                                } else {
+                                    Modifier
+                                },
+                            )
+                            .padding(16.dp),
+                    ) {
+                        Text(
+                            if (open) "${level.index}. ${level.title}" else "Уровень ${level.index}",
+                            fontWeight = FontWeight.Black,
+                            fontSize = 20.sp,
+                            color = if (open) Color(0xFF7C2D12) else Color(0xFF78716C),
+                        )
+                        Spacer(Modifier.height(4.dp))
+                        Text(
+                            when {
+                                !open -> "Закрыто. Сначала дойди до флага раньше."
+                                cleared -> "${level.chapter} · ${campaignStars(progress, level.index)}"
+                                else -> "${level.chapter} · ${campaignStars(progress, level.index)} · новый"
+                            },
+                            color = if (open) Color(0xFF9A3412) else Color(0xFFA8A29E),
+                            fontSize = 15.sp,
+                        )
+                    }
+                }
+            }
+        }
     }
 }
 
@@ -919,6 +1049,11 @@ private fun resolveTravel(
     sourceRoot: String,
 ): PortalArrival? {
     if (portal.role != RedBallPortalRole.ENTRY || portal.linkId.isBlank()) return null
+    val campaignScene = RedBallCampaign.sceneByLink(portal.linkId)
+    if (campaignScene != null) {
+        val (x, y) = portal.arrivalIn(campaignScene, null)
+        return PortalArrival(campaignScene, x, y, System.nanoTime(), campaignScene.id)
+    }
     val catalog = store.listAll()
     val sourceKind = if (sourceRoot == sourceSceneId) RedBallSceneKind.MAIN else RedBallSceneKind.NESTED
     val sourceParent = if (sourceKind == RedBallSceneKind.NESTED) sourceRoot else ""
@@ -972,6 +1107,8 @@ private fun RedBallPlay(
     skinId: RedBallSkinId,
     onSkin: (RedBallSkinId) -> Unit,
     onExit: () -> Unit,
+    campaign: RedBallCampaignLevel? = null,
+    progress: RedBallCampaignProgress? = null,
 ) {
     val context = LocalContext.current
     var arrival by remember { mutableStateOf<PortalArrival?>(null) }
@@ -986,6 +1123,8 @@ private fun RedBallPlay(
     }
     val held = remember { intArrayOf(0, 0, 0) }
     val paused = remember(sim) { mutableStateOf(false) }
+    var introOn by remember(sim) { mutableStateOf(!campaign?.intro.isNullOrBlank()) }
+    var savedClear by remember(sim) { mutableStateOf(false) }
     var tick by remember { mutableIntStateOf(0) }
     // sim.hearts — обычное поле. Строка сердец читает снимок, иначе не перерисовывается.
     var hudHearts by remember(sim) { mutableIntStateOf(sim.hearts) }
@@ -993,7 +1132,7 @@ private fun RedBallPlay(
         var last = 0L
         while (isActive) {
             withFrameNanos { now ->
-                if (last != 0L && !paused.value) {
+                if (last != 0L && !paused.value && !introOn) {
                     val dt = ((now - last) / 1_000_000_000f).coerceIn(0f, 0.033f)
                     val move = (held[1] - held[0]).toFloat()
                     sim.step(dt, move, held[2].toFloat())
@@ -1046,6 +1185,13 @@ private fun RedBallPlay(
     if (!testMode) {
         KidsGameWinReward(KidsGames.RED_BALL, sim.won, points = 20, round = if (sim.won) shown.id.hashCode() else 0)
     }
+    LaunchedEffect(sim.won, campaign?.index) {
+        val level = campaign ?: return@LaunchedEffect
+        if (!sim.won || savedClear) return@LaunchedEffect
+        savedClear = true
+        progress?.record(level.index, sim.starsCollected)
+    }
+    val storyLine = sim.director.story
     val title = when {
         testMode -> "Проверка · ${shown.name}"
         shown.builtin -> "Красный мяч"
@@ -1149,6 +1295,76 @@ private fun RedBallPlay(
                 if (down) sim.jump()
             },
         )
+        val line = storyLine
+        if (!introOn && line != null && !sim.won && !sim.dead) {
+            Box(
+                Modifier
+                    .align(Alignment.TopCenter)
+                    .statusBarsPadding()
+                    .padding(top = 64.dp, start = 24.dp, end = 24.dp)
+                    .clip(RoundedCornerShape(22.dp))
+                    .background(Color.White.copy(alpha = 0.94f))
+                    .kidsPressable(onClick = { sim.director.dismissStory() })
+                    .padding(horizontal = 16.dp, vertical = 12.dp),
+            ) {
+                Text(
+                    line,
+                    color = Color(0xFF7C2D12),
+                    fontWeight = FontWeight.Bold,
+                    fontSize = 16.sp,
+                    textAlign = TextAlign.Center,
+                )
+            }
+        }
+        if (introOn && campaign != null) {
+            Box(
+                Modifier
+                    .fillMaxSize()
+                    .background(Color(0xAA16324A))
+                    .pointerInput(Unit) {
+                        awaitEachGesture {
+                            val down = awaitFirstDown()
+                            down.consume()
+                            waitForUpOrCancellation()?.consume()
+                        }
+                    },
+                contentAlignment = Alignment.Center,
+            ) {
+                Column(
+                    Modifier
+                        .padding(24.dp)
+                        .clip(RoundedCornerShape(28.dp))
+                        .background(Color.White)
+                        .padding(horizontal = 22.dp, vertical = 20.dp),
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                ) {
+                    Text(
+                        "Уровень ${campaign.index}. ${campaign.title}",
+                        fontWeight = FontWeight.Black,
+                        fontSize = 22.sp,
+                        color = Color(0xFF7C2D12),
+                        textAlign = TextAlign.Center,
+                    )
+                    Spacer(Modifier.height(8.dp))
+                    Text(
+                        campaign.intro,
+                        color = Color(0xFF44403C),
+                        fontSize = 16.sp,
+                        textAlign = TextAlign.Center,
+                    )
+                    Spacer(Modifier.height(14.dp))
+                    Box(
+                        Modifier
+                            .clip(RoundedCornerShape(999.dp))
+                            .background(Color(0xFF7C3AED))
+                            .kidsPressable(onClick = { introOn = false })
+                            .padding(horizontal = 22.dp, vertical = 10.dp),
+                    ) {
+                        Text("В путь", color = Color.White, fontWeight = FontWeight.Black, fontSize = 18.sp)
+                    }
+                }
+            }
+        }
         if (sim.won || sim.dead) {
             Column(
                 Modifier
@@ -1169,6 +1385,7 @@ private fun RedBallPlay(
                 Spacer(Modifier.height(8.dp))
                 Text(
                     when {
+                        sim.won && campaign != null -> campaignClearLine(campaign, sim.starsCollected)
                         sim.won && shown.builtin -> "Мяч докатился сам, как надо"
                         sim.won -> "Получилось! Мяч добрался до двери"
                         shown.builtin -> "Ящик закрывает яму, пружина подбрасывает наверх. Влево — тележка и глубокая вода: вниз, чтобы нырнуть"
@@ -1187,6 +1404,7 @@ private fun RedBallPlay(
                             .kidsPressable(onClick = {
                                 sim.reset()
                                 hudHearts = sim.hearts
+                                savedClear = false
                             })
                             .padding(horizontal = 22.dp, vertical = 10.dp),
                     ) {
@@ -1239,6 +1457,7 @@ private fun RedBallPlay(
                     PauseChoice("Заново", Color(0xFFDC2626)) {
                         sim.reset()
                         hudHearts = sim.hearts
+                        savedClear = false
                         paused.value = false
                     }
                     Spacer(Modifier.height(8.dp))
