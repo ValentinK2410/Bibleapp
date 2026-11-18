@@ -5,7 +5,11 @@ import com.example.bible.games.RedBallAabb
 import com.example.bible.games.RedBallActKind
 import com.example.bible.games.RedBallCampaign
 import com.example.bible.games.RedBallCampaignProgress
+import com.example.bible.games.RedBallCampaignRun
+import com.example.bible.games.RedBallCheckpoint
 import com.example.bible.games.RedBallChaser
+import com.example.bible.games.RedBallSpike
+import com.example.bible.games.cameraFrame
 import com.example.bible.games.RedBallDecoy
 import com.example.bible.games.RedBallEnemySpawn
 import com.example.bible.games.RedBallFlood
@@ -45,7 +49,18 @@ class RedBallCampaignTest {
             assertTrue(level.intro.isNotBlank())
             assertTrue(level.twist.isNotBlank())
             assertTrue(level.intro != level.twist)
-            assertEquals(3, level.scene.stars.size)
+            assertTrue("${level.title}: мало секций", level.sections.size >= 4)
+            assertTrue("${level.title}: мало звёзд", level.scene.stars.size >= 4)
+            assertTrue("${level.title}: мало чекпоинтов", level.scene.checkpoints.size >= 2)
+            assertTrue("${level.title}: нет горок", level.scene.slopes.isNotEmpty())
+            val legacy = LEGACY_WIDTH.getValue(level.index)
+            assertTrue(
+                "${level.title}: ширина ${level.scene.worldW.toInt()} меньше ${legacy * 4}",
+                level.scene.worldW >= legacy * 4f,
+            )
+            val low = level.scene.stars.minOf { it.y }
+            val high = level.scene.stars.maxOf { it.y }
+            assertTrue("${level.title}: нет секрета со звездой", high - low >= 160f)
             assertTrue(
                 level.scene.script.acts.any { it.kind == RedBallActKind.STORY && it.text == level.twist },
             )
@@ -319,63 +334,181 @@ class RedBallCampaignTest {
     }
 
     @Test
-    fun firstLevelIsClearedByRunningAndOneJump() {
-        val sim = RedBallSim(RedBallCampaign.byIndex(1)!!.scene)
-        var hold = 0f
-        repeat(60 * 14) {
-            val dt = 1f / 60f
-            if (sim.ballX in 390f..455f && sim.grounded) {
-                sim.jumpHeld = true
-                sim.jump()
-                hold = 0.24f
-            }
-            if (hold > 0f) {
-                sim.jumpHeld = true
-                hold -= dt
-            } else {
-                sim.jumpHeld = false
-            }
-            sim.step(dt, 1f)
-            if (sim.won || sim.dead) return@repeat
+    fun checkpointRespawnKeepsTheHeartsYouHave() {
+        val scene = RedBallScene(
+            id = "cp",
+            name = "Чекпоинт",
+            builtin = false,
+            worldW = 1600f,
+            worldH = 900f,
+            voidY = 800f,
+            startX = 80f,
+            startY = 472f,
+            solids = listOf(RedBallAabb(0f, 500f, 1600f, 860f)),
+            slopes = emptyList(),
+            spikes = listOf(RedBallSpike(980f, 440f, 80f, 60f)),
+            springs = emptyList(),
+            door = RedBallAabb(1400f, 324f, 1490f, 500f),
+            crates = emptyList(),
+            checkpoints = listOf(
+                RedBallCheckpoint(460f, 472f),
+                RedBallCheckpoint(760f, 472f),
+            ),
+        )
+        val missed = RedBallSim(scene)
+        missed.ballY = scene.voidY + 40f
+        missed.step(1f / 60f, 0f)
+        assertEquals("яма до чекпоинта не сняла сердце", 2, missed.hearts)
+        assertEquals(scene.startX, missed.ballX, 0.5f)
+        assertFalse(missed.dead)
+
+        val sim = RedBallSim(scene)
+        sim.ballX = 460f
+        sim.ballY = 472f
+        sim.step(1f / 60f, 0f)
+        assertEquals(460f, sim.spawnX, 1f)
+        assertEquals(472f, sim.spawnY, 1f)
+        assertEquals(RedBallSim.MAX_HEARTS, sim.hearts)
+        sim.ballX = 980f
+        sim.ballY = 470f
+        sim.step(1f / 60f, 0f)
+        assertEquals("удар не вернул на чекпоинт", 460f, sim.ballX, 1.5f)
+        assertEquals(472f, sim.ballY, 1.5f)
+        assertEquals(RedBallSim.MAX_HEARTS - 1, sim.hearts)
+        assertFalse(sim.dead)
+        repeat(60 * 3) {
+            sim.ballX = 460f
+            sim.ballY = 472f
+            sim.step(1f / 60f, 0f)
         }
-        assertFalse("мяч погиб x=${sim.ballX} y=${sim.ballY}", sim.dead)
-        assertTrue("флаг близко, но не взят x=${sim.ballX}", sim.won)
+        assertEquals(0f, sim.invuln, 0.05f)
+        assertEquals(RedBallSim.MAX_HEARTS - 1, sim.hearts)
+        sim.ballY = scene.voidY + 40f
+        sim.step(1f / 60f, 0f)
+        assertEquals("яма вернула полные сердца", RedBallSim.MAX_HEARTS - 2, sim.hearts)
+        assertEquals(460f, sim.ballX, 1.5f)
+        assertFalse(sim.dead)
+
+        val plain = scene.copy(checkpoints = emptyList(), id = "plain")
+        val knocked = RedBallSim(plain)
+        knocked.ballX = 980f
+        knocked.ballY = 470f
+        knocked.step(1f / 60f, 0f)
+        assertEquals(RedBallSim.MAX_HEARTS - 1, knocked.hearts)
+        assertTrue(
+            "без чекпоинта шипы унесли мяч на старт: x=${knocked.ballX}",
+            kotlin.math.abs(knocked.ballX - 980f) < 160f,
+        )
+
+        val campaign = RedBallCampaign.byIndex(1)!!.scene
+        val home = campaign.checkpoints.first()
+        val ball = RedBallSim(campaign)
+        ball.ballX = home.x
+        ball.ballY = home.y
+        ball.step(1f / 60f, 0f)
+        assertEquals(home.x, ball.spawnX, 1f)
+        ball.ballY = campaign.voidY + 50f
+        ball.step(1f / 60f, 0f)
+        assertEquals(RedBallSim.MAX_HEARTS - 1, ball.hearts)
+        assertEquals(home.x, ball.ballX, 1.5f)
+        assertEquals(home.y, ball.ballY, 1.5f)
+        assertFalse(ball.dead)
     }
 
     @Test
-    fun cartChaseReachesTheFlag() {
-        val sim = RedBallSim(RedBallCampaign.byIndex(6)!!.scene)
-        repeat(60 * 16) {
-            sim.step(1f / 60f, 1f)
-            if (sim.won || sim.dead) return@repeat
+    fun flagAdvancesToTheNextLevelAndTheTenthReturnsToSelect() {
+        val progress = RedBallCampaignProgress(MapCampaignMemory())
+        val run = RedBallCampaignRun(progress)
+        assertTrue(run.begin(1))
+        assertFalse(run.begin(2))
+        run.dismissIntro()
+        assertEquals(RedBallCampaignRun.Phase.PLAY, run.phase)
+        run.reachFlag(collected = 1, total = 5, nowMs = 0L)
+        assertEquals(RedBallCampaignRun.Phase.CLEAR, run.phase)
+        assertEquals(1, progress.bestStars(1))
+        assertTrue(progress.isUnlocked(2))
+        assertFalse(run.advance(RedBallCampaignRun.CLEAR_HOLD_MS - 1, pressed = false))
+        assertEquals(1, run.index)
+        assertTrue(run.advance(RedBallCampaignRun.CLEAR_HOLD_MS, pressed = false))
+        assertEquals(2, run.index)
+        assertEquals(RedBallCampaignRun.Phase.INTRO, run.phase)
+
+        run.dismissIntro()
+        run.reachFlag(collected = 5, total = 5, nowMs = 50L)
+        assertEquals(3, progress.bestStars(2))
+        assertTrue(run.advance(50L, pressed = true))
+        assertEquals(3, run.index)
+        assertEquals(RedBallCampaignRun.Phase.INTRO, run.phase)
+
+        for (level in 3..10) {
+            assertEquals(level, run.index)
+            run.dismissIntro()
+            run.reachFlag(collected = 4, total = 6, nowMs = 0L)
+            if (level < 10) {
+                assertEquals(RedBallCampaignRun.Phase.CLEAR, run.phase)
+                assertTrue(run.advance(RedBallCampaignRun.CLEAR_HOLD_MS, pressed = false))
+                assertTrue(progress.isUnlocked(level + 1))
+                assertEquals(RedBallCampaignRun.Phase.INTRO, run.phase)
+            }
         }
-        assertFalse("погоня убила мяч x=${sim.ballX} hearts=${sim.hearts}", sim.dead)
-        assertTrue("тележка не доехала x=${sim.ballX}", sim.won)
+        assertEquals(RedBallCampaignRun.Phase.FINALE, run.phase)
+        assertTrue(progress.isCleared(10))
+        assertEquals(2, progress.bestStars(10))
+        assertFalse(progress.isUnlocked(11))
+        assertFalse(run.advance(RedBallCampaignRun.CLEAR_HOLD_MS - 1, pressed = false))
+        assertTrue(run.advance(0L, pressed = true))
+        assertEquals(RedBallCampaignRun.Phase.SELECT, run.phase)
     }
 
     @Test
-    fun fleeingTheBossReachesTheFlag() {
-        val sim = RedBallSim(RedBallCampaign.byIndex(9)!!.scene)
-        var hold = 0f
-        repeat(60 * 16) {
-            val dt = 1f / 60f
-            if (sim.ballX in 1040f..1160f && sim.grounded) {
-                sim.jumpHeld = true
-                sim.jump()
-                hold = 0.12f
+    fun cameraKeepsTheFarFlagInsideTheWorld() {
+        for (level in RedBallCampaign.levels) {
+            val scene = level.scene
+            val focusX = (scene.door.l + scene.door.r) / 2f
+            val focusY = (scene.door.t + scene.door.b) / 2f
+            val frame = scene.cameraFrame(focusX, focusY, 900f, 620f)
+            val maxCam = (scene.worldW - frame.viewW).coerceAtLeast(scene.minX)
+            assertTrue("${level.title}: камера x=${frame.x}", frame.x in scene.minX..maxCam)
+            assertTrue(
+                "${level.title}: флаг x=$focusX вне кадра ${frame.x}",
+                focusX in frame.x..(frame.x + frame.viewW),
+            )
+            assertTrue(
+                "${level.title}: флаг y=$focusY вне кадра ${frame.y}",
+                focusY in frame.y..(frame.y + frame.viewH),
+            )
+            for (point in scene.checkpoints) {
+                val shot = scene.cameraFrame(point.x, point.y, 900f, 620f)
+                assertTrue(
+                    "${level.title}: чекпоинт вне кадра",
+                    point.x in shot.x..(shot.x + shot.viewW) && point.y in shot.y..(shot.y + shot.viewH),
+                )
             }
-            if (hold > 0f) {
-                sim.jumpHeld = true
-                hold -= dt
-            } else {
-                sim.jumpHeld = false
+            if (level.index == 7 || level.index == 8) {
+                val pools = scene.waters.map { it.r - it.l } + scene.script.floods.map { it.water.r - it.water.l }
+                assertTrue("${level.title}: короткий заплыв", pools.max() >= 2500f)
             }
-            sim.step(dt, 1f)
-            if (sim.won || sim.dead) return@repeat
+            if (level.index == 10) {
+                assertTrue(scene.script.doorHidden)
+                assertTrue(scene.enemies.count { it.hits > 1 } >= 2)
+                assertTrue(scene.script.acts.any { it.kind == RedBallActKind.GRAVITY && it.value > 1.4f })
+            }
         }
-        assertFalse("король догнал x=${sim.ballX} hearts=${sim.hearts}", sim.dead)
-        assertTrue("не убежал x=${sim.ballX}", sim.won)
     }
+
+    /** Ширина мира до удлинения. Новый уровень должен быть хотя бы вчетверо шире. */
+    private val LEGACY_WIDTH = mapOf(
+        1 to 1780f,
+        2 to 1960f,
+        3 to 2080f,
+        4 to 1520f,
+        5 to 1760f,
+        6 to 3060f,
+        7 to 2060f,
+        8 to 1240f,
+        9 to 3400f,
+        10 to 1960f,
+    )
 
     private fun signature(scene: RedBallScene): String {
         val script = scene.script

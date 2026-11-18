@@ -1,5 +1,6 @@
 package com.example.bible.ui
 
+import android.os.SystemClock
 import android.widget.Toast
 import androidx.activity.compose.BackHandler
 import androidx.compose.animation.core.Animatable
@@ -98,6 +99,8 @@ import com.example.bible.games.PrefsCampaignMemory
 import com.example.bible.games.RedBallCampaign
 import com.example.bible.games.RedBallCampaignLevel
 import com.example.bible.games.RedBallCampaignProgress
+import com.example.bible.games.RedBallCampaignRun
+import com.example.bible.games.medalStars
 import com.example.bible.games.RedBallDraft
 import com.example.bible.games.RedBallLevelMeta
 import com.example.bible.games.RedBallLevelStore
@@ -117,6 +120,7 @@ import com.example.bible.games.familyScenes
 import com.example.bible.ui.theme.OutlinedTextField
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -158,6 +162,7 @@ fun KidsRedBallGameScreen(onBack: () -> Unit) {
     var familyOpen by remember { mutableStateOf(false) }
     var campaignRev by remember { mutableIntStateOf(0) }
     val campaignProgress = remember { RedBallCampaignProgress(PrefsCampaignMemory(context.applicationContext)) }
+    val campaignRun = remember { RedBallCampaignRun(campaignProgress) }
     val savedLevels by produceState<List<RedBallLevelMeta>?>(null, listRev, store) {
         value = withContext(Dispatchers.IO) { store.listAll() }
     }
@@ -299,7 +304,7 @@ fun KidsRedBallGameScreen(onBack: () -> Unit) {
         }
     }
 
-    fun beginCampaign(level: RedBallCampaignLevel) {
+    fun showCampaign(level: RedBallCampaignLevel) {
         if (!campaignProgress.isUnlocked(level.index)) return
         skinId = level.skin
         val links = level.scene.portals.map { it.linkId }.filter { RedBallCampaign.isCampaignId(it) }.toSet()
@@ -313,6 +318,11 @@ fun KidsRedBallGameScreen(onBack: () -> Unit) {
         page = RedBallPage.PLAY
     }
 
+    fun beginCampaign(level: RedBallCampaignLevel) {
+        if (!campaignRun.begin(level.index)) return
+        showCampaign(level)
+    }
+
     fun leavePlay() {
         val current = play
         if (current?.campaign != null) {
@@ -324,6 +334,17 @@ fun KidsRedBallGameScreen(onBack: () -> Unit) {
             current?.campaign != null -> RedBallPage.CAMPAIGN
             current?.scene?.builtin == false -> RedBallPage.LEVELS
             else -> RedBallPage.MENU
+        }
+    }
+
+    fun onCampaignMoved() {
+        when (campaignRun.phase) {
+            RedBallCampaignRun.Phase.INTRO -> {
+                val next = RedBallCampaign.byIndex(campaignRun.index) ?: return
+                showCampaign(next)
+            }
+            RedBallCampaignRun.Phase.SELECT -> leavePlay()
+            else -> Unit
         }
     }
 
@@ -537,6 +558,8 @@ fun KidsRedBallGameScreen(onBack: () -> Unit) {
                     onExit = { leavePlay() },
                     campaign = request.campaign,
                     progress = campaignProgress,
+                    campaignRun = if (request.campaign != null) campaignRun else null,
+                    onCampaignMoved = { onCampaignMoved() },
                 )
             }
         }
@@ -602,7 +625,7 @@ private fun RedBallMenu(
             Spacer(Modifier.height(12.dp))
             RedBallSkinPicker(skinId, onSkin, labelColor = titleColor, labelHalo = halo)
             Spacer(Modifier.height(16.dp))
-            MenuCard("Сказка", "Десять уровней. Следующий откроется у флага", Color(0xFF7C3AED), onCampaign)
+            MenuCard("Сказка", "Десять длинных уровней. У флага сразу следующий", Color(0xFF7C3AED), onCampaign)
             Spacer(Modifier.height(12.dp))
             MenuCard("Играть", "Готовая горка: ящик, пружина и дверь", Color(0xFFDC2626), onPlayBuiltin)
             Spacer(Modifier.height(12.dp))
@@ -763,11 +786,16 @@ private fun RedBallLevelList(
     }
 }
 
-private fun campaignClearLine(level: RedBallCampaignLevel, stars: Int): String {
-    val shown = stars.coerceIn(0, 3)
-    val marks = "★".repeat(shown) + "☆".repeat(3 - shown)
-    val next = if (level.index < RedBallCampaign.COUNT) " Следующий уровень открыт." else " Квадратный король побеждён."
-    return "Звёзды: $marks.$next"
+private fun campaignClearLine(level: RedBallCampaignLevel, stars: Int, total: Int): String {
+    val medal = medalStars(stars, total)
+    val marks = "★".repeat(medal) + "☆".repeat(3 - medal)
+    val next = if (level.index < RedBallCampaign.COUNT) {
+        " Следующий откроется сам."
+    } else {
+        " Квадратный король побеждён."
+    }
+    val count = if (total > 0) "$stars из $total · " else ""
+    return "Звёзды: $count$marks.$next"
 }
 
 private fun campaignStars(progress: RedBallCampaignProgress, index: Int): String {
@@ -1109,6 +1137,8 @@ private fun RedBallPlay(
     onExit: () -> Unit,
     campaign: RedBallCampaignLevel? = null,
     progress: RedBallCampaignProgress? = null,
+    campaignRun: RedBallCampaignRun? = null,
+    onCampaignMoved: () -> Unit = {},
 ) {
     val context = LocalContext.current
     var arrival by remember { mutableStateOf<PortalArrival?>(null) }
@@ -1124,7 +1154,7 @@ private fun RedBallPlay(
     val held = remember { intArrayOf(0, 0, 0) }
     val paused = remember(sim) { mutableStateOf(false) }
     var introOn by remember(sim) { mutableStateOf(!campaign?.intro.isNullOrBlank()) }
-    var savedClear by remember(sim) { mutableStateOf(false) }
+    val clearHanded = remember(sim) { mutableStateOf(false) }
     var tick by remember { mutableIntStateOf(0) }
     // sim.hearts — обычное поле. Строка сердец читает снимок, иначе не перерисовывается.
     var hudHearts by remember(sim) { mutableIntStateOf(sim.hearts) }
@@ -1187,9 +1217,18 @@ private fun RedBallPlay(
     }
     LaunchedEffect(sim.won, campaign?.index) {
         val level = campaign ?: return@LaunchedEffect
-        if (!sim.won || savedClear) return@LaunchedEffect
-        savedClear = true
-        progress?.record(level.index, sim.starsCollected)
+        if (!sim.won) return@LaunchedEffect
+        val started = SystemClock.uptimeMillis()
+        val collected = sim.starsCollected
+        val total = shown.stars.size
+        val run = campaignRun
+        if (run != null) run.reachFlag(collected, total, started)
+        else progress?.record(level.index, medalStars(collected, total))
+        delay(RedBallCampaignRun.CLEAR_HOLD_MS)
+        if (!clearHanded.value && run != null && run.advance(started + RedBallCampaignRun.CLEAR_HOLD_MS, false)) {
+            clearHanded.value = true
+            onCampaignMoved()
+        }
     }
     val storyLine = sim.director.story
     val title = when {
@@ -1357,7 +1396,10 @@ private fun RedBallPlay(
                         Modifier
                             .clip(RoundedCornerShape(999.dp))
                             .background(Color(0xFF7C3AED))
-                            .kidsPressable(onClick = { introOn = false })
+                            .kidsPressable(onClick = {
+                                introOn = false
+                                campaignRun?.dismissIntro()
+                            })
                             .padding(horizontal = 22.dp, vertical = 10.dp),
                     ) {
                         Text("В путь", color = Color.White, fontWeight = FontWeight.Black, fontSize = 18.sp)
@@ -1365,7 +1407,54 @@ private fun RedBallPlay(
                 }
             }
         }
-        if (sim.won || sim.dead) {
+        if (sim.won && campaign != null) {
+            val finale = campaign.index >= RedBallCampaign.COUNT
+            Column(
+                Modifier
+                    .align(Alignment.Center)
+                    .padding(24.dp)
+                    .clip(RoundedCornerShape(28.dp))
+                    .background(Color.White.copy(alpha = 0.96f))
+                    .padding(horizontal = 28.dp, vertical = 22.dp),
+                horizontalAlignment = Alignment.CenterHorizontally,
+            ) {
+                Text(
+                    if (finale) "Сказка пройдена!" else "Дверь открыта!",
+                    fontWeight = FontWeight.Black,
+                    fontSize = 26.sp,
+                    color = Color(0xFF7F1D1D),
+                    textAlign = TextAlign.Center,
+                )
+                Spacer(Modifier.height(8.dp))
+                Text(
+                    campaignClearLine(campaign, sim.starsCollected, shown.stars.size),
+                    color = Color(0xFF44403C),
+                    fontSize = 16.sp,
+                    textAlign = TextAlign.Center,
+                )
+                Spacer(Modifier.height(14.dp))
+                Box(
+                    Modifier
+                        .clip(RoundedCornerShape(999.dp))
+                        .background(Color(0xFF7C3AED))
+                        .kidsPressable(onClick = {
+                            val run = campaignRun
+                            if (run != null && !clearHanded.value && run.advance(SystemClock.uptimeMillis(), true)) {
+                                clearHanded.value = true
+                                onCampaignMoved()
+                            }
+                        })
+                        .padding(horizontal = 22.dp, vertical = 10.dp),
+                ) {
+                    Text(
+                        if (finale) "К сказке" else "Дальше",
+                        color = Color.White,
+                        fontWeight = FontWeight.Black,
+                        fontSize = 18.sp,
+                    )
+                }
+            }
+        } else if (sim.won || sim.dead) {
             Column(
                 Modifier
                     .align(Alignment.Center)
@@ -1385,7 +1474,6 @@ private fun RedBallPlay(
                 Spacer(Modifier.height(8.dp))
                 Text(
                     when {
-                        sim.won && campaign != null -> campaignClearLine(campaign, sim.starsCollected)
                         sim.won && shown.builtin -> "Мяч докатился сам, как надо"
                         sim.won -> "Получилось! Мяч добрался до двери"
                         shown.builtin -> "Ящик закрывает яму, пружина подбрасывает наверх. Влево — тележка и глубокая вода: вниз, чтобы нырнуть"
@@ -1404,7 +1492,6 @@ private fun RedBallPlay(
                             .kidsPressable(onClick = {
                                 sim.reset()
                                 hudHearts = sim.hearts
-                                savedClear = false
                             })
                             .padding(horizontal = 22.dp, vertical = 10.dp),
                     ) {
@@ -1457,7 +1544,6 @@ private fun RedBallPlay(
                     PauseChoice("Заново", Color(0xFFDC2626)) {
                         sim.reset()
                         hudHearts = sim.hearts
-                        savedClear = false
                         paused.value = false
                     }
                     Spacer(Modifier.height(8.dp))

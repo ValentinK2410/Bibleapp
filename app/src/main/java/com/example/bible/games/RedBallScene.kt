@@ -71,6 +71,16 @@ data class RedBallCartSpawn(
     val h: Float = 46f,
 )
 
+/**
+ * Точка, где мяч появляется после ямы или потери сердца.
+ * [x] и [y] — центр мяча, как [RedBallScene.startX].
+ * Сердца при этом не восполняются.
+ */
+data class RedBallCheckpoint(
+    val x: Float,
+    val y: Float,
+)
+
 data class RedBallEnemySpawn(
     val x: Float,
     val y: Float,
@@ -178,6 +188,8 @@ data class RedBallScene(
     val portals: List<RedBallPortal> = emptyList(),
     val waters: List<RedBallWater> = emptyList(),
     val carts: List<RedBallCartSpawn> = emptyList(),
+    /** Середина длинного уровня. Пустой список — яма по-прежнему возвращает на старт. */
+    val checkpoints: List<RedBallCheckpoint> = emptyList(),
     /** Сценарий кампании. У горки и уровней редактора его нет. */
     val script: RedBallScript = RedBallScript.NONE,
 ) {
@@ -958,6 +970,29 @@ internal fun mergeAabbs(input: List<RedBallAabb>): List<RedBallAabb> {
         }
     }
     return items
+}
+
+/**
+ * Кадр камеры на длинной карте. [x] и [y] — левый верх видимого мира.
+ * Мяч держится в кадре, а кадр не уезжает за [RedBallScene.minX] и [RedBallScene.worldW].
+ */
+data class RedBallCameraFrame(
+    val x: Float,
+    val y: Float,
+    val viewW: Float,
+    val viewH: Float,
+)
+
+fun RedBallScene.cameraFrame(focusX: Float, focusY: Float, viewW: Float, viewH: Float): RedBallCameraFrame {
+    val width = viewW.coerceAtLeast(1f)
+    val height = viewH.coerceAtLeast(1f)
+    val minCamX = minX
+    val maxCamX = (worldW - width).let { if (it < minCamX) minCamX else it }
+    val camX = (focusX - width * 0.38f).coerceIn(minCamX, maxCamX)
+    val minCamY = minY - height * 0.45f
+    val maxCamY = (worldH - height).let { if (it < minCamY) minCamY else it }
+    val camY = (focusY - height * 0.58f).coerceIn(minCamY, maxCamY)
+    return RedBallCameraFrame(camX, camY, width, height)
 }
 
 private fun tryMerge(a: RedBallAabb, b: RedBallAabb): RedBallAabb? {

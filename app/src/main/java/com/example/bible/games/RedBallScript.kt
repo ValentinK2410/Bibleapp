@@ -10,6 +10,7 @@ enum class RedBallMark {
     NONE,
     PORTAL,
     FRIEND,
+    SWITCH,
 }
 
 /**
