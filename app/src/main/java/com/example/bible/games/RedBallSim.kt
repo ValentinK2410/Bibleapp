@@ -27,6 +27,7 @@ class RedBallSim(val scene: RedBallScene = RedBallScene.builtin()) {
 
     val crates: List<RedBallCrate> = scene.crates.map { it.toBody() }
     val blocks: List<RedBallCrate> = scene.blocks.map { it.toBody() }
+    val carts: List<RedBallCart> = scene.carts.map { it.toCart() }
     val enemies: List<RedBallEnemy> = scene.enemies.map { it.toEnemy() }
     val stars: List<RedBallStar> = scene.stars.mapIndexed { index, it ->
         RedBallStar(it.x, it.y, it.x, it.y, index * 1.3f)
@@ -58,10 +59,34 @@ class RedBallSim(val scene: RedBallScene = RedBallScene.builtin()) {
 
     var grounded = false
         private set
+
+    /** Сглаженный взгляд: X вправо, Y вниз. Рисуют и классика, и спрайты. */
+    var gazeX = 0f
+        private set
+    var gazeY = 0f
+        private set
+
+    /** Запас воздуха 0…1. На поверхности восстанавливается, под водой тает. */
+    var breath = 1f
+        private set
+
+    /** Центр мяча ниже поверхности воды. */
+    var submerged = false
+        private set
+
+    /** Мяч сидит в тележке: кнопки влево/вправо везут её, прыжок высаживает. */
+    val ridingCart: Boolean get() = rideIndex >= 0
+
     private var wasGrounded = false
     private var contactFriction = RED_BALL_FRICTION
     private var jellyV = 0f
     private var landKick = 0f
+    private var rideIndex = -1
+    private var rideLock = 0f
+    private var diveHeld = false
+    private var afloat = false
+    private var wetLanding = false
+    private var bubbleCd = 0f
 
     private val springArmed = BooleanArray(scene.springs.size) { true }
     private var pendingLose = false
@@ -85,7 +110,7 @@ class RedBallSim(val scene: RedBallScene = RedBallScene.builtin()) {
     private var coyote = 0f
     private var rising = false
 
-    /** Нажали «Прыжок». Сработает, если мяч стоит на опоре или только что с неё сошёл. */
+    /** Нажали «Прыжок». Сработает, если мяч стоит на опоре или только что с неё сошёл. Из тележки прыжок высаживает. */
     fun jump() {
         if (won || dead) return
         jumpBuffer = JUMP_BUFFER
@@ -107,6 +132,7 @@ class RedBallSim(val scene: RedBallScene = RedBallScene.builtin()) {
         magnetTime = 0f
         for (crate in crates) crate.reset()
         for (block in blocks) block.reset()
+        for (cart in carts) cart.reset()
         for (enemy in enemies) enemy.reset()
         for (star in stars) star.reset()
         for (magnet in magnets) magnet.taken = false
@@ -117,6 +143,16 @@ class RedBallSim(val scene: RedBallScene = RedBallScene.builtin()) {
         invuln = 0f
         grounded = false
         wasGrounded = false
+        gazeX = 0f
+        gazeY = 0f
+        breath = 1f
+        submerged = false
+        rideIndex = -1
+        rideLock = 0f
+        diveHeld = false
+        afloat = false
+        wetLanding = false
+        bubbleCd = 0f
         contactFriction = RED_BALL_FRICTION
         for (i in springArmed.indices) springArmed[i] = true
         pendingLose = false
@@ -188,6 +224,10 @@ class RedBallSim(val scene: RedBallScene = RedBallScene.builtin()) {
         grounded = false
         wasGrounded = false
         rising = false
+        rideIndex = -1
+        rideLock = 0.2f
+        afloat = false
+        submerged = false
         jumpHeld = false
         jumpBuffer = 0f
         coyote = 0f
@@ -208,8 +248,13 @@ class RedBallSim(val scene: RedBallScene = RedBallScene.builtin()) {
         reset()
     }
 
-    fun step(dt: Float, move: Float) {
+    /**
+     * [move] — влево −1, вправо 1.
+     * [dive] — зажата кнопка «вниз»: в воде мяч уходит под поверхность.
+     */
+    fun step(dt: Float, move: Float, dive: Float = 0f) {
         if (won || dead || portalHold) return
+        diveHeld = dive > 0.2f
         val total = dt.coerceIn(0f, 0.05f)
         var left = total
         while (left > 0f) {
@@ -222,12 +267,27 @@ class RedBallSim(val scene: RedBallScene = RedBallScene.builtin()) {
         if (spent > 0f) {
             updateJelly(spent)
             updateParticles(spent)
+            updateGaze(spent)
             anim += spent
         }
     }
 
     private fun substep(dt: Float, move: Float) {
         if (invuln > 0f) invuln = (invuln - dt).coerceAtLeast(0f)
+        if (rideLock > 0f) rideLock = (rideLock - dt).coerceAtLeast(0f)
+        if (rideIndex >= 0 && jumpBuffer > 0f) leaveCart()
+        if (rideIndex >= 0) {
+            stepCarts(dt, move)
+            seatRider()
+            grounded = true
+            wasGrounded = true
+            contactFriction = RED_BALL_FRICTION
+            ballAngle += ballVx / RedBallScene.BALL_R * dt
+            for (enemy in enemies) if (enemy.alive && enemy.gravity) enemy.vy += GRAVITY * dt
+            stepEnemies(dt)
+            afterMotion(dt, riding = true)
+            return
+        }
         coyote = if (wasGrounded) COYOTE_TIME else (coyote - dt).coerceAtLeast(0f)
         if (jumpBuffer > 0f) {
             if (coyote > 0f) {
@@ -249,8 +309,13 @@ class RedBallSim(val scene: RedBallScene = RedBallScene.builtin()) {
                 rising = false
             }
         }
+        val swimming = swimProbe() != null
         val climbing = overlapsLadder()
-        if (climbing && jumpHeld && !wasGrounded) {
+        if (swimming) {
+            ballVy += (WATER_GRAVITY - BUOYANCY) * dt
+            if (diveHeld) ballVy += DIVE_PUSH * dt
+            rising = false
+        } else if (climbing && jumpHeld && !wasGrounded) {
             ballVy = -CLIMB_SPEED
             rising = false
             jumpBuffer = 0f
@@ -263,18 +328,30 @@ class RedBallSim(val scene: RedBallScene = RedBallScene.builtin()) {
         for (crate in crates) if (crate.gravity) crate.vy += GRAVITY * dt
         for (block in blocks) if (block.gravity) block.vy += GRAVITY * dt
         for (enemy in enemies) if (enemy.alive && enemy.gravity) enemy.vy += GRAVITY * dt
-        val accel = if (wasGrounded) RUN_ACCEL else AIR_ACCEL
+        val accel = when {
+            swimming -> WATER_ACCEL
+            wasGrounded -> RUN_ACCEL
+            else -> AIR_ACCEL
+        }
         ballVx += move * accel * dt
-        ballVx = ballVx.coerceIn(-MAX_RUN, MAX_RUN)
-        if (move == 0f && wasGrounded) {
+        val maxRun = if (swimming) WATER_MAX else MAX_RUN
+        ballVx = ballVx.coerceIn(-maxRun, maxRun)
+        if (move == 0f && wasGrounded && !swimming) {
             val drag = GROUND_DRAG * frictionMul(contactFriction)
             ballVx *= (1f - drag * dt).coerceAtLeast(0f)
         }
         ballVx *= (1f - AIR_DRAG * dt).coerceAtLeast(0f)
+        if (swimming) {
+            ballVx *= (1f - WATER_DRAG * dt).coerceAtLeast(0f)
+            ballVy *= (1f - WATER_DRAG * 0.8f * dt).coerceAtLeast(0f)
+            ballVy = ballVy.coerceIn(-WATER_RISE, WATER_SINK)
+        }
         grounded = false
         for (crate in crates) crate.onGround = false
         for (block in blocks) block.onGround = false
 
+        val prevFeet = ballY + RedBallScene.BALL_R
+        stepCarts(dt, 0f)
         ballX += ballVx * dt
         ballY += ballVy * dt
         for (crate in crates) {
@@ -315,11 +392,17 @@ class RedBallSim(val scene: RedBallScene = RedBallScene.builtin()) {
             }
         }
         stepEnemies(dt)
+        settleOnWater(prevFeet)
         ballAngle += ballVx / RedBallScene.BALL_R * dt
         if (!wasGrounded && grounded && fallVy > 200f && fallVy > landKick) landKick = fallVy
         wasGrounded = grounded
+        if (rideIndex < 0) tryEnterCart()
+        if (rideIndex >= 0) seatRider()
+        afterMotion(dt, riding = rideIndex >= 0)
+    }
 
-        applySprings()
+    private fun afterMotion(dt: Float, riding: Boolean) {
+        if (!riding) applySprings()
         touchEnemies()
         if (dead) return
         collectPickups(dt)
@@ -329,9 +412,10 @@ class RedBallSim(val scene: RedBallScene = RedBallScene.builtin()) {
             takeHit(back * 160f, -200f, respawn = false)
             if (dead) return
         }
-        if (ballY > scene.voidY) {
-            // Яма и вода под уровнем: одно сердце и возврат на старт.
-            // Пока мигание не кончилось, в воду можно упасть снова без второго удара.
+        if (ballY > scene.voidY && poolAt(ballX, ballY) == null) {
+            // Яма под уровнем: одно сердце и возврат на старт.
+            // Глубокая вода — отдельный объём, в ней тонут воздухом, а не ямой.
+            // Пока мигание не кончилось, в яму можно упасть снова без второго удара.
             if (invuln > 0f) respawnAtStart() else takeHit(0f, 0f, respawn = true)
             if (dead) return
         }
@@ -343,6 +427,7 @@ class RedBallSim(val scene: RedBallScene = RedBallScene.builtin()) {
             return
         }
         touchPortals()
+        if (!dead && !won && !portalHold) updateBreath(dt)
     }
 
     private fun touchPortals() {
@@ -382,9 +467,10 @@ class RedBallSim(val scene: RedBallScene = RedBallScene.builtin()) {
         if (landKick > 0f) {
             val kick = (landKick / 650f).coerceIn(0f, 1.15f)
             jellyV -= kick * 11f
-            if (landKick > 240f) {
-                puff(ballX, ballY + RedBallScene.BALL_R, RedBallParticle.DUST, 8, 110f, 0.38f, 5.5f)
+            if (!wetLanding && landKick > DUST_MIN) {
+                landPuff(ballX, ballY + RedBallScene.BALL_R, landKick)
             }
+            wetLanding = false
             landKick = 0f
         }
         jellyV += (target - jellyY) * 240f * dt
@@ -401,7 +487,15 @@ class RedBallSim(val scene: RedBallScene = RedBallScene.builtin()) {
             if (p.life <= 0f) {
                 fx.removeAt(i)
             } else {
-                if (p.kind != RedBallParticle.SPARK) p.vy += 980f * dt
+                when (p.kind) {
+                    RedBallParticle.SPARK, RedBallParticle.BUBBLE -> Unit
+                    RedBallParticle.PUFF -> {
+                        p.vx *= (1f - 2.8f * dt).coerceAtLeast(0f)
+                        p.vy *= (1f - 3.2f * dt).coerceAtLeast(0f)
+                    }
+                    RedBallParticle.SPLASH -> p.vy += 520f * dt
+                    else -> p.vy += 980f * dt
+                }
                 p.x += p.vx * dt
                 p.y += p.vy * dt
             }
@@ -411,7 +505,7 @@ class RedBallSim(val scene: RedBallScene = RedBallScene.builtin()) {
 
     private fun puff(x: Float, y: Float, kind: Int, count: Int, speed: Float, life: Float, size: Float) {
         for (n in 0 until count) {
-            if (fx.size >= 80) fx.removeAt(0)
+            if (fx.size >= 96) fx.removeAt(0)
             val ang = rng.nextFloat() * 6.2831855f
             val sp = speed * (0.35f + rng.nextFloat())
             val lasting = life * (0.65f + rng.nextFloat() * 0.5f)
@@ -972,6 +1066,10 @@ class RedBallSim(val scene: RedBallScene = RedBallScene.builtin()) {
      */
     private fun takeHit(knockVx: Float, knockVy: Float, respawn: Boolean) {
         if (dead || won || invuln > 0f) return
+        if (rideIndex >= 0) {
+            rideIndex = -1
+            rideLock = 0.35f
+        }
         hearts -= 1
         invuln = INVULN_TIME
         if (hearts <= 0) {
@@ -1000,6 +1098,9 @@ class RedBallSim(val scene: RedBallScene = RedBallScene.builtin()) {
         wasGrounded = false
         rising = false
         coyote = 0f
+        rideIndex = -1
+        afloat = false
+        submerged = false
     }
 
     private fun hitsSpike(): Boolean {
@@ -1012,6 +1113,294 @@ class RedBallSim(val scene: RedBallScene = RedBallScene.builtin()) {
             if (abs(ballX - spike.x) < half + radius * 0.45f) return true
         }
         return false
+    }
+
+    private fun updateGaze(dt: Float) {
+        val foe = gazeFoe()
+        val target = if (foe != null) {
+            val dx = foe.x - ballX
+            val dy = foe.y - ballY
+            val m = hypot(dx, dy).coerceAtLeast(1f)
+            RedBallGaze((dx / m).coerceIn(-1f, 1f), ((dy / m) * 0.75f).coerceIn(-1f, 1f))
+        } else {
+            RedBallGazeMath.target(ballVx, ballVy, grounded, rising)
+        }
+        val next = RedBallGazeMath.step(RedBallGaze(gazeX, gazeY), target, dt)
+        gazeX = next.x
+        gazeY = next.y
+    }
+
+    private fun gazeFoe(): RedBallEnemy? {
+        var best: RedBallEnemy? = null
+        var bestD = Float.MAX_VALUE
+        for (enemy in enemies) {
+            if (!enemy.alive) continue
+            val dx = enemy.x - ballX
+            val dy = enemy.y - ballY
+            val d = dx * dx + dy * dy
+            val reach = enemy.size * 0.5f + 130f
+            if (d < reach * reach && d < bestD) {
+                bestD = d
+                best = enemy
+            }
+        }
+        return best
+    }
+
+    private fun leaveCart() {
+        val cart = carts.getOrNull(rideIndex) ?: return
+        rideIndex = -1
+        rideLock = RIDE_LOCK
+        ballX = cart.x
+        ballY = cart.y - cart.h * 0.5f - RedBallScene.BALL_R * 0.35f
+        ballVx = cart.vx
+        ballVy = JUMP_VY
+        jumpBuffer = 0f
+        coyote = 0f
+        wasGrounded = false
+        grounded = false
+        rising = true
+        afloat = false
+        pendingJump = true
+    }
+
+    private fun seatRider() {
+        val cart = carts.getOrNull(rideIndex) ?: return
+        ballX = cart.x
+        ballY = cart.y - cart.h * 0.12f
+        ballVx = cart.vx
+        ballVy = cart.vy
+    }
+
+    private fun tryEnterCart() {
+        if (rideLock > 0f || (rising && ballVy < -60f)) return
+        for (i in carts.indices) {
+            val cart = carts[i]
+            if (abs(ballX - cart.x) > cart.w * 0.36f) continue
+            val rim = cart.y - cart.h * 0.5f
+            if (ballY + RedBallScene.BALL_R < rim - 2f) continue
+            if (ballY > cart.y + cart.h * 0.2f) continue
+            if (ballVy < -80f) continue
+            rideIndex = i
+            rising = false
+            grounded = true
+            wasGrounded = true
+            seatRider()
+            return
+        }
+    }
+
+    private fun stepCarts(dt: Float, move: Float) {
+        if (carts.isEmpty()) return
+        for (i in carts.indices) {
+            val cart = carts[i]
+            val driven = i == rideIndex
+            cart.onGround = false
+            cart.vy += GRAVITY * dt
+            if (driven) {
+                cart.vx += move * CART_ACCEL * dt
+                cart.vx = cart.vx.coerceIn(-CART_MAX, CART_MAX)
+            }
+            cart.x += cart.vx * dt
+            cart.y += cart.vy * dt
+            repeat(3) {
+                resolveCartAgainstSolids(cart)
+                resolveCartAgainstSlopes(cart)
+            }
+            if (cart.onGround) {
+                val drag = if (driven && move != 0f) 0.4f else CART_DRAG
+                cart.vx *= (1f - drag * dt).coerceAtLeast(0f)
+            }
+            cart.spin += cart.vx / 16f * dt
+        }
+    }
+
+    private fun resolveCartAgainstSolids(cart: RedBallCart) {
+        resolveCartAgainstList(cart, scene.solids)
+        if (scene.concrete.isNotEmpty()) resolveCartAgainstList(cart, scene.concrete)
+    }
+
+    private fun resolveCartAgainstList(cart: RedBallCart, solids: List<RedBallAabb>) {
+        val hw = cart.w * 0.5f
+        val hh = cart.h * 0.5f
+        for (solid in solids) {
+            val l = cart.x - hw
+            val t = cart.y - hh
+            val r = cart.x + hw
+            val b = cart.y + hh
+            if (r <= solid.l || l >= solid.r || b <= solid.t || t >= solid.b) continue
+            val penL = r - solid.l
+            val penR = solid.r - l
+            val penT = b - solid.t
+            val penB = solid.b - t
+            val least = minOf(penL, penR, penT, penB)
+            when (least) {
+                penL -> {
+                    cart.x -= penL
+                    if (cart.vx > 0f) cart.vx = 0f
+                }
+                penR -> {
+                    cart.x += penR
+                    if (cart.vx < 0f) cart.vx = 0f
+                }
+                penT -> {
+                    cart.y -= penT
+                    if (cart.vy > 0f) cart.vy *= -0.04f
+                    cart.onGround = true
+                }
+                else -> {
+                    cart.y += penB
+                    if (cart.vy < 0f) cart.vy = 0f
+                }
+            }
+        }
+    }
+
+    private fun resolveCartAgainstSlopes(cart: RedBallCart) {
+        val radius = cart.h * 0.5f
+        for (slope in scene.slopes) {
+            val hit = slopeHit(slope, cart.x, cart.y, radius, radius * 0.35f) ?: continue
+            cart.x += hit.nx * hit.pen
+            cart.y += hit.ny * hit.pen
+            val vn = cart.vx * hit.nx + cart.vy * hit.ny
+            if (vn < 0f) {
+                cart.vx -= vn * hit.nx
+                cart.vy -= vn * hit.ny
+            }
+            if (hit.ny < -0.25f) cart.onGround = true
+        }
+    }
+
+    private fun poolAt(x: Float, y: Float): RedBallWater? {
+        for (pool in scene.waters) {
+            if (x >= pool.l && x <= pool.r && y >= pool.t && y <= pool.b) return pool
+        }
+        return null
+    }
+
+    /** Вода, в которой мяч уже плывёт, или поверхность, если зажато «вниз». */
+    private fun swimProbe(): RedBallWater? {
+        if (diveHeld) {
+            val feet = poolAt(ballX, ballY + RedBallScene.BALL_R * 0.85f)
+            if (feet != null) return feet
+        }
+        return poolAt(ballX, ballY)
+    }
+
+    private fun settleOnWater(prevFeet: Float) {
+        if (diveHeld || rideIndex >= 0) {
+            afloat = false
+            return
+        }
+        val radius = RedBallScene.BALL_R
+        for (pool in scene.waters) {
+            if (ballX < pool.l + 2f || ballX > pool.r - 2f) continue
+            val feet = ballY + radius
+            val crossed = prevFeet <= pool.t + 4f && feet >= pool.t - 1f
+            val shallow = ballY <= pool.t + radius * 0.45f && feet >= pool.t && ballY + radius * 0.2f >= pool.t
+            if (!crossed && !shallow) continue
+            if (ballVy < -40f && !crossed) continue
+            val impact = ballVy
+            val surfaceY = pool.t - radius
+            if (ballY > surfaceY) ballY = surfaceY
+            if (ballVy > 0f) ballVy *= 0.05f
+            grounded = true
+            contactFriction = RED_BALL_FRICTION * 0.65f
+            if (!afloat && impact > 90f) {
+                splash(ballX, pool.t, impact)
+                wetLanding = true
+            }
+            afloat = true
+            return
+        }
+        afloat = false
+    }
+
+    private fun updateBreath(dt: Float) {
+        val pool = poolAt(ballX, ballY)
+        val under = pool != null && ballY > pool.t + 8f
+        submerged = under
+        if (under) {
+            breath = (breath - BREATH_DRAIN * dt).coerceAtLeast(0f)
+            bubbleCd -= dt
+            if (bubbleCd <= 0f) {
+                bubbleCd = 0.16f
+                emit(
+                    x = ballX + (rng.nextFloat() - 0.5f) * 16f,
+                    y = ballY - RedBallScene.BALL_R * 0.4f,
+                    vx = (rng.nextFloat() - 0.5f) * 24f,
+                    vy = -36f - rng.nextFloat() * 28f,
+                    life = 0.7f + rng.nextFloat() * 0.25f,
+                    kind = RedBallParticle.BUBBLE,
+                    size = 3.2f + rng.nextFloat() * 3.4f,
+                )
+            }
+            if (breath <= 0f) {
+                val before = hearts
+                takeHit(0f, -260f, respawn = false)
+                if (hearts < before || dead) breath = BREATH_GASP
+            }
+        } else {
+            breath = (breath + BREATH_REFILL * dt).coerceAtMost(1f)
+        }
+    }
+
+    /** Плоское облачко влево и вправо от точки касания. Живёт около 0,4 с и растёт с ударом. */
+    private fun landPuff(x: Float, y: Float, impact: Float) {
+        val scale = (impact / 480f).coerceIn(0.45f, 2.1f)
+        val count = (4 + 5f * scale).toInt()
+        for (n in 0 until count) {
+            val dir = if (n % 2 == 0) -1f else 1f
+            val along = (0.45f + rng.nextFloat()) * (70f + 90f * scale)
+            emit(
+                x = x + dir * (4f + rng.nextFloat() * 10f),
+                y = y - rng.nextFloat() * 4f,
+                vx = dir * along,
+                vy = -16f - rng.nextFloat() * 36f * scale,
+                life = 0.34f + rng.nextFloat() * 0.1f,
+                kind = RedBallParticle.PUFF,
+                size = (4.2f + 5.5f * scale) * (0.65f + rng.nextFloat() * 0.45f),
+            )
+        }
+    }
+
+    private fun splash(x: Float, y: Float, impact: Float) {
+        val scale = (impact / 520f).coerceIn(0.45f, 2f)
+        val count = (4 + 4f * scale).toInt()
+        for (n in 0 until count) {
+            val dir = if (n % 2 == 0) -1f else 1f
+            emit(
+                x = x + dir * (2f + rng.nextFloat() * 8f),
+                y = y,
+                vx = dir * (40f + 70f * scale) * (0.5f + rng.nextFloat()),
+                vy = -(80f + 90f * scale) * (0.45f + rng.nextFloat()),
+                life = 0.32f + rng.nextFloat() * 0.12f,
+                kind = RedBallParticle.SPLASH,
+                size = (3.5f + 4f * scale) * (0.6f + rng.nextFloat() * 0.5f),
+            )
+        }
+    }
+
+    private fun emit(
+        x: Float,
+        y: Float,
+        vx: Float,
+        vy: Float,
+        life: Float,
+        kind: Int,
+        size: Float,
+    ) {
+        if (fx.size >= 96) fx.removeAt(0)
+        fx += RedBallParticle(
+            x = x,
+            y = y,
+            vx = vx,
+            vy = vy,
+            life = life,
+            maxLife = life,
+            kind = kind,
+            size = size,
+        )
     }
 
     companion object {
@@ -1040,6 +1429,22 @@ class RedBallSim(val scene: RedBallScene = RedBallScene.builtin()) {
         private const val CLIMB_SPEED = 250f
         private const val LADDER_FALL = 150f
         private const val ENEMY_SPEED = 86f
+        private const val DUST_MIN = 165f
+        private const val CART_ACCEL = 1100f
+        private const val CART_MAX = 340f
+        private const val CART_DRAG = 2.5f
+        private const val RIDE_LOCK = 0.22f
+        private const val WATER_GRAVITY = 700f
+        private const val BUOYANCY = 1500f
+        private const val DIVE_PUSH = 2200f
+        private const val WATER_ACCEL = 620f
+        private const val WATER_MAX = 200f
+        private const val WATER_DRAG = 2.4f
+        private const val WATER_RISE = 260f
+        private const val WATER_SINK = 280f
+        private const val BREATH_DRAIN = 0.25f
+        private const val BREATH_REFILL = 0.55f
+        private const val BREATH_GASP = 0.42f
     }
 }
 
@@ -1055,6 +1460,17 @@ private fun RedBallCrateSpawn.toBody() = RedBallCrate(
     movable = movable,
     friction = friction,
     mass = mass,
+)
+
+private fun RedBallCartSpawn.toCart() = RedBallCart(
+    x = x,
+    y = y,
+    vx = 0f,
+    vy = 0f,
+    w = w,
+    h = h,
+    homeX = x,
+    homeY = y,
 )
 
 private fun RedBallEnemySpawn.toEnemy() = RedBallEnemy(
@@ -1091,6 +1507,29 @@ class RedBallCrate(
         vx = 0f
         vy = 0f
         onGround = false
+    }
+}
+
+class RedBallCart(
+    var x: Float,
+    var y: Float,
+    var vx: Float,
+    var vy: Float,
+    val w: Float,
+    val h: Float,
+    val homeX: Float,
+    val homeY: Float,
+) {
+    var onGround: Boolean = false
+    var spin: Float = 0f
+
+    fun reset() {
+        x = homeX
+        y = homeY
+        vx = 0f
+        vy = 0f
+        onGround = false
+        spin = 0f
     }
 }
 
@@ -1163,5 +1602,8 @@ class RedBallParticle(
         const val DUST = 0
         const val SPARK = 1
         const val BOOM = 2
+        const val PUFF = 3
+        const val SPLASH = 4
+        const val BUBBLE = 5
     }
 }

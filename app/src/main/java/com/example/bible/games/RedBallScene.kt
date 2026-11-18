@@ -45,6 +45,25 @@ data class RedBallStarSpawn(val x: Float, val y: Float)
 
 data class RedBallMagnetSpawn(val x: Float, val y: Float)
 
+/**
+ * Прямоугольник воды. [t] — поверхность, [b] — дно. Ось Y вниз.
+ * В отличие от ямы под [RedBallScene.voidY], здесь можно плыть и нырять.
+ */
+data class RedBallWater(
+    val l: Float,
+    val t: Float,
+    val r: Float,
+    val b: Float,
+)
+
+/** Тележка. [x] и [y] — центр кузова, низ стоит на земле, если её так поставили. */
+data class RedBallCartSpawn(
+    val x: Float,
+    val y: Float,
+    val w: Float = 118f,
+    val h: Float = 46f,
+)
+
 data class RedBallEnemySpawn(
     val x: Float,
     val y: Float,
@@ -142,6 +161,8 @@ data class RedBallScene(
     val magnets: List<RedBallMagnetSpawn> = emptyList(),
     val enemies: List<RedBallEnemySpawn> = emptyList(),
     val portals: List<RedBallPortal> = emptyList(),
+    val waters: List<RedBallWater> = emptyList(),
+    val carts: List<RedBallCartSpawn> = emptyList(),
 ) {
     /** Порталы с неизвестной целью засыпают: мяч проходит сквозь них. */
     fun withKnownPortals(knownIds: Set<String>): RedBallScene {
@@ -178,10 +199,16 @@ data class RedBallScene(
                     RedBallAabb(1280f, 860f, 1400f, 980f),
                     RedBallAabb(1400f, floor, 1860f, 980f),
                     RedBallAabb(1860f, ledge, 2620f, 980f),
-                    RedBallAabb(-80f, 0f, 0f, 980f),
+                    RedBallAabb(-1100f, 0f, -980f, 980f),
                     RedBallAabb(2620f, 0f, 2700f, 980f),
+                    RedBallAabb(-12f, 555f, 8f, 980f),
+                    RedBallAabb(-980f, 940f, -20f, 980f),
+                    RedBallAabb(-720f, 760f, -260f, 980f),
                 ),
-                slopes = listOf(RedBallSlope(470f, 640f, 820f, floor)),
+                slopes = listOf(
+                    RedBallSlope(470f, 640f, 820f, floor),
+                    RedBallSlope(-24f, 690f, -260f, 760f),
+                ),
                 spikes = listOf(
                     RedBallSpike(1310f, 800f, 36f, 60f),
                     RedBallSpike(1350f, 800f, 36f, 60f),
@@ -190,6 +217,14 @@ data class RedBallScene(
                 springs = listOf(RedBallAabb(1660f, 724f, 1750f, floor)),
                 door = RedBallAabb(2380f, 250f, 2480f, ledge),
                 crates = listOf(RedBallCrateSpawn(1140f, floor - crate / 2f, crate)),
+                minX = -1140f,
+                stars = listOf(
+                    RedBallStarSpawn(-860f, 870f),
+                    RedBallStarSpawn(-800f, 900f),
+                    RedBallStarSpawn(-900f, 840f),
+                ),
+                waters = listOf(RedBallWater(-980f, 780f, -24f, 940f)),
+                carts = listOf(RedBallCartSpawn(-490f, 760f - 23f, 118f, 46f)),
             )
         }
     }
@@ -209,6 +244,8 @@ enum class RedBallPieceKind(val w: Int, val h: Int) {
     START(1, 1),
     DOOR(2, 4),
     PORTAL(2, 3),
+    WATER(6, 4),
+    CART(3, 2),
 }
 
 data class RedBallPiece(
@@ -448,6 +485,8 @@ data class RedBallDraft(
         val magnets = mutableListOf<RedBallMagnetSpawn>()
         val enemies = mutableListOf<RedBallEnemySpawn>()
         val portals = mutableListOf<RedBallPortal>()
+        val waters = mutableListOf<RedBallWater>()
+        val carts = mutableListOf<RedBallCartSpawn>()
         var startX = cell * 2f
         var startY = originY + cell
         var door: RedBallAabb? = null
@@ -515,6 +554,16 @@ data class RedBallDraft(
                     role = piece.role,
                     exitId = piece.exitId,
                 )
+                RedBallPieceKind.WATER -> waters += RedBallWater(box.l, box.t, box.r, box.b)
+                RedBallPieceKind.CART -> {
+                    val bodyH = min(box.b - box.t, 48f)
+                    carts += RedBallCartSpawn(
+                        x = (box.l + box.r) / 2f,
+                        y = box.b - bodyH / 2f,
+                        w = (box.r - box.l) * 0.94f,
+                        h = bodyH,
+                    )
+                }
             }
         }
         if (pieces.isEmpty()) {
@@ -557,6 +606,8 @@ data class RedBallDraft(
             magnets = magnets,
             enemies = enemies,
             portals = portals,
+            waters = waters,
+            carts = carts,
         )
     }
 
@@ -635,6 +686,7 @@ data class RedBallDraft(
         private val HIT_ORDER = listOf(
             RedBallPieceKind.ENEMY,
             RedBallPieceKind.CRATE,
+            RedBallPieceKind.CART,
             RedBallPieceKind.STAR,
             RedBallPieceKind.MAGNET,
             RedBallPieceKind.PORTAL,
@@ -644,6 +696,7 @@ data class RedBallDraft(
             RedBallPieceKind.LADDER,
             RedBallPieceKind.START,
             RedBallPieceKind.SLOPE,
+            RedBallPieceKind.WATER,
             RedBallPieceKind.CONCRETE,
             RedBallPieceKind.GROUND,
         )
@@ -782,6 +835,8 @@ data class RedBallDraft(
             "start" -> RedBallPieceKind.START
             "door" -> RedBallPieceKind.DOOR
             "portal" -> RedBallPieceKind.PORTAL
+            "water" -> RedBallPieceKind.WATER
+            "cart" -> RedBallPieceKind.CART
             else -> null
         }
 

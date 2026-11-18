@@ -21,10 +21,12 @@ import com.example.bible.games.RedBallAabb
 import com.example.bible.games.RedBallDraft
 import com.example.bible.games.RedBallPiece
 import com.example.bible.games.RedBallPieceKind
+import com.example.bible.games.RedBallParticle
 import com.example.bible.games.RedBallPortalRole
 import com.example.bible.games.RedBallScene
 import com.example.bible.games.RedBallSim
 import com.example.bible.games.RedBallSlope
+import com.example.bible.games.RedBallWater
 import com.example.bible.games.skins.RedBallSkinBitmaps
 import com.example.bible.games.skins.RedBallSkinSlot
 import kotlin.math.atan2
@@ -78,6 +80,7 @@ internal fun DrawScope.drawSpritePlay(
         translate(-camX, -camY)
     }) {
         drawSpriteWater(scene, sim.anim, skin)
+        for (water in scene.waters) drawSpritePool(water, sim.anim, skin)
         val grounds = ArrayList<RedBallAabb>(scene.solids.size)
         for (solid in scene.solids) {
             if (solid.r <= scene.minX + 0.5f || solid.l >= scene.worldW - 0.5f) continue
@@ -114,13 +117,21 @@ internal fun DrawScope.drawSpritePlay(
         val door = scene.door
         drawSpriteFlag(door.l, door.t, door.r, door.b, sim.anim, skin)
         for (crate in sim.crates) drawSpriteCrate(crate.x, crate.y, crate.size, skin)
+        for (cart in sim.carts) {
+            drawCartoonCart(cart.x, cart.y, cart.w, cart.h, cart.spin, skin.bitmapOrNull(RedBallSkinSlot.CART))
+        }
         for (block in sim.blocks) drawSpriteBoulder(block.x, block.y, block.size, skin)
         for (enemy in sim.enemies) {
             if (enemy.alive) drawSpriteEnemy(enemy.x, enemy.y, enemy.size, enemy.angle, skin)
         }
-        for (particle in sim.particles) drawParticle(particle)
+        for (particle in sim.particles) {
+            if (particle.kind != RedBallParticle.BUBBLE) drawParticle(particle)
+        }
         if (sim.magnetTime > 0f) drawMagnetAura(sim.ballX, sim.ballY, sim.anim)
         drawSpriteHero(sim, skin)
+        for (particle in sim.particles) {
+            if (particle.kind == RedBallParticle.BUBBLE) drawParticle(particle)
+        }
     }
 }
 
@@ -189,6 +200,18 @@ internal fun DrawScope.drawSpriteEditorWorld(
                 angle = 0f,
                 skin,
             )
+            RedBallPieceKind.WATER -> drawSpritePool(RedBallWater(box.l, box.t, box.r, box.b), 0.4f, skin)
+            RedBallPieceKind.CART -> {
+                val bodyH = min(box.b - box.t, 48f)
+                drawCartoonCart(
+                    (box.l + box.r) / 2f,
+                    box.b - bodyH / 2f,
+                    (box.r - box.l) * 0.94f,
+                    bodyH,
+                    0.4f,
+                    skin.bitmapOrNull(RedBallSkinSlot.CART),
+                )
+            }
             RedBallPieceKind.DOOR -> drawSpriteFlag(box.l, box.t, box.r, box.b, 0.8f, skin)
             RedBallPieceKind.PORTAL -> {
                 val mood = when {
@@ -438,6 +461,47 @@ private fun DrawScope.drawSpriteHero(sim: RedBallSim, skin: RedBallSkinBitmaps) 
         d * sy,
         alpha = sim.hurtBlink(),
     )
+    if (!sim.dead) drawSpritePupils(sim.ballX, sim.ballY + sink, d, sx, sy, sim.gazeX, sim.gazeY)
+}
+
+/**
+ * У спрайта глаза нарисованы внутри PNG. Поверх кладём белки и зрачки,
+ * сдвинутые на [gazeX]/[gazeY], чтобы направление читалось в любой главе.
+ * Координаты белков сняты с кадра героя 128×128: левый глаз около (54, 56), правый около (90, 56).
+ */
+private fun DrawScope.drawSpritePupils(
+    x: Float,
+    cy: Float,
+    diameter: Float,
+    sx: Float,
+    sy: Float,
+    gazeX: Float,
+    gazeY: Float,
+) {
+    val gx = gazeX.coerceIn(-1f, 1f)
+    val gy = gazeY.coerceIn(-1f, 1f)
+    withTransform({ scale(sx, sy, pivot = Offset(x, cy)) }) {
+        val unit = diameter / 128f
+        fun eye(px: Float, py: Float) {
+            val ex = x + (px - 64f) * unit
+            val ey = cy + (py - 64f) * unit
+            val ew = 8.5f * unit
+            val eh = 9f * unit
+            drawOval(Color.White, Offset(ex - ew, ey - eh), Size(ew * 2f, eh * 2f))
+            drawOval(
+                Color(0xFF1A120C),
+                Offset(ex - ew, ey - eh),
+                Size(ew * 2f, eh * 2f),
+                style = Stroke(width = unit * 1.1f),
+            )
+            val pupil = Offset(ex + gx * ew * 0.48f, ey + gy * eh * 0.46f)
+            val pr = 3.6f * unit
+            drawCircle(Color(0xFF1A120C), pr, pupil)
+            drawCircle(Color.White, pr * 0.34f, pupil - Offset(pr * 0.32f, pr * 0.34f))
+        }
+        eye(54f, 56f)
+        eye(90f, 56f)
+    }
 }
 
 /** Спрайт уже с лицом: в воздухе удивлён, рядом с врагом испуган, иначе улыбается. */
@@ -741,6 +805,37 @@ private fun DrawScope.drawSpriteSpring(
     if (w < 4f || h < 4f) return
     val slot = if (compressed) RedBallSkinSlot.SPRING_COMPRESSED else RedBallSkinSlot.SPRING_IDLE
     placeCentered(skin.bitmap(slot), (l + r) / 2f, (t + b) / 2f, w, h)
+}
+
+/** Отдельный пруд: те же тайлы воды, но только внутри прямоугольника. */
+private fun DrawScope.drawSpritePool(water: RedBallWater, time: Float, skin: RedBallSkinBitmaps) {
+    val w = water.r - water.l
+    val h = water.b - water.t
+    if (w < 4f || h < 4f) return
+    fillTiled(
+        skin.bitmap(RedBallSkinSlot.WATER_BODY),
+        water.l,
+        water.t,
+        water.r,
+        water.b,
+        WATER_BODY_TILE,
+        WATER_BODY_TILE,
+        alpha = WATER_BODY_ALPHA,
+    )
+    val overlap = WATER_SURFACE_H * 0.42f
+    val stripTop = water.t - (WATER_SURFACE_H - overlap)
+    val shift = wrapShift(time * WATER_SCROLL, WATER_SURFACE_W)
+    fillTiled(
+        skin.bitmap(RedBallSkinSlot.WATER_SURFACE),
+        water.l,
+        stripTop,
+        water.r,
+        stripTop + WATER_SURFACE_H,
+        WATER_SURFACE_W,
+        WATER_SURFACE_H,
+        originX = water.l - shift,
+        originY = stripTop,
+    )
 }
 
 /** Яма: тело тайлится по всей глубине, сверху полоска волн медленно едет вбок. */

@@ -984,7 +984,7 @@ private fun RedBallPlay(
         val spot = arrival
         if (spot == null) RedBallSim(shown) else RedBallSim(spot.scene).also { it.arrive(spot.x, spot.y) }
     }
-    val held = remember { intArrayOf(0, 0) }
+    val held = remember { intArrayOf(0, 0, 0) }
     val paused = remember(sim) { mutableStateOf(false) }
     var tick by remember { mutableIntStateOf(0) }
     // sim.hearts — обычное поле. Строка сердец читает снимок, иначе не перерисовывается.
@@ -996,7 +996,7 @@ private fun RedBallPlay(
                 if (last != 0L && !paused.value) {
                     val dt = ((now - last) / 1_000_000_000f).coerceIn(0f, 0.033f)
                     val move = (held[1] - held[0]).toFloat()
-                    sim.step(dt, move)
+                    sim.step(dt, move, held[2].toFloat())
                 }
                 last = now
                 val lives = sim.hearts
@@ -1098,6 +1098,16 @@ private fun RedBallPlay(
                 .padding(start = 12.dp, top = 8.dp)
                 .align(Alignment.TopStart),
         )
+        val frame = tick
+        if (frame >= 0 && (sim.submerged || sim.breath < 0.995f)) {
+            BreathMeter(
+                breath = sim.breath,
+                modifier = Modifier
+                    .statusBarsPadding()
+                    .padding(start = 14.dp, top = 52.dp)
+                    .align(Alignment.TopStart),
+            )
+        }
         if (!sim.won && !sim.dead && travel == null) {
             PauseButton(
                 Modifier
@@ -1126,6 +1136,7 @@ private fun RedBallPlay(
             horizontalArrangement = Arrangement.spacedBy(12.dp),
         ) {
             ArrowPad(left = true, onHold = { held[0] = if (it) 1 else 0 })
+            DownPad(onHold = { held[2] = if (it) 1 else 0 })
             ArrowPad(left = false, onHold = { held[1] = if (it) 1 else 0 })
         }
         JumpPad(
@@ -1160,7 +1171,7 @@ private fun RedBallPlay(
                     when {
                         sim.won && shown.builtin -> "Мяч докатился сам, как надо"
                         sim.won -> "Получилось! Мяч добрался до двери"
-                        shown.builtin -> "Ящик закрывает яму, пружина подбрасывает наверх"
+                        shown.builtin -> "Ящик закрывает яму, пружина подбрасывает наверх. Влево — тележка и глубокая вода: вниз, чтобы нырнуть"
                         else -> "Шипы и злые квадраты сбоку опасны. Сверху квадрат можно раздавить"
                     },
                     color = Color(0xFF44403C),
@@ -1558,6 +1569,64 @@ private fun ArrowPad(left: Boolean, onHold: (Boolean) -> Unit) {
                 path,
                 Color.White.copy(alpha = 0.92f),
                 style = Stroke(width = stroke, join = StrokeJoin.Round),
+            )
+        }
+    }
+}
+
+@Composable
+private fun DownPad(onHold: (Boolean) -> Unit) {
+    val hold = rememberUpdatedState(onHold)
+    Box(
+        Modifier
+            .size(74.dp)
+            .semantics { contentDescription = "Вниз" }
+            .pointerInput(Unit) {
+                awaitEachGesture {
+                    awaitFirstDown().consume()
+                    hold.value(true)
+                    waitForUpOrCancellation()?.consume()
+                    hold.value(false)
+                }
+            },
+        contentAlignment = Alignment.Center,
+    ) {
+        Canvas(Modifier.fillMaxSize()) {
+            val stroke = 5.dp.toPx()
+            val inset = size.minDimension * 0.2f
+            val path = Path().apply {
+                moveTo(inset, inset)
+                lineTo(size.width - inset, inset)
+                lineTo(size.width / 2f, size.height - inset)
+                close()
+            }
+            drawPath(path, Color.White.copy(alpha = 0.14f))
+            drawPath(
+                path,
+                Color(0xFFD7F4FF).copy(alpha = 0.95f),
+                style = Stroke(width = stroke, join = StrokeJoin.Round),
+            )
+        }
+    }
+}
+
+@Composable
+private fun BreathMeter(breath: Float, modifier: Modifier = Modifier) {
+    val k = breath.coerceIn(0f, 1f)
+    Column(modifier) {
+        Text("Воздух", color = Color.White, fontWeight = FontWeight.Black, fontSize = 12.sp)
+        Box(
+            Modifier
+                .padding(top = 2.dp)
+                .size(width = 112.dp, height = 14.dp)
+                .clip(RoundedCornerShape(999.dp))
+                .background(Color.White.copy(alpha = 0.38f)),
+        ) {
+            Box(
+                Modifier
+                    .fillMaxHeight()
+                    .fillMaxWidth(k.coerceAtLeast(0.04f))
+                    .background(if (k < 0.28f) Color(0xFFDC2626) else Color(0xFF38BDF8)),
             )
         }
     }

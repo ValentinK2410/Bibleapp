@@ -83,6 +83,7 @@ class RedBallSkinTest {
             val paths = chapter.files.values
             assertEquals("в ${chapter.title} повторяется файл", paths.size, paths.toSet().size)
             for (slot in RedBallSkinSlot.entries) {
+                if (slot.optional && slot !in chapter.files) continue
                 val relative = chapter.files.getValue(slot)
                 val full = chapter.assetPath(slot)
                 for (piece in banned) {
@@ -117,7 +118,8 @@ class RedBallSkinTest {
         assertTrue(partial.missingSlots().contains(RedBallSkinSlot.SPRING_COMPRESSED))
         assertTrue(partial.missingSlots().contains(RedBallSkinSlot.WATER_SURFACE))
         assertTrue(partial.missingSlots().contains(RedBallSkinSlot.WATER_BODY))
-        assertEquals(RedBallSkinSlot.entries.size - 1, partial.missingSlots().size)
+        assertFalse(partial.missingSlots().contains(RedBallSkinSlot.CART))
+        assertEquals(RedBallSkinSlot.entries.count { !it.optional } - 1, partial.missingSlots().size)
     }
 
     @Test
@@ -151,7 +153,8 @@ class RedBallSkinTest {
     @Test
     fun everyChapterShipsTheSameSlotSizes() {
         val assets = redballAssets()
-        assertEquals(RedBallSkinSlot.entries.toSet(), expectedPng.keys)
+        val required = RedBallSkinSlot.entries.filter { !it.optional }.toSet()
+        assertEquals(required, expectedPng.keys)
         val packed = RedBallSkins.chapters.associate { it.id to fileBytes(assets, it) }
         assertEquals(
             setOf(RedBallSkinId.GREEN_HILLS, RedBallSkinId.DEEP_FOREST, RedBallSkinId.SUNNY_DESERT),
@@ -162,10 +165,10 @@ class RedBallSkinTest {
             val files = packed.getValue(chapter.id)
             assertEquals(
                 "у ${chapter.title} не хватает слота",
-                RedBallSkinSlot.entries.toSet(),
+                required,
                 files.keys,
             )
-            for (slot in RedBallSkinSlot.entries) {
+            for (slot in required) {
                 val spec = expectedPng.getValue(slot)
                 val file = files.getValue(slot)
                 val expectedBytes = when (chapter.id) {
@@ -230,8 +233,8 @@ class RedBallSkinTest {
     }
 
     private fun fileBytes(assets: File, chapter: RedBallSkin): Map<RedBallSkinSlot, PngFile> {
-        val out = HashMap<RedBallSkinSlot, PngFile>(RedBallSkinSlot.entries.size)
-        for (slot in RedBallSkinSlot.entries) {
+        val out = HashMap<RedBallSkinSlot, PngFile>(chapter.files.size)
+        for (slot in chapter.files.keys) {
             val file = File(assets, chapter.assetPath(slot).removePrefix("redball/"))
             val (width, height) = pngSize(file)
             val raw = file.readBytes()
