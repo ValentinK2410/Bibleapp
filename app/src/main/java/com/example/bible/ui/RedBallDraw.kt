@@ -29,6 +29,7 @@ import androidx.compose.ui.unit.LayoutDirection
 import com.example.bible.games.RedBallAabb
 import com.example.bible.games.RedBallDraft
 import com.example.bible.games.RedBallMark
+import com.example.bible.games.cameraFrame
 import com.example.bible.games.RedBallEnemy
 import com.example.bible.games.RedBallParticle
 import com.example.bible.games.RedBallPiece
@@ -94,10 +95,10 @@ internal fun DrawScope.drawRedBallPlay(sim: RedBallSim, skin: RedBallSkinBitmaps
     val viewH = 620f
     val scale = size.height / viewH
     val viewW = size.width / scale
-    val maxCamX = (scene.worldW - viewW).coerceAtLeast(scene.minX)
-    val camX = (sim.ballX - viewW * 0.38f).coerceIn(scene.minX, maxCamX)
+    val frame = scene.cameraFrame(sim.ballX, sim.ballY, viewW, viewH)
+    val camX = frame.x
+    val camY = frame.y
     val restCamY = (scene.worldH - viewH).coerceAtLeast(scene.minY)
-    val camY = (sim.ballY - viewH * 0.58f).coerceIn(scene.minY - viewH * 1.5f, restCamY)
     if (skin != null) {
         drawSpritePlay(sim, camX, camY, scale, (restCamY - camY) * scale, skin)
         if (sim.submerged) drawRect(Color(0xFF15608F).copy(alpha = 0.22f))
@@ -134,11 +135,15 @@ internal fun DrawScope.drawRedBallPlay(sim: RedBallSim, skin: RedBallSkinBitmaps
             when (mark) {
                 RedBallMark.PORTAL -> drawFairyPortal(box.l, box.t, box.r, box.b, sim.anim, PortalMood.OPEN)
                 RedBallMark.FRIEND -> drawFriendBadge((box.l + box.r) / 2f, box.b - 18f)
+                RedBallMark.SWITCH -> drawSwitchLever(box)
                 RedBallMark.NONE -> Unit
             }
         }
         if (sim.director.doorVisible) {
             drawFinishFlag(scene.door.l, scene.door.t, scene.door.r, scene.door.b, sim.anim)
+        }
+        for (point in scene.checkpoints) {
+            drawCheckpoint(point.x, point.y, point.x == sim.spawnX && point.y == sim.spawnY)
         }
         for (decoy in sim.director.visibleDecoys()) {
             drawFinishFlag(decoy.l, decoy.t, decoy.r, decoy.b, sim.anim)
@@ -185,6 +190,9 @@ internal fun DrawScope.drawRedBallPlay(sim: RedBallSim, skin: RedBallSkinBitmaps
             }
             if (sim.director.doorVisible) {
                 drawFinishFlag(scene.door.l, scene.door.t, scene.door.r, scene.door.b, sim.anim)
+            }
+            for (point in scene.checkpoints) {
+                drawCheckpoint(point.x, point.y, point.x == sim.spawnX && point.y == sim.spawnY)
             }
             drawGlossyBall(
                 sim.ballX,
@@ -637,8 +645,9 @@ private fun terrainPicture(scene: RedBallScene, art: TerrainArt, screenScale: Fl
     if (ppm < 0.85f) return null
     val cached = pictureCache
     if (cached != null && cached.key == art.key && abs(cached.ppm - ppm) < 0.08f) return cached
-    val bw = (worldW * ppm).toInt().coerceIn(1, 8192)
-    val bh = (worldH * ppm).toInt().coerceIn(1, 8192)
+    val bw = (worldW * ppm).toInt()
+    val bh = (worldH * ppm).toInt()
+    if (bw !in 1..8192 || bh !in 1..8192) return null
     return try {
         val bitmap = ImageBitmap(bw, bh, ImageBitmapConfig.Argb8888)
         CanvasDrawScope().draw(
@@ -1371,6 +1380,24 @@ internal fun DrawScope.drawFairySpring(l: Float, t: Float, r: Float, b: Float) {
             style = Stroke(width = stroke, cap = StrokeCap.Round),
         )
     }
+}
+
+/** Столбик чекпоинта. Зажжённый — последний, куда мяч вернётся. */
+internal fun DrawScope.drawCheckpoint(x: Float, y: Float, lit: Boolean) {
+    val color = if (lit) Color(0xFF16A34A) else Color(0xFF86EFAC)
+    val pole = if (lit) Color(0xFF14532D) else Color(0xFF3F6212)
+    drawRoundRect(pole, Offset(x - 3f, y - 54f), Size(6f, 54f), CornerRadius(2f, 2f))
+    drawRoundRect(color, Offset(x + 2f, y - 50f), Size(18f, 12f), CornerRadius(2f, 2f))
+    drawCircle(if (lit) Color(0xFFFEF9C3) else Color.White, 3.5f, Offset(x, y - 54f))
+}
+
+/** Рычаг, который включает мост. */
+internal fun DrawScope.drawSwitchLever(box: RedBallAabb) {
+    val x = (box.l + box.r) / 2f
+    val y = box.b - 6f
+    drawRoundRect(Color(0xFF78350F), Offset(x - 16f, y - 8f), Size(32f, 10f), CornerRadius(3f, 3f))
+    drawLine(Color(0xFFFBBF24), Offset(x, y - 6f), Offset(x + 12f, y - 28f), strokeWidth = 4f)
+    drawCircle(Color(0xFFFDE68A), 5f, Offset(x + 12f, y - 28f))
 }
 
 private fun DrawScope.drawFinishFlag(l: Float, t: Float, r: Float, b: Float, wave: Float) {

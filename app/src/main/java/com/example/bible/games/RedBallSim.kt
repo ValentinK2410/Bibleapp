@@ -54,6 +54,15 @@ class RedBallSim(val scene: RedBallScene = RedBallScene.builtin()) {
         private set
 
     /**
+     * Куда вернуться из ямы. Пока чекпоинт не взят — это старт.
+     * Потеря сердца не наполняет их заново.
+     */
+    var spawnX = 0f
+        private set
+    var spawnY = 0f
+        private set
+
+    /**
      * Секунды после удара, когда урон не проходит.
      * Пока значение больше нуля, мяч мигает в обоих скинах.
      */
@@ -144,6 +153,8 @@ class RedBallSim(val scene: RedBallScene = RedBallScene.builtin()) {
         won = false
         dead = false
         hearts = MAX_HEARTS
+        spawnX = scene.startX
+        spawnY = scene.startY
         invuln = 0f
         grounded = false
         wasGrounded = false
@@ -413,6 +424,7 @@ class RedBallSim(val scene: RedBallScene = RedBallScene.builtin()) {
         if (!riding) applySprings()
         touchEnemies()
         if (dead) return
+        claimCheckpoint()
         collectPickups(dt)
 
         if (hitsSpike()) {
@@ -1116,7 +1128,9 @@ class RedBallSim(val scene: RedBallScene = RedBallScene.builtin()) {
     /**
      * Один удар снимает одно сердце и включает [INVULN_TIME] секунд,
      * в которые не ранят ни враг, ни шипы, ни вода, ни яма.
-     * На нуле сердец мяч погибает. [respawn] — вылезти из ямы на старт.
+     * На нуле сердец мяч погибает.
+     * [respawn] — вылезти из ямы. Если на уровне есть чекпоинты, туда же
+     * возвращает и обычная потеря сердца. Полные сердца при этом не выдаются.
      */
     private fun takeHit(knockVx: Float, knockVy: Float, respawn: Boolean) {
         if (dead || won || invuln > 0f) return
@@ -1135,7 +1149,7 @@ class RedBallSim(val scene: RedBallScene = RedBallScene.builtin()) {
             return
         }
         pendingHurt = true
-        if (respawn) {
+        if (respawn || scene.checkpoints.isNotEmpty()) {
             respawnAtStart()
         } else {
             ballVx = knockVx
@@ -1143,9 +1157,23 @@ class RedBallSim(val scene: RedBallScene = RedBallScene.builtin()) {
         }
     }
 
+    private fun claimCheckpoint() {
+        if (scene.checkpoints.isEmpty() || dead || won) return
+        val reach = RedBallScene.BALL_R + 26f
+        val reach2 = reach * reach
+        for (point in scene.checkpoints) {
+            val dx = ballX - point.x
+            val dy = ballY - point.y
+            if (dx * dx + dy * dy <= reach2) {
+                spawnX = point.x
+                spawnY = point.y
+            }
+        }
+    }
+
     private fun respawnAtStart() {
-        ballX = scene.startX
-        ballY = scene.startY
+        ballX = spawnX
+        ballY = spawnY
         ballVx = 0f
         ballVy = 0f
         grounded = false
@@ -1155,6 +1183,7 @@ class RedBallSim(val scene: RedBallScene = RedBallScene.builtin()) {
         rideIndex = -1
         afloat = false
         submerged = false
+        breath = 1f
     }
 
     private fun hitsSpike(): Boolean {

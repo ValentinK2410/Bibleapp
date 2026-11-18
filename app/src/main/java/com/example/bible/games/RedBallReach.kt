@@ -15,13 +15,15 @@ internal object RedBallReach {
         scriptProblems(scene)?.let { return it }
         spawnProblems(scene)?.let { return it }
         val ids = triggerIds(scene)
-        if (ids.size > 12) return "${scene.name}: слишком много триггеров"
-        if (!reachesDoor(scene, ids)) {
+        if (ids.size > 16) return "${scene.name}: слишком много триггеров"
+        val reached = reachedPoints(scene, ids)
+        if (reached == null) {
             val samples = buildSamples(scene, 0, ids)
             val doorish = samples.count { insideDoor(scene, it.x, it.y) }
             return "${scene.name}: флаг недостижим (точек ${samples.size}, в двери $doorish)"
         }
-        starProblems(scene, ids)?.let { return it }
+        starProblems(scene, reached)?.let { return it }
+        checkpointProblems(scene, reached)?.let { return it }
         return null
     }
 
@@ -76,8 +78,7 @@ internal object RedBallReach {
         return null
     }
 
-    private fun starProblems(scene: RedBallScene, ids: List<String>): String? {
-        val reached = reachedPoints(scene, ids) ?: return "${scene.name}: путь к флагу разошёлся"
+    private fun starProblems(scene: RedBallScene, reached: List<Pt>): String? {
         val magnet = scene.magnets.any { magnet ->
             reached.any { dist(it.x, it.y, magnet.x, magnet.y) <= R + 20f }
         }
@@ -89,8 +90,31 @@ internal object RedBallReach {
         return null
     }
 
-    private fun reachesDoor(scene: RedBallScene, ids: List<String>): Boolean =
-        reachedPoints(scene, ids) != null
+    private fun checkpointProblems(scene: RedBallScene, reached: List<Pt>): String? {
+        val points = scene.checkpoints
+        if (points.isEmpty()) return null
+        if (points.size < 2) return "${scene.name}: мало чекпоинтов"
+        val doorX = (scene.door.l + scene.door.r) / 2f
+        val doorY = (scene.door.t + scene.door.b) / 2f
+        for (point in points) {
+            if (point.y >= scene.voidY - 8f) return "${scene.name}: чекпоинт в яме"
+            if (dist(point.x, point.y, scene.startX, scene.startY) < 90f) {
+                return "${scene.name}: чекпоинт на старте"
+            }
+            if (dist(point.x, point.y, doorX, doorY) < 90f) return "${scene.name}: чекпоинт на флаге"
+            val near = reached.any { dist(it.x, it.y, point.x, point.y) <= 70f }
+            if (!near) return "${scene.name}: чекпоинт (${point.x.toInt()}, ${point.y.toInt()}) не на пути"
+        }
+        for (i in points.indices) {
+            for (j in i + 1 until points.size) {
+                val apart = dist(points[i].x, points[i].y, points[j].x, points[j].y)
+                if (apart < 240f) return "${scene.name}: чекпоинты стоят кучно"
+            }
+        }
+        val span = points.maxOf { it.x } - points.minOf { it.x }
+        if (span < 500f) return "${scene.name}: чекпоинты не разошлись по уровню"
+        return null
+    }
 
     private data class Pt(val x: Float, val y: Float, val spring: Boolean, val water: Int)
 
@@ -114,7 +138,7 @@ internal object RedBallReach {
         push(scene.startX, scene.startY, 0)
         var guard = 0
         while (queue.isNotEmpty()) {
-            if (++guard > 60_000) return null
+            if (++guard > 120_000) return null
             val node = queue.removeFirst()
             val mask = masks.removeFirst()
             val fired = fired(ids, mask)

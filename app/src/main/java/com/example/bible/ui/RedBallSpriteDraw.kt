@@ -124,12 +124,16 @@ internal fun DrawScope.drawSpritePlay(
                     box.l, box.t, box.r, box.b, sim.anim, SpritePortalMood.OPEN, skin,
                 )
                 RedBallMark.FRIEND -> drawFriendBadge((box.l + box.r) / 2f, box.b - 18f)
+                RedBallMark.SWITCH -> drawSwitchLever(box)
                 RedBallMark.NONE -> Unit
             }
         }
         if (sim.director.doorVisible) {
             val door = scene.door
             drawSpriteFlag(door.l, door.t, door.r, door.b, sim.anim, skin)
+        }
+        for (point in scene.checkpoints) {
+            drawCheckpoint(point.x, point.y, point.x == sim.spawnX && point.y == sim.spawnY)
         }
         for (decoy in sim.director.visibleDecoys()) {
             drawSpriteFlag(decoy.l, decoy.t, decoy.r, decoy.b, sim.anim, skin)
@@ -171,6 +175,9 @@ internal fun DrawScope.drawSpritePlay(
             if (sim.director.doorVisible) {
                 val door = scene.door
                 drawSpriteFlag(door.l, door.t, door.r, door.b, sim.anim, skin)
+            }
+            for (point in scene.checkpoints) {
+                drawCheckpoint(point.x, point.y, point.x == sim.spawnX && point.y == sim.spawnY)
             }
             drawSpriteHero(sim, skin)
         }
