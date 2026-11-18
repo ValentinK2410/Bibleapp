@@ -14,6 +14,7 @@ import com.example.bible.games.RedBallPortalRole
 import com.example.bible.games.RedBallScene
 import com.example.bible.games.RedBallSceneKind
 import com.example.bible.games.RedBallSim
+import com.example.bible.games.RedBallSpike
 import com.example.bible.games.allowedPortalTargetIds
 import com.example.bible.games.RedBallStarSpawn
 import org.junit.Assert.assertEquals
@@ -156,8 +157,18 @@ class RedBallSimTest {
             RedBallPiece(100, RedBallPieceKind.SPIKE, 6, 8, 1, 2, false),
         )
         val doomed = RedBallSim(spiked.toScene())
-        repeat(60 * 4) { doomed.step(1f / 60f, 1f) }
-        assertTrue("шипы не сработали, x=${doomed.ballX} y=${doomed.ballY}", doomed.dead)
+        var hurt = false
+        var heartsWhenHurt = RedBallSim.MAX_HEARTS
+        repeat(60 * 4) {
+            val before = doomed.hearts
+            doomed.step(1f / 60f, 1f)
+            if (!hurt && doomed.hearts < before) {
+                hurt = true
+                heartsWhenHurt = doomed.hearts
+            }
+        }
+        assertTrue("шипы не сработали, x=${doomed.ballX} y=${doomed.ballY}", hurt)
+        assertEquals("шипы сняли не одно сердце", RedBallSim.MAX_HEARTS - 1, heartsWhenHurt)
     }
 
     @Test
@@ -268,7 +279,7 @@ class RedBallSimTest {
     }
 
     @Test
-    fun stompKillsEnemyAndSideContactRestarts() {
+    fun stompKillsEnemyAndSideContactCostsOneHeart() {
         val scene = arena(enemies = listOf(RedBallEnemySpawn(420f, 460f, 80f, 280f, 560f)))
         val stomp = RedBallSim(scene)
         val enemy = stomp.enemies.single()
@@ -278,6 +289,8 @@ class RedBallSimTest {
         stomp.step(1f / 60f, 0f)
         assertFalse("враг пережил прыжок сверху", enemy.alive)
         assertFalse("мяч погиб от своего прыжка", stomp.dead)
+        assertEquals(RedBallSim.MAX_HEARTS, stomp.hearts)
+        assertEquals(0f, stomp.invuln, 0.001f)
         assertTrue(stomp.consumeStomp())
 
         val side = RedBallSim(scene)
@@ -286,8 +299,89 @@ class RedBallSimTest {
         side.ballY = walker.y
         side.ballVy = 0f
         side.step(1f / 60f, 0f)
-        assertTrue("боковой удар не перезапустил мяч", side.dead)
+        assertFalse("боковой удар не должен забирать все сердца", side.dead)
+        assertEquals(RedBallSim.MAX_HEARTS - 1, side.hearts)
+        assertTrue("после удара нет неуязвимости", side.invuln > 0f)
         assertTrue("враг исчез от касания сбоку", walker.alive)
+        assertTrue(side.consumeHurt())
+        assertFalse(side.consumeLose())
+
+        side.ballX = walker.x
+        side.ballY = walker.y - 52f
+        side.ballVy = 420f
+        side.step(1f / 60f, 0f)
+        assertFalse("враг пережил прыжок во время мигания", walker.alive)
+        assertEquals("прыжок сверху снял сердце", RedBallSim.MAX_HEARTS - 1, side.hearts)
+    }
+
+    @Test
+    fun enemyTouchCostsOneHeartThenAnotherOnlyAfterInvuln() {
+        val scene = arena(enemies = listOf(RedBallEnemySpawn(420f, 460f, 80f, 280f, 560f)))
+        val sim = RedBallSim(scene)
+        val blinks = HashSet<Float>()
+        repeat((1.5f * 60f).toInt()) {
+            pinOntoEnemy(sim)
+            sim.step(1f / 60f, 0f)
+            blinks += sim.hurtBlink()
+        }
+        assertEquals("за 1.5 с касания должно пропасть ровно одно сердце", 2, sim.hearts)
+        assertFalse(sim.dead)
+        assertTrue("враг не должен умереть от бокового касания", sim.enemies.single().alive)
+        assertTrue("неуязвимость кончилась раньше 1.5 с", sim.invuln > 0.3f)
+        assertTrue("мигание не включается", blinks.contains(1f))
+        assertTrue("мигание не гаснет", blinks.contains(RedBallSim.HURT_BLINK_ALPHA))
+
+        repeat((2.5f * 60f).toInt()) {
+            parkOnStart(sim)
+            sim.step(1f / 60f, 0f)
+        }
+        assertEquals("за ожидание в стороне снялось ещё сердце", 2, sim.hearts)
+        assertEquals(0f, sim.invuln, 0.001f)
+        assertEquals(1f, sim.hurtBlink(), 0.001f)
+
+        pinOntoEnemy(sim)
+        sim.step(1f / 60f, 0f)
+        assertEquals("повторное касание после 2 с не сняло сердце", 1, sim.hearts)
+        assertFalse(sim.dead)
+        assertTrue(sim.invuln > RedBallSim.INVULN_TIME - 0.05f)
+    }
+
+    @Test
+    fun spikeAndPitShareTheInvulnWindow() {
+        val spiked = arena(spikes = listOf(RedBallSpike(200f, 400f, 120f, 120f)))
+        val onSpikes = RedBallSim(spiked)
+        repeat((1.5f * 60f).toInt()) {
+            onSpikes.ballX = 200f
+            onSpikes.ballY = 472f
+            onSpikes.ballVx = 0f
+            onSpikes.ballVy = 0f
+            onSpikes.step(1f / 60f, 0f)
+        }
+        assertEquals(2, onSpikes.hearts)
+        assertFalse(onSpikes.dead)
+        assertTrue(onSpikes.invuln > 0.3f)
+
+        val pit = RedBallSim(arena())
+        repeat((1.5f * 60f).toInt()) {
+            pit.ballX = 400f
+            pit.ballY = pit.scene.voidY + 40f
+            pit.ballVx = 0f
+            pit.ballVy = 40f
+            pit.step(1f / 60f, 0f)
+        }
+        assertEquals("яма сняла не одно сердце", 2, pit.hearts)
+        assertFalse(pit.dead)
+        assertEquals(pit.scene.startX, pit.ballX, 0.1f)
+        assertEquals(pit.scene.startY, pit.ballY, 0.1f)
+        repeat(60 * 3) {
+            parkOnStart(pit)
+            pit.step(1f / 60f, 0f)
+        }
+        assertEquals(0f, pit.invuln, 0.001f)
+        pit.ballY = pit.scene.voidY + 40f
+        pit.step(1f / 60f, 0f)
+        assertEquals("вторая яма после неуязвимости не сняла сердце", 1, pit.hearts)
+        assertEquals(pit.scene.startX, pit.ballX, 0.1f)
     }
 
     @Test
@@ -792,6 +886,21 @@ class RedBallSimTest {
         assertFalse(sim.dead)
     }
 
+    private fun pinOntoEnemy(sim: RedBallSim) {
+        val enemy = sim.enemies.single()
+        sim.ballX = enemy.x - enemy.size * 0.2f
+        sim.ballY = enemy.y
+        sim.ballVx = 0f
+        sim.ballVy = 0f
+    }
+
+    private fun parkOnStart(sim: RedBallSim) {
+        sim.ballX = sim.scene.startX
+        sim.ballY = sim.scene.startY
+        sim.ballVx = 0f
+        sim.ballVy = 0f
+    }
+
     private fun arena(
         friction: Float = RED_BALL_FRICTION,
         crates: List<RedBallCrateSpawn> = emptyList(),
@@ -800,6 +909,7 @@ class RedBallSimTest {
         magnets: List<RedBallMagnetSpawn> = emptyList(),
         enemies: List<RedBallEnemySpawn> = emptyList(),
         portals: List<RedBallPortal> = emptyList(),
+        spikes: List<RedBallSpike> = emptyList(),
     ): RedBallScene {
         return RedBallScene(
             id = "arena",
@@ -812,7 +922,7 @@ class RedBallSimTest {
             startY = 472f,
             solids = listOf(RedBallAabb(0f, 500f, 1700f, 760f, friction)),
             slopes = emptyList(),
-            spikes = emptyList(),
+            spikes = spikes,
             springs = emptyList(),
             door = RedBallAabb(1500f, 340f, 1600f, 500f),
             crates = crates,

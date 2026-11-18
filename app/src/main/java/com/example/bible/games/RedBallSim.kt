@@ -44,6 +44,18 @@ class RedBallSim(val scene: RedBallScene = RedBallScene.builtin()) {
         private set
     var dead = false
         private set
+
+    /** Оставшиеся жизни. Ноль — мяч погиб. */
+    var hearts = MAX_HEARTS
+        private set
+
+    /**
+     * Секунды после удара, когда урон не проходит.
+     * Пока значение больше нуля, мяч мигает в обоих скинах.
+     */
+    var invuln = 0f
+        private set
+
     var grounded = false
         private set
     private var wasGrounded = false
@@ -53,6 +65,7 @@ class RedBallSim(val scene: RedBallScene = RedBallScene.builtin()) {
 
     private val springArmed = BooleanArray(scene.springs.size) { true }
     private var pendingLose = false
+    private var pendingHurt = false
     private var pendingSpring = false
     private var pendingWin = false
     private var pendingJump = false
@@ -100,11 +113,14 @@ class RedBallSim(val scene: RedBallScene = RedBallScene.builtin()) {
         fx.clear()
         won = false
         dead = false
+        hearts = MAX_HEARTS
+        invuln = 0f
         grounded = false
         wasGrounded = false
         contactFriction = RED_BALL_FRICTION
         for (i in springArmed.indices) springArmed[i] = true
         pendingLose = false
+        pendingHurt = false
         pendingSpring = false
         pendingWin = false
         pendingJump = false
@@ -129,6 +145,20 @@ class RedBallSim(val scene: RedBallScene = RedBallScene.builtin()) {
     fun consumeWin(): Boolean = pendingWin.also { pendingWin = false }
 
     fun consumeLose(): Boolean = pendingLose.also { pendingLose = false }
+
+    /** Удар, после которого жизнь ещё осталась. */
+    fun consumeHurt(): Boolean = pendingHurt.also { pendingHurt = false }
+
+    /**
+     * 1 — мяч рисуется как обычно.
+     * Меньше — кадр мигания, пока действует неуязвимость.
+     * Оба скина читают одно и то же значение.
+     */
+    fun hurtBlink(): Float {
+        if (dead || invuln <= 0f) return 1f
+        val dim = ((anim * HURT_BLINK_HZ).toInt() and 1) == 1
+        return if (dim) HURT_BLINK_ALPHA else 1f
+    }
 
     fun consumeSpring(): Boolean = pendingSpring.also { pendingSpring = false }
 
@@ -197,6 +227,7 @@ class RedBallSim(val scene: RedBallScene = RedBallScene.builtin()) {
     }
 
     private fun substep(dt: Float, move: Float) {
+        if (invuln > 0f) invuln = (invuln - dt).coerceAtLeast(0f)
         coyote = if (wasGrounded) COYOTE_TIME else (coyote - dt).coerceAtLeast(0f)
         if (jumpBuffer > 0f) {
             if (coyote > 0f) {
@@ -293,12 +324,16 @@ class RedBallSim(val scene: RedBallScene = RedBallScene.builtin()) {
         if (dead) return
         collectPickups(dt)
 
-        if (ballY > scene.voidY || hitsSpike()) {
-            dead = true
-            pendingLose = true
-            ballVx = 0f
-            ballVy = 0f
-            return
+        if (hitsSpike()) {
+            val back = if (ballVx >= 0f) -1f else 1f
+            takeHit(back * 160f, -200f, respawn = false)
+            if (dead) return
+        }
+        if (ballY > scene.voidY) {
+            // Яма и вода под уровнем: одно сердце и возврат на старт.
+            // Пока мигание не кончилось, в воду можно упасть снова без второго удара.
+            if (invuln > 0f) respawnAtStart() else takeHit(0f, 0f, respawn = true)
+            if (dead) return
         }
         if (overlapsDoor()) {
             won = true
@@ -511,12 +546,11 @@ class RedBallSim(val scene: RedBallScene = RedBallScene.builtin()) {
                 rising = false
                 pendingStomp = true
                 puff(enemy.x, enemy.y, RedBallParticle.BOOM, 16, 280f, 0.55f, 8f)
-            } else {
-                dead = true
-                pendingLose = true
-                ballVx = 0f
-                ballVy = 0f
-                return
+            } else if (invuln <= 0f) {
+                val away = if (ballX >= enemy.x) 1f else -1f
+                ballX += away * 8f
+                takeHit(away * 240f, -200f, respawn = false)
+                if (dead) return
             }
         }
     }
@@ -931,6 +965,43 @@ class RedBallSim(val scene: RedBallScene = RedBallScene.builtin()) {
         return ballX > d.l && ballX < d.r && ballY > d.t && ballY < d.b
     }
 
+    /**
+     * Один удар снимает одно сердце и включает [INVULN_TIME] секунд,
+     * в которые не ранят ни враг, ни шипы, ни вода, ни яма.
+     * На нуле сердец мяч погибает. [respawn] — вылезти из ямы на старт.
+     */
+    private fun takeHit(knockVx: Float, knockVy: Float, respawn: Boolean) {
+        if (dead || won || invuln > 0f) return
+        hearts -= 1
+        invuln = INVULN_TIME
+        if (hearts <= 0) {
+            hearts = 0
+            dead = true
+            pendingLose = true
+            ballVx = 0f
+            ballVy = 0f
+            return
+        }
+        pendingHurt = true
+        if (respawn) {
+            respawnAtStart()
+        } else {
+            ballVx = knockVx
+            ballVy = knockVy
+        }
+    }
+
+    private fun respawnAtStart() {
+        ballX = scene.startX
+        ballY = scene.startY
+        ballVx = 0f
+        ballVy = 0f
+        grounded = false
+        wasGrounded = false
+        rising = false
+        coyote = 0f
+    }
+
     private fun hitsSpike(): Boolean {
         val radius = RedBallScene.BALL_R
         for (spike in scene.spikes) {
@@ -946,6 +1017,10 @@ class RedBallSim(val scene: RedBallScene = RedBallScene.builtin()) {
     companion object {
         const val GRAVITY = 2400f
         const val MAGNET_RADIUS = 230f
+        const val MAX_HEARTS = 3
+        const val INVULN_TIME = 2f
+        const val HURT_BLINK_HZ = 8f
+        const val HURT_BLINK_ALPHA = 0.18f
         private const val MAGNET_TIME = 4.6f
         private const val RUN_ACCEL = 1700f
         private const val AIR_ACCEL = 980f

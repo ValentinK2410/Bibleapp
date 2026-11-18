@@ -975,6 +975,7 @@ private fun RedBallPlay(
         }
     }
     androidx.compose.runtime.LaunchedEffect(tick) {
+        if (sim.consumeHurt()) KidsGameAudio.play(KidsSfx.WRONG)
         if (sim.consumeLose()) KidsGameAudio.play(KidsSfx.LOSE)
         if (sim.consumeSpring()) KidsGameAudio.play(KidsSfx.PLACE)
         if (sim.consumeWin()) KidsGameAudio.play(KidsSfx.WIN)
@@ -1065,9 +1066,9 @@ private fun RedBallPlay(
             horizontalArrangement = Arrangement.spacedBy(4.dp),
         ) {
             val heartIcon = skin?.bitmap(RedBallSkinSlot.ICON_HEART)
-            repeat(3) {
+            repeat(RedBallSim.MAX_HEARTS) { index ->
                 Canvas(Modifier.size(width = 36.dp, height = 32.dp)) {
-                    drawHudHeart(filled = !sim.dead, icon = heartIcon)
+                    drawHudHeart(filled = index < sim.hearts, icon = heartIcon)
                 }
             }
         }

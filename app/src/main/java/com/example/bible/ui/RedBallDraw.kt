@@ -2,10 +2,12 @@ package com.example.bible.ui
 
 import androidx.compose.ui.geometry.CornerRadius
 import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Canvas
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.Paint
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.graphics.ColorMatrix
 import androidx.compose.ui.graphics.FilterQuality
@@ -139,6 +141,7 @@ internal fun DrawScope.drawRedBallPlay(sim: RedBallSim, skin: RedBallSkinBitmaps
             sim.jellyX,
             sim.jellyY,
             faceOf(sim),
+            sim.hurtBlink(),
         )
     }
 }
@@ -1523,6 +1526,7 @@ private fun DrawScope.drawGlossyBall(
     squashX: Float = 1f,
     squashY: Float = 1f,
     face: BallFace = editorFace,
+    alpha: Float = 1f,
 ) {
     val sx = squashX.coerceIn(0.62f, 1.48f)
     val sy = squashY.coerceIn(0.62f, 1.42f)
@@ -1541,41 +1545,59 @@ private fun DrawScope.drawGlossyBall(
     }
     val sink = ((1f - sy) * r * 0.62f).coerceAtLeast(0f)
     val cy = y + sink
-    withTransform({
-        scale(sx, sy, pivot = Offset(x, cy))
-    }) {
-        drawCircle(
-            Brush.radialGradient(
-                listOf(Color(0xFFFF8E8E), Color(0xFFFF3B3B), Color(0xFFE2182C), Color(0xFFB01020)),
-                center = Offset(x - r * 0.36f, cy - r * 0.42f),
-                radius = r * 1.75f,
-            ),
-            r,
-            Offset(x, cy),
-        )
-        rotate(Math.toDegrees(angle.toDouble()).toFloat(), Offset(x, cy)) {
-            drawArc(
-                Color(0xFF9F1230).copy(alpha = 0.45f),
-                startAngle = 28f,
-                sweepAngle = 48f,
-                useCenter = false,
-                topLeft = Offset(x - r * 0.78f, cy - r * 0.78f),
-                size = Size(r * 1.56f, r * 1.56f),
-                style = Stroke(width = r * 0.11f, cap = StrokeCap.Round),
+    val extent = r * 1.9f
+    withBlink(alpha, Rect(x - extent, cy - extent, x + extent, cy + extent)) {
+        withTransform({
+            scale(sx, sy, pivot = Offset(x, cy))
+        }) {
+            drawCircle(
+                Brush.radialGradient(
+                    listOf(Color(0xFFFF8E8E), Color(0xFFFF3B3B), Color(0xFFE2182C), Color(0xFFB01020)),
+                    center = Offset(x - r * 0.36f, cy - r * 0.42f),
+                    radius = r * 1.75f,
+                ),
+                r,
+                Offset(x, cy),
+            )
+            rotate(Math.toDegrees(angle.toDouble()).toFloat(), Offset(x, cy)) {
+                drawArc(
+                    Color(0xFF9F1230).copy(alpha = 0.45f),
+                    startAngle = 28f,
+                    sweepAngle = 48f,
+                    useCenter = false,
+                    topLeft = Offset(x - r * 0.78f, cy - r * 0.78f),
+                    size = Size(r * 1.56f, r * 1.56f),
+                    style = Stroke(width = r * 0.11f, cap = StrokeCap.Round),
+                )
+            }
+            drawOval(
+                Color.White.copy(alpha = 0.9f),
+                Offset(x - r * 0.58f, cy - r * 0.72f),
+                Size(r * 0.42f, r * 0.24f),
+            )
+            drawBallFace(x, cy, r, face)
+            drawCircle(
+                Color(0xFF3A1218),
+                r,
+                Offset(x, cy),
+                style = Stroke(width = r * 0.1f),
             )
         }
-        drawOval(
-            Color.White.copy(alpha = 0.9f),
-            Offset(x - r * 0.58f, cy - r * 0.72f),
-            Size(r * 0.42f, r * 0.24f),
-        )
-        drawBallFace(x, cy, r, face)
-        drawCircle(
-            Color(0xFF3A1218),
-            r,
-            Offset(x, cy),
-            style = Stroke(width = r * 0.1f),
-        )
+    }
+}
+
+/** Пока мяч неуязвим, классический рисунок мигает тем же ритмом, что и спрайт скина. */
+private inline fun DrawScope.withBlink(alpha: Float, bounds: Rect, block: DrawScope.() -> Unit) {
+    if (alpha >= 0.99f) {
+        block()
+        return
+    }
+    val paint = Paint().apply { this.alpha = alpha.coerceIn(0f, 1f) }
+    drawContext.canvas.saveLayer(bounds, paint)
+    try {
+        block()
+    } finally {
+        drawContext.canvas.restore()
     }
 }
 
