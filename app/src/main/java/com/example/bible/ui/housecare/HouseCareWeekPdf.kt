@@ -9,6 +9,7 @@ import android.text.StaticLayout
 import android.text.TextPaint
 import com.example.bible.data.housecare.CleaningWeekDay
 import com.example.bible.data.housecare.CleaningWeekDocument
+import com.example.bible.data.housecare.cleaningWeekBodyFontPt
 import java.io.OutputStream
 
 /** Альбомный A4 в пунктах PDF: 297×210 мм. */
@@ -67,7 +68,7 @@ private fun drawWeek(canvas: Canvas, document: CleaningWeekDocument) {
         style = Paint.Style.FILL
         color = headerFill
     }
-    val bodySize = bodyTextSize(document)
+    val bodySize = (cleaningWeekBodyFontPt(document.days) - 1f).coerceAtLeast(6f)
     val body = textPaint(sans, bodySize, ink, Paint.Align.LEFT)
     val name = textPaint(sansBold, bodySize, ink, Paint.Align.LEFT)
     val quiet = textPaint(sans, bodySize, muted, Paint.Align.LEFT)
@@ -89,27 +90,74 @@ private fun drawWeek(canvas: Canvas, document: CleaningWeekDocument) {
         canvas.save()
         canvas.translate(left + 4f, tableTop + headerH + 4f)
         canvas.clipRect(0f, 0f, contentWidth.toFloat(), contentHeight)
+        var dy = 0f
+        if (day.habits.isNotEmpty()) {
+            var kind = ""
+            day.habits.forEach { habit ->
+                if (habit.kindLabel != kind) {
+                    kind = habit.kindLabel
+                    dy += drawBlock(canvas, kind, name, contentWidth, dy)
+                }
+                dy += drawCheckedLine(canvas, habit.name, body, contentWidth, dy, habit.done)
+            }
+            dy += 3f
+            canvas.drawLine(0f, dy, contentWidth.toFloat(), dy, border)
+            dy += 4f
+        }
         if (day.rooms.isEmpty()) {
-            layoutOf("Нет уборки", quiet, contentWidth).draw(canvas)
+            drawBlock(canvas, "Нет уборки", quiet, contentWidth, dy)
         } else {
-            var dy = 0f
             day.rooms.forEachIndexed { roomIndex, room ->
-                if (roomIndex > 0) dy += 6f
+                if (roomIndex > 0) dy += 5f
                 dy += drawBlock(canvas, room.name, name, contentWidth, dy)
                 if (room.floorName.isNotBlank()) {
                     dy += drawBlock(canvas, room.floorName, quiet, contentWidth, dy)
                 }
-                val tasks = if (room.tasks.isEmpty()) {
-                    "Задачи не заданы"
+                if (room.tasks.isEmpty()) {
+                    dy += drawBlock(canvas, "Задачи не заданы", quiet, contentWidth, dy)
                 } else {
-                    room.tasks.joinToString("\n") { "• $it" }
+                    room.tasks.forEach { task ->
+                        dy += drawCheckedLine(canvas, task, body, contentWidth, dy, checked = false)
+                    }
                 }
-                val taskPaint = if (room.tasks.isEmpty()) quiet else body
-                dy += drawBlock(canvas, tasks, taskPaint, contentWidth, dy)
             }
         }
         canvas.restore()
     }
+}
+
+private fun drawCheckedLine(
+    canvas: Canvas,
+    text: String,
+    paint: TextPaint,
+    width: Int,
+    dy: Float,
+    checked: Boolean,
+): Int {
+    val box = (paint.textSize * 0.85f).coerceAtLeast(6f)
+    val gap = 2.5f
+    val textWidth = (width - box - gap).toInt().coerceAtLeast(1)
+    val layout = layoutOf(text, paint, textWidth)
+    val rowH = maxOf(layout.height, (box + 1f).toInt())
+    val boxTop = dy + ((rowH - box) / 2f).coerceAtLeast(0f)
+    val stroke = Paint(Paint.ANTI_ALIAS_FLAG).apply {
+        style = Paint.Style.STROKE
+        strokeWidth = 0.8f
+        color = ink
+        strokeCap = Paint.Cap.ROUND
+        strokeJoin = Paint.Join.ROUND
+    }
+    canvas.drawRect(0.4f, boxTop, box, boxTop + box, stroke)
+    if (checked) {
+        stroke.strokeWidth = 1.1f
+        canvas.drawLine(box * 0.18f, boxTop + box * 0.55f, box * 0.42f, boxTop + box * 0.82f, stroke)
+        canvas.drawLine(box * 0.42f, boxTop + box * 0.82f, box * 0.84f, boxTop + box * 0.2f, stroke)
+    }
+    canvas.save()
+    canvas.translate(box + gap, dy)
+    layout.draw(canvas)
+    canvas.restore()
+    return rowH
 }
 
 private fun drawBlock(canvas: Canvas, text: String, paint: TextPaint, width: Int, dy: Float): Int {
@@ -136,18 +184,3 @@ private fun textPaint(typeface: Typeface, size: Float, color: Int, align: Paint.
         textAlign = align
     }
 
-/** Плотный день ужимаем, чтобы клетки чаще оставались на одном листе. */
-private fun bodyTextSize(document: CleaningWeekDocument): Float {
-    val peak = document.days.maxOfOrNull { day ->
-        if (day.rooms.isEmpty()) 1
-        else day.rooms.sumOf { room ->
-            1 + (if (room.floorName.isNotBlank()) 1 else 0) + room.tasks.size.coerceAtLeast(1)
-        }
-    } ?: 1
-    return when {
-        peak <= 16 -> 9f
-        peak <= 24 -> 8f
-        peak <= 34 -> 7f
-        else -> 6f
-    }
-}

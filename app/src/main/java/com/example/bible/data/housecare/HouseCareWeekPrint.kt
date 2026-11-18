@@ -3,11 +3,23 @@ package com.example.bible.data.housecare
 import java.time.DayOfWeek
 import java.time.LocalDate
 
-/** Один день печатной недели: подпись «Пн» и дата, плюс комнаты этого дня. */
+/** Пустой квадратик для отметки ручкой и уже отмеченный в приложении. */
+internal const val PRINT_BOX_EMPTY = "☐"
+internal const val PRINT_BOX_DONE = "☑"
+
+/** Привычка в клетке дня: список один на все дни, отметка — на эту дату. */
+internal data class CleaningWeekHabit(
+    val name: String,
+    val kindLabel: String,
+    val done: Boolean,
+)
+
+/** Один день печатной недели: подпись «Пн» и дата, привычки и комнаты. */
 internal data class CleaningWeekDay(
     val weekday: String,
     val dateLabel: String,
     val rooms: List<CleaningWeekRoom>,
+    val habits: List<CleaningWeekHabit> = emptyList(),
 )
 
 /** Комната в клетке дня и конкретные разделы, которые в ней убирают. */
@@ -19,7 +31,7 @@ internal data class CleaningWeekRoom(
 
 /**
  * Лист печати: заголовок с диапазоном дат и семь клеток Пн–Вс.
- * Собирается из реального плана [HouseCareData], без привычек и чужих объектов.
+ * Собирается из реального плана [HouseCareData]: комнаты этой даты и ежедневные привычки объекта.
  */
 internal data class CleaningWeekDocument(
     val title: String,
@@ -95,6 +107,7 @@ internal fun HouseCareData.cleaningWeekDocument(
             weekday = WeekDays.shortLabel(date.dayOfWeek.value),
             dateLabel = if (crossYear) date.dottedYear() else date.dotted(),
             rooms = rooms,
+            habits = habitsForPrint(resolvedPlaceId, iso),
         )
     }
     val subtitle = buildList {
@@ -120,14 +133,26 @@ internal fun HouseCareData.cleaningWeekDocument(
     )
 }
 
-/** Кегль текста в клетках: обычная неделя читается крупно, плотный день ужимается, чтобы чаще влезть на один лист. */
-internal fun cleaningWeekBodyFontPt(days: List<CleaningWeekDay>): Int {
-    val peak = days.maxOfOrNull { day ->
-        if (day.rooms.isEmpty()) 1
-        else day.rooms.sumOf { room ->
+/** Сколько строк займёт день: привычки, комнаты и разделы. Пустая уборка — одна строка «Нет уборки». */
+internal fun cleaningWeekDensity(day: CleaningWeekDay): Int {
+    val habitLines = if (day.habits.isEmpty()) {
+        0
+    } else {
+        day.habits.map { it.kindLabel }.distinct().size + day.habits.size
+    }
+    val roomLines = if (day.rooms.isEmpty()) {
+        1
+    } else {
+        day.rooms.sumOf { room ->
             1 + (if (room.floorName.isNotBlank()) 1 else 0) + room.tasks.size.coerceAtLeast(1)
         }
-    } ?: 1
+    }
+    return habitLines + roomLines
+}
+
+/** Кегль текста в клетках: обычная неделя читается крупно, плотный день ужимается, чтобы чаще влезть на один лист. */
+internal fun cleaningWeekBodyFontPt(days: List<CleaningWeekDay>): Int {
+    val peak = days.maxOfOrNull { cleaningWeekDensity(it) } ?: 1
     return when {
         peak <= 16 -> 10
         peak <= 24 -> 9
@@ -225,11 +250,17 @@ internal fun cleaningWeekHtml(document: CleaningWeekDocument): String {
           .dow { font-weight: 700; font-size: ${headPt}pt; line-height: 1.15; }
           .date { font-size: ${fontPt}pt; line-height: 1.2; color: #243044; }
           .body { padding: 1.8mm 1.5mm 2mm; font-size: ${fontPt}pt; line-height: 1.28; }
-          .room { margin-top: 2.2mm; }
+          .habits { margin: 0 0 1.4mm; padding-bottom: 1.1mm; border-bottom: 0.45pt solid #c5d0dc; }
+          .kind { font-weight: 700; font-size: 0.82em; color: #3e5166; margin-top: 0.8mm; }
+          .habits .kind:first-child { margin-top: 0; }
+          .room { margin-top: 1.8mm; }
           .room:first-child { margin-top: 0; }
           .room-name { font-weight: 700; }
           .floor { color: #3e5166; font-size: 0.86em; }
-          .task { padding-left: 0.15em; }
+          .box {
+            font-family: "DejaVu Sans", "Noto Sans Symbols 2", "Noto Sans Symbols", "Segoe UI Symbol", sans-serif;
+            margin-right: 0.15em;
+          }
           .empty, .notasks { color: #5c6b7a; }
           .notasks { font-style: italic; }
         </style>
@@ -251,31 +282,9 @@ internal fun cleaningWeekHtml(document: CleaningWeekDocument): String {
 }
 
 private fun dayCell(day: CleaningWeekDay, fontPt: Int): String {
-    val body = if (day.rooms.isEmpty()) {
-        """<p class="empty">Нет уборки</p>"""
-    } else {
-        day.rooms.joinToString("\n") { room ->
-            val floor = if (room.floorName.isBlank()) {
-                ""
-            } else {
-                """<div class="floor">${escapeHtml(room.floorName)}</div>"""
-            }
-            val tasks = if (room.tasks.isEmpty()) {
-                """<div class="notasks">Задачи не заданы</div>"""
-            } else {
-                room.tasks.joinToString("\n") { task ->
-                    """<div class="task">• ${escapeHtml(task)}</div>"""
-                }
-            }
-            """
-            <div class="room">
-              <div class="room-name">${escapeHtml(room.name)}</div>
-              $floor
-              $tasks
-            </div>
-            """.trimIndent()
-        }
-    }
+    val habits = habitsBlock(day)
+    val rooms = roomsBlock(day)
+    val body = listOf(habits, rooms).filter { it.isNotBlank() }.joinToString("\n")
     return """
         <td>
           <div class="head">
@@ -285,4 +294,73 @@ private fun dayCell(day: CleaningWeekDay, fontPt: Int): String {
           <div class="body" style="font-size:${fontPt}pt">$body</div>
         </td>
     """.trimIndent()
+}
+
+/** Утро, затем вечер: один и тот же список в каждом дне, квадратик — на эту дату. */
+private fun HouseCareData.habitsForPrint(placeId: String, isoDate: String): List<CleaningWeekHabit> {
+    if (placeId.isBlank()) return emptyList()
+    val morning = habitsOf(placeId, CleaningHabit.KIND_MORNING)
+    val evening = habitsOf(placeId, CleaningHabit.KIND_EVENING)
+    val known = setOf(CleaningHabit.KIND_MORNING, CleaningHabit.KIND_EVENING)
+    val other = habits.filter { it.placeId == placeId && it.kind !in known }
+        .sortedWith(compareBy({ it.order }, { it.createdAt }))
+    return (morning + evening + other).mapNotNull { habit ->
+        val name = habit.name.trim()
+        if (name.isEmpty()) {
+            null
+        } else {
+            CleaningWeekHabit(
+                name = name,
+                kindLabel = habitKindLabel(habit.kind),
+                done = habit.isDoneOn(isoDate),
+            )
+        }
+    }
+}
+
+private fun habitKindLabel(kind: String): String = when (kind) {
+    CleaningHabit.KIND_MORNING -> "Утро"
+    CleaningHabit.KIND_EVENING -> "Вечер"
+    else -> "Привычки"
+}
+
+private fun habitsBlock(day: CleaningWeekDay): String {
+    if (day.habits.isEmpty()) return ""
+    val lines = buildString {
+        var kind = ""
+        day.habits.forEach { habit ->
+            if (habit.kindLabel != kind) {
+                kind = habit.kindLabel
+                append("""<div class="kind">${escapeHtml(kind)}</div>""")
+            }
+            val box = if (habit.done) PRINT_BOX_DONE else PRINT_BOX_EMPTY
+            append("""<div class="habit"><span class="box">$box</span> ${escapeHtml(habit.name)}</div>""")
+        }
+    }
+    return """<div class="habits">$lines</div>"""
+}
+
+private fun roomsBlock(day: CleaningWeekDay): String {
+    if (day.rooms.isEmpty()) return """<p class="empty">Нет уборки</p>"""
+    return day.rooms.joinToString("\n") { room ->
+        val floor = if (room.floorName.isBlank()) {
+            ""
+        } else {
+            """<div class="floor">${escapeHtml(room.floorName)}</div>"""
+        }
+        val tasks = if (room.tasks.isEmpty()) {
+            """<div class="notasks">Задачи не заданы</div>"""
+        } else {
+            room.tasks.joinToString("\n") { task ->
+                """<div class="task"><span class="box">$PRINT_BOX_EMPTY</span> ${escapeHtml(task)}</div>"""
+            }
+        }
+        """
+        <div class="room">
+          <div class="room-name">${escapeHtml(room.name)}</div>
+          $floor
+          $tasks
+        </div>
+        """.trimIndent()
+    }
 }
