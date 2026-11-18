@@ -11,6 +11,7 @@ import org.junit.Assert.assertTrue
 import org.junit.Test
 import java.io.File
 import java.nio.ByteBuffer
+import java.security.MessageDigest
 
 class RedBallSkinTest {
 
@@ -22,10 +23,25 @@ class RedBallSkinTest {
         assertEquals(RedBallSkinId.GREEN_HILLS, RedBallSkinId.fromStored("нет-такого"))
         assertEquals(RedBallSkinId.CLASSIC, RedBallSkinId.fromStored("classic"))
         assertEquals(RedBallSkinId.GREEN_HILLS, RedBallSkinId.fromStored("green_hills"))
+        assertEquals(RedBallSkinId.DEEP_FOREST, RedBallSkinId.fromStored("deep_forest"))
         assertTrue(RedBallSkinId.CLASSIC.procedural)
         assertFalse(RedBallSkinId.GREEN_HILLS.procedural)
+        assertFalse(RedBallSkinId.DEEP_FOREST.procedural)
         assertEquals(null, RedBallSkins.chapter(RedBallSkinId.CLASSIC))
         assertEquals(RedBallSkinId.GREEN_HILLS, RedBallSkins.selectable.first())
+        assertEquals(
+            listOf(RedBallSkinId.GREEN_HILLS, RedBallSkinId.DEEP_FOREST, RedBallSkinId.CLASSIC),
+            RedBallSkins.selectable,
+        )
+        assertEquals(0L, RedBallSkinId.GREEN_HILLS.menuInk)
+        assertEquals(0L, RedBallSkinId.CLASSIC.menuInk)
+        assertEquals(0L, RedBallSkinId.GREEN_HILLS.menuInkSoft)
+        assertLightInk(RedBallSkinId.DEEP_FOREST.menuInk)
+        assertLightInk(RedBallSkinId.DEEP_FOREST.menuInkSoft)
+        val forest = RedBallSkins.chapter(RedBallSkinId.DEEP_FOREST)
+        assertEquals(2, forest!!.chapter)
+        assertEquals("Тёмный лес", forest.title)
+        assertEquals("redball/deep_forest", forest.assetRoot)
     }
 
     @Test
@@ -107,9 +123,35 @@ class RedBallSkinTest {
     }
 
     @Test
+    fun everyChapterShipsTheSameSlotSizes() {
+        val assets = redballAssets()
+        assertEquals(RedBallSkinSlot.entries.toSet(), expectedPng.keys)
+        val green = fileBytes(assets, RedBallSkins.greenHills)
+        val forest = fileBytes(assets, RedBallSkins.deepForest)
+        for (slot in RedBallSkinSlot.entries) {
+            val (width, height, greenBytes, forestBytes) = expectedPng.getValue(slot)
+            val greenFile = green.getValue(slot)
+            val forestFile = forest.getValue(slot)
+            assertEquals("$slot green width", width, greenFile.width)
+            assertEquals("$slot green height", height, greenFile.height)
+            assertEquals("$slot forest width", width, forestFile.width)
+            assertEquals("$slot forest height", height, forestFile.height)
+            assertEquals("$slot green bytes", greenBytes, greenFile.bytes)
+            assertEquals("$slot forest bytes", forestBytes, forestFile.bytes)
+            val copied = slot in copiedFromGreenHills
+            assertEquals(
+                if (copied) "$slot должен совпадать с зелёными холмами" else "$slot должен быть новым рисунком леса",
+                copied,
+                greenFile.bytes == forestFile.bytes && greenFile.sha == forestFile.sha,
+            )
+        }
+    }
+
+    @Test
     fun levelSaveDoesNotMentionTheSkin() {
         val json = RedBallDraft.fresh().toJson()
         assertFalse(json.contains("green_hills"))
+        assertFalse(json.contains("deep_forest"))
         assertFalse(json.contains("\"skin\""))
         assertEquals(RedBallDraft.fresh().name, RedBallDraft.fromJson(json)!!.name)
     }
@@ -138,4 +180,94 @@ class RedBallSkinTest {
         val height = buffer.getInt(20)
         return width to height
     }
+
+    private fun fileBytes(assets: File, chapter: RedBallSkin): Map<RedBallSkinSlot, PngFile> {
+        val out = HashMap<RedBallSkinSlot, PngFile>(RedBallSkinSlot.entries.size)
+        for (slot in RedBallSkinSlot.entries) {
+            val file = File(assets, chapter.assetPath(slot).removePrefix("redball/"))
+            val (width, height) = pngSize(file)
+            val raw = file.readBytes()
+            val sha = MessageDigest.getInstance("SHA-256").digest(raw).joinToString("") { "%02x".format(it) }
+            out[slot] = PngFile(width, height, raw.size.toLong(), sha)
+        }
+        return out
+    }
+
+    private fun assertLightInk(argb: Long) {
+        val red = (argb shr 16) and 0xFF
+        val green = (argb shr 8) and 0xFF
+        val blue = argb and 0xFF
+        assertTrue(
+            "чернила меню слишком тёмные для фиолетового неба: %08X".format(argb),
+            red >= 0xD0 && green >= 0xC0 && blue >= 0xC0,
+        )
+    }
+
+    private data class PngFile(val width: Int, val height: Int, val bytes: Long, val sha: String)
+
+    private data class ExpectedPng(
+        val width: Int,
+        val height: Int,
+        val greenBytes: Long,
+        val forestBytes: Long,
+    )
+
+    /**
+     * Пиксели совпадают у обеих глав: спрайты и иконки — 2×, крупные тайлы — 1×.
+     * Байты «Тёмного леса» — это как раз тот файл, который лежит в APK.
+     */
+    private val expectedPng = mapOf(
+        RedBallSkinSlot.HERO_HAPPY to ExpectedPng(128, 128, 19724, 19724),
+        RedBallSkinSlot.HERO_SURPRISED to ExpectedPng(128, 128, 19672, 19672),
+        RedBallSkinSlot.HERO_SCARED to ExpectedPng(128, 128, 19371, 19371),
+        RedBallSkinSlot.ENEMY_SQUARE to ExpectedPng(128, 128, 21880, 26251),
+        RedBallSkinSlot.BOSS to ExpectedPng(256, 256, 58220, 73002),
+        RedBallSkinSlot.BOULDER to ExpectedPng(128, 128, 19545, 22518),
+        RedBallSkinSlot.CRATE to ExpectedPng(256, 256, 59025, 79467),
+        RedBallSkinSlot.CONCRETE to ExpectedPng(256, 256, 12315, 42961),
+        RedBallSkinSlot.GRASS_TOP to ExpectedPng(256, 256, 91524, 90378),
+        RedBallSkinSlot.GRASS_EDGE to ExpectedPng(256, 64, 20558, 22233),
+        RedBallSkinSlot.SOIL to ExpectedPng(256, 256, 116862, 98530),
+        RedBallSkinSlot.LADDER to ExpectedPng(128, 128, 9041, 5004),
+        RedBallSkinSlot.SPIKES to ExpectedPng(128, 128, 17986, 21040),
+        RedBallSkinSlot.SPRING_IDLE to ExpectedPng(128, 128, 19313, 19441),
+        RedBallSkinSlot.SPRING_COMPRESSED to ExpectedPng(128, 128, 14527, 15540),
+        RedBallSkinSlot.WATER_SURFACE to ExpectedPng(256, 64, 17849, 20698),
+        RedBallSkinSlot.WATER_BODY to ExpectedPng(256, 256, 59516, 62014),
+        RedBallSkinSlot.STAR to ExpectedPng(64, 64, 5032, 5032),
+        RedBallSkinSlot.MAGNET to ExpectedPng(64, 64, 5380, 5380),
+        RedBallSkinSlot.HEART to ExpectedPng(64, 64, 4931, 4931),
+        RedBallSkinSlot.FLAG to ExpectedPng(128, 128, 11998, 11998),
+        RedBallSkinSlot.PORTAL_ENTRY to ExpectedPng(128, 128, 28008, 28008),
+        RedBallSkinSlot.PORTAL_EXIT to ExpectedPng(128, 128, 30742, 30742),
+        RedBallSkinSlot.BUSH to ExpectedPng(256, 256, 43723, 58499),
+        RedBallSkinSlot.TREE to ExpectedPng(256, 256, 52559, 57696),
+        RedBallSkinSlot.SKY to ExpectedPng(256, 512, 1589, 5902),
+        RedBallSkinSlot.HILLS_FAR to ExpectedPng(1024, 256, 239534, 265165),
+        RedBallSkinSlot.HILLS_NEAR to ExpectedPng(1024, 256, 312512, 353349),
+        RedBallSkinSlot.CLOUD_A to ExpectedPng(216, 128, 21725, 24407),
+        RedBallSkinSlot.CLOUD_B to ExpectedPng(216, 128, 20728, 22917),
+        RedBallSkinSlot.CLOUD_C to ExpectedPng(218, 128, 20459, 25339),
+        RedBallSkinSlot.ICON_HEART to ExpectedPng(64, 64, 4931, 4931),
+        RedBallSkinSlot.ICON_STAR to ExpectedPng(64, 64, 5032, 5032),
+        RedBallSkinSlot.ICON_PAUSE to ExpectedPng(64, 64, 6194, 6194),
+        RedBallSkinSlot.ICON_COIN to ExpectedPng(64, 64, 8109, 8109),
+    )
+
+    /** Герой, звезда, магнит, сердце, флаг, порталы и иконки — побайтовые копии «Зелёных холмов». */
+    private val copiedFromGreenHills = setOf(
+        RedBallSkinSlot.HERO_HAPPY,
+        RedBallSkinSlot.HERO_SURPRISED,
+        RedBallSkinSlot.HERO_SCARED,
+        RedBallSkinSlot.STAR,
+        RedBallSkinSlot.MAGNET,
+        RedBallSkinSlot.HEART,
+        RedBallSkinSlot.FLAG,
+        RedBallSkinSlot.PORTAL_ENTRY,
+        RedBallSkinSlot.PORTAL_EXIT,
+        RedBallSkinSlot.ICON_HEART,
+        RedBallSkinSlot.ICON_STAR,
+        RedBallSkinSlot.ICON_PAUSE,
+        RedBallSkinSlot.ICON_COIN,
+    )
 }

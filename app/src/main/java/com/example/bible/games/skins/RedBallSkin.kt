@@ -4,10 +4,11 @@ package com.example.bible.games.skins
  * Оформление «Красного мяча».
  *
  * [RedBallSkinId.CLASSIC] рисуется процедурами, как раньше.
- * Главы 1–5 — наборы PNG. Сейчас собрана глава 1, «Зелёные холмы».
+ * Главы 1–5 — наборы PNG. Собраны глава 1 «Зелёные холмы» и глава 2 «Тёмный лес».
  * Выбор хранится отдельно от JSON уровня, старые сохранения не меняются.
+ * Мигание после удара не зависит от главы: и классика, и спрайты читают [com.example.bible.games.RedBallSim.hurtBlink].
  *
- * Как добавить главу 2–5:
+ * Как добавить главу 3–5:
  * 1. Положить PNG в `assets/redball/<ключ>/` и закрыть каждый [RedBallSkinSlot].
  *    Спрайты и иконки лучше брать из `src/2x` пакета (на экране они крупнее тайла),
  *    холмы, землю и небо — из финальной 1× папки: так APK не раздувается.
@@ -19,8 +20,23 @@ enum class RedBallSkinId(
     val storageKey: String,
     val title: String,
     val procedural: Boolean,
+    /**
+     * ARGB подписей меню, которые лежат прямо на небе. 0 — прежний тёплый коричневый:
+     * он читается на светлом небе классики и «Зелёных холмов».
+     * На тёмном фиолетовом небе нужен светлый цвет, иначе заголовок пропадает.
+     */
+    val menuInk: Long = 0L,
+    /** Более тихий оттенок второй строки меню. 0 — прежний кирпичный. */
+    val menuInkSoft: Long = 0L,
 ) {
     GREEN_HILLS("green_hills", "Зелёные холмы", procedural = false),
+    DEEP_FOREST(
+        "deep_forest",
+        "Тёмный лес",
+        procedural = false,
+        menuInk = 0xFFFFF6E8,
+        menuInkSoft = 0xFFE4D4FF,
+    ),
     CLASSIC("classic", "Классика", procedural = true),
     ;
 
@@ -105,14 +121,14 @@ class RedBallSkin(
 }
 
 object RedBallSkins {
-    val greenHills: RedBallSkin = RedBallSkin(
-        id = RedBallSkinId.GREEN_HILLS,
-        title = RedBallSkinId.GREEN_HILLS.title,
-        chapter = 1,
-        assetRoot = "redball/green_hills",
-        // Спрайты и иконки — мастера 2× (резче на плотном экране).
-        // Крупные тайлы (холмы, земля, небо, бетон, вода, ящик) — финальные 1×.
-        files = mapOf(
+    /**
+     * Одинаковые относительные пути у глав 1 и 2.
+     * Спрайты и иконки — мастера 2× (резче на плотном экране).
+     * Крупные тайлы (холмы, земля, небо, бетон, вода, ящик) — финальные 1×.
+     * Своей подстановки нет: общие с холмами герой, звезда, магнит, сердце,
+     * флаг, порталы и иконки лежат копией в каталоге главы.
+     */
+    private val chapterFiles: Map<RedBallSkinSlot, String> = mapOf(
             RedBallSkinSlot.HERO_HAPPY to "sprites/hero_red_ball_happy.png",
             RedBallSkinSlot.HERO_SURPRISED to "sprites/hero_red_ball_surprised.png",
             RedBallSkinSlot.HERO_SCARED to "sprites/hero_red_ball_scared.png",
@@ -148,14 +164,33 @@ object RedBallSkins {
             RedBallSkinSlot.ICON_STAR to "icons/star.png",
             RedBallSkinSlot.ICON_PAUSE to "icons/pause.png",
             RedBallSkinSlot.ICON_COIN to "icons/coin.png",
-        ),
+    )
+
+    val greenHills: RedBallSkin = RedBallSkin(
+        id = RedBallSkinId.GREEN_HILLS,
+        title = RedBallSkinId.GREEN_HILLS.title,
+        chapter = 1,
+        assetRoot = "redball/green_hills",
+        files = chapterFiles,
+    )
+
+    val deepForest: RedBallSkin = RedBallSkin(
+        id = RedBallSkinId.DEEP_FOREST,
+        title = RedBallSkinId.DEEP_FOREST.title,
+        chapter = 2,
+        assetRoot = "redball/deep_forest",
+        files = chapterFiles,
     )
 
     /** Главы со спрайтами. Классика сюда не входит: у неё нет файлов. */
-    val chapters: List<RedBallSkin> = listOf(greenHills)
+    val chapters: List<RedBallSkin> = listOf(greenHills, deepForest)
 
     /** Порядок чипов. Первой идёт глава по умолчанию. */
-    val selectable: List<RedBallSkinId> = listOf(RedBallSkinId.GREEN_HILLS, RedBallSkinId.CLASSIC)
+    val selectable: List<RedBallSkinId> = listOf(
+        RedBallSkinId.GREEN_HILLS,
+        RedBallSkinId.DEEP_FOREST,
+        RedBallSkinId.CLASSIC,
+    )
 
     fun chapter(id: RedBallSkinId): RedBallSkin? = chapters.firstOrNull { it.id == id }
 }
