@@ -90,6 +90,16 @@ enum class RedBallSkinSlot {
     ICON_STAR,
     ICON_PAUSE,
     ICON_COIN,
+    /**
+     * Тележка. Слота может не быть: тогда кузов рисуется процедурой
+     * в том же плоском стиле, и глава не обязана класть PNG.
+     */
+    CART,
+    ;
+
+    /** Нет файла — игра рисует предмет сама. В [RedBallSkin.missingSlots] такой слот не дыра. */
+    val optional: Boolean
+        get() = this == CART
 }
 
 /**
@@ -117,7 +127,8 @@ class RedBallSkin(
 
     fun assetPath(slot: RedBallSkinSlot): String = "$assetRoot/${files.getValue(slot)}"
 
-    fun missingSlots(): List<RedBallSkinSlot> = RedBallSkinSlot.entries.filter { it !in files }
+    fun missingSlots(): List<RedBallSkinSlot> =
+        RedBallSkinSlot.entries.filter { it !in files && !it.optional }
 }
 
 object RedBallSkins {

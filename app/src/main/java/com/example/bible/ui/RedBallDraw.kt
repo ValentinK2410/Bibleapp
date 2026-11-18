@@ -36,6 +36,7 @@ import com.example.bible.games.RedBallPortalRole
 import com.example.bible.games.RedBallScene
 import com.example.bible.games.RedBallSim
 import com.example.bible.games.RedBallSlope
+import com.example.bible.games.RedBallWater
 import com.example.bible.games.skins.RedBallSkinBitmaps
 import kotlin.math.PI
 import kotlin.math.abs
@@ -98,6 +99,7 @@ internal fun DrawScope.drawRedBallPlay(sim: RedBallSim, skin: RedBallSkinBitmaps
     val camY = (sim.ballY - viewH * 0.58f).coerceIn(scene.minY - viewH * 1.5f, restCamY)
     if (skin != null) {
         drawSpritePlay(sim, camX, camY, scale, (restCamY - camY) * scale, skin)
+        if (sim.submerged) drawRect(Color(0xFF15608F).copy(alpha = 0.22f))
         return
     }
     drawFairySky(camX, scale, liftPx = (restCamY - camY) * scale)
@@ -112,6 +114,7 @@ internal fun DrawScope.drawRedBallPlay(sim: RedBallSim, skin: RedBallSkinBitmaps
         } else {
             drawStaticWorld(scene, art)
         }
+        for (water in scene.waters) drawWaterVolume(water, sim.anim)
         for (star in sim.stars) {
             if (!star.taken) drawCollectStar(star.x, star.y, 16f, sim.anim, star.attached)
         }
@@ -126,11 +129,14 @@ internal fun DrawScope.drawRedBallPlay(sim: RedBallSim, skin: RedBallSkinBitmaps
         }
         drawFinishFlag(scene.door.l, scene.door.t, scene.door.r, scene.door.b, sim.anim)
         for (crate in sim.crates) drawWoodCrate(crate.x, crate.y, crate.size)
+        for (cart in sim.carts) drawCartoonCart(cart.x, cart.y, cart.w, cart.h, cart.spin, null)
         for (block in sim.blocks) drawRockBoulder(block.x, block.y, block.size)
         for (enemy in sim.enemies) {
             if (enemy.alive) drawAngrySquare(enemy.x, enemy.y, enemy.size, enemy.angle)
         }
-        for (particle in sim.particles) drawParticle(particle)
+        for (particle in sim.particles) {
+            if (particle.kind != RedBallParticle.BUBBLE) drawParticle(particle)
+        }
         if (sim.magnetTime > 0f) drawMagnetAura(sim.ballX, sim.ballY, sim.anim)
         drawGlossyBall(
             sim.ballX,
@@ -143,6 +149,12 @@ internal fun DrawScope.drawRedBallPlay(sim: RedBallSim, skin: RedBallSkinBitmaps
             faceOf(sim),
             sim.hurtBlink(),
         )
+        for (particle in sim.particles) {
+            if (particle.kind == RedBallParticle.BUBBLE) drawParticle(particle)
+        }
+    }
+    if (sim.submerged) {
+        drawRect(Color(0xFF15608F).copy(alpha = 0.22f))
     }
 }
 
@@ -218,6 +230,11 @@ internal fun DrawScope.drawRedBallEditor(
                     RedBallPieceKind.STAR -> drawCollectStar((box.l + box.r) / 2f, (box.t + box.b) / 2f, 16f, 0.6f, false)
                     RedBallPieceKind.MAGNET -> drawMagnet((box.l + box.r) / 2f, (box.t + box.b) / 2f, 0.4f)
                     RedBallPieceKind.ENEMY -> drawAngrySquare((box.l + box.r) / 2f, (box.t + box.b) / 2f, min(piece.w, piece.h) * cell, 0.15f)
+                    RedBallPieceKind.WATER -> drawWaterVolume(RedBallWater(box.l, box.t, box.r, box.b), 0.4f)
+                    RedBallPieceKind.CART -> {
+                        val bodyH = min(box.b - box.t, 48f)
+                        drawCartoonCart((box.l + box.r) / 2f, box.b - bodyH / 2f, (box.r - box.l) * 0.94f, bodyH, 0.4f, null)
+                    }
                     RedBallPieceKind.DOOR -> drawFinishFlag(box.l, box.t, box.r, box.b, 0.8f)
                     RedBallPieceKind.PORTAL -> {
                         val mood = when {
@@ -365,19 +382,7 @@ private fun faceOf(sim: RedBallSim): BallFace {
         !sim.grounded && (sim.ballVy < -50f || sim.ballVy > 120f) -> BallMood.SURPRISED
         else -> BallMood.HAPPY
     }
-    val lookX: Float
-    val lookY: Float
-    if (mood == BallMood.SCARED && foe != null) {
-        val dx = foe.x - sim.ballX
-        val dy = foe.y - sim.ballY
-        val m = hypot(dx, dy).coerceAtLeast(1f)
-        lookX = (dx / m).coerceIn(-1f, 1f)
-        lookY = ((dy / m) * 0.75f).coerceIn(-1f, 1f)
-    } else {
-        lookX = (sim.ballVx / 480f).coerceIn(-1f, 1f).let { if (abs(sim.ballVx) < 12f) 0.28f else it }
-        lookY = (sim.ballVy / 720f).coerceIn(-1f, 1f)
-    }
-    return BallFace(mood, lookX, lookY, blinkAmount(sim.anim, mood))
+    return BallFace(mood, sim.gazeX, sim.gazeY, blinkAmount(sim.anim, mood))
 }
 
 private fun blinkAmount(time: Float, mood: BallMood): Float {
@@ -1067,6 +1072,103 @@ private fun topIsOpen(solid: RedBallAabb, solids: List<RedBallAabb>, slopes: Lis
 private val waterPath = Path()
 private val reedPath = Path()
 
+/** Пруд или заводь. Поверхность чуть дышит, тело — плоский градиент. */
+internal fun DrawScope.drawWaterVolume(water: RedBallWater, time: Float) {
+    val w = water.r - water.l
+    val h = water.b - water.t
+    if (w < 2f || h < 2f) return
+    drawRect(
+        Brush.verticalGradient(
+            listOf(Color(0xCC9AEEF6), Color(0xCC2E9BB8), Color(0xE0145670)),
+            startY = water.t,
+            endY = water.b,
+        ),
+        topLeft = Offset(water.l, water.t),
+        size = Size(w, h),
+    )
+    val wave = waterPath
+    wave.reset()
+    val surface = water.t + 3f
+    wave.moveTo(water.l, surface)
+    var x = water.l
+    var crest = true
+    val bob = sin(time * 2.2f) * 1.6f
+    while (x < water.r) {
+        val next = min(x + 36f, water.r)
+        val mid = (x + next) * 0.5f
+        wave.quadraticTo(mid, surface + bob + if (crest) -6f else 8f, next, surface)
+        x = next
+        crest = !crest
+    }
+    drawPath(wave, Color(0xFFF3FEFF), style = Stroke(3.2f, cap = StrokeCap.Round))
+}
+
+/**
+ * Деревянная тележка на двух колёсах. Если у главы есть PNG слота [com.example.bible.games.skins.RedBallSkinSlot.CART],
+ * рисуется он, иначе эта процедура.
+ */
+internal fun DrawScope.drawCartoonCart(
+    x: Float,
+    y: Float,
+    w: Float,
+    h: Float,
+    spin: Float,
+    sprite: ImageBitmap?,
+) {
+    if (w < 8f || h < 8f) return
+    if (sprite != null) {
+        val dw = w * 1.2f
+        val dh = h * 1.7f
+        withTransform({
+            translate(x - dw / 2f, y - h * 0.95f)
+            scale(dw / sprite.width, dh / sprite.height, Offset.Zero)
+        }) {
+            drawImage(sprite, filterQuality = FilterQuality.Medium)
+        }
+        return
+    }
+    val bodyH = h * 0.72f
+    val top = y - h * 0.42f
+    val left = x - w / 2f
+    drawRoundRect(Color(0xFF6B3E1E), Offset(left, top), Size(w, bodyH), CornerRadius(7f, 7f))
+    drawRoundRect(
+        Brush.verticalGradient(listOf(Color(0xFFE0A15A), Color(0xFFC4843A), Color(0xFF8D5524)), startY = top, endY = top + bodyH),
+        Offset(left + 3f, top + 3f),
+        Size((w - 6f).coerceAtLeast(1f), (bodyH - 6f).coerceAtLeast(1f)),
+        CornerRadius(5f, 5f),
+    )
+    val plank = (w - 10f) / 3f
+    for (i in 0 until 3) {
+        val px = left + 5f + i * plank
+        drawLine(
+            Color(0xFF6B3E1E).copy(alpha = 0.55f),
+            Offset(px, top + 6f),
+            Offset(px, top + bodyH - 6f),
+            strokeWidth = 2f,
+        )
+    }
+    drawRoundRect(
+        Color(0xFF4A2A12),
+        Offset(left, top),
+        Size(w, bodyH),
+        CornerRadius(7f, 7f),
+        style = Stroke(3f),
+    )
+    val wheelR = h * 0.28f
+    val wy = top + bodyH - wheelR * 0.15f
+    fun wheel(wx: Float) {
+        drawCircle(Color(0xFF2C241C), wheelR, Offset(wx, wy))
+        drawCircle(Color(0xFF8A8178), wheelR * 0.72f, Offset(wx, wy))
+        rotate(Math.toDegrees(spin.toDouble()).toFloat(), Offset(wx, wy)) {
+            drawLine(Color(0xFF2C241C), Offset(wx - wheelR * 0.5f, wy), Offset(wx + wheelR * 0.5f, wy), 2.2f, StrokeCap.Round)
+            drawLine(Color(0xFF2C241C), Offset(wx, wy - wheelR * 0.5f), Offset(wx, wy + wheelR * 0.5f), 2.2f, StrokeCap.Round)
+        }
+        drawCircle(Color(0xFFF0D48A), wheelR * 0.2f, Offset(wx, wy))
+    }
+    wheel(x - w * 0.30f)
+    wheel(x + w * 0.30f)
+}
+
 internal fun DrawScope.drawVoid(scene: RedBallScene) {
     val surface = scene.voidY - 6f
     val bottom = scene.worldH + 60f
@@ -1646,8 +1748,8 @@ private fun DrawScope.drawBallFace(x: Float, cy: Float, r: Float, face: BallFace
             style = Stroke(width = r * 0.045f),
         )
         if (face.blink < 0.82f) {
-            val px = ex + face.lookX * eyeHalfW * 0.42f
-            val py = eyeY + face.lookY * eyeHalfH * 0.38f
+            val px = ex + face.lookX * eyeHalfW * 0.52f
+            val py = eyeY + face.lookY * eyeHalfH * 0.48f
             val pr = r * 0.105f * pupilK
             drawCircle(Color(0xFF1A120C), pr, Offset(px, py))
             drawCircle(Color.White, pr * 0.38f, Offset(px - pr * 0.32f, py - pr * 0.36f))
@@ -2253,6 +2355,31 @@ internal fun DrawScope.drawParticle(particle: RedBallParticle) {
             val path = starPath(c.x, c.y, rad * 1.3f, rad * 0.55f)
             drawPath(path, Color(0xFFFFE08A).copy(alpha = t))
             drawPath(path, Color(0xFF8A5A10).copy(alpha = t), style = Stroke(1.2f))
+        }
+        RedBallParticle.PUFF -> {
+            drawOval(
+                Color(0xFFE4CBA4).copy(alpha = 0.82f * t),
+                Offset(c.x - rad * 1.45f, c.y - rad * 0.5f),
+                Size(rad * 2.9f, rad * 1.05f),
+            )
+            drawOval(
+                Color(0xFFFFF8EE).copy(alpha = 0.55f * t),
+                Offset(c.x - rad * 0.8f, c.y - rad * 0.28f),
+                Size(rad * 1.5f, rad * 0.5f),
+            )
+        }
+        RedBallParticle.SPLASH -> {
+            drawOval(
+                Color(0xFFD7F7FF).copy(alpha = 0.9f * t),
+                Offset(c.x - rad * 0.7f, c.y - rad * 1.15f),
+                Size(rad * 1.4f, rad * 2.1f),
+            )
+            drawCircle(Color(0xFF3AA0C4).copy(alpha = 0.85f * t), rad * 0.45f, c)
+        }
+        RedBallParticle.BUBBLE -> {
+            drawCircle(Color(0xFFEFF9FF).copy(alpha = 0.35f * t), rad, c)
+            drawCircle(Color(0xFFF7FCFF).copy(alpha = 0.9f * t), rad, c, style = Stroke(1.6f))
+            drawCircle(Color.White.copy(alpha = 0.8f * t), rad * 0.28f, c - Offset(rad * 0.28f, rad * 0.3f))
         }
         else -> drawCircle(Color(0xFF8A6240).copy(alpha = 0.4f * t), rad, c)
     }

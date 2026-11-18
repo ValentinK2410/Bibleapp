@@ -18,6 +18,9 @@ class RedBallSkinBitmaps(
     val id: RedBallSkinId get() = spec.id
 
     fun bitmap(slot: RedBallSkinSlot): ImageBitmap = images.getValue(slot)
+
+    /** Пусто, если глава не закрыла необязательный слот — например тележку. */
+    fun bitmapOrNull(slot: RedBallSkinSlot): ImageBitmap? = images[slot]
 }
 
 object RedBallSkinCache {
@@ -36,9 +39,15 @@ object RedBallSkinCache {
     }
 
     private fun decode(context: Context, spec: RedBallSkin): RedBallSkinBitmaps? {
-        val images = HashMap<RedBallSkinSlot, ImageBitmap>(RedBallSkinSlot.entries.size)
+        val images = HashMap<RedBallSkinSlot, ImageBitmap>(spec.files.size)
         for (slot in RedBallSkinSlot.entries) {
-            val path = spec.assetPath(slot)
+            val relative = spec.files[slot]
+            if (relative == null) {
+                if (slot.optional) continue
+                Log.e(TAG, "Нет файла для $slot")
+                return null
+            }
+            val path = "${spec.assetRoot}/$relative"
             val bitmap = try {
                 context.assets.open(path).use { stream ->
                     val opts = BitmapFactory.Options().apply {

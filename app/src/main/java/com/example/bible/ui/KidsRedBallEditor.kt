@@ -86,6 +86,8 @@ internal enum class RedBallTool(val kind: RedBallPieceKind?, val flip: Boolean, 
     START(RedBallPieceKind.START, false, "🔴", "Старт", Color(0xFFDC2626)),
     DOOR(RedBallPieceKind.DOOR, false, "🚪", "Дверь", Color(0xFF7C3AED)),
     PORTAL(RedBallPieceKind.PORTAL, false, "🟣", "Портал", Color(0xFF6D28D9)),
+    WATER(RedBallPieceKind.WATER, false, "💧", "Вода", Color(0xFF0284C7)),
+    CART(RedBallPieceKind.CART, false, "🛒", "Тележка", Color(0xFF92400E)),
     PROPS(null, false, "⚙️", "Свойства", Color(0xFF0F766E)),
     ERASE(null, false, "🧽", "Ластик", Color(0xFFBE185D)),
 }
@@ -644,6 +646,8 @@ private fun RedBallPieceKind.label(): String = when (this) {
     RedBallPieceKind.START -> "Старт"
     RedBallPieceKind.DOOR -> "Дверь"
     RedBallPieceKind.PORTAL -> "Портал"
+    RedBallPieceKind.WATER -> "Вода"
+    RedBallPieceKind.CART -> "Тележка"
 }
 
 private data class PortalTarget(val draft: RedBallDraft?, val ready: Boolean)
