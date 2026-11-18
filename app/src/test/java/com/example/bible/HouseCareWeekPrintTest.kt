@@ -1,8 +1,12 @@
 package com.example.bible
 
+import com.example.bible.data.housecare.CleaningHabit
 import com.example.bible.data.housecare.CleaningTask
 import com.example.bible.data.housecare.CleaningWeekDocument
+import com.example.bible.data.housecare.CleaningWeekHabit
 import com.example.bible.data.housecare.CleaningWeekRoom
+import com.example.bible.data.housecare.PRINT_BOX_DONE
+import com.example.bible.data.housecare.PRINT_BOX_EMPTY
 import com.example.bible.data.housecare.CleaningZone
 import com.example.bible.data.housecare.HouseCareData
 import com.example.bible.data.housecare.HouseFloor
@@ -64,6 +68,8 @@ class HouseCareWeekPrintTest {
         assertTrue(html.contains("Подоконник"))
         assertTrue(html.contains("Нет уборки"))
         assertTrue(html.contains("Задачи не заданы"))
+        assertTrue(html.contains("""<span class="box">$PRINT_BOX_EMPTY</span> Пол"""))
+        assertFalse(html.contains("• "))
         assertTrue(html.contains("charset=\"UTF-8\""))
         assertTrue(html.contains("size: A4 landscape"))
         assertFalse(html.contains("Веранда"))
@@ -120,9 +126,88 @@ class HouseCareWeekPrintTest {
     }
 
     @Test
+    fun dailyHabitsRepeatInEveryDayWithDateMark() {
+        val doc = withHabits().cleaningWeekDocument("p1", monday)
+        assertEquals(7, doc.days.size)
+        doc.days.forEach { day ->
+            assertEquals(listOf("Помолиться", "Зубы", "Посуда"), day.habits.map { it.name })
+            assertEquals(listOf("Утро", "Утро", "Вечер"), day.habits.map { it.kindLabel })
+        }
+        val mondayHabits = doc.days.first().habits
+        assertTrue(mondayHabits[0].done)
+        assertFalse(mondayHabits[1].done)
+        assertFalse(mondayHabits[2].done)
+        assertFalse(doc.days[1].habits[0].done)
+        val html = doc.toHtml()
+        assertTrue(html.contains(PRINT_BOX_DONE))
+        assertTrue(html.contains("""<span class="box">$PRINT_BOX_EMPTY</span> Зубы"""))
+        assertTrue(html.contains("""<span class="box">$PRINT_BOX_DONE</span> Помолиться"""))
+        assertFalse(html.contains("Дачная"))
+        assertTrue(html.contains("Нет уборки"))
+        assertFalse(html.contains("""<div class="notasks">$PRINT_BOX_EMPTY"""))
+    }
+
+    @Test
+    fun floorPrintKeepsPlaceHabits() {
+        val doc = withHabits().cleaningWeekDocument("p1", monday, floorId = "f1")
+        assertEquals(listOf("Помолиться", "Зубы", "Посуда"), doc.days.first().habits.map { it.name })
+        assertFalse(doc.days.flatMap { it.rooms }.map { it.name }.contains("Ванная"))
+    }
+
+    @Test
+    fun manyHabitsShrinkTheType() {
+        val base = sample().cleaningWeekDocument("p1", monday)
+        val crowded = base.days.map { day ->
+            day.copy(habits = List(12) { CleaningWeekHabit("Привычка $it", "Утро", false) })
+        }
+        assertTrue(cleaningWeekBodyFontPt(crowded) < cleaningWeekBodyFontPt(base.days))
+    }
+
+    @Test
     fun escapeKeepsCyrillicAndBreaksLines() {
         assertEquals("Кухня &amp; зал<br>пол", escapeHtml("Кухня & зал\nпол"))
     }
+
+    private fun withHabits(): HouseCareData = sample().copy(
+        habits = listOf(
+            CleaningHabit(
+                id = "h1",
+                placeId = "p1",
+                kind = CleaningHabit.KIND_MORNING,
+                name = "Помолиться",
+                order = 0,
+                doneDates = listOf(monday.toString()),
+            ),
+            CleaningHabit(
+                id = "h2",
+                placeId = "p1",
+                kind = CleaningHabit.KIND_MORNING,
+                name = "Зубы",
+                order = 1,
+            ),
+            CleaningHabit(
+                id = "blank",
+                placeId = "p1",
+                kind = CleaningHabit.KIND_MORNING,
+                name = "   ",
+                order = 2,
+            ),
+            CleaningHabit(
+                id = "h3",
+                placeId = "p1",
+                kind = CleaningHabit.KIND_EVENING,
+                name = "Посуда",
+                order = 0,
+            ),
+            CleaningHabit(
+                id = "other",
+                placeId = "p2",
+                kind = CleaningHabit.KIND_MORNING,
+                name = "Дачная",
+                order = 0,
+            ),
+        ),
+    )
 
     private fun sample(): HouseCareData {
         val wednesday = "2026-11-18"
