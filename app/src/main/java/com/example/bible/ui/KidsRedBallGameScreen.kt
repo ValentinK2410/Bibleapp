@@ -517,22 +517,23 @@ private fun RedBallMenu(
                 .navigationBarsPadding()
                 .padding(horizontal = 22.dp, vertical = 8.dp),
         ) {
+            val titleColor = skinId.menuTitleColor()
             IconButton(onClick = onBack) {
-                Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Назад", tint = Color(0xFF7C2D12))
+                Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Назад", tint = titleColor)
             }
             Text(
                 "Красный мяч",
                 fontWeight = FontWeight.Black,
                 fontSize = 34.sp,
-                color = Color(0xFF7C2D12),
+                color = titleColor,
             )
             Text(
                 "Кати мяч до двери, шагни в портал или собери свою горку.",
-                color = Color(0xFF9A3412),
+                color = skinId.menuSubtitleColor(),
                 fontSize = 16.sp,
             )
             Spacer(Modifier.height(12.dp))
-            RedBallSkinPicker(skinId, onSkin)
+            RedBallSkinPicker(skinId, onSkin, labelColor = titleColor)
             Spacer(Modifier.height(16.dp))
             MenuCard("Играть", "Готовая горка: ящик, пружина и дверь", Color(0xFFDC2626), onPlayBuiltin)
             Spacer(Modifier.height(12.dp))
@@ -1306,18 +1307,29 @@ private fun StarBar(
     }
 }
 
+private val menuBrown = Color(0xFF7C2D12)
+private val menuBrownSoft = Color(0xFF9A3412)
+
+/** Подписи меню поверх неба. На «Тёмном лесе» небо фиолетовое, коричневый текст на нём не читается. */
+private fun RedBallSkinId.menuTitleColor(): Color =
+    if (menuInk == 0L) menuBrown else Color(menuInk)
+
+private fun RedBallSkinId.menuSubtitleColor(): Color =
+    if (menuInkSoft == 0L) menuBrownSoft else Color(menuInkSoft)
+
 @Composable
 internal fun RedBallSkinPicker(
     selected: RedBallSkinId,
     onSelect: (RedBallSkinId) -> Unit,
     modifier: Modifier = Modifier,
+    labelColor: Color = Color(0xFF7C2D12),
 ) {
     Row(
         modifier.horizontalScroll(rememberScrollState()),
         horizontalArrangement = Arrangement.spacedBy(8.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
-        Text("Вид", color = Color(0xFF7C2D12), fontWeight = FontWeight.Black, fontSize = 14.sp)
+        Text("Вид", color = labelColor, fontWeight = FontWeight.Black, fontSize = 14.sp)
         for (id in RedBallSkins.selectable) {
             val on = id == selected
             Box(
