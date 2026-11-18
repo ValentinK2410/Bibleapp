@@ -433,6 +433,7 @@ private fun DrawScope.drawSpriteHero(sim: RedBallSim, skin: RedBallSkinBitmaps) 
         sim.ballY + sink,
         d * sx,
         d * sy,
+        alpha = sim.hurtBlink(),
     )
 }
 
