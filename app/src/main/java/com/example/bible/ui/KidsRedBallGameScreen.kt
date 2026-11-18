@@ -4,6 +4,7 @@ import android.widget.Toast
 import androidx.activity.compose.BackHandler
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.FastOutSlowInEasing
+import androidx.compose.animation.core.LinearEasing
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
@@ -43,8 +44,11 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.key
 import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.produceState
 import androidx.compose.runtime.remember
@@ -92,8 +96,12 @@ import com.example.bible.games.RedBallPortal
 import com.example.bible.games.RedBallPortalRole
 import com.example.bible.games.RedBallScene
 import com.example.bible.games.RedBallSceneKind
+import com.example.bible.games.HUD_HEART_FADE_MS
 import com.example.bible.games.RedBallSim
 import com.example.bible.games.allowedPortalTargetIds
+import com.example.bible.games.hudHeartPop
+import com.example.bible.games.hudHeartsAfterLoss
+import com.example.bible.games.visibleHudHeartCount
 import com.example.bible.games.familyScenes
 import com.example.bible.ui.theme.OutlinedTextField
 import kotlinx.coroutines.Dispatchers
@@ -961,6 +969,8 @@ private fun RedBallPlay(
     val held = remember { intArrayOf(0, 0) }
     val paused = remember(sim) { mutableStateOf(false) }
     var tick by remember { mutableIntStateOf(0) }
+    // sim.hearts — обычное поле. Строка сердец читает снимок, иначе не перерисовывается.
+    var hudHearts by remember(sim) { mutableIntStateOf(sim.hearts) }
     androidx.compose.runtime.LaunchedEffect(sim) {
         var last = 0L
         while (isActive) {
@@ -971,6 +981,8 @@ private fun RedBallPlay(
                     sim.step(dt, move)
                 }
                 last = now
+                val lives = sim.hearts
+                if (hudHearts != lives) hudHearts = lives
                 if (!paused.value) tick++
             }
         }
@@ -1059,20 +1071,15 @@ private fun RedBallPlay(
                 )
             }
         }
-        Row(
-            Modifier
+        HeartHud(
+            hearts = hudHearts,
+            icon = skin?.bitmap(RedBallSkinSlot.ICON_HEART),
+            resetKey = sim,
+            modifier = Modifier
                 .statusBarsPadding()
                 .padding(start = 12.dp, top = 8.dp)
                 .align(Alignment.TopStart),
-            horizontalArrangement = Arrangement.spacedBy(4.dp),
-        ) {
-            val heartIcon = skin?.bitmap(RedBallSkinSlot.ICON_HEART)
-            repeat(RedBallSim.MAX_HEARTS) { index ->
-                Canvas(Modifier.size(width = 36.dp, height = 32.dp)) {
-                    drawHudHeart(filled = index < sim.hearts, icon = heartIcon)
-                }
-            }
-        }
+        )
         if (!sim.won && !sim.dead && travel == null) {
             PauseButton(
                 Modifier
@@ -1148,7 +1155,10 @@ private fun RedBallPlay(
                         Modifier
                             .clip(RoundedCornerShape(999.dp))
                             .background(Color(0xFFDC2626))
-                            .kidsPressable(onClick = { sim.reset() })
+                            .kidsPressable(onClick = {
+                                sim.reset()
+                                hudHearts = sim.hearts
+                            })
                             .padding(horizontal = 22.dp, vertical = 10.dp),
                     ) {
                         Text("Ещё раз", color = Color.White, fontWeight = FontWeight.Black, fontSize = 18.sp)
@@ -1199,6 +1209,7 @@ private fun RedBallPlay(
                     Spacer(Modifier.height(8.dp))
                     PauseChoice("Заново", Color(0xFFDC2626)) {
                         sim.reset()
+                        hudHearts = sim.hearts
                         paused.value = false
                     }
                     Spacer(Modifier.height(8.dp))
@@ -1255,6 +1266,72 @@ private fun PauseButton(
                     .background(Color.White),
             )
         }
+    }
+}
+
+private data class FadingHudHeart(val index: Int, val token: Int)
+
+@Composable
+private fun HeartHud(
+    hearts: Int,
+    icon: ImageBitmap?,
+    resetKey: Any,
+    modifier: Modifier = Modifier,
+) {
+    val shown = visibleHudHeartCount(hearts)
+    val previous = remember(resetKey) { intArrayOf(shown) }
+    val fading = remember(resetKey) { mutableStateListOf<FadingHudHeart>() }
+    val nextToken = remember(resetKey) { intArrayOf(0) }
+    if (shown != previous[0]) {
+        val change = hudHeartsAfterLoss(previous[0], shown)
+        previous[0] = change.shown
+        if (change.fading.isEmpty()) {
+            fading.clear()
+        } else {
+            for (index in change.fading) {
+                nextToken[0] += 1
+                fading.add(FadingHudHeart(index, nextToken[0]))
+            }
+        }
+    }
+    Row(modifier, horizontalArrangement = Arrangement.spacedBy(4.dp)) {
+        repeat(shown) {
+            HudHeartCanvas(icon)
+        }
+        fading.sortedBy { it.index }.forEach { fade ->
+            key(fade.index, fade.token) {
+                PopHudHeart(icon) { fading.remove(fade) }
+            }
+        }
+    }
+}
+
+@Composable
+private fun HudHeartCanvas(icon: ImageBitmap?) {
+    Canvas(Modifier.size(width = 36.dp, height = 32.dp)) {
+        drawHudHeart(filled = true, icon = icon)
+    }
+}
+
+@Composable
+private fun PopHudHeart(icon: ImageBitmap?, onFinished: () -> Unit) {
+    val progress = remember { Animatable(0f) }
+    val finish = rememberUpdatedState(onFinished)
+    LaunchedEffect(Unit) {
+        progress.animateTo(1f, tween(HUD_HEART_FADE_MS, easing = LinearEasing))
+        finish.value()
+    }
+    Canvas(
+        Modifier
+            .size(width = 36.dp, height = 32.dp)
+            .graphicsLayer {
+                val pop = hudHeartPop(progress.value)
+                scaleX = pop.scale
+                scaleY = pop.scale
+                alpha = pop.alpha
+            },
+    ) {
+        drawHudHeart(filled = true, icon = icon)
     }
 }
 
