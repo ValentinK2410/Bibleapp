@@ -224,6 +224,8 @@ internal fun DrawScope.drawSpriteEditorWorld(
 /**
  * Небо главы: градиент, облака и два слоя холмов с разным сдвигом.
  * [liftPx] — насколько камера поднялась, в пикселях экрана. Дальние слои едут меньше.
+ * У главы с [com.example.bible.games.skins.RedBallSkinId.flatSun] поверх градиента
+ * лежит плоский диск: в PNG неба солнца нет.
  */
 internal fun DrawScope.drawSpriteSky(
     camX: Float,
@@ -232,6 +234,7 @@ internal fun DrawScope.drawSpriteSky(
     skin: RedBallSkinBitmaps,
 ) {
     drawSkyFill(skin.bitmap(RedBallSkinSlot.SKY))
+    if (skin.id.flatSun) drawFlatSun(camX, worldToScreen, liftPx)
     drawSpriteClouds(camX, worldToScreen, liftPx, skin)
     val horizon = size.height * 0.64f
     val farH = size.height * 0.26f
@@ -581,6 +584,17 @@ private fun DrawScope.drawLostBadge(r: Float, t: Float, w: Float, h: Float) {
         androidx.compose.ui.graphics.StrokeCap.Round,
     )
     drawCircle(Color(0xFFDC2626), (w * 0.018f).coerceAtLeast(1.4f), badge + Offset(0f, w * 0.055f))
+}
+
+/** Плоский диск без ореола. Облака рисуются следом и могут закрыть край. */
+private fun DrawScope.drawFlatSun(camX: Float, worldToScreen: Float, liftPx: Float) {
+    val sunR = size.minDimension * 0.072f
+    val sun = Offset(
+        size.width * 0.8f - camX * worldToScreen * 0.03f,
+        size.height * 0.12f + liftPx * 0.04f,
+    )
+    drawCircle(Color(0xFFFFB03A), sunR, sun)
+    drawCircle(Color(0xFFFFE29A), sunR * 0.58f, sun)
 }
 
 private fun DrawScope.drawSkyFill(image: ImageBitmap) {
