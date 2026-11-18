@@ -1418,8 +1418,9 @@ private val menuBrownSoft = Color(0xFF9A3412)
 
 /**
  * Подписи меню поверх неба. Цвет задаёт глава:
- * у «Тёмного леса» небо фиолетовое и текст светлый,
+ * у «Тёмного леса» и «Водного мира» небо тёмное и текст светлый,
  * у «Солнечной пустыни» закат яркий и текст тёмный.
+ * У пустыни обводка светлая, у водного мира тёмная: верх синего градиента ещё бирюзовый.
  */
 private fun RedBallSkinId.menuTitleColor(): Color =
     if (menuInk == 0L) menuBrown else Color(menuInk)
@@ -1427,7 +1428,7 @@ private fun RedBallSkinId.menuTitleColor(): Color =
 private fun RedBallSkinId.menuSubtitleColor(): Color =
     if (menuInkSoft == 0L) menuBrownSoft else Color(menuInkSoft)
 
-/** Светлая обводка, если текст может встать у верхнего края яркого неба. */
+/** Обводка подписи, если верх неба спорит с цветом текста. */
 private fun RedBallSkinId.skyHalo(): Shadow? {
     if (menuHalo == 0L) return null
     return Shadow(

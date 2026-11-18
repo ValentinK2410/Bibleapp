@@ -249,6 +249,7 @@ internal fun DrawScope.drawSpriteEditorWorld(
  * [liftPx] — насколько камера поднялась, в пикселях экрана. Дальние слои едут меньше.
  * У главы с [com.example.bible.games.skins.RedBallSkinId.flatSun] поверх градиента
  * лежит плоский диск: в PNG неба солнца нет.
+ * «Водный мир» диск не рисует: лучи уже в тайле неба.
  */
 internal fun DrawScope.drawSpriteSky(
     camX: Float,
