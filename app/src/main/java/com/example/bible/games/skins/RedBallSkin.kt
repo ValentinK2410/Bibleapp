@@ -4,11 +4,12 @@ package com.example.bible.games.skins
  * Оформление «Красного мяча».
  *
  * [RedBallSkinId.CLASSIC] рисуется процедурами, как раньше.
- * Главы 1–5 — наборы PNG. Собраны глава 1 «Зелёные холмы» и глава 2 «Тёмный лес».
+ * Главы 1–5 — наборы PNG. Собраны глава 1 «Зелёные холмы», глава 2 «Тёмный лес»
+ * и глава 3 «Солнечная пустыня».
  * Выбор хранится отдельно от JSON уровня, старые сохранения не меняются.
  * Мигание после удара не зависит от главы: и классика, и спрайты читают [com.example.bible.games.RedBallSim.hurtBlink].
  *
- * Как добавить главу 3–5:
+ * Как добавить главу 4–5:
  * 1. Положить PNG в `assets/redball/<ключ>/` и закрыть каждый [RedBallSkinSlot].
  *    Спрайты и иконки лучше брать из `src/2x` пакета (на экране они крупнее тайла),
  *    холмы, землю и небо — из финальной 1× папки: так APK не раздувается.
@@ -21,13 +22,23 @@ enum class RedBallSkinId(
     val title: String,
     val procedural: Boolean,
     /**
-     * ARGB подписей меню, которые лежат прямо на небе. 0 — прежний тёплый коричневый:
+     * ARGB подписей меню и HUD, которые лежат прямо на небе. 0 — прежний тёплый коричневый:
      * он читается на светлом небе классики и «Зелёных холмов».
      * На тёмном фиолетовом небе нужен светлый цвет, иначе заголовок пропадает.
+     * На ярком закате нужен тёмный, иначе строка сливается с небом.
      */
     val menuInk: Long = 0L,
     /** Более тихий оттенок второй строки меню. 0 — прежний кирпичный. */
     val menuInkSoft: Long = 0L,
+    /**
+     * Светлая обводка тех же подписей. 0 — без обводки.
+     * Нужна, когда чернила тёмные, а текст может встать у верхнего края неба.
+     */
+    val menuHalo: Long = 0L,
+    /**
+     * Плоское солнце поверх градиента. В PNG неба его нет, рисуется в кадре.
+     */
+    val flatSun: Boolean = false,
 ) {
     GREEN_HILLS("green_hills", "Зелёные холмы", procedural = false),
     DEEP_FOREST(
@@ -36,6 +47,15 @@ enum class RedBallSkinId(
         procedural = false,
         menuInk = 0xFFFFF6E8,
         menuInkSoft = 0xFFE4D4FF,
+    ),
+    SUNNY_DESERT(
+        "sunny_desert",
+        "Солнечная пустыня",
+        procedural = false,
+        menuInk = 0xFF281E1E,
+        menuInkSoft = 0xFF281E1E,
+        menuHalo = 0xD9FFF3C4,
+        flatSun = true,
     ),
     CLASSIC("classic", "Классика", procedural = true),
     ;
@@ -133,7 +153,7 @@ class RedBallSkin(
 
 object RedBallSkins {
     /**
-     * Одинаковые относительные пути у глав 1 и 2.
+     * Одинаковые относительные пути у глав 1–3.
      * Спрайты и иконки — мастера 2× (резче на плотном экране).
      * Крупные тайлы (холмы, земля, небо, бетон, вода, ящик) — финальные 1×.
      * Своей подстановки нет: общие с холмами герой, звезда, магнит, сердце,
@@ -193,13 +213,22 @@ object RedBallSkins {
         files = chapterFiles,
     )
 
+    val sunnyDesert: RedBallSkin = RedBallSkin(
+        id = RedBallSkinId.SUNNY_DESERT,
+        title = RedBallSkinId.SUNNY_DESERT.title,
+        chapter = 3,
+        assetRoot = "redball/sunny_desert",
+        files = chapterFiles,
+    )
+
     /** Главы со спрайтами. Классика сюда не входит: у неё нет файлов. */
-    val chapters: List<RedBallSkin> = listOf(greenHills, deepForest)
+    val chapters: List<RedBallSkin> = listOf(greenHills, deepForest, sunnyDesert)
 
     /** Порядок чипов. Первой идёт глава по умолчанию. */
     val selectable: List<RedBallSkinId> = listOf(
         RedBallSkinId.GREEN_HILLS,
         RedBallSkinId.DEEP_FOREST,
+        RedBallSkinId.SUNNY_DESERT,
         RedBallSkinId.CLASSIC,
     )
 

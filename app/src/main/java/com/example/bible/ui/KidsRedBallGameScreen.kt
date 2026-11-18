@@ -29,6 +29,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.navigationBarsPadding
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBarsPadding
@@ -60,10 +61,12 @@ import androidx.compose.runtime.withFrameNanos
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.FilterQuality
 import androidx.compose.ui.graphics.ImageBitmap
+import androidx.compose.ui.graphics.Shadow
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.StrokeCap
@@ -73,6 +76,8 @@ import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
+import androidx.compose.material3.LocalTextStyle
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.IntSize
@@ -526,22 +531,35 @@ private fun RedBallMenu(
                 .padding(horizontal = 22.dp, vertical = 8.dp),
         ) {
             val titleColor = skinId.menuTitleColor()
+            val halo = skinId.skyHalo()
             IconButton(onClick = onBack) {
-                Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Назад", tint = titleColor)
+                Box {
+                    if (halo != null) {
+                        Icon(
+                            Icons.AutoMirrored.Filled.ArrowBack,
+                            contentDescription = null,
+                            tint = Color(skinId.menuHalo),
+                            modifier = Modifier.offset(x = 0.dp, y = 1.dp),
+                        )
+                    }
+                    Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Назад", tint = titleColor)
+                }
             }
             Text(
                 "Красный мяч",
                 fontWeight = FontWeight.Black,
                 fontSize = 34.sp,
                 color = titleColor,
+                style = LocalTextStyle.current.withSkyHalo(halo),
             )
             Text(
                 "Кати мяч до двери, шагни в портал или собери свою горку.",
                 color = skinId.menuSubtitleColor(),
                 fontSize = 16.sp,
+                style = LocalTextStyle.current.withSkyHalo(halo),
             )
             Spacer(Modifier.height(12.dp))
-            RedBallSkinPicker(skinId, onSkin, labelColor = titleColor)
+            RedBallSkinPicker(skinId, onSkin, labelColor = titleColor, labelHalo = halo)
             Spacer(Modifier.height(16.dp))
             MenuCard("Играть", "Готовая горка: ящик, пружина и дверь", Color(0xFFDC2626), onPlayBuiltin)
             Spacer(Modifier.height(12.dp))
@@ -1398,12 +1416,29 @@ private fun StarBar(
 private val menuBrown = Color(0xFF7C2D12)
 private val menuBrownSoft = Color(0xFF9A3412)
 
-/** Подписи меню поверх неба. На «Тёмном лесе» небо фиолетовое, коричневый текст на нём не читается. */
+/**
+ * Подписи меню поверх неба. Цвет задаёт глава:
+ * у «Тёмного леса» небо фиолетовое и текст светлый,
+ * у «Солнечной пустыни» закат яркий и текст тёмный.
+ */
 private fun RedBallSkinId.menuTitleColor(): Color =
     if (menuInk == 0L) menuBrown else Color(menuInk)
 
 private fun RedBallSkinId.menuSubtitleColor(): Color =
     if (menuInkSoft == 0L) menuBrownSoft else Color(menuInkSoft)
+
+/** Светлая обводка, если текст может встать у верхнего края яркого неба. */
+private fun RedBallSkinId.skyHalo(): Shadow? {
+    if (menuHalo == 0L) return null
+    return Shadow(
+        color = Color(menuHalo),
+        offset = Offset(0f, 0.8f),
+        blurRadius = 6f,
+    )
+}
+
+private fun TextStyle.withSkyHalo(halo: Shadow?): TextStyle =
+    if (halo == null) this else copy(shadow = halo)
 
 @Composable
 internal fun RedBallSkinPicker(
@@ -1411,13 +1446,20 @@ internal fun RedBallSkinPicker(
     onSelect: (RedBallSkinId) -> Unit,
     modifier: Modifier = Modifier,
     labelColor: Color = Color(0xFF7C2D12),
+    labelHalo: Shadow? = null,
 ) {
     Row(
         modifier.horizontalScroll(rememberScrollState()),
         horizontalArrangement = Arrangement.spacedBy(8.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
-        Text("Вид", color = labelColor, fontWeight = FontWeight.Black, fontSize = 14.sp)
+        Text(
+            "Вид",
+            color = labelColor,
+            fontWeight = FontWeight.Black,
+            fontSize = 14.sp,
+            style = LocalTextStyle.current.withSkyHalo(labelHalo),
+        )
         for (id in RedBallSkins.selectable) {
             val on = id == selected
             Box(
