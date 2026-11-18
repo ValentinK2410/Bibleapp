@@ -29,7 +29,14 @@ data class RedBallSlope(
     val friction: Float = RED_BALL_FRICTION,
 )
 
-data class RedBallSpike(val x: Float, val top: Float, val w: Float, val h: Float)
+data class RedBallSpike(
+    val x: Float,
+    val top: Float,
+    val w: Float,
+    val h: Float,
+    /** Пустая группа всегда колется. Иначе шипы пропадают, когда сценарий очищает группу. */
+    val group: String = "",
+)
 
 data class RedBallCrateSpawn(
     val x: Float,
@@ -73,6 +80,14 @@ data class RedBallEnemySpawn(
     val gravity: Boolean = true,
     val friction: Float = RED_BALL_FRICTION,
     val mass: Float = 1f,
+    /** Сколько прыжков сверху нужно, чтобы квадрат исчез. У короля больше одного. */
+    val hits: Int = 1,
+    /** Спит, пока сценарий не разбудит: не едет и не ранит. */
+    val asleep: Boolean = false,
+    /** Пока спит, рисуется ящиком, а не квадратом. */
+    val disguised: Boolean = false,
+    /** Имя события, которое вспыхивает, когда жизни квадрата кончились. */
+    val defeatTrigger: String = "",
 )
 
 /** Вход уводит мяч в другую сцену. Выход только принимает: в него зайти нельзя. */
@@ -163,6 +178,8 @@ data class RedBallScene(
     val portals: List<RedBallPortal> = emptyList(),
     val waters: List<RedBallWater> = emptyList(),
     val carts: List<RedBallCartSpawn> = emptyList(),
+    /** Сценарий кампании. У горки и уровней редактора его нет. */
+    val script: RedBallScript = RedBallScript.NONE,
 ) {
     /** Порталы с неизвестной целью засыпают: мяч проходит сквозь них. */
     fun withKnownPortals(knownIds: Set<String>): RedBallScene {

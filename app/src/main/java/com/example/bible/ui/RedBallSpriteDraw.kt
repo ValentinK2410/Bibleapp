@@ -18,6 +18,7 @@ import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.drawscope.clipPath
 import androidx.compose.ui.graphics.drawscope.withTransform
 import com.example.bible.games.RedBallAabb
+import com.example.bible.games.RedBallMark
 import com.example.bible.games.RedBallDraft
 import com.example.bible.games.RedBallPiece
 import com.example.bible.games.RedBallPieceKind
@@ -81,6 +82,9 @@ internal fun DrawScope.drawSpritePlay(
     }) {
         drawSpriteWater(scene, sim.anim, skin)
         for (water in scene.waters) drawSpritePool(water, sim.anim, skin)
+        for (water in sim.director.floodWaters()) drawSpritePool(water, sim.anim, skin)
+        val dynamic = sim.director.visualSolids()
+        if (dynamic.isNotEmpty()) drawSpriteTerrain(dynamic, emptyList(), emptyList(), skin)
         val grounds = ArrayList<RedBallAabb>(scene.solids.size)
         for (solid in scene.solids) {
             if (solid.r <= scene.minX + 0.5f || solid.l >= scene.worldW - 0.5f) continue
@@ -114,15 +118,36 @@ internal fun DrawScope.drawSpritePlay(
             val box = portal.box
             drawSpritePortal(box.l, box.t, box.r, box.b, sim.anim, mood, skin)
         }
-        val door = scene.door
-        drawSpriteFlag(door.l, door.t, door.r, door.b, sim.anim, skin)
+        for ((box, mark) in sim.director.marks()) {
+            when (mark) {
+                RedBallMark.PORTAL -> drawSpritePortal(
+                    box.l, box.t, box.r, box.b, sim.anim, SpritePortalMood.OPEN, skin,
+                )
+                RedBallMark.FRIEND -> drawFriendBadge((box.l + box.r) / 2f, box.b - 18f)
+                RedBallMark.NONE -> Unit
+            }
+        }
+        if (sim.director.doorVisible) {
+            val door = scene.door
+            drawSpriteFlag(door.l, door.t, door.r, door.b, sim.anim, skin)
+        }
+        for (decoy in sim.director.visibleDecoys()) {
+            drawSpriteFlag(decoy.l, decoy.t, decoy.r, decoy.b, sim.anim, skin)
+        }
         for (crate in sim.crates) drawSpriteCrate(crate.x, crate.y, crate.size, skin)
         for (cart in sim.carts) {
             drawCartoonCart(cart.x, cart.y, cart.w, cart.h, cart.spin, skin.bitmapOrNull(RedBallSkinSlot.CART))
         }
         for (block in sim.blocks) drawSpriteBoulder(block.x, block.y, block.size, skin)
+        for (chaser in sim.director.chasers()) {
+            if (chaser.waiting && !chaser.active) continue
+            if (chaser.boss) drawSpriteEnemy(chaser.x, chaser.y, chaser.size, sim.anim, skin)
+            else drawSpriteBoulder(chaser.x, chaser.y, chaser.size, skin)
+        }
         for (enemy in sim.enemies) {
-            if (enemy.alive) drawSpriteEnemy(enemy.x, enemy.y, enemy.size, enemy.angle, skin)
+            if (!enemy.alive) continue
+            if (enemy.asleep && enemy.disguised) drawSpriteCrate(enemy.x, enemy.y, enemy.size, skin)
+            else drawSpriteEnemy(enemy.x, enemy.y, enemy.size, enemy.angle, skin)
         }
         for (particle in sim.particles) {
             if (particle.kind != RedBallParticle.BUBBLE) drawParticle(particle)
@@ -131,6 +156,23 @@ internal fun DrawScope.drawSpritePlay(
         drawSpriteHero(sim, skin)
         for (particle in sim.particles) {
             if (particle.kind == RedBallParticle.BUBBLE) drawParticle(particle)
+        }
+        if (sim.director.darkness > 0.02f) {
+            val viewW = size.width / scale
+            val viewH = size.height / scale
+            drawRect(
+                Color.Black.copy(alpha = sim.director.darkness.coerceIn(0f, 0.84f)),
+                Offset(camX - 400f, camY - 400f),
+                Size(viewW + 800f, viewH + 800f),
+            )
+            for (star in sim.stars) {
+                if (!star.taken) drawSpriteStar(star.x, star.y, sim.anim, star.attached, skin)
+            }
+            if (sim.director.doorVisible) {
+                val door = scene.door
+                drawSpriteFlag(door.l, door.t, door.r, door.b, sim.anim, skin)
+            }
+            drawSpriteHero(sim, skin)
         }
     }
 }

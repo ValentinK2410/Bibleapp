@@ -28,6 +28,7 @@ import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.LayoutDirection
 import com.example.bible.games.RedBallAabb
 import com.example.bible.games.RedBallDraft
+import com.example.bible.games.RedBallMark
 import com.example.bible.games.RedBallEnemy
 import com.example.bible.games.RedBallParticle
 import com.example.bible.games.RedBallPiece
@@ -115,6 +116,8 @@ internal fun DrawScope.drawRedBallPlay(sim: RedBallSim, skin: RedBallSkinBitmaps
             drawStaticWorld(scene, art)
         }
         for (water in scene.waters) drawWaterVolume(water, sim.anim)
+        for (water in sim.director.floodWaters()) drawWaterVolume(water, sim.anim)
+        for (slab in sim.director.visualSolids()) drawCampaignSlab(slab)
         for (star in sim.stars) {
             if (!star.taken) drawCollectStar(star.x, star.y, 16f, sim.anim, star.attached)
         }
@@ -127,12 +130,31 @@ internal fun DrawScope.drawRedBallPlay(sim: RedBallSim, skin: RedBallSkinBitmaps
             }
             drawFairyPortal(portal.box.l, portal.box.t, portal.box.r, portal.box.b, sim.anim, mood)
         }
-        drawFinishFlag(scene.door.l, scene.door.t, scene.door.r, scene.door.b, sim.anim)
+        for ((box, mark) in sim.director.marks()) {
+            when (mark) {
+                RedBallMark.PORTAL -> drawFairyPortal(box.l, box.t, box.r, box.b, sim.anim, PortalMood.OPEN)
+                RedBallMark.FRIEND -> drawFriendBadge((box.l + box.r) / 2f, box.b - 18f)
+                RedBallMark.NONE -> Unit
+            }
+        }
+        if (sim.director.doorVisible) {
+            drawFinishFlag(scene.door.l, scene.door.t, scene.door.r, scene.door.b, sim.anim)
+        }
+        for (decoy in sim.director.visibleDecoys()) {
+            drawFinishFlag(decoy.l, decoy.t, decoy.r, decoy.b, sim.anim)
+        }
         for (crate in sim.crates) drawWoodCrate(crate.x, crate.y, crate.size)
         for (cart in sim.carts) drawCartoonCart(cart.x, cart.y, cart.w, cart.h, cart.spin, null)
         for (block in sim.blocks) drawRockBoulder(block.x, block.y, block.size)
+        for (chaser in sim.director.chasers()) {
+            if (chaser.waiting && !chaser.active) continue
+            if (chaser.boss) drawAngrySquare(chaser.x, chaser.y, chaser.size, sim.anim)
+            else drawRockBoulder(chaser.x, chaser.y, chaser.size)
+        }
         for (enemy in sim.enemies) {
-            if (enemy.alive) drawAngrySquare(enemy.x, enemy.y, enemy.size, enemy.angle)
+            if (!enemy.alive) continue
+            if (enemy.asleep && enemy.disguised) drawWoodCrate(enemy.x, enemy.y, enemy.size)
+            else drawAngrySquare(enemy.x, enemy.y, enemy.size, enemy.angle)
         }
         for (particle in sim.particles) {
             if (particle.kind != RedBallParticle.BUBBLE) drawParticle(particle)
@@ -152,10 +174,67 @@ internal fun DrawScope.drawRedBallPlay(sim: RedBallSim, skin: RedBallSkinBitmaps
         for (particle in sim.particles) {
             if (particle.kind == RedBallParticle.BUBBLE) drawParticle(particle)
         }
+        if (sim.director.darkness > 0.02f) {
+            drawRect(
+                Color.Black.copy(alpha = sim.director.darkness.coerceIn(0f, 0.84f)),
+                Offset(camX - 400f, camY - 400f),
+                Size(viewW + 800f, viewH + 800f),
+            )
+            for (star in sim.stars) {
+                if (!star.taken) drawCollectStar(star.x, star.y, 16f, sim.anim, star.attached)
+            }
+            if (sim.director.doorVisible) {
+                drawFinishFlag(scene.door.l, scene.door.t, scene.door.r, scene.door.b, sim.anim)
+            }
+            drawGlossyBall(
+                sim.ballX,
+                sim.ballY,
+                RedBallScene.BALL_R,
+                sim.ballAngle,
+                sim.groundBelowBall(),
+                sim.jellyX,
+                sim.jellyY,
+                faceOf(sim),
+                sim.hurtBlink(),
+            )
+        }
     }
     if (sim.submerged) {
         drawRect(Color(0xFF15608F).copy(alpha = 0.22f))
     }
+}
+
+/** Обваливающийся пол и мост друга. Не входит в закэшированную землю. */
+private fun DrawScope.drawCampaignSlab(box: RedBallAabb) {
+    val w = box.r - box.l
+    val h = box.b - box.t
+    if (w < 4f || h < 4f) return
+    drawRoundRect(
+        Color(0xFF3F6B34),
+        Offset(box.l, box.t),
+        Size(w, h),
+        CornerRadius(10f, 10f),
+    )
+    drawRect(Color(0xFF86D36A), Offset(box.l, box.t), Size(w, 14f.coerceAtMost(h)))
+}
+
+/** Маленький круглый друг. Общий для классики и спрайтовых глав. */
+internal fun DrawScope.drawFriendBadge(x: Float, y: Float) {
+    drawCircle(Color(0x33000000), 16f, Offset(x, y + 10f))
+    drawCircle(Color(0xFFE11D2E), 18f, Offset(x, y))
+    drawCircle(Color.White, 3.2f, Offset(x - 6f, y - 3f))
+    drawCircle(Color.White, 3.2f, Offset(x + 6f, y - 3f))
+    drawCircle(Color(0xFF1A120C), 1.6f, Offset(x - 5f, y - 2f))
+    drawCircle(Color(0xFF1A120C), 1.6f, Offset(x + 7f, y - 2f))
+    drawArc(
+        Color(0xFF1A120C),
+        startAngle = 20f,
+        sweepAngle = 140f,
+        useCenter = false,
+        topLeft = Offset(x - 7f, y + 1f),
+        size = Size(14f, 8f),
+        style = Stroke(width = 1.6f),
+    )
 }
 
 internal fun DrawScope.drawRedBallEditor(
