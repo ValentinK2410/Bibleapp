@@ -479,6 +479,12 @@ fun PlaceDaysScreen(
                                     )
                                 }
                             }
+                            PrintCleaningWeekButton(
+                                data = data,
+                                placeId = placeId,
+                                weekStart = weekStart,
+                                modifier = Modifier.padding(top = 4.dp),
+                            )
                         }
                     }
 

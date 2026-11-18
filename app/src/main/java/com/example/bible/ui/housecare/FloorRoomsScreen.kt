@@ -87,6 +87,14 @@ fun FloorRoomsScreen(
                 )
             }
             item {
+                PrintCleaningWeekButton(
+                    data = data,
+                    placeId = floor?.placeId.orEmpty(),
+                    weekStart = weekStart,
+                    floorId = floorId,
+                )
+            }
+            item {
                 EmptyAddCard(
                     hint = "Добавить комнату или участок",
                     subtitle = "15-минутка, кухня, зал, санузел… и день, когда убираем",
