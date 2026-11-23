@@ -1,0 +1,91 @@
+{
+  "id": "align-titus-RBO-01",
+  "translationCode": "RBO",
+  "bookId": "titus",
+  "chapter": 1,
+  "title": "Титу 1 · РБО",
+  "audioFilePath": "/data/user/0/com.example.bible.sqlite/files/bible_audio/rbo/63_01.mp3",
+  "updatedAt": 1795392000000,
+  "cues": [
+    {
+      "timeMs": 6505,
+      "verseStart": 1,
+      "attachments": []
+    },
+    {
+      "timeMs": 22455,
+      "verseStart": 2,
+      "attachments": []
+    },
+    {
+      "timeMs": 30941,
+      "verseStart": 3,
+      "attachments": []
+    },
+    {
+      "timeMs": 42229,
+      "verseStart": 4,
+      "attachments": []
+    },
+    {
+      "timeMs": 48473,
+      "verseStart": 5,
+      "attachments": []
+    },
+    {
+      "timeMs": 60221,
+      "verseStart": 6,
+      "attachments": []
+    },
+    {
+      "timeMs": 72970,
+      "verseStart": 7,
+      "attachments": []
+    },
+    {
+      "timeMs": 88361,
+      "verseStart": 8,
+      "attachments": []
+    },
+    {
+      "timeMs": 98848,
+      "verseStart": 9,
+      "attachments": []
+    },
+    {
+      "timeMs": 111396,
+      "verseStart": 10,
+      "attachments": []
+    },
+    {
+      "timeMs": 119782,
+      "verseStart": 11,
+      "attachments": []
+    },
+    {
+      "timeMs": 129248,
+      "verseStart": 12,
+      "attachments": []
+    },
+    {
+      "timeMs": 140856,
+      "verseStart": 13,
+      "attachments": []
+    },
+    {
+      "timeMs": 148141,
+      "verseStart": 14,
+      "attachments": []
+    },
+    {
+      "timeMs": 155847,
+      "verseStart": 15,
+      "attachments": []
+    },
+    {
+      "timeMs": 166214,
+      "verseStart": 16,
+      "attachments": []
+    }
+  ]
+}

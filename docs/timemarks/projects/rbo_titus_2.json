@@ -1,0 +1,71 @@
+{
+  "id": "gh_rbo_titus_2",
+  "translationCode": "RBO",
+  "bookId": "titus",
+  "chapter": 2,
+  "title": "Титу 2 · РБО",
+  "narratorId": "rbo",
+  "audioFileName": "63_02.mp3",
+  "cues": [
+    {
+      "timeMs": 4083,
+      "verseStart": 1
+    },
+    {
+      "timeMs": 8426,
+      "verseStart": 2
+    },
+    {
+      "timeMs": 17793,
+      "verseStart": 3
+    },
+    {
+      "timeMs": 28701,
+      "verseStart": 4
+    },
+    {
+      "timeMs": 32103,
+      "verseStart": 5
+    },
+    {
+      "timeMs": 40969,
+      "verseStart": 6
+    },
+    {
+      "timeMs": 45733,
+      "verseStart": 7
+    },
+    {
+      "timeMs": 54579,
+      "verseStart": 8
+    },
+    {
+      "timeMs": 64726,
+      "verseStart": 9
+    },
+    {
+      "timeMs": 71131,
+      "verseStart": 10
+    },
+    {
+      "timeMs": 80898,
+      "verseStart": 11
+    },
+    {
+      "timeMs": 86902,
+      "verseStart": 12
+    },
+    {
+      "timeMs": 95128,
+      "verseStart": 13
+    },
+    {
+      "timeMs": 105616,
+      "verseStart": 14
+    },
+    {
+      "timeMs": 119666,
+      "verseStart": 15
+    }
+  ]
+}

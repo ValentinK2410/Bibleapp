@@ -6104,6 +6104,36 @@
       "file": "projects/rbo_romans_9.json"
     },
     {
+      "id": "gh_rbo_titus_1",
+      "translationCode": "RBO",
+      "bookId": "titus",
+      "chapter": 1,
+      "title": "Титу 1 · РБО",
+      "cueCount": 16,
+      "narratorId": "rbo",
+      "file": "projects/rbo_titus_1.json"
+    },
+    {
+      "id": "gh_rbo_titus_2",
+      "translationCode": "RBO",
+      "bookId": "titus",
+      "chapter": 2,
+      "title": "Титу 2 · РБО",
+      "cueCount": 15,
+      "narratorId": "rbo",
+      "file": "projects/rbo_titus_2.json"
+    },
+    {
+      "id": "gh_rbo_titus_3",
+      "translationCode": "RBO",
+      "bookId": "titus",
+      "chapter": 3,
+      "title": "Титу 3 · РБО",
+      "cueCount": 15,
+      "narratorId": "rbo",
+      "file": "projects/rbo_titus_3.json"
+    },
+    {
       "id": "gh_syn_1_corinthians_1",
       "translationCode": "SYN",
       "bookId": "1_corinthians",
