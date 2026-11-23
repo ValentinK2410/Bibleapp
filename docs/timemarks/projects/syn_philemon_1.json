@@ -1,0 +1,111 @@
+{
+  "id": "gh_syn_philemon_1",
+  "translationCode": "SYN",
+  "bookId": "philemon",
+  "chapter": 1,
+  "title": "К Филимону 1 · Синодальный · Бондаренко",
+  "narratorId": "bondarenko",
+  "audioFileName": "64_01.mp3",
+  "cues": [
+    {
+      "timeMs": 6304,
+      "verseStart": 1
+    },
+    {
+      "timeMs": 15010,
+      "verseStart": 2
+    },
+    {
+      "timeMs": 22555,
+      "verseStart": 3
+    },
+    {
+      "timeMs": 30040,
+      "verseStart": 4
+    },
+    {
+      "timeMs": 34443,
+      "verseStart": 5
+    },
+    {
+      "timeMs": 40468,
+      "verseStart": 6
+    },
+    {
+      "timeMs": 49434,
+      "verseStart": 7
+    },
+    {
+      "timeMs": 58880,
+      "verseStart": 8
+    },
+    {
+      "timeMs": 64984,
+      "verseStart": 9
+    },
+    {
+      "timeMs": 72950,
+      "verseStart": 10
+    },
+    {
+      "timeMs": 78093,
+      "verseStart": 11
+    },
+    {
+      "timeMs": 86419,
+      "verseStart": 12
+    },
+    {
+      "timeMs": 90522,
+      "verseStart": 13
+    },
+    {
+      "timeMs": 98207,
+      "verseStart": 14
+    },
+    {
+      "timeMs": 107293,
+      "verseStart": 15
+    },
+    {
+      "timeMs": 113817,
+      "verseStart": 16
+    },
+    {
+      "timeMs": 124385,
+      "verseStart": 17
+    },
+    {
+      "timeMs": 131069,
+      "verseStart": 18
+    },
+    {
+      "timeMs": 136913,
+      "verseStart": 19
+    },
+    {
+      "timeMs": 146740,
+      "verseStart": 20
+    },
+    {
+      "timeMs": 154645,
+      "verseStart": 21
+    },
+    {
+      "timeMs": 162190,
+      "verseStart": 22
+    },
+    {
+      "timeMs": 171417,
+      "verseStart": 23
+    },
+    {
+      "timeMs": 177200,
+      "verseStart": 24
+    },
+    {
+      "timeMs": 184906,
+      "verseStart": 25
+    }
+  ]
+}

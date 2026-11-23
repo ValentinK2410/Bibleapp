@@ -7414,6 +7414,16 @@
       "file": "projects/syn_mark_9.json"
     },
     {
+      "id": "gh_syn_philemon_1",
+      "translationCode": "SYN",
+      "bookId": "philemon",
+      "chapter": 1,
+      "title": "К Филимону 1 · Синодальный · Бондаренко",
+      "cueCount": 25,
+      "narratorId": "bondarenko",
+      "file": "projects/syn_philemon_1.json"
+    },
+    {
       "id": "gh_syn_philippians_1",
       "translationCode": "SYN",
       "bookId": "philippians",
