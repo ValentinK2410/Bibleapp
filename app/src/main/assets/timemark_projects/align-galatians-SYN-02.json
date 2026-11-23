@@ -1,0 +1,116 @@
+{
+  "id": "align-galatians-SYN-02",
+  "translationCode": "SYN",
+  "bookId": "galatians",
+  "chapter": 2,
+  "title": "К Галатам 2 · Синодальный · Бондаренко",
+  "audioFilePath": "/data/user/0/com.example.bible.sqlite/files/bible_audio/bondarenko/55_02.mp3",
+  "updatedAt": 1795392000000,
+  "cues": [
+    {
+      "timeMs": 2782,
+      "verseStart": 1,
+      "attachments": []
+    },
+    {
+      "timeMs": 11168,
+      "verseStart": 2,
+      "attachments": []
+    },
+    {
+      "timeMs": 24578,
+      "verseStart": 3,
+      "attachments": []
+    },
+    {
+      "timeMs": 31523,
+      "verseStart": 4,
+      "attachments": []
+    },
+    {
+      "timeMs": 42912,
+      "verseStart": 5,
+      "attachments": []
+    },
+    {
+      "timeMs": 54480,
+      "verseStart": 6,
+      "attachments": []
+    },
+    {
+      "timeMs": 68290,
+      "verseStart": 7,
+      "attachments": []
+    },
+    {
+      "timeMs": 75035,
+      "verseStart": 8,
+      "attachments": []
+    },
+    {
+      "timeMs": 81240,
+      "verseStart": 9,
+      "attachments": []
+    },
+    {
+      "timeMs": 95810,
+      "verseStart": 10,
+      "attachments": []
+    },
+    {
+      "timeMs": 103376,
+      "verseStart": 11,
+      "attachments": []
+    },
+    {
+      "timeMs": 111542,
+      "verseStart": 12,
+      "attachments": []
+    },
+    {
+      "timeMs": 123311,
+      "verseStart": 13,
+      "attachments": []
+    },
+    {
+      "timeMs": 130616,
+      "verseStart": 14,
+      "attachments": []
+    },
+    {
+      "timeMs": 151131,
+      "verseStart": 15,
+      "attachments": []
+    },
+    {
+      "timeMs": 155594,
+      "verseStart": 16,
+      "attachments": []
+    },
+    {
+      "timeMs": 173527,
+      "verseStart": 17,
+      "attachments": []
+    },
+    {
+      "timeMs": 183615,
+      "verseStart": 18,
+      "attachments": []
+    },
+    {
+      "timeMs": 191100,
+      "verseStart": 19,
+      "attachments": []
+    },
+    {
+      "timeMs": 198266,
+      "verseStart": 20,
+      "attachments": []
+    },
+    {
+      "timeMs": 212296,
+      "verseStart": 21,
+      "attachments": []
+    }
+  ]
+}

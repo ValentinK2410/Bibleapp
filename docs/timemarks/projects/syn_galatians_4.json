@@ -1,0 +1,135 @@
+{
+  "id": "gh_syn_galatians_4",
+  "translationCode": "SYN",
+  "bookId": "galatians",
+  "chapter": 4,
+  "title": "К Галатам 4 · Синодальный · Бондаренко",
+  "narratorId": "bondarenko",
+  "audioFileName": "55_04.mp3",
+  "cues": [
+    {
+      "timeMs": 2882,
+      "verseStart": 1
+    },
+    {
+      "timeMs": 11227,
+      "verseStart": 2
+    },
+    {
+      "timeMs": 17291,
+      "verseStart": 3
+    },
+    {
+      "timeMs": 24356,
+      "verseStart": 4
+    },
+    {
+      "timeMs": 34403,
+      "verseStart": 5
+    },
+    {
+      "timeMs": 40086,
+      "verseStart": 6
+    },
+    {
+      "timeMs": 50493,
+      "verseStart": 7
+    },
+    {
+      "timeMs": 64783,
+      "verseStart": 8
+    },
+    {
+      "timeMs": 71547,
+      "verseStart": 9
+    },
+    {
+      "timeMs": 85997,
+      "verseStart": 10
+    },
+    {
+      "timeMs": 91260,
+      "verseStart": 11
+    },
+    {
+      "timeMs": 98065,
+      "verseStart": 12
+    },
+    {
+      "timeMs": 106570,
+      "verseStart": 13
+    },
+    {
+      "timeMs": 112514,
+      "verseStart": 14
+    },
+    {
+      "timeMs": 125022,
+      "verseStart": 15
+    },
+    {
+      "timeMs": 135729,
+      "verseStart": 16
+    },
+    {
+      "timeMs": 143495,
+      "verseStart": 17
+    },
+    {
+      "timeMs": 150159,
+      "verseStart": 18
+    },
+    {
+      "timeMs": 157124,
+      "verseStart": 19
+    },
+    {
+      "timeMs": 163948,
+      "verseStart": 20
+    },
+    {
+      "timeMs": 172914,
+      "verseStart": 21
+    },
+    {
+      "timeMs": 179378,
+      "verseStart": 22
+    },
+    {
+      "timeMs": 187143,
+      "verseStart": 23
+    },
+    {
+      "timeMs": 194508,
+      "verseStart": 24
+    },
+    {
+      "timeMs": 204295,
+      "verseStart": 25
+    },
+    {
+      "timeMs": 213441,
+      "verseStart": 26
+    },
+    {
+      "timeMs": 219265,
+      "verseStart": 27
+    },
+    {
+      "timeMs": 235635,
+      "verseStart": 28
+    },
+    {
+      "timeMs": 239558,
+      "verseStart": 29
+    },
+    {
+      "timeMs": 246422,
+      "verseStart": 30
+    },
+    {
+      "timeMs": 257290,
+      "verseStart": 31
+    }
+  ]
+}

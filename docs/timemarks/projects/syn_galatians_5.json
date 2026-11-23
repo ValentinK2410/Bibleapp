@@ -1,0 +1,115 @@
+{
+  "id": "gh_syn_galatians_5",
+  "translationCode": "SYN",
+  "bookId": "galatians",
+  "chapter": 5,
+  "title": "К Галатам 5 · Синодальный · Бондаренко",
+  "narratorId": "bondarenko",
+  "audioFileName": "55_05.mp3",
+  "cues": [
+    {
+      "timeMs": 3342,
+      "verseStart": 1
+    },
+    {
+      "timeMs": 10668,
+      "verseStart": 2
+    },
+    {
+      "timeMs": 19454,
+      "verseStart": 3
+    },
+    {
+      "timeMs": 27460,
+      "verseStart": 4
+    },
+    {
+      "timeMs": 35305,
+      "verseStart": 5
+    },
+    {
+      "timeMs": 41670,
+      "verseStart": 6
+    },
+    {
+      "timeMs": 52477,
+      "verseStart": 7
+    },
+    {
+      "timeMs": 58822,
+      "verseStart": 8
+    },
+    {
+      "timeMs": 62765,
+      "verseStart": 9
+    },
+    {
+      "timeMs": 67388,
+      "verseStart": 10
+    },
+    {
+      "timeMs": 78576,
+      "verseStart": 11
+    },
+    {
+      "timeMs": 88403,
+      "verseStart": 12
+    },
+    {
+      "timeMs": 95188,
+      "verseStart": 13
+    },
+    {
+      "timeMs": 105595,
+      "verseStart": 14
+    },
+    {
+      "timeMs": 114161,
+      "verseStart": 15
+    },
+    {
+      "timeMs": 122767,
+      "verseStart": 16
+    },
+    {
+      "timeMs": 130533,
+      "verseStart": 17
+    },
+    {
+      "timeMs": 142281,
+      "verseStart": 18
+    },
+    {
+      "timeMs": 148966,
+      "verseStart": 19
+    },
+    {
+      "timeMs": 157432,
+      "verseStart": 20
+    },
+    {
+      "timeMs": 167699,
+      "verseStart": 21
+    },
+    {
+      "timeMs": 183831,
+      "verseStart": 22
+    },
+    {
+      "timeMs": 195960,
+      "verseStart": 23
+    },
+    {
+      "timeMs": 203985,
+      "verseStart": 24
+    },
+    {
+      "timeMs": 210910,
+      "verseStart": 25
+    },
+    {
+      "timeMs": 215413,
+      "verseStart": 26
+    }
+  ]
+}

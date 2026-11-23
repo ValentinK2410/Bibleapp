@@ -1,0 +1,101 @@
+{
+  "id": "align-galatians-SYN-06",
+  "translationCode": "SYN",
+  "bookId": "galatians",
+  "chapter": 6,
+  "title": "К Галатам 6 · Синодальный · Бондаренко",
+  "audioFilePath": "/data/user/0/com.example.bible.sqlite/files/bible_audio/bondarenko/55_06.mp3",
+  "updatedAt": 1795392000000,
+  "cues": [
+    {
+      "timeMs": 3402,
+      "verseStart": 1,
+      "attachments": []
+    },
+    {
+      "timeMs": 19832,
+      "verseStart": 2,
+      "attachments": []
+    },
+    {
+      "timeMs": 27157,
+      "verseStart": 3,
+      "attachments": []
+    },
+    {
+      "timeMs": 36363,
+      "verseStart": 4,
+      "attachments": []
+    },
+    {
+      "timeMs": 44128,
+      "verseStart": 5,
+      "attachments": []
+    },
+    {
+      "timeMs": 49231,
+      "verseStart": 6,
+      "attachments": []
+    },
+    {
+      "timeMs": 56015,
+      "verseStart": 7,
+      "attachments": []
+    },
+    {
+      "timeMs": 64380,
+      "verseStart": 8,
+      "attachments": []
+    },
+    {
+      "timeMs": 74107,
+      "verseStart": 9,
+      "attachments": []
+    },
+    {
+      "timeMs": 80671,
+      "verseStart": 10,
+      "attachments": []
+    },
+    {
+      "timeMs": 92478,
+      "verseStart": 11,
+      "attachments": []
+    },
+    {
+      "timeMs": 98182,
+      "verseStart": 12,
+      "attachments": []
+    },
+    {
+      "timeMs": 108228,
+      "verseStart": 13,
+      "attachments": []
+    },
+    {
+      "timeMs": 117794,
+      "verseStart": 14,
+      "attachments": []
+    },
+    {
+      "timeMs": 131022,
+      "verseStart": 15,
+      "attachments": []
+    },
+    {
+      "timeMs": 145031,
+      "verseStart": 16,
+      "attachments": []
+    },
+    {
+      "timeMs": 156938,
+      "verseStart": 17,
+      "attachments": []
+    },
+    {
+      "timeMs": 166985,
+      "verseStart": 18,
+      "attachments": []
+    }
+  ]
+}
