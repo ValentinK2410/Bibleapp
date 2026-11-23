@@ -1,0 +1,76 @@
+{
+  "id": "align-1_corinthians-RBO-05",
+  "translationCode": "RBO",
+  "bookId": "1_corinthians",
+  "chapter": 5,
+  "title": "1-е Коринфянам 5 · РБО",
+  "audioFilePath": "/data/user/0/com.example.bible.sqlite/files/bible_audio/rbo/53_05.mp3",
+  "updatedAt": 1795392000000,
+  "cues": [
+    {
+      "timeMs": 4323,
+      "verseStart": 1,
+      "attachments": []
+    },
+    {
+      "timeMs": 14791,
+      "verseStart": 2,
+      "attachments": []
+    },
+    {
+      "timeMs": 24477,
+      "verseStart": 3,
+      "attachments": []
+    },
+    {
+      "timeMs": 38668,
+      "verseStart": 4,
+      "attachments": []
+    },
+    {
+      "timeMs": 45813,
+      "verseStart": 5,
+      "attachments": []
+    },
+    {
+      "timeMs": 54219,
+      "verseStart": 6,
+      "attachments": []
+    },
+    {
+      "timeMs": 64946,
+      "verseStart": 7,
+      "attachments": []
+    },
+    {
+      "timeMs": 81738,
+      "verseStart": 8,
+      "attachments": []
+    },
+    {
+      "timeMs": 92446,
+      "verseStart": 9,
+      "attachments": []
+    },
+    {
+      "timeMs": 97309,
+      "verseStart": 10,
+      "attachments": []
+    },
+    {
+      "timeMs": 108297,
+      "verseStart": 11,
+      "attachments": []
+    },
+    {
+      "timeMs": 122507,
+      "verseStart": 12,
+      "attachments": []
+    },
+    {
+      "timeMs": 128992,
+      "verseStart": 13,
+      "attachments": []
+    }
+  ]
+}

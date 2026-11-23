@@ -1,0 +1,63 @@
+{
+  "id": "gh_rbo_1_corinthians_13",
+  "translationCode": "RBO",
+  "bookId": "1_corinthians",
+  "chapter": 13,
+  "title": "1-е Коринфянам 13 · РБО",
+  "narratorId": "rbo",
+  "audioFileName": "53_13.mp3",
+  "cues": [
+    {
+      "timeMs": 4584,
+      "verseStart": 1
+    },
+    {
+      "timeMs": 15112,
+      "verseStart": 2
+    },
+    {
+      "timeMs": 29024,
+      "verseStart": 3
+    },
+    {
+      "timeMs": 40133,
+      "verseStart": 4
+    },
+    {
+      "timeMs": 47739,
+      "verseStart": 5
+    },
+    {
+      "timeMs": 54244,
+      "verseStart": 6
+    },
+    {
+      "timeMs": 58107,
+      "verseStart": 7
+    },
+    {
+      "timeMs": 65613,
+      "verseStart": 8
+    },
+    {
+      "timeMs": 74921,
+      "verseStart": 9
+    },
+    {
+      "timeMs": 79485,
+      "verseStart": 10
+    },
+    {
+      "timeMs": 84008,
+      "verseStart": 11
+    },
+    {
+      "timeMs": 94837,
+      "verseStart": 12
+    },
+    {
+      "timeMs": 109910,
+      "verseStart": 13
+    }
+  ]
+}

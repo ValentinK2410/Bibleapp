@@ -1,0 +1,111 @@
+{
+  "id": "align-1_corinthians-RBO-06",
+  "translationCode": "RBO",
+  "bookId": "1_corinthians",
+  "chapter": 6,
+  "title": "1-е Коринфянам 6 · РБО",
+  "audioFilePath": "/data/user/0/com.example.bible.sqlite/files/bible_audio/rbo/53_06.mp3",
+  "updatedAt": 1795392000000,
+  "cues": [
+    {
+      "timeMs": 4343,
+      "verseStart": 1,
+      "attachments": []
+    },
+    {
+      "timeMs": 16492,
+      "verseStart": 2,
+      "attachments": []
+    },
+    {
+      "timeMs": 27641,
+      "verseStart": 3,
+      "attachments": []
+    },
+    {
+      "timeMs": 36147,
+      "verseStart": 4,
+      "attachments": []
+    },
+    {
+      "timeMs": 45134,
+      "verseStart": 5,
+      "attachments": []
+    },
+    {
+      "timeMs": 54521,
+      "verseStart": 6,
+      "attachments": []
+    },
+    {
+      "timeMs": 60445,
+      "verseStart": 7,
+      "attachments": []
+    },
+    {
+      "timeMs": 72574,
+      "verseStart": 8,
+      "attachments": []
+    },
+    {
+      "timeMs": 79720,
+      "verseStart": 9,
+      "attachments": []
+    },
+    {
+      "timeMs": 93390,
+      "verseStart": 10,
+      "attachments": []
+    },
+    {
+      "timeMs": 103498,
+      "verseStart": 11,
+      "attachments": []
+    },
+    {
+      "timeMs": 115447,
+      "verseStart": 12,
+      "attachments": []
+    },
+    {
+      "timeMs": 130498,
+      "verseStart": 13,
+      "attachments": []
+    },
+    {
+      "timeMs": 145869,
+      "verseStart": 14,
+      "attachments": []
+    },
+    {
+      "timeMs": 152054,
+      "verseStart": 15,
+      "attachments": []
+    },
+    {
+      "timeMs": 167345,
+      "verseStart": 16,
+      "attachments": []
+    },
+    {
+      "timeMs": 178133,
+      "verseStart": 17,
+      "attachments": []
+    },
+    {
+      "timeMs": 183257,
+      "verseStart": 18,
+      "attachments": []
+    },
+    {
+      "timeMs": 195446,
+      "verseStart": 19,
+      "attachments": []
+    },
+    {
+      "timeMs": 206915,
+      "verseStart": 20,
+      "attachments": []
+    }
+  ]
+}

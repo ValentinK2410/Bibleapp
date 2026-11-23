@@ -1,0 +1,91 @@
+{
+  "id": "align-1_corinthians-RBO-02",
+  "translationCode": "RBO",
+  "bookId": "1_corinthians",
+  "chapter": 2,
+  "title": "1-е Коринфянам 2 · РБО",
+  "audioFilePath": "/data/user/0/com.example.bible.sqlite/files/bible_audio/rbo/53_02.mp3",
+  "updatedAt": 1795392000000,
+  "cues": [
+    {
+      "timeMs": 4303,
+      "verseStart": 1,
+      "attachments": []
+    },
+    {
+      "timeMs": 12990,
+      "verseStart": 2,
+      "attachments": []
+    },
+    {
+      "timeMs": 24238,
+      "verseStart": 3,
+      "attachments": []
+    },
+    {
+      "timeMs": 28301,
+      "verseStart": 4,
+      "attachments": []
+    },
+    {
+      "timeMs": 37588,
+      "verseStart": 5,
+      "attachments": []
+    },
+    {
+      "timeMs": 43773,
+      "verseStart": 6,
+      "attachments": []
+    },
+    {
+      "timeMs": 54500,
+      "verseStart": 7,
+      "attachments": []
+    },
+    {
+      "timeMs": 64908,
+      "verseStart": 8,
+      "attachments": []
+    },
+    {
+      "timeMs": 75636,
+      "verseStart": 9,
+      "attachments": []
+    },
+    {
+      "timeMs": 89246,
+      "verseStart": 10,
+      "attachments": []
+    },
+    {
+      "timeMs": 99654,
+      "verseStart": 11,
+      "attachments": []
+    },
+    {
+      "timeMs": 113544,
+      "verseStart": 12,
+      "attachments": []
+    },
+    {
+      "timeMs": 122451,
+      "verseStart": 13,
+      "attachments": []
+    },
+    {
+      "timeMs": 136301,
+      "verseStart": 14,
+      "attachments": []
+    },
+    {
+      "timeMs": 149031,
+      "verseStart": 15,
+      "attachments": []
+    },
+    {
+      "timeMs": 158658,
+      "verseStart": 16,
+      "attachments": []
+    }
+  ]
+}

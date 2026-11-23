@@ -1,0 +1,63 @@
+{
+  "id": "gh_rbo_1_corinthians_8",
+  "translationCode": "RBO",
+  "bookId": "1_corinthians",
+  "chapter": 8,
+  "title": "1-е Коринфянам 8 · РБО",
+  "narratorId": "rbo",
+  "audioFileName": "53_08.mp3",
+  "cues": [
+    {
+      "timeMs": 4303,
+      "verseStart": 1
+    },
+    {
+      "timeMs": 20775,
+      "verseStart": 2
+    },
+    {
+      "timeMs": 29942,
+      "verseStart": 3
+    },
+    {
+      "timeMs": 35606,
+      "verseStart": 4
+    },
+    {
+      "timeMs": 47274,
+      "verseStart": 5
+    },
+    {
+      "timeMs": 58222,
+      "verseStart": 6
+    },
+    {
+      "timeMs": 75834,
+      "verseStart": 7
+    },
+    {
+      "timeMs": 96189,
+      "verseStart": 8
+    },
+    {
+      "timeMs": 106316,
+      "verseStart": 9
+    },
+    {
+      "timeMs": 113622,
+      "verseStart": 10
+    },
+    {
+      "timeMs": 130634,
+      "verseStart": 11
+    },
+    {
+      "timeMs": 138539,
+      "verseStart": 12
+    },
+    {
+      "timeMs": 147446,
+      "verseStart": 13
+    }
+  ]
+}

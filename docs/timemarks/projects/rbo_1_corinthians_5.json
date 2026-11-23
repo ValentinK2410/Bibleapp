@@ -1,0 +1,63 @@
+{
+  "id": "gh_rbo_1_corinthians_5",
+  "translationCode": "RBO",
+  "bookId": "1_corinthians",
+  "chapter": 5,
+  "title": "1-е Коринфянам 5 · РБО",
+  "narratorId": "rbo",
+  "audioFileName": "53_05.mp3",
+  "cues": [
+    {
+      "timeMs": 4323,
+      "verseStart": 1
+    },
+    {
+      "timeMs": 14791,
+      "verseStart": 2
+    },
+    {
+      "timeMs": 24477,
+      "verseStart": 3
+    },
+    {
+      "timeMs": 38668,
+      "verseStart": 4
+    },
+    {
+      "timeMs": 45813,
+      "verseStart": 5
+    },
+    {
+      "timeMs": 54219,
+      "verseStart": 6
+    },
+    {
+      "timeMs": 64946,
+      "verseStart": 7
+    },
+    {
+      "timeMs": 81738,
+      "verseStart": 8
+    },
+    {
+      "timeMs": 92446,
+      "verseStart": 9
+    },
+    {
+      "timeMs": 97309,
+      "verseStart": 10
+    },
+    {
+      "timeMs": 108297,
+      "verseStart": 11
+    },
+    {
+      "timeMs": 122507,
+      "verseStart": 12
+    },
+    {
+      "timeMs": 128992,
+      "verseStart": 13
+    }
+  ]
+}

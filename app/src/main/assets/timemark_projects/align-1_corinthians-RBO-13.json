@@ -1,0 +1,76 @@
+{
+  "id": "align-1_corinthians-RBO-13",
+  "translationCode": "RBO",
+  "bookId": "1_corinthians",
+  "chapter": 13,
+  "title": "1-е Коринфянам 13 · РБО",
+  "audioFilePath": "/data/user/0/com.example.bible.sqlite/files/bible_audio/rbo/53_13.mp3",
+  "updatedAt": 1795392000000,
+  "cues": [
+    {
+      "timeMs": 4584,
+      "verseStart": 1,
+      "attachments": []
+    },
+    {
+      "timeMs": 15112,
+      "verseStart": 2,
+      "attachments": []
+    },
+    {
+      "timeMs": 29024,
+      "verseStart": 3,
+      "attachments": []
+    },
+    {
+      "timeMs": 40133,
+      "verseStart": 4,
+      "attachments": []
+    },
+    {
+      "timeMs": 47739,
+      "verseStart": 5,
+      "attachments": []
+    },
+    {
+      "timeMs": 54244,
+      "verseStart": 6,
+      "attachments": []
+    },
+    {
+      "timeMs": 58107,
+      "verseStart": 7,
+      "attachments": []
+    },
+    {
+      "timeMs": 65613,
+      "verseStart": 8,
+      "attachments": []
+    },
+    {
+      "timeMs": 74921,
+      "verseStart": 9,
+      "attachments": []
+    },
+    {
+      "timeMs": 79485,
+      "verseStart": 10,
+      "attachments": []
+    },
+    {
+      "timeMs": 84008,
+      "verseStart": 11,
+      "attachments": []
+    },
+    {
+      "timeMs": 94837,
+      "verseStart": 12,
+      "attachments": []
+    },
+    {
+      "timeMs": 109910,
+      "verseStart": 13,
+      "attachments": []
+    }
+  ]
+}

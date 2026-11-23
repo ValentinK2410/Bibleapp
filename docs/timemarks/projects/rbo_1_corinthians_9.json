@@ -1,0 +1,119 @@
+{
+  "id": "gh_rbo_1_corinthians_9",
+  "translationCode": "RBO",
+  "bookId": "1_corinthians",
+  "chapter": 9,
+  "title": "1-е Коринфянам 9 · РБО",
+  "narratorId": "rbo",
+  "audioFileName": "53_09.mp3",
+  "cues": [
+    {
+      "timeMs": 4363,
+      "verseStart": 1
+    },
+    {
+      "timeMs": 20294,
+      "verseStart": 2
+    },
+    {
+      "timeMs": 31842,
+      "verseStart": 3
+    },
+    {
+      "timeMs": 36465,
+      "verseStart": 4
+    },
+    {
+      "timeMs": 40028,
+      "verseStart": 5
+    },
+    {
+      "timeMs": 49795,
+      "verseStart": 6
+    },
+    {
+      "timeMs": 55058,
+      "verseStart": 7
+    },
+    {
+      "timeMs": 70969,
+      "verseStart": 8
+    },
+    {
+      "timeMs": 73351,
+      "verseStart": 9
+    },
+    {
+      "timeMs": 85820,
+      "verseStart": 10
+    },
+    {
+      "timeMs": 98088,
+      "verseStart": 11
+    },
+    {
+      "timeMs": 108795,
+      "verseStart": 12
+    },
+    {
+      "timeMs": 127989,
+      "verseStart": 13
+    },
+    {
+      "timeMs": 138276,
+      "verseStart": 14
+    },
+    {
+      "timeMs": 146562,
+      "verseStart": 15
+    },
+    {
+      "timeMs": 164154,
+      "verseStart": 16
+    },
+    {
+      "timeMs": 178003,
+      "verseStart": 17
+    },
+    {
+      "timeMs": 189231,
+      "verseStart": 18
+    },
+    {
+      "timeMs": 203621,
+      "verseStart": 19
+    },
+    {
+      "timeMs": 212367,
+      "verseStart": 20
+    },
+    {
+      "timeMs": 229659,
+      "verseStart": 21
+    },
+    {
+      "timeMs": 243088,
+      "verseStart": 22
+    },
+    {
+      "timeMs": 253656,
+      "verseStart": 23
+    },
+    {
+      "timeMs": 260200,
+      "verseStart": 24
+    },
+    {
+      "timeMs": 270107,
+      "verseStart": 25
+    },
+    {
+      "timeMs": 281595,
+      "verseStart": 26
+    },
+    {
+      "timeMs": 289761,
+      "verseStart": 27
+    }
+  ]
+}
