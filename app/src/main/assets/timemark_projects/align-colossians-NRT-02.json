@@ -1,0 +1,126 @@
+{
+  "id": "align-colossians-NRT-02",
+  "translationCode": "NRT",
+  "bookId": "colossians",
+  "chapter": 2,
+  "title": "К Колоссянам 2 · Новый русский",
+  "audioFilePath": "/data/user/0/com.example.bible.sqlite/files/bible_audio/new-russian/58_02.mp3",
+  "updatedAt": 1795392000000,
+  "cues": [
+    {
+      "timeMs": 1101,
+      "verseStart": 1,
+      "attachments": []
+    },
+    {
+      "timeMs": 10288,
+      "verseStart": 2,
+      "attachments": []
+    },
+    {
+      "timeMs": 21896,
+      "verseStart": 3,
+      "attachments": []
+    },
+    {
+      "timeMs": 25899,
+      "verseStart": 4,
+      "attachments": []
+    },
+    {
+      "timeMs": 31804,
+      "verseStart": 5,
+      "attachments": []
+    },
+    {
+      "timeMs": 46715,
+      "verseStart": 6,
+      "attachments": []
+    },
+    {
+      "timeMs": 53159,
+      "verseStart": 7,
+      "attachments": []
+    },
+    {
+      "timeMs": 64148,
+      "verseStart": 8,
+      "attachments": []
+    },
+    {
+      "timeMs": 76236,
+      "verseStart": 9,
+      "attachments": []
+    },
+    {
+      "timeMs": 81961,
+      "verseStart": 10,
+      "attachments": []
+    },
+    {
+      "timeMs": 89326,
+      "verseStart": 11,
+      "attachments": []
+    },
+    {
+      "timeMs": 103797,
+      "verseStart": 12,
+      "attachments": []
+    },
+    {
+      "timeMs": 114345,
+      "verseStart": 13,
+      "attachments": []
+    },
+    {
+      "timeMs": 127294,
+      "verseStart": 14,
+      "attachments": []
+    },
+    {
+      "timeMs": 138002,
+      "verseStart": 15,
+      "attachments": []
+    },
+    {
+      "timeMs": 146749,
+      "verseStart": 16,
+      "attachments": []
+    },
+    {
+      "timeMs": 158898,
+      "verseStart": 17,
+      "attachments": []
+    },
+    {
+      "timeMs": 166683,
+      "verseStart": 18,
+      "attachments": []
+    },
+    {
+      "timeMs": 183156,
+      "verseStart": 19,
+      "attachments": []
+    },
+    {
+      "timeMs": 195885,
+      "verseStart": 20,
+      "attachments": []
+    },
+    {
+      "timeMs": 207133,
+      "verseStart": 21,
+      "attachments": []
+    },
+    {
+      "timeMs": 212177,
+      "verseStart": 22,
+      "attachments": []
+    },
+    {
+      "timeMs": 220723,
+      "verseStart": 23,
+      "attachments": []
+    }
+  ]
+}

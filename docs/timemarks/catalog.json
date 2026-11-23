@@ -3054,6 +3054,46 @@
       "file": "projects/nrt_2_corinthians_9.json"
     },
     {
+      "id": "gh_nrt_colossians_1",
+      "translationCode": "NRT",
+      "bookId": "colossians",
+      "chapter": 1,
+      "title": "К Колоссянам 1 · Новый русский",
+      "cueCount": 29,
+      "narratorId": "new-russian",
+      "file": "projects/nrt_colossians_1.json"
+    },
+    {
+      "id": "gh_nrt_colossians_2",
+      "translationCode": "NRT",
+      "bookId": "colossians",
+      "chapter": 2,
+      "title": "К Колоссянам 2 · Новый русский",
+      "cueCount": 23,
+      "narratorId": "new-russian",
+      "file": "projects/nrt_colossians_2.json"
+    },
+    {
+      "id": "gh_nrt_colossians_3",
+      "translationCode": "NRT",
+      "bookId": "colossians",
+      "chapter": 3,
+      "title": "К Колоссянам 3 · Новый русский",
+      "cueCount": 25,
+      "narratorId": "new-russian",
+      "file": "projects/nrt_colossians_3.json"
+    },
+    {
+      "id": "gh_nrt_colossians_4",
+      "translationCode": "NRT",
+      "bookId": "colossians",
+      "chapter": 4,
+      "title": "К Колоссянам 4 · Новый русский",
+      "cueCount": 18,
+      "narratorId": "new-russian",
+      "file": "projects/nrt_colossians_4.json"
+    },
+    {
       "id": "gh_nrt_ephesians_1",
       "translationCode": "NRT",
       "bookId": "ephesians",

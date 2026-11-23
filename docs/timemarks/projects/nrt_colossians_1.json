@@ -1,0 +1,127 @@
+{
+  "id": "gh_nrt_colossians_1",
+  "translationCode": "NRT",
+  "bookId": "colossians",
+  "chapter": 1,
+  "title": "К Колоссянам 1 · Новый русский",
+  "narratorId": "new-russian",
+  "audioFileName": "58_01.mp3",
+  "cues": [
+    {
+      "timeMs": 360,
+      "verseStart": 1
+    },
+    {
+      "timeMs": 6585,
+      "verseStart": 2
+    },
+    {
+      "timeMs": 20595,
+      "verseStart": 3
+    },
+    {
+      "timeMs": 27620,
+      "verseStart": 4
+    },
+    {
+      "timeMs": 34125,
+      "verseStart": 5
+    },
+    {
+      "timeMs": 45013,
+      "verseStart": 6
+    },
+    {
+      "timeMs": 59564,
+      "verseStart": 7
+    },
+    {
+      "timeMs": 67389,
+      "verseStart": 8
+    },
+    {
+      "timeMs": 71432,
+      "verseStart": 9
+    },
+    {
+      "timeMs": 84142,
+      "verseStart": 10
+    },
+    {
+      "timeMs": 94930,
+      "verseStart": 11
+    },
+    {
+      "timeMs": 104377,
+      "verseStart": 12
+    },
+    {
+      "timeMs": 111942,
+      "verseStart": 13
+    },
+    {
+      "timeMs": 117907,
+      "verseStart": 14
+    },
+    {
+      "timeMs": 130556,
+      "verseStart": 15
+    },
+    {
+      "timeMs": 135800,
+      "verseStart": 16
+    },
+    {
+      "timeMs": 149450,
+      "verseStart": 17
+    },
+    {
+      "timeMs": 158536,
+      "verseStart": 18
+    },
+    {
+      "timeMs": 170265,
+      "verseStart": 19
+    },
+    {
+      "timeMs": 174608,
+      "verseStart": 20
+    },
+    {
+      "timeMs": 185576,
+      "verseStart": 21
+    },
+    {
+      "timeMs": 192942,
+      "verseStart": 22
+    },
+    {
+      "timeMs": 208873,
+      "verseStart": 23
+    },
+    {
+      "timeMs": 233171,
+      "verseStart": 24
+    },
+    {
+      "timeMs": 247001,
+      "verseStart": 25
+    },
+    {
+      "timeMs": 254647,
+      "verseStart": 26
+    },
+    {
+      "timeMs": 265875,
+      "verseStart": 27
+    },
+    {
+      "timeMs": 282347,
+      "verseStart": 28
+    },
+    {
+      "timeMs": 293575,
+      "verseStart": 29
+    }
+  ]
+}

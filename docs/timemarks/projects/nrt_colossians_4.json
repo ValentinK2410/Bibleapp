@@ -1,0 +1,83 @@
+{
+  "id": "gh_nrt_colossians_4",
+  "translationCode": "NRT",
+  "bookId": "colossians",
+  "chapter": 4,
+  "title": "К Колоссянам 4 · Новый русский",
+  "narratorId": "new-russian",
+  "audioFileName": "58_04.mp3",
+  "cues": [
+    {
+      "timeMs": 360,
+      "verseStart": 1
+    },
+    {
+      "timeMs": 13990,
+      "verseStart": 2
+    },
+    {
+      "timeMs": 21156,
+      "verseStart": 3
+    },
+    {
+      "timeMs": 34305,
+      "verseStart": 4
+    },
+    {
+      "timeMs": 38648,
+      "verseStart": 5
+    },
+    {
+      "timeMs": 44052,
+      "verseStart": 6
+    },
+    {
+      "timeMs": 54800,
+      "verseStart": 7
+    },
+    {
+      "timeMs": 63086,
+      "verseStart": 8
+    },
+    {
+      "timeMs": 71352,
+      "verseStart": 9
+    },
+    {
+      "timeMs": 80959,
+      "verseStart": 10
+    },
+    {
+      "timeMs": 97391,
+      "verseStart": 11
+    },
+    {
+      "timeMs": 112482,
+      "verseStart": 12
+    },
+    {
+      "timeMs": 129915,
+      "verseStart": 13
+    },
+    {
+      "timeMs": 138101,
+      "verseStart": 14
+    },
+    {
+      "timeMs": 142544,
+      "verseStart": 15
+    },
+    {
+      "timeMs": 150931,
+      "verseStart": 16
+    },
+    {
+      "timeMs": 164180,
+      "verseStart": 17
+    },
+    {
+      "timeMs": 170665,
+      "verseStart": 18
+    }
+  ]
+}

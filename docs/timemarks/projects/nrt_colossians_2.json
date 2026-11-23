@@ -1,0 +1,103 @@
+{
+  "id": "gh_nrt_colossians_2",
+  "translationCode": "NRT",
+  "bookId": "colossians",
+  "chapter": 2,
+  "title": "К Колоссянам 2 · Новый русский",
+  "narratorId": "new-russian",
+  "audioFileName": "58_02.mp3",
+  "cues": [
+    {
+      "timeMs": 1101,
+      "verseStart": 1
+    },
+    {
+      "timeMs": 10288,
+      "verseStart": 2
+    },
+    {
+      "timeMs": 21896,
+      "verseStart": 3
+    },
+    {
+      "timeMs": 25899,
+      "verseStart": 4
+    },
+    {
+      "timeMs": 31804,
+      "verseStart": 5
+    },
+    {
+      "timeMs": 46715,
+      "verseStart": 6
+    },
+    {
+      "timeMs": 53159,
+      "verseStart": 7
+    },
+    {
+      "timeMs": 64148,
+      "verseStart": 8
+    },
+    {
+      "timeMs": 76236,
+      "verseStart": 9
+    },
+    {
+      "timeMs": 81961,
+      "verseStart": 10
+    },
+    {
+      "timeMs": 89326,
+      "verseStart": 11
+    },
+    {
+      "timeMs": 103797,
+      "verseStart": 12
+    },
+    {
+      "timeMs": 114345,
+      "verseStart": 13
+    },
+    {
+      "timeMs": 127294,
+      "verseStart": 14
+    },
+    {
+      "timeMs": 138002,
+      "verseStart": 15
+    },
+    {
+      "timeMs": 146749,
+      "verseStart": 16
+    },
+    {
+      "timeMs": 158898,
+      "verseStart": 17
+    },
+    {
+      "timeMs": 166683,
+      "verseStart": 18
+    },
+    {
+      "timeMs": 183156,
+      "verseStart": 19
+    },
+    {
+      "timeMs": 195885,
+      "verseStart": 20
+    },
+    {
+      "timeMs": 207133,
+      "verseStart": 21
+    },
+    {
+      "timeMs": 212177,
+      "verseStart": 22
+    },
+    {
+      "timeMs": 220723,
+      "verseStart": 23
+    }
+  ]
+}
