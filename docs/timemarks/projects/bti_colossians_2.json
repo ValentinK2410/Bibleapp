@@ -1,0 +1,103 @@
+{
+  "id": "gh_bti_colossians_2",
+  "translationCode": "BTI",
+  "bookId": "colossians",
+  "chapter": 2,
+  "title": "К Колоссянам 2 · Кулаковых",
+  "narratorId": "bti",
+  "audioFileName": "58_02.mp3",
+  "cues": [
+    {
+      "timeMs": 4403,
+      "verseStart": 1
+    },
+    {
+      "timeMs": 20855,
+      "verseStart": 2
+    },
+    {
+      "timeMs": 39548,
+      "verseStart": 3
+    },
+    {
+      "timeMs": 47473,
+      "verseStart": 4
+    },
+    {
+      "timeMs": 55879,
+      "verseStart": 5
+    },
+    {
+      "timeMs": 68868,
+      "verseStart": 6
+    },
+    {
+      "timeMs": 79215,
+      "verseStart": 7
+    },
+    {
+      "timeMs": 95146,
+      "verseStart": 8
+    },
+    {
+      "timeMs": 111297,
+      "verseStart": 9
+    },
+    {
+      "timeMs": 116721,
+      "verseStart": 10
+    },
+    {
+      "timeMs": 125327,
+      "verseStart": 11
+    },
+    {
+      "timeMs": 140377,
+      "verseStart": 12
+    },
+    {
+      "timeMs": 153407,
+      "verseStart": 13
+    },
+    {
+      "timeMs": 171119,
+      "verseStart": 14
+    },
+    {
+      "timeMs": 186670,
+      "verseStart": 15
+    },
+    {
+      "timeMs": 199879,
+      "verseStart": 16
+    },
+    {
+      "timeMs": 212988,
+      "verseStart": 17
+    },
+    {
+      "timeMs": 223935,
+      "verseStart": 18
+    },
+    {
+      "timeMs": 238105,
+      "verseStart": 19
+    },
+    {
+      "timeMs": 253216,
+      "verseStart": 20
+    },
+    {
+      "timeMs": 269407,
+      "verseStart": 21
+    },
+    {
+      "timeMs": 274070,
+      "verseStart": 22
+    },
+    {
+      "timeMs": 288220,
+      "verseStart": 23
+    }
+  ]
+}

@@ -1,0 +1,83 @@
+{
+  "id": "gh_bti_colossians_4",
+  "translationCode": "BTI",
+  "bookId": "colossians",
+  "chapter": 4,
+  "title": "К Колоссянам 4 · Кулаковых",
+  "narratorId": "bti",
+  "audioFileName": "58_04.mp3",
+  "cues": [
+    {
+      "timeMs": 4143,
+      "verseStart": 1
+    },
+    {
+      "timeMs": 14870,
+      "verseStart": 2
+    },
+    {
+      "timeMs": 23316,
+      "verseStart": 3
+    },
+    {
+      "timeMs": 36885,
+      "verseStart": 4
+    },
+    {
+      "timeMs": 44390,
+      "verseStart": 5
+    },
+    {
+      "timeMs": 52996,
+      "verseStart": 6
+    },
+    {
+      "timeMs": 63062,
+      "verseStart": 7
+    },
+    {
+      "timeMs": 72749,
+      "verseStart": 8
+    },
+    {
+      "timeMs": 81435,
+      "verseStart": 9
+    },
+    {
+      "timeMs": 93403,
+      "verseStart": 10
+    },
+    {
+      "timeMs": 109894,
+      "verseStart": 11
+    },
+    {
+      "timeMs": 124443,
+      "verseStart": 12
+    },
+    {
+      "timeMs": 142475,
+      "verseStart": 13
+    },
+    {
+      "timeMs": 152122,
+      "verseStart": 14
+    },
+    {
+      "timeMs": 158646,
+      "verseStart": 15
+    },
+    {
+      "timeMs": 167212,
+      "verseStart": 16
+    },
+    {
+      "timeMs": 181321,
+      "verseStart": 17
+    },
+    {
+      "timeMs": 192709,
+      "verseStart": 18
+    }
+  ]
+}

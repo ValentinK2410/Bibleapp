@@ -1,0 +1,127 @@
+{
+  "id": "gh_bti_colossians_1",
+  "translationCode": "BTI",
+  "bookId": "colossians",
+  "chapter": 1,
+  "title": "К Колоссянам 1 · Кулаковых",
+  "narratorId": "bti",
+  "audioFileName": "58_01.mp3",
+  "cues": [
+    {
+      "timeMs": 10808,
+      "verseStart": 1
+    },
+    {
+      "timeMs": 18453,
+      "verseStart": 2
+    },
+    {
+      "timeMs": 31623,
+      "verseStart": 3
+    },
+    {
+      "timeMs": 38267,
+      "verseStart": 4
+    },
+    {
+      "timeMs": 47254,
+      "verseStart": 5
+    },
+    {
+      "timeMs": 61804,
+      "verseStart": 6
+    },
+    {
+      "timeMs": 80357,
+      "verseStart": 7
+    },
+    {
+      "timeMs": 89003,
+      "verseStart": 8
+    },
+    {
+      "timeMs": 95308,
+      "verseStart": 9
+    },
+    {
+      "timeMs": 111799,
+      "verseStart": 10
+    },
+    {
+      "timeMs": 123208,
+      "verseStart": 11
+    },
+    {
+      "timeMs": 133055,
+      "verseStart": 12
+    },
+    {
+      "timeMs": 143622,
+      "verseStart": 13
+    },
+    {
+      "timeMs": 150627,
+      "verseStart": 14
+    },
+    {
+      "timeMs": 157652,
+      "verseStart": 15
+    },
+    {
+      "timeMs": 166959,
+      "verseStart": 16
+    },
+    {
+      "timeMs": 184431,
+      "verseStart": 17
+    },
+    {
+      "timeMs": 191596,
+      "verseStart": 18
+    },
+    {
+      "timeMs": 207307,
+      "verseStart": 19
+    },
+    {
+      "timeMs": 213592,
+      "verseStart": 20
+    },
+    {
+      "timeMs": 227902,
+      "verseStart": 21
+    },
+    {
+      "timeMs": 235848,
+      "verseStart": 22
+    },
+    {
+      "timeMs": 254701,
+      "verseStart": 23
+    },
+    {
+      "timeMs": 281700,
+      "verseStart": 24
+    },
+    {
+      "timeMs": 298032,
+      "verseStart": 25
+    },
+    {
+      "timeMs": 312422,
+      "verseStart": 26
+    },
+    {
+      "timeMs": 322649,
+      "verseStart": 27
+    },
+    {
+      "timeMs": 342323,
+      "verseStart": 28
+    },
+    {
+      "timeMs": 355012,
+      "verseStart": 29
+    }
+  ]
+}

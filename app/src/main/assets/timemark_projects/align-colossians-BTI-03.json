@@ -1,0 +1,136 @@
+{
+  "id": "align-colossians-BTI-03",
+  "translationCode": "BTI",
+  "bookId": "colossians",
+  "chapter": 3,
+  "title": "К Колоссянам 3 · Кулаковых",
+  "audioFilePath": "/data/user/0/com.example.bible.sqlite/files/bible_audio/bti/58_03.mp3",
+  "updatedAt": 1795392000000,
+  "cues": [
+    {
+      "timeMs": 3783,
+      "verseStart": 1,
+      "attachments": []
+    },
+    {
+      "timeMs": 15631,
+      "verseStart": 2,
+      "attachments": []
+    },
+    {
+      "timeMs": 19333,
+      "verseStart": 3,
+      "attachments": []
+    },
+    {
+      "timeMs": 27719,
+      "verseStart": 4,
+      "attachments": []
+    },
+    {
+      "timeMs": 38386,
+      "verseStart": 5,
+      "attachments": []
+    },
+    {
+      "timeMs": 54557,
+      "verseStart": 6,
+      "attachments": []
+    },
+    {
+      "timeMs": 61041,
+      "verseStart": 7,
+      "attachments": []
+    },
+    {
+      "timeMs": 66765,
+      "verseStart": 8,
+      "attachments": []
+    },
+    {
+      "timeMs": 82115,
+      "verseStart": 9,
+      "attachments": []
+    },
+    {
+      "timeMs": 91401,
+      "verseStart": 10,
+      "attachments": []
+    },
+    {
+      "timeMs": 103769,
+      "verseStart": 11,
+      "attachments": []
+    },
+    {
+      "timeMs": 124483,
+      "verseStart": 12,
+      "attachments": []
+    },
+    {
+      "timeMs": 138293,
+      "verseStart": 13,
+      "attachments": []
+    },
+    {
+      "timeMs": 152882,
+      "verseStart": 14,
+      "attachments": []
+    },
+    {
+      "timeMs": 162549,
+      "verseStart": 15,
+      "attachments": []
+    },
+    {
+      "timeMs": 175658,
+      "verseStart": 16,
+      "attachments": []
+    },
+    {
+      "timeMs": 196632,
+      "verseStart": 17,
+      "attachments": []
+    },
+    {
+      "timeMs": 211922,
+      "verseStart": 18,
+      "attachments": []
+    },
+    {
+      "timeMs": 218486,
+      "verseStart": 19,
+      "attachments": []
+    },
+    {
+      "timeMs": 225031,
+      "verseStart": 20,
+      "attachments": []
+    },
+    {
+      "timeMs": 234557,
+      "verseStart": 21,
+      "attachments": []
+    },
+    {
+      "timeMs": 242622,
+      "verseStart": 22,
+      "attachments": []
+    },
+    {
+      "timeMs": 257532,
+      "verseStart": 23,
+      "attachments": []
+    },
+    {
+      "timeMs": 265638,
+      "verseStart": 24,
+      "attachments": []
+    },
+    {
+      "timeMs": 277706,
+      "verseStart": 25,
+      "attachments": []
+    }
+  ]
+}

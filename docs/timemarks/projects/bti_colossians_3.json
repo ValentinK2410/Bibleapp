@@ -1,0 +1,111 @@
+{
+  "id": "gh_bti_colossians_3",
+  "translationCode": "BTI",
+  "bookId": "colossians",
+  "chapter": 3,
+  "title": "К Колоссянам 3 · Кулаковых",
+  "narratorId": "bti",
+  "audioFileName": "58_03.mp3",
+  "cues": [
+    {
+      "timeMs": 3783,
+      "verseStart": 1
+    },
+    {
+      "timeMs": 15631,
+      "verseStart": 2
+    },
+    {
+      "timeMs": 19333,
+      "verseStart": 3
+    },
+    {
+      "timeMs": 27719,
+      "verseStart": 4
+    },
+    {
+      "timeMs": 38386,
+      "verseStart": 5
+    },
+    {
+      "timeMs": 54557,
+      "verseStart": 6
+    },
+    {
+      "timeMs": 61041,
+      "verseStart": 7
+    },
+    {
+      "timeMs": 66765,
+      "verseStart": 8
+    },
+    {
+      "timeMs": 82115,
+      "verseStart": 9
+    },
+    {
+      "timeMs": 91401,
+      "verseStart": 10
+    },
+    {
+      "timeMs": 103769,
+      "verseStart": 11
+    },
+    {
+      "timeMs": 124483,
+      "verseStart": 12
+    },
+    {
+      "timeMs": 138293,
+      "verseStart": 13
+    },
+    {
+      "timeMs": 152882,
+      "verseStart": 14
+    },
+    {
+      "timeMs": 162549,
+      "verseStart": 15
+    },
+    {
+      "timeMs": 175658,
+      "verseStart": 16
+    },
+    {
+      "timeMs": 196632,
+      "verseStart": 17
+    },
+    {
+      "timeMs": 211922,
+      "verseStart": 18
+    },
+    {
+      "timeMs": 218486,
+      "verseStart": 19
+    },
+    {
+      "timeMs": 225031,
+      "verseStart": 20
+    },
+    {
+      "timeMs": 234557,
+      "verseStart": 21
+    },
+    {
+      "timeMs": 242622,
+      "verseStart": 22
+    },
+    {
+      "timeMs": 257532,
+      "verseStart": 23
+    },
+    {
+      "timeMs": 265638,
+      "verseStart": 24
+    },
+    {
+      "timeMs": 277706,
+      "verseStart": 25
+    }
+  ]
+}
