@@ -1,0 +1,67 @@
+{
+  "id": "gh_rbo_hebrews_5",
+  "translationCode": "RBO",
+  "bookId": "hebrews",
+  "chapter": 5,
+  "title": "К Евреям 5 · РБО",
+  "narratorId": "rbo",
+  "audioFileName": "65_05.mp3",
+  "cues": [
+    {
+      "timeMs": 4203,
+      "verseStart": 1
+    },
+    {
+      "timeMs": 15572,
+      "verseStart": 2
+    },
+    {
+      "timeMs": 23598,
+      "verseStart": 3
+    },
+    {
+      "timeMs": 29822,
+      "verseStart": 4
+    },
+    {
+      "timeMs": 40370,
+      "verseStart": 5
+    },
+    {
+      "timeMs": 53220,
+      "verseStart": 6
+    },
+    {
+      "timeMs": 61386,
+      "verseStart": 7
+    },
+    {
+      "timeMs": 74016,
+      "verseStart": 8
+    },
+    {
+      "timeMs": 79520,
+      "verseStart": 9
+    },
+    {
+      "timeMs": 87646,
+      "verseStart": 10
+    },
+    {
+      "timeMs": 93390,
+      "verseStart": 11
+    },
+    {
+      "timeMs": 100816,
+      "verseStart": 12
+    },
+    {
+      "timeMs": 116047,
+      "verseStart": 13
+    },
+    {
+      "timeMs": 124033,
+      "verseStart": 14
+    }
+  ]
+}

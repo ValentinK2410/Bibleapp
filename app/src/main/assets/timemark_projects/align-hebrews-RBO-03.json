@@ -1,0 +1,106 @@
+{
+  "id": "align-hebrews-RBO-03",
+  "translationCode": "RBO",
+  "bookId": "hebrews",
+  "chapter": 3,
+  "title": "К Евреям 3 · РБО",
+  "audioFilePath": "/data/user/0/com.example.bible.sqlite/files/bible_audio/rbo/65_03.mp3",
+  "updatedAt": 1795392000000,
+  "cues": [
+    {
+      "timeMs": 4323,
+      "verseStart": 1,
+      "attachments": []
+    },
+    {
+      "timeMs": 13270,
+      "verseStart": 2,
+      "attachments": []
+    },
+    {
+      "timeMs": 25680,
+      "verseStart": 3,
+      "attachments": []
+    },
+    {
+      "timeMs": 35187,
+      "verseStart": 4,
+      "attachments": []
+    },
+    {
+      "timeMs": 41933,
+      "verseStart": 5,
+      "attachments": []
+    },
+    {
+      "timeMs": 52000,
+      "verseStart": 6,
+      "attachments": []
+    },
+    {
+      "timeMs": 67212,
+      "verseStart": 7,
+      "attachments": []
+    },
+    {
+      "timeMs": 73477,
+      "verseStart": 8,
+      "attachments": []
+    },
+    {
+      "timeMs": 80383,
+      "verseStart": 9,
+      "attachments": []
+    },
+    {
+      "timeMs": 85326,
+      "verseStart": 10,
+      "attachments": []
+    },
+    {
+      "timeMs": 96315,
+      "verseStart": 11,
+      "attachments": []
+    },
+    {
+      "timeMs": 104541,
+      "verseStart": 12,
+      "attachments": []
+    },
+    {
+      "timeMs": 115650,
+      "verseStart": 13,
+      "attachments": []
+    },
+    {
+      "timeMs": 126498,
+      "verseStart": 14,
+      "attachments": []
+    },
+    {
+      "timeMs": 136126,
+      "verseStart": 15,
+      "attachments": []
+    },
+    {
+      "timeMs": 146614,
+      "verseStart": 16,
+      "attachments": []
+    },
+    {
+      "timeMs": 156582,
+      "verseStart": 17,
+      "attachments": []
+    },
+    {
+      "timeMs": 164748,
+      "verseStart": 18,
+      "attachments": []
+    },
+    {
+      "timeMs": 173515,
+      "verseStart": 19,
+      "attachments": []
+    }
+  ]
+}

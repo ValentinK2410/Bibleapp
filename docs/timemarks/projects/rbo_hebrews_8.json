@@ -1,0 +1,63 @@
+{
+  "id": "gh_rbo_hebrews_8",
+  "translationCode": "RBO",
+  "bookId": "hebrews",
+  "chapter": 8,
+  "title": "К Евреям 8 · РБО",
+  "narratorId": "rbo",
+  "audioFileName": "65_08.mp3",
+  "cues": [
+    {
+      "timeMs": 4403,
+      "verseStart": 1
+    },
+    {
+      "timeMs": 14151,
+      "verseStart": 2
+    },
+    {
+      "timeMs": 22477,
+      "verseStart": 3
+    },
+    {
+      "timeMs": 33626,
+      "verseStart": 4
+    },
+    {
+      "timeMs": 43653,
+      "verseStart": 5
+    },
+    {
+      "timeMs": 62327,
+      "verseStart": 6
+    },
+    {
+      "timeMs": 74196,
+      "verseStart": 7
+    },
+    {
+      "timeMs": 79681,
+      "verseStart": 8
+    },
+    {
+      "timeMs": 93131,
+      "verseStart": 9
+    },
+    {
+      "timeMs": 108262,
+      "verseStart": 10
+    },
+    {
+      "timeMs": 125896,
+      "verseStart": 11
+    },
+    {
+      "timeMs": 137645,
+      "verseStart": 12
+    },
+    {
+      "timeMs": 144410,
+      "verseStart": 13
+    }
+  ]
+}

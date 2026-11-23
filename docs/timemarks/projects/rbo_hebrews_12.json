@@ -1,0 +1,127 @@
+{
+  "id": "gh_rbo_hebrews_12",
+  "translationCode": "RBO",
+  "bookId": "hebrews",
+  "chapter": 12,
+  "title": "К Евреям 12 · РБО",
+  "narratorId": "rbo",
+  "audioFileName": "65_12.mp3",
+  "cues": [
+    {
+      "timeMs": 4003,
+      "verseStart": 1
+    },
+    {
+      "timeMs": 14950,
+      "verseStart": 2
+    },
+    {
+      "timeMs": 32923,
+      "verseStart": 3
+    },
+    {
+      "timeMs": 43850,
+      "verseStart": 4
+    },
+    {
+      "timeMs": 50775,
+      "verseStart": 5
+    },
+    {
+      "timeMs": 65705,
+      "verseStart": 6
+    },
+    {
+      "timeMs": 74752,
+      "verseStart": 7
+    },
+    {
+      "timeMs": 86760,
+      "verseStart": 8
+    },
+    {
+      "timeMs": 93985,
+      "verseStart": 9
+    },
+    {
+      "timeMs": 106654,
+      "verseStart": 10
+    },
+    {
+      "timeMs": 120563,
+      "verseStart": 11
+    },
+    {
+      "timeMs": 133632,
+      "verseStart": 12
+    },
+    {
+      "timeMs": 139116,
+      "verseStart": 13
+    },
+    {
+      "timeMs": 145480,
+      "verseStart": 14
+    },
+    {
+      "timeMs": 153006,
+      "verseStart": 15
+    },
+    {
+      "timeMs": 166695,
+      "verseStart": 16
+    },
+    {
+      "timeMs": 176222,
+      "verseStart": 17
+    },
+    {
+      "timeMs": 188310,
+      "verseStart": 18
+    },
+    {
+      "timeMs": 197196,
+      "verseStart": 19
+    },
+    {
+      "timeMs": 205602,
+      "verseStart": 20
+    },
+    {
+      "timeMs": 215088,
+      "verseStart": 21
+    },
+    {
+      "timeMs": 222393,
+      "verseStart": 22
+    },
+    {
+      "timeMs": 230559,
+      "verseStart": 23
+    },
+    {
+      "timeMs": 241727,
+      "verseStart": 24
+    },
+    {
+      "timeMs": 250653,
+      "verseStart": 25
+    },
+    {
+      "timeMs": 268145,
+      "verseStart": 26
+    },
+    {
+      "timeMs": 279593,
+      "verseStart": 27
+    },
+    {
+      "timeMs": 289440,
+      "verseStart": 28
+    },
+    {
+      "timeMs": 303529,
+      "verseStart": 29
+    }
+  ]
+}

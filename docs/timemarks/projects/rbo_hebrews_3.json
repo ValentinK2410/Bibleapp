@@ -1,0 +1,87 @@
+{
+  "id": "gh_rbo_hebrews_3",
+  "translationCode": "RBO",
+  "bookId": "hebrews",
+  "chapter": 3,
+  "title": "К Евреям 3 · РБО",
+  "narratorId": "rbo",
+  "audioFileName": "65_03.mp3",
+  "cues": [
+    {
+      "timeMs": 4323,
+      "verseStart": 1
+    },
+    {
+      "timeMs": 13270,
+      "verseStart": 2
+    },
+    {
+      "timeMs": 25680,
+      "verseStart": 3
+    },
+    {
+      "timeMs": 35187,
+      "verseStart": 4
+    },
+    {
+      "timeMs": 41933,
+      "verseStart": 5
+    },
+    {
+      "timeMs": 52000,
+      "verseStart": 6
+    },
+    {
+      "timeMs": 67212,
+      "verseStart": 7
+    },
+    {
+      "timeMs": 73477,
+      "verseStart": 8
+    },
+    {
+      "timeMs": 80383,
+      "verseStart": 9
+    },
+    {
+      "timeMs": 85326,
+      "verseStart": 10
+    },
+    {
+      "timeMs": 96315,
+      "verseStart": 11
+    },
+    {
+      "timeMs": 104541,
+      "verseStart": 12
+    },
+    {
+      "timeMs": 115650,
+      "verseStart": 13
+    },
+    {
+      "timeMs": 126498,
+      "verseStart": 14
+    },
+    {
+      "timeMs": 136126,
+      "verseStart": 15
+    },
+    {
+      "timeMs": 146614,
+      "verseStart": 16
+    },
+    {
+      "timeMs": 156582,
+      "verseStart": 17
+    },
+    {
+      "timeMs": 164748,
+      "verseStart": 18
+    },
+    {
+      "timeMs": 173515,
+      "verseStart": 19
+    }
+  ]
+}

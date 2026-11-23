@@ -1,0 +1,81 @@
+{
+  "id": "align-hebrews-RBO-01",
+  "translationCode": "RBO",
+  "bookId": "hebrews",
+  "chapter": 1,
+  "title": "К Евреям 1 · РБО",
+  "audioFilePath": "/data/user/0/com.example.bible.sqlite/files/bible_audio/rbo/65_01.mp3",
+  "updatedAt": 1795392000000,
+  "cues": [
+    {
+      "timeMs": 6445,
+      "verseStart": 1,
+      "attachments": []
+    },
+    {
+      "timeMs": 12409,
+      "verseStart": 2,
+      "attachments": []
+    },
+    {
+      "timeMs": 23657,
+      "verseStart": 3,
+      "attachments": []
+    },
+    {
+      "timeMs": 39969,
+      "verseStart": 4,
+      "attachments": []
+    },
+    {
+      "timeMs": 48235,
+      "verseStart": 5,
+      "attachments": []
+    },
+    {
+      "timeMs": 63206,
+      "verseStart": 6,
+      "attachments": []
+    },
+    {
+      "timeMs": 72873,
+      "verseStart": 7,
+      "attachments": []
+    },
+    {
+      "timeMs": 82079,
+      "verseStart": 8,
+      "attachments": []
+    },
+    {
+      "timeMs": 92086,
+      "verseStart": 9,
+      "attachments": []
+    },
+    {
+      "timeMs": 104115,
+      "verseStart": 10,
+      "attachments": []
+    },
+    {
+      "timeMs": 112021,
+      "verseStart": 11,
+      "attachments": []
+    },
+    {
+      "timeMs": 117345,
+      "verseStart": 12,
+      "attachments": []
+    },
+    {
+      "timeMs": 125731,
+      "verseStart": 13,
+      "attachments": []
+    },
+    {
+      "timeMs": 137239,
+      "verseStart": 14,
+      "attachments": []
+    }
+  ]
+}

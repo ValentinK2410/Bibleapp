@@ -1,0 +1,67 @@
+{
+  "id": "gh_rbo_hebrews_1",
+  "translationCode": "RBO",
+  "bookId": "hebrews",
+  "chapter": 1,
+  "title": "К Евреям 1 · РБО",
+  "narratorId": "rbo",
+  "audioFileName": "65_01.mp3",
+  "cues": [
+    {
+      "timeMs": 6445,
+      "verseStart": 1
+    },
+    {
+      "timeMs": 12409,
+      "verseStart": 2
+    },
+    {
+      "timeMs": 23657,
+      "verseStart": 3
+    },
+    {
+      "timeMs": 39969,
+      "verseStart": 4
+    },
+    {
+      "timeMs": 48235,
+      "verseStart": 5
+    },
+    {
+      "timeMs": 63206,
+      "verseStart": 6
+    },
+    {
+      "timeMs": 72873,
+      "verseStart": 7
+    },
+    {
+      "timeMs": 82079,
+      "verseStart": 8
+    },
+    {
+      "timeMs": 92086,
+      "verseStart": 9
+    },
+    {
+      "timeMs": 104115,
+      "verseStart": 10
+    },
+    {
+      "timeMs": 112021,
+      "verseStart": 11
+    },
+    {
+      "timeMs": 117345,
+      "verseStart": 12
+    },
+    {
+      "timeMs": 125731,
+      "verseStart": 13
+    },
+    {
+      "timeMs": 137239,
+      "verseStart": 14
+    }
+  ]
+}

@@ -1,0 +1,123 @@
+{
+  "id": "gh_rbo_hebrews_9",
+  "translationCode": "RBO",
+  "bookId": "hebrews",
+  "chapter": 9,
+  "title": "К Евреям 9 · РБО",
+  "narratorId": "rbo",
+  "audioFileName": "65_09.mp3",
+  "cues": [
+    {
+      "timeMs": 4303,
+      "verseStart": 1
+    },
+    {
+      "timeMs": 11648,
+      "verseStart": 2
+    },
+    {
+      "timeMs": 23696,
+      "verseStart": 3
+    },
+    {
+      "timeMs": 28879,
+      "verseStart": 4
+    },
+    {
+      "timeMs": 46131,
+      "verseStart": 5
+    },
+    {
+      "timeMs": 59339,
+      "verseStart": 6
+    },
+    {
+      "timeMs": 66924,
+      "verseStart": 7
+    },
+    {
+      "timeMs": 80773,
+      "verseStart": 8
+    },
+    {
+      "timeMs": 88799,
+      "verseStart": 9
+    },
+    {
+      "timeMs": 101227,
+      "verseStart": 10
+    },
+    {
+      "timeMs": 112835,
+      "verseStart": 11
+    },
+    {
+      "timeMs": 127064,
+      "verseStart": 12
+    },
+    {
+      "timeMs": 138792,
+      "verseStart": 13
+    },
+    {
+      "timeMs": 147598,
+      "verseStart": 14
+    },
+    {
+      "timeMs": 163608,
+      "verseStart": 15
+    },
+    {
+      "timeMs": 181140,
+      "verseStart": 16
+    },
+    {
+      "timeMs": 187264,
+      "verseStart": 17
+    },
+    {
+      "timeMs": 193508,
+      "verseStart": 18
+    },
+    {
+      "timeMs": 198311,
+      "verseStart": 19
+    },
+    {
+      "timeMs": 213481,
+      "verseStart": 20
+    },
+    {
+      "timeMs": 220126,
+      "verseStart": 21
+    },
+    {
+      "timeMs": 225809,
+      "verseStart": 22
+    },
+    {
+      "timeMs": 234695,
+      "verseStart": 23
+    },
+    {
+      "timeMs": 245582,
+      "verseStart": 24
+    },
+    {
+      "timeMs": 258291,
+      "verseStart": 25
+    },
+    {
+      "timeMs": 266396,
+      "verseStart": 26
+    },
+    {
+      "timeMs": 278944,
+      "verseStart": 27
+    },
+    {
+      "timeMs": 284008,
+      "verseStart": 28
+    }
+  ]
+}

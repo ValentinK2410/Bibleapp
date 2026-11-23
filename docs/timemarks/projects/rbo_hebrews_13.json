@@ -1,0 +1,111 @@
+{
+  "id": "gh_rbo_hebrews_13",
+  "translationCode": "RBO",
+  "bookId": "hebrews",
+  "chapter": 13,
+  "title": "К Евреям 13 · РБО",
+  "narratorId": "rbo",
+  "audioFileName": "65_13.mp3",
+  "cues": [
+    {
+      "timeMs": 4643,
+      "verseStart": 1
+    },
+    {
+      "timeMs": 7425,
+      "verseStart": 2
+    },
+    {
+      "timeMs": 14850,
+      "verseStart": 3
+    },
+    {
+      "timeMs": 25237,
+      "verseStart": 4
+    },
+    {
+      "timeMs": 37184,
+      "verseStart": 5
+    },
+    {
+      "timeMs": 47551,
+      "verseStart": 6
+    },
+    {
+      "timeMs": 57698,
+      "verseStart": 7
+    },
+    {
+      "timeMs": 67364,
+      "verseStart": 8
+    },
+    {
+      "timeMs": 73528,
+      "verseStart": 9
+    },
+    {
+      "timeMs": 89278,
+      "verseStart": 10
+    },
+    {
+      "timeMs": 95062,
+      "verseStart": 11
+    },
+    {
+      "timeMs": 104448,
+      "verseStart": 12
+    },
+    {
+      "timeMs": 111213,
+      "verseStart": 13
+    },
+    {
+      "timeMs": 116556,
+      "verseStart": 14
+    },
+    {
+      "timeMs": 122680,
+      "verseStart": 15
+    },
+    {
+      "timeMs": 131826,
+      "verseStart": 16
+    },
+    {
+      "timeMs": 139431,
+      "verseStart": 17
+    },
+    {
+      "timeMs": 155221,
+      "verseStart": 18
+    },
+    {
+      "timeMs": 165328,
+      "verseStart": 19
+    },
+    {
+      "timeMs": 171072,
+      "verseStart": 20
+    },
+    {
+      "timeMs": 182819,
+      "verseStart": 21
+    },
+    {
+      "timeMs": 198209,
+      "verseStart": 22
+    },
+    {
+      "timeMs": 206575,
+      "verseStart": 23
+    },
+    {
+      "timeMs": 215901,
+      "verseStart": 24
+    },
+    {
+      "timeMs": 224687,
+      "verseStart": 25
+    }
+  ]
+}

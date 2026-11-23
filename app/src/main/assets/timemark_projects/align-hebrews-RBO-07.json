@@ -1,0 +1,151 @@
+{
+  "id": "align-hebrews-RBO-07",
+  "translationCode": "RBO",
+  "bookId": "hebrews",
+  "chapter": 7,
+  "title": "К Евреям 7 · РБО",
+  "audioFilePath": "/data/user/0/com.example.bible.sqlite/files/bible_audio/rbo/65_07.mp3",
+  "updatedAt": 1795392000000,
+  "cues": [
+    {
+      "timeMs": 4363,
+      "verseStart": 1,
+      "attachments": []
+    },
+    {
+      "timeMs": 16051,
+      "verseStart": 2,
+      "attachments": []
+    },
+    {
+      "timeMs": 30761,
+      "verseStart": 3,
+      "attachments": []
+    },
+    {
+      "timeMs": 44070,
+      "verseStart": 4,
+      "attachments": []
+    },
+    {
+      "timeMs": 53016,
+      "verseStart": 5,
+      "attachments": []
+    },
+    {
+      "timeMs": 64264,
+      "verseStart": 6,
+      "attachments": []
+    },
+    {
+      "timeMs": 73710,
+      "verseStart": 7,
+      "attachments": []
+    },
+    {
+      "timeMs": 79454,
+      "verseStart": 8,
+      "attachments": []
+    },
+    {
+      "timeMs": 89060,
+      "verseStart": 9,
+      "attachments": []
+    },
+    {
+      "timeMs": 97106,
+      "verseStart": 10,
+      "attachments": []
+    },
+    {
+      "timeMs": 104431,
+      "verseStart": 11,
+      "attachments": []
+    },
+    {
+      "timeMs": 122423,
+      "verseStart": 12,
+      "attachments": []
+    },
+    {
+      "timeMs": 127846,
+      "verseStart": 13,
+      "attachments": []
+    },
+    {
+      "timeMs": 135532,
+      "verseStart": 14,
+      "attachments": []
+    },
+    {
+      "timeMs": 146519,
+      "verseStart": 15,
+      "attachments": []
+    },
+    {
+      "timeMs": 152443,
+      "verseStart": 16,
+      "attachments": []
+    },
+    {
+      "timeMs": 159268,
+      "verseStart": 17,
+      "attachments": []
+    },
+    {
+      "timeMs": 167433,
+      "verseStart": 18,
+      "attachments": []
+    },
+    {
+      "timeMs": 174858,
+      "verseStart": 19,
+      "attachments": []
+    },
+    {
+      "timeMs": 183784,
+      "verseStart": 20,
+      "attachments": []
+    },
+    {
+      "timeMs": 189968,
+      "verseStart": 21,
+      "attachments": []
+    },
+    {
+      "timeMs": 200596,
+      "verseStart": 22,
+      "attachments": []
+    },
+    {
+      "timeMs": 207680,
+      "verseStart": 23,
+      "attachments": []
+    },
+    {
+      "timeMs": 213344,
+      "verseStart": 24,
+      "attachments": []
+    },
+    {
+      "timeMs": 218828,
+      "verseStart": 25,
+      "attachments": []
+    },
+    {
+      "timeMs": 228354,
+      "verseStart": 26,
+      "attachments": []
+    },
+    {
+      "timeMs": 238561,
+      "verseStart": 27,
+      "attachments": []
+    },
+    {
+      "timeMs": 253411,
+      "verseStart": 28,
+      "attachments": []
+    }
+  ]
+}

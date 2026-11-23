@@ -1,0 +1,123 @@
+{
+  "id": "gh_rbo_hebrews_7",
+  "translationCode": "RBO",
+  "bookId": "hebrews",
+  "chapter": 7,
+  "title": "К Евреям 7 · РБО",
+  "narratorId": "rbo",
+  "audioFileName": "65_07.mp3",
+  "cues": [
+    {
+      "timeMs": 4363,
+      "verseStart": 1
+    },
+    {
+      "timeMs": 16051,
+      "verseStart": 2
+    },
+    {
+      "timeMs": 30761,
+      "verseStart": 3
+    },
+    {
+      "timeMs": 44070,
+      "verseStart": 4
+    },
+    {
+      "timeMs": 53016,
+      "verseStart": 5
+    },
+    {
+      "timeMs": 64264,
+      "verseStart": 6
+    },
+    {
+      "timeMs": 73710,
+      "verseStart": 7
+    },
+    {
+      "timeMs": 79454,
+      "verseStart": 8
+    },
+    {
+      "timeMs": 89060,
+      "verseStart": 9
+    },
+    {
+      "timeMs": 97106,
+      "verseStart": 10
+    },
+    {
+      "timeMs": 104431,
+      "verseStart": 11
+    },
+    {
+      "timeMs": 122423,
+      "verseStart": 12
+    },
+    {
+      "timeMs": 127846,
+      "verseStart": 13
+    },
+    {
+      "timeMs": 135532,
+      "verseStart": 14
+    },
+    {
+      "timeMs": 146519,
+      "verseStart": 15
+    },
+    {
+      "timeMs": 152443,
+      "verseStart": 16
+    },
+    {
+      "timeMs": 159268,
+      "verseStart": 17
+    },
+    {
+      "timeMs": 167433,
+      "verseStart": 18
+    },
+    {
+      "timeMs": 174858,
+      "verseStart": 19
+    },
+    {
+      "timeMs": 183784,
+      "verseStart": 20
+    },
+    {
+      "timeMs": 189968,
+      "verseStart": 21
+    },
+    {
+      "timeMs": 200596,
+      "verseStart": 22
+    },
+    {
+      "timeMs": 207680,
+      "verseStart": 23
+    },
+    {
+      "timeMs": 213344,
+      "verseStart": 24
+    },
+    {
+      "timeMs": 218828,
+      "verseStart": 25
+    },
+    {
+      "timeMs": 228354,
+      "verseStart": 26
+    },
+    {
+      "timeMs": 238561,
+      "verseStart": 27
+    },
+    {
+      "timeMs": 253411,
+      "verseStart": 28
+    }
+  ]
+}
