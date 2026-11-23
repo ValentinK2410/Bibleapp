@@ -1,0 +1,111 @@
+{
+  "id": "align-1_thessalonians-RBO-02",
+  "translationCode": "RBO",
+  "bookId": "1_thessalonians",
+  "chapter": 2,
+  "title": "1-е Фессалоникийцам 2 · РБО",
+  "audioFilePath": "/data/user/0/com.example.bible.sqlite/files/bible_audio/rbo/59_02.mp3",
+  "updatedAt": 1795392000000,
+  "cues": [
+    {
+      "timeMs": 4403,
+      "verseStart": 1,
+      "attachments": []
+    },
+    {
+      "timeMs": 10026,
+      "verseStart": 2,
+      "attachments": []
+    },
+    {
+      "timeMs": 25697,
+      "verseStart": 3,
+      "attachments": []
+    },
+    {
+      "timeMs": 30620,
+      "verseStart": 4,
+      "attachments": []
+    },
+    {
+      "timeMs": 43448,
+      "verseStart": 5,
+      "attachments": []
+    },
+    {
+      "timeMs": 52494,
+      "verseStart": 6,
+      "attachments": []
+    },
+    {
+      "timeMs": 58297,
+      "verseStart": 7,
+      "attachments": []
+    },
+    {
+      "timeMs": 71586,
+      "verseStart": 8,
+      "attachments": []
+    },
+    {
+      "timeMs": 84134,
+      "verseStart": 9,
+      "attachments": []
+    },
+    {
+      "timeMs": 96922,
+      "verseStart": 10,
+      "attachments": []
+    },
+    {
+      "timeMs": 106689,
+      "verseStart": 11,
+      "attachments": []
+    },
+    {
+      "timeMs": 113533,
+      "verseStart": 12,
+      "attachments": []
+    },
+    {
+      "timeMs": 126381,
+      "verseStart": 13,
+      "attachments": []
+    },
+    {
+      "timeMs": 144593,
+      "verseStart": 14,
+      "attachments": []
+    },
+    {
+      "timeMs": 156080,
+      "verseStart": 15,
+      "attachments": []
+    },
+    {
+      "timeMs": 169949,
+      "verseStart": 16,
+      "attachments": []
+    },
+    {
+      "timeMs": 184098,
+      "verseStart": 17,
+      "attachments": []
+    },
+    {
+      "timeMs": 201229,
+      "verseStart": 18,
+      "attachments": []
+    },
+    {
+      "timeMs": 209775,
+      "verseStart": 19,
+      "attachments": []
+    },
+    {
+      "timeMs": 221262,
+      "verseStart": 20,
+      "attachments": []
+    }
+  ]
+}

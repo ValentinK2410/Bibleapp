@@ -4324,6 +4324,56 @@
       "file": "projects/rbo_1_corinthians_9.json"
     },
     {
+      "id": "gh_rbo_1_thessalonians_1",
+      "translationCode": "RBO",
+      "bookId": "1_thessalonians",
+      "chapter": 1,
+      "title": "1-е Фессалоникийцам 1 · РБО",
+      "cueCount": 10,
+      "narratorId": "rbo",
+      "file": "projects/rbo_1_thessalonians_1.json"
+    },
+    {
+      "id": "gh_rbo_1_thessalonians_2",
+      "translationCode": "RBO",
+      "bookId": "1_thessalonians",
+      "chapter": 2,
+      "title": "1-е Фессалоникийцам 2 · РБО",
+      "cueCount": 20,
+      "narratorId": "rbo",
+      "file": "projects/rbo_1_thessalonians_2.json"
+    },
+    {
+      "id": "gh_rbo_1_thessalonians_3",
+      "translationCode": "RBO",
+      "bookId": "1_thessalonians",
+      "chapter": 3,
+      "title": "1-е Фессалоникийцам 3 · РБО",
+      "cueCount": 13,
+      "narratorId": "rbo",
+      "file": "projects/rbo_1_thessalonians_3.json"
+    },
+    {
+      "id": "gh_rbo_1_thessalonians_4",
+      "translationCode": "RBO",
+      "bookId": "1_thessalonians",
+      "chapter": 4,
+      "title": "1-е Фессалоникийцам 4 · РБО",
+      "cueCount": 18,
+      "narratorId": "rbo",
+      "file": "projects/rbo_1_thessalonians_4.json"
+    },
+    {
+      "id": "gh_rbo_1_thessalonians_5",
+      "translationCode": "RBO",
+      "bookId": "1_thessalonians",
+      "chapter": 5,
+      "title": "1-е Фессалоникийцам 5 · РБО",
+      "cueCount": 28,
+      "narratorId": "rbo",
+      "file": "projects/rbo_1_thessalonians_5.json"
+    },
+    {
       "id": "gh_rbo_2_corinthians_1",
       "translationCode": "RBO",
       "bookId": "2_corinthians",

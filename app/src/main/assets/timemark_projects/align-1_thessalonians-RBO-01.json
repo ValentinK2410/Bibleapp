@@ -1,0 +1,61 @@
+{
+  "id": "align-1_thessalonians-RBO-01",
+  "translationCode": "RBO",
+  "bookId": "1_thessalonians",
+  "chapter": 1,
+  "title": "1-е Фессалоникийцам 1 · РБО",
+  "audioFilePath": "/data/user/0/com.example.bible.sqlite/files/bible_audio/rbo/59_01.mp3",
+  "updatedAt": 1795392000000,
+  "cues": [
+    {
+      "timeMs": 8887,
+      "verseStart": 1,
+      "attachments": []
+    },
+    {
+      "timeMs": 21076,
+      "verseStart": 2,
+      "attachments": []
+    },
+    {
+      "timeMs": 26720,
+      "verseStart": 3,
+      "attachments": []
+    },
+    {
+      "timeMs": 39129,
+      "verseStart": 4,
+      "attachments": []
+    },
+    {
+      "timeMs": 43392,
+      "verseStart": 5,
+      "attachments": []
+    },
+    {
+      "timeMs": 62967,
+      "verseStart": 6,
+      "attachments": []
+    },
+    {
+      "timeMs": 73135,
+      "verseStart": 7,
+      "attachments": []
+    },
+    {
+      "timeMs": 78879,
+      "verseStart": 8,
+      "attachments": []
+    },
+    {
+      "timeMs": 89547,
+      "verseStart": 9,
+      "attachments": []
+    },
+    {
+      "timeMs": 101556,
+      "verseStart": 10,
+      "attachments": []
+    }
+  ]
+}
