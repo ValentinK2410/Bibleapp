@@ -1,0 +1,76 @@
+{
+  "id": "align-1_thessalonians-WEB-03",
+  "translationCode": "WEB",
+  "bookId": "1_thessalonians",
+  "chapter": 3,
+  "title": "1-е Фессалоникийцам 3 · WEB (англ.)",
+  "audioFilePath": "/data/user/0/com.example.bible.sqlite/files/bible_audio/web/52_03.mp3",
+  "updatedAt": 1794873600000,
+  "cues": [
+    {
+      "timeMs": 2762,
+      "verseStart": 1,
+      "attachments": []
+    },
+    {
+      "timeMs": 8466,
+      "verseStart": 2,
+      "attachments": []
+    },
+    {
+      "timeMs": 17913,
+      "verseStart": 3,
+      "attachments": []
+    },
+    {
+      "timeMs": 25499,
+      "verseStart": 4,
+      "attachments": []
+    },
+    {
+      "timeMs": 34525,
+      "verseStart": 5,
+      "attachments": []
+    },
+    {
+      "timeMs": 45173,
+      "verseStart": 6,
+      "attachments": []
+    },
+    {
+      "timeMs": 57882,
+      "verseStart": 7,
+      "attachments": []
+    },
+    {
+      "timeMs": 64207,
+      "verseStart": 8,
+      "attachments": []
+    },
+    {
+      "timeMs": 69711,
+      "verseStart": 9,
+      "attachments": []
+    },
+    {
+      "timeMs": 76996,
+      "verseStart": 10,
+      "attachments": []
+    },
+    {
+      "timeMs": 86383,
+      "verseStart": 11,
+      "attachments": []
+    },
+    {
+      "timeMs": 93408,
+      "verseStart": 12,
+      "attachments": []
+    },
+    {
+      "timeMs": 101474,
+      "verseStart": 13,
+      "attachments": []
+    }
+  ]
+}

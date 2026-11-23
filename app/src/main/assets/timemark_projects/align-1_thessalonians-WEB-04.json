@@ -1,0 +1,101 @@
+{
+  "id": "align-1_thessalonians-WEB-04",
+  "translationCode": "WEB",
+  "bookId": "1_thessalonians",
+  "chapter": 4,
+  "title": "1-е Фессалоникийцам 4 · WEB (англ.)",
+  "audioFilePath": "/data/user/0/com.example.bible.sqlite/files/bible_audio/web/52_04.mp3",
+  "updatedAt": 1794873600000,
+  "cues": [
+    {
+      "timeMs": 3182,
+      "verseStart": 1,
+      "attachments": []
+    },
+    {
+      "timeMs": 16953,
+      "verseStart": 2,
+      "attachments": []
+    },
+    {
+      "timeMs": 21076,
+      "verseStart": 3,
+      "attachments": []
+    },
+    {
+      "timeMs": 28221,
+      "verseStart": 4,
+      "attachments": []
+    },
+    {
+      "timeMs": 34026,
+      "verseStart": 5,
+      "attachments": []
+    },
+    {
+      "timeMs": 39049,
+      "verseStart": 6,
+      "attachments": []
+    },
+    {
+      "timeMs": 50218,
+      "verseStart": 7,
+      "attachments": []
+    },
+    {
+      "timeMs": 55622,
+      "verseStart": 8,
+      "attachments": []
+    },
+    {
+      "timeMs": 64368,
+      "verseStart": 9,
+      "attachments": []
+    },
+    {
+      "timeMs": 72574,
+      "verseStart": 10,
+      "attachments": []
+    },
+    {
+      "timeMs": 82802,
+      "verseStart": 11,
+      "attachments": []
+    },
+    {
+      "timeMs": 90268,
+      "verseStart": 12,
+      "attachments": []
+    },
+    {
+      "timeMs": 98734,
+      "verseStart": 13,
+      "attachments": []
+    },
+    {
+      "timeMs": 107420,
+      "verseStart": 14,
+      "attachments": []
+    },
+    {
+      "timeMs": 115567,
+      "verseStart": 15,
+      "attachments": []
+    },
+    {
+      "timeMs": 125394,
+      "verseStart": 16,
+      "attachments": []
+    },
+    {
+      "timeMs": 136842,
+      "verseStart": 17,
+      "attachments": []
+    },
+    {
+      "timeMs": 147390,
+      "verseStart": 18,
+      "attachments": []
+    }
+  ]
+}

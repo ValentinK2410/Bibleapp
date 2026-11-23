@@ -1,0 +1,83 @@
+{
+  "id": "gh_web_1_thessalonians_4",
+  "translationCode": "WEB",
+  "bookId": "1_thessalonians",
+  "chapter": 4,
+  "title": "1-е Фессалоникийцам 4 · WEB (англ.)",
+  "narratorId": "web",
+  "audioFileName": "52_04.mp3",
+  "cues": [
+    {
+      "timeMs": 3182,
+      "verseStart": 1
+    },
+    {
+      "timeMs": 16953,
+      "verseStart": 2
+    },
+    {
+      "timeMs": 21076,
+      "verseStart": 3
+    },
+    {
+      "timeMs": 28221,
+      "verseStart": 4
+    },
+    {
+      "timeMs": 34026,
+      "verseStart": 5
+    },
+    {
+      "timeMs": 39049,
+      "verseStart": 6
+    },
+    {
+      "timeMs": 50218,
+      "verseStart": 7
+    },
+    {
+      "timeMs": 55622,
+      "verseStart": 8
+    },
+    {
+      "timeMs": 64368,
+      "verseStart": 9
+    },
+    {
+      "timeMs": 72574,
+      "verseStart": 10
+    },
+    {
+      "timeMs": 82802,
+      "verseStart": 11
+    },
+    {
+      "timeMs": 90268,
+      "verseStart": 12
+    },
+    {
+      "timeMs": 98734,
+      "verseStart": 13
+    },
+    {
+      "timeMs": 107420,
+      "verseStart": 14
+    },
+    {
+      "timeMs": 115567,
+      "verseStart": 15
+    },
+    {
+      "timeMs": 125394,
+      "verseStart": 16
+    },
+    {
+      "timeMs": 136842,
+      "verseStart": 17
+    },
+    {
+      "timeMs": 147390,
+      "verseStart": 18
+    }
+  ]
+}
