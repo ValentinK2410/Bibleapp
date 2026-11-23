@@ -1,0 +1,75 @@
+{
+  "id": "gh_bti_2_corinthians_7",
+  "translationCode": "BTI",
+  "bookId": "2_corinthians",
+  "chapter": 7,
+  "title": "2-е Коринфянам 7 · Кулаковых",
+  "narratorId": "bti",
+  "audioFileName": "54_07.mp3",
+  "cues": [
+    {
+      "timeMs": 4863,
+      "verseStart": 1
+    },
+    {
+      "timeMs": 22756,
+      "verseStart": 2
+    },
+    {
+      "timeMs": 35905,
+      "verseStart": 3
+    },
+    {
+      "timeMs": 48214,
+      "verseStart": 4
+    },
+    {
+      "timeMs": 63945,
+      "verseStart": 5
+    },
+    {
+      "timeMs": 78495,
+      "verseStart": 6
+    },
+    {
+      "timeMs": 84880,
+      "verseStart": 7
+    },
+    {
+      "timeMs": 107275,
+      "verseStart": 8
+    },
+    {
+      "timeMs": 126008,
+      "verseStart": 9
+    },
+    {
+      "timeMs": 147363,
+      "verseStart": 10
+    },
+    {
+      "timeMs": 160272,
+      "verseStart": 11
+    },
+    {
+      "timeMs": 190193,
+      "verseStart": 12
+    },
+    {
+      "timeMs": 208726,
+      "verseStart": 13
+    },
+    {
+      "timeMs": 223857,
+      "verseStart": 14
+    },
+    {
+      "timeMs": 241069,
+      "verseStart": 15
+    },
+    {
+      "timeMs": 254358,
+      "verseStart": 16
+    }
+  ]
+}

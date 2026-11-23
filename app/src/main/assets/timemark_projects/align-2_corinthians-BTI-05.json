@@ -1,0 +1,116 @@
+{
+  "id": "align-2_corinthians-BTI-05",
+  "translationCode": "BTI",
+  "bookId": "2_corinthians",
+  "chapter": 5,
+  "title": "2-е Коринфянам 5 · Кулаковых",
+  "audioFilePath": "/data/user/0/com.example.bible.sqlite/files/bible_audio/bti/54_05.mp3",
+  "updatedAt": 1795392000000,
+  "cues": [
+    {
+      "timeMs": 4143,
+      "verseStart": 1,
+      "attachments": []
+    },
+    {
+      "timeMs": 19633,
+      "verseStart": 2,
+      "attachments": []
+    },
+    {
+      "timeMs": 30319,
+      "verseStart": 3,
+      "attachments": []
+    },
+    {
+      "timeMs": 37624,
+      "verseStart": 4,
+      "attachments": []
+    },
+    {
+      "timeMs": 62080,
+      "verseStart": 5,
+      "attachments": []
+    },
+    {
+      "timeMs": 74087,
+      "verseStart": 6,
+      "attachments": []
+    },
+    {
+      "timeMs": 85194,
+      "verseStart": 7,
+      "attachments": []
+    },
+    {
+      "timeMs": 89177,
+      "verseStart": 8,
+      "attachments": []
+    },
+    {
+      "timeMs": 100324,
+      "verseStart": 9,
+      "attachments": []
+    },
+    {
+      "timeMs": 112992,
+      "verseStart": 10,
+      "attachments": []
+    },
+    {
+      "timeMs": 132925,
+      "verseStart": 11,
+      "attachments": []
+    },
+    {
+      "timeMs": 148375,
+      "verseStart": 12,
+      "attachments": []
+    },
+    {
+      "timeMs": 169328,
+      "verseStart": 13,
+      "attachments": []
+    },
+    {
+      "timeMs": 181476,
+      "verseStart": 14,
+      "attachments": []
+    },
+    {
+      "timeMs": 195025,
+      "verseStart": 15,
+      "attachments": []
+    },
+    {
+      "timeMs": 206052,
+      "verseStart": 16,
+      "attachments": []
+    },
+    {
+      "timeMs": 221241,
+      "verseStart": 17,
+      "attachments": []
+    },
+    {
+      "timeMs": 232769,
+      "verseStart": 18,
+      "attachments": []
+    },
+    {
+      "timeMs": 242435,
+      "verseStart": 19,
+      "attachments": []
+    },
+    {
+      "timeMs": 259426,
+      "verseStart": 20,
+      "attachments": []
+    },
+    {
+      "timeMs": 275736,
+      "verseStart": 21,
+      "attachments": []
+    }
+  ]
+}

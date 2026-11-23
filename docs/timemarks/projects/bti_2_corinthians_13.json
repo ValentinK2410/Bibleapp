@@ -1,0 +1,63 @@
+{
+  "id": "gh_bti_2_corinthians_13",
+  "translationCode": "BTI",
+  "bookId": "2_corinthians",
+  "chapter": 13,
+  "title": "2-е Коринфянам 13 · Кулаковых",
+  "narratorId": "bti",
+  "audioFileName": "54_13.mp3",
+  "cues": [
+    {
+      "timeMs": 5044,
+      "verseStart": 1
+    },
+    {
+      "timeMs": 22836,
+      "verseStart": 2
+    },
+    {
+      "timeMs": 43090,
+      "verseStart": 3
+    },
+    {
+      "timeMs": 61303,
+      "verseStart": 4
+    },
+    {
+      "timeMs": 81978,
+      "verseStart": 5
+    },
+    {
+      "timeMs": 98609,
+      "verseStart": 6
+    },
+    {
+      "timeMs": 107075,
+      "verseStart": 7
+    },
+    {
+      "timeMs": 128010,
+      "verseStart": 8
+    },
+    {
+      "timeMs": 136396,
+      "verseStart": 9
+    },
+    {
+      "timeMs": 147424,
+      "verseStart": 10
+    },
+    {
+      "timeMs": 168378,
+      "verseStart": 11
+    },
+    {
+      "timeMs": 187752,
+      "verseStart": 12
+    },
+    {
+      "timeMs": 197119,
+      "verseStart": 13
+    }
+  ]
+}

@@ -1,0 +1,83 @@
+{
+  "id": "gh_bti_2_corinthians_10",
+  "translationCode": "BTI",
+  "bookId": "2_corinthians",
+  "chapter": 10,
+  "title": "2-е Коринфянам 10 · Кулаковых",
+  "narratorId": "bti",
+  "audioFileName": "54_10.mp3",
+  "cues": [
+    {
+      "timeMs": 4623,
+      "verseStart": 1
+    },
+    {
+      "timeMs": 18653,
+      "verseStart": 2
+    },
+    {
+      "timeMs": 35666,
+      "verseStart": 3
+    },
+    {
+      "timeMs": 43792,
+      "verseStart": 4
+    },
+    {
+      "timeMs": 60684,
+      "verseStart": 5
+    },
+    {
+      "timeMs": 75815,
+      "verseStart": 6
+    },
+    {
+      "timeMs": 88644,
+      "verseStart": 7
+    },
+    {
+      "timeMs": 103775,
+      "verseStart": 8
+    },
+    {
+      "timeMs": 118765,
+      "verseStart": 9
+    },
+    {
+      "timeMs": 125470,
+      "verseStart": 10
+    },
+    {
+      "timeMs": 138880,
+      "verseStart": 11
+    },
+    {
+      "timeMs": 151289,
+      "verseStart": 12
+    },
+    {
+      "timeMs": 171523,
+      "verseStart": 13
+    },
+    {
+      "timeMs": 183812,
+      "verseStart": 14
+    },
+    {
+      "timeMs": 196001,
+      "verseStart": 15
+    },
+    {
+      "timeMs": 213053,
+      "verseStart": 16
+    },
+    {
+      "timeMs": 226363,
+      "verseStart": 17
+    },
+    {
+      "timeMs": 233208,
+      "verseStart": 18
+    }
+  ]
+}

@@ -1,0 +1,83 @@
+{
+  "id": "gh_bti_2_corinthians_6",
+  "translationCode": "BTI",
+  "bookId": "2_corinthians",
+  "chapter": 6,
+  "title": "2-е Коринфянам 6 · Кулаковых",
+  "narratorId": "bti",
+  "audioFileName": "54_06.mp3",
+  "cues": [
+    {
+      "timeMs": 3723,
+      "verseStart": 1
+    },
+    {
+      "timeMs": 16452,
+      "verseStart": 2
+    },
+    {
+      "timeMs": 39048,
+      "verseStart": 3
+    },
+    {
+      "timeMs": 49115,
+      "verseStart": 4
+    },
+    {
+      "timeMs": 63826,
+      "verseStart": 5
+    },
+    {
+      "timeMs": 77395,
+      "verseStart": 6
+    },
+    {
+      "timeMs": 93707,
+      "verseStart": 7
+    },
+    {
+      "timeMs": 108077,
+      "verseStart": 8
+    },
+    {
+      "timeMs": 121467,
+      "verseStart": 9
+    },
+    {
+      "timeMs": 138419,
+      "verseStart": 10
+    },
+    {
+      "timeMs": 152909,
+      "verseStart": 11
+    },
+    {
+      "timeMs": 159634,
+      "verseStart": 12
+    },
+    {
+      "timeMs": 168240,
+      "verseStart": 13
+    },
+    {
+      "timeMs": 179729,
+      "verseStart": 14
+    },
+    {
+      "timeMs": 198222,
+      "verseStart": 15
+    },
+    {
+      "timeMs": 211451,
+      "verseStart": 16
+    },
+    {
+      "timeMs": 241673,
+      "verseStart": 17
+    },
+    {
+      "timeMs": 257484,
+      "verseStart": 18
+    }
+  ]
+}

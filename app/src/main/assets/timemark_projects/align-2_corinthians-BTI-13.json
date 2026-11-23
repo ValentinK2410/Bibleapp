@@ -1,0 +1,76 @@
+{
+  "id": "align-2_corinthians-BTI-13",
+  "translationCode": "BTI",
+  "bookId": "2_corinthians",
+  "chapter": 13,
+  "title": "2-е Коринфянам 13 · Кулаковых",
+  "audioFilePath": "/data/user/0/com.example.bible.sqlite/files/bible_audio/bti/54_13.mp3",
+  "updatedAt": 1795392000000,
+  "cues": [
+    {
+      "timeMs": 5044,
+      "verseStart": 1,
+      "attachments": []
+    },
+    {
+      "timeMs": 22836,
+      "verseStart": 2,
+      "attachments": []
+    },
+    {
+      "timeMs": 43090,
+      "verseStart": 3,
+      "attachments": []
+    },
+    {
+      "timeMs": 61303,
+      "verseStart": 4,
+      "attachments": []
+    },
+    {
+      "timeMs": 81978,
+      "verseStart": 5,
+      "attachments": []
+    },
+    {
+      "timeMs": 98609,
+      "verseStart": 6,
+      "attachments": []
+    },
+    {
+      "timeMs": 107075,
+      "verseStart": 7,
+      "attachments": []
+    },
+    {
+      "timeMs": 128010,
+      "verseStart": 8,
+      "attachments": []
+    },
+    {
+      "timeMs": 136396,
+      "verseStart": 9,
+      "attachments": []
+    },
+    {
+      "timeMs": 147424,
+      "verseStart": 10,
+      "attachments": []
+    },
+    {
+      "timeMs": 168378,
+      "verseStart": 11,
+      "attachments": []
+    },
+    {
+      "timeMs": 187752,
+      "verseStart": 12,
+      "attachments": []
+    },
+    {
+      "timeMs": 197119,
+      "verseStart": 13,
+      "attachments": []
+    }
+  ]
+}

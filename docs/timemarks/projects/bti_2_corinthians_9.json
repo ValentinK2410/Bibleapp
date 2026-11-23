@@ -1,0 +1,71 @@
+{
+  "id": "gh_bti_2_corinthians_9",
+  "translationCode": "BTI",
+  "bookId": "2_corinthians",
+  "chapter": 9,
+  "title": "2-е Коринфянам 9 · Кулаковых",
+  "narratorId": "bti",
+  "audioFileName": "54_09.mp3",
+  "cues": [
+    {
+      "timeMs": 3883,
+      "verseStart": 1
+    },
+    {
+      "timeMs": 10227,
+      "verseStart": 2
+    },
+    {
+      "timeMs": 30381,
+      "verseStart": 3
+    },
+    {
+      "timeMs": 44651,
+      "verseStart": 4
+    },
+    {
+      "timeMs": 58320,
+      "verseStart": 5
+    },
+    {
+      "timeMs": 79555,
+      "verseStart": 6
+    },
+    {
+      "timeMs": 91984,
+      "verseStart": 7
+    },
+    {
+      "timeMs": 105613,
+      "verseStart": 8
+    },
+    {
+      "timeMs": 120163,
+      "verseStart": 9
+    },
+    {
+      "timeMs": 132812,
+      "verseStart": 10
+    },
+    {
+      "timeMs": 145481,
+      "verseStart": 11
+    },
+    {
+      "timeMs": 161752,
+      "verseStart": 12
+    },
+    {
+      "timeMs": 173080,
+      "verseStart": 13
+    },
+    {
+      "timeMs": 191953,
+      "verseStart": 14
+    },
+    {
+      "timeMs": 203060,
+      "verseStart": 15
+    }
+  ]
+}
