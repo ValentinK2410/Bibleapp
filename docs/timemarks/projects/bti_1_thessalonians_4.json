@@ -1,0 +1,83 @@
+{
+  "id": "gh_bti_1_thessalonians_4",
+  "translationCode": "BTI",
+  "bookId": "1_thessalonians",
+  "chapter": 4,
+  "title": "1-е Фессалоникийцам 4 · Кулаковых",
+  "narratorId": "bti",
+  "audioFileName": "59_04.mp3",
+  "cues": [
+    {
+      "timeMs": 4804,
+      "verseStart": 1
+    },
+    {
+      "timeMs": 24098,
+      "verseStart": 2
+    },
+    {
+      "timeMs": 30983,
+      "verseStart": 3
+    },
+    {
+      "timeMs": 39309,
+      "verseStart": 4
+    },
+    {
+      "timeMs": 48735,
+      "verseStart": 5
+    },
+    {
+      "timeMs": 55560,
+      "verseStart": 6
+    },
+    {
+      "timeMs": 69631,
+      "verseStart": 7
+    },
+    {
+      "timeMs": 79518,
+      "verseStart": 8
+    },
+    {
+      "timeMs": 92267,
+      "verseStart": 9
+    },
+    {
+      "timeMs": 102114,
+      "verseStart": 10
+    },
+    {
+      "timeMs": 114463,
+      "verseStart": 11
+    },
+    {
+      "timeMs": 128714,
+      "verseStart": 12
+    },
+    {
+      "timeMs": 138080,
+      "verseStart": 13
+    },
+    {
+      "timeMs": 150589,
+      "verseStart": 14
+    },
+    {
+      "timeMs": 167542,
+      "verseStart": 15
+    },
+    {
+      "timeMs": 181712,
+      "verseStart": 16
+    },
+    {
+      "timeMs": 198264,
+      "verseStart": 17
+    },
+    {
+      "timeMs": 212915,
+      "verseStart": 18
+    }
+  ]
+}

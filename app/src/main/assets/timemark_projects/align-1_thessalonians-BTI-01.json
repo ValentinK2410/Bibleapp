@@ -1,0 +1,61 @@
+{
+  "id": "align-1_thessalonians-BTI-01",
+  "translationCode": "BTI",
+  "bookId": "1_thessalonians",
+  "chapter": 1,
+  "title": "1-е Фессалоникийцам 1 · Кулаковых",
+  "audioFilePath": "/data/user/0/com.example.bible.sqlite/files/bible_audio/bti/59_01.mp3",
+  "updatedAt": 1795392000000,
+  "cues": [
+    {
+      "timeMs": 9488,
+      "verseStart": 1,
+      "attachments": []
+    },
+    {
+      "timeMs": 26401,
+      "verseStart": 2,
+      "attachments": []
+    },
+    {
+      "timeMs": 35709,
+      "verseStart": 3,
+      "attachments": []
+    },
+    {
+      "timeMs": 54464,
+      "verseStart": 4,
+      "attachments": []
+    },
+    {
+      "timeMs": 60609,
+      "verseStart": 5,
+      "attachments": []
+    },
+    {
+      "timeMs": 85129,
+      "verseStart": 6,
+      "attachments": []
+    },
+    {
+      "timeMs": 99160,
+      "verseStart": 7,
+      "attachments": []
+    },
+    {
+      "timeMs": 107187,
+      "verseStart": 8,
+      "attachments": []
+    },
+    {
+      "timeMs": 125602,
+      "verseStart": 9,
+      "attachments": []
+    },
+    {
+      "timeMs": 139253,
+      "verseStart": 10,
+      "attachments": []
+    }
+  ]
+}

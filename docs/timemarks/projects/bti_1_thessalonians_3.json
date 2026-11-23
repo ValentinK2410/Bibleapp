@@ -1,0 +1,63 @@
+{
+  "id": "gh_bti_1_thessalonians_3",
+  "translationCode": "BTI",
+  "bookId": "1_thessalonians",
+  "chapter": 3,
+  "title": "1-е Фессалоникийцам 3 · Кулаковых",
+  "narratorId": "bti",
+  "audioFileName": "59_03.mp3",
+  "cues": [
+    {
+      "timeMs": 2902,
+      "verseStart": 1
+    },
+    {
+      "timeMs": 13729,
+      "verseStart": 2
+    },
+    {
+      "timeMs": 29921,
+      "verseStart": 3
+    },
+    {
+      "timeMs": 39687,
+      "verseStart": 4
+    },
+    {
+      "timeMs": 54678,
+      "verseStart": 5
+    },
+    {
+      "timeMs": 72990,
+      "verseStart": 6
+    },
+    {
+      "timeMs": 94505,
+      "verseStart": 7
+    },
+    {
+      "timeMs": 105973,
+      "verseStart": 8
+    },
+    {
+      "timeMs": 111877,
+      "verseStart": 9
+    },
+    {
+      "timeMs": 124646,
+      "verseStart": 10
+    },
+    {
+      "timeMs": 140236,
+      "verseStart": 11
+    },
+    {
+      "timeMs": 152925,
+      "verseStart": 12
+    },
+    {
+      "timeMs": 171578,
+      "verseStart": 13
+    }
+  ]
+}

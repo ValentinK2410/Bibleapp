@@ -1,0 +1,111 @@
+{
+  "id": "align-1_thessalonians-BTI-02",
+  "translationCode": "BTI",
+  "bookId": "1_thessalonians",
+  "chapter": 2,
+  "title": "1-е Фессалоникийцам 2 · Кулаковых",
+  "audioFilePath": "/data/user/0/com.example.bible.sqlite/files/bible_audio/bti/59_02.mp3",
+  "updatedAt": 1795392000000,
+  "cues": [
+    {
+      "timeMs": 4483,
+      "verseStart": 1,
+      "attachments": []
+    },
+    {
+      "timeMs": 11668,
+      "verseStart": 2,
+      "attachments": []
+    },
+    {
+      "timeMs": 29460,
+      "verseStart": 3,
+      "attachments": []
+    },
+    {
+      "timeMs": 40347,
+      "verseStart": 4,
+      "attachments": []
+    },
+    {
+      "timeMs": 57259,
+      "verseStart": 5,
+      "attachments": []
+    },
+    {
+      "timeMs": 67105,
+      "verseStart": 6,
+      "attachments": []
+    },
+    {
+      "timeMs": 72609,
+      "verseStart": 7,
+      "attachments": []
+    },
+    {
+      "timeMs": 89420,
+      "verseStart": 8,
+      "attachments": []
+    },
+    {
+      "timeMs": 103570,
+      "verseStart": 9,
+      "attachments": []
+    },
+    {
+      "timeMs": 120461,
+      "verseStart": 10,
+      "attachments": []
+    },
+    {
+      "timeMs": 133470,
+      "verseStart": 11,
+      "attachments": []
+    },
+    {
+      "timeMs": 140975,
+      "verseStart": 12,
+      "attachments": []
+    },
+    {
+      "timeMs": 159948,
+      "verseStart": 13,
+      "attachments": []
+    },
+    {
+      "timeMs": 181563,
+      "verseStart": 14,
+      "attachments": []
+    },
+    {
+      "timeMs": 196753,
+      "verseStart": 15,
+      "attachments": []
+    },
+    {
+      "timeMs": 214885,
+      "verseStart": 16,
+      "attachments": []
+    },
+    {
+      "timeMs": 234919,
+      "verseStart": 17,
+      "attachments": []
+    },
+    {
+      "timeMs": 251610,
+      "verseStart": 18,
+      "attachments": []
+    },
+    {
+      "timeMs": 264799,
+      "verseStart": 19,
+      "attachments": []
+    },
+    {
+      "timeMs": 278028,
+      "verseStart": 20,
+      "attachments": []
+    }
+  ]
+}

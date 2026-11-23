@@ -1,0 +1,123 @@
+{
+  "id": "gh_bti_1_thessalonians_5",
+  "translationCode": "BTI",
+  "bookId": "1_thessalonians",
+  "chapter": 5,
+  "title": "1-е Фессалоникийцам 5 · Кулаковых",
+  "narratorId": "bti",
+  "audioFileName": "59_05.mp3",
+  "cues": [
+    {
+      "timeMs": 3602,
+      "verseStart": 1
+    },
+    {
+      "timeMs": 7945,
+      "verseStart": 2
+    },
+    {
+      "timeMs": 19393,
+      "verseStart": 3
+    },
+    {
+      "timeMs": 38986,
+      "verseStart": 4
+    },
+    {
+      "timeMs": 48773,
+      "verseStart": 5
+    },
+    {
+      "timeMs": 59540,
+      "verseStart": 6
+    },
+    {
+      "timeMs": 67266,
+      "verseStart": 7
+    },
+    {
+      "timeMs": 74230,
+      "verseStart": 8
+    },
+    {
+      "timeMs": 90301,
+      "verseStart": 9
+    },
+    {
+      "timeMs": 101649,
+      "verseStart": 10
+    },
+    {
+      "timeMs": 113937,
+      "verseStart": 11
+    },
+    {
+      "timeMs": 125325,
+      "verseStart": 12
+    },
+    {
+      "timeMs": 142096,
+      "verseStart": 13
+    },
+    {
+      "timeMs": 152483,
+      "verseStart": 14
+    },
+    {
+      "timeMs": 169015,
+      "verseStart": 15
+    },
+    {
+      "timeMs": 182704,
+      "verseStart": 16
+    },
+    {
+      "timeMs": 184385,
+      "verseStart": 17
+    },
+    {
+      "timeMs": 186386,
+      "verseStart": 18
+    },
+    {
+      "timeMs": 194772,
+      "verseStart": 19
+    },
+    {
+      "timeMs": 201937,
+      "verseStart": 20
+    },
+    {
+      "timeMs": 205199,
+      "verseStart": 21
+    },
+    {
+      "timeMs": 211423,
+      "verseStart": 22
+    },
+    {
+      "timeMs": 216747,
+      "verseStart": 23
+    },
+    {
+      "timeMs": 237001,
+      "verseStart": 24
+    },
+    {
+      "timeMs": 243665,
+      "verseStart": 25
+    },
+    {
+      "timeMs": 247928,
+      "verseStart": 26
+    },
+    {
+      "timeMs": 252411,
+      "verseStart": 27
+    },
+    {
+      "timeMs": 260417,
+      "verseStart": 28
+    }
+  ]
+}
