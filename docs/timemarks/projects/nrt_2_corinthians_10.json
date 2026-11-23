@@ -1,0 +1,83 @@
+{
+  "id": "gh_nrt_2_corinthians_10",
+  "translationCode": "NRT",
+  "bookId": "2_corinthians",
+  "chapter": 10,
+  "title": "2-е Коринфянам 10 · Новый русский",
+  "narratorId": "new-russian",
+  "audioFileName": "54_10.mp3",
+  "cues": [
+    {
+      "timeMs": 4863,
+      "verseStart": 1
+    },
+    {
+      "timeMs": 16852,
+      "verseStart": 2
+    },
+    {
+      "timeMs": 29961,
+      "verseStart": 3
+    },
+    {
+      "timeMs": 35985,
+      "verseStart": 4
+    },
+    {
+      "timeMs": 48314,
+      "verseStart": 5
+    },
+    {
+      "timeMs": 59502,
+      "verseStart": 6
+    },
+    {
+      "timeMs": 66467,
+      "verseStart": 7
+    },
+    {
+      "timeMs": 80056,
+      "verseStart": 8
+    },
+    {
+      "timeMs": 90764,
+      "verseStart": 9
+    },
+    {
+      "timeMs": 97268,
+      "verseStart": 10
+    },
+    {
+      "timeMs": 107195,
+      "verseStart": 11
+    },
+    {
+      "timeMs": 116482,
+      "verseStart": 12
+    },
+    {
+      "timeMs": 128811,
+      "verseStart": 13
+    },
+    {
+      "timeMs": 141299,
+      "verseStart": 14
+    },
+    {
+      "timeMs": 150986,
+      "verseStart": 15
+    },
+    {
+      "timeMs": 162915,
+      "verseStart": 16
+    },
+    {
+      "timeMs": 172842,
+      "verseStart": 17
+    },
+    {
+      "timeMs": 176724,
+      "verseStart": 18
+    }
+  ]
+}

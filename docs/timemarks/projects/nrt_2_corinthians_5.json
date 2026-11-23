@@ -1,0 +1,95 @@
+{
+  "id": "gh_nrt_2_corinthians_5",
+  "translationCode": "NRT",
+  "bookId": "2_corinthians",
+  "chapter": 5,
+  "title": "2-е Коринфянам 5 · Новый русский",
+  "narratorId": "new-russian",
+  "audioFileName": "54_05.mp3",
+  "cues": [
+    {
+      "timeMs": 420,
+      "verseStart": 1
+    },
+    {
+      "timeMs": 14731,
+      "verseStart": 2
+    },
+    {
+      "timeMs": 24398,
+      "verseStart": 3
+    },
+    {
+      "timeMs": 28741,
+      "verseStart": 4
+    },
+    {
+      "timeMs": 45393,
+      "verseStart": 5
+    },
+    {
+      "timeMs": 51457,
+      "verseStart": 6
+    },
+    {
+      "timeMs": 59783,
+      "verseStart": 7
+    },
+    {
+      "timeMs": 63826,
+      "verseStart": 8
+    },
+    {
+      "timeMs": 71512,
+      "verseStart": 9
+    },
+    {
+      "timeMs": 79057,
+      "verseStart": 10
+    },
+    {
+      "timeMs": 97270,
+      "verseStart": 11
+    },
+    {
+      "timeMs": 111781,
+      "verseStart": 12
+    },
+    {
+      "timeMs": 124770,
+      "verseStart": 13
+    },
+    {
+      "timeMs": 134537,
+      "verseStart": 14
+    },
+    {
+      "timeMs": 143704,
+      "verseStart": 15
+    },
+    {
+      "timeMs": 153952,
+      "verseStart": 16
+    },
+    {
+      "timeMs": 164299,
+      "verseStart": 17
+    },
+    {
+      "timeMs": 173145,
+      "verseStart": 18
+    },
+    {
+      "timeMs": 182192,
+      "verseStart": 19
+    },
+    {
+      "timeMs": 194041,
+      "verseStart": 20
+    },
+    {
+      "timeMs": 207390,
+      "verseStart": 21
+    }
+  ]
+}

@@ -1,0 +1,86 @@
+{
+  "id": "align-2_corinthians-NRT-09",
+  "translationCode": "NRT",
+  "bookId": "2_corinthians",
+  "chapter": 9,
+  "title": "2-е Коринфянам 9 · Новый русский",
+  "audioFilePath": "/data/user/0/com.example.bible.sqlite/files/bible_audio/new-russian/54_09.mp3",
+  "updatedAt": 1795392000000,
+  "cues": [
+    {
+      "timeMs": 5404,
+      "verseStart": 1,
+      "attachments": []
+    },
+    {
+      "timeMs": 8906,
+      "verseStart": 2,
+      "attachments": []
+    },
+    {
+      "timeMs": 25298,
+      "verseStart": 3,
+      "attachments": []
+    },
+    {
+      "timeMs": 34825,
+      "verseStart": 4,
+      "attachments": []
+    },
+    {
+      "timeMs": 48295,
+      "verseStart": 5,
+      "attachments": []
+    },
+    {
+      "timeMs": 64146,
+      "verseStart": 6,
+      "attachments": []
+    },
+    {
+      "timeMs": 72432,
+      "verseStart": 7,
+      "attachments": []
+    },
+    {
+      "timeMs": 84280,
+      "verseStart": 8,
+      "attachments": []
+    },
+    {
+      "timeMs": 95748,
+      "verseStart": 9,
+      "attachments": []
+    },
+    {
+      "timeMs": 103934,
+      "verseStart": 10,
+      "attachments": []
+    },
+    {
+      "timeMs": 115502,
+      "verseStart": 11,
+      "attachments": []
+    },
+    {
+      "timeMs": 127411,
+      "verseStart": 12,
+      "attachments": []
+    },
+    {
+      "timeMs": 136417,
+      "verseStart": 13,
+      "attachments": []
+    },
+    {
+      "timeMs": 153510,
+      "verseStart": 14,
+      "attachments": []
+    },
+    {
+      "timeMs": 162116,
+      "verseStart": 15,
+      "attachments": []
+    }
+  ]
+}

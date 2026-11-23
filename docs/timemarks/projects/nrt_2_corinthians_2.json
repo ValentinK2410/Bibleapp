@@ -1,0 +1,79 @@
+{
+  "id": "gh_nrt_2_corinthians_2",
+  "translationCode": "NRT",
+  "bookId": "2_corinthians",
+  "chapter": 2,
+  "title": "2-е Коринфянам 2 · Новый русский",
+  "narratorId": "new-russian",
+  "audioFileName": "54_02.mp3",
+  "cues": [
+    {
+      "timeMs": 300,
+      "verseStart": 1
+    },
+    {
+      "timeMs": 6484,
+      "verseStart": 2
+    },
+    {
+      "timeMs": 14830,
+      "verseStart": 3
+    },
+    {
+      "timeMs": 29139,
+      "verseStart": 4
+    },
+    {
+      "timeMs": 45870,
+      "verseStart": 5
+    },
+    {
+      "timeMs": 54015,
+      "verseStart": 6
+    },
+    {
+      "timeMs": 61660,
+      "verseStart": 7
+    },
+    {
+      "timeMs": 68544,
+      "verseStart": 8
+    },
+    {
+      "timeMs": 72887,
+      "verseStart": 9
+    },
+    {
+      "timeMs": 79451,
+      "verseStart": 10
+    },
+    {
+      "timeMs": 91779,
+      "verseStart": 11
+    },
+    {
+      "timeMs": 101305,
+      "verseStart": 12
+    },
+    {
+      "timeMs": 108570,
+      "verseStart": 13
+    },
+    {
+      "timeMs": 121618,
+      "verseStart": 14
+    },
+    {
+      "timeMs": 133986,
+      "verseStart": 15
+    },
+    {
+      "timeMs": 144853,
+      "verseStart": 16
+    },
+    {
+      "timeMs": 154840,
+      "verseStart": 17
+    }
+  ]
+}

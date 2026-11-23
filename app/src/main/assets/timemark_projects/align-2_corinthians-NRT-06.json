@@ -1,0 +1,101 @@
+{
+  "id": "align-2_corinthians-NRT-06",
+  "translationCode": "NRT",
+  "bookId": "2_corinthians",
+  "chapter": 6,
+  "title": "2-е Коринфянам 6 · Новый русский",
+  "audioFilePath": "/data/user/0/com.example.bible.sqlite/files/bible_audio/new-russian/54_06.mp3",
+  "updatedAt": 1795392000000,
+  "cues": [
+    {
+      "timeMs": 981,
+      "verseStart": 1,
+      "attachments": []
+    },
+    {
+      "timeMs": 9087,
+      "verseStart": 2,
+      "attachments": []
+    },
+    {
+      "timeMs": 27160,
+      "verseStart": 3,
+      "attachments": []
+    },
+    {
+      "timeMs": 34925,
+      "verseStart": 4,
+      "attachments": []
+    },
+    {
+      "timeMs": 44892,
+      "verseStart": 5,
+      "attachments": []
+    },
+    {
+      "timeMs": 55000,
+      "verseStart": 6,
+      "attachments": []
+    },
+    {
+      "timeMs": 62185,
+      "verseStart": 7,
+      "attachments": []
+    },
+    {
+      "timeMs": 68710,
+      "verseStart": 8,
+      "attachments": []
+    },
+    {
+      "timeMs": 79577,
+      "verseStart": 9,
+      "attachments": []
+    },
+    {
+      "timeMs": 90565,
+      "verseStart": 10,
+      "attachments": []
+    },
+    {
+      "timeMs": 103315,
+      "verseStart": 11,
+      "attachments": []
+    },
+    {
+      "timeMs": 112321,
+      "verseStart": 12,
+      "attachments": []
+    },
+    {
+      "timeMs": 117725,
+      "verseStart": 13,
+      "attachments": []
+    },
+    {
+      "timeMs": 131135,
+      "verseStart": 14,
+      "attachments": []
+    },
+    {
+      "timeMs": 140882,
+      "verseStart": 15,
+      "attachments": []
+    },
+    {
+      "timeMs": 146766,
+      "verseStart": 16,
+      "attachments": []
+    },
+    {
+      "timeMs": 164018,
+      "verseStart": 17,
+      "attachments": []
+    },
+    {
+      "timeMs": 174146,
+      "verseStart": 18,
+      "attachments": []
+    }
+  ]
+}

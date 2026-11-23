@@ -1,0 +1,131 @@
+{
+  "id": "align-2_corinthians-NRT-01",
+  "translationCode": "NRT",
+  "bookId": "2_corinthians",
+  "chapter": 1,
+  "title": "2-е Коринфянам 1 · Новый русский",
+  "audioFilePath": "/data/user/0/com.example.bible.sqlite/files/bible_audio/new-russian/54_01.mp3",
+  "updatedAt": 1795392000000,
+  "cues": [
+    {
+      "timeMs": 1041,
+      "verseStart": 1,
+      "attachments": []
+    },
+    {
+      "timeMs": 11788,
+      "verseStart": 2,
+      "attachments": []
+    },
+    {
+      "timeMs": 22015,
+      "verseStart": 3,
+      "attachments": []
+    },
+    {
+      "timeMs": 30821,
+      "verseStart": 4,
+      "attachments": []
+    },
+    {
+      "timeMs": 42829,
+      "verseStart": 5,
+      "attachments": []
+    },
+    {
+      "timeMs": 50474,
+      "verseStart": 6,
+      "attachments": []
+    },
+    {
+      "timeMs": 68306,
+      "verseStart": 7,
+      "attachments": []
+    },
+    {
+      "timeMs": 77832,
+      "verseStart": 8,
+      "attachments": []
+    },
+    {
+      "timeMs": 92222,
+      "verseStart": 9,
+      "attachments": []
+    },
+    {
+      "timeMs": 104310,
+      "verseStart": 10,
+      "attachments": []
+    },
+    {
+      "timeMs": 113236,
+      "verseStart": 11,
+      "attachments": []
+    },
+    {
+      "timeMs": 127646,
+      "verseStart": 12,
+      "attachments": []
+    },
+    {
+      "timeMs": 147899,
+      "verseStart": 13,
+      "attachments": []
+    },
+    {
+      "timeMs": 157966,
+      "verseStart": 14,
+      "attachments": []
+    },
+    {
+      "timeMs": 167833,
+      "verseStart": 15,
+      "attachments": []
+    },
+    {
+      "timeMs": 174877,
+      "verseStart": 16,
+      "attachments": []
+    },
+    {
+      "timeMs": 185484,
+      "verseStart": 17,
+      "attachments": []
+    },
+    {
+      "timeMs": 196152,
+      "verseStart": 18,
+      "attachments": []
+    },
+    {
+      "timeMs": 204537,
+      "verseStart": 19,
+      "attachments": []
+    },
+    {
+      "timeMs": 217586,
+      "verseStart": 20,
+      "attachments": []
+    },
+    {
+      "timeMs": 228113,
+      "verseStart": 21,
+      "attachments": []
+    },
+    {
+      "timeMs": 236739,
+      "verseStart": 22,
+      "attachments": []
+    },
+    {
+      "timeMs": 247726,
+      "verseStart": 23,
+      "attachments": []
+    },
+    {
+      "timeMs": 255591,
+      "verseStart": 24,
+      "attachments": []
+    }
+  ]
+}

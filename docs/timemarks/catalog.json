@@ -2434,6 +2434,136 @@
       "file": "projects/nrt_1_corinthians_9.json"
     },
     {
+      "id": "gh_nrt_2_corinthians_1",
+      "translationCode": "NRT",
+      "bookId": "2_corinthians",
+      "chapter": 1,
+      "title": "2-е Коринфянам 1 · Новый русский",
+      "cueCount": 24,
+      "narratorId": "new-russian",
+      "file": "projects/nrt_2_corinthians_1.json"
+    },
+    {
+      "id": "gh_nrt_2_corinthians_10",
+      "translationCode": "NRT",
+      "bookId": "2_corinthians",
+      "chapter": 10,
+      "title": "2-е Коринфянам 10 · Новый русский",
+      "cueCount": 18,
+      "narratorId": "new-russian",
+      "file": "projects/nrt_2_corinthians_10.json"
+    },
+    {
+      "id": "gh_nrt_2_corinthians_11",
+      "translationCode": "NRT",
+      "bookId": "2_corinthians",
+      "chapter": 11,
+      "title": "2-е Коринфянам 11 · Новый русский",
+      "cueCount": 33,
+      "narratorId": "new-russian",
+      "file": "projects/nrt_2_corinthians_11.json"
+    },
+    {
+      "id": "gh_nrt_2_corinthians_12",
+      "translationCode": "NRT",
+      "bookId": "2_corinthians",
+      "chapter": 12,
+      "title": "2-е Коринфянам 12 · Новый русский",
+      "cueCount": 21,
+      "narratorId": "new-russian",
+      "file": "projects/nrt_2_corinthians_12.json"
+    },
+    {
+      "id": "gh_nrt_2_corinthians_13",
+      "translationCode": "NRT",
+      "bookId": "2_corinthians",
+      "chapter": 13,
+      "title": "2-е Коринфянам 13 · Новый русский",
+      "cueCount": 13,
+      "narratorId": "new-russian",
+      "file": "projects/nrt_2_corinthians_13.json"
+    },
+    {
+      "id": "gh_nrt_2_corinthians_2",
+      "translationCode": "NRT",
+      "bookId": "2_corinthians",
+      "chapter": 2,
+      "title": "2-е Коринфянам 2 · Новый русский",
+      "cueCount": 17,
+      "narratorId": "new-russian",
+      "file": "projects/nrt_2_corinthians_2.json"
+    },
+    {
+      "id": "gh_nrt_2_corinthians_3",
+      "translationCode": "NRT",
+      "bookId": "2_corinthians",
+      "chapter": 3,
+      "title": "2-е Коринфянам 3 · Новый русский",
+      "cueCount": 18,
+      "narratorId": "new-russian",
+      "file": "projects/nrt_2_corinthians_3.json"
+    },
+    {
+      "id": "gh_nrt_2_corinthians_4",
+      "translationCode": "NRT",
+      "bookId": "2_corinthians",
+      "chapter": 4,
+      "title": "2-е Коринфянам 4 · Новый русский",
+      "cueCount": 18,
+      "narratorId": "new-russian",
+      "file": "projects/nrt_2_corinthians_4.json"
+    },
+    {
+      "id": "gh_nrt_2_corinthians_5",
+      "translationCode": "NRT",
+      "bookId": "2_corinthians",
+      "chapter": 5,
+      "title": "2-е Коринфянам 5 · Новый русский",
+      "cueCount": 21,
+      "narratorId": "new-russian",
+      "file": "projects/nrt_2_corinthians_5.json"
+    },
+    {
+      "id": "gh_nrt_2_corinthians_6",
+      "translationCode": "NRT",
+      "bookId": "2_corinthians",
+      "chapter": 6,
+      "title": "2-е Коринфянам 6 · Новый русский",
+      "cueCount": 18,
+      "narratorId": "new-russian",
+      "file": "projects/nrt_2_corinthians_6.json"
+    },
+    {
+      "id": "gh_nrt_2_corinthians_7",
+      "translationCode": "NRT",
+      "bookId": "2_corinthians",
+      "chapter": 7,
+      "title": "2-е Коринфянам 7 · Новый русский",
+      "cueCount": 16,
+      "narratorId": "new-russian",
+      "file": "projects/nrt_2_corinthians_7.json"
+    },
+    {
+      "id": "gh_nrt_2_corinthians_8",
+      "translationCode": "NRT",
+      "bookId": "2_corinthians",
+      "chapter": 8,
+      "title": "2-е Коринфянам 8 · Новый русский",
+      "cueCount": 24,
+      "narratorId": "new-russian",
+      "file": "projects/nrt_2_corinthians_8.json"
+    },
+    {
+      "id": "gh_nrt_2_corinthians_9",
+      "translationCode": "NRT",
+      "bookId": "2_corinthians",
+      "chapter": 9,
+      "title": "2-е Коринфянам 9 · Новый русский",
+      "cueCount": 15,
+      "narratorId": "new-russian",
+      "file": "projects/nrt_2_corinthians_9.json"
+    },
+    {
       "id": "gh_nrt_john_1",
       "translationCode": "NRT",
       "bookId": "john",
