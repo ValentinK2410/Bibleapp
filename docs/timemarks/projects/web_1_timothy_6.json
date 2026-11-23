@@ -1,0 +1,95 @@
+{
+  "id": "gh_web_1_timothy_6",
+  "translationCode": "WEB",
+  "bookId": "1_timothy",
+  "chapter": 6,
+  "title": "1-е Тимофею 6 · WEB (англ.)",
+  "narratorId": "web",
+  "audioFileName": "54_06.mp3",
+  "cues": [
+    {
+      "timeMs": 2262,
+      "verseStart": 1
+    },
+    {
+      "timeMs": 9967,
+      "verseStart": 2
+    },
+    {
+      "timeMs": 22515,
+      "verseStart": 3
+    },
+    {
+      "timeMs": 30940,
+      "verseStart": 4
+    },
+    {
+      "timeMs": 40526,
+      "verseStart": 5
+    },
+    {
+      "timeMs": 50833,
+      "verseStart": 6
+    },
+    {
+      "timeMs": 53755,
+      "verseStart": 7
+    },
+    {
+      "timeMs": 58178,
+      "verseStart": 8
+    },
+    {
+      "timeMs": 61980,
+      "verseStart": 9
+    },
+    {
+      "timeMs": 71987,
+      "verseStart": 10
+    },
+    {
+      "timeMs": 81673,
+      "verseStart": 11
+    },
+    {
+      "timeMs": 91620,
+      "verseStart": 12
+    },
+    {
+      "timeMs": 102007,
+      "verseStart": 13
+    },
+    {
+      "timeMs": 110072,
+      "verseStart": 14
+    },
+    {
+      "timeMs": 116336,
+      "verseStart": 15
+    },
+    {
+      "timeMs": 123621,
+      "verseStart": 16
+    },
+    {
+      "timeMs": 136269,
+      "verseStart": 17
+    },
+    {
+      "timeMs": 146656,
+      "verseStart": 18
+    },
+    {
+      "timeMs": 152640,
+      "verseStart": 19
+    },
+    {
+      "timeMs": 160805,
+      "verseStart": 20
+    },
+    {
+      "timeMs": 171132,
+      "verseStart": 21
+    }
+  ]
+}

@@ -1,0 +1,116 @@
+{
+  "id": "align-1_timothy-WEB-06",
+  "translationCode": "WEB",
+  "bookId": "1_timothy",
+  "chapter": 6,
+  "title": "1-е Тимофею 6 · WEB (англ.)",
+  "audioFilePath": "/data/user/0/com.example.bible.sqlite/files/bible_audio/web/54_06.mp3",
+  "updatedAt": 1794873600000,
+  "cues": [
+    {
+      "timeMs": 2262,
+      "verseStart": 1,
+      "attachments": []
+    },
+    {
+      "timeMs": 9967,
+      "verseStart": 2,
+      "attachments": []
+    },
+    {
+      "timeMs": 22515,
+      "verseStart": 3,
+      "attachments": []
+    },
+    {
+      "timeMs": 30940,
+      "verseStart": 4,
+      "attachments": []
+    },
+    {
+      "timeMs": 40526,
+      "verseStart": 5,
+      "attachments": []
+    },
+    {
+      "timeMs": 50833,
+      "verseStart": 6,
+      "attachments": []
+    },
+    {
+      "timeMs": 53755,
+      "verseStart": 7,
+      "attachments": []
+    },
+    {
+      "timeMs": 58178,
+      "verseStart": 8,
+      "attachments": []
+    },
+    {
+      "timeMs": 61980,
+      "verseStart": 9,
+      "attachments": []
+    },
+    {
+      "timeMs": 71987,
+      "verseStart": 10,
+      "attachments": []
+    },
+    {
+      "timeMs": 81673,
+      "verseStart": 11,
+      "attachments": []
+    },
+    {
+      "timeMs": 91620,
+      "verseStart": 12,
+      "attachments": []
+    },
+    {
+      "timeMs": 102007,
+      "verseStart": 13,
+      "attachments": []
+    },
+    {
+      "timeMs": 110072,
+      "verseStart": 14,
+      "attachments": []
+    },
+    {
+      "timeMs": 116336,
+      "verseStart": 15,
+      "attachments": []
+    },
+    {
+      "timeMs": 123621,
+      "verseStart": 16,
+      "attachments": []
+    },
+    {
+      "timeMs": 136269,
+      "verseStart": 17,
+      "attachments": []
+    },
+    {
+      "timeMs": 146656,
+      "verseStart": 18,
+      "attachments": []
+    },
+    {
+      "timeMs": 152640,
+      "verseStart": 19,
+      "attachments": []
+    },
+    {
+      "timeMs": 160805,
+      "verseStart": 20,
+      "attachments": []
+    },
+    {
+      "timeMs": 171132,
+      "verseStart": 21,
+      "attachments": []
+    }
+  ]
+}

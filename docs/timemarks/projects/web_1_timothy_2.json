@@ -1,0 +1,71 @@
+{
+  "id": "gh_web_1_timothy_2",
+  "translationCode": "WEB",
+  "bookId": "1_timothy",
+  "chapter": 2,
+  "title": "1-е Тимофею 2 · WEB (англ.)",
+  "narratorId": "web",
+  "audioFileName": "54_02.mp3",
+  "cues": [
+    {
+      "timeMs": 2082,
+      "verseStart": 1
+    },
+    {
+      "timeMs": 9167,
+      "verseStart": 2
+    },
+    {
+      "timeMs": 17013,
+      "verseStart": 3
+    },
+    {
+      "timeMs": 20495,
+      "verseStart": 4
+    },
+    {
+      "timeMs": 25399,
+      "verseStart": 5
+    },
+    {
+      "timeMs": 32084,
+      "verseStart": 6
+    },
+    {
+      "timeMs": 37248,
+      "verseStart": 7
+    },
+    {
+      "timeMs": 48556,
+      "verseStart": 8
+    },
+    {
+      "timeMs": 55462,
+      "verseStart": 9
+    },
+    {
+      "timeMs": 67711,
+      "verseStart": 10
+    },
+    {
+      "timeMs": 74035,
+      "verseStart": 11
+    },
+    {
+      "timeMs": 77318,
+      "verseStart": 12
+    },
+    {
+      "timeMs": 83763,
+      "verseStart": 13
+    },
+    {
+      "timeMs": 87085,
+      "verseStart": 14
+    },
+    {
+      "timeMs": 92910,
+      "verseStart": 15
+    }
+  ]
+}

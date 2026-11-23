@@ -1,0 +1,75 @@
+{
+  "id": "gh_web_1_timothy_4",
+  "translationCode": "WEB",
+  "bookId": "1_timothy",
+  "chapter": 4,
+  "title": "1-е Тимофею 4 · WEB (англ.)",
+  "narratorId": "web",
+  "audioFileName": "54_04.mp3",
+  "cues": [
+    {
+      "timeMs": 3222,
+      "verseStart": 1
+    },
+    {
+      "timeMs": 12529,
+      "verseStart": 2
+    },
+    {
+      "timeMs": 17713,
+      "verseStart": 3
+    },
+    {
+      "timeMs": 28040,
+      "verseStart": 4
+    },
+    {
+      "timeMs": 35105,
+      "verseStart": 5
+    },
+    {
+      "timeMs": 39288,
+      "verseStart": 6
+    },
+    {
+      "timeMs": 49275,
+      "verseStart": 7
+    },
+    {
+      "timeMs": 56280,
+      "verseStart": 8
+    },
+    {
+      "timeMs": 66268,
+      "verseStart": 9
+    },
+    {
+      "timeMs": 70330,
+      "verseStart": 10
+    },
+    {
+      "timeMs": 79617,
+      "verseStart": 11
+    },
+    {
+      "timeMs": 82940,
+      "verseStart": 12
+    },
+    {
+      "timeMs": 93207,
+      "verseStart": 13
+    },
+    {
+      "timeMs": 98170,
+      "verseStart": 14
+    },
+    {
+      "timeMs": 105476,
+      "verseStart": 15
+    },
+    {
+      "timeMs": 112120,
+      "verseStart": 16
+    }
+  ]
+}
