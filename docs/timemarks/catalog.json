@@ -3164,6 +3164,36 @@
       "file": "projects/grk_romans_9.json"
     },
     {
+      "id": "gh_grk_titus_1",
+      "translationCode": "PODSTR",
+      "bookId": "titus",
+      "chapter": 1,
+      "title": "Титу 1 · Греческий (Koine)",
+      "cueCount": 16,
+      "narratorId": "greek-nt",
+      "file": "projects/grk_titus_1.json"
+    },
+    {
+      "id": "gh_grk_titus_2",
+      "translationCode": "PODSTR",
+      "bookId": "titus",
+      "chapter": 2,
+      "title": "Титу 2 · Греческий (Koine)",
+      "cueCount": 15,
+      "narratorId": "greek-nt",
+      "file": "projects/grk_titus_2.json"
+    },
+    {
+      "id": "gh_grk_titus_3",
+      "translationCode": "PODSTR",
+      "bookId": "titus",
+      "chapter": 3,
+      "title": "Титу 3 · Греческий (Koine)",
+      "cueCount": 15,
+      "narratorId": "greek-nt",
+      "file": "projects/grk_titus_3.json"
+    },
+    {
       "id": "gh_nrt_1_corinthians_1",
       "translationCode": "NRT",
       "bookId": "1_corinthians",

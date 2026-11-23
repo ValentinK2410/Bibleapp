@@ -1,0 +1,86 @@
+{
+  "id": "align-titus-GRK-03",
+  "translationCode": "PODSTR",
+  "bookId": "titus",
+  "chapter": 3,
+  "title": "Титу 3 · Греческий (Koine)",
+  "audioFilePath": "/data/user/0/com.example.bible.sqlite/files/bible_audio/greek-nt/56_03.mp3",
+  "updatedAt": 1794873600000,
+  "cues": [
+    {
+      "timeMs": 480,
+      "verseStart": 1,
+      "attachments": []
+    },
+    {
+      "timeMs": 8087,
+      "verseStart": 2,
+      "attachments": []
+    },
+    {
+      "timeMs": 16553,
+      "verseStart": 3,
+      "attachments": []
+    },
+    {
+      "timeMs": 30004,
+      "verseStart": 4,
+      "attachments": []
+    },
+    {
+      "timeMs": 34688,
+      "verseStart": 5,
+      "attachments": []
+    },
+    {
+      "timeMs": 46657,
+      "verseStart": 6,
+      "attachments": []
+    },
+    {
+      "timeMs": 51721,
+      "verseStart": 7,
+      "attachments": []
+    },
+    {
+      "timeMs": 58547,
+      "verseStart": 8,
+      "attachments": []
+    },
+    {
+      "timeMs": 71397,
+      "verseStart": 9,
+      "attachments": []
+    },
+    {
+      "timeMs": 80605,
+      "verseStart": 10,
+      "attachments": []
+    },
+    {
+      "timeMs": 85128,
+      "verseStart": 11,
+      "attachments": []
+    },
+    {
+      "timeMs": 90973,
+      "verseStart": 12,
+      "attachments": []
+    },
+    {
+      "timeMs": 100140,
+      "verseStart": 13,
+      "attachments": []
+    },
+    {
+      "timeMs": 106405,
+      "verseStart": 14,
+      "attachments": []
+    },
+    {
+      "timeMs": 113971,
+      "verseStart": 15,
+      "attachments": []
+    }
+  ]
+}

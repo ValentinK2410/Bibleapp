@@ -1,0 +1,75 @@
+{
+  "id": "gh_grk_titus_1",
+  "translationCode": "PODSTR",
+  "bookId": "titus",
+  "chapter": 1,
+  "title": "Титу 1 · Греческий (Koine)",
+  "narratorId": "greek-nt",
+  "audioFileName": "56_01.mp3",
+  "cues": [
+    {
+      "timeMs": 340,
+      "verseStart": 1
+    },
+    {
+      "timeMs": 9927,
+      "verseStart": 2
+    },
+    {
+      "timeMs": 16572,
+      "verseStart": 3
+    },
+    {
+      "timeMs": 26038,
+      "verseStart": 4
+    },
+    {
+      "timeMs": 35665,
+      "verseStart": 5
+    },
+    {
+      "timeMs": 46693,
+      "verseStart": 6
+    },
+    {
+      "timeMs": 55659,
+      "verseStart": 7
+    },
+    {
+      "timeMs": 66927,
+      "verseStart": 8
+    },
+    {
+      "timeMs": 73492,
+      "verseStart": 9
+    },
+    {
+      "timeMs": 84640,
+      "verseStart": 10
+    },
+    {
+      "timeMs": 91364,
+      "verseStart": 11
+    },
+    {
+      "timeMs": 99070,
+      "verseStart": 12
+    },
+    {
+      "timeMs": 106755,
+      "verseStart": 13
+    },
+    {
+      "timeMs": 114701,
+      "verseStart": 14
+    },
+    {
+      "timeMs": 120945,
+      "verseStart": 15
+    },
+    {
+      "timeMs": 129631,
+      "verseStart": 16
+    }
+  ]
+}
