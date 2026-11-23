@@ -2754,6 +2754,16 @@
       "file": "projects/nrt_2_corinthians_9.json"
     },
     {
+      "id": "gh_nrt_galatians_1",
+      "translationCode": "NRT",
+      "bookId": "galatians",
+      "chapter": 1,
+      "title": "К Галатам 1 · Новый русский",
+      "cueCount": 24,
+      "narratorId": "new-russian",
+      "file": "projects/nrt_galatians_1.json"
+    },
+    {
       "id": "gh_nrt_john_1",
       "translationCode": "NRT",
       "bookId": "john",
