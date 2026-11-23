@@ -1,0 +1,96 @@
+{
+  "id": "align-2_thessalonians-NRT-02",
+  "translationCode": "NRT",
+  "bookId": "2_thessalonians",
+  "chapter": 2,
+  "title": "2-е Фессалоникийцам 2 · Новый русский",
+  "audioFilePath": "/data/user/0/com.example.bible.sqlite/files/bible_audio/new-russian/60_02.mp3",
+  "updatedAt": 1795392000000,
+  "cues": [
+    {
+      "timeMs": 7065,
+      "verseStart": 1,
+      "attachments": []
+    },
+    {
+      "timeMs": 15831,
+      "verseStart": 2,
+      "attachments": []
+    },
+    {
+      "timeMs": 28900,
+      "verseStart": 3,
+      "attachments": []
+    },
+    {
+      "timeMs": 46192,
+      "verseStart": 4,
+      "attachments": []
+    },
+    {
+      "timeMs": 59202,
+      "verseStart": 5,
+      "attachments": []
+    },
+    {
+      "timeMs": 64365,
+      "verseStart": 6,
+      "attachments": []
+    },
+    {
+      "timeMs": 74452,
+      "verseStart": 7,
+      "attachments": []
+    },
+    {
+      "timeMs": 84639,
+      "verseStart": 8,
+      "attachments": []
+    },
+    {
+      "timeMs": 96388,
+      "verseStart": 9,
+      "attachments": []
+    },
+    {
+      "timeMs": 106375,
+      "verseStart": 10,
+      "attachments": []
+    },
+    {
+      "timeMs": 119664,
+      "verseStart": 11,
+      "attachments": []
+    },
+    {
+      "timeMs": 127269,
+      "verseStart": 12,
+      "attachments": []
+    },
+    {
+      "timeMs": 135655,
+      "verseStart": 13,
+      "attachments": []
+    },
+    {
+      "timeMs": 152567,
+      "verseStart": 14,
+      "attachments": []
+    },
+    {
+      "timeMs": 162774,
+      "verseStart": 15,
+      "attachments": []
+    },
+    {
+      "timeMs": 172721,
+      "verseStart": 16,
+      "attachments": []
+    },
+    {
+      "timeMs": 185850,
+      "verseStart": 17,
+      "attachments": []
+    }
+  ]
+}

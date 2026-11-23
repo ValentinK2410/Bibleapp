@@ -1,0 +1,83 @@
+{
+  "id": "gh_nrt_2_thessalonians_3",
+  "translationCode": "NRT",
+  "bookId": "2_thessalonians",
+  "chapter": 3,
+  "title": "2-е Фессалоникийцам 3 · Новый русский",
+  "narratorId": "new-russian",
+  "audioFileName": "60_03.mp3",
+  "cues": [
+    {
+      "timeMs": 2922,
+      "verseStart": 1
+    },
+    {
+      "timeMs": 17291,
+      "verseStart": 2
+    },
+    {
+      "timeMs": 24975,
+      "verseStart": 3
+    },
+    {
+      "timeMs": 32080,
+      "verseStart": 4
+    },
+    {
+      "timeMs": 38424,
+      "verseStart": 5
+    },
+    {
+      "timeMs": 48350,
+      "verseStart": 6
+    },
+    {
+      "timeMs": 61998,
+      "verseStart": 7
+    },
+    {
+      "timeMs": 70743,
+      "verseStart": 8
+    },
+    {
+      "timeMs": 81550,
+      "verseStart": 9
+    },
+    {
+      "timeMs": 91216,
+      "verseStart": 10
+    },
+    {
+      "timeMs": 99121,
+      "verseStart": 11
+    },
+    {
+      "timeMs": 109087,
+      "verseStart": 12
+    },
+    {
+      "timeMs": 118433,
+      "verseStart": 13
+    },
+    {
+      "timeMs": 124176,
+      "verseStart": 14
+    },
+    {
+      "timeMs": 137624,
+      "verseStart": 15
+    },
+    {
+      "timeMs": 144128,
+      "verseStart": 16
+    },
+    {
+      "timeMs": 157657,
+      "verseStart": 17
+    },
+    {
+      "timeMs": 166982,
+      "verseStart": 18
+    }
+  ]
+}
