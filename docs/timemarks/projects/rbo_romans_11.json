@@ -1,0 +1,155 @@
+{
+  "id": "gh_rbo_romans_11",
+  "translationCode": "RBO",
+  "bookId": "romans",
+  "chapter": 11,
+  "title": "К Римлянам 11 · РБО",
+  "narratorId": "rbo",
+  "audioFileName": "52_11.mp3",
+  "cues": [
+    {
+      "timeMs": 4603,
+      "verseStart": 1
+    },
+    {
+      "timeMs": 17512,
+      "verseStart": 2
+    },
+    {
+      "timeMs": 29820,
+      "verseStart": 3
+    },
+    {
+      "timeMs": 41428,
+      "verseStart": 4
+    },
+    {
+      "timeMs": 52695,
+      "verseStart": 5
+    },
+    {
+      "timeMs": 59620,
+      "verseStart": 6
+    },
+    {
+      "timeMs": 66324,
+      "verseStart": 7
+    },
+    {
+      "timeMs": 77392,
+      "verseStart": 8
+    },
+    {
+      "timeMs": 89140,
+      "verseStart": 9
+    },
+    {
+      "timeMs": 98466,
+      "verseStart": 10
+    },
+    {
+      "timeMs": 107452,
+      "verseStart": 11
+    },
+    {
+      "timeMs": 123463,
+      "verseStart": 12
+    },
+    {
+      "timeMs": 138092,
+      "verseStart": 13
+    },
+    {
+      "timeMs": 145237,
+      "verseStart": 14
+    },
+    {
+      "timeMs": 155924,
+      "verseStart": 15
+    },
+    {
+      "timeMs": 166371,
+      "verseStart": 16
+    },
+    {
+      "timeMs": 177259,
+      "verseStart": 17
+    },
+    {
+      "timeMs": 188866,
+      "verseStart": 18
+    },
+    {
+      "timeMs": 199553,
+      "verseStart": 19
+    },
+    {
+      "timeMs": 206218,
+      "verseStart": 20
+    },
+    {
+      "timeMs": 216885,
+      "verseStart": 21
+    },
+    {
+      "timeMs": 223069,
+      "verseStart": 22
+    },
+    {
+      "timeMs": 236678,
+      "verseStart": 23
+    },
+    {
+      "timeMs": 247145,
+      "verseStart": 24
+    },
+    {
+      "timeMs": 260174,
+      "verseStart": 25
+    },
+    {
+      "timeMs": 277666,
+      "verseStart": 26
+    },
+    {
+      "timeMs": 288233,
+      "verseStart": 27
+    },
+    {
+      "timeMs": 294057,
+      "verseStart": 28
+    },
+    {
+      "timeMs": 307626,
+      "verseStart": 29
+    },
+    {
+      "timeMs": 313249,
+      "verseStart": 30
+    },
+    {
+      "timeMs": 320454,
+      "verseStart": 31
+    },
+    {
+      "timeMs": 328960,
+      "verseStart": 32
+    },
+    {
+      "timeMs": 336885,
+      "verseStart": 33
+    },
+    {
+      "timeMs": 347092,
+      "verseStart": 34
+    },
+    {
+      "timeMs": 351815,
+      "verseStart": 35
+    },
+    {
+      "timeMs": 357059,
+      "verseStart": 36
+    }
+  ]
+}

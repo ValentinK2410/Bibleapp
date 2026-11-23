@@ -1,0 +1,95 @@
+{
+  "id": "gh_rbo_romans_5",
+  "translationCode": "RBO",
+  "bookId": "romans",
+  "chapter": 5,
+  "title": "К Римлянам 5 · РБО",
+  "narratorId": "rbo",
+  "audioFileName": "52_05.mp3",
+  "cues": [
+    {
+      "timeMs": 4503,
+      "verseStart": 1
+    },
+    {
+      "timeMs": 11849,
+      "verseStart": 2
+    },
+    {
+      "timeMs": 23817,
+      "verseStart": 3
+    },
+    {
+      "timeMs": 32103,
+      "verseStart": 4
+    },
+    {
+      "timeMs": 37507,
+      "verseStart": 5
+    },
+    {
+      "timeMs": 45793,
+      "verseStart": 6
+    },
+    {
+      "timeMs": 52778,
+      "verseStart": 7
+    },
+    {
+      "timeMs": 59984,
+      "verseStart": 8
+    },
+    {
+      "timeMs": 69370,
+      "verseStart": 9
+    },
+    {
+      "timeMs": 76115,
+      "verseStart": 10
+    },
+    {
+      "timeMs": 87343,
+      "verseStart": 11
+    },
+    {
+      "timeMs": 97651,
+      "verseStart": 12
+    },
+    {
+      "timeMs": 107938,
+      "verseStart": 13
+    },
+    {
+      "timeMs": 116505,
+      "verseStart": 14
+    },
+    {
+      "timeMs": 130515,
+      "verseStart": 15
+    },
+    {
+      "timeMs": 147847,
+      "verseStart": 16
+    },
+    {
+      "timeMs": 162458,
+      "verseStart": 17
+    },
+    {
+      "timeMs": 180511,
+      "verseStart": 18
+    },
+    {
+      "timeMs": 193180,
+      "verseStart": 19
+    },
+    {
+      "timeMs": 202987,
+      "verseStart": 20
+    },
+    {
+      "timeMs": 212815,
+      "verseStart": 21
+    }
+  ]
+}

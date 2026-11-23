@@ -1,0 +1,176 @@
+{
+  "id": "align-romans-RBO-09",
+  "translationCode": "RBO",
+  "bookId": "romans",
+  "chapter": 9,
+  "title": "К Римлянам 9 · РБО",
+  "audioFilePath": "/data/user/0/com.example.bible.sqlite/files/bible_audio/rbo/52_09.mp3",
+  "updatedAt": 1795392000000,
+  "cues": [
+    {
+      "timeMs": 5124,
+      "verseStart": 1,
+      "attachments": []
+    },
+    {
+      "timeMs": 14250,
+      "verseStart": 2,
+      "attachments": []
+    },
+    {
+      "timeMs": 18953,
+      "verseStart": 3,
+      "attachments": []
+    },
+    {
+      "timeMs": 27659,
+      "verseStart": 4,
+      "attachments": []
+    },
+    {
+      "timeMs": 41088,
+      "verseStart": 5,
+      "attachments": []
+    },
+    {
+      "timeMs": 54077,
+      "verseStart": 6,
+      "attachments": []
+    },
+    {
+      "timeMs": 64124,
+      "verseStart": 7,
+      "attachments": []
+    },
+    {
+      "timeMs": 74571,
+      "verseStart": 8,
+      "attachments": []
+    },
+    {
+      "timeMs": 86239,
+      "verseStart": 9,
+      "attachments": []
+    },
+    {
+      "timeMs": 95045,
+      "verseStart": 10,
+      "attachments": []
+    },
+    {
+      "timeMs": 103310,
+      "verseStart": 11,
+      "attachments": []
+    },
+    {
+      "timeMs": 117540,
+      "verseStart": 12,
+      "attachments": []
+    },
+    {
+      "timeMs": 123064,
+      "verseStart": 13,
+      "attachments": []
+    },
+    {
+      "timeMs": 131430,
+      "verseStart": 14,
+      "attachments": []
+    },
+    {
+      "timeMs": 139635,
+      "verseStart": 15,
+      "attachments": []
+    },
+    {
+      "timeMs": 149802,
+      "verseStart": 16,
+      "attachments": []
+    },
+    {
+      "timeMs": 158008,
+      "verseStart": 17,
+      "attachments": []
+    },
+    {
+      "timeMs": 170436,
+      "verseStart": 18,
+      "attachments": []
+    },
+    {
+      "timeMs": 178862,
+      "verseStart": 19,
+      "attachments": []
+    },
+    {
+      "timeMs": 189509,
+      "verseStart": 20,
+      "attachments": []
+    },
+    {
+      "timeMs": 199836,
+      "verseStart": 21,
+      "attachments": []
+    },
+    {
+      "timeMs": 207661,
+      "verseStart": 22,
+      "attachments": []
+    },
+    {
+      "timeMs": 216828,
+      "verseStart": 23,
+      "attachments": []
+    },
+    {
+      "timeMs": 232318,
+      "verseStart": 24,
+      "attachments": []
+    },
+    {
+      "timeMs": 236101,
+      "verseStart": 25,
+      "attachments": []
+    },
+    {
+      "timeMs": 246748,
+      "verseStart": 26,
+      "attachments": []
+    },
+    {
+      "timeMs": 256455,
+      "verseStart": 27,
+      "attachments": []
+    },
+    {
+      "timeMs": 267782,
+      "verseStart": 28,
+      "attachments": []
+    },
+    {
+      "timeMs": 274727,
+      "verseStart": 29,
+      "attachments": []
+    },
+    {
+      "timeMs": 286915,
+      "verseStart": 30,
+      "attachments": []
+    },
+    {
+      "timeMs": 298563,
+      "verseStart": 31,
+      "attachments": []
+    },
+    {
+      "timeMs": 306349,
+      "verseStart": 32,
+      "attachments": []
+    },
+    {
+      "timeMs": 316596,
+      "verseStart": 33,
+      "attachments": []
+    }
+  ]
+}

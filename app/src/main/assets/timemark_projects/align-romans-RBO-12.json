@@ -1,0 +1,116 @@
+{
+  "id": "align-romans-RBO-12",
+  "translationCode": "RBO",
+  "bookId": "romans",
+  "chapter": 12,
+  "title": "К Римлянам 12 · РБО",
+  "audioFilePath": "/data/user/0/com.example.bible.sqlite/files/bible_audio/rbo/52_12.mp3",
+  "updatedAt": 1795392000000,
+  "cues": [
+    {
+      "timeMs": 5144,
+      "verseStart": 1,
+      "attachments": []
+    },
+    {
+      "timeMs": 21435,
+      "verseStart": 2,
+      "attachments": []
+    },
+    {
+      "timeMs": 37866,
+      "verseStart": 3,
+      "attachments": []
+    },
+    {
+      "timeMs": 54037,
+      "verseStart": 4,
+      "attachments": []
+    },
+    {
+      "timeMs": 61882,
+      "verseStart": 5,
+      "attachments": []
+    },
+    {
+      "timeMs": 74771,
+      "verseStart": 6,
+      "attachments": []
+    },
+    {
+      "timeMs": 87800,
+      "verseStart": 7,
+      "attachments": []
+    },
+    {
+      "timeMs": 92983,
+      "verseStart": 8,
+      "attachments": []
+    },
+    {
+      "timeMs": 107393,
+      "verseStart": 9,
+      "attachments": []
+    },
+    {
+      "timeMs": 115078,
+      "verseStart": 10,
+      "attachments": []
+    },
+    {
+      "timeMs": 122763,
+      "verseStart": 11,
+      "attachments": []
+    },
+    {
+      "timeMs": 127246,
+      "verseStart": 12,
+      "attachments": []
+    },
+    {
+      "timeMs": 134071,
+      "verseStart": 13,
+      "attachments": []
+    },
+    {
+      "timeMs": 139815,
+      "verseStart": 14,
+      "attachments": []
+    },
+    {
+      "timeMs": 146119,
+      "verseStart": 15,
+      "attachments": []
+    },
+    {
+      "timeMs": 151263,
+      "verseStart": 16,
+      "attachments": []
+    },
+    {
+      "timeMs": 162891,
+      "verseStart": 17,
+      "attachments": []
+    },
+    {
+      "timeMs": 171476,
+      "verseStart": 18,
+      "attachments": []
+    },
+    {
+      "timeMs": 175959,
+      "verseStart": 19,
+      "attachments": []
+    },
+    {
+      "timeMs": 187187,
+      "verseStart": 20,
+      "attachments": []
+    },
+    {
+      "timeMs": 197934,
+      "verseStart": 21,
+      "attachments": []
+    }
+  ]
+}

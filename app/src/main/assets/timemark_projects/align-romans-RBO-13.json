@@ -1,0 +1,81 @@
+{
+  "id": "align-romans-RBO-13",
+  "translationCode": "RBO",
+  "bookId": "romans",
+  "chapter": 13,
+  "title": "К Римлянам 13 · РБО",
+  "audioFilePath": "/data/user/0/com.example.bible.sqlite/files/bible_audio/rbo/52_13.mp3",
+  "updatedAt": 1795392000000,
+  "cues": [
+    {
+      "timeMs": 4644,
+      "verseStart": 1,
+      "attachments": []
+    },
+    {
+      "timeMs": 13990,
+      "verseStart": 2,
+      "attachments": []
+    },
+    {
+      "timeMs": 24959,
+      "verseStart": 3,
+      "attachments": []
+    },
+    {
+      "timeMs": 34346,
+      "verseStart": 4,
+      "attachments": []
+    },
+    {
+      "timeMs": 51038,
+      "verseStart": 5,
+      "attachments": []
+    },
+    {
+      "timeMs": 59224,
+      "verseStart": 6,
+      "attachments": []
+    },
+    {
+      "timeMs": 66930,
+      "verseStart": 7,
+      "attachments": []
+    },
+    {
+      "timeMs": 76577,
+      "verseStart": 8,
+      "attachments": []
+    },
+    {
+      "timeMs": 86905,
+      "verseStart": 9,
+      "attachments": []
+    },
+    {
+      "timeMs": 103157,
+      "verseStart": 10,
+      "attachments": []
+    },
+    {
+      "timeMs": 111343,
+      "verseStart": 11,
+      "attachments": []
+    },
+    {
+      "timeMs": 123352,
+      "verseStart": 12,
+      "attachments": []
+    },
+    {
+      "timeMs": 132539,
+      "verseStart": 13,
+      "attachments": []
+    },
+    {
+      "timeMs": 142366,
+      "verseStart": 14,
+      "attachments": []
+    }
+  ]
+}

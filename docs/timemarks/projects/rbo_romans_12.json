@@ -1,0 +1,95 @@
+{
+  "id": "gh_rbo_romans_12",
+  "translationCode": "RBO",
+  "bookId": "romans",
+  "chapter": 12,
+  "title": "К Римлянам 12 · РБО",
+  "narratorId": "rbo",
+  "audioFileName": "52_12.mp3",
+  "cues": [
+    {
+      "timeMs": 5144,
+      "verseStart": 1
+    },
+    {
+      "timeMs": 21435,
+      "verseStart": 2
+    },
+    {
+      "timeMs": 37866,
+      "verseStart": 3
+    },
+    {
+      "timeMs": 54037,
+      "verseStart": 4
+    },
+    {
+      "timeMs": 61882,
+      "verseStart": 5
+    },
+    {
+      "timeMs": 74771,
+      "verseStart": 6
+    },
+    {
+      "timeMs": 87800,
+      "verseStart": 7
+    },
+    {
+      "timeMs": 92983,
+      "verseStart": 8
+    },
+    {
+      "timeMs": 107393,
+      "verseStart": 9
+    },
+    {
+      "timeMs": 115078,
+      "verseStart": 10
+    },
+    {
+      "timeMs": 122763,
+      "verseStart": 11
+    },
+    {
+      "timeMs": 127246,
+      "verseStart": 12
+    },
+    {
+      "timeMs": 134071,
+      "verseStart": 13
+    },
+    {
+      "timeMs": 139815,
+      "verseStart": 14
+    },
+    {
+      "timeMs": 146119,
+      "verseStart": 15
+    },
+    {
+      "timeMs": 151263,
+      "verseStart": 16
+    },
+    {
+      "timeMs": 162891,
+      "verseStart": 17
+    },
+    {
+      "timeMs": 171476,
+      "verseStart": 18
+    },
+    {
+      "timeMs": 175959,
+      "verseStart": 19
+    },
+    {
+      "timeMs": 187187,
+      "verseStart": 20
+    },
+    {
+      "timeMs": 197934,
+      "verseStart": 21
+    }
+  ]
+}

@@ -1,0 +1,127 @@
+{
+  "id": "gh_rbo_romans_2",
+  "translationCode": "RBO",
+  "bookId": "romans",
+  "chapter": 2,
+  "title": "К Римлянам 2 · РБО",
+  "narratorId": "rbo",
+  "audioFileName": "52_02.mp3",
+  "cues": [
+    {
+      "timeMs": 4403,
+      "verseStart": 1
+    },
+    {
+      "timeMs": 18353,
+      "verseStart": 2
+    },
+    {
+      "timeMs": 24697,
+      "verseStart": 3
+    },
+    {
+      "timeMs": 34484,
+      "verseStart": 4
+    },
+    {
+      "timeMs": 45712,
+      "verseStart": 5
+    },
+    {
+      "timeMs": 53337,
+      "verseStart": 6
+    },
+    {
+      "timeMs": 57000,
+      "verseStart": 7
+    },
+    {
+      "timeMs": 64145,
+      "verseStart": 8
+    },
+    {
+      "timeMs": 70890,
+      "verseStart": 9
+    },
+    {
+      "timeMs": 78615,
+      "verseStart": 10
+    },
+    {
+      "timeMs": 86781,
+      "verseStart": 11
+    },
+    {
+      "timeMs": 90023,
+      "verseStart": 12
+    },
+    {
+      "timeMs": 100130,
+      "verseStart": 13
+    },
+    {
+      "timeMs": 106435,
+      "verseStart": 14
+    },
+    {
+      "timeMs": 116502,
+      "verseStart": 15
+    },
+    {
+      "timeMs": 127449,
+      "verseStart": 16
+    },
+    {
+      "timeMs": 137116,
+      "verseStart": 17
+    },
+    {
+      "timeMs": 142360,
+      "verseStart": 18
+    },
+    {
+      "timeMs": 151286,
+      "verseStart": 19
+    },
+    {
+      "timeMs": 156109,
+      "verseStart": 20
+    },
+    {
+      "timeMs": 166437,
+      "verseStart": 21
+    },
+    {
+      "timeMs": 175023,
+      "verseStart": 22
+    },
+    {
+      "timeMs": 182788,
+      "verseStart": 23
+    },
+    {
+      "timeMs": 188612,
+      "verseStart": 24
+    },
+    {
+      "timeMs": 196037,
+      "verseStart": 25
+    },
+    {
+      "timeMs": 206324,
+      "verseStart": 26
+    },
+    {
+      "timeMs": 213349,
+      "verseStart": 27
+    },
+    {
+      "timeMs": 224897,
+      "verseStart": 28
+    },
+    {
+      "timeMs": 231482,
+      "verseStart": 29
+    }
+  ]
+}

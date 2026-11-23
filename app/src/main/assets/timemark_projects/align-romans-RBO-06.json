@@ -1,0 +1,126 @@
+{
+  "id": "align-romans-RBO-06",
+  "translationCode": "RBO",
+  "bookId": "romans",
+  "chapter": 6,
+  "title": "К Римлянам 6 · РБО",
+  "audioFilePath": "/data/user/0/com.example.bible.sqlite/files/bible_audio/rbo/52_06.mp3",
+  "updatedAt": 1795392000000,
+  "cues": [
+    {
+      "timeMs": 4383,
+      "verseStart": 1,
+      "attachments": []
+    },
+    {
+      "timeMs": 13410,
+      "verseStart": 2,
+      "attachments": []
+    },
+    {
+      "timeMs": 20976,
+      "verseStart": 3,
+      "attachments": []
+    },
+    {
+      "timeMs": 29742,
+      "verseStart": 4,
+      "attachments": []
+    },
+    {
+      "timeMs": 44733,
+      "verseStart": 5,
+      "attachments": []
+    },
+    {
+      "timeMs": 52799,
+      "verseStart": 6,
+      "attachments": []
+    },
+    {
+      "timeMs": 64128,
+      "verseStart": 7,
+      "attachments": []
+    },
+    {
+      "timeMs": 67870,
+      "verseStart": 8,
+      "attachments": []
+    },
+    {
+      "timeMs": 72494,
+      "verseStart": 9,
+      "attachments": []
+    },
+    {
+      "timeMs": 79599,
+      "verseStart": 10,
+      "attachments": []
+    },
+    {
+      "timeMs": 87385,
+      "verseStart": 11,
+      "attachments": []
+    },
+    {
+      "timeMs": 95251,
+      "verseStart": 12,
+      "attachments": []
+    },
+    {
+      "timeMs": 101555,
+      "verseStart": 13,
+      "attachments": []
+    },
+    {
+      "timeMs": 117507,
+      "verseStart": 14,
+      "attachments": []
+    },
+    {
+      "timeMs": 124693,
+      "verseStart": 15,
+      "attachments": []
+    },
+    {
+      "timeMs": 134800,
+      "verseStart": 16,
+      "attachments": []
+    },
+    {
+      "timeMs": 155616,
+      "verseStart": 17,
+      "attachments": []
+    },
+    {
+      "timeMs": 163602,
+      "verseStart": 18,
+      "attachments": []
+    },
+    {
+      "timeMs": 169906,
+      "verseStart": 19,
+      "attachments": []
+    },
+    {
+      "timeMs": 186218,
+      "verseStart": 20,
+      "attachments": []
+    },
+    {
+      "timeMs": 190682,
+      "verseStart": 21,
+      "attachments": []
+    },
+    {
+      "timeMs": 199148,
+      "verseStart": 22,
+      "attachments": []
+    },
+    {
+      "timeMs": 208935,
+      "verseStart": 23,
+      "attachments": []
+    }
+  ]
+}

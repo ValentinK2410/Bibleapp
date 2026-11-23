@@ -1,0 +1,67 @@
+{
+  "id": "gh_rbo_romans_13",
+  "translationCode": "RBO",
+  "bookId": "romans",
+  "chapter": 13,
+  "title": "К Римлянам 13 · РБО",
+  "narratorId": "rbo",
+  "audioFileName": "52_13.mp3",
+  "cues": [
+    {
+      "timeMs": 4644,
+      "verseStart": 1
+    },
+    {
+      "timeMs": 13990,
+      "verseStart": 2
+    },
+    {
+      "timeMs": 24959,
+      "verseStart": 3
+    },
+    {
+      "timeMs": 34346,
+      "verseStart": 4
+    },
+    {
+      "timeMs": 51038,
+      "verseStart": 5
+    },
+    {
+      "timeMs": 59224,
+      "verseStart": 6
+    },
+    {
+      "timeMs": 66930,
+      "verseStart": 7
+    },
+    {
+      "timeMs": 76577,
+      "verseStart": 8
+    },
+    {
+      "timeMs": 86905,
+      "verseStart": 9
+    },
+    {
+      "timeMs": 103157,
+      "verseStart": 10
+    },
+    {
+      "timeMs": 111343,
+      "verseStart": 11
+    },
+    {
+      "timeMs": 123352,
+      "verseStart": 12
+    },
+    {
+      "timeMs": 132539,
+      "verseStart": 13
+    },
+    {
+      "timeMs": 142366,
+      "verseStart": 14
+    }
+  ]
+}
