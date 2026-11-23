@@ -344,6 +344,36 @@
       "file": "projects/bti_2_corinthians_9.json"
     },
     {
+      "id": "gh_bti_2_thessalonians_1",
+      "translationCode": "BTI",
+      "bookId": "2_thessalonians",
+      "chapter": 1,
+      "title": "2-е Фессалоникийцам 1 · Кулаковых",
+      "cueCount": 12,
+      "narratorId": "bti",
+      "file": "projects/bti_2_thessalonians_1.json"
+    },
+    {
+      "id": "gh_bti_2_thessalonians_2",
+      "translationCode": "BTI",
+      "bookId": "2_thessalonians",
+      "chapter": 2,
+      "title": "2-е Фессалоникийцам 2 · Кулаковых",
+      "cueCount": 17,
+      "narratorId": "bti",
+      "file": "projects/bti_2_thessalonians_2.json"
+    },
+    {
+      "id": "gh_bti_2_thessalonians_3",
+      "translationCode": "BTI",
+      "bookId": "2_thessalonians",
+      "chapter": 3,
+      "title": "2-е Фессалоникийцам 3 · Кулаковых",
+      "cueCount": 18,
+      "narratorId": "bti",
+      "file": "projects/bti_2_thessalonians_3.json"
+    },
+    {
       "id": "gh_bti_colossians_1",
       "translationCode": "BTI",
       "bookId": "colossians",

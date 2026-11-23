@@ -1,0 +1,83 @@
+{
+  "id": "gh_bti_2_thessalonians_3",
+  "translationCode": "BTI",
+  "bookId": "2_thessalonians",
+  "chapter": 3,
+  "title": "2-е Фессалоникийцам 3 · Кулаковых",
+  "narratorId": "bti",
+  "audioFileName": "60_03.mp3",
+  "cues": [
+    {
+      "timeMs": 4724,
+      "verseStart": 1
+    },
+    {
+      "timeMs": 20636,
+      "verseStart": 2
+    },
+    {
+      "timeMs": 31203,
+      "verseStart": 3
+    },
+    {
+      "timeMs": 40170,
+      "verseStart": 4
+    },
+    {
+      "timeMs": 50238,
+      "verseStart": 5
+    },
+    {
+      "timeMs": 60305,
+      "verseStart": 6
+    },
+    {
+      "timeMs": 81781,
+      "verseStart": 7
+    },
+    {
+      "timeMs": 89067,
+      "verseStart": 8
+    },
+    {
+      "timeMs": 102777,
+      "verseStart": 9
+    },
+    {
+      "timeMs": 112965,
+      "verseStart": 10
+    },
+    {
+      "timeMs": 125514,
+      "verseStart": 11
+    },
+    {
+      "timeMs": 134961,
+      "verseStart": 12
+    },
+    {
+      "timeMs": 151073,
+      "verseStart": 13
+    },
+    {
+      "timeMs": 157998,
+      "verseStart": 14
+    },
+    {
+      "timeMs": 172829,
+      "verseStart": 15
+    },
+    {
+      "timeMs": 180275,
+      "verseStart": 16
+    },
+    {
+      "timeMs": 192964,
+      "verseStart": 17
+    },
+    {
+      "timeMs": 203733,
+      "verseStart": 18
+    }
+  ]
+}

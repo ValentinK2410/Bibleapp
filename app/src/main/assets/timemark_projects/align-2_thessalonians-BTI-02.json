@@ -1,0 +1,96 @@
+{
+  "id": "align-2_thessalonians-BTI-02",
+  "translationCode": "BTI",
+  "bookId": "2_thessalonians",
+  "chapter": 2,
+  "title": "2-е Фессалоникийцам 2 · Кулаковых",
+  "audioFilePath": "/data/user/0/com.example.bible.sqlite/files/bible_audio/bti/60_02.mp3",
+  "updatedAt": 1795392000000,
+  "cues": [
+    {
+      "timeMs": 3883,
+      "verseStart": 1,
+      "attachments": []
+    },
+    {
+      "timeMs": 18213,
+      "verseStart": 2,
+      "attachments": []
+    },
+    {
+      "timeMs": 34365,
+      "verseStart": 3,
+      "attachments": []
+    },
+    {
+      "timeMs": 52297,
+      "verseStart": 4,
+      "attachments": []
+    },
+    {
+      "timeMs": 70050,
+      "verseStart": 5,
+      "attachments": []
+    },
+    {
+      "timeMs": 76134,
+      "verseStart": 6,
+      "attachments": []
+    },
+    {
+      "timeMs": 85261,
+      "verseStart": 7,
+      "attachments": []
+    },
+    {
+      "timeMs": 100392,
+      "verseStart": 8,
+      "attachments": []
+    },
+    {
+      "timeMs": 119585,
+      "verseStart": 9,
+      "attachments": []
+    },
+    {
+      "timeMs": 135316,
+      "verseStart": 10,
+      "attachments": []
+    },
+    {
+      "timeMs": 151428,
+      "verseStart": 11,
+      "attachments": []
+    },
+    {
+      "timeMs": 162516,
+      "verseStart": 12,
+      "attachments": []
+    },
+    {
+      "timeMs": 173964,
+      "verseStart": 13,
+      "attachments": []
+    },
+    {
+      "timeMs": 196900,
+      "verseStart": 14,
+      "attachments": []
+    },
+    {
+      "timeMs": 210630,
+      "verseStart": 15,
+      "attachments": []
+    },
+    {
+      "timeMs": 223920,
+      "verseStart": 16,
+      "attachments": []
+    },
+    {
+      "timeMs": 238030,
+      "verseStart": 17,
+      "attachments": []
+    }
+  ]
+}
