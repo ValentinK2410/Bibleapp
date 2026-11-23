@@ -1,0 +1,95 @@
+{
+  "id": "gh_grk_1_timothy_6",
+  "translationCode": "PODSTR",
+  "bookId": "1_timothy",
+  "chapter": 6,
+  "title": "1-е Тимофею 6 · Греческий (Koine)",
+  "narratorId": "greek-nt",
+  "audioFileName": "54_06.mp3",
+  "cues": [
+    {
+      "timeMs": 601,
+      "verseStart": 1
+    },
+    {
+      "timeMs": 10808,
+      "verseStart": 2
+    },
+    {
+      "timeMs": 26039,
+      "verseStart": 3
+    },
+    {
+      "timeMs": 34285,
+      "verseStart": 4
+    },
+    {
+      "timeMs": 46394,
+      "verseStart": 5
+    },
+    {
+      "timeMs": 55821,
+      "verseStart": 6
+    },
+    {
+      "timeMs": 60104,
+      "verseStart": 7
+    },
+    {
+      "timeMs": 65829,
+      "verseStart": 8
+    },
+    {
+      "timeMs": 71613,
+      "verseStart": 9
+    },
+    {
+      "timeMs": 83742,
+      "verseStart": 10
+    },
+    {
+      "timeMs": 94870,
+      "verseStart": 11
+    },
+    {
+      "timeMs": 105258,
+      "verseStart": 12
+    },
+    {
+      "timeMs": 116026,
+      "verseStart": 13
+    },
+    {
+      "timeMs": 125613,
+      "verseStart": 14
+    },
+    {
+      "timeMs": 132338,
+      "verseStart": 15
+    },
+    {
+      "timeMs": 140724,
+      "verseStart": 16
+    },
+    {
+      "timeMs": 152253,
+      "verseStart": 17
+    },
+    {
+      "timeMs": 164942,
+      "verseStart": 18
+    },
+    {
+      "timeMs": 171307,
+      "verseStart": 19
+    },
+    {
+      "timeMs": 178552,
+      "verseStart": 20
+    },
+    {
+      "timeMs": 187839,
+      "verseStart": 21
+    }
+  ]
+}

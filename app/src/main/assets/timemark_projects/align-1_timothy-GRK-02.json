@@ -1,0 +1,86 @@
+{
+  "id": "align-1_timothy-GRK-02",
+  "translationCode": "PODSTR",
+  "bookId": "1_timothy",
+  "chapter": 2,
+  "title": "1-е Тимофею 2 · Греческий (Koine)",
+  "audioFilePath": "/data/user/0/com.example.bible.sqlite/files/bible_audio/greek-nt/54_02.mp3",
+  "updatedAt": 1794873600000,
+  "cues": [
+    {
+      "timeMs": 380,
+      "verseStart": 1,
+      "attachments": []
+    },
+    {
+      "timeMs": 8186,
+      "verseStart": 2,
+      "attachments": []
+    },
+    {
+      "timeMs": 17332,
+      "verseStart": 3,
+      "attachments": []
+    },
+    {
+      "timeMs": 21875,
+      "verseStart": 4,
+      "attachments": []
+    },
+    {
+      "timeMs": 27519,
+      "verseStart": 5,
+      "attachments": []
+    },
+    {
+      "timeMs": 32743,
+      "verseStart": 6,
+      "attachments": []
+    },
+    {
+      "timeMs": 37986,
+      "verseStart": 7,
+      "attachments": []
+    },
+    {
+      "timeMs": 45912,
+      "verseStart": 8,
+      "attachments": []
+    },
+    {
+      "timeMs": 54058,
+      "verseStart": 9,
+      "attachments": []
+    },
+    {
+      "timeMs": 65646,
+      "verseStart": 10,
+      "attachments": []
+    },
+    {
+      "timeMs": 70469,
+      "verseStart": 11,
+      "attachments": []
+    },
+    {
+      "timeMs": 74272,
+      "verseStart": 12,
+      "attachments": []
+    },
+    {
+      "timeMs": 80616,
+      "verseStart": 13,
+      "attachments": []
+    },
+    {
+      "timeMs": 83698,
+      "verseStart": 14,
+      "attachments": []
+    },
+    {
+      "timeMs": 89282,
+      "verseStart": 15,
+      "attachments": []
+    }
+  ]
+}

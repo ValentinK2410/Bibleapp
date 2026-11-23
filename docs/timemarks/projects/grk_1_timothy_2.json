@@ -1,0 +1,71 @@
+{
+  "id": "gh_grk_1_timothy_2",
+  "translationCode": "PODSTR",
+  "bookId": "1_timothy",
+  "chapter": 2,
+  "title": "1-е Тимофею 2 · Греческий (Koine)",
+  "narratorId": "greek-nt",
+  "audioFileName": "54_02.mp3",
+  "cues": [
+    {
+      "timeMs": 380,
+      "verseStart": 1
+    },
+    {
+      "timeMs": 8186,
+      "verseStart": 2
+    },
+    {
+      "timeMs": 17332,
+      "verseStart": 3
+    },
+    {
+      "timeMs": 21875,
+      "verseStart": 4
+    },
+    {
+      "timeMs": 27519,
+      "verseStart": 5
+    },
+    {
+      "timeMs": 32743,
+      "verseStart": 6
+    },
+    {
+      "timeMs": 37986,
+      "verseStart": 7
+    },
+    {
+      "timeMs": 45912,
+      "verseStart": 8
+    },
+    {
+      "timeMs": 54058,
+      "verseStart": 9
+    },
+    {
+      "timeMs": 65646,
+      "verseStart": 10
+    },
+    {
+      "timeMs": 70469,
+      "verseStart": 11
+    },
+    {
+      "timeMs": 74272,
+      "verseStart": 12
+    },
+    {
+      "timeMs": 80616,
+      "verseStart": 13
+    },
+    {
+      "timeMs": 83698,
+      "verseStart": 14
+    },
+    {
+      "timeMs": 89282,
+      "verseStart": 15
+    }
+  ]
+}

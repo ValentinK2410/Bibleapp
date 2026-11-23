@@ -1,0 +1,91 @@
+{
+  "id": "align-1_timothy-GRK-04",
+  "translationCode": "PODSTR",
+  "bookId": "1_timothy",
+  "chapter": 4,
+  "title": "1-е Тимофею 4 · Греческий (Koine)",
+  "audioFilePath": "/data/user/0/com.example.bible.sqlite/files/bible_audio/greek-nt/54_04.mp3",
+  "updatedAt": 1794873600000,
+  "cues": [
+    {
+      "timeMs": 681,
+      "verseStart": 1,
+      "attachments": []
+    },
+    {
+      "timeMs": 12649,
+      "verseStart": 2,
+      "attachments": []
+    },
+    {
+      "timeMs": 17273,
+      "verseStart": 3,
+      "attachments": []
+    },
+    {
+      "timeMs": 27420,
+      "verseStart": 4,
+      "attachments": []
+    },
+    {
+      "timeMs": 34005,
+      "verseStart": 5,
+      "attachments": []
+    },
+    {
+      "timeMs": 37728,
+      "verseStart": 6,
+      "attachments": []
+    },
+    {
+      "timeMs": 49157,
+      "verseStart": 7,
+      "attachments": []
+    },
+    {
+      "timeMs": 55521,
+      "verseStart": 8,
+      "attachments": []
+    },
+    {
+      "timeMs": 67410,
+      "verseStart": 9,
+      "attachments": []
+    },
+    {
+      "timeMs": 70793,
+      "verseStart": 10,
+      "attachments": []
+    },
+    {
+      "timeMs": 80640,
+      "verseStart": 11,
+      "attachments": []
+    },
+    {
+      "timeMs": 82782,
+      "verseStart": 12,
+      "attachments": []
+    },
+    {
+      "timeMs": 92849,
+      "verseStart": 13,
+      "attachments": []
+    },
+    {
+      "timeMs": 98133,
+      "verseStart": 14,
+      "attachments": []
+    },
+    {
+      "timeMs": 105959,
+      "verseStart": 15,
+      "attachments": []
+    },
+    {
+      "timeMs": 111323,
+      "verseStart": 16,
+      "attachments": []
+    }
+  ]
+}

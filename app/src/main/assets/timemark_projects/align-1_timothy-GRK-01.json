@@ -1,0 +1,111 @@
+{
+  "id": "align-1_timothy-GRK-01",
+  "translationCode": "PODSTR",
+  "bookId": "1_timothy",
+  "chapter": 1,
+  "title": "1-е Тимофею 1 · Греческий (Koine)",
+  "audioFilePath": "/data/user/0/com.example.bible.sqlite/files/bible_audio/greek-nt/54_01.mp3",
+  "updatedAt": 1794873600000,
+  "cues": [
+    {
+      "timeMs": 440,
+      "verseStart": 1,
+      "attachments": []
+    },
+    {
+      "timeMs": 8447,
+      "verseStart": 2,
+      "attachments": []
+    },
+    {
+      "timeMs": 17133,
+      "verseStart": 3,
+      "attachments": []
+    },
+    {
+      "timeMs": 25079,
+      "verseStart": 4,
+      "attachments": []
+    },
+    {
+      "timeMs": 33406,
+      "verseStart": 5,
+      "attachments": []
+    },
+    {
+      "timeMs": 41092,
+      "verseStart": 6,
+      "attachments": []
+    },
+    {
+      "timeMs": 45755,
+      "verseStart": 7,
+      "attachments": []
+    },
+    {
+      "timeMs": 52200,
+      "verseStart": 8,
+      "attachments": []
+    },
+    {
+      "timeMs": 56644,
+      "verseStart": 9,
+      "attachments": []
+    },
+    {
+      "timeMs": 68813,
+      "verseStart": 10,
+      "attachments": []
+    },
+    {
+      "timeMs": 78341,
+      "verseStart": 11,
+      "attachments": []
+    },
+    {
+      "timeMs": 83445,
+      "verseStart": 12,
+      "attachments": []
+    },
+    {
+      "timeMs": 91431,
+      "verseStart": 13,
+      "attachments": []
+    },
+    {
+      "timeMs": 100438,
+      "verseStart": 14,
+      "attachments": []
+    },
+    {
+      "timeMs": 106763,
+      "verseStart": 15,
+      "attachments": []
+    },
+    {
+      "timeMs": 116270,
+      "verseStart": 16,
+      "attachments": []
+    },
+    {
+      "timeMs": 127499,
+      "verseStart": 17,
+      "attachments": []
+    },
+    {
+      "timeMs": 136466,
+      "verseStart": 18,
+      "attachments": []
+    },
+    {
+      "timeMs": 146053,
+      "verseStart": 19,
+      "attachments": []
+    },
+    {
+      "timeMs": 152398,
+      "verseStart": 20,
+      "attachments": []
+    }
+  ]
+}
