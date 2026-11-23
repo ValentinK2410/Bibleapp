@@ -294,6 +294,66 @@
       "file": "projects/bti_2_corinthians_9.json"
     },
     {
+      "id": "gh_bti_galatians_1",
+      "translationCode": "BTI",
+      "bookId": "galatians",
+      "chapter": 1,
+      "title": "К Галатам 1 · Кулаковых",
+      "cueCount": 24,
+      "narratorId": "bti",
+      "file": "projects/bti_galatians_1.json"
+    },
+    {
+      "id": "gh_bti_galatians_2",
+      "translationCode": "BTI",
+      "bookId": "galatians",
+      "chapter": 2,
+      "title": "К Галатам 2 · Кулаковых",
+      "cueCount": 21,
+      "narratorId": "bti",
+      "file": "projects/bti_galatians_2.json"
+    },
+    {
+      "id": "gh_bti_galatians_3",
+      "translationCode": "BTI",
+      "bookId": "galatians",
+      "chapter": 3,
+      "title": "К Галатам 3 · Кулаковых",
+      "cueCount": 29,
+      "narratorId": "bti",
+      "file": "projects/bti_galatians_3.json"
+    },
+    {
+      "id": "gh_bti_galatians_4",
+      "translationCode": "BTI",
+      "bookId": "galatians",
+      "chapter": 4,
+      "title": "К Галатам 4 · Кулаковых",
+      "cueCount": 31,
+      "narratorId": "bti",
+      "file": "projects/bti_galatians_4.json"
+    },
+    {
+      "id": "gh_bti_galatians_5",
+      "translationCode": "BTI",
+      "bookId": "galatians",
+      "chapter": 5,
+      "title": "К Галатам 5 · Кулаковых",
+      "cueCount": 26,
+      "narratorId": "bti",
+      "file": "projects/bti_galatians_5.json"
+    },
+    {
+      "id": "gh_bti_galatians_6",
+      "translationCode": "BTI",
+      "bookId": "galatians",
+      "chapter": 6,
+      "title": "К Галатам 6 · Кулаковых",
+      "cueCount": 18,
+      "narratorId": "bti",
+      "file": "projects/bti_galatians_6.json"
+    },
+    {
       "id": "gh_bti_john_1",
       "translationCode": "BTI",
       "bookId": "john",

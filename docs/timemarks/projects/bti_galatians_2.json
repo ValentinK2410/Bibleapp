@@ -1,0 +1,95 @@
+{
+  "id": "gh_bti_galatians_2",
+  "translationCode": "BTI",
+  "bookId": "galatians",
+  "chapter": 2,
+  "title": "К Галатам 2 · Кулаковых",
+  "narratorId": "bti",
+  "audioFileName": "55_02.mp3",
+  "cues": [
+    {
+      "timeMs": 3843,
+      "verseStart": 1
+    },
+    {
+      "timeMs": 16412,
+      "verseStart": 2
+    },
+    {
+      "timeMs": 39228,
+      "verseStart": 3
+    },
+    {
+      "timeMs": 47173,
+      "verseStart": 4
+    },
+    {
+      "timeMs": 62924,
+      "verseStart": 5
+    },
+    {
+      "timeMs": 75513,
+      "verseStart": 6
+    },
+    {
+      "timeMs": 95727,
+      "verseStart": 7
+    },
+    {
+      "timeMs": 104794,
+      "verseStart": 8
+    },
+    {
+      "timeMs": 116121,
+      "verseStart": 9
+    },
+    {
+      "timeMs": 142540,
+      "verseStart": 10
+    },
+    {
+      "timeMs": 151967,
+      "verseStart": 11
+    },
+    {
+      "timeMs": 165776,
+      "verseStart": 12
+    },
+    {
+      "timeMs": 185650,
+      "verseStart": 13
+    },
+    {
+      "timeMs": 194997,
+      "verseStart": 14
+    },
+    {
+      "timeMs": 217993,
+      "verseStart": 15
+    },
+    {
+      "timeMs": 224517,
+      "verseStart": 16
+    },
+    {
+      "timeMs": 253118,
+      "verseStart": 17
+    },
+    {
+      "timeMs": 275473,
+      "verseStart": 18
+    },
+    {
+      "timeMs": 285020,
+      "verseStart": 19
+    },
+    {
+      "timeMs": 301011,
+      "verseStart": 20
+    },
+    {
+      "timeMs": 321365,
+      "verseStart": 21
+    }
+  ]
+}

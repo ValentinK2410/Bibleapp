@@ -1,0 +1,135 @@
+{
+  "id": "gh_bti_galatians_4",
+  "translationCode": "BTI",
+  "bookId": "galatians",
+  "chapter": 4,
+  "title": "К Галатам 4 · Кулаковых",
+  "narratorId": "bti",
+  "audioFileName": "55_04.mp3",
+  "cues": [
+    {
+      "timeMs": 4723,
+      "verseStart": 1
+    },
+    {
+      "timeMs": 15711,
+      "verseStart": 2
+    },
+    {
+      "timeMs": 23056,
+      "verseStart": 3
+    },
+    {
+      "timeMs": 32963,
+      "verseStart": 4
+    },
+    {
+      "timeMs": 45812,
+      "verseStart": 5
+    },
+    {
+      "timeMs": 51696,
+      "verseStart": 6
+    },
+    {
+      "timeMs": 69128,
+      "verseStart": 7
+    },
+    {
+      "timeMs": 81997,
+      "verseStart": 8
+    },
+    {
+      "timeMs": 90202,
+      "verseStart": 9
+    },
+    {
+      "timeMs": 110196,
+      "verseStart": 10
+    },
+    {
+      "timeMs": 115099,
+      "verseStart": 11
+    },
+    {
+      "timeMs": 123625,
+      "verseStart": 12
+    },
+    {
+      "timeMs": 135573,
+      "verseStart": 13
+    },
+    {
+      "timeMs": 143379,
+      "verseStart": 14
+    },
+    {
+      "timeMs": 160691,
+      "verseStart": 15
+    },
+    {
+      "timeMs": 175221,
+      "verseStart": 16
+    },
+    {
+      "timeMs": 183406,
+      "verseStart": 17
+    },
+    {
+      "timeMs": 195134,
+      "verseStart": 18
+    },
+    {
+      "timeMs": 205642,
+      "verseStart": 19
+    },
+    {
+      "timeMs": 217590,
+      "verseStart": 20
+    },
+    {
+      "timeMs": 229718,
+      "verseStart": 21
+    },
+    {
+      "timeMs": 238805,
+      "verseStart": 22
+    },
+    {
+      "timeMs": 249672,
+      "verseStart": 23
+    },
+    {
+      "timeMs": 262961,
+      "verseStart": 24
+    },
+    {
+      "timeMs": 282715,
+      "verseStart": 25
+    },
+    {
+      "timeMs": 296064,
+      "verseStart": 26
+    },
+    {
+      "timeMs": 303829,
+      "verseStart": 27
+    },
+    {
+      "timeMs": 329947,
+      "verseStart": 28
+    },
+    {
+      "timeMs": 338853,
+      "verseStart": 29
+    },
+    {
+      "timeMs": 350802,
+      "verseStart": 30
+    },
+    {
+      "timeMs": 366593,
+      "verseStart": 31
+    }
+  ]
+}

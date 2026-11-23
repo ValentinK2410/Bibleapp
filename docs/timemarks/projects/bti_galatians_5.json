@@ -1,0 +1,115 @@
+{
+  "id": "gh_bti_galatians_5",
+  "translationCode": "BTI",
+  "bookId": "galatians",
+  "chapter": 5,
+  "title": "К Галатам 5 · Кулаковых",
+  "narratorId": "bti",
+  "audioFileName": "55_05.mp3",
+  "cues": [
+    {
+      "timeMs": 4383,
+      "verseStart": 1
+    },
+    {
+      "timeMs": 19173,
+      "verseStart": 2
+    },
+    {
+      "timeMs": 30680,
+      "verseStart": 3
+    },
+    {
+      "timeMs": 40627,
+      "verseStart": 4
+    },
+    {
+      "timeMs": 51994,
+      "verseStart": 5
+    },
+    {
+      "timeMs": 63962,
+      "verseStart": 6
+    },
+    {
+      "timeMs": 81753,
+      "verseStart": 7
+    },
+    {
+      "timeMs": 89338,
+      "verseStart": 8
+    },
+    {
+      "timeMs": 95542,
+      "verseStart": 9
+    },
+    {
+      "timeMs": 100245,
+      "verseStart": 10
+    },
+    {
+      "timeMs": 114975,
+      "verseStart": 11
+    },
+    {
+      "timeMs": 137350,
+      "verseStart": 12
+    },
+    {
+      "timeMs": 149378,
+      "verseStart": 13
+    },
+    {
+      "timeMs": 163627,
+      "verseStart": 14
+    },
+    {
+      "timeMs": 171932,
+      "verseStart": 15
+    },
+    {
+      "timeMs": 182619,
+      "verseStart": 16
+    },
+    {
+      "timeMs": 192105,
+      "verseStart": 17
+    },
+    {
+      "timeMs": 209377,
+      "verseStart": 18
+    },
+    {
+      "timeMs": 216882,
+      "verseStart": 19
+    },
+    {
+      "timeMs": 227609,
+      "verseStart": 20
+    },
+    {
+      "timeMs": 243979,
+      "verseStart": 21
+    },
+    {
+      "timeMs": 264172,
+      "verseStart": 22
+    },
+    {
+      "timeMs": 281284,
+      "verseStart": 23
+    },
+    {
+      "timeMs": 294172,
+      "verseStart": 24
+    },
+    {
+      "timeMs": 302057,
+      "verseStart": 25
+    },
+    {
+      "timeMs": 307621,
+      "verseStart": 26
+    }
+  ]
+}

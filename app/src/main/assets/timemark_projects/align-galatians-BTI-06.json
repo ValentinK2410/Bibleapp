@@ -1,0 +1,101 @@
+{
+  "id": "align-galatians-BTI-06",
+  "translationCode": "BTI",
+  "bookId": "galatians",
+  "chapter": 6,
+  "title": "К Галатам 6 · Кулаковых",
+  "audioFilePath": "/data/user/0/com.example.bible.sqlite/files/bible_audio/bti/55_06.mp3",
+  "updatedAt": 1795392000000,
+  "cues": [
+    {
+      "timeMs": 4683,
+      "verseStart": 1,
+      "attachments": []
+    },
+    {
+      "timeMs": 24798,
+      "verseStart": 2,
+      "attachments": []
+    },
+    {
+      "timeMs": 31822,
+      "verseStart": 3,
+      "attachments": []
+    },
+    {
+      "timeMs": 39748,
+      "verseStart": 4,
+      "attachments": []
+    },
+    {
+      "timeMs": 53177,
+      "verseStart": 5,
+      "attachments": []
+    },
+    {
+      "timeMs": 59602,
+      "verseStart": 6,
+      "attachments": []
+    },
+    {
+      "timeMs": 67608,
+      "verseStart": 7,
+      "attachments": []
+    },
+    {
+      "timeMs": 76434,
+      "verseStart": 8,
+      "attachments": []
+    },
+    {
+      "timeMs": 90244,
+      "verseStart": 9,
+      "attachments": []
+    },
+    {
+      "timeMs": 100851,
+      "verseStart": 10,
+      "attachments": []
+    },
+    {
+      "timeMs": 112399,
+      "verseStart": 11,
+      "attachments": []
+    },
+    {
+      "timeMs": 119404,
+      "verseStart": 12,
+      "attachments": []
+    },
+    {
+      "timeMs": 132413,
+      "verseStart": 13,
+      "attachments": []
+    },
+    {
+      "timeMs": 144582,
+      "verseStart": 14,
+      "attachments": []
+    },
+    {
+      "timeMs": 162855,
+      "verseStart": 15,
+      "attachments": []
+    },
+    {
+      "timeMs": 174983,
+      "verseStart": 16,
+      "attachments": []
+    },
+    {
+      "timeMs": 189073,
+      "verseStart": 17,
+      "attachments": []
+    },
+    {
+      "timeMs": 201522,
+      "verseStart": 18,
+      "attachments": []
+    }
+  ]
+}
