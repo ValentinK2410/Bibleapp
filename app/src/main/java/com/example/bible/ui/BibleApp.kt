@@ -244,6 +244,8 @@ import com.example.bible.ui.housecare.FloorRoomsScreen
 import com.example.bible.ui.housecare.CleaningDayScreen
 import com.example.bible.ui.housecare.FamilyMenuScreen
 import com.example.bible.ui.housecare.HouseCareHubScreen
+import com.example.bible.ui.mynotes.MyNoteEditorScreen
+import com.example.bible.ui.mynotes.MyNotesScreen
 import com.example.bible.ui.housecare.HouseCareSettingsScreen
 import com.example.bible.ui.housecare.HouseCareViewModel
 import com.example.bible.ui.housecare.PlaceDaysScreen
@@ -2100,6 +2102,29 @@ private fun BibleNavHost(
                 onOpenCleaning = { navController.navigate("house_cleaning") },
                 onOpenStats = { navController.navigate("house_clean_stats") },
                 onOpenFamilyMenu = { navController.navigate("house_family_menu") },
+            )
+        }
+        composable("my_notes") {
+            MyNotesScreen(
+                onBack = { navController.navigateUp() },
+                onOpenNote = { id -> navController.navigate("my_note/$id") },
+                onCreate = { id -> navController.navigate("my_note/$id?fresh=true") },
+            )
+        }
+        composable(
+            route = "my_note/{noteId}?fresh={fresh}",
+            arguments = listOf(
+                navArgument("noteId") { type = NavType.StringType },
+                navArgument("fresh") {
+                    type = NavType.BoolType
+                    defaultValue = false
+                },
+            ),
+        ) { entry ->
+            MyNoteEditorScreen(
+                noteId = entry.arguments?.getString("noteId").orEmpty(),
+                fresh = entry.arguments?.getBoolean("fresh") == true,
+                onBack = { navController.navigateUp() },
             )
         }
         composable("house_family_menu") {

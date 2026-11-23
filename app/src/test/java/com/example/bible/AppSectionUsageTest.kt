@@ -17,6 +17,8 @@ class AppSectionUsageTest {
         assertEquals("songs", AppSectionUsage.sectionIdForRoute("songs_pv"))
         assertEquals("kids_games", AppSectionUsage.sectionIdForRoute("kids_checkers"))
         assertEquals("quran", AppSectionUsage.sectionIdForRoute("quran/{surah}/v/{verse}"))
+        assertEquals("my_notes", AppSectionUsage.sectionIdForRoute("my_notes"))
+        assertEquals("my_notes", AppSectionUsage.sectionIdForRoute("my_note/abc?fresh=true"))
         assertNull(AppSectionUsage.sectionIdForRoute("books"))
     }
 
