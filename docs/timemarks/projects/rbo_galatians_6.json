@@ -1,0 +1,83 @@
+{
+  "id": "gh_rbo_galatians_6",
+  "translationCode": "RBO",
+  "bookId": "galatians",
+  "chapter": 6,
+  "title": "К Галатам 6 · РБО",
+  "narratorId": "rbo",
+  "audioFileName": "55_06.mp3",
+  "cues": [
+    {
+      "timeMs": 4363,
+      "verseStart": 1
+    },
+    {
+      "timeMs": 21975,
+      "verseStart": 2
+    },
+    {
+      "timeMs": 28979,
+      "verseStart": 3
+    },
+    {
+      "timeMs": 36164,
+      "verseStart": 4
+    },
+    {
+      "timeMs": 44770,
+      "verseStart": 5
+    },
+    {
+      "timeMs": 48052,
+      "verseStart": 6
+    },
+    {
+      "timeMs": 55317,
+      "verseStart": 7
+    },
+    {
+      "timeMs": 62802,
+      "verseStart": 8
+    },
+    {
+      "timeMs": 72469,
+      "verseStart": 9
+    },
+    {
+      "timeMs": 81775,
+      "verseStart": 10
+    },
+    {
+      "timeMs": 91361,
+      "verseStart": 11
+    },
+    {
+      "timeMs": 96305,
+      "verseStart": 12
+    },
+    {
+      "timeMs": 107432,
+      "verseStart": 13
+    },
+    {
+      "timeMs": 115938,
+      "verseStart": 14
+    },
+    {
+      "timeMs": 128566,
+      "verseStart": 15
+    },
+    {
+      "timeMs": 136492,
+      "verseStart": 16
+    },
+    {
+      "timeMs": 144657,
+      "verseStart": 17
+    },
+    {
+      "timeMs": 153083,
+      "verseStart": 18
+    }
+  ]
+}

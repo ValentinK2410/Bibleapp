@@ -1,0 +1,95 @@
+{
+  "id": "gh_rbo_galatians_2",
+  "translationCode": "RBO",
+  "bookId": "galatians",
+  "chapter": 2,
+  "title": "К Галатам 2 · РБО",
+  "narratorId": "rbo",
+  "audioFileName": "55_02.mp3",
+  "cues": [
+    {
+      "timeMs": 4203,
+      "verseStart": 1
+    },
+    {
+      "timeMs": 11628,
+      "verseStart": 2
+    },
+    {
+      "timeMs": 32922,
+      "verseStart": 3
+    },
+    {
+      "timeMs": 41688,
+      "verseStart": 4
+    },
+    {
+      "timeMs": 55517,
+      "verseStart": 5
+    },
+    {
+      "timeMs": 63342,
+      "verseStart": 6
+    },
+    {
+      "timeMs": 79533,
+      "verseStart": 7
+    },
+    {
+      "timeMs": 89399,
+      "verseStart": 8
+    },
+    {
+      "timeMs": 99146,
+      "verseStart": 9
+    },
+    {
+      "timeMs": 115636,
+      "verseStart": 10
+    },
+    {
+      "timeMs": 124622,
+      "verseStart": 11
+    },
+    {
+      "timeMs": 132788,
+      "verseStart": 12
+    },
+    {
+      "timeMs": 148558,
+      "verseStart": 13
+    },
+    {
+      "timeMs": 156203,
+      "verseStart": 14
+    },
+    {
+      "timeMs": 177197,
+      "verseStart": 15
+    },
+    {
+      "timeMs": 182080,
+      "verseStart": 16
+    },
+    {
+      "timeMs": 204555,
+      "verseStart": 17
+    },
+    {
+      "timeMs": 221726,
+      "verseStart": 18
+    },
+    {
+      "timeMs": 228851,
+      "verseStart": 19
+    },
+    {
+      "timeMs": 238518,
+      "verseStart": 20
+    },
+    {
+      "timeMs": 253527,
+      "verseStart": 21
+    }
+  ]
+}
