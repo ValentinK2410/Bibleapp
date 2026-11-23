@@ -1,0 +1,143 @@
+{
+  "id": "gh_grk_ephesians_5",
+  "translationCode": "PODSTR",
+  "bookId": "ephesians",
+  "chapter": 5,
+  "title": "К Ефесянам 5 · Греческий (Koine)",
+  "narratorId": "greek-nt",
+  "audioFileName": "49_05.mp3",
+  "cues": [
+    {
+      "timeMs": 781,
+      "verseStart": 1
+    },
+    {
+      "timeMs": 4723,
+      "verseStart": 2
+    },
+    {
+      "timeMs": 15510,
+      "verseStart": 3
+    },
+    {
+      "timeMs": 23655,
+      "verseStart": 4
+    },
+    {
+      "timeMs": 31200,
+      "verseStart": 5
+    },
+    {
+      "timeMs": 43508,
+      "verseStart": 6
+    },
+    {
+      "timeMs": 51153,
+      "verseStart": 7
+    },
+    {
+      "timeMs": 54055,
+      "verseStart": 8
+    },
+    {
+      "timeMs": 60860,
+      "verseStart": 9
+    },
+    {
+      "timeMs": 66603,
+      "verseStart": 10
+    },
+    {
+      "timeMs": 70026,
+      "verseStart": 11
+    },
+    {
+      "timeMs": 76210,
+      "verseStart": 12
+    },
+    {
+      "timeMs": 80773,
+      "verseStart": 13
+    },
+    {
+      "timeMs": 87577,
+      "verseStart": 14
+    },
+    {
+      "timeMs": 96063,
+      "verseStart": 15
+    },
+    {
+      "timeMs": 101486,
+      "verseStart": 16
+    },
+    {
+      "timeMs": 106209,
+      "verseStart": 17
+    },
+    {
+      "timeMs": 111292,
+      "verseStart": 18
+    },
+    {
+      "timeMs": 117296,
+      "verseStart": 19
+    },
+    {
+      "timeMs": 126562,
+      "verseStart": 20
+    },
+    {
+      "timeMs": 133427,
+      "verseStart": 21
+    },
+    {
+      "timeMs": 136409,
+      "verseStart": 22
+    },
+    {
+      "timeMs": 140391,
+      "verseStart": 23
+    },
+    {
+      "timeMs": 147936,
+      "verseStart": 24
+    },
+    {
+      "timeMs": 154881,
+      "verseStart": 25
+    },
+    {
+      "timeMs": 162706,
+      "verseStart": 26
+    },
+    {
+      "timeMs": 167529,
+      "verseStart": 27
+    },
+    {
+      "timeMs": 178736,
+      "verseStart": 28
+    },
+    {
+      "timeMs": 188743,
+      "verseStart": 29
+    },
+    {
+      "timeMs": 196948,
+      "verseStart": 30
+    },
+    {
+      "timeMs": 200491,
+      "verseStart": 31
+    },
+    {
+      "timeMs": 210037,
+      "verseStart": 32
+    },
+    {
+      "timeMs": 215820,
+      "verseStart": 33
+    }
+  ]
+}

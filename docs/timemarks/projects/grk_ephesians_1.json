@@ -1,0 +1,103 @@
+{
+  "id": "gh_grk_ephesians_1",
+  "translationCode": "PODSTR",
+  "bookId": "ephesians",
+  "chapter": 1,
+  "title": "К Ефесянам 1 · Греческий (Koine)",
+  "narratorId": "greek-nt",
+  "audioFileName": "49_01.mp3",
+  "cues": [
+    {
+      "timeMs": 480,
+      "verseStart": 1
+    },
+    {
+      "timeMs": 9627,
+      "verseStart": 2
+    },
+    {
+      "timeMs": 15271,
+      "verseStart": 3
+    },
+    {
+      "timeMs": 26320,
+      "verseStart": 4
+    },
+    {
+      "timeMs": 35466,
+      "verseStart": 5
+    },
+    {
+      "timeMs": 43632,
+      "verseStart": 6
+    },
+    {
+      "timeMs": 49417,
+      "verseStart": 7
+    },
+    {
+      "timeMs": 58884,
+      "verseStart": 8
+    },
+    {
+      "timeMs": 63067,
+      "verseStart": 9
+    },
+    {
+      "timeMs": 69872,
+      "verseStart": 10
+    },
+    {
+      "timeMs": 80760,
+      "verseStart": 11
+    },
+    {
+      "timeMs": 89086,
+      "verseStart": 12
+    },
+    {
+      "timeMs": 95031,
+      "verseStart": 13
+    },
+    {
+      "timeMs": 107080,
+      "verseStart": 14
+    },
+    {
+      "timeMs": 115386,
+      "verseStart": 15
+    },
+    {
+      "timeMs": 123232,
+      "verseStart": 16
+    },
+    {
+      "timeMs": 128415,
+      "verseStart": 17
+    },
+    {
+      "timeMs": 138443,
+      "verseStart": 18
+    },
+    {
+      "timeMs": 151432,
+      "verseStart": 19
+    },
+    {
+      "timeMs": 161500,
+      "verseStart": 20
+    },
+    {
+      "timeMs": 169206,
+      "verseStart": 21
+    },
+    {
+      "timeMs": 180614,
+      "verseStart": 22
+    },
+    {
+      "timeMs": 187359,
+      "verseStart": 23
+    }
+  ]
+}

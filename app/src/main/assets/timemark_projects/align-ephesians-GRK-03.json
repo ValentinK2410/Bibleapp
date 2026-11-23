@@ -1,0 +1,116 @@
+{
+  "id": "align-ephesians-GRK-03",
+  "translationCode": "PODSTR",
+  "bookId": "ephesians",
+  "chapter": 3,
+  "title": "К Ефесянам 3 · Греческий (Koine)",
+  "audioFilePath": "/data/user/0/com.example.bible.sqlite/files/bible_audio/greek-nt/49_03.mp3",
+  "updatedAt": 1794873600000,
+  "cues": [
+    {
+      "timeMs": 640,
+      "verseStart": 1,
+      "attachments": []
+    },
+    {
+      "timeMs": 7385,
+      "verseStart": 2,
+      "attachments": []
+    },
+    {
+      "timeMs": 13609,
+      "verseStart": 3,
+      "attachments": []
+    },
+    {
+      "timeMs": 19493,
+      "verseStart": 4,
+      "attachments": []
+    },
+    {
+      "timeMs": 25897,
+      "verseStart": 5,
+      "attachments": []
+    },
+    {
+      "timeMs": 35624,
+      "verseStart": 6,
+      "attachments": []
+    },
+    {
+      "timeMs": 44690,
+      "verseStart": 7,
+      "attachments": []
+    },
+    {
+      "timeMs": 53675,
+      "verseStart": 8,
+      "attachments": []
+    },
+    {
+      "timeMs": 64222,
+      "verseStart": 9,
+      "attachments": []
+    },
+    {
+      "timeMs": 73128,
+      "verseStart": 10,
+      "attachments": []
+    },
+    {
+      "timeMs": 82775,
+      "verseStart": 11,
+      "attachments": []
+    },
+    {
+      "timeMs": 88538,
+      "verseStart": 12,
+      "attachments": []
+    },
+    {
+      "timeMs": 95863,
+      "verseStart": 13,
+      "attachments": []
+    },
+    {
+      "timeMs": 103989,
+      "verseStart": 14,
+      "attachments": []
+    },
+    {
+      "timeMs": 108472,
+      "verseStart": 15,
+      "attachments": []
+    },
+    {
+      "timeMs": 112474,
+      "verseStart": 16,
+      "attachments": []
+    },
+    {
+      "timeMs": 121500,
+      "verseStart": 17,
+      "attachments": []
+    },
+    {
+      "timeMs": 129445,
+      "verseStart": 18,
+      "attachments": []
+    },
+    {
+      "timeMs": 137871,
+      "verseStart": 19,
+      "attachments": []
+    },
+    {
+      "timeMs": 146537,
+      "verseStart": 20,
+      "attachments": []
+    },
+    {
+      "timeMs": 155943,
+      "verseStart": 21,
+      "attachments": []
+    }
+  ]
+}
