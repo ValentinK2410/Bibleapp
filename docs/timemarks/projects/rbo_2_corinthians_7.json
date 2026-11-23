@@ -1,0 +1,75 @@
+{
+  "id": "gh_rbo_2_corinthians_7",
+  "translationCode": "RBO",
+  "bookId": "2_corinthians",
+  "chapter": 7,
+  "title": "2-е Коринфянам 7 · РБО",
+  "narratorId": "rbo",
+  "audioFileName": "54_07.mp3",
+  "cues": [
+    {
+      "timeMs": 4223,
+      "verseStart": 1
+    },
+    {
+      "timeMs": 17852,
+      "verseStart": 2
+    },
+    {
+      "timeMs": 27678,
+      "verseStart": 3
+    },
+    {
+      "timeMs": 37224,
+      "verseStart": 4
+    },
+    {
+      "timeMs": 48752,
+      "verseStart": 5
+    },
+    {
+      "timeMs": 59519,
+      "verseStart": 6
+    },
+    {
+      "timeMs": 68004,
+      "verseStart": 7
+    },
+    {
+      "timeMs": 83354,
+      "verseStart": 8
+    },
+    {
+      "timeMs": 95442,
+      "verseStart": 9
+    },
+    {
+      "timeMs": 111152,
+      "verseStart": 10
+    },
+    {
+      "timeMs": 121999,
+      "verseStart": 11
+    },
+    {
+      "timeMs": 142453,
+      "verseStart": 12
+    },
+    {
+      "timeMs": 157382,
+      "verseStart": 13
+    },
+    {
+      "timeMs": 169870,
+      "verseStart": 14
+    },
+    {
+      "timeMs": 182439,
+      "verseStart": 15
+    },
+    {
+      "timeMs": 193446,
+      "verseStart": 16
+    }
+  ]
+}

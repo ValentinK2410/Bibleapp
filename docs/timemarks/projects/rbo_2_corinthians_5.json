@@ -1,0 +1,95 @@
+{
+  "id": "gh_rbo_2_corinthians_5",
+  "translationCode": "RBO",
+  "bookId": "2_corinthians",
+  "chapter": 5,
+  "title": "2-е Коринфянам 5 · РБО",
+  "narratorId": "rbo",
+  "audioFileName": "54_05.mp3",
+  "cues": [
+    {
+      "timeMs": 4223,
+      "verseStart": 1
+    },
+    {
+      "timeMs": 17952,
+      "verseStart": 2
+    },
+    {
+      "timeMs": 25317,
+      "verseStart": 3
+    },
+    {
+      "timeMs": 29339,
+      "verseStart": 4
+    },
+    {
+      "timeMs": 45810,
+      "verseStart": 5
+    },
+    {
+      "timeMs": 53115,
+      "verseStart": 6
+    },
+    {
+      "timeMs": 64222,
+      "verseStart": 7
+    },
+    {
+      "timeMs": 69065,
+      "verseStart": 8
+    },
+    {
+      "timeMs": 78852,
+      "verseStart": 9
+    },
+    {
+      "timeMs": 86917,
+      "verseStart": 10
+    },
+    {
+      "timeMs": 100946,
+      "verseStart": 11
+    },
+    {
+      "timeMs": 115316,
+      "verseStart": 12
+    },
+    {
+      "timeMs": 131506,
+      "verseStart": 13
+    },
+    {
+      "timeMs": 138171,
+      "verseStart": 14
+    },
+    {
+      "timeMs": 148417,
+      "verseStart": 15
+    },
+    {
+      "timeMs": 157684,
+      "verseStart": 16
+    },
+    {
+      "timeMs": 168691,
+      "verseStart": 17
+    },
+    {
+      "timeMs": 178057,
+      "verseStart": 18
+    },
+    {
+      "timeMs": 186062,
+      "verseStart": 19
+    },
+    {
+      "timeMs": 198390,
+      "verseStart": 20
+    },
+    {
+      "timeMs": 213560,
+      "verseStart": 21
+    }
+  ]
+}

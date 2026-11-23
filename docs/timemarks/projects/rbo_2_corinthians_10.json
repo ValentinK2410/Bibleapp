@@ -1,0 +1,83 @@
+{
+  "id": "gh_rbo_2_corinthians_10",
+  "translationCode": "RBO",
+  "bookId": "2_corinthians",
+  "chapter": 10,
+  "title": "2-е Коринфянам 10 · РБО",
+  "narratorId": "rbo",
+  "audioFileName": "54_10.mp3",
+  "cues": [
+    {
+      "timeMs": 4503,
+      "verseStart": 1
+    },
+    {
+      "timeMs": 14649,
+      "verseStart": 2
+    },
+    {
+      "timeMs": 32001,
+      "verseStart": 3
+    },
+    {
+      "timeMs": 38305,
+      "verseStart": 4
+    },
+    {
+      "timeMs": 47591,
+      "verseStart": 5
+    },
+    {
+      "timeMs": 59938,
+      "verseStart": 6
+    },
+    {
+      "timeMs": 69945,
+      "verseStart": 7
+    },
+    {
+      "timeMs": 82693,
+      "verseStart": 8
+    },
+    {
+      "timeMs": 93600,
+      "verseStart": 9
+    },
+    {
+      "timeMs": 98703,
+      "verseStart": 10
+    },
+    {
+      "timeMs": 111732,
+      "verseStart": 11
+    },
+    {
+      "timeMs": 121838,
+      "verseStart": 12
+    },
+    {
+      "timeMs": 136808,
+      "verseStart": 13
+    },
+    {
+      "timeMs": 149656,
+      "verseStart": 14
+    },
+    {
+      "timeMs": 160743,
+      "verseStart": 15
+    },
+    {
+      "timeMs": 174552,
+      "verseStart": 16
+    },
+    {
+      "timeMs": 185059,
+      "verseStart": 17
+    },
+    {
+      "timeMs": 190062,
+      "verseStart": 18
+    }
+  ]
+}

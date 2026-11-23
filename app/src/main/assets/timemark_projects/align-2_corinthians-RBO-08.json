@@ -1,0 +1,131 @@
+{
+  "id": "align-2_corinthians-RBO-08",
+  "translationCode": "RBO",
+  "bookId": "2_corinthians",
+  "chapter": 8,
+  "title": "2-е Коринфянам 8 · РБО",
+  "audioFilePath": "/data/user/0/com.example.bible.sqlite/files/bible_audio/rbo/54_08.mp3",
+  "updatedAt": 1795392000000,
+  "cues": [
+    {
+      "timeMs": 4243,
+      "verseStart": 1,
+      "attachments": []
+    },
+    {
+      "timeMs": 10887,
+      "verseStart": 2,
+      "attachments": []
+    },
+    {
+      "timeMs": 19213,
+      "verseStart": 3,
+      "attachments": []
+    },
+    {
+      "timeMs": 20674,
+      "verseStart": 4,
+      "attachments": []
+    },
+    {
+      "timeMs": 34323,
+      "verseStart": 5,
+      "attachments": []
+    },
+    {
+      "timeMs": 45130,
+      "verseStart": 6,
+      "attachments": []
+    },
+    {
+      "timeMs": 51874,
+      "verseStart": 7,
+      "attachments": []
+    },
+    {
+      "timeMs": 63882,
+      "verseStart": 8,
+      "attachments": []
+    },
+    {
+      "timeMs": 71647,
+      "verseStart": 9,
+      "attachments": []
+    },
+    {
+      "timeMs": 84696,
+      "verseStart": 10,
+      "attachments": []
+    },
+    {
+      "timeMs": 101187,
+      "verseStart": 11,
+      "attachments": []
+    },
+    {
+      "timeMs": 111233,
+      "verseStart": 12,
+      "attachments": []
+    },
+    {
+      "timeMs": 119939,
+      "verseStart": 13,
+      "attachments": []
+    },
+    {
+      "timeMs": 127604,
+      "verseStart": 14,
+      "attachments": []
+    },
+    {
+      "timeMs": 140773,
+      "verseStart": 15,
+      "attachments": []
+    },
+    {
+      "timeMs": 150319,
+      "verseStart": 16,
+      "attachments": []
+    },
+    {
+      "timeMs": 157584,
+      "verseStart": 17,
+      "attachments": []
+    },
+    {
+      "timeMs": 165409,
+      "verseStart": 18,
+      "attachments": []
+    },
+    {
+      "timeMs": 172674,
+      "verseStart": 19,
+      "attachments": []
+    },
+    {
+      "timeMs": 183061,
+      "verseStart": 20,
+      "attachments": []
+    },
+    {
+      "timeMs": 190586,
+      "verseStart": 21,
+      "attachments": []
+    },
+    {
+      "timeMs": 198031,
+      "verseStart": 22,
+      "attachments": []
+    },
+    {
+      "timeMs": 214542,
+      "verseStart": 23,
+      "attachments": []
+    },
+    {
+      "timeMs": 227710,
+      "verseStart": 24,
+      "attachments": []
+    }
+  ]
+}

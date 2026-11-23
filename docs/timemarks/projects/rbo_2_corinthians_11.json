@@ -1,0 +1,143 @@
+{
+  "id": "gh_rbo_2_corinthians_11",
+  "translationCode": "RBO",
+  "bookId": "2_corinthians",
+  "chapter": 11,
+  "title": "2-е Коринфянам 11 · РБО",
+  "narratorId": "rbo",
+  "audioFileName": "54_11.mp3",
+  "cues": [
+    {
+      "timeMs": 4543,
+      "verseStart": 1
+    },
+    {
+      "timeMs": 11328,
+      "verseStart": 2
+    },
+    {
+      "timeMs": 23776,
+      "verseStart": 3
+    },
+    {
+      "timeMs": 36705,
+      "verseStart": 4
+    },
+    {
+      "timeMs": 51354,
+      "verseStart": 5
+    },
+    {
+      "timeMs": 58279,
+      "verseStart": 6
+    },
+    {
+      "timeMs": 68806,
+      "verseStart": 7
+    },
+    {
+      "timeMs": 76972,
+      "verseStart": 8
+    },
+    {
+      "timeMs": 83236,
+      "verseStart": 9
+    },
+    {
+      "timeMs": 96445,
+      "verseStart": 10
+    },
+    {
+      "timeMs": 105911,
+      "verseStart": 11
+    },
+    {
+      "timeMs": 114577,
+      "verseStart": 12
+    },
+    {
+      "timeMs": 127285,
+      "verseStart": 13
+    },
+    {
+      "timeMs": 134890,
+      "verseStart": 14
+    },
+    {
+      "timeMs": 141194,
+      "verseStart": 15
+    },
+    {
+      "timeMs": 151661,
+      "verseStart": 16
+    },
+    {
+      "timeMs": 163990,
+      "verseStart": 17
+    },
+    {
+      "timeMs": 172515,
+      "verseStart": 18
+    },
+    {
+      "timeMs": 179760,
+      "verseStart": 19
+    },
+    {
+      "timeMs": 184664,
+      "verseStart": 20
+    },
+    {
+      "timeMs": 193509,
+      "verseStart": 21
+    },
+    {
+      "timeMs": 208600,
+      "verseStart": 22
+    },
+    {
+      "timeMs": 217886,
+      "verseStart": 23
+    },
+    {
+      "timeMs": 233696,
+      "verseStart": 24
+    },
+    {
+      "timeMs": 237819,
+      "verseStart": 25
+    },
+    {
+      "timeMs": 246765,
+      "verseStart": 26
+    },
+    {
+      "timeMs": 259374,
+      "verseStart": 27
+    },
+    {
+      "timeMs": 266478,
+      "verseStart": 28
+    },
+    {
+      "timeMs": 275985,
+      "verseStart": 29
+    },
+    {
+      "timeMs": 284390,
+      "verseStart": 30
+    },
+    {
+      "timeMs": 291855,
+      "verseStart": 31
+    },
+    {
+      "timeMs": 299821,
+      "verseStart": 32
+    },
+    {
+      "timeMs": 306185,
+      "verseStart": 33
+    }
+  ]
+}

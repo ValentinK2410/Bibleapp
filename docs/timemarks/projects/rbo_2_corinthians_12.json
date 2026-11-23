@@ -1,0 +1,95 @@
+{
+  "id": "gh_rbo_2_corinthians_12",
+  "translationCode": "RBO",
+  "bookId": "2_corinthians",
+  "chapter": 12,
+  "title": "2-е Коринфянам 12 · РБО",
+  "narratorId": "rbo",
+  "audioFileName": "54_12.mp3",
+  "cues": [
+    {
+      "timeMs": 4563,
+      "verseStart": 1
+    },
+    {
+      "timeMs": 13829,
+      "verseStart": 2
+    },
+    {
+      "timeMs": 27579,
+      "verseStart": 3
+    },
+    {
+      "timeMs": 35244,
+      "verseStart": 4
+    },
+    {
+      "timeMs": 43850,
+      "verseStart": 5
+    },
+    {
+      "timeMs": 51415,
+      "verseStart": 6
+    },
+    {
+      "timeMs": 66385,
+      "verseStart": 7
+    },
+    {
+      "timeMs": 81555,
+      "verseStart": 8
+    },
+    {
+      "timeMs": 85938,
+      "verseStart": 9
+    },
+    {
+      "timeMs": 105511,
+      "verseStart": 10
+    },
+    {
+      "timeMs": 120421,
+      "verseStart": 11
+    },
+    {
+      "timeMs": 134630,
+      "verseStart": 12
+    },
+    {
+      "timeMs": 150621,
+      "verseStart": 13
+    },
+    {
+      "timeMs": 163350,
+      "verseStart": 14
+    },
+    {
+      "timeMs": 177920,
+      "verseStart": 15
+    },
+    {
+      "timeMs": 191389,
+      "verseStart": 16
+    },
+    {
+      "timeMs": 199054,
+      "verseStart": 17
+    },
+    {
+      "timeMs": 205118,
+      "verseStart": 18
+    },
+    {
+      "timeMs": 221289,
+      "verseStart": 19
+    },
+    {
+      "timeMs": 236639,
+      "verseStart": 20
+    },
+    {
+      "timeMs": 256192,
+      "verseStart": 21
+    }
+  ]
+}
