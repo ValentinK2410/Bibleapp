@@ -1,0 +1,81 @@
+{
+  "id": "align-romans-WEB-13",
+  "translationCode": "WEB",
+  "bookId": "romans",
+  "chapter": 13,
+  "title": "К Римлянам 13 · WEB (англ.)",
+  "audioFilePath": "/data/user/0/com.example.bible.sqlite/files/bible_audio/web/45_13.mp3",
+  "updatedAt": 1794873600000,
+  "cues": [
+    {
+      "timeMs": 3582,
+      "verseStart": 1,
+      "attachments": []
+    },
+    {
+      "timeMs": 12908,
+      "verseStart": 2,
+      "attachments": []
+    },
+    {
+      "timeMs": 21534,
+      "verseStart": 3,
+      "attachments": []
+    },
+    {
+      "timeMs": 33121,
+      "verseStart": 4,
+      "attachments": []
+    },
+    {
+      "timeMs": 48631,
+      "verseStart": 5,
+      "attachments": []
+    },
+    {
+      "timeMs": 55035,
+      "verseStart": 6,
+      "attachments": []
+    },
+    {
+      "timeMs": 63480,
+      "verseStart": 7,
+      "attachments": []
+    },
+    {
+      "timeMs": 73907,
+      "verseStart": 8,
+      "attachments": []
+    },
+    {
+      "timeMs": 80711,
+      "verseStart": 9,
+      "attachments": []
+    },
+    {
+      "timeMs": 102004,
+      "verseStart": 10,
+      "attachments": []
+    },
+    {
+      "timeMs": 107888,
+      "verseStart": 11,
+      "attachments": []
+    },
+    {
+      "timeMs": 118695,
+      "verseStart": 12,
+      "attachments": []
+    },
+    {
+      "timeMs": 128461,
+      "verseStart": 13,
+      "attachments": []
+    },
+    {
+      "timeMs": 138067,
+      "verseStart": 14,
+      "attachments": []
+    }
+  ]
+}

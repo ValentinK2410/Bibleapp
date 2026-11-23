@@ -1,0 +1,95 @@
+{
+  "id": "gh_web_romans_5",
+  "translationCode": "WEB",
+  "bookId": "romans",
+  "chapter": 5,
+  "title": "К Римлянам 5 · WEB (англ.)",
+  "narratorId": "web",
+  "audioFileName": "45_05.mp3",
+  "cues": [
+    {
+      "timeMs": 2302,
+      "verseStart": 1
+    },
+    {
+      "timeMs": 7905,
+      "verseStart": 2
+    },
+    {
+      "timeMs": 15410,
+      "verseStart": 3
+    },
+    {
+      "timeMs": 21935,
+      "verseStart": 4
+    },
+    {
+      "timeMs": 25357,
+      "verseStart": 5
+    },
+    {
+      "timeMs": 34123,
+      "verseStart": 6
+    },
+    {
+      "timeMs": 39626,
+      "verseStart": 7
+    },
+    {
+      "timeMs": 47191,
+      "verseStart": 8
+    },
+    {
+      "timeMs": 52575,
+      "verseStart": 9
+    },
+    {
+      "timeMs": 58539,
+      "verseStart": 10
+    },
+    {
+      "timeMs": 67025,
+      "verseStart": 11
+    },
+    {
+      "timeMs": 75110,
+      "verseStart": 12
+    },
+    {
+      "timeMs": 84236,
+      "verseStart": 13
+    },
+    {
+      "timeMs": 89940,
+      "verseStart": 14
+    },
+    {
+      "timeMs": 100047,
+      "verseStart": 15
+    },
+    {
+      "timeMs": 114396,
+      "verseStart": 16
+    },
+    {
+      "timeMs": 125824,
+      "verseStart": 17
+    },
+    {
+      "timeMs": 138692,
+      "verseStart": 18
+    },
+    {
+      "timeMs": 150600,
+      "verseStart": 19
+    },
+    {
+      "timeMs": 158806,
+      "verseStart": 20
+    },
+    {
+      "timeMs": 165710,
+      "verseStart": 21
+    }
+  ]
+}

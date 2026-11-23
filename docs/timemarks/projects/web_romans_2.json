@@ -1,0 +1,127 @@
+{
+  "id": "gh_web_romans_2",
+  "translationCode": "WEB",
+  "bookId": "romans",
+  "chapter": 2,
+  "title": "К Римлянам 2 · WEB (англ.)",
+  "narratorId": "web",
+  "audioFileName": "45_02.mp3",
+  "cues": [
+    {
+      "timeMs": 2122,
+      "verseStart": 1
+    },
+    {
+      "timeMs": 14550,
+      "verseStart": 2
+    },
+    {
+      "timeMs": 20355,
+      "verseStart": 3
+    },
+    {
+      "timeMs": 28761,
+      "verseStart": 4
+    },
+    {
+      "timeMs": 36926,
+      "verseStart": 5
+    },
+    {
+      "timeMs": 46253,
+      "verseStart": 6
+    },
+    {
+      "timeMs": 49616,
+      "verseStart": 7
+    },
+    {
+      "timeMs": 56861,
+      "verseStart": 8
+    },
+    {
+      "timeMs": 63786,
+      "verseStart": 9
+    },
+    {
+      "timeMs": 71971,
+      "verseStart": 10
+    },
+    {
+      "timeMs": 78876,
+      "verseStart": 11
+    },
+    {
+      "timeMs": 82639,
+      "verseStart": 12
+    },
+    {
+      "timeMs": 91025,
+      "verseStart": 13
+    },
+    {
+      "timeMs": 97169,
+      "verseStart": 14
+    },
+    {
+      "timeMs": 105976,
+      "verseStart": 15
+    },
+    {
+      "timeMs": 117084,
+      "verseStart": 16
+    },
+    {
+      "timeMs": 123969,
+      "verseStart": 17
+    },
+    {
+      "timeMs": 129533,
+      "verseStart": 18
+    },
+    {
+      "timeMs": 135177,
+      "verseStart": 19
+    },
+    {
+      "timeMs": 141421,
+      "verseStart": 20
+    },
+    {
+      "timeMs": 148566,
+      "verseStart": 21
+    },
+    {
+      "timeMs": 156452,
+      "verseStart": 22
+    },
+    {
+      "timeMs": 164898,
+      "verseStart": 23
+    },
+    {
+      "timeMs": 170542,
+      "verseStart": 24
+    },
+    {
+      "timeMs": 176046,
+      "verseStart": 25
+    },
+    {
+      "timeMs": 184332,
+      "verseStart": 26
+    },
+    {
+      "timeMs": 192017,
+      "verseStart": 27
+    },
+    {
+      "timeMs": 201724,
+      "verseStart": 28
+    },
+    {
+      "timeMs": 208049,
+      "verseStart": 29
+    }
+  ]
+}

@@ -1,0 +1,143 @@
+{
+  "id": "gh_web_romans_9",
+  "translationCode": "WEB",
+  "bookId": "romans",
+  "chapter": 9,
+  "title": "К Римлянам 9 · WEB (англ.)",
+  "narratorId": "web",
+  "audioFileName": "45_09.mp3",
+  "cues": [
+    {
+      "timeMs": 2181,
+      "verseStart": 1
+    },
+    {
+      "timeMs": 8485,
+      "verseStart": 2
+    },
+    {
+      "timeMs": 12548,
+      "verseStart": 3
+    },
+    {
+      "timeMs": 19512,
+      "verseStart": 4
+    },
+    {
+      "timeMs": 28538,
+      "verseStart": 5
+    },
+    {
+      "timeMs": 39105,
+      "verseStart": 6
+    },
+    {
+      "timeMs": 46029,
+      "verseStart": 7
+    },
+    {
+      "timeMs": 53093,
+      "verseStart": 8
+    },
+    {
+      "timeMs": 62399,
+      "verseStart": 9
+    },
+    {
+      "timeMs": 69063,
+      "verseStart": 10
+    },
+    {
+      "timeMs": 75287,
+      "verseStart": 11
+    },
+    {
+      "timeMs": 85554,
+      "verseStart": 12
+    },
+    {
+      "timeMs": 90036,
+      "verseStart": 13
+    },
+    {
+      "timeMs": 96020,
+      "verseStart": 14
+    },
+    {
+      "timeMs": 101784,
+      "verseStart": 15
+    },
+    {
+      "timeMs": 110269,
+      "verseStart": 16
+    },
+    {
+      "timeMs": 116293,
+      "verseStart": 17
+    },
+    {
+      "timeMs": 128260,
+      "verseStart": 18
+    },
+    {
+      "timeMs": 134804,
+      "verseStart": 19
+    },
+    {
+      "timeMs": 141809,
+      "verseStart": 20
+    },
+    {
+      "timeMs": 152816,
+      "verseStart": 21
+    },
+    {
+      "timeMs": 160140,
+      "verseStart": 22
+    },
+    {
+      "timeMs": 168585,
+      "verseStart": 23
+    },
+    {
+      "timeMs": 175050,
+      "verseStart": 24
+    },
+    {
+      "timeMs": 181474,
+      "verseStart": 25
+    },
+    {
+      "timeMs": 192701,
+      "verseStart": 26
+    },
+    {
+      "timeMs": 202387,
+      "verseStart": 27
+    },
+    {
+      "timeMs": 211853,
+      "verseStart": 28
+    },
+    {
+      "timeMs": 220278,
+      "verseStart": 29
+    },
+    {
+      "timeMs": 229864,
+      "verseStart": 30
+    },
+    {
+      "timeMs": 238549,
+      "verseStart": 31
+    },
+    {
+      "timeMs": 244713,
+      "verseStart": 32
+    },
+    {
+      "timeMs": 253719,
+      "verseStart": 33
+    }
+  ]
+}

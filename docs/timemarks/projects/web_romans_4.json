@@ -1,0 +1,111 @@
+{
+  "id": "gh_web_romans_4",
+  "translationCode": "WEB",
+  "bookId": "romans",
+  "chapter": 4,
+  "title": "К Римлянам 4 · WEB (англ.)",
+  "narratorId": "web",
+  "audioFileName": "45_04.mp3",
+  "cues": [
+    {
+      "timeMs": 3322,
+      "verseStart": 1
+    },
+    {
+      "timeMs": 9186,
+      "verseStart": 2
+    },
+    {
+      "timeMs": 15231,
+      "verseStart": 3
+    },
+    {
+      "timeMs": 22055,
+      "verseStart": 4
+    },
+    {
+      "timeMs": 26758,
+      "verseStart": 5
+    },
+    {
+      "timeMs": 35024,
+      "verseStart": 6
+    },
+    {
+      "timeMs": 41629,
+      "verseStart": 7
+    },
+    {
+      "timeMs": 46732,
+      "verseStart": 8
+    },
+    {
+      "timeMs": 51976,
+      "verseStart": 9
+    },
+    {
+      "timeMs": 61883,
+      "verseStart": 10
+    },
+    {
+      "timeMs": 71569,
+      "verseStart": 11
+    },
+    {
+      "timeMs": 86840,
+      "verseStart": 12
+    },
+    {
+      "timeMs": 98728,
+      "verseStart": 13
+    },
+    {
+      "timeMs": 107494,
+      "verseStart": 14
+    },
+    {
+      "timeMs": 113758,
+      "verseStart": 15
+    },
+    {
+      "timeMs": 119602,
+      "verseStart": 16
+    },
+    {
+      "timeMs": 133472,
+      "verseStart": 17
+    },
+    {
+      "timeMs": 145840,
+      "verseStart": 18
+    },
+    {
+      "timeMs": 155967,
+      "verseStart": 19
+    },
+    {
+      "timeMs": 165334,
+      "verseStart": 20
+    },
+    {
+      "timeMs": 171818,
+      "verseStart": 21
+    },
+    {
+      "timeMs": 176962,
+      "verseStart": 22
+    },
+    {
+      "timeMs": 180864,
+      "verseStart": 23
+    },
+    {
+      "timeMs": 184787,
+      "verseStart": 24
+    },
+    {
+      "timeMs": 192392,
+      "verseStart": 25
+    }
+  ]
+}

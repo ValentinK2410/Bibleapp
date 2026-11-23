@@ -1,0 +1,111 @@
+{
+  "id": "gh_web_romans_7",
+  "translationCode": "WEB",
+  "bookId": "romans",
+  "chapter": 7,
+  "title": "К Римлянам 7 · WEB (англ.)",
+  "narratorId": "web",
+  "audioFileName": "45_07.mp3",
+  "cues": [
+    {
+      "timeMs": 2802,
+      "verseStart": 1
+    },
+    {
+      "timeMs": 10486,
+      "verseStart": 2
+    },
+    {
+      "timeMs": 19292,
+      "verseStart": 3
+    },
+    {
+      "timeMs": 32480,
+      "verseStart": 4
+    },
+    {
+      "timeMs": 45268,
+      "verseStart": 5
+    },
+    {
+      "timeMs": 55014,
+      "verseStart": 6
+    },
+    {
+      "timeMs": 65240,
+      "verseStart": 7
+    },
+    {
+      "timeMs": 77567,
+      "verseStart": 8
+    },
+    {
+      "timeMs": 86313,
+      "verseStart": 9
+    },
+    {
+      "timeMs": 93457,
+      "verseStart": 10
+    },
+    {
+      "timeMs": 98620,
+      "verseStart": 11
+    },
+    {
+      "timeMs": 104564,
+      "verseStart": 12
+    },
+    {
+      "timeMs": 111288,
+      "verseStart": 13
+    },
+    {
+      "timeMs": 125457,
+      "verseStart": 14
+    },
+    {
+      "timeMs": 130820,
+      "verseStart": 15
+    },
+    {
+      "timeMs": 137704,
+      "verseStart": 16
+    },
+    {
+      "timeMs": 142587,
+      "verseStart": 17
+    },
+    {
+      "timeMs": 147430,
+      "verseStart": 18
+    },
+    {
+      "timeMs": 157696,
+      "verseStart": 19
+    },
+    {
+      "timeMs": 163720,
+      "verseStart": 20
+    },
+    {
+      "timeMs": 170804,
+      "verseStart": 21
+    },
+    {
+      "timeMs": 176648,
+      "verseStart": 22
+    },
+    {
+      "timeMs": 179930,
+      "verseStart": 23
+    },
+    {
+      "timeMs": 189956,
+      "verseStart": 24
+    },
+    {
+      "timeMs": 196800,
+      "verseStart": 25
+    }
+  ]
+}

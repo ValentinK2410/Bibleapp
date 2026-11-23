@@ -1,0 +1,95 @@
+{
+  "id": "gh_web_romans_10",
+  "translationCode": "WEB",
+  "bookId": "romans",
+  "chapter": 10,
+  "title": "К Римлянам 10 · WEB (англ.)",
+  "narratorId": "web",
+  "audioFileName": "45_10.mp3",
+  "cues": [
+    {
+      "timeMs": 2662,
+      "verseStart": 1
+    },
+    {
+      "timeMs": 8486,
+      "verseStart": 2
+    },
+    {
+      "timeMs": 14110,
+      "verseStart": 3
+    },
+    {
+      "timeMs": 23197,
+      "verseStart": 4
+    },
+    {
+      "timeMs": 28260,
+      "verseStart": 5
+    },
+    {
+      "timeMs": 36046,
+      "verseStart": 6
+    },
+    {
+      "timeMs": 46193,
+      "verseStart": 7
+    },
+    {
+      "timeMs": 52018,
+      "verseStart": 8
+    },
+    {
+      "timeMs": 61404,
+      "verseStart": 9
+    },
+    {
+      "timeMs": 70011,
+      "verseStart": 10
+    },
+    {
+      "timeMs": 77436,
+      "verseStart": 11
+    },
+    {
+      "timeMs": 83400,
+      "verseStart": 12
+    },
+    {
+      "timeMs": 90505,
+      "verseStart": 13
+    },
+    {
+      "timeMs": 95089,
+      "verseStart": 14
+    },
+    {
+      "timeMs": 105316,
+      "verseStart": 15
+    },
+    {
+      "timeMs": 116764,
+      "verseStart": 16
+    },
+    {
+      "timeMs": 124950,
+      "verseStart": 17
+    },
+    {
+      "timeMs": 129934,
+      "verseStart": 18
+    },
+    {
+      "timeMs": 139380,
+      "verseStart": 19
+    },
+    {
+      "timeMs": 151389,
+      "verseStart": 20
+    },
+    {
+      "timeMs": 160556,
+      "verseStart": 21
+    }
+  ]
+}

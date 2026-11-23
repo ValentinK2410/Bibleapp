@@ -1,0 +1,67 @@
+{
+  "id": "gh_web_romans_13",
+  "translationCode": "WEB",
+  "bookId": "romans",
+  "chapter": 13,
+  "title": "К Римлянам 13 · WEB (англ.)",
+  "narratorId": "web",
+  "audioFileName": "45_13.mp3",
+  "cues": [
+    {
+      "timeMs": 3582,
+      "verseStart": 1
+    },
+    {
+      "timeMs": 12908,
+      "verseStart": 2
+    },
+    {
+      "timeMs": 21534,
+      "verseStart": 3
+    },
+    {
+      "timeMs": 33121,
+      "verseStart": 4
+    },
+    {
+      "timeMs": 48631,
+      "verseStart": 5
+    },
+    {
+      "timeMs": 55035,
+      "verseStart": 6
+    },
+    {
+      "timeMs": 63480,
+      "verseStart": 7
+    },
+    {
+      "timeMs": 73907,
+      "verseStart": 8
+    },
+    {
+      "timeMs": 80711,
+      "verseStart": 9
+    },
+    {
+      "timeMs": 102004,
+      "verseStart": 10
+    },
+    {
+      "timeMs": 107888,
+      "verseStart": 11
+    },
+    {
+      "timeMs": 118695,
+      "verseStart": 12
+    },
+    {
+      "timeMs": 128461,
+      "verseStart": 13
+    },
+    {
+      "timeMs": 138067,
+      "verseStart": 14
+    }
+  ]
+}

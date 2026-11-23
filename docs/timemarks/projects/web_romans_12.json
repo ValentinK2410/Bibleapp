@@ -1,0 +1,95 @@
+{
+  "id": "gh_web_romans_12",
+  "translationCode": "WEB",
+  "bookId": "romans",
+  "chapter": 12,
+  "title": "К Римлянам 12 · WEB (англ.)",
+  "narratorId": "web",
+  "audioFileName": "45_12.mp3",
+  "cues": [
+    {
+      "timeMs": 2762,
+      "verseStart": 1
+    },
+    {
+      "timeMs": 13029,
+      "verseStart": 2
+    },
+    {
+      "timeMs": 25218,
+      "verseStart": 3
+    },
+    {
+      "timeMs": 39428,
+      "verseStart": 4
+    },
+    {
+      "timeMs": 43891,
+      "verseStart": 5
+    },
+    {
+      "timeMs": 50715,
+      "verseStart": 6
+    },
+    {
+      "timeMs": 59001,
+      "verseStart": 7
+    },
+    {
+      "timeMs": 63865,
+      "verseStart": 8
+    },
+    {
+      "timeMs": 75333,
+      "verseStart": 9
+    },
+    {
+      "timeMs": 82117,
+      "verseStart": 10
+    },
+    {
+      "timeMs": 88022,
+      "verseStart": 11
+    },
+    {
+      "timeMs": 92965,
+      "verseStart": 12
+    },
+    {
+      "timeMs": 98469,
+      "verseStart": 13
+    },
+    {
+      "timeMs": 103492,
+      "verseStart": 14
+    },
+    {
+      "timeMs": 107315,
+      "verseStart": 15
+    },
+    {
+      "timeMs": 111798,
+      "verseStart": 16
+    },
+    {
+      "timeMs": 123126,
+      "verseStart": 17
+    },
+    {
+      "timeMs": 129791,
+      "verseStart": 18
+    },
+    {
+      "timeMs": 135815,
+      "verseStart": 19
+    },
+    {
+      "timeMs": 147563,
+      "verseStart": 20
+    },
+    {
+      "timeMs": 159752,
+      "verseStart": 21
+    }
+  ]
+}

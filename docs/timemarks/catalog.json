@@ -5022,6 +5022,166 @@
       "cueCount": 38,
       "narratorId": "web",
       "file": "projects/web_matthew_9.json"
+    },
+    {
+      "id": "gh_web_romans_1",
+      "translationCode": "WEB",
+      "bookId": "romans",
+      "chapter": 1,
+      "title": "К Римлянам 1 · WEB (англ.)",
+      "cueCount": 32,
+      "narratorId": "web",
+      "file": "projects/web_romans_1.json"
+    },
+    {
+      "id": "gh_web_romans_10",
+      "translationCode": "WEB",
+      "bookId": "romans",
+      "chapter": 10,
+      "title": "К Римлянам 10 · WEB (англ.)",
+      "cueCount": 21,
+      "narratorId": "web",
+      "file": "projects/web_romans_10.json"
+    },
+    {
+      "id": "gh_web_romans_11",
+      "translationCode": "WEB",
+      "bookId": "romans",
+      "chapter": 11,
+      "title": "К Римлянам 11 · WEB (англ.)",
+      "cueCount": 36,
+      "narratorId": "web",
+      "file": "projects/web_romans_11.json"
+    },
+    {
+      "id": "gh_web_romans_12",
+      "translationCode": "WEB",
+      "bookId": "romans",
+      "chapter": 12,
+      "title": "К Римлянам 12 · WEB (англ.)",
+      "cueCount": 21,
+      "narratorId": "web",
+      "file": "projects/web_romans_12.json"
+    },
+    {
+      "id": "gh_web_romans_13",
+      "translationCode": "WEB",
+      "bookId": "romans",
+      "chapter": 13,
+      "title": "К Римлянам 13 · WEB (англ.)",
+      "cueCount": 14,
+      "narratorId": "web",
+      "file": "projects/web_romans_13.json"
+    },
+    {
+      "id": "gh_web_romans_14",
+      "translationCode": "WEB",
+      "bookId": "romans",
+      "chapter": 14,
+      "title": "К Римлянам 14 · WEB (англ.)",
+      "cueCount": 26,
+      "narratorId": "web",
+      "file": "projects/web_romans_14.json"
+    },
+    {
+      "id": "gh_web_romans_15",
+      "translationCode": "WEB",
+      "bookId": "romans",
+      "chapter": 15,
+      "title": "К Римлянам 15 · WEB (англ.)",
+      "cueCount": 33,
+      "narratorId": "web",
+      "file": "projects/web_romans_15.json"
+    },
+    {
+      "id": "gh_web_romans_16",
+      "translationCode": "WEB",
+      "bookId": "romans",
+      "chapter": 16,
+      "title": "К Римлянам 16 · WEB (англ.)",
+      "cueCount": 24,
+      "narratorId": "web",
+      "file": "projects/web_romans_16.json"
+    },
+    {
+      "id": "gh_web_romans_2",
+      "translationCode": "WEB",
+      "bookId": "romans",
+      "chapter": 2,
+      "title": "К Римлянам 2 · WEB (англ.)",
+      "cueCount": 29,
+      "narratorId": "web",
+      "file": "projects/web_romans_2.json"
+    },
+    {
+      "id": "gh_web_romans_3",
+      "translationCode": "WEB",
+      "bookId": "romans",
+      "chapter": 3,
+      "title": "К Римлянам 3 · WEB (англ.)",
+      "cueCount": 31,
+      "narratorId": "web",
+      "file": "projects/web_romans_3.json"
+    },
+    {
+      "id": "gh_web_romans_4",
+      "translationCode": "WEB",
+      "bookId": "romans",
+      "chapter": 4,
+      "title": "К Римлянам 4 · WEB (англ.)",
+      "cueCount": 25,
+      "narratorId": "web",
+      "file": "projects/web_romans_4.json"
+    },
+    {
+      "id": "gh_web_romans_5",
+      "translationCode": "WEB",
+      "bookId": "romans",
+      "chapter": 5,
+      "title": "К Римлянам 5 · WEB (англ.)",
+      "cueCount": 21,
+      "narratorId": "web",
+      "file": "projects/web_romans_5.json"
+    },
+    {
+      "id": "gh_web_romans_6",
+      "translationCode": "WEB",
+      "bookId": "romans",
+      "chapter": 6,
+      "title": "К Римлянам 6 · WEB (англ.)",
+      "cueCount": 23,
+      "narratorId": "web",
+      "file": "projects/web_romans_6.json"
+    },
+    {
+      "id": "gh_web_romans_7",
+      "translationCode": "WEB",
+      "bookId": "romans",
+      "chapter": 7,
+      "title": "К Римлянам 7 · WEB (англ.)",
+      "cueCount": 25,
+      "narratorId": "web",
+      "file": "projects/web_romans_7.json"
+    },
+    {
+      "id": "gh_web_romans_8",
+      "translationCode": "WEB",
+      "bookId": "romans",
+      "chapter": 8,
+      "title": "К Римлянам 8 · WEB (англ.)",
+      "cueCount": 39,
+      "narratorId": "web",
+      "file": "projects/web_romans_8.json"
+    },
+    {
+      "id": "gh_web_romans_9",
+      "translationCode": "WEB",
+      "bookId": "romans",
+      "chapter": 9,
+      "title": "К Римлянам 9 · WEB (англ.)",
+      "cueCount": 33,
+      "narratorId": "web",
+      "file": "projects/web_romans_9.json"
     }
   ]
 }
