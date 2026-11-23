@@ -1,0 +1,115 @@
+{
+  "id": "gh_nrt_2_timothy_2",
+  "translationCode": "NRT",
+  "bookId": "2_timothy",
+  "chapter": 2,
+  "title": "2-е Тимофею 2 · Новый русский",
+  "narratorId": "new-russian",
+  "audioFileName": "62_02.mp3",
+  "cues": [
+    {
+      "timeMs": 3943,
+      "verseStart": 1
+    },
+    {
+      "timeMs": 10748,
+      "verseStart": 2
+    },
+    {
+      "timeMs": 20655,
+      "verseStart": 3
+    },
+    {
+      "timeMs": 25619,
+      "verseStart": 4
+    },
+    {
+      "timeMs": 32344,
+      "verseStart": 5
+    },
+    {
+      "timeMs": 37828,
+      "verseStart": 6
+    },
+    {
+      "timeMs": 44212,
+      "verseStart": 7
+    },
+    {
+      "timeMs": 49216,
+      "verseStart": 8
+    },
+    {
+      "timeMs": 59944,
+      "verseStart": 9
+    },
+    {
+      "timeMs": 69591,
+      "verseStart": 10
+    },
+    {
+      "timeMs": 80539,
+      "verseStart": 11
+    },
+    {
+      "timeMs": 86083,
+      "verseStart": 12
+    },
+    {
+      "timeMs": 95270,
+      "verseStart": 13
+    },
+    {
+      "timeMs": 106518,
+      "verseStart": 14
+    },
+    {
+      "timeMs": 119187,
+      "verseStart": 15
+    },
+    {
+      "timeMs": 129575,
+      "verseStart": 16
+    },
+    {
+      "timeMs": 139302,
+      "verseStart": 17
+    },
+    {
+      "timeMs": 147348,
+      "verseStart": 18
+    },
+    {
+      "timeMs": 155654,
+      "verseStart": 19
+    },
+    {
+      "timeMs": 171085,
+      "verseStart": 20
+    },
+    {
+      "timeMs": 184255,
+      "verseStart": 21
+    },
+    {
+      "timeMs": 199866,
+      "verseStart": 22
+    },
+    {
+      "timeMs": 213896,
+      "verseStart": 23
+    },
+    {
+      "timeMs": 222062,
+      "verseStart": 24
+    },
+    {
+      "timeMs": 233250,
+      "verseStart": 25
+    },
+    {
+      "timeMs": 243538,
+      "verseStart": 26
+    }
+  ]
+}

@@ -1,0 +1,121 @@
+{
+  "id": "align-2_timothy-NRT-04",
+  "translationCode": "NRT",
+  "bookId": "2_timothy",
+  "chapter": 4,
+  "title": "2-е Тимофею 4 · Новый русский",
+  "audioFilePath": "/data/user/0/com.example.bible.sqlite/files/bible_audio/new-russian/62_04.mp3",
+  "updatedAt": 1795392000000,
+  "cues": [
+    {
+      "timeMs": 300,
+      "verseStart": 1,
+      "attachments": []
+    },
+    {
+      "timeMs": 12649,
+      "verseStart": 2,
+      "attachments": []
+    },
+    {
+      "timeMs": 22876,
+      "verseStart": 3,
+      "attachments": []
+    },
+    {
+      "timeMs": 37246,
+      "verseStart": 4,
+      "attachments": []
+    },
+    {
+      "timeMs": 41669,
+      "verseStart": 5,
+      "attachments": []
+    },
+    {
+      "timeMs": 53838,
+      "verseStart": 6,
+      "attachments": []
+    },
+    {
+      "timeMs": 60562,
+      "verseStart": 7,
+      "attachments": []
+    },
+    {
+      "timeMs": 65906,
+      "verseStart": 8,
+      "attachments": []
+    },
+    {
+      "timeMs": 84439,
+      "verseStart": 9,
+      "attachments": []
+    },
+    {
+      "timeMs": 86601,
+      "verseStart": 10,
+      "attachments": []
+    },
+    {
+      "timeMs": 96768,
+      "verseStart": 11,
+      "attachments": []
+    },
+    {
+      "timeMs": 104173,
+      "verseStart": 12,
+      "attachments": []
+    },
+    {
+      "timeMs": 106234,
+      "verseStart": 13,
+      "attachments": []
+    },
+    {
+      "timeMs": 117022,
+      "verseStart": 14,
+      "attachments": []
+    },
+    {
+      "timeMs": 123767,
+      "verseStart": 15,
+      "attachments": []
+    },
+    {
+      "timeMs": 130031,
+      "verseStart": 16,
+      "attachments": []
+    },
+    {
+      "timeMs": 143080,
+      "verseStart": 17,
+      "attachments": []
+    },
+    {
+      "timeMs": 157270,
+      "verseStart": 18,
+      "attachments": []
+    },
+    {
+      "timeMs": 172701,
+      "verseStart": 19,
+      "attachments": []
+    },
+    {
+      "timeMs": 177524,
+      "verseStart": 20,
+      "attachments": []
+    },
+    {
+      "timeMs": 182407,
+      "verseStart": 21,
+      "attachments": []
+    },
+    {
+      "timeMs": 191614,
+      "verseStart": 22,
+      "attachments": []
+    }
+  ]
+}

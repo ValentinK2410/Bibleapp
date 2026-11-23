@@ -1,0 +1,96 @@
+{
+  "id": "align-2_timothy-NRT-03",
+  "translationCode": "NRT",
+  "bookId": "2_timothy",
+  "chapter": 3,
+  "title": "2-е Тимофею 3 · Новый русский",
+  "audioFilePath": "/data/user/0/com.example.bible.sqlite/files/bible_audio/new-russian/62_03.mp3",
+  "updatedAt": 1795392000000,
+  "cues": [
+    {
+      "timeMs": 4284,
+      "verseStart": 1,
+      "attachments": []
+    },
+    {
+      "timeMs": 8587,
+      "verseStart": 2,
+      "attachments": []
+    },
+    {
+      "timeMs": 17734,
+      "verseStart": 3,
+      "attachments": []
+    },
+    {
+      "timeMs": 25160,
+      "verseStart": 4,
+      "attachments": []
+    },
+    {
+      "timeMs": 32766,
+      "verseStart": 5,
+      "attachments": []
+    },
+    {
+      "timeMs": 43155,
+      "verseStart": 6,
+      "attachments": []
+    },
+    {
+      "timeMs": 53583,
+      "verseStart": 7,
+      "attachments": []
+    },
+    {
+      "timeMs": 57166,
+      "verseStart": 8,
+      "attachments": []
+    },
+    {
+      "timeMs": 71398,
+      "verseStart": 9,
+      "attachments": []
+    },
+    {
+      "timeMs": 81266,
+      "verseStart": 10,
+      "attachments": []
+    },
+    {
+      "timeMs": 90573,
+      "verseStart": 11,
+      "attachments": []
+    },
+    {
+      "timeMs": 103063,
+      "verseStart": 12,
+      "attachments": []
+    },
+    {
+      "timeMs": 109929,
+      "verseStart": 13,
+      "attachments": []
+    },
+    {
+      "timeMs": 119376,
+      "verseStart": 14,
+      "attachments": []
+    },
+    {
+      "timeMs": 127443,
+      "verseStart": 15,
+      "attachments": []
+    },
+    {
+      "timeMs": 137751,
+      "verseStart": 16,
+      "attachments": []
+    },
+    {
+      "timeMs": 147679,
+      "verseStart": 17,
+      "attachments": []
+    }
+  ]
+}
