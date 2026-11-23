@@ -1,0 +1,95 @@
+{
+  "id": "gh_nrt_galatians_2",
+  "translationCode": "NRT",
+  "bookId": "galatians",
+  "chapter": 2,
+  "title": "К Галатам 2 · Новый русский",
+  "narratorId": "new-russian",
+  "audioFileName": "55_02.mp3",
+  "cues": [
+    {
+      "timeMs": 4923,
+      "verseStart": 1
+    },
+    {
+      "timeMs": 13028,
+      "verseStart": 2
+    },
+    {
+      "timeMs": 32061,
+      "verseStart": 3
+    },
+    {
+      "timeMs": 36744,
+      "verseStart": 4
+    },
+    {
+      "timeMs": 49452,
+      "verseStart": 5
+    },
+    {
+      "timeMs": 56876,
+      "verseStart": 6
+    },
+    {
+      "timeMs": 75528,
+      "verseStart": 7
+    },
+    {
+      "timeMs": 85775,
+      "verseStart": 8
+    },
+    {
+      "timeMs": 96201,
+      "verseStart": 9
+    },
+    {
+      "timeMs": 116174,
+      "verseStart": 10
+    },
+    {
+      "timeMs": 128902,
+      "verseStart": 11
+    },
+    {
+      "timeMs": 136347,
+      "verseStart": 12
+    },
+    {
+      "timeMs": 151437,
+      "verseStart": 13
+    },
+    {
+      "timeMs": 160042,
+      "verseStart": 14
+    },
+    {
+      "timeMs": 178134,
+      "verseStart": 15
+    },
+    {
+      "timeMs": 183017,
+      "verseStart": 16
+    },
+    {
+      "timeMs": 202810,
+      "verseStart": 17
+    },
+    {
+      "timeMs": 218179,
+      "verseStart": 18
+    },
+    {
+      "timeMs": 230207,
+      "verseStart": 19
+    },
+    {
+      "timeMs": 240914,
+      "verseStart": 20
+    },
+    {
+      "timeMs": 254082,
+      "verseStart": 21
+    }
+  ]
+}

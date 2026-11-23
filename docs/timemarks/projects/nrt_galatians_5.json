@@ -1,0 +1,115 @@
+{
+  "id": "gh_nrt_galatians_5",
+  "translationCode": "NRT",
+  "bookId": "galatians",
+  "chapter": 5,
+  "title": "К Галатам 5 · Новый русский",
+  "narratorId": "new-russian",
+  "audioFileName": "55_05.mp3",
+  "cues": [
+    {
+      "timeMs": 1061,
+      "verseStart": 1
+    },
+    {
+      "timeMs": 14830,
+      "verseStart": 2
+    },
+    {
+      "timeMs": 27318,
+      "verseStart": 3
+    },
+    {
+      "timeMs": 36023,
+      "verseStart": 4
+    },
+    {
+      "timeMs": 45409,
+      "verseStart": 5
+    },
+    {
+      "timeMs": 52574,
+      "verseStart": 6
+    },
+    {
+      "timeMs": 66943,
+      "verseStart": 7
+    },
+    {
+      "timeMs": 72807,
+      "verseStart": 8
+    },
+    {
+      "timeMs": 78110,
+      "verseStart": 9
+    },
+    {
+      "timeMs": 83754,
+      "verseStart": 10
+    },
+    {
+      "timeMs": 99924,
+      "verseStart": 11
+    },
+    {
+      "timeMs": 111552,
+      "verseStart": 12
+    },
+    {
+      "timeMs": 117176,
+      "verseStart": 13
+    },
+    {
+      "timeMs": 130804,
+      "verseStart": 14
+    },
+    {
+      "timeMs": 139410,
+      "verseStart": 15
+    },
+    {
+      "timeMs": 151317,
+      "verseStart": 16
+    },
+    {
+      "timeMs": 160063,
+      "verseStart": 17
+    },
+    {
+      "timeMs": 180636,
+      "verseStart": 18
+    },
+    {
+      "timeMs": 186220,
+      "verseStart": 19
+    },
+    {
+      "timeMs": 193345,
+      "verseStart": 20
+    },
+    {
+      "timeMs": 202631,
+      "verseStart": 21
+    },
+    {
+      "timeMs": 215139,
+      "verseStart": 22
+    },
+    {
+      "timeMs": 225145,
+      "verseStart": 23
+    },
+    {
+      "timeMs": 233130,
+      "verseStart": 24
+    },
+    {
+      "timeMs": 243597,
+      "verseStart": 25
+    },
+    {
+      "timeMs": 249481,
+      "verseStart": 26
+    }
+  ]
+}

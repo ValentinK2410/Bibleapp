@@ -1,0 +1,101 @@
+{
+  "id": "align-galatians-NRT-06",
+  "translationCode": "NRT",
+  "bookId": "galatians",
+  "chapter": 6,
+  "title": "К Галатам 6 · Новый русский",
+  "audioFilePath": "/data/user/0/com.example.bible.sqlite/files/bible_audio/new-russian/55_06.mp3",
+  "updatedAt": 1795392000000,
+  "cues": [
+    {
+      "timeMs": 5564,
+      "verseStart": 1,
+      "attachments": []
+    },
+    {
+      "timeMs": 19794,
+      "verseStart": 2,
+      "attachments": []
+    },
+    {
+      "timeMs": 25358,
+      "verseStart": 3,
+      "attachments": []
+    },
+    {
+      "timeMs": 33403,
+      "verseStart": 4,
+      "attachments": []
+    },
+    {
+      "timeMs": 41569,
+      "verseStart": 5,
+      "attachments": []
+    },
+    {
+      "timeMs": 44071,
+      "verseStart": 6,
+      "attachments": []
+    },
+    {
+      "timeMs": 50595,
+      "verseStart": 7,
+      "attachments": []
+    },
+    {
+      "timeMs": 59422,
+      "verseStart": 8,
+      "attachments": []
+    },
+    {
+      "timeMs": 72931,
+      "verseStart": 9,
+      "attachments": []
+    },
+    {
+      "timeMs": 83699,
+      "verseStart": 10,
+      "attachments": []
+    },
+    {
+      "timeMs": 93385,
+      "verseStart": 11,
+      "attachments": []
+    },
+    {
+      "timeMs": 101991,
+      "verseStart": 12,
+      "attachments": []
+    },
+    {
+      "timeMs": 115681,
+      "verseStart": 13,
+      "attachments": []
+    },
+    {
+      "timeMs": 127569,
+      "verseStart": 14,
+      "attachments": []
+    },
+    {
+      "timeMs": 139017,
+      "verseStart": 15,
+      "attachments": []
+    },
+    {
+      "timeMs": 149925,
+      "verseStart": 16,
+      "attachments": []
+    },
+    {
+      "timeMs": 158931,
+      "verseStart": 17,
+      "attachments": []
+    },
+    {
+      "timeMs": 168878,
+      "verseStart": 18,
+      "attachments": []
+    }
+  ]
+}
