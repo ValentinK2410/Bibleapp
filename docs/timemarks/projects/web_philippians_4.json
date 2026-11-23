@@ -1,0 +1,103 @@
+{
+  "id": "gh_web_philippians_4",
+  "translationCode": "WEB",
+  "bookId": "philippians",
+  "chapter": 4,
+  "title": "К Филиппийцам 4 · WEB (англ.)",
+  "narratorId": "web",
+  "audioFileName": "50_04.mp3",
+  "cues": [
+    {
+      "timeMs": 3262,
+      "verseStart": 1
+    },
+    {
+      "timeMs": 14329,
+      "verseStart": 2
+    },
+    {
+      "timeMs": 20894,
+      "verseStart": 3
+    },
+    {
+      "timeMs": 33482,
+      "verseStart": 4
+    },
+    {
+      "timeMs": 38825,
+      "verseStart": 5
+    },
+    {
+      "timeMs": 44069,
+      "verseStart": 6
+    },
+    {
+      "timeMs": 53775,
+      "verseStart": 7
+    },
+    {
+      "timeMs": 61760,
+      "verseStart": 8
+    },
+    {
+      "timeMs": 82193,
+      "verseStart": 9
+    },
+    {
+      "timeMs": 91940,
+      "verseStart": 10
+    },
+    {
+      "timeMs": 103507,
+      "verseStart": 11
+    },
+    {
+      "timeMs": 111052,
+      "verseStart": 12
+    },
+    {
+      "timeMs": 124160,
+      "verseStart": 13
+    },
+    {
+      "timeMs": 129484,
+      "verseStart": 14
+    },
+    {
+      "timeMs": 136508,
+      "verseStart": 15
+    },
+    {
+      "timeMs": 148636,
+      "verseStart": 16
+    },
+    {
+      "timeMs": 154080,
+      "verseStart": 17
+    },
+    {
+      "timeMs": 160344,
+      "verseStart": 18
+    },
+    {
+      "timeMs": 174813,
+      "verseStart": 19
+    },
+    {
+      "timeMs": 182938,
+      "verseStart": 20
+    },
+    {
+      "timeMs": 189943,
+      "verseStart": 21
+    },
+    {
+      "timeMs": 195166,
+      "verseStart": 22
+    },
+    {
+      "timeMs": 200250,
+      "verseStart": 23
+    }
+  ]
+}
