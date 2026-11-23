@@ -1,0 +1,95 @@
+{
+  "id": "gh_bti_romans_10",
+  "translationCode": "BTI",
+  "bookId": "romans",
+  "chapter": 10,
+  "title": "К Римлянам 10 · Кулаковых",
+  "narratorId": "bti",
+  "audioFileName": "52_10.mp3",
+  "cues": [
+    {
+      "timeMs": 4263,
+      "verseStart": 1
+    },
+    {
+      "timeMs": 14770,
+      "verseStart": 2
+    },
+    {
+      "timeMs": 26419,
+      "verseStart": 3
+    },
+    {
+      "timeMs": 39047,
+      "verseStart": 4
+    },
+    {
+      "timeMs": 53758,
+      "verseStart": 5
+    },
+    {
+      "timeMs": 68988,
+      "verseStart": 6
+    },
+    {
+      "timeMs": 86741,
+      "verseStart": 7
+    },
+    {
+      "timeMs": 97248,
+      "verseStart": 8
+    },
+    {
+      "timeMs": 117602,
+      "verseStart": 9
+    },
+    {
+      "timeMs": 132613,
+      "verseStart": 10
+    },
+    {
+      "timeMs": 142680,
+      "verseStart": 11
+    },
+    {
+      "timeMs": 150505,
+      "verseStart": 12
+    },
+    {
+      "timeMs": 167577,
+      "verseStart": 13
+    },
+    {
+      "timeMs": 175002,
+      "verseStart": 14
+    },
+    {
+      "timeMs": 188031,
+      "verseStart": 15
+    },
+    {
+      "timeMs": 204263,
+      "verseStart": 16
+    },
+    {
+      "timeMs": 219253,
+      "verseStart": 17
+    },
+    {
+      "timeMs": 230741,
+      "verseStart": 18
+    },
+    {
+      "timeMs": 255058,
+      "verseStart": 19
+    },
+    {
+      "timeMs": 281877,
+      "verseStart": 20
+    },
+    {
+      "timeMs": 297988,
+      "verseStart": 21
+    }
+  ]
+}

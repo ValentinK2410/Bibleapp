@@ -1,0 +1,81 @@
+{
+  "id": "align-romans-BTI-13",
+  "translationCode": "BTI",
+  "bookId": "romans",
+  "chapter": 13,
+  "title": "К Римлянам 13 · Кулаковых",
+  "audioFilePath": "/data/user/0/com.example.bible.sqlite/files/bible_audio/bti/52_13.mp3",
+  "updatedAt": 1795392000000,
+  "cues": [
+    {
+      "timeMs": 4343,
+      "verseStart": 1,
+      "attachments": []
+    },
+    {
+      "timeMs": 17591,
+      "verseStart": 2,
+      "attachments": []
+    },
+    {
+      "timeMs": 26777,
+      "verseStart": 3,
+      "attachments": []
+    },
+    {
+      "timeMs": 40665,
+      "verseStart": 4,
+      "attachments": []
+    },
+    {
+      "timeMs": 59037,
+      "verseStart": 5,
+      "attachments": []
+    },
+    {
+      "timeMs": 66081,
+      "verseStart": 6,
+      "attachments": []
+    },
+    {
+      "timeMs": 78729,
+      "verseStart": 7,
+      "attachments": []
+    },
+    {
+      "timeMs": 90416,
+      "verseStart": 8,
+      "attachments": []
+    },
+    {
+      "timeMs": 101883,
+      "verseStart": 9,
+      "attachments": []
+    },
+    {
+      "timeMs": 117233,
+      "verseStart": 10,
+      "attachments": []
+    },
+    {
+      "timeMs": 127819,
+      "verseStart": 11,
+      "attachments": []
+    },
+    {
+      "timeMs": 141047,
+      "verseStart": 12,
+      "attachments": []
+    },
+    {
+      "timeMs": 151274,
+      "verseStart": 13,
+      "attachments": []
+    },
+    {
+      "timeMs": 167504,
+      "verseStart": 14,
+      "attachments": []
+    }
+  ]
+}

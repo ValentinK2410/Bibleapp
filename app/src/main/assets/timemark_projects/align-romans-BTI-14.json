@@ -1,0 +1,126 @@
+{
+  "id": "align-romans-BTI-14",
+  "translationCode": "BTI",
+  "bookId": "romans",
+  "chapter": 14,
+  "title": "К Римлянам 14 · Кулаковых",
+  "audioFilePath": "/data/user/0/com.example.bible.sqlite/files/bible_audio/bti/52_14.mp3",
+  "updatedAt": 1795392000000,
+  "cues": [
+    {
+      "timeMs": 3903,
+      "verseStart": 1,
+      "attachments": []
+    },
+    {
+      "timeMs": 10727,
+      "verseStart": 2,
+      "attachments": []
+    },
+    {
+      "timeMs": 17872,
+      "verseStart": 3,
+      "attachments": []
+    },
+    {
+      "timeMs": 33863,
+      "verseStart": 4,
+      "attachments": []
+    },
+    {
+      "timeMs": 49514,
+      "verseStart": 5,
+      "attachments": []
+    },
+    {
+      "timeMs": 62443,
+      "verseStart": 6,
+      "attachments": []
+    },
+    {
+      "timeMs": 83297,
+      "verseStart": 7,
+      "attachments": []
+    },
+    {
+      "timeMs": 90262,
+      "verseStart": 8,
+      "attachments": []
+    },
+    {
+      "timeMs": 105693,
+      "verseStart": 9,
+      "attachments": []
+    },
+    {
+      "timeMs": 115879,
+      "verseStart": 10,
+      "attachments": []
+    },
+    {
+      "timeMs": 128348,
+      "verseStart": 11,
+      "attachments": []
+    },
+    {
+      "timeMs": 147401,
+      "verseStart": 12,
+      "attachments": []
+    },
+    {
+      "timeMs": 152805,
+      "verseStart": 13,
+      "attachments": []
+    },
+    {
+      "timeMs": 165514,
+      "verseStart": 14,
+      "attachments": []
+    },
+    {
+      "timeMs": 184126,
+      "verseStart": 15,
+      "attachments": []
+    },
+    {
+      "timeMs": 200317,
+      "verseStart": 16,
+      "attachments": []
+    },
+    {
+      "timeMs": 206902,
+      "verseStart": 17,
+      "attachments": []
+    },
+    {
+      "timeMs": 222332,
+      "verseStart": 18,
+      "attachments": []
+    },
+    {
+      "timeMs": 231299,
+      "verseStart": 19,
+      "attachments": []
+    },
+    {
+      "timeMs": 239664,
+      "verseStart": 20,
+      "attachments": []
+    },
+    {
+      "timeMs": 256536,
+      "verseStart": 21,
+      "attachments": []
+    },
+    {
+      "timeMs": 267583,
+      "verseStart": 22,
+      "attachments": []
+    },
+    {
+      "timeMs": 278871,
+      "verseStart": 23,
+      "attachments": []
+    }
+  ]
+}

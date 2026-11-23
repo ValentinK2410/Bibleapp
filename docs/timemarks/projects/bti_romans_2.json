@@ -1,0 +1,127 @@
+{
+  "id": "gh_bti_romans_2",
+  "translationCode": "BTI",
+  "bookId": "romans",
+  "chapter": 2,
+  "title": "К Римлянам 2 · Кулаковых",
+  "narratorId": "bti",
+  "audioFileName": "52_02.mp3",
+  "cues": [
+    {
+      "timeMs": 4283,
+      "verseStart": 1
+    },
+    {
+      "timeMs": 21335,
+      "verseStart": 2
+    },
+    {
+      "timeMs": 30421,
+      "verseStart": 3
+    },
+    {
+      "timeMs": 41049,
+      "verseStart": 4
+    },
+    {
+      "timeMs": 58301,
+      "verseStart": 5
+    },
+    {
+      "timeMs": 75833,
+      "verseStart": 6
+    },
+    {
+      "timeMs": 79976,
+      "verseStart": 7
+    },
+    {
+      "timeMs": 92865,
+      "verseStart": 8
+    },
+    {
+      "timeMs": 103252,
+      "verseStart": 9
+    },
+    {
+      "timeMs": 113419,
+      "verseStart": 10
+    },
+    {
+      "timeMs": 128469,
+      "verseStart": 11
+    },
+    {
+      "timeMs": 133072,
+      "verseStart": 12
+    },
+    {
+      "timeMs": 147242,
+      "verseStart": 13
+    },
+    {
+      "timeMs": 157289,
+      "verseStart": 14
+    },
+    {
+      "timeMs": 171119,
+      "verseStart": 15
+    },
+    {
+      "timeMs": 189992,
+      "verseStart": 16
+    },
+    {
+      "timeMs": 205243,
+      "verseStart": 17
+    },
+    {
+      "timeMs": 213668,
+      "verseStart": 18
+    },
+    {
+      "timeMs": 221534,
+      "verseStart": 19
+    },
+    {
+      "timeMs": 227318,
+      "verseStart": 20
+    },
+    {
+      "timeMs": 237785,
+      "verseStart": 21
+    },
+    {
+      "timeMs": 248673,
+      "verseStart": 22
+    },
+    {
+      "timeMs": 258920,
+      "verseStart": 23
+    },
+    {
+      "timeMs": 267846,
+      "verseStart": 24
+    },
+    {
+      "timeMs": 276952,
+      "verseStart": 25
+    },
+    {
+      "timeMs": 292943,
+      "verseStart": 26
+    },
+    {
+      "timeMs": 303931,
+      "verseStart": 27
+    },
+    {
+      "timeMs": 324305,
+      "verseStart": 28
+    },
+    {
+      "timeMs": 337114,
+      "verseStart": 29
+    }
+  ]
+}

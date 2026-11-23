@@ -1,0 +1,95 @@
+{
+  "id": "gh_bti_romans_12",
+  "translationCode": "BTI",
+  "bookId": "romans",
+  "chapter": 12,
+  "title": "К Римлянам 12 · Кулаковых",
+  "narratorId": "bti",
+  "audioFileName": "52_12.mp3",
+  "cues": [
+    {
+      "timeMs": 4263,
+      "verseStart": 1
+    },
+    {
+      "timeMs": 24678,
+      "verseStart": 2
+    },
+    {
+      "timeMs": 47094,
+      "verseStart": 3
+    },
+    {
+      "timeMs": 69229,
+      "verseStart": 4
+    },
+    {
+      "timeMs": 76855,
+      "verseStart": 5
+    },
+    {
+      "timeMs": 90765,
+      "verseStart": 6
+    },
+    {
+      "timeMs": 107977,
+      "verseStart": 7
+    },
+    {
+      "timeMs": 115663,
+      "verseStart": 8
+    },
+    {
+      "timeMs": 140660,
+      "verseStart": 9
+    },
+    {
+      "timeMs": 151068,
+      "verseStart": 10
+    },
+    {
+      "timeMs": 161235,
+      "verseStart": 11
+    },
+    {
+      "timeMs": 169521,
+      "verseStart": 12
+    },
+    {
+      "timeMs": 178988,
+      "verseStart": 13
+    },
+    {
+      "timeMs": 188515,
+      "verseStart": 14
+    },
+    {
+      "timeMs": 197341,
+      "verseStart": 15
+    },
+    {
+      "timeMs": 203365,
+      "verseStart": 16
+    },
+    {
+      "timeMs": 215254,
+      "verseStart": 17
+    },
+    {
+      "timeMs": 226842,
+      "verseStart": 18
+    },
+    {
+      "timeMs": 234347,
+      "verseStart": 19
+    },
+    {
+      "timeMs": 249978,
+      "verseStart": 20
+    },
+    {
+      "timeMs": 268071,
+      "verseStart": 21
+    }
+  ]
+}

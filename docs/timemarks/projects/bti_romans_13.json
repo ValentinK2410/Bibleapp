@@ -1,0 +1,67 @@
+{
+  "id": "gh_bti_romans_13",
+  "translationCode": "BTI",
+  "bookId": "romans",
+  "chapter": 13,
+  "title": "К Римлянам 13 · Кулаковых",
+  "narratorId": "bti",
+  "audioFileName": "52_13.mp3",
+  "cues": [
+    {
+      "timeMs": 4343,
+      "verseStart": 1
+    },
+    {
+      "timeMs": 17591,
+      "verseStart": 2
+    },
+    {
+      "timeMs": 26777,
+      "verseStart": 3
+    },
+    {
+      "timeMs": 40665,
+      "verseStart": 4
+    },
+    {
+      "timeMs": 59037,
+      "verseStart": 5
+    },
+    {
+      "timeMs": 66081,
+      "verseStart": 6
+    },
+    {
+      "timeMs": 78729,
+      "verseStart": 7
+    },
+    {
+      "timeMs": 90416,
+      "verseStart": 8
+    },
+    {
+      "timeMs": 101883,
+      "verseStart": 9
+    },
+    {
+      "timeMs": 117233,
+      "verseStart": 10
+    },
+    {
+      "timeMs": 127819,
+      "verseStart": 11
+    },
+    {
+      "timeMs": 141047,
+      "verseStart": 12
+    },
+    {
+      "timeMs": 151274,
+      "verseStart": 13
+    },
+    {
+      "timeMs": 167504,
+      "verseStart": 14
+    }
+  ]
+}

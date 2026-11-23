@@ -1,0 +1,111 @@
+{
+  "id": "gh_bti_romans_7",
+  "translationCode": "BTI",
+  "bookId": "romans",
+  "chapter": 7,
+  "title": "К Римлянам 7 · Кулаковых",
+  "narratorId": "bti",
+  "audioFileName": "52_07.mp3",
+  "cues": [
+    {
+      "timeMs": 4503,
+      "verseStart": 1
+    },
+    {
+      "timeMs": 13869,
+      "verseStart": 2
+    },
+    {
+      "timeMs": 27058,
+      "verseStart": 3
+    },
+    {
+      "timeMs": 46812,
+      "verseStart": 4
+    },
+    {
+      "timeMs": 68707,
+      "verseStart": 5
+    },
+    {
+      "timeMs": 80254,
+      "verseStart": 6
+    },
+    {
+      "timeMs": 96646,
+      "verseStart": 7
+    },
+    {
+      "timeMs": 114117,
+      "verseStart": 8
+    },
+    {
+      "timeMs": 125325,
+      "verseStart": 9
+    },
+    {
+      "timeMs": 132510,
+      "verseStart": 10
+    },
+    {
+      "timeMs": 142136,
+      "verseStart": 11
+    },
+    {
+      "timeMs": 152143,
+      "verseStart": 12
+    },
+    {
+      "timeMs": 161630,
+      "verseStart": 13
+    },
+    {
+      "timeMs": 189268,
+      "verseStart": 14
+    },
+    {
+      "timeMs": 200796,
+      "verseStart": 15
+    },
+    {
+      "timeMs": 208361,
+      "verseStart": 16
+    },
+    {
+      "timeMs": 216967,
+      "verseStart": 17
+    },
+    {
+      "timeMs": 225873,
+      "verseStart": 18
+    },
+    {
+      "timeMs": 237501,
+      "verseStart": 19
+    },
+    {
+      "timeMs": 251550,
+      "verseStart": 20
+    },
+    {
+      "timeMs": 264639,
+      "verseStart": 21
+    },
+    {
+      "timeMs": 276047,
+      "verseStart": 22
+    },
+    {
+      "timeMs": 279709,
+      "verseStart": 23
+    },
+    {
+      "timeMs": 304306,
+      "verseStart": 24
+    },
+    {
+      "timeMs": 315754,
+      "verseStart": 25
+    }
+  ]
+}

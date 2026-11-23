@@ -1,0 +1,139 @@
+{
+  "id": "gh_bti_romans_1",
+  "translationCode": "BTI",
+  "bookId": "romans",
+  "chapter": 1,
+  "title": "К Римлянам 1 · Кулаковых",
+  "narratorId": "bti",
+  "audioFileName": "52_01.mp3",
+  "cues": [
+    {
+      "timeMs": 10667,
+      "verseStart": 1
+    },
+    {
+      "timeMs": 22235,
+      "verseStart": 2
+    },
+    {
+      "timeMs": 29159,
+      "verseStart": 3
+    },
+    {
+      "timeMs": 37045,
+      "verseStart": 4
+    },
+    {
+      "timeMs": 53956,
+      "verseStart": 5
+    },
+    {
+      "timeMs": 66524,
+      "verseStart": 6
+    },
+    {
+      "timeMs": 72388,
+      "verseStart": 7
+    },
+    {
+      "timeMs": 89540,
+      "verseStart": 8
+    },
+    {
+      "timeMs": 100167,
+      "verseStart": 9
+    },
+    {
+      "timeMs": 109913,
+      "verseStart": 10
+    },
+    {
+      "timeMs": 117558,
+      "verseStart": 11
+    },
+    {
+      "timeMs": 127225,
+      "verseStart": 12
+    },
+    {
+      "timeMs": 139893,
+      "verseStart": 13
+    },
+    {
+      "timeMs": 159746,
+      "verseStart": 14
+    },
+    {
+      "timeMs": 168752,
+      "verseStart": 15
+    },
+    {
+      "timeMs": 179940,
+      "verseStart": 16
+    },
+    {
+      "timeMs": 194910,
+      "verseStart": 17
+    },
+    {
+      "timeMs": 213422,
+      "verseStart": 18
+    },
+    {
+      "timeMs": 227511,
+      "verseStart": 19
+    },
+    {
+      "timeMs": 239439,
+      "verseStart": 20
+    },
+    {
+      "timeMs": 256851,
+      "verseStart": 21
+    },
+    {
+      "timeMs": 275303,
+      "verseStart": 22
+    },
+    {
+      "timeMs": 280626,
+      "verseStart": 23
+    },
+    {
+      "timeMs": 297858,
+      "verseStart": 24
+    },
+    {
+      "timeMs": 308925,
+      "verseStart": 25
+    },
+    {
+      "timeMs": 326117,
+      "verseStart": 26
+    },
+    {
+      "timeMs": 340566,
+      "verseStart": 27
+    },
+    {
+      "timeMs": 366183,
+      "verseStart": 28
+    },
+    {
+      "timeMs": 376350,
+      "verseStart": 29
+    },
+    {
+      "timeMs": 393902,
+      "verseStart": 30
+    },
+    {
+      "timeMs": 405189,
+      "verseStart": 31
+    },
+    {
+      "timeMs": 413155,
+      "verseStart": 32
+    }
+  ]
+}

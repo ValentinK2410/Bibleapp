@@ -1,0 +1,167 @@
+{
+  "id": "gh_bti_romans_8",
+  "translationCode": "BTI",
+  "bookId": "romans",
+  "chapter": 8,
+  "title": "К Римлянам 8 · Кулаковых",
+  "narratorId": "bti",
+  "audioFileName": "52_08.mp3",
+  "cues": [
+    {
+      "timeMs": 3823,
+      "verseStart": 1
+    },
+    {
+      "timeMs": 14570,
+      "verseStart": 2
+    },
+    {
+      "timeMs": 25317,
+      "verseStart": 3
+    },
+    {
+      "timeMs": 44270,
+      "verseStart": 4
+    },
+    {
+      "timeMs": 56078,
+      "verseStart": 5
+    },
+    {
+      "timeMs": 68967,
+      "verseStart": 6
+    },
+    {
+      "timeMs": 78673,
+      "verseStart": 7
+    },
+    {
+      "timeMs": 86619,
+      "verseStart": 8
+    },
+    {
+      "timeMs": 94684,
+      "verseStart": 9
+    },
+    {
+      "timeMs": 109734,
+      "verseStart": 10
+    },
+    {
+      "timeMs": 125685,
+      "verseStart": 11
+    },
+    {
+      "timeMs": 143297,
+      "verseStart": 12
+    },
+    {
+      "timeMs": 151883,
+      "verseStart": 13
+    },
+    {
+      "timeMs": 168394,
+      "verseStart": 14
+    },
+    {
+      "timeMs": 174839,
+      "verseStart": 15
+    },
+    {
+      "timeMs": 193451,
+      "verseStart": 16
+    },
+    {
+      "timeMs": 201517,
+      "verseStart": 17
+    },
+    {
+      "timeMs": 220970,
+      "verseStart": 18
+    },
+    {
+      "timeMs": 232578,
+      "verseStart": 19
+    },
+    {
+      "timeMs": 240903,
+      "verseStart": 20
+    },
+    {
+      "timeMs": 252051,
+      "verseStart": 21
+    },
+    {
+      "timeMs": 268482,
+      "verseStart": 22
+    },
+    {
+      "timeMs": 276688,
+      "verseStart": 23
+    },
+    {
+      "timeMs": 294800,
+      "verseStart": 24
+    },
+    {
+      "timeMs": 310110,
+      "verseStart": 25
+    },
+    {
+      "timeMs": 320477,
+      "verseStart": 26
+    },
+    {
+      "timeMs": 335287,
+      "verseStart": 27
+    },
+    {
+      "timeMs": 351238,
+      "verseStart": 28
+    },
+    {
+      "timeMs": 366849,
+      "verseStart": 29
+    },
+    {
+      "timeMs": 383600,
+      "verseStart": 30
+    },
+    {
+      "timeMs": 401392,
+      "verseStart": 31
+    },
+    {
+      "timeMs": 410758,
+      "verseStart": 32
+    },
+    {
+      "timeMs": 425508,
+      "verseStart": 33
+    },
+    {
+      "timeMs": 434574,
+      "verseStart": 34
+    },
+    {
+      "timeMs": 451646,
+      "verseStart": 35
+    },
+    {
+      "timeMs": 468197,
+      "verseStart": 36
+    },
+    {
+      "timeMs": 483548,
+      "verseStart": 37
+    },
+    {
+      "timeMs": 492954,
+      "verseStart": 38
+    },
+    {
+      "timeMs": 506563,
+      "verseStart": 39
+    }
+  ]
+}

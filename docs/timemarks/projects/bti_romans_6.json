@@ -1,0 +1,103 @@
+{
+  "id": "gh_bti_romans_6",
+  "translationCode": "BTI",
+  "bookId": "romans",
+  "chapter": 6,
+  "title": "К Римлянам 6 · Кулаковых",
+  "narratorId": "bti",
+  "audioFileName": "52_06.mp3",
+  "cues": [
+    {
+      "timeMs": 5044,
+      "verseStart": 1
+    },
+    {
+      "timeMs": 12629,
+      "verseStart": 2
+    },
+    {
+      "timeMs": 20194,
+      "verseStart": 3
+    },
+    {
+      "timeMs": 28760,
+      "verseStart": 4
+    },
+    {
+      "timeMs": 46672,
+      "verseStart": 5
+    },
+    {
+      "timeMs": 59421,
+      "verseStart": 6
+    },
+    {
+      "timeMs": 74071,
+      "verseStart": 7
+    },
+    {
+      "timeMs": 79035,
+      "verseStart": 8
+    },
+    {
+      "timeMs": 86480,
+      "verseStart": 9
+    },
+    {
+      "timeMs": 95526,
+      "verseStart": 10
+    },
+    {
+      "timeMs": 114319,
+      "verseStart": 11
+    },
+    {
+      "timeMs": 123245,
+      "verseStart": 12
+    },
+    {
+      "timeMs": 132451,
+      "verseStart": 13
+    },
+    {
+      "timeMs": 149543,
+      "verseStart": 14
+    },
+    {
+      "timeMs": 159350,
+      "verseStart": 15
+    },
+    {
+      "timeMs": 169997,
+      "verseStart": 16
+    },
+    {
+      "timeMs": 190471,
+      "verseStart": 17
+    },
+    {
+      "timeMs": 202760,
+      "verseStart": 18
+    },
+    {
+      "timeMs": 208304,
+      "verseStart": 19
+    },
+    {
+      "timeMs": 231119,
+      "verseStart": 20
+    },
+    {
+      "timeMs": 238965,
+      "verseStart": 21
+    },
+    {
+      "timeMs": 249032,
+      "verseStart": 22
+    },
+    {
+      "timeMs": 263342,
+      "verseStart": 23
+    }
+  ]
+}
