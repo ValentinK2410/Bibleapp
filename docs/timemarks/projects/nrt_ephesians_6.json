@@ -1,0 +1,107 @@
+{
+  "id": "gh_nrt_ephesians_6",
+  "translationCode": "NRT",
+  "bookId": "ephesians",
+  "chapter": 6,
+  "title": "К Ефесянам 6 · Новый русский",
+  "narratorId": "new-russian",
+  "audioFileName": "56_06.mp3",
+  "cues": [
+    {
+      "timeMs": 4403,
+      "verseStart": 1
+    },
+    {
+      "timeMs": 10908,
+      "verseStart": 2
+    },
+    {
+      "timeMs": 16292,
+      "verseStart": 3
+    },
+    {
+      "timeMs": 20395,
+      "verseStart": 4
+    },
+    {
+      "timeMs": 33765,
+      "verseStart": 5
+    },
+    {
+      "timeMs": 42792,
+      "verseStart": 6
+    },
+    {
+      "timeMs": 54601,
+      "verseStart": 7
+    },
+    {
+      "timeMs": 59704,
+      "verseStart": 8
+    },
+    {
+      "timeMs": 67790,
+      "verseStart": 9
+    },
+    {
+      "timeMs": 88646,
+      "verseStart": 10
+    },
+    {
+      "timeMs": 95051,
+      "verseStart": 11
+    },
+    {
+      "timeMs": 105338,
+      "verseStart": 12
+    },
+    {
+      "timeMs": 118088,
+      "verseStart": 13
+    },
+    {
+      "timeMs": 130057,
+      "verseStart": 14
+    },
+    {
+      "timeMs": 136521,
+      "verseStart": 15
+    },
+    {
+      "timeMs": 141245,
+      "verseStart": 16
+    },
+    {
+      "timeMs": 148791,
+      "verseStart": 17
+    },
+    {
+      "timeMs": 155716,
+      "verseStart": 18
+    },
+    {
+      "timeMs": 167344,
+      "verseStart": 19
+    },
+    {
+      "timeMs": 177312,
+      "verseStart": 20
+    },
+    {
+      "timeMs": 190121,
+      "verseStart": 21
+    },
+    {
+      "timeMs": 198067,
+      "verseStart": 22
+    },
+    {
+      "timeMs": 204212,
+      "verseStart": 23
+    },
+    {
+      "timeMs": 213779,
+      "verseStart": 24
+    }
+  ]
+}

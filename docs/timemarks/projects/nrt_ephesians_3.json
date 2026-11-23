@@ -1,0 +1,95 @@
+{
+  "id": "gh_nrt_ephesians_3",
+  "translationCode": "NRT",
+  "bookId": "ephesians",
+  "chapter": 3,
+  "title": "К Ефесянам 3 · Новый русский",
+  "narratorId": "new-russian",
+  "audioFileName": "56_03.mp3",
+  "cues": [
+    {
+      "timeMs": 5244,
+      "verseStart": 1
+    },
+    {
+      "timeMs": 14330,
+      "verseStart": 2
+    },
+    {
+      "timeMs": 21775,
+      "verseStart": 3
+    },
+    {
+      "timeMs": 26598,
+      "verseStart": 4
+    },
+    {
+      "timeMs": 32662,
+      "verseStart": 5
+    },
+    {
+      "timeMs": 42789,
+      "verseStart": 6
+    },
+    {
+      "timeMs": 63083,
+      "verseStart": 7
+    },
+    {
+      "timeMs": 71929,
+      "verseStart": 8
+    },
+    {
+      "timeMs": 85719,
+      "verseStart": 9
+    },
+    {
+      "timeMs": 96186,
+      "verseStart": 10
+    },
+    {
+      "timeMs": 105613,
+      "verseStart": 11
+    },
+    {
+      "timeMs": 114479,
+      "verseStart": 12
+    },
+    {
+      "timeMs": 121083,
+      "verseStart": 13
+    },
+    {
+      "timeMs": 134152,
+      "verseStart": 14
+    },
+    {
+      "timeMs": 139276,
+      "verseStart": 15
+    },
+    {
+      "timeMs": 144219,
+      "verseStart": 16
+    },
+    {
+      "timeMs": 151924,
+      "verseStart": 17
+    },
+    {
+      "timeMs": 157568,
+      "verseStart": 18
+    },
+    {
+      "timeMs": 172599,
+      "verseStart": 19
+    },
+    {
+      "timeMs": 186228,
+      "verseStart": 20
+    },
+    {
+      "timeMs": 196595,
+      "verseStart": 21
+    }
+  ]
+}

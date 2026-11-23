@@ -1,0 +1,99 @@
+{
+  "id": "gh_nrt_ephesians_2",
+  "translationCode": "NRT",
+  "bookId": "ephesians",
+  "chapter": 2,
+  "title": "К Ефесянам 2 · Новый русский",
+  "narratorId": "new-russian",
+  "audioFileName": "56_02.mp3",
+  "cues": [
+    {
+      "timeMs": 5704,
+      "verseStart": 1
+    },
+    {
+      "timeMs": 9426,
+      "verseStart": 2
+    },
+    {
+      "timeMs": 23536,
+      "verseStart": 3
+    },
+    {
+      "timeMs": 35184,
+      "verseStart": 4
+    },
+    {
+      "timeMs": 41788,
+      "verseStart": 5
+    },
+    {
+      "timeMs": 52676,
+      "verseStart": 6
+    },
+    {
+      "timeMs": 60741,
+      "verseStart": 7
+    },
+    {
+      "timeMs": 69607,
+      "verseStart": 8
+    },
+    {
+      "timeMs": 77473,
+      "verseStart": 9
+    },
+    {
+      "timeMs": 84177,
+      "verseStart": 10
+    },
+    {
+      "timeMs": 102710,
+      "verseStart": 11
+    },
+    {
+      "timeMs": 115678,
+      "verseStart": 12
+    },
+    {
+      "timeMs": 131609,
+      "verseStart": 13
+    },
+    {
+      "timeMs": 142016,
+      "verseStart": 14
+    },
+    {
+      "timeMs": 158347,
+      "verseStart": 15
+    },
+    {
+      "timeMs": 170556,
+      "verseStart": 16
+    },
+    {
+      "timeMs": 179321,
+      "verseStart": 17
+    },
+    {
+      "timeMs": 188848,
+      "verseStart": 18
+    },
+    {
+      "timeMs": 194872,
+      "verseStart": 19
+    },
+    {
+      "timeMs": 204679,
+      "verseStart": 20
+    },
+    {
+      "timeMs": 215126,
+      "verseStart": 21
+    },
+    {
+      "timeMs": 223431,
+      "verseStart": 22
+    }
+  ]
+}
