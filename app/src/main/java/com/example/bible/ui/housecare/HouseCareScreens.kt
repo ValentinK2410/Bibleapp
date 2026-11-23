@@ -622,8 +622,8 @@ fun CleaningDayScreen(
             item {
                 HabitBlocks(
                     viewModel = viewModel,
+                    data = data,
                     placeId = placeId,
-                    habits = data.habits.filter { it.placeId == placeId },
                     date = date,
                     collapse = collapse,
                 )
