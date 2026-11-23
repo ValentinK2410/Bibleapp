@@ -1,0 +1,75 @@
+{
+  "id": "gh_nrt_1_timothy_4",
+  "translationCode": "NRT",
+  "bookId": "1_timothy",
+  "chapter": 4,
+  "title": "1-е Тимофею 4 · Новый русский",
+  "narratorId": "new-russian",
+  "audioFileName": "61_04.mp3",
+  "cues": [
+    {
+      "timeMs": 3923,
+      "verseStart": 1
+    },
+    {
+      "timeMs": 13249,
+      "verseStart": 2
+    },
+    {
+      "timeMs": 20173,
+      "verseStart": 3
+    },
+    {
+      "timeMs": 32601,
+      "verseStart": 4
+    },
+    {
+      "timeMs": 40006,
+      "verseStart": 5
+    },
+    {
+      "timeMs": 44129,
+      "verseStart": 6
+    },
+    {
+      "timeMs": 57237,
+      "verseStart": 7
+    },
+    {
+      "timeMs": 65042,
+      "verseStart": 8
+    },
+    {
+      "timeMs": 75369,
+      "verseStart": 9
+    },
+    {
+      "timeMs": 78331,
+      "verseStart": 10
+    },
+    {
+      "timeMs": 88478,
+      "verseStart": 11
+    },
+    {
+      "timeMs": 91920,
+      "verseStart": 12
+    },
+    {
+      "timeMs": 103627,
+      "verseStart": 13
+    },
+    {
+      "timeMs": 108851,
+      "verseStart": 14
+    },
+    {
+      "timeMs": 116896,
+      "verseStart": 15
+    },
+    {
+      "timeMs": 124741,
+      "verseStart": 16
+    }
+  ]
+}

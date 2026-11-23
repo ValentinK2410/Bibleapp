@@ -1,0 +1,75 @@
+{
+  "id": "gh_nrt_1_timothy_3",
+  "translationCode": "NRT",
+  "bookId": "1_timothy",
+  "chapter": 3,
+  "title": "1-е Тимофею 3 · Новый русский",
+  "narratorId": "new-russian",
+  "audioFileName": "61_03.mp3",
+  "cues": [
+    {
+      "timeMs": 3662,
+      "verseStart": 1
+    },
+    {
+      "timeMs": 9566,
+      "verseStart": 2
+    },
+    {
+      "timeMs": 21494,
+      "verseStart": 3
+    },
+    {
+      "timeMs": 29019,
+      "verseStart": 4
+    },
+    {
+      "timeMs": 34842,
+      "verseStart": 5
+    },
+    {
+      "timeMs": 41647,
+      "verseStart": 6
+    },
+    {
+      "timeMs": 52113,
+      "verseStart": 7
+    },
+    {
+      "timeMs": 59698,
+      "verseStart": 8
+    },
+    {
+      "timeMs": 69064,
+      "verseStart": 9
+    },
+    {
+      "timeMs": 73827,
+      "verseStart": 10
+    },
+    {
+      "timeMs": 83673,
+      "verseStart": 11
+    },
+    {
+      "timeMs": 91999,
+      "verseStart": 12
+    },
+    {
+      "timeMs": 98042,
+      "verseStart": 13
+    },
+    {
+      "timeMs": 110510,
+      "verseStart": 14
+    },
+    {
+      "timeMs": 114713,
+      "verseStart": 15
+    },
+    {
+      "timeMs": 125460,
+      "verseStart": 16
+    }
+  ]
+}

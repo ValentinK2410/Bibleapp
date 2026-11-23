@@ -1,0 +1,71 @@
+{
+  "id": "gh_nrt_1_timothy_2",
+  "translationCode": "NRT",
+  "bookId": "1_timothy",
+  "chapter": 2,
+  "title": "1-е Тимофею 2 · Новый русский",
+  "narratorId": "new-russian",
+  "audioFileName": "61_02.mp3",
+  "cues": [
+    {
+      "timeMs": 2602,
+      "verseStart": 1
+    },
+    {
+      "timeMs": 12429,
+      "verseStart": 2
+    },
+    {
+      "timeMs": 21795,
+      "verseStart": 3
+    },
+    {
+      "timeMs": 25598,
+      "verseStart": 4
+    },
+    {
+      "timeMs": 29941,
+      "verseStart": 5
+    },
+    {
+      "timeMs": 37125,
+      "verseStart": 6
+    },
+    {
+      "timeMs": 45251,
+      "verseStart": 7
+    },
+    {
+      "timeMs": 55558,
+      "verseStart": 8
+    },
+    {
+      "timeMs": 62763,
+      "verseStart": 9
+    },
+    {
+      "timeMs": 74351,
+      "verseStart": 10
+    },
+    {
+      "timeMs": 80235,
+      "verseStart": 11
+    },
+    {
+      "timeMs": 84238,
+      "verseStart": 12
+    },
+    {
+      "timeMs": 90342,
+      "verseStart": 13
+    },
+    {
+      "timeMs": 93524,
+      "verseStart": 14
+    },
+    {
+      "timeMs": 100289,
+      "verseStart": 15
+    }
+  ]
+}

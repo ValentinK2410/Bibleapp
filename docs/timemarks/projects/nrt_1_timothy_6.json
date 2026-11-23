@@ -1,0 +1,95 @@
+{
+  "id": "gh_nrt_1_timothy_6",
+  "translationCode": "NRT",
+  "bookId": "1_timothy",
+  "chapter": 6,
+  "title": "1-е Тимофею 6 · Новый русский",
+  "narratorId": "new-russian",
+  "audioFileName": "61_06.mp3",
+  "cues": [
+    {
+      "timeMs": 320,
+      "verseStart": 1
+    },
+    {
+      "timeMs": 11548,
+      "verseStart": 2
+    },
+    {
+      "timeMs": 35843,
+      "verseStart": 3
+    },
+    {
+      "timeMs": 47071,
+      "verseStart": 4
+    },
+    {
+      "timeMs": 60880,
+      "verseStart": 5
+    },
+    {
+      "timeMs": 73067,
+      "verseStart": 6
+    },
+    {
+      "timeMs": 77710,
+      "verseStart": 7
+    },
+    {
+      "timeMs": 83354,
+      "verseStart": 8
+    },
+    {
+      "timeMs": 87257,
+      "verseStart": 9
+    },
+    {
+      "timeMs": 99905,
+      "verseStart": 10
+    },
+    {
+      "timeMs": 113193,
+      "verseStart": 11
+    },
+    {
+      "timeMs": 123540,
+      "verseStart": 12
+    },
+    {
+      "timeMs": 135688,
+      "verseStart": 13
+    },
+    {
+      "timeMs": 147756,
+      "verseStart": 14
+    },
+    {
+      "timeMs": 156361,
+      "verseStart": 15
+    },
+    {
+      "timeMs": 165167,
+      "verseStart": 16
+    },
+    {
+      "timeMs": 180077,
+      "verseStart": 17
+    },
+    {
+      "timeMs": 196307,
+      "verseStart": 18
+    },
+    {
+      "timeMs": 205033,
+      "verseStart": 19
+    },
+    {
+      "timeMs": 215520,
+      "verseStart": 20
+    },
+    {
+      "timeMs": 225966,
+      "verseStart": 21
+    }
+  ]
+}

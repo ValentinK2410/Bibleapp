@@ -1,0 +1,111 @@
+{
+  "id": "align-1_timothy-NRT-01",
+  "translationCode": "NRT",
+  "bookId": "1_timothy",
+  "chapter": 1,
+  "title": "1-е Тимофею 1 · Новый русский",
+  "audioFilePath": "/data/user/0/com.example.bible.sqlite/files/bible_audio/new-russian/61_01.mp3",
+  "updatedAt": 1795392000000,
+  "cues": [
+    {
+      "timeMs": 1041,
+      "verseStart": 1,
+      "attachments": []
+    },
+    {
+      "timeMs": 10928,
+      "verseStart": 2,
+      "attachments": []
+    },
+    {
+      "timeMs": 26319,
+      "verseStart": 3,
+      "attachments": []
+    },
+    {
+      "timeMs": 35406,
+      "verseStart": 4,
+      "attachments": []
+    },
+    {
+      "timeMs": 48435,
+      "verseStart": 5,
+      "attachments": []
+    },
+    {
+      "timeMs": 57261,
+      "verseStart": 6,
+      "attachments": []
+    },
+    {
+      "timeMs": 62405,
+      "verseStart": 7,
+      "attachments": []
+    },
+    {
+      "timeMs": 70411,
+      "verseStart": 8,
+      "attachments": []
+    },
+    {
+      "timeMs": 74353,
+      "verseStart": 9,
+      "attachments": []
+    },
+    {
+      "timeMs": 92106,
+      "verseStart": 10,
+      "attachments": []
+    },
+    {
+      "timeMs": 103414,
+      "verseStart": 11,
+      "attachments": []
+    },
+    {
+      "timeMs": 115463,
+      "verseStart": 12,
+      "attachments": []
+    },
+    {
+      "timeMs": 125230,
+      "verseStart": 13,
+      "attachments": []
+    },
+    {
+      "timeMs": 135918,
+      "verseStart": 14,
+      "attachments": []
+    },
+    {
+      "timeMs": 146225,
+      "verseStart": 15,
+      "attachments": []
+    },
+    {
+      "timeMs": 156793,
+      "verseStart": 16,
+      "attachments": []
+    },
+    {
+      "timeMs": 172864,
+      "verseStart": 17,
+      "attachments": []
+    },
+    {
+      "timeMs": 188856,
+      "verseStart": 18,
+      "attachments": []
+    },
+    {
+      "timeMs": 201125,
+      "verseStart": 19,
+      "attachments": []
+    },
+    {
+      "timeMs": 209691,
+      "verseStart": 20,
+      "attachments": []
+    }
+  ]
+}
