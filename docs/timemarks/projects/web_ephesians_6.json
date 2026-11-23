@@ -1,0 +1,107 @@
+{
+  "id": "gh_web_ephesians_6",
+  "translationCode": "WEB",
+  "bookId": "ephesians",
+  "chapter": 6,
+  "title": "К Ефесянам 6 · WEB (англ.)",
+  "narratorId": "web",
+  "audioFileName": "49_06.mp3",
+  "cues": [
+    {
+      "timeMs": 2902,
+      "verseStart": 1
+    },
+    {
+      "timeMs": 7645,
+      "verseStart": 2
+    },
+    {
+      "timeMs": 11927,
+      "verseStart": 3
+    },
+    {
+      "timeMs": 18391,
+      "verseStart": 4
+    },
+    {
+      "timeMs": 26937,
+      "verseStart": 5
+    },
+    {
+      "timeMs": 36703,
+      "verseStart": 6
+    },
+    {
+      "timeMs": 44708,
+      "verseStart": 7
+    },
+    {
+      "timeMs": 49430,
+      "verseStart": 8
+    },
+    {
+      "timeMs": 60077,
+      "verseStart": 9
+    },
+    {
+      "timeMs": 75006,
+      "verseStart": 10
+    },
+    {
+      "timeMs": 81630,
+      "verseStart": 11
+    },
+    {
+      "timeMs": 88735,
+      "verseStart": 12
+    },
+    {
+      "timeMs": 102523,
+      "verseStart": 13
+    },
+    {
+      "timeMs": 114270,
+      "verseStart": 14
+    },
+    {
+      "timeMs": 122695,
+      "verseStart": 15
+    },
+    {
+      "timeMs": 127438,
+      "verseStart": 16
+    },
+    {
+      "timeMs": 137144,
+      "verseStart": 17
+    },
+    {
+      "timeMs": 143708,
+      "verseStart": 18
+    },
+    {
+      "timeMs": 153574,
+      "verseStart": 19
+    },
+    {
+      "timeMs": 162360,
+      "verseStart": 20
+    },
+    {
+      "timeMs": 172326,
+      "verseStart": 21
+    },
+    {
+      "timeMs": 183033,
+      "verseStart": 22
+    },
+    {
+      "timeMs": 191898,
+      "verseStart": 23
+    },
+    {
+      "timeMs": 199663,
+      "verseStart": 24
+    }
+  ]
+}

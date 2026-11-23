@@ -1,0 +1,143 @@
+{
+  "id": "gh_web_ephesians_5",
+  "translationCode": "WEB",
+  "bookId": "ephesians",
+  "chapter": 5,
+  "title": "К Ефесянам 5 · WEB (англ.)",
+  "narratorId": "web",
+  "audioFileName": "49_05.mp3",
+  "cues": [
+    {
+      "timeMs": 2422,
+      "verseStart": 1
+    },
+    {
+      "timeMs": 6364,
+      "verseStart": 2
+    },
+    {
+      "timeMs": 17812,
+      "verseStart": 3
+    },
+    {
+      "timeMs": 26998,
+      "verseStart": 4
+    },
+    {
+      "timeMs": 35804,
+      "verseStart": 5
+    },
+    {
+      "timeMs": 48452,
+      "verseStart": 6
+    },
+    {
+      "timeMs": 57698,
+      "verseStart": 7
+    },
+    {
+      "timeMs": 61341,
+      "verseStart": 8
+    },
+    {
+      "timeMs": 70127,
+      "verseStart": 9
+    },
+    {
+      "timeMs": 74870,
+      "verseStart": 10
+    },
+    {
+      "timeMs": 79033,
+      "verseStart": 11
+    },
+    {
+      "timeMs": 85697,
+      "verseStart": 12
+    },
+    {
+      "timeMs": 92502,
+      "verseStart": 13
+    },
+    {
+      "timeMs": 100707,
+      "verseStart": 14
+    },
+    {
+      "timeMs": 110513,
+      "verseStart": 15
+    },
+    {
+      "timeMs": 116497,
+      "verseStart": 16
+    },
+    {
+      "timeMs": 120780,
+      "verseStart": 17
+    },
+    {
+      "timeMs": 127625,
+      "verseStart": 18
+    },
+    {
+      "timeMs": 133809,
+      "verseStart": 19
+    },
+    {
+      "timeMs": 142615,
+      "verseStart": 20
+    },
+    {
+      "timeMs": 149940,
+      "verseStart": 21
+    },
+    {
+      "timeMs": 155203,
+      "verseStart": 22
+    },
+    {
+      "timeMs": 161127,
+      "verseStart": 23
+    },
+    {
+      "timeMs": 169613,
+      "verseStart": 24
+    },
+    {
+      "timeMs": 178699,
+      "verseStart": 25
+    },
+    {
+      "timeMs": 186584,
+      "verseStart": 26
+    },
+    {
+      "timeMs": 191467,
+      "verseStart": 27
+    },
+    {
+      "timeMs": 203535,
+      "verseStart": 28
+    },
+    {
+      "timeMs": 212161,
+      "verseStart": 29
+    },
+    {
+      "timeMs": 219886,
+      "verseStart": 30
+    },
+    {
+      "timeMs": 226110,
+      "verseStart": 31
+    },
+    {
+      "timeMs": 236897,
+      "verseStart": 32
+    },
+    {
+      "timeMs": 243762,
+      "verseStart": 33
+    }
+  ]
+}
