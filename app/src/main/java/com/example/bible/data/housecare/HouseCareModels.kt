@@ -244,7 +244,10 @@ data class WeekdayTileStyle(
     }
 }
 
-/** Бытовая привычка: «помолиться», «почистить зубы», «помыть посуду». Отмечается галочкой на каждый день. */
+/**
+ * Бытовая привычка. Пустая [date] — общий список объекта: он виден каждый день,
+ * пока у этого дня не появится свой список. Дата yyyy-MM-dd — пункт только этого дня.
+ */
 data class CleaningHabit(
     val id: String = UUID.randomUUID().toString(),
     val placeId: String,
@@ -254,6 +257,7 @@ data class CleaningHabit(
     val createdAt: Long = System.currentTimeMillis(),
     /** Даты в формате yyyy-MM-dd, когда привычка выполнена. */
     val doneDates: List<String> = emptyList(),
+    val date: String = "",
 ) {
     fun isDoneOn(date: String): Boolean = date in doneDates
 
@@ -265,6 +269,7 @@ data class CleaningHabit(
         put("order", order)
         put("createdAt", createdAt)
         put("doneDates", JSONArray().apply { doneDates.forEach { put(it) } })
+        put("date", date)
     }
 
     companion object {
@@ -281,9 +286,66 @@ data class CleaningHabit(
             doneDates = j.optJSONArray("doneDates").let { arr ->
                 if (arr == null) emptyList() else (0 until arr.length()).map { arr.getString(it) }
             },
+            date = j.optString("date", ""),
         )
     }
 }
+
+/** Сохранённый список утра или вечера: только названия, без отметок «сделано». */
+data class HabitTemplate(
+    val id: String = UUID.randomUUID().toString(),
+    val placeId: String,
+    val kind: String,
+    val name: String,
+    val items: List<String>,
+    val createdAt: Long = System.currentTimeMillis(),
+) {
+    fun toJson(): JSONObject = JSONObject().apply {
+        put("id", id)
+        put("placeId", placeId)
+        put("kind", kind)
+        put("name", name)
+        put("items", JSONArray().apply { items.forEach { put(it) } })
+        put("createdAt", createdAt)
+    }
+
+    companion object {
+        fun fromJson(j: JSONObject): HabitTemplate = HabitTemplate(
+            id = j.optString("id").ifBlank { UUID.randomUUID().toString() },
+            placeId = j.optString("placeId"),
+            kind = j.optString("kind", CleaningHabit.KIND_MORNING).ifBlank { CleaningHabit.KIND_MORNING },
+            name = j.optString("name", ""),
+            items = j.optJSONArray("items").let { arr ->
+                if (arr == null) emptyList() else (0 until arr.length()).map { arr.optString(it) }
+            },
+            createdAt = j.optLong("createdAt", System.currentTimeMillis()),
+        )
+    }
+}
+
+/** День со своим списком привычек. Пустой список тоже хранится здесь, чтобы не вернуться к общему. */
+data class HabitOwnDay(
+    val placeId: String,
+    val kind: String,
+    val date: String,
+) {
+    fun toJson(): JSONObject = JSONObject().apply {
+        put("placeId", placeId)
+        put("kind", kind)
+        put("date", date)
+    }
+
+    companion object {
+        fun fromJson(j: JSONObject): HabitOwnDay = HabitOwnDay(
+            placeId = j.optString("placeId"),
+            kind = j.optString("kind", CleaningHabit.KIND_MORNING),
+            date = j.optString("date"),
+        )
+    }
+}
+
+/** Добавить недостающие пункты или заменить список дня целиком. */
+enum class HabitCopyMode { MERGE, REPLACE }
 
 /** Всё состояние раздела «Попечительная о доме». */
 data class HouseCareData(
@@ -293,6 +355,8 @@ data class HouseCareData(
     val tasks: List<CleaningTask> = emptyList(),
     val tileStyles: List<WeekdayTileStyle> = emptyList(),
     val habits: List<CleaningHabit> = emptyList(),
+    val habitTemplates: List<HabitTemplate> = emptyList(),
+    val habitOwnDays: List<HabitOwnDay> = emptyList(),
 ) {
     fun tileStyleOf(day: Int): WeekdayTileStyle =
         tileStyles.firstOrNull { it.day == day } ?: WeekdayTileStyle(day = day)
@@ -323,9 +387,26 @@ data class HouseCareData(
 
     fun finishedReports(): List<CleaningReport> = tasks.flatMap { it.finishedReports() }
 
+    /** Общий список утра или вечера, без пунктов отдельных дней. */
     fun habitsOf(placeId: String, kind: String): List<CleaningHabit> =
-        habits.filter { it.placeId == placeId && it.kind == kind }
+        habits.filter { it.placeId == placeId && it.kind == kind && it.date.isBlank() }
             .sortedWith(compareBy({ it.order }, { it.createdAt }))
+
+    /** У дня свой список. Пустой свой список тоже считается, общий тогда не подставляется. */
+    fun ownsHabitDay(placeId: String, kind: String, date: LocalDate): Boolean {
+        val iso = date.toString()
+        return habitOwnDays.any { it.placeId == placeId && it.kind == kind && it.date == iso } ||
+            habits.any { it.placeId == placeId && it.kind == kind && it.date == iso }
+    }
+
+    /** Свой список дня, если он заведён, иначе общий. */
+    fun habitsOn(placeId: String, kind: String, date: LocalDate): List<CleaningHabit> {
+        val iso = date.toString()
+        val own = ownsHabitDay(placeId, kind, date)
+        return habits.filter {
+            it.placeId == placeId && it.kind == kind && if (own) it.date == iso else it.date.isBlank()
+        }.sortedWith(compareBy({ it.order }, { it.createdAt }))
+    }
 
     fun toJson(): JSONObject = JSONObject().apply {
         put("places", JSONArray().apply { places.forEach { put(it.toJson()) } })
@@ -334,6 +415,8 @@ data class HouseCareData(
         put("tasks", JSONArray().apply { tasks.forEach { put(it.toJson()) } })
         put("tileStyles", JSONArray().apply { tileStyles.forEach { put(it.toJson()) } })
         put("habits", JSONArray().apply { habits.forEach { put(it.toJson()) } })
+        put("habitTemplates", JSONArray().apply { habitTemplates.forEach { put(it.toJson()) } })
+        put("habitOwnDays", JSONArray().apply { habitOwnDays.forEach { put(it.toJson()) } })
     }
 
     companion object {
@@ -361,6 +444,12 @@ data class HouseCareData(
                     },
                     habits = root.optJSONArray("habits").let { arr ->
                         if (arr == null) emptyList() else (0 until arr.length()).map { CleaningHabit.fromJson(arr.getJSONObject(it)) }
+                    },
+                    habitTemplates = root.optJSONArray("habitTemplates").let { arr ->
+                        if (arr == null) emptyList() else (0 until arr.length()).map { HabitTemplate.fromJson(arr.getJSONObject(it)) }
+                    },
+                    habitOwnDays = root.optJSONArray("habitOwnDays").let { arr ->
+                        if (arr == null) emptyList() else (0 until arr.length()).map { HabitOwnDay.fromJson(arr.getJSONObject(it)) }
                     },
                 )
             } catch (_: Exception) {

@@ -127,7 +127,7 @@ internal fun dayWithDate(date: LocalDate): String =
 
 /** Сколько привычек блока выполнено на дату. */
 internal fun HouseCareData.habitProgressOn(placeId: String, kind: String, date: LocalDate): Pair<Int, Int> {
-    val block = habitsOf(placeId, kind)
+    val block = habitsOn(placeId, kind, date)
     val key = date.toString()
     return block.count { it.isDoneOn(key) } to block.size
 }

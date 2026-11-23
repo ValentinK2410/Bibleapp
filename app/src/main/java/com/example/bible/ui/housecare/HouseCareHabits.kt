@@ -38,43 +38,79 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.dp
 import com.example.bible.data.housecare.CleaningHabit
+import com.example.bible.data.housecare.HabitCopyMode
+import com.example.bible.data.housecare.HouseCareData
+import com.example.bible.data.housecare.WeekDays
+import com.example.bible.data.housecare.habitMonthTargets
+import com.example.bible.data.housecare.habitMonthWeekdayTargets
+import com.example.bible.data.housecare.habitTargetsWithItems
+import com.example.bible.data.housecare.habitWeekTargets
 import com.example.bible.ui.theme.OutlinedTextField
 import java.time.LocalDate
 
 /**
- * Два блока бытовых привычек — утренние и вечерние. Список общий для объекта и повторяется
- * в каждый день недели: галочка ставится на дату, которую открыл пользователь.
- * Стрелки меняют порядок, карандаш правит, переносит между блоками и удаляет.
+ * Утренние и вечерние привычки. Пока у дня нет своего списка, виден общий.
+ * Шаблон и копирование на неделю или месяц заводят отдельный список и не переносят отметки «сделано».
  */
 @Composable
 internal fun HabitBlocks(
     viewModel: HouseCareViewModel,
+    data: HouseCareData,
     placeId: String,
-    habits: List<CleaningHabit>,
     date: LocalDate,
     collapse: CollapseState,
 ) {
     val dayKey = date.toString()
     var editing by remember { mutableStateOf<HabitEdit?>(null) }
     var addingKind by remember { mutableStateOf<String?>(null) }
-    // Порядок задаёт поле order: без сортировки список показывался бы в порядке создания.
-    val ordered = habits.sortedWith(compareBy({ it.order }, { it.createdAt }))
+    var savingKind by remember { mutableStateOf<String?>(null) }
+    var pickingTemplateKind by remember { mutableStateOf<String?>(null) }
+    var pickingMonthKind by remember { mutableStateOf<String?>(null) }
+    var pending by remember { mutableStateOf<PendingHabitCopy?>(null) }
+
+    fun copyOrAsk(kind: String, targets: List<LocalDate>, templateId: String?) {
+        if (targets.isEmpty()) return
+        val filled = data.habitTargetsWithItems(placeId, kind, targets)
+        if (filled == 0) {
+            if (templateId == null) {
+                viewModel.copyDayHabits(placeId, kind, date, targets, HabitCopyMode.REPLACE)
+            } else {
+                viewModel.applyHabitTemplate(templateId, date, HabitCopyMode.REPLACE)
+            }
+        } else {
+            val label = if (kind == CleaningHabit.KIND_MORNING) "утренние" else "вечерние"
+            pending = PendingHabitCopy(
+                kind = kind,
+                targets = targets,
+                templateId = templateId,
+                title = "Скопировать $label привычки",
+                message = "В $filled ${pluralRu(filled, "дне", "днях", "днях")} уже есть привычки. " +
+                    "Заменить списки или добавить только новые пункты? " +
+                    "Отметки «сделано» с исходного дня не переносятся. " +
+                    "Уже отмеченное в те дни с тем же названием сохранится.",
+            )
+        }
+    }
 
     Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
         listOf(CleaningHabit.KIND_MORNING to "Утренние привычки", CleaningHabit.KIND_EVENING to "Вечерние привычки")
             .forEach { (kind, label) ->
-                val block = ordered.filter { it.kind == kind }
                 HabitBlock(
                     title = label,
                     icon = if (kind == CleaningHabit.KIND_MORNING) Icons.Default.WbTwilight else Icons.Default.NightsStay,
-                    habits = block,
+                    habits = data.habitsOn(placeId, kind, date),
+                    ownsDay = data.ownsHabitDay(placeId, kind, date),
                     collapsed = collapse.collapsed("habit:$kind"),
                     onToggleCollapsed = { collapse.toggle("habit:$kind") },
                     doneOf = { it.isDoneOn(dayKey) },
                     onToggle = { habit -> viewModel.setHabitDone(habit.id, dayKey, !habit.isDoneOn(dayKey)) },
-                    onMove = { index, delta -> viewModel.moveHabit(placeId, kind, index, index + delta) },
+                    onMove = { index, delta -> viewModel.moveHabit(placeId, kind, date, index, index + delta) },
                     onEdit = { editing = HabitEdit(it, kind) },
                     onAdd = { addingKind = kind },
+                    onSaveTemplate = { savingKind = kind },
+                    onApplyTemplate = { pickingTemplateKind = kind },
+                    onCopyWeek = { copyOrAsk(kind, habitWeekTargets(date), null) },
+                    onCopyMonth = { pickingMonthKind = kind },
                 )
             }
     }
@@ -87,7 +123,7 @@ internal fun HabitBlocks(
             canDelete = false,
             onDismiss = { addingKind = null },
             onSave = { name, kind ->
-                viewModel.addHabit(placeId, kind, name)
+                viewModel.addHabit(placeId, kind, name, date)
                 addingKind = null
             },
             onDelete = {},
@@ -108,6 +144,152 @@ internal fun HabitBlocks(
             onDelete = { viewModel.deleteHabit(current.habit.id); editing = null },
         )
     }
+
+    savingKind?.let { kind ->
+        HabitTemplateNameDialog(
+            onDismiss = { savingKind = null },
+            onSave = { title ->
+                viewModel.saveHabitTemplate(placeId, kind, date, title)
+                savingKind = null
+            },
+        )
+    }
+
+    pickingTemplateKind?.let { kind ->
+        val templates = data.habitTemplates.filter { it.placeId == placeId && it.kind == kind }
+        AlertDialog(
+            onDismissRequest = { pickingTemplateKind = null },
+            title = { Text("Шаблоны") },
+            text = {
+                Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                    if (templates.isEmpty()) {
+                        Text(
+                            "Пока нет шаблонов. Набросайте список и сохраните его кнопкой «В шаблон».",
+                            style = MaterialTheme.typography.bodyMedium,
+                        )
+                    } else {
+                        templates.forEach { template ->
+                            Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth()) {
+                                TextButton(
+                                    onClick = {
+                                        pickingTemplateKind = null
+                                        copyOrAsk(kind, listOf(date), template.id)
+                                    },
+                                    modifier = Modifier.weight(1f),
+                                ) {
+                                    Text("${template.name} · ${template.items.size}", modifier = Modifier.fillMaxWidth())
+                                }
+                                TextButton(onClick = { viewModel.deleteHabitTemplate(template.id) }) {
+                                    Text("Удалить", color = MaterialTheme.colorScheme.error)
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            confirmButton = {},
+            dismissButton = { TextButton(onClick = { pickingTemplateKind = null }) { Text("Закрыть") } },
+        )
+    }
+
+    pickingMonthKind?.let { kind ->
+        val weekday = WeekDays.fullLabel(date.dayOfWeek.value).lowercase()
+        val allDays = habitMonthTargets(date)
+        val sameWeekday = habitMonthWeekdayTargets(date)
+        AlertDialog(
+            onDismissRequest = { pickingMonthKind = null },
+            title = { Text("На весь месяц") },
+            text = {
+                Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
+                    Text("Куда скопировать список, не включая этот день.", style = MaterialTheme.typography.bodyMedium)
+                    TextButton(
+                        onClick = {
+                            pickingMonthKind = null
+                            copyOrAsk(kind, allDays, null)
+                        },
+                        modifier = Modifier.fillMaxWidth(),
+                    ) { Text("Все дни месяца · ${allDays.size}") }
+                    TextButton(
+                        onClick = {
+                            pickingMonthKind = null
+                            copyOrAsk(kind, sameWeekday, null)
+                        },
+                        modifier = Modifier.fillMaxWidth(),
+                    ) { Text("Только $weekday · ${sameWeekday.size}") }
+                }
+            },
+            confirmButton = {},
+            dismissButton = { TextButton(onClick = { pickingMonthKind = null }) { Text("Отмена") } },
+        )
+    }
+
+    pending?.let { request ->
+        AlertDialog(
+            onDismissRequest = { pending = null },
+            title = { Text(request.title) },
+            text = { Text(request.message) },
+            confirmButton = {
+                TextButton(onClick = {
+                    applyPending(viewModel, placeId, date, request, HabitCopyMode.REPLACE)
+                    pending = null
+                }) { Text("Заменить") }
+            },
+            dismissButton = {
+                Row {
+                    TextButton(onClick = {
+                        applyPending(viewModel, placeId, date, request, HabitCopyMode.MERGE)
+                        pending = null
+                    }) { Text("Добавить") }
+                    TextButton(onClick = { pending = null }) { Text("Отмена") }
+                }
+            },
+        )
+    }
+}
+
+private class PendingHabitCopy(
+    val kind: String,
+    val targets: List<LocalDate>,
+    val templateId: String?,
+    val title: String,
+    val message: String,
+)
+
+private fun applyPending(
+    viewModel: HouseCareViewModel,
+    placeId: String,
+    date: LocalDate,
+    request: PendingHabitCopy,
+    mode: HabitCopyMode,
+) {
+    val templateId = request.templateId
+    if (templateId == null) {
+        viewModel.copyDayHabits(placeId, request.kind, date, request.targets, mode)
+    } else {
+        viewModel.applyHabitTemplate(templateId, date, mode)
+    }
+}
+
+@Composable
+private fun HabitTemplateNameDialog(onDismiss: () -> Unit, onSave: (String) -> Unit) {
+    var title by remember { mutableStateOf("") }
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = { Text("Новый шаблон") },
+        text = {
+            OutlinedTextField(
+                value = title,
+                onValueChange = { title = it },
+                label = { Text("Название шаблона") },
+                singleLine = true,
+                modifier = Modifier.fillMaxWidth(),
+            )
+        },
+        confirmButton = {
+            TextButton(enabled = title.isNotBlank(), onClick = { onSave(title.trim()) }) { Text("Сохранить") }
+        },
+        dismissButton = { TextButton(onClick = onDismiss) { Text("Отмена") } },
+    )
 }
 
 private class HabitEdit(val habit: CleaningHabit, val kind: String)
@@ -117,6 +299,7 @@ private fun HabitBlock(
     title: String,
     icon: ImageVector,
     habits: List<CleaningHabit>,
+    ownsDay: Boolean,
     collapsed: Boolean,
     onToggleCollapsed: () -> Unit,
     doneOf: (CleaningHabit) -> Boolean,
@@ -124,6 +307,10 @@ private fun HabitBlock(
     onMove: (index: Int, delta: Int) -> Unit,
     onEdit: (CleaningHabit) -> Unit,
     onAdd: () -> Unit,
+    onSaveTemplate: () -> Unit,
+    onApplyTemplate: () -> Unit,
+    onCopyWeek: () -> Unit,
+    onCopyMonth: () -> Unit,
 ) {
     val done = habits.count { doneOf(it) }
     GroupCard {
@@ -157,7 +344,12 @@ private fun HabitBlock(
                 Column(modifier = Modifier.weight(1f)) {
                     Text(title, style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.SemiBold)
                     Text(
-                        if (habits.isEmpty()) "Пока пусто" else "$done из ${habits.size} выполнено",
+                        if (habits.isEmpty()) {
+                            if (ownsDay) "Пока пусто · список этого дня" else "Пока пусто · общий список"
+                        } else {
+                            val scope = if (ownsDay) "этот день" else "общий список"
+                            "$done из ${habits.size} · $scope"
+                        },
                         style = MaterialTheme.typography.labelSmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                     )
@@ -245,6 +437,22 @@ private fun HabitBlock(
                     )
                 }
                 AddInlineRow(label = "Добавить привычку", onClick = onAdd)
+                Row(modifier = Modifier.fillMaxWidth()) {
+                    TextButton(onClick = onSaveTemplate, enabled = habits.isNotEmpty(), modifier = Modifier.weight(1f)) {
+                        Text("В шаблон")
+                    }
+                    TextButton(onClick = onApplyTemplate, modifier = Modifier.weight(1f)) {
+                        Text("Из шаблона")
+                    }
+                }
+                Row(modifier = Modifier.fillMaxWidth()) {
+                    TextButton(onClick = onCopyWeek, enabled = habits.isNotEmpty(), modifier = Modifier.weight(1f)) {
+                        Text("На неделю")
+                    }
+                    TextButton(onClick = onCopyMonth, enabled = habits.isNotEmpty(), modifier = Modifier.weight(1f)) {
+                        Text("На месяц")
+                    }
+                }
             }
         }
     }

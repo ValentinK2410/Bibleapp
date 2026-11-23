@@ -112,6 +112,8 @@ class HouseCareStore(context: Context) {
             zones = cur.zones.filterNot { it.floorId in floorIds },
             tasks = cur.tasks.filterNot { it.zoneId in zoneIds },
             habits = cur.habits.filterNot { it.placeId == id },
+            habitTemplates = cur.habitTemplates.filterNot { it.placeId == id },
+            habitOwnDays = cur.habitOwnDays.filterNot { it.placeId == id },
         )
     }
 
@@ -300,28 +302,39 @@ class HouseCareStore(context: Context) {
         task.copy(active = if (isEmpty) null else cleared)
     }
 
-    /** Привычка попадает в конец своего блока — утра или вечера. */
-    suspend fun addHabit(placeId: String, kind: String, name: String) = mutate { cur ->
-        val nextOrder = (cur.habitsOf(placeId, kind).maxOfOrNull { it.order } ?: -1) + 1
+    /**
+     * Привычка попадает в конец блока.
+     * Если у [day] уже свой список, пункт пишется только в этот день, иначе в общий список.
+     */
+    suspend fun addHabit(placeId: String, kind: String, name: String, day: LocalDate? = null) = mutate { cur ->
+        val iso = if (day != null && cur.ownsHabitDay(placeId, kind, day)) day.toString() else ""
+        val nextOrder = (cur.habits.filter { it.placeId == placeId && it.kind == kind && it.date == iso }
+            .maxOfOrNull { it.order } ?: -1) + 1
         cur.copy(
             habits = cur.habits + CleaningHabit(
                 placeId = placeId,
                 kind = kind,
                 name = name.trim(),
                 order = nextOrder,
+                date = iso,
             ),
         )
     }
 
-    /** Смена блока — привычка переезжает в конец нового блока. */
+    /** Смена блока — привычка переезжает в конец нового блока. Свой день не теряет остальные пункты. */
     suspend fun updateHabit(id: String, name: String, kind: String) = mutate { cur ->
         val habit = cur.habits.firstOrNull { it.id == id } ?: return@mutate cur
+        val trimmed = name.trim()
         if (habit.kind == kind) {
-            cur.copy(habits = cur.habits.map { if (it.id == id) it.copy(name = name.trim()) else it })
+            cur.copy(habits = cur.habits.map { if (it.id == id) it.copy(name = trimmed) else it })
+        } else if (habit.date.isNotBlank()) {
+            val day = runCatching { LocalDate.parse(habit.date) }.getOrNull() ?: return@mutate cur
+            val moved = cur.applyHabitNames(habit.placeId, kind, listOf(trimmed), listOf(day), HabitCopyMode.MERGE)
+            moved.copy(habits = moved.habits.filterNot { it.id == id })
         } else {
             val nextOrder = (cur.habitsOf(habit.placeId, kind).maxOfOrNull { it.order } ?: -1) + 1
             cur.copy(habits = cur.habits.map {
-                if (it.id == id) it.copy(name = name.trim(), kind = kind, order = nextOrder) else it
+                if (it.id == id) it.copy(name = trimmed, kind = kind, order = nextOrder) else it
             })
         }
     }
@@ -330,8 +343,8 @@ class HouseCareStore(context: Context) {
         cur.copy(habits = cur.habits.filterNot { it.id == id })
     }
 
-    suspend fun moveHabit(placeId: String, kind: String, from: Int, to: Int) = mutate { cur ->
-        val block = cur.habitsOf(placeId, kind).toMutableList()
+    suspend fun moveHabit(placeId: String, kind: String, day: LocalDate, from: Int, to: Int) = mutate { cur ->
+        val block = cur.habitsOn(placeId, kind, day).toMutableList()
         if (from !in block.indices) return@mutate cur
         val target = to.coerceIn(0, block.lastIndex)
         if (from == target) return@mutate cur
@@ -341,6 +354,26 @@ class HouseCareStore(context: Context) {
             val index = idsInOrder.indexOf(habit.id)
             if (index >= 0) habit.copy(order = index) else habit
         })
+    }
+
+    suspend fun saveHabitTemplate(placeId: String, kind: String, day: LocalDate, title: String) = mutate { cur ->
+        cur.saveHabitTemplate(placeId, kind, day, title)
+    }
+
+    suspend fun deleteHabitTemplate(id: String) = mutate { cur -> cur.deleteHabitTemplate(id) }
+
+    suspend fun applyHabitTemplate(templateId: String, day: LocalDate, mode: HabitCopyMode) = mutate { cur ->
+        cur.applyHabitTemplate(templateId, day, mode)
+    }
+
+    suspend fun copyDayHabits(
+        placeId: String,
+        kind: String,
+        source: LocalDate,
+        targets: List<LocalDate>,
+        mode: HabitCopyMode,
+    ) = mutate { cur ->
+        cur.copyDayHabits(placeId, kind, source, targets, mode)
     }
 
     /** Галочка «выполнено» ставится на конкретную дату, поэтому на следующий день блок пустой. */

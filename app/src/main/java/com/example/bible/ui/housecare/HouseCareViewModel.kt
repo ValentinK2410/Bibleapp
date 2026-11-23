@@ -5,6 +5,7 @@ import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
+import com.example.bible.data.housecare.HabitCopyMode
 import com.example.bible.data.housecare.HouseCareData
 import com.example.bible.data.housecare.HouseCarePhotoStorage
 import com.example.bible.data.housecare.HouseCareStore
@@ -65,13 +66,31 @@ class HouseCareViewModel(
 
     fun deleteZone(id: String) = edit { deleteZone(id) }
 
-    fun addHabit(placeId: String, kind: String, name: String) = edit { addHabit(placeId, kind, name) }
+    fun addHabit(placeId: String, kind: String, name: String, day: LocalDate) =
+        edit { addHabit(placeId, kind, name, day) }
 
     fun updateHabit(id: String, name: String, kind: String) = edit { updateHabit(id, name, kind) }
 
     fun deleteHabit(id: String) = edit { deleteHabit(id) }
 
-    fun moveHabit(placeId: String, kind: String, from: Int, to: Int) = edit { moveHabit(placeId, kind, from, to) }
+    fun moveHabit(placeId: String, kind: String, day: LocalDate, from: Int, to: Int) =
+        edit { moveHabit(placeId, kind, day, from, to) }
+
+    fun saveHabitTemplate(placeId: String, kind: String, day: LocalDate, title: String) =
+        edit { saveHabitTemplate(placeId, kind, day, title) }
+
+    fun deleteHabitTemplate(id: String) = edit { deleteHabitTemplate(id) }
+
+    fun applyHabitTemplate(templateId: String, day: LocalDate, mode: HabitCopyMode) =
+        edit { applyHabitTemplate(templateId, day, mode) }
+
+    fun copyDayHabits(
+        placeId: String,
+        kind: String,
+        source: LocalDate,
+        targets: List<LocalDate>,
+        mode: HabitCopyMode,
+    ) = edit { copyDayHabits(placeId, kind, source, targets, mode) }
 
     fun setHabitDone(id: String, date: String, done: Boolean) = edit { setHabitDone(id, date, done) }
 

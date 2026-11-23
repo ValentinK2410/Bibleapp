@@ -296,15 +296,13 @@ private fun dayCell(day: CleaningWeekDay, fontPt: Int): String {
     """.trimIndent()
 }
 
-/** Утро, затем вечер: один и тот же список в каждом дне, квадратик — на эту дату. */
+/** Утро, затем вечер: свой список дня или общий, квадратик — на эту дату. */
 private fun HouseCareData.habitsForPrint(placeId: String, isoDate: String): List<CleaningWeekHabit> {
     if (placeId.isBlank()) return emptyList()
-    val morning = habitsOf(placeId, CleaningHabit.KIND_MORNING)
-    val evening = habitsOf(placeId, CleaningHabit.KIND_EVENING)
-    val known = setOf(CleaningHabit.KIND_MORNING, CleaningHabit.KIND_EVENING)
-    val other = habits.filter { it.placeId == placeId && it.kind !in known }
-        .sortedWith(compareBy({ it.order }, { it.createdAt }))
-    return (morning + evening + other).mapNotNull { habit ->
+    val date = runCatching { LocalDate.parse(isoDate) }.getOrElse { return emptyList() }
+    val known = listOf(CleaningHabit.KIND_MORNING, CleaningHabit.KIND_EVENING)
+    val otherKinds = habits.filter { it.placeId == placeId && it.kind !in known }.map { it.kind }.distinct()
+    return (known + otherKinds).flatMap { kind -> habitsOn(placeId, kind, date) }.mapNotNull { habit ->
         val name = habit.name.trim()
         if (name.isEmpty()) {
             null
