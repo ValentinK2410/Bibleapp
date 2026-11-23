@@ -1,0 +1,99 @@
+{
+  "id": "gh_rbo_2_timothy_4",
+  "translationCode": "RBO",
+  "bookId": "2_timothy",
+  "chapter": 4,
+  "title": "2-е Тимофею 4 · РБО",
+  "narratorId": "rbo",
+  "audioFileName": "62_04.mp3",
+  "cues": [
+    {
+      "timeMs": 4283,
+      "verseStart": 1
+    },
+    {
+      "timeMs": 13929,
+      "verseStart": 2
+    },
+    {
+      "timeMs": 26758,
+      "verseStart": 3
+    },
+    {
+      "timeMs": 37665,
+      "verseStart": 4
+    },
+    {
+      "timeMs": 44650,
+      "verseStart": 5
+    },
+    {
+      "timeMs": 57679,
+      "verseStart": 6
+    },
+    {
+      "timeMs": 65604,
+      "verseStart": 7
+    },
+    {
+      "timeMs": 72108,
+      "verseStart": 8
+    },
+    {
+      "timeMs": 88799,
+      "verseStart": 9
+    },
+    {
+      "timeMs": 91821,
+      "verseStart": 10
+    },
+    {
+      "timeMs": 102849,
+      "verseStart": 11
+    },
+    {
+      "timeMs": 109833,
+      "verseStart": 12
+    },
+    {
+      "timeMs": 112775,
+      "verseStart": 13
+    },
+    {
+      "timeMs": 119940,
+      "verseStart": 14
+    },
+    {
+      "timeMs": 126665,
+      "verseStart": 15
+    },
+    {
+      "timeMs": 133309,
+      "verseStart": 16
+    },
+    {
+      "timeMs": 142535,
+      "verseStart": 17
+    },
+    {
+      "timeMs": 156965,
+      "verseStart": 18
+    },
+    {
+      "timeMs": 169353,
+      "verseStart": 19
+    },
+    {
+      "timeMs": 174177,
+      "verseStart": 20
+    },
+    {
+      "timeMs": 180020,
+      "verseStart": 21
+    },
+    {
+      "timeMs": 188946,
+      "verseStart": 22
+    }
+  ]
+}
