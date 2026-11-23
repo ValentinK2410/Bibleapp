@@ -1,0 +1,116 @@
+{
+  "id": "align-2_corinthians-WEB-05",
+  "translationCode": "WEB",
+  "bookId": "2_corinthians",
+  "chapter": 5,
+  "title": "2-е Коринфянам 5 · WEB (англ.)",
+  "audioFilePath": "/data/user/0/com.example.bible.sqlite/files/bible_audio/web/47_05.mp3",
+  "updatedAt": 1794873600000,
+  "cues": [
+    {
+      "timeMs": 2342,
+      "verseStart": 1,
+      "attachments": []
+    },
+    {
+      "timeMs": 11888,
+      "verseStart": 2,
+      "attachments": []
+    },
+    {
+      "timeMs": 18092,
+      "verseStart": 3,
+      "attachments": []
+    },
+    {
+      "timeMs": 22234,
+      "verseStart": 4,
+      "attachments": []
+    },
+    {
+      "timeMs": 33502,
+      "verseStart": 5,
+      "attachments": []
+    },
+    {
+      "timeMs": 39866,
+      "verseStart": 6,
+      "attachments": []
+    },
+    {
+      "timeMs": 45589,
+      "verseStart": 7,
+      "attachments": []
+    },
+    {
+      "timeMs": 48551,
+      "verseStart": 8,
+      "attachments": []
+    },
+    {
+      "timeMs": 55316,
+      "verseStart": 9,
+      "attachments": []
+    },
+    {
+      "timeMs": 59719,
+      "verseStart": 10,
+      "attachments": []
+    },
+    {
+      "timeMs": 69265,
+      "verseStart": 11,
+      "attachments": []
+    },
+    {
+      "timeMs": 78451,
+      "verseStart": 12,
+      "attachments": []
+    },
+    {
+      "timeMs": 89318,
+      "verseStart": 13,
+      "attachments": []
+    },
+    {
+      "timeMs": 95662,
+      "verseStart": 14,
+      "attachments": []
+    },
+    {
+      "timeMs": 103567,
+      "verseStart": 15,
+      "attachments": []
+    },
+    {
+      "timeMs": 113553,
+      "verseStart": 16,
+      "attachments": []
+    },
+    {
+      "timeMs": 123180,
+      "verseStart": 17,
+      "attachments": []
+    },
+    {
+      "timeMs": 130925,
+      "verseStart": 18,
+      "attachments": []
+    },
+    {
+      "timeMs": 138570,
+      "verseStart": 19,
+      "attachments": []
+    },
+    {
+      "timeMs": 149316,
+      "verseStart": 20,
+      "attachments": []
+    },
+    {
+      "timeMs": 159183,
+      "verseStart": 21,
+      "attachments": []
+    }
+  ]
+}

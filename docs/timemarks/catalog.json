@@ -5744,6 +5744,136 @@
       "file": "projects/web_1_corinthians_9.json"
     },
     {
+      "id": "gh_web_2_corinthians_1",
+      "translationCode": "WEB",
+      "bookId": "2_corinthians",
+      "chapter": 1,
+      "title": "2-е Коринфянам 1 · WEB (англ.)",
+      "cueCount": 24,
+      "narratorId": "web",
+      "file": "projects/web_2_corinthians_1.json"
+    },
+    {
+      "id": "gh_web_2_corinthians_10",
+      "translationCode": "WEB",
+      "bookId": "2_corinthians",
+      "chapter": 10,
+      "title": "2-е Коринфянам 10 · WEB (англ.)",
+      "cueCount": 18,
+      "narratorId": "web",
+      "file": "projects/web_2_corinthians_10.json"
+    },
+    {
+      "id": "gh_web_2_corinthians_11",
+      "translationCode": "WEB",
+      "bookId": "2_corinthians",
+      "chapter": 11,
+      "title": "2-е Коринфянам 11 · WEB (англ.)",
+      "cueCount": 33,
+      "narratorId": "web",
+      "file": "projects/web_2_corinthians_11.json"
+    },
+    {
+      "id": "gh_web_2_corinthians_12",
+      "translationCode": "WEB",
+      "bookId": "2_corinthians",
+      "chapter": 12,
+      "title": "2-е Коринфянам 12 · WEB (англ.)",
+      "cueCount": 21,
+      "narratorId": "web",
+      "file": "projects/web_2_corinthians_12.json"
+    },
+    {
+      "id": "gh_web_2_corinthians_13",
+      "translationCode": "WEB",
+      "bookId": "2_corinthians",
+      "chapter": 13,
+      "title": "2-е Коринфянам 13 · WEB (англ.)",
+      "cueCount": 14,
+      "narratorId": "web",
+      "file": "projects/web_2_corinthians_13.json"
+    },
+    {
+      "id": "gh_web_2_corinthians_2",
+      "translationCode": "WEB",
+      "bookId": "2_corinthians",
+      "chapter": 2,
+      "title": "2-е Коринфянам 2 · WEB (англ.)",
+      "cueCount": 17,
+      "narratorId": "web",
+      "file": "projects/web_2_corinthians_2.json"
+    },
+    {
+      "id": "gh_web_2_corinthians_3",
+      "translationCode": "WEB",
+      "bookId": "2_corinthians",
+      "chapter": 3,
+      "title": "2-е Коринфянам 3 · WEB (англ.)",
+      "cueCount": 18,
+      "narratorId": "web",
+      "file": "projects/web_2_corinthians_3.json"
+    },
+    {
+      "id": "gh_web_2_corinthians_4",
+      "translationCode": "WEB",
+      "bookId": "2_corinthians",
+      "chapter": 4,
+      "title": "2-е Коринфянам 4 · WEB (англ.)",
+      "cueCount": 18,
+      "narratorId": "web",
+      "file": "projects/web_2_corinthians_4.json"
+    },
+    {
+      "id": "gh_web_2_corinthians_5",
+      "translationCode": "WEB",
+      "bookId": "2_corinthians",
+      "chapter": 5,
+      "title": "2-е Коринфянам 5 · WEB (англ.)",
+      "cueCount": 21,
+      "narratorId": "web",
+      "file": "projects/web_2_corinthians_5.json"
+    },
+    {
+      "id": "gh_web_2_corinthians_6",
+      "translationCode": "WEB",
+      "bookId": "2_corinthians",
+      "chapter": 6,
+      "title": "2-е Коринфянам 6 · WEB (англ.)",
+      "cueCount": 18,
+      "narratorId": "web",
+      "file": "projects/web_2_corinthians_6.json"
+    },
+    {
+      "id": "gh_web_2_corinthians_7",
+      "translationCode": "WEB",
+      "bookId": "2_corinthians",
+      "chapter": 7,
+      "title": "2-е Коринфянам 7 · WEB (англ.)",
+      "cueCount": 16,
+      "narratorId": "web",
+      "file": "projects/web_2_corinthians_7.json"
+    },
+    {
+      "id": "gh_web_2_corinthians_8",
+      "translationCode": "WEB",
+      "bookId": "2_corinthians",
+      "chapter": 8,
+      "title": "2-е Коринфянам 8 · WEB (англ.)",
+      "cueCount": 24,
+      "narratorId": "web",
+      "file": "projects/web_2_corinthians_8.json"
+    },
+    {
+      "id": "gh_web_2_corinthians_9",
+      "translationCode": "WEB",
+      "bookId": "2_corinthians",
+      "chapter": 9,
+      "title": "2-е Коринфянам 9 · WEB (англ.)",
+      "cueCount": 15,
+      "narratorId": "web",
+      "file": "projects/web_2_corinthians_9.json"
+    },
+    {
       "id": "gh_web_john_1",
       "translationCode": "WEB",
       "bookId": "john",

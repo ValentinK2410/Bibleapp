@@ -1,0 +1,83 @@
+{
+  "id": "gh_web_2_corinthians_4",
+  "translationCode": "WEB",
+  "bookId": "2_corinthians",
+  "chapter": 4,
+  "title": "2-е Коринфянам 4 · WEB (англ.)",
+  "narratorId": "web",
+  "audioFileName": "47_04.mp3",
+  "cues": [
+    {
+      "timeMs": 3262,
+      "verseStart": 1
+    },
+    {
+      "timeMs": 8365,
+      "verseStart": 2
+    },
+    {
+      "timeMs": 21834,
+      "verseStart": 3
+    },
+    {
+      "timeMs": 26116,
+      "verseStart": 4
+    },
+    {
+      "timeMs": 35922,
+      "verseStart": 5
+    },
+    {
+      "timeMs": 43307,
+      "verseStart": 6
+    },
+    {
+      "timeMs": 52633,
+      "verseStart": 7
+    },
+    {
+      "timeMs": 60178,
+      "verseStart": 8
+    },
+    {
+      "timeMs": 65381,
+      "verseStart": 9
+    },
+    {
+      "timeMs": 70264,
+      "verseStart": 10
+    },
+    {
+      "timeMs": 79069,
+      "verseStart": 11
+    },
+    {
+      "timeMs": 88355,
+      "verseStart": 12
+    },
+    {
+      "timeMs": 93138,
+      "verseStart": 13
+    },
+    {
+      "timeMs": 101803,
+      "verseStart": 14
+    },
+    {
+      "timeMs": 109308,
+      "verseStart": 15
+    },
+    {
+      "timeMs": 116753,
+      "verseStart": 16
+    },
+    {
+      "timeMs": 124157,
+      "verseStart": 17
+    },
+    {
+      "timeMs": 131262,
+      "verseStart": 18
+    }
+  ]
+}

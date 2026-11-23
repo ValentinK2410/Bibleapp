@@ -1,0 +1,83 @@
+{
+  "id": "gh_web_2_corinthians_10",
+  "translationCode": "WEB",
+  "bookId": "2_corinthians",
+  "chapter": 10,
+  "title": "2-е Коринфянам 10 · WEB (англ.)",
+  "narratorId": "web",
+  "audioFileName": "47_10.mp3",
+  "cues": [
+    {
+      "timeMs": 2722,
+      "verseStart": 1
+    },
+    {
+      "timeMs": 11668,
+      "verseStart": 2
+    },
+    {
+      "timeMs": 23577,
+      "verseStart": 3
+    },
+    {
+      "timeMs": 28180,
+      "verseStart": 4
+    },
+    {
+      "timeMs": 35025,
+      "verseStart": 5
+    },
+    {
+      "timeMs": 45373,
+      "verseStart": 6
+    },
+    {
+      "timeMs": 53158,
+      "verseStart": 7
+    },
+    {
+      "timeMs": 67428,
+      "verseStart": 8
+    },
+    {
+      "timeMs": 76495,
+      "verseStart": 9
+    },
+    {
+      "timeMs": 80578,
+      "verseStart": 10
+    },
+    {
+      "timeMs": 89144,
+      "verseStart": 11
+    },
+    {
+      "timeMs": 98811,
+      "verseStart": 12
+    },
+    {
+      "timeMs": 113061,
+      "verseStart": 13
+    },
+    {
+      "timeMs": 123008,
+      "verseStart": 14
+    },
+    {
+      "timeMs": 132475,
+      "verseStart": 15
+    },
+    {
+      "timeMs": 144484,
+      "verseStart": 16
+    },
+    {
+      "timeMs": 152910,
+      "verseStart": 17
+    },
+    {
+      "timeMs": 156632,
+      "verseStart": 18
+    }
+  ]
+}

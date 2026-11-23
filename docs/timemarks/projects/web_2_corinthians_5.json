@@ -1,0 +1,95 @@
+{
+  "id": "gh_web_2_corinthians_5",
+  "translationCode": "WEB",
+  "bookId": "2_corinthians",
+  "chapter": 5,
+  "title": "2-е Коринфянам 5 · WEB (англ.)",
+  "narratorId": "web",
+  "audioFileName": "47_05.mp3",
+  "cues": [
+    {
+      "timeMs": 2342,
+      "verseStart": 1
+    },
+    {
+      "timeMs": 11888,
+      "verseStart": 2
+    },
+    {
+      "timeMs": 18092,
+      "verseStart": 3
+    },
+    {
+      "timeMs": 22234,
+      "verseStart": 4
+    },
+    {
+      "timeMs": 33502,
+      "verseStart": 5
+    },
+    {
+      "timeMs": 39866,
+      "verseStart": 6
+    },
+    {
+      "timeMs": 45589,
+      "verseStart": 7
+    },
+    {
+      "timeMs": 48551,
+      "verseStart": 8
+    },
+    {
+      "timeMs": 55316,
+      "verseStart": 9
+    },
+    {
+      "timeMs": 59719,
+      "verseStart": 10
+    },
+    {
+      "timeMs": 69265,
+      "verseStart": 11
+    },
+    {
+      "timeMs": 78451,
+      "verseStart": 12
+    },
+    {
+      "timeMs": 89318,
+      "verseStart": 13
+    },
+    {
+      "timeMs": 95662,
+      "verseStart": 14
+    },
+    {
+      "timeMs": 103567,
+      "verseStart": 15
+    },
+    {
+      "timeMs": 113553,
+      "verseStart": 16
+    },
+    {
+      "timeMs": 123180,
+      "verseStart": 17
+    },
+    {
+      "timeMs": 130925,
+      "verseStart": 18
+    },
+    {
+      "timeMs": 138570,
+      "verseStart": 19
+    },
+    {
+      "timeMs": 149316,
+      "verseStart": 20
+    },
+    {
+      "timeMs": 159183,
+      "verseStart": 21
+    }
+  ]
+}

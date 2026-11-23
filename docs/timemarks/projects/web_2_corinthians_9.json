@@ -1,0 +1,71 @@
+{
+  "id": "gh_web_2_corinthians_9",
+  "translationCode": "WEB",
+  "bookId": "2_corinthians",
+  "chapter": 9,
+  "title": "2-е Коринфянам 9 · WEB (англ.)",
+  "narratorId": "web",
+  "audioFileName": "47_09.mp3",
+  "cues": [
+    {
+      "timeMs": 1901,
+      "verseStart": 1
+    },
+    {
+      "timeMs": 6925,
+      "verseStart": 2
+    },
+    {
+      "timeMs": 18773,
+      "verseStart": 3
+    },
+    {
+      "timeMs": 25938,
+      "verseStart": 4
+    },
+    {
+      "timeMs": 36685,
+      "verseStart": 5
+    },
+    {
+      "timeMs": 51855,
+      "verseStart": 6
+    },
+    {
+      "timeMs": 60941,
+      "verseStart": 7
+    },
+    {
+      "timeMs": 70308,
+      "verseStart": 8
+    },
+    {
+      "timeMs": 80034,
+      "verseStart": 9
+    },
+    {
+      "timeMs": 87760,
+      "verseStart": 10
+    },
+    {
+      "timeMs": 98247,
+      "verseStart": 11
+    },
+    {
+      "timeMs": 106352,
+      "verseStart": 12
+    },
+    {
+      "timeMs": 115458,
+      "verseStart": 13
+    },
+    {
+      "timeMs": 127426,
+      "verseStart": 14
+    },
+    {
+      "timeMs": 134091,
+      "verseStart": 15
+    }
+  ]
+}

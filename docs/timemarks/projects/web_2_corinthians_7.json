@@ -1,0 +1,75 @@
+{
+  "id": "gh_web_2_corinthians_7",
+  "translationCode": "WEB",
+  "bookId": "2_corinthians",
+  "chapter": 7,
+  "title": "2-е Коринфянам 7 · WEB (англ.)",
+  "narratorId": "web",
+  "audioFileName": "47_07.mp3",
+  "cues": [
+    {
+      "timeMs": 2782,
+      "verseStart": 1
+    },
+    {
+      "timeMs": 11269,
+      "verseStart": 2
+    },
+    {
+      "timeMs": 17314,
+      "verseStart": 3
+    },
+    {
+      "timeMs": 23139,
+      "verseStart": 4
+    },
+    {
+      "timeMs": 31766,
+      "verseStart": 5
+    },
+    {
+      "timeMs": 39512,
+      "verseStart": 6
+    },
+    {
+      "timeMs": 45256,
+      "verseStart": 7
+    },
+    {
+      "timeMs": 58047,
+      "verseStart": 8
+    },
+    {
+      "timeMs": 67334,
+      "verseStart": 9
+    },
+    {
+      "timeMs": 78143,
+      "verseStart": 10
+    },
+    {
+      "timeMs": 86009,
+      "verseStart": 11
+    },
+    {
+      "timeMs": 106846,
+      "verseStart": 12
+    },
+    {
+      "timeMs": 117615,
+      "verseStart": 13
+    },
+    {
+      "timeMs": 126942,
+      "verseStart": 14
+    },
+    {
+      "timeMs": 137991,
+      "verseStart": 15
+    },
+    {
+      "timeMs": 146358,
+      "verseStart": 16
+    }
+  ]
+}

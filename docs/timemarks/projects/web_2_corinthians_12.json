@@ -1,0 +1,95 @@
+{
+  "id": "gh_web_2_corinthians_12",
+  "translationCode": "WEB",
+  "bookId": "2_corinthians",
+  "chapter": 12,
+  "title": "2-е Коринфянам 12 · WEB (англ.)",
+  "narratorId": "web",
+  "audioFileName": "47_12.mp3",
+  "cues": [
+    {
+      "timeMs": 2682,
+      "verseStart": 1
+    },
+    {
+      "timeMs": 9446,
+      "verseStart": 2
+    },
+    {
+      "timeMs": 20153,
+      "verseStart": 3
+    },
+    {
+      "timeMs": 25557,
+      "verseStart": 4
+    },
+    {
+      "timeMs": 32802,
+      "verseStart": 5
+    },
+    {
+      "timeMs": 39506,
+      "verseStart": 6
+    },
+    {
+      "timeMs": 53155,
+      "verseStart": 7
+    },
+    {
+      "timeMs": 64762,
+      "verseStart": 8
+    },
+    {
+      "timeMs": 68565,
+      "verseStart": 9
+    },
+    {
+      "timeMs": 81974,
+      "verseStart": 10
+    },
+    {
+      "timeMs": 92921,
+      "verseStart": 11
+    },
+    {
+      "timeMs": 103708,
+      "verseStart": 12
+    },
+    {
+      "timeMs": 110612,
+      "verseStart": 13
+    },
+    {
+      "timeMs": 119939,
+      "verseStart": 14
+    },
+    {
+      "timeMs": 131926,
+      "verseStart": 15
+    },
+    {
+      "timeMs": 139972,
+      "verseStart": 16
+    },
+    {
+      "timeMs": 146916,
+      "verseStart": 17
+    },
+    {
+      "timeMs": 151359,
+      "verseStart": 18
+    },
+    {
+      "timeMs": 161326,
+      "verseStart": 19
+    },
+    {
+      "timeMs": 172713,
+      "verseStart": 20
+    },
+    {
+      "timeMs": 187223,
+      "verseStart": 21
+    }
+  ]
+}
