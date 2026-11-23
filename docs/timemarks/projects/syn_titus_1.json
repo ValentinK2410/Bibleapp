@@ -1,0 +1,75 @@
+{
+  "id": "gh_syn_titus_1",
+  "translationCode": "SYN",
+  "bookId": "titus",
+  "chapter": 1,
+  "title": "Титу 1 · Синодальный · Бондаренко",
+  "narratorId": "bondarenko",
+  "audioFileName": "63_01.mp3",
+  "cues": [
+    {
+      "timeMs": 16811,
+      "verseStart": 1
+    },
+    {
+      "timeMs": 28479,
+      "verseStart": 2
+    },
+    {
+      "timeMs": 36204,
+      "verseStart": 3
+    },
+    {
+      "timeMs": 44750,
+      "verseStart": 4
+    },
+    {
+      "timeMs": 58999,
+      "verseStart": 5
+    },
+    {
+      "timeMs": 68565,
+      "verseStart": 6
+    },
+    {
+      "timeMs": 78392,
+      "verseStart": 7
+    },
+    {
+      "timeMs": 89499,
+      "verseStart": 8
+    },
+    {
+      "timeMs": 98205,
+      "verseStart": 9
+    },
+    {
+      "timeMs": 110173,
+      "verseStart": 10
+    },
+    {
+      "timeMs": 116697,
+      "verseStart": 11
+    },
+    {
+      "timeMs": 126483,
+      "verseStart": 12
+    },
+    {
+      "timeMs": 135409,
+      "verseStart": 13
+    },
+    {
+      "timeMs": 143514,
+      "verseStart": 14
+    },
+    {
+      "timeMs": 150399,
+      "verseStart": 15
+    },
+    {
+      "timeMs": 161927,
+      "verseStart": 16
+    }
+  ]
+}

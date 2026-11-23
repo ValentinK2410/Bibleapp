@@ -1,0 +1,91 @@
+{
+  "id": "align-titus-SYN-01",
+  "translationCode": "SYN",
+  "bookId": "titus",
+  "chapter": 1,
+  "title": "Титу 1 · Синодальный · Бондаренко",
+  "audioFilePath": "/data/user/0/com.example.bible.sqlite/files/bible_audio/bondarenko/63_01.mp3",
+  "updatedAt": 1795392000000,
+  "cues": [
+    {
+      "timeMs": 16811,
+      "verseStart": 1,
+      "attachments": []
+    },
+    {
+      "timeMs": 28479,
+      "verseStart": 2,
+      "attachments": []
+    },
+    {
+      "timeMs": 36204,
+      "verseStart": 3,
+      "attachments": []
+    },
+    {
+      "timeMs": 44750,
+      "verseStart": 4,
+      "attachments": []
+    },
+    {
+      "timeMs": 58999,
+      "verseStart": 5,
+      "attachments": []
+    },
+    {
+      "timeMs": 68565,
+      "verseStart": 6,
+      "attachments": []
+    },
+    {
+      "timeMs": 78392,
+      "verseStart": 7,
+      "attachments": []
+    },
+    {
+      "timeMs": 89499,
+      "verseStart": 8,
+      "attachments": []
+    },
+    {
+      "timeMs": 98205,
+      "verseStart": 9,
+      "attachments": []
+    },
+    {
+      "timeMs": 110173,
+      "verseStart": 10,
+      "attachments": []
+    },
+    {
+      "timeMs": 116697,
+      "verseStart": 11,
+      "attachments": []
+    },
+    {
+      "timeMs": 126483,
+      "verseStart": 12,
+      "attachments": []
+    },
+    {
+      "timeMs": 135409,
+      "verseStart": 13,
+      "attachments": []
+    },
+    {
+      "timeMs": 143514,
+      "verseStart": 14,
+      "attachments": []
+    },
+    {
+      "timeMs": 150399,
+      "verseStart": 15,
+      "attachments": []
+    },
+    {
+      "timeMs": 161927,
+      "verseStart": 16,
+      "attachments": []
+    }
+  ]
+}
