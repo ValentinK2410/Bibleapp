@@ -1,0 +1,111 @@
+{
+  "id": "gh_grk_romans_7",
+  "translationCode": "PODSTR",
+  "bookId": "romans",
+  "chapter": 7,
+  "title": "К Римлянам 7 · Греческий (Koine)",
+  "narratorId": "greek-nt",
+  "audioFileName": "45_07.mp3",
+  "cues": [
+    {
+      "timeMs": 340,
+      "verseStart": 1
+    },
+    {
+      "timeMs": 8166,
+      "verseStart": 2
+    },
+    {
+      "timeMs": 16832,
+      "verseStart": 3
+    },
+    {
+      "timeMs": 30402,
+      "verseStart": 4
+    },
+    {
+      "timeMs": 43191,
+      "verseStart": 5
+    },
+    {
+      "timeMs": 53518,
+      "verseStart": 6
+    },
+    {
+      "timeMs": 65066,
+      "verseStart": 7
+    },
+    {
+      "timeMs": 77735,
+      "verseStart": 8
+    },
+    {
+      "timeMs": 86702,
+      "verseStart": 9
+    },
+    {
+      "timeMs": 94347,
+      "verseStart": 10
+    },
+    {
+      "timeMs": 98330,
+      "verseStart": 11
+    },
+    {
+      "timeMs": 105675,
+      "verseStart": 12
+    },
+    {
+      "timeMs": 111199,
+      "verseStart": 13
+    },
+    {
+      "timeMs": 126370,
+      "verseStart": 14
+    },
+    {
+      "timeMs": 133835,
+      "verseStart": 15
+    },
+    {
+      "timeMs": 140400,
+      "verseStart": 16
+    },
+    {
+      "timeMs": 145303,
+      "verseStart": 17
+    },
+    {
+      "timeMs": 150987,
+      "verseStart": 18
+    },
+    {
+      "timeMs": 161235,
+      "verseStart": 19
+    },
+    {
+      "timeMs": 166919,
+      "verseStart": 20
+    },
+    {
+      "timeMs": 173964,
+      "verseStart": 21
+    },
+    {
+      "timeMs": 180388,
+      "verseStart": 22
+    },
+    {
+      "timeMs": 184691,
+      "verseStart": 23
+    },
+    {
+      "timeMs": 196159,
+      "verseStart": 24
+    },
+    {
+      "timeMs": 201943,
+      "verseStart": 25
+    }
+  ]
+}

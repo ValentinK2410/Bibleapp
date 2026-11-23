@@ -1,7 +1,7 @@
 {
   "format": "bible_timemark_catalog",
   "version": 1,
-  "updatedAt": "2026-11-18",
+  "updatedAt": "2026-11-23",
   "items": [
     {
       "id": "gh_bti_john_1",
@@ -1502,6 +1502,166 @@
       "cueCount": 38,
       "narratorId": "greek-nt",
       "file": "projects/grk_matthew_9.json"
+    },
+    {
+      "id": "gh_grk_romans_1",
+      "translationCode": "PODSTR",
+      "bookId": "romans",
+      "chapter": 1,
+      "title": "К Римлянам 1 · Греческий (Koine)",
+      "cueCount": 32,
+      "narratorId": "greek-nt",
+      "file": "projects/grk_romans_1.json"
+    },
+    {
+      "id": "gh_grk_romans_10",
+      "translationCode": "PODSTR",
+      "bookId": "romans",
+      "chapter": 10,
+      "title": "К Римлянам 10 · Греческий (Koine)",
+      "cueCount": 21,
+      "narratorId": "greek-nt",
+      "file": "projects/grk_romans_10.json"
+    },
+    {
+      "id": "gh_grk_romans_11",
+      "translationCode": "PODSTR",
+      "bookId": "romans",
+      "chapter": 11,
+      "title": "К Римлянам 11 · Греческий (Koine)",
+      "cueCount": 36,
+      "narratorId": "greek-nt",
+      "file": "projects/grk_romans_11.json"
+    },
+    {
+      "id": "gh_grk_romans_12",
+      "translationCode": "PODSTR",
+      "bookId": "romans",
+      "chapter": 12,
+      "title": "К Римлянам 12 · Греческий (Koine)",
+      "cueCount": 21,
+      "narratorId": "greek-nt",
+      "file": "projects/grk_romans_12.json"
+    },
+    {
+      "id": "gh_grk_romans_13",
+      "translationCode": "PODSTR",
+      "bookId": "romans",
+      "chapter": 13,
+      "title": "К Римлянам 13 · Греческий (Koine)",
+      "cueCount": 14,
+      "narratorId": "greek-nt",
+      "file": "projects/grk_romans_13.json"
+    },
+    {
+      "id": "gh_grk_romans_14",
+      "translationCode": "PODSTR",
+      "bookId": "romans",
+      "chapter": 14,
+      "title": "К Римлянам 14 · Греческий (Koine)",
+      "cueCount": 23,
+      "narratorId": "greek-nt",
+      "file": "projects/grk_romans_14.json"
+    },
+    {
+      "id": "gh_grk_romans_15",
+      "translationCode": "PODSTR",
+      "bookId": "romans",
+      "chapter": 15,
+      "title": "К Римлянам 15 · Греческий (Koine)",
+      "cueCount": 33,
+      "narratorId": "greek-nt",
+      "file": "projects/grk_romans_15.json"
+    },
+    {
+      "id": "gh_grk_romans_16",
+      "translationCode": "PODSTR",
+      "bookId": "romans",
+      "chapter": 16,
+      "title": "К Римлянам 16 · Греческий (Koine)",
+      "cueCount": 24,
+      "narratorId": "greek-nt",
+      "file": "projects/grk_romans_16.json"
+    },
+    {
+      "id": "gh_grk_romans_2",
+      "translationCode": "PODSTR",
+      "bookId": "romans",
+      "chapter": 2,
+      "title": "К Римлянам 2 · Греческий (Koine)",
+      "cueCount": 29,
+      "narratorId": "greek-nt",
+      "file": "projects/grk_romans_2.json"
+    },
+    {
+      "id": "gh_grk_romans_3",
+      "translationCode": "PODSTR",
+      "bookId": "romans",
+      "chapter": 3,
+      "title": "К Римлянам 3 · Греческий (Koine)",
+      "cueCount": 31,
+      "narratorId": "greek-nt",
+      "file": "projects/grk_romans_3.json"
+    },
+    {
+      "id": "gh_grk_romans_4",
+      "translationCode": "PODSTR",
+      "bookId": "romans",
+      "chapter": 4,
+      "title": "К Римлянам 4 · Греческий (Koine)",
+      "cueCount": 25,
+      "narratorId": "greek-nt",
+      "file": "projects/grk_romans_4.json"
+    },
+    {
+      "id": "gh_grk_romans_5",
+      "translationCode": "PODSTR",
+      "bookId": "romans",
+      "chapter": 5,
+      "title": "К Римлянам 5 · Греческий (Koine)",
+      "cueCount": 21,
+      "narratorId": "greek-nt",
+      "file": "projects/grk_romans_5.json"
+    },
+    {
+      "id": "gh_grk_romans_6",
+      "translationCode": "PODSTR",
+      "bookId": "romans",
+      "chapter": 6,
+      "title": "К Римлянам 6 · Греческий (Koine)",
+      "cueCount": 23,
+      "narratorId": "greek-nt",
+      "file": "projects/grk_romans_6.json"
+    },
+    {
+      "id": "gh_grk_romans_7",
+      "translationCode": "PODSTR",
+      "bookId": "romans",
+      "chapter": 7,
+      "title": "К Римлянам 7 · Греческий (Koine)",
+      "cueCount": 25,
+      "narratorId": "greek-nt",
+      "file": "projects/grk_romans_7.json"
+    },
+    {
+      "id": "gh_grk_romans_8",
+      "translationCode": "PODSTR",
+      "bookId": "romans",
+      "chapter": 8,
+      "title": "К Римлянам 8 · Греческий (Koine)",
+      "cueCount": 39,
+      "narratorId": "greek-nt",
+      "file": "projects/grk_romans_8.json"
+    },
+    {
+      "id": "gh_grk_romans_9",
+      "translationCode": "PODSTR",
+      "bookId": "romans",
+      "chapter": 9,
+      "title": "К Римлянам 9 · Греческий (Koine)",
+      "cueCount": 33,
+      "narratorId": "greek-nt",
+      "file": "projects/grk_romans_9.json"
     },
     {
       "id": "gh_nrt_john_1",

@@ -1,0 +1,111 @@
+{
+  "id": "gh_grk_romans_4",
+  "translationCode": "PODSTR",
+  "bookId": "romans",
+  "chapter": 4,
+  "title": "К Римлянам 4 · Греческий (Koine)",
+  "narratorId": "greek-nt",
+  "audioFileName": "45_04.mp3",
+  "cues": [
+    {
+      "timeMs": 10387,
+      "verseStart": 1
+    },
+    {
+      "timeMs": 14970,
+      "verseStart": 2
+    },
+    {
+      "timeMs": 20314,
+      "verseStart": 3
+    },
+    {
+      "timeMs": 26898,
+      "verseStart": 4
+    },
+    {
+      "timeMs": 32642,
+      "verseStart": 5
+    },
+    {
+      "timeMs": 41148,
+      "verseStart": 6
+    },
+    {
+      "timeMs": 48453,
+      "verseStart": 7
+    },
+    {
+      "timeMs": 53196,
+      "verseStart": 8
+    },
+    {
+      "timeMs": 57219,
+      "verseStart": 9
+    },
+    {
+      "timeMs": 67386,
+      "verseStart": 10
+    },
+    {
+      "timeMs": 75172,
+      "verseStart": 11
+    },
+    {
+      "timeMs": 89962,
+      "verseStart": 12
+    },
+    {
+      "timeMs": 99748,
+      "verseStart": 13
+    },
+    {
+      "timeMs": 109315,
+      "verseStart": 14
+    },
+    {
+      "timeMs": 115479,
+      "verseStart": 15
+    },
+    {
+      "timeMs": 121883,
+      "verseStart": 16
+    },
+    {
+      "timeMs": 135933,
+      "verseStart": 17
+    },
+    {
+      "timeMs": 147941,
+      "verseStart": 18
+    },
+    {
+      "timeMs": 157988,
+      "verseStart": 19
+    },
+    {
+      "timeMs": 169016,
+      "verseStart": 20
+    },
+    {
+      "timeMs": 178342,
+      "verseStart": 21
+    },
+    {
+      "timeMs": 183266,
+      "verseStart": 22
+    },
+    {
+      "timeMs": 186828,
+      "verseStart": 23
+    },
+    {
+      "timeMs": 190550,
+      "verseStart": 24
+    },
+    {
+      "timeMs": 199517,
+      "verseStart": 25
+    }
+  ]
+}

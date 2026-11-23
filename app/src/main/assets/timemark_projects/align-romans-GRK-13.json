@@ -1,0 +1,81 @@
+{
+  "id": "align-romans-GRK-13",
+  "translationCode": "PODSTR",
+  "bookId": "romans",
+  "chapter": 13,
+  "title": "К Римлянам 13 · Греческий (Koine)",
+  "audioFilePath": "/data/user/0/com.example.bible.sqlite/files/bible_audio/greek-nt/45_13.mp3",
+  "updatedAt": 1794873600000,
+  "cues": [
+    {
+      "timeMs": 541,
+      "verseStart": 1,
+      "attachments": []
+    },
+    {
+      "timeMs": 9988,
+      "verseStart": 2,
+      "attachments": []
+    },
+    {
+      "timeMs": 18035,
+      "verseStart": 3,
+      "attachments": []
+    },
+    {
+      "timeMs": 28284,
+      "verseStart": 4,
+      "attachments": []
+    },
+    {
+      "timeMs": 41095,
+      "verseStart": 5,
+      "attachments": []
+    },
+    {
+      "timeMs": 47140,
+      "verseStart": 6,
+      "attachments": []
+    },
+    {
+      "timeMs": 54446,
+      "verseStart": 7,
+      "attachments": []
+    },
+    {
+      "timeMs": 64434,
+      "verseStart": 8,
+      "attachments": []
+    },
+    {
+      "timeMs": 71140,
+      "verseStart": 9,
+      "attachments": []
+    },
+    {
+      "timeMs": 83910,
+      "verseStart": 10,
+      "attachments": []
+    },
+    {
+      "timeMs": 89335,
+      "verseStart": 11,
+      "attachments": []
+    },
+    {
+      "timeMs": 98463,
+      "verseStart": 12,
+      "attachments": []
+    },
+    {
+      "timeMs": 107330,
+      "verseStart": 13,
+      "attachments": []
+    },
+    {
+      "timeMs": 115657,
+      "verseStart": 14,
+      "attachments": []
+    }
+  ]
+}

@@ -1,0 +1,95 @@
+{
+  "id": "gh_grk_romans_12",
+  "translationCode": "PODSTR",
+  "bookId": "romans",
+  "chapter": 12,
+  "title": "К Римлянам 12 · Греческий (Koine)",
+  "narratorId": "greek-nt",
+  "audioFileName": "45_12.mp3",
+  "cues": [
+    {
+      "timeMs": 400,
+      "verseStart": 1
+    },
+    {
+      "timeMs": 12549,
+      "verseStart": 2
+    },
+    {
+      "timeMs": 26118,
+      "verseStart": 3
+    },
+    {
+      "timeMs": 38606,
+      "verseStart": 4
+    },
+    {
+      "timeMs": 45251,
+      "verseStart": 5
+    },
+    {
+      "timeMs": 50254,
+      "verseStart": 6
+    },
+    {
+      "timeMs": 58280,
+      "verseStart": 7
+    },
+    {
+      "timeMs": 64004,
+      "verseStart": 8
+    },
+    {
+      "timeMs": 73090,
+      "verseStart": 9
+    },
+    {
+      "timeMs": 79134,
+      "verseStart": 10
+    },
+    {
+      "timeMs": 84658,
+      "verseStart": 11
+    },
+    {
+      "timeMs": 90562,
+      "verseStart": 12
+    },
+    {
+      "timeMs": 96806,
+      "verseStart": 13
+    },
+    {
+      "timeMs": 102149,
+      "verseStart": 14
+    },
+    {
+      "timeMs": 106332,
+      "verseStart": 15
+    },
+    {
+      "timeMs": 109795,
+      "verseStart": 16
+    },
+    {
+      "timeMs": 118801,
+      "verseStart": 17
+    },
+    {
+      "timeMs": 125165,
+      "verseStart": 18
+    },
+    {
+      "timeMs": 129648,
+      "verseStart": 19
+    },
+    {
+      "timeMs": 139975,
+      "verseStart": 20
+    },
+    {
+      "timeMs": 150322,
+      "verseStart": 21
+    }
+  ]
+}

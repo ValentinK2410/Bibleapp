@@ -1,0 +1,95 @@
+{
+  "id": "gh_grk_romans_5",
+  "translationCode": "PODSTR",
+  "bookId": "romans",
+  "chapter": 5,
+  "title": "К Римлянам 5 · Греческий (Koine)",
+  "narratorId": "greek-nt",
+  "audioFileName": "45_05.mp3",
+  "cues": [
+    {
+      "timeMs": 741,
+      "verseStart": 1
+    },
+    {
+      "timeMs": 8206,
+      "verseStart": 2
+    },
+    {
+      "timeMs": 18613,
+      "verseStart": 3
+    },
+    {
+      "timeMs": 25858,
+      "verseStart": 4
+    },
+    {
+      "timeMs": 29941,
+      "verseStart": 5
+    },
+    {
+      "timeMs": 39568,
+      "verseStart": 6
+    },
+    {
+      "timeMs": 46332,
+      "verseStart": 7
+    },
+    {
+      "timeMs": 53077,
+      "verseStart": 8
+    },
+    {
+      "timeMs": 61623,
+      "verseStart": 9
+    },
+    {
+      "timeMs": 68748,
+      "verseStart": 10
+    },
+    {
+      "timeMs": 77875,
+      "verseStart": 11
+    },
+    {
+      "timeMs": 86661,
+      "verseStart": 12
+    },
+    {
+      "timeMs": 99350,
+      "verseStart": 13
+    },
+    {
+      "timeMs": 105994,
+      "verseStart": 14
+    },
+    {
+      "timeMs": 116802,
+      "verseStart": 15
+    },
+    {
+      "timeMs": 131912,
+      "verseStart": 16
+    },
+    {
+      "timeMs": 143320,
+      "verseStart": 17
+    },
+    {
+      "timeMs": 158031,
+      "verseStart": 18
+    },
+    {
+      "timeMs": 168698,
+      "verseStart": 19
+    },
+    {
+      "timeMs": 179246,
+      "verseStart": 20
+    },
+    {
+      "timeMs": 187932,
+      "verseStart": 21
+    }
+  ]
+}

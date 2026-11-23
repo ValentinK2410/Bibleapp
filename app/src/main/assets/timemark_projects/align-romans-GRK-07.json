@@ -1,0 +1,136 @@
+{
+  "id": "align-romans-GRK-07",
+  "translationCode": "PODSTR",
+  "bookId": "romans",
+  "chapter": 7,
+  "title": "К Римлянам 7 · Греческий (Koine)",
+  "audioFilePath": "/data/user/0/com.example.bible.sqlite/files/bible_audio/greek-nt/45_07.mp3",
+  "updatedAt": 1794873600000,
+  "cues": [
+    {
+      "timeMs": 340,
+      "verseStart": 1,
+      "attachments": []
+    },
+    {
+      "timeMs": 8166,
+      "verseStart": 2,
+      "attachments": []
+    },
+    {
+      "timeMs": 16832,
+      "verseStart": 3,
+      "attachments": []
+    },
+    {
+      "timeMs": 30402,
+      "verseStart": 4,
+      "attachments": []
+    },
+    {
+      "timeMs": 43191,
+      "verseStart": 5,
+      "attachments": []
+    },
+    {
+      "timeMs": 53518,
+      "verseStart": 6,
+      "attachments": []
+    },
+    {
+      "timeMs": 65066,
+      "verseStart": 7,
+      "attachments": []
+    },
+    {
+      "timeMs": 77735,
+      "verseStart": 8,
+      "attachments": []
+    },
+    {
+      "timeMs": 86702,
+      "verseStart": 9,
+      "attachments": []
+    },
+    {
+      "timeMs": 94347,
+      "verseStart": 10,
+      "attachments": []
+    },
+    {
+      "timeMs": 98330,
+      "verseStart": 11,
+      "attachments": []
+    },
+    {
+      "timeMs": 105675,
+      "verseStart": 12,
+      "attachments": []
+    },
+    {
+      "timeMs": 111199,
+      "verseStart": 13,
+      "attachments": []
+    },
+    {
+      "timeMs": 126370,
+      "verseStart": 14,
+      "attachments": []
+    },
+    {
+      "timeMs": 133835,
+      "verseStart": 15,
+      "attachments": []
+    },
+    {
+      "timeMs": 140400,
+      "verseStart": 16,
+      "attachments": []
+    },
+    {
+      "timeMs": 145303,
+      "verseStart": 17,
+      "attachments": []
+    },
+    {
+      "timeMs": 150987,
+      "verseStart": 18,
+      "attachments": []
+    },
+    {
+      "timeMs": 161235,
+      "verseStart": 19,
+      "attachments": []
+    },
+    {
+      "timeMs": 166919,
+      "verseStart": 20,
+      "attachments": []
+    },
+    {
+      "timeMs": 173964,
+      "verseStart": 21,
+      "attachments": []
+    },
+    {
+      "timeMs": 180388,
+      "verseStart": 22,
+      "attachments": []
+    },
+    {
+      "timeMs": 184691,
+      "verseStart": 23,
+      "attachments": []
+    },
+    {
+      "timeMs": 196159,
+      "verseStart": 24,
+      "attachments": []
+    },
+    {
+      "timeMs": 201943,
+      "verseStart": 25,
+      "attachments": []
+    }
+  ]
+}

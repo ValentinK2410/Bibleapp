@@ -49,6 +49,20 @@ BOOKS = [
     ("mark", 41, 40, "От Марка", "Mark"),
     ("luke", 42, 41, "От Луки", "Luke"),
     ("john", 43, 42, "От Иоанна", "John"),
+    ("romans", 45, 44, "К Римлянам", "Romans"),
+    ("1_corinthians", 46, 45, "1-е Коринфянам", "1 Corinthians"),
+    ("2_corinthians", 47, 46, "2-е Коринфянам", "2 Corinthians"),
+    ("galatians", 48, 47, "К Галатам", "Galatians"),
+    ("ephesians", 49, 48, "К Ефесянам", "Ephesians"),
+    ("philippians", 50, 49, "К Филиппийцам", "Philippians"),
+    ("colossians", 51, 50, "К Колоссянам", "Colossians"),
+    ("1_thessalonians", 52, 51, "1-е Фессалоникийцам", "1 Thessalonians"),
+    ("2_thessalonians", 53, 52, "2-е Фессалоникийцам", "2 Thessalonians"),
+    ("1_timothy", 54, 53, "1-е Тимофею", "1 Timothy"),
+    ("2_timothy", 55, 54, "2-е Тимофею", "2 Timothy"),
+    ("titus", 56, 55, "Титу", "Titus"),
+    ("philemon", 57, 56, "К Филимону", "Philemon"),
+    ("hebrews", 58, 57, "К Евреям", "Hebrews"),
 ]
 
 UA = (
@@ -340,7 +354,22 @@ def main() -> None:
                     verses = [{"number": i, "text": re.sub(r"[{}\[\]]", "", t)}
                               for i, t in enumerate(kjv_chapter, start=1)]
                     used_kjv = True
-                cues, row = fa_chapter(fa, dest, verses, web_verses, length)
+                spoken, unread = web_verses, []
+                if kjv_chapter is not None and len(kjv_chapter) < len(web_verses):
+                    # в WEB стихов больше, чем читает диктор KJV (Рим 14:24-26 — славословие,
+                    # у KJV оно в 16:25-27): выравниваем по KJV, а лишние стихи WEB ставим
+                    # сразу за последним, как «[отсутствует]» в русских дорожках
+                    verses = [{"number": i, "text": re.sub(r"[{}\[\]]", "", t)}
+                              for i, t in enumerate(kjv_chapter, start=1)]
+                    spoken, unread = web_verses[:len(kjv_chapter)], web_verses[len(kjv_chapter):]
+                    used_kjv = True
+                cues, row = fa_chapter(fa, dest, verses, spoken, length)
+                for verse in unread:
+                    t = min(cues[-1]["timeMs"] + 200, int(max(length - 0.05, 0.0) * 1000))
+                    cues.append({"timeMs": t, "verseStart": verse["number"]})
+                if unread:
+                    row["unread"] = [verse["number"] for verse in unread]
+                    row["verses"] = len(cues)
                 write_project(book_id, book_num, title_ru, index, cues)
                 row.update({"book": book_id, "chapter": index, "text": "KJV" if used_kjv else "WEB"})
                 stats.append(row)

@@ -1,0 +1,95 @@
+{
+  "id": "gh_grk_romans_10",
+  "translationCode": "PODSTR",
+  "bookId": "romans",
+  "chapter": 10,
+  "title": "К Римлянам 10 · Греческий (Koine)",
+  "narratorId": "greek-nt",
+  "audioFileName": "45_10.mp3",
+  "cues": [
+    {
+      "timeMs": 661,
+      "verseStart": 1
+    },
+    {
+      "timeMs": 8306,
+      "verseStart": 2
+    },
+    {
+      "timeMs": 13570,
+      "verseStart": 3
+    },
+    {
+      "timeMs": 21836,
+      "verseStart": 4
+    },
+    {
+      "timeMs": 26679,
+      "verseStart": 5
+    },
+    {
+      "timeMs": 33204,
+      "verseStart": 6
+    },
+    {
+      "timeMs": 42991,
+      "verseStart": 7
+    },
+    {
+      "timeMs": 48435,
+      "verseStart": 8
+    },
+    {
+      "timeMs": 58081,
+      "verseStart": 9
+    },
+    {
+      "timeMs": 68169,
+      "verseStart": 10
+    },
+    {
+      "timeMs": 73893,
+      "verseStart": 11
+    },
+    {
+      "timeMs": 78756,
+      "verseStart": 12
+    },
+    {
+      "timeMs": 87402,
+      "verseStart": 13
+    },
+    {
+      "timeMs": 91545,
+      "verseStart": 14
+    },
+    {
+      "timeMs": 101032,
+      "verseStart": 15
+    },
+    {
+      "timeMs": 109458,
+      "verseStart": 16
+    },
+    {
+      "timeMs": 116823,
+      "verseStart": 17
+    },
+    {
+      "timeMs": 121406,
+      "verseStart": 18
+    },
+    {
+      "timeMs": 131093,
+      "verseStart": 19
+    },
+    {
+      "timeMs": 140980,
+      "verseStart": 20
+    },
+    {
+      "timeMs": 149306,
+      "verseStart": 21
+    }
+  ]
+}

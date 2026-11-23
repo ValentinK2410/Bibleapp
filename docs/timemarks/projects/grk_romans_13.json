@@ -1,0 +1,67 @@
+{
+  "id": "gh_grk_romans_13",
+  "translationCode": "PODSTR",
+  "bookId": "romans",
+  "chapter": 13,
+  "title": "К Римлянам 13 · Греческий (Koine)",
+  "narratorId": "greek-nt",
+  "audioFileName": "45_13.mp3",
+  "cues": [
+    {
+      "timeMs": 541,
+      "verseStart": 1
+    },
+    {
+      "timeMs": 9988,
+      "verseStart": 2
+    },
+    {
+      "timeMs": 18035,
+      "verseStart": 3
+    },
+    {
+      "timeMs": 28284,
+      "verseStart": 4
+    },
+    {
+      "timeMs": 41095,
+      "verseStart": 5
+    },
+    {
+      "timeMs": 47140,
+      "verseStart": 6
+    },
+    {
+      "timeMs": 54446,
+      "verseStart": 7
+    },
+    {
+      "timeMs": 64434,
+      "verseStart": 8
+    },
+    {
+      "timeMs": 71140,
+      "verseStart": 9
+    },
+    {
+      "timeMs": 83910,
+      "verseStart": 10
+    },
+    {
+      "timeMs": 89335,
+      "verseStart": 11
+    },
+    {
+      "timeMs": 98463,
+      "verseStart": 12
+    },
+    {
+      "timeMs": 107330,
+      "verseStart": 13
+    },
+    {
+      "timeMs": 115657,
+      "verseStart": 14
+    }
+  ]
+}

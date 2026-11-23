@@ -1,0 +1,103 @@
+{
+  "id": "gh_grk_romans_14",
+  "translationCode": "PODSTR",
+  "bookId": "romans",
+  "chapter": 14,
+  "title": "К Римлянам 14 · Греческий (Koine)",
+  "narratorId": "greek-nt",
+  "audioFileName": "45_14.mp3",
+  "cues": [
+    {
+      "timeMs": 520,
+      "verseStart": 1
+    },
+    {
+      "timeMs": 6585,
+      "verseStart": 2
+    },
+    {
+      "timeMs": 11128,
+      "verseStart": 3
+    },
+    {
+      "timeMs": 19754,
+      "verseStart": 4
+    },
+    {
+      "timeMs": 29160,
+      "verseStart": 5
+    },
+    {
+      "timeMs": 36945,
+      "verseStart": 6
+    },
+    {
+      "timeMs": 47693,
+      "verseStart": 7
+    },
+    {
+      "timeMs": 51916,
+      "verseStart": 8
+    },
+    {
+      "timeMs": 62583,
+      "verseStart": 9
+    },
+    {
+      "timeMs": 69128,
+      "verseStart": 10
+    },
+    {
+      "timeMs": 78394,
+      "verseStart": 11
+    },
+    {
+      "timeMs": 86279,
+      "verseStart": 12
+    },
+    {
+      "timeMs": 90642,
+      "verseStart": 13
+    },
+    {
+      "timeMs": 98107,
+      "verseStart": 14
+    },
+    {
+      "timeMs": 106753,
+      "verseStart": 15
+    },
+    {
+      "timeMs": 116960,
+      "verseStart": 16
+    },
+    {
+      "timeMs": 119922,
+      "verseStart": 17
+    },
+    {
+      "timeMs": 127608,
+      "verseStart": 18
+    },
+    {
+      "timeMs": 133252,
+      "verseStart": 19
+    },
+    {
+      "timeMs": 138615,
+      "verseStart": 20
+    },
+    {
+      "timeMs": 147361,
+      "verseStart": 21
+    },
+    {
+      "timeMs": 153005,
+      "verseStart": 22
+    },
+    {
+      "timeMs": 160290,
+      "verseStart": 23
+    }
+  ]
+}

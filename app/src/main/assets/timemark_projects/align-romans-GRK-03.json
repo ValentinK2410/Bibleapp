@@ -1,0 +1,166 @@
+{
+  "id": "align-romans-GRK-03",
+  "translationCode": "PODSTR",
+  "bookId": "romans",
+  "chapter": 3,
+  "title": "К Римлянам 3 · Греческий (Koine)",
+  "audioFilePath": "/data/user/0/com.example.bible.sqlite/files/bible_audio/greek-nt/45_03.mp3",
+  "updatedAt": 1794873600000,
+  "cues": [
+    {
+      "timeMs": 841,
+      "verseStart": 1,
+      "attachments": []
+    },
+    {
+      "timeMs": 5844,
+      "verseStart": 2,
+      "attachments": []
+    },
+    {
+      "timeMs": 11888,
+      "verseStart": 3,
+      "attachments": []
+    },
+    {
+      "timeMs": 18032,
+      "verseStart": 4,
+      "attachments": []
+    },
+    {
+      "timeMs": 30420,
+      "verseStart": 5,
+      "attachments": []
+    },
+    {
+      "timeMs": 40007,
+      "verseStart": 6,
+      "attachments": []
+    },
+    {
+      "timeMs": 44010,
+      "verseStart": 7,
+      "attachments": []
+    },
+    {
+      "timeMs": 51935,
+      "verseStart": 8,
+      "attachments": []
+    },
+    {
+      "timeMs": 62022,
+      "verseStart": 9,
+      "attachments": []
+    },
+    {
+      "timeMs": 70507,
+      "verseStart": 10,
+      "attachments": []
+    },
+    {
+      "timeMs": 74550,
+      "verseStart": 11,
+      "attachments": []
+    },
+    {
+      "timeMs": 78112,
+      "verseStart": 12,
+      "attachments": []
+    },
+    {
+      "timeMs": 84717,
+      "verseStart": 13,
+      "attachments": []
+    },
+    {
+      "timeMs": 92242,
+      "verseStart": 14,
+      "attachments": []
+    },
+    {
+      "timeMs": 94944,
+      "verseStart": 15,
+      "attachments": []
+    },
+    {
+      "timeMs": 97405,
+      "verseStart": 16,
+      "attachments": []
+    },
+    {
+      "timeMs": 100788,
+      "verseStart": 17,
+      "attachments": []
+    },
+    {
+      "timeMs": 103409,
+      "verseStart": 18,
+      "attachments": []
+    },
+    {
+      "timeMs": 107572,
+      "verseStart": 19,
+      "attachments": []
+    },
+    {
+      "timeMs": 116798,
+      "verseStart": 20,
+      "attachments": []
+    },
+    {
+      "timeMs": 125084,
+      "verseStart": 21,
+      "attachments": []
+    },
+    {
+      "timeMs": 132769,
+      "verseStart": 22,
+      "attachments": []
+    },
+    {
+      "timeMs": 140574,
+      "verseStart": 23,
+      "attachments": []
+    },
+    {
+      "timeMs": 145077,
+      "verseStart": 24,
+      "attachments": []
+    },
+    {
+      "timeMs": 151182,
+      "verseStart": 25,
+      "attachments": []
+    },
+    {
+      "timeMs": 163830,
+      "verseStart": 26,
+      "attachments": []
+    },
+    {
+      "timeMs": 173176,
+      "verseStart": 27,
+      "attachments": []
+    },
+    {
+      "timeMs": 181362,
+      "verseStart": 28,
+      "attachments": []
+    },
+    {
+      "timeMs": 186565,
+      "verseStart": 29,
+      "attachments": []
+    },
+    {
+      "timeMs": 192489,
+      "verseStart": 30,
+      "attachments": []
+    },
+    {
+      "timeMs": 199074,
+      "verseStart": 31,
+      "attachments": []
+    }
+  ]
+}

@@ -1,0 +1,107 @@
+{
+  "id": "gh_grk_romans_16",
+  "translationCode": "PODSTR",
+  "bookId": "romans",
+  "chapter": 16,
+  "title": "К Римлянам 16 · Греческий (Koine)",
+  "narratorId": "greek-nt",
+  "audioFileName": "45_16.mp3",
+  "cues": [
+    {
+      "timeMs": 520,
+      "verseStart": 1
+    },
+    {
+      "timeMs": 7145,
+      "verseStart": 2
+    },
+    {
+      "timeMs": 18412,
+      "verseStart": 3
+    },
+    {
+      "timeMs": 22635,
+      "verseStart": 4
+    },
+    {
+      "timeMs": 30941,
+      "verseStart": 5
+    },
+    {
+      "timeMs": 38946,
+      "verseStart": 6
+    },
+    {
+      "timeMs": 42809,
+      "verseStart": 7
+    },
+    {
+      "timeMs": 53296,
+      "verseStart": 8
+    },
+    {
+      "timeMs": 56498,
+      "verseStart": 9
+    },
+    {
+      "timeMs": 61862,
+      "verseStart": 10
+    },
+    {
+      "timeMs": 67305,
+      "verseStart": 11
+    },
+    {
+      "timeMs": 73630,
+      "verseStart": 12
+    },
+    {
+      "timeMs": 82055,
+      "verseStart": 13
+    },
+    {
+      "timeMs": 86939,
+      "verseStart": 14
+    },
+    {
+      "timeMs": 93403,
+      "verseStart": 15
+    },
+    {
+      "timeMs": 101429,
+      "verseStart": 16
+    },
+    {
+      "timeMs": 107032,
+      "verseStart": 17
+    },
+    {
+      "timeMs": 116419,
+      "verseStart": 18
+    },
+    {
+      "timeMs": 126726,
+      "verseStart": 19
+    },
+    {
+      "timeMs": 136572,
+      "verseStart": 20
+    },
+    {
+      "timeMs": 143957,
+      "verseStart": 21
+    },
+    {
+      "timeMs": 150722,
+      "verseStart": 22
+    },
+    {
+      "timeMs": 154985,
+      "verseStart": 23
+    },
+    {
+      "timeMs": 167573,
+      "verseStart": 24
+    }
+  ]
+}
