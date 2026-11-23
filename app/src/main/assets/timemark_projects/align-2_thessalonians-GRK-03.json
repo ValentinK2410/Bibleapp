@@ -1,0 +1,101 @@
+{
+  "id": "align-2_thessalonians-GRK-03",
+  "translationCode": "PODSTR",
+  "bookId": "2_thessalonians",
+  "chapter": 3,
+  "title": "2-е Фессалоникийцам 3 · Греческий (Koine)",
+  "audioFilePath": "/data/user/0/com.example.bible.sqlite/files/bible_audio/greek-nt/53_03.mp3",
+  "updatedAt": 1794873600000,
+  "cues": [
+    {
+      "timeMs": 340,
+      "verseStart": 1,
+      "attachments": []
+    },
+    {
+      "timeMs": 8846,
+      "verseStart": 2,
+      "attachments": []
+    },
+    {
+      "timeMs": 15451,
+      "verseStart": 3,
+      "attachments": []
+    },
+    {
+      "timeMs": 21275,
+      "verseStart": 4,
+      "attachments": []
+    },
+    {
+      "timeMs": 27219,
+      "verseStart": 5,
+      "attachments": []
+    },
+    {
+      "timeMs": 34203,
+      "verseStart": 6,
+      "attachments": []
+    },
+    {
+      "timeMs": 46392,
+      "verseStart": 7,
+      "attachments": []
+    },
+    {
+      "timeMs": 51515,
+      "verseStart": 8,
+      "attachments": []
+    },
+    {
+      "timeMs": 61182,
+      "verseStart": 9,
+      "attachments": []
+    },
+    {
+      "timeMs": 68106,
+      "verseStart": 10,
+      "attachments": []
+    },
+    {
+      "timeMs": 75812,
+      "verseStart": 11,
+      "attachments": []
+    },
+    {
+      "timeMs": 83497,
+      "verseStart": 12,
+      "attachments": []
+    },
+    {
+      "timeMs": 94064,
+      "verseStart": 13,
+      "attachments": []
+    },
+    {
+      "timeMs": 97927,
+      "verseStart": 14,
+      "attachments": []
+    },
+    {
+      "timeMs": 106853,
+      "verseStart": 15,
+      "attachments": []
+    },
+    {
+      "timeMs": 111776,
+      "verseStart": 16,
+      "attachments": []
+    },
+    {
+      "timeMs": 120182,
+      "verseStart": 17,
+      "attachments": []
+    },
+    {
+      "timeMs": 126446,
+      "verseStart": 18,
+      "attachments": []
+    }
+  ]
+}

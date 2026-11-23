@@ -1,0 +1,79 @@
+{
+  "id": "gh_grk_2_thessalonians_2",
+  "translationCode": "PODSTR",
+  "bookId": "2_thessalonians",
+  "chapter": 2,
+  "title": "2-е Фессалоникийцам 2 · Греческий (Koine)",
+  "narratorId": "greek-nt",
+  "audioFileName": "53_02.mp3",
+  "cues": [
+    {
+      "timeMs": 821,
+      "verseStart": 1
+    },
+    {
+      "timeMs": 9146,
+      "verseStart": 2
+    },
+    {
+      "timeMs": 22374,
+      "verseStart": 3
+    },
+    {
+      "timeMs": 32780,
+      "verseStart": 4
+    },
+    {
+      "timeMs": 43167,
+      "verseStart": 5
+    },
+    {
+      "timeMs": 46929,
+      "verseStart": 6
+    },
+    {
+      "timeMs": 52012,
+      "verseStart": 7
+    },
+    {
+      "timeMs": 58456,
+      "verseStart": 8
+    },
+    {
+      "timeMs": 68082,
+      "verseStart": 9
+    },
+    {
+      "timeMs": 74826,
+      "verseStart": 10
+    },
+    {
+      "timeMs": 82851,
+      "verseStart": 11
+    },
+    {
+      "timeMs": 88615,
+      "verseStart": 12
+    },
+    {
+      "timeMs": 95179,
+      "verseStart": 13
+    },
+    {
+      "timeMs": 108347,
+      "verseStart": 14
+    },
+    {
+      "timeMs": 115231,
+      "verseStart": 15
+    },
+    {
+      "timeMs": 123896,
+      "verseStart": 16
+    },
+    {
+      "timeMs": 134023,
+      "verseStart": 17
+    }
+  ]
+}
