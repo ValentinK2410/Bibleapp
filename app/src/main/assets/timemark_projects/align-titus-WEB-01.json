@@ -1,0 +1,91 @@
+{
+  "id": "align-titus-WEB-01",
+  "translationCode": "WEB",
+  "bookId": "titus",
+  "chapter": 1,
+  "title": "Титу 1 · WEB (англ.)",
+  "audioFilePath": "/data/user/0/com.example.bible.sqlite/files/bible_audio/web/56_01.mp3",
+  "updatedAt": 1794873600000,
+  "cues": [
+    {
+      "timeMs": 5444,
+      "verseStart": 1,
+      "attachments": []
+    },
+    {
+      "timeMs": 14770,
+      "verseStart": 2,
+      "attachments": []
+    },
+    {
+      "timeMs": 20414,
+      "verseStart": 3,
+      "attachments": []
+    },
+    {
+      "timeMs": 28900,
+      "verseStart": 4,
+      "attachments": []
+    },
+    {
+      "timeMs": 41448,
+      "verseStart": 5,
+      "attachments": []
+    },
+    {
+      "timeMs": 51175,
+      "verseStart": 6,
+      "attachments": []
+    },
+    {
+      "timeMs": 58940,
+      "verseStart": 7,
+      "attachments": []
+    },
+    {
+      "timeMs": 70769,
+      "verseStart": 8,
+      "attachments": []
+    },
+    {
+      "timeMs": 78394,
+      "verseStart": 9,
+      "attachments": []
+    },
+    {
+      "timeMs": 88761,
+      "verseStart": 10,
+      "attachments": []
+    },
+    {
+      "timeMs": 94805,
+      "verseStart": 11,
+      "attachments": []
+    },
+    {
+      "timeMs": 104952,
+      "verseStart": 12,
+      "attachments": []
+    },
+    {
+      "timeMs": 114859,
+      "verseStart": 13,
+      "attachments": []
+    },
+    {
+      "timeMs": 121343,
+      "verseStart": 14,
+      "attachments": []
+    },
+    {
+      "timeMs": 127868,
+      "verseStart": 15,
+      "attachments": []
+    },
+    {
+      "timeMs": 138995,
+      "verseStart": 16,
+      "attachments": []
+    }
+  ]
+}

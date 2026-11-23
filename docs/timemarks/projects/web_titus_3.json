@@ -1,0 +1,71 @@
+{
+  "id": "gh_web_titus_3",
+  "translationCode": "WEB",
+  "bookId": "titus",
+  "chapter": 3,
+  "title": "Титу 3 · WEB (англ.)",
+  "narratorId": "web",
+  "audioFileName": "56_03.mp3",
+  "cues": [
+    {
+      "timeMs": 2902,
+      "verseStart": 1
+    },
+    {
+      "timeMs": 11068,
+      "verseStart": 2
+    },
+    {
+      "timeMs": 19033,
+      "verseStart": 3
+    },
+    {
+      "timeMs": 32863,
+      "verseStart": 4
+    },
+    {
+      "timeMs": 37627,
+      "verseStart": 5
+    },
+    {
+      "timeMs": 48855,
+      "verseStart": 6
+    },
+    {
+      "timeMs": 53538,
+      "verseStart": 7
+    },
+    {
+      "timeMs": 60563,
+      "verseStart": 8
+    },
+    {
+      "timeMs": 76594,
+      "verseStart": 9
+    },
+    {
+      "timeMs": 87282,
+      "verseStart": 10
+    },
+    {
+      "timeMs": 92525,
+      "verseStart": 11
+    },
+    {
+      "timeMs": 98770,
+      "verseStart": 12
+    },
+    {
+      "timeMs": 107496,
+      "verseStart": 13
+    },
+    {
+      "timeMs": 114061,
+      "verseStart": 14
+    },
+    {
+      "timeMs": 121686,
+      "verseStart": 15
+    }
+  ]
+}
