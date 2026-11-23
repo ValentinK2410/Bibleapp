@@ -1,0 +1,176 @@
+{
+  "id": "align-romans-NRT-15",
+  "translationCode": "NRT",
+  "bookId": "romans",
+  "chapter": 15,
+  "title": "К Римлянам 15 · Новый русский",
+  "audioFilePath": "/data/user/0/com.example.bible.sqlite/files/bible_audio/new-russian/52_15.mp3",
+  "updatedAt": 1795392000000,
+  "cues": [
+    {
+      "timeMs": 500,
+      "verseStart": 1,
+      "attachments": []
+    },
+    {
+      "timeMs": 8666,
+      "verseStart": 2,
+      "attachments": []
+    },
+    {
+      "timeMs": 17132,
+      "verseStart": 3,
+      "attachments": []
+    },
+    {
+      "timeMs": 26139,
+      "verseStart": 4,
+      "attachments": []
+    },
+    {
+      "timeMs": 37627,
+      "verseStart": 5,
+      "attachments": []
+    },
+    {
+      "timeMs": 49415,
+      "verseStart": 6,
+      "attachments": []
+    },
+    {
+      "timeMs": 64706,
+      "verseStart": 7,
+      "attachments": []
+    },
+    {
+      "timeMs": 71391,
+      "verseStart": 8,
+      "attachments": []
+    },
+    {
+      "timeMs": 83440,
+      "verseStart": 9,
+      "attachments": []
+    },
+    {
+      "timeMs": 99151,
+      "verseStart": 10,
+      "attachments": []
+    },
+    {
+      "timeMs": 104895,
+      "verseStart": 11,
+      "attachments": []
+    },
+    {
+      "timeMs": 112260,
+      "verseStart": 12,
+      "attachments": []
+    },
+    {
+      "timeMs": 124009,
+      "verseStart": 13,
+      "attachments": []
+    },
+    {
+      "timeMs": 142522,
+      "verseStart": 14,
+      "attachments": []
+    },
+    {
+      "timeMs": 150828,
+      "verseStart": 15,
+      "attachments": []
+    },
+    {
+      "timeMs": 160195,
+      "verseStart": 16,
+      "attachments": []
+    },
+    {
+      "timeMs": 181310,
+      "verseStart": 17,
+      "attachments": []
+    },
+    {
+      "timeMs": 186854,
+      "verseStart": 18,
+      "attachments": []
+    },
+    {
+      "timeMs": 201064,
+      "verseStart": 19,
+      "attachments": []
+    },
+    {
+      "timeMs": 217295,
+      "verseStart": 20,
+      "attachments": []
+    },
+    {
+      "timeMs": 227743,
+      "verseStart": 21,
+      "attachments": []
+    },
+    {
+      "timeMs": 237350,
+      "verseStart": 22,
+      "attachments": []
+    },
+    {
+      "timeMs": 252240,
+      "verseStart": 23,
+      "attachments": []
+    },
+    {
+      "timeMs": 259145,
+      "verseStart": 24,
+      "attachments": []
+    },
+    {
+      "timeMs": 274616,
+      "verseStart": 25,
+      "attachments": []
+    },
+    {
+      "timeMs": 280901,
+      "verseStart": 26,
+      "attachments": []
+    },
+    {
+      "timeMs": 290508,
+      "verseStart": 27,
+      "attachments": []
+    },
+    {
+      "timeMs": 309641,
+      "verseStart": 28,
+      "attachments": []
+    },
+    {
+      "timeMs": 320069,
+      "verseStart": 29,
+      "attachments": []
+    },
+    {
+      "timeMs": 327294,
+      "verseStart": 30,
+      "attachments": []
+    },
+    {
+      "timeMs": 340063,
+      "verseStart": 31,
+      "attachments": []
+    },
+    {
+      "timeMs": 354413,
+      "verseStart": 32,
+      "attachments": []
+    },
+    {
+      "timeMs": 362899,
+      "verseStart": 33,
+      "attachments": []
+    }
+  ]
+}

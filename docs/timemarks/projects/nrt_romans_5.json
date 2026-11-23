@@ -1,0 +1,95 @@
+{
+  "id": "gh_nrt_romans_5",
+  "translationCode": "NRT",
+  "bookId": "romans",
+  "chapter": 5,
+  "title": "К Римлянам 5 · Новый русский",
+  "narratorId": "new-russian",
+  "audioFileName": "52_05.mp3",
+  "cues": [
+    {
+      "timeMs": 4003,
+      "verseStart": 1
+    },
+    {
+      "timeMs": 12109,
+      "verseStart": 2
+    },
+    {
+      "timeMs": 23257,
+      "verseStart": 3
+    },
+    {
+      "timeMs": 31022,
+      "verseStart": 4
+    },
+    {
+      "timeMs": 36366,
+      "verseStart": 5
+    },
+    {
+      "timeMs": 46133,
+      "verseStart": 6
+    },
+    {
+      "timeMs": 52397,
+      "verseStart": 7
+    },
+    {
+      "timeMs": 61143,
+      "verseStart": 8
+    },
+    {
+      "timeMs": 68789,
+      "verseStart": 9
+    },
+    {
+      "timeMs": 76494,
+      "verseStart": 10
+    },
+    {
+      "timeMs": 87882,
+      "verseStart": 11
+    },
+    {
+      "timeMs": 101392,
+      "verseStart": 12
+    },
+    {
+      "timeMs": 111739,
+      "verseStart": 13
+    },
+    {
+      "timeMs": 120405,
+      "verseStart": 14
+    },
+    {
+      "timeMs": 135556,
+      "verseStart": 15
+    },
+    {
+      "timeMs": 152568,
+      "verseStart": 16
+    },
+    {
+      "timeMs": 169280,
+      "verseStart": 17
+    },
+    {
+      "timeMs": 187393,
+      "verseStart": 18
+    },
+    {
+      "timeMs": 198981,
+      "verseStart": 19
+    },
+    {
+      "timeMs": 208047,
+      "verseStart": 20
+    },
+    {
+      "timeMs": 215933,
+      "verseStart": 21
+    }
+  ]
+}

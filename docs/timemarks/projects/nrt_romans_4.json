@@ -1,0 +1,111 @@
+{
+  "id": "gh_nrt_romans_4",
+  "translationCode": "NRT",
+  "bookId": "romans",
+  "chapter": 4,
+  "title": "К Римлянам 4 · Новый русский",
+  "narratorId": "new-russian",
+  "audioFileName": "52_04.mp3",
+  "cues": [
+    {
+      "timeMs": 3923,
+      "verseStart": 1
+    },
+    {
+      "timeMs": 9586,
+      "verseStart": 2
+    },
+    {
+      "timeMs": 16370,
+      "verseStart": 3
+    },
+    {
+      "timeMs": 23095,
+      "verseStart": 4
+    },
+    {
+      "timeMs": 27717,
+      "verseStart": 5
+    },
+    {
+      "timeMs": 37464,
+      "verseStart": 6
+    },
+    {
+      "timeMs": 47270,
+      "verseStart": 7
+    },
+    {
+      "timeMs": 52313,
+      "verseStart": 8
+    },
+    {
+      "timeMs": 56315,
+      "verseStart": 9
+    },
+    {
+      "timeMs": 66222,
+      "verseStart": 10
+    },
+    {
+      "timeMs": 73546,
+      "verseStart": 11
+    },
+    {
+      "timeMs": 89937,
+      "verseStart": 12
+    },
+    {
+      "timeMs": 107187,
+      "verseStart": 13
+    },
+    {
+      "timeMs": 118855,
+      "verseStart": 14
+    },
+    {
+      "timeMs": 130922,
+      "verseStart": 15
+    },
+    {
+      "timeMs": 137406,
+      "verseStart": 16
+    },
+    {
+      "timeMs": 157399,
+      "verseStart": 17
+    },
+    {
+      "timeMs": 173909,
+      "verseStart": 18
+    },
+    {
+      "timeMs": 186937,
+      "verseStart": 19
+    },
+    {
+      "timeMs": 197664,
+      "verseStart": 20
+    },
+    {
+      "timeMs": 205569,
+      "verseStart": 21
+    },
+    {
+      "timeMs": 211713,
+      "verseStart": 22
+    },
+    {
+      "timeMs": 215315,
+      "verseStart": 23
+    },
+    {
+      "timeMs": 219598,
+      "verseStart": 24
+    },
+    {
+      "timeMs": 228764,
+      "verseStart": 25
+    }
+  ]
+}

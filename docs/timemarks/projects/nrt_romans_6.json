@@ -1,0 +1,103 @@
+{
+  "id": "gh_nrt_romans_6",
+  "translationCode": "NRT",
+  "bookId": "romans",
+  "chapter": 6,
+  "title": "К Римлянам 6 · Новый русский",
+  "narratorId": "new-russian",
+  "audioFileName": "52_06.mp3",
+  "cues": [
+    {
+      "timeMs": 6905,
+      "verseStart": 1
+    },
+    {
+      "timeMs": 13130,
+      "verseStart": 2
+    },
+    {
+      "timeMs": 20815,
+      "verseStart": 3
+    },
+    {
+      "timeMs": 29161,
+      "verseStart": 4
+    },
+    {
+      "timeMs": 40770,
+      "verseStart": 5
+    },
+    {
+      "timeMs": 49736,
+      "verseStart": 6
+    },
+    {
+      "timeMs": 63927,
+      "verseStart": 7
+    },
+    {
+      "timeMs": 67829,
+      "verseStart": 8
+    },
+    {
+      "timeMs": 72593,
+      "verseStart": 9
+    },
+    {
+      "timeMs": 80739,
+      "verseStart": 10
+    },
+    {
+      "timeMs": 89225,
+      "verseStart": 11
+    },
+    {
+      "timeMs": 97831,
+      "verseStart": 12
+    },
+    {
+      "timeMs": 105757,
+      "verseStart": 13
+    },
+    {
+      "timeMs": 120188,
+      "verseStart": 14
+    },
+    {
+      "timeMs": 130495,
+      "verseStart": 15
+    },
+    {
+      "timeMs": 138221,
+      "verseStart": 16
+    },
+    {
+      "timeMs": 152071,
+      "verseStart": 17
+    },
+    {
+      "timeMs": 160997,
+      "verseStart": 18
+    },
+    {
+      "timeMs": 166241,
+      "verseStart": 19
+    },
+    {
+      "timeMs": 185295,
+      "verseStart": 20
+    },
+    {
+      "timeMs": 191479,
+      "verseStart": 21
+    },
+    {
+      "timeMs": 200146,
+      "verseStart": 22
+    },
+    {
+      "timeMs": 212074,
+      "verseStart": 23
+    }
+  ]
+}

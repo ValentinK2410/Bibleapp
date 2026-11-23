@@ -1,0 +1,167 @@
+{
+  "id": "gh_nrt_romans_8",
+  "translationCode": "NRT",
+  "bookId": "romans",
+  "chapter": 8,
+  "title": "К Римлянам 8 · Новый русский",
+  "narratorId": "new-russian",
+  "audioFileName": "52_08.mp3",
+  "cues": [
+    {
+      "timeMs": 4963,
+      "verseStart": 1
+    },
+    {
+      "timeMs": 12308,
+      "verseStart": 2
+    },
+    {
+      "timeMs": 21734,
+      "verseStart": 3
+    },
+    {
+      "timeMs": 42348,
+      "verseStart": 4
+    },
+    {
+      "timeMs": 53696,
+      "verseStart": 5
+    },
+    {
+      "timeMs": 63182,
+      "verseStart": 6
+    },
+    {
+      "timeMs": 71667,
+      "verseStart": 7
+    },
+    {
+      "timeMs": 79513,
+      "verseStart": 8
+    },
+    {
+      "timeMs": 85377,
+      "verseStart": 9
+    },
+    {
+      "timeMs": 98505,
+      "verseStart": 10
+    },
+    {
+      "timeMs": 108792,
+      "verseStart": 11
+    },
+    {
+      "timeMs": 121380,
+      "verseStart": 12
+    },
+    {
+      "timeMs": 129065,
+      "verseStart": 13
+    },
+    {
+      "timeMs": 140513,
+      "verseStart": 14
+    },
+    {
+      "timeMs": 147858,
+      "verseStart": 15
+    },
+    {
+      "timeMs": 159686,
+      "verseStart": 16
+    },
+    {
+      "timeMs": 166270,
+      "verseStart": 17
+    },
+    {
+      "timeMs": 184182,
+      "verseStart": 18
+    },
+    {
+      "timeMs": 193728,
+      "verseStart": 19
+    },
+    {
+      "timeMs": 199272,
+      "verseStart": 20
+    },
+    {
+      "timeMs": 212341,
+      "verseStart": 21
+    },
+    {
+      "timeMs": 219385,
+      "verseStart": 22
+    },
+    {
+      "timeMs": 225849,
+      "verseStart": 23
+    },
+    {
+      "timeMs": 242000,
+      "verseStart": 24
+    },
+    {
+      "timeMs": 253448,
+      "verseStart": 25
+    },
+    {
+      "timeMs": 258791,
+      "verseStart": 26
+    },
+    {
+      "timeMs": 275462,
+      "verseStart": 27
+    },
+    {
+      "timeMs": 293694,
+      "verseStart": 28
+    },
+    {
+      "timeMs": 299938,
+      "verseStart": 29
+    },
+    {
+      "timeMs": 311166,
+      "verseStart": 30
+    },
+    {
+      "timeMs": 322013,
+      "verseStart": 31
+    },
+    {
+      "timeMs": 328417,
+      "verseStart": 32
+    },
+    {
+      "timeMs": 337663,
+      "verseStart": 33
+    },
+    {
+      "timeMs": 342947,
+      "verseStart": 34
+    },
+    {
+      "timeMs": 353574,
+      "verseStart": 35
+    },
+    {
+      "timeMs": 364241,
+      "verseStart": 36
+    },
+    {
+      "timeMs": 372687,
+      "verseStart": 37
+    },
+    {
+      "timeMs": 381452,
+      "verseStart": 38
+    },
+    {
+      "timeMs": 391699,
+      "verseStart": 39
+    }
+  ]
+}

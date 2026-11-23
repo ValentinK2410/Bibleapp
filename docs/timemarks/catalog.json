@@ -2274,6 +2274,166 @@
       "file": "projects/nrt_mark_9.json"
     },
     {
+      "id": "gh_nrt_romans_1",
+      "translationCode": "NRT",
+      "bookId": "romans",
+      "chapter": 1,
+      "title": "К Римлянам 1 · Новый русский",
+      "cueCount": 32,
+      "narratorId": "new-russian",
+      "file": "projects/nrt_romans_1.json"
+    },
+    {
+      "id": "gh_nrt_romans_10",
+      "translationCode": "NRT",
+      "bookId": "romans",
+      "chapter": 10,
+      "title": "К Римлянам 10 · Новый русский",
+      "cueCount": 21,
+      "narratorId": "new-russian",
+      "file": "projects/nrt_romans_10.json"
+    },
+    {
+      "id": "gh_nrt_romans_11",
+      "translationCode": "NRT",
+      "bookId": "romans",
+      "chapter": 11,
+      "title": "К Римлянам 11 · Новый русский",
+      "cueCount": 36,
+      "narratorId": "new-russian",
+      "file": "projects/nrt_romans_11.json"
+    },
+    {
+      "id": "gh_nrt_romans_12",
+      "translationCode": "NRT",
+      "bookId": "romans",
+      "chapter": 12,
+      "title": "К Римлянам 12 · Новый русский",
+      "cueCount": 21,
+      "narratorId": "new-russian",
+      "file": "projects/nrt_romans_12.json"
+    },
+    {
+      "id": "gh_nrt_romans_13",
+      "translationCode": "NRT",
+      "bookId": "romans",
+      "chapter": 13,
+      "title": "К Римлянам 13 · Новый русский",
+      "cueCount": 14,
+      "narratorId": "new-russian",
+      "file": "projects/nrt_romans_13.json"
+    },
+    {
+      "id": "gh_nrt_romans_14",
+      "translationCode": "NRT",
+      "bookId": "romans",
+      "chapter": 14,
+      "title": "К Римлянам 14 · Новый русский",
+      "cueCount": 23,
+      "narratorId": "new-russian",
+      "file": "projects/nrt_romans_14.json"
+    },
+    {
+      "id": "gh_nrt_romans_15",
+      "translationCode": "NRT",
+      "bookId": "romans",
+      "chapter": 15,
+      "title": "К Римлянам 15 · Новый русский",
+      "cueCount": 33,
+      "narratorId": "new-russian",
+      "file": "projects/nrt_romans_15.json"
+    },
+    {
+      "id": "gh_nrt_romans_16",
+      "translationCode": "NRT",
+      "bookId": "romans",
+      "chapter": 16,
+      "title": "К Римлянам 16 · Новый русский",
+      "cueCount": 27,
+      "narratorId": "new-russian",
+      "file": "projects/nrt_romans_16.json"
+    },
+    {
+      "id": "gh_nrt_romans_2",
+      "translationCode": "NRT",
+      "bookId": "romans",
+      "chapter": 2,
+      "title": "К Римлянам 2 · Новый русский",
+      "cueCount": 29,
+      "narratorId": "new-russian",
+      "file": "projects/nrt_romans_2.json"
+    },
+    {
+      "id": "gh_nrt_romans_3",
+      "translationCode": "NRT",
+      "bookId": "romans",
+      "chapter": 3,
+      "title": "К Римлянам 3 · Новый русский",
+      "cueCount": 31,
+      "narratorId": "new-russian",
+      "file": "projects/nrt_romans_3.json"
+    },
+    {
+      "id": "gh_nrt_romans_4",
+      "translationCode": "NRT",
+      "bookId": "romans",
+      "chapter": 4,
+      "title": "К Римлянам 4 · Новый русский",
+      "cueCount": 25,
+      "narratorId": "new-russian",
+      "file": "projects/nrt_romans_4.json"
+    },
+    {
+      "id": "gh_nrt_romans_5",
+      "translationCode": "NRT",
+      "bookId": "romans",
+      "chapter": 5,
+      "title": "К Римлянам 5 · Новый русский",
+      "cueCount": 21,
+      "narratorId": "new-russian",
+      "file": "projects/nrt_romans_5.json"
+    },
+    {
+      "id": "gh_nrt_romans_6",
+      "translationCode": "NRT",
+      "bookId": "romans",
+      "chapter": 6,
+      "title": "К Римлянам 6 · Новый русский",
+      "cueCount": 23,
+      "narratorId": "new-russian",
+      "file": "projects/nrt_romans_6.json"
+    },
+    {
+      "id": "gh_nrt_romans_7",
+      "translationCode": "NRT",
+      "bookId": "romans",
+      "chapter": 7,
+      "title": "К Римлянам 7 · Новый русский",
+      "cueCount": 25,
+      "narratorId": "new-russian",
+      "file": "projects/nrt_romans_7.json"
+    },
+    {
+      "id": "gh_nrt_romans_8",
+      "translationCode": "NRT",
+      "bookId": "romans",
+      "chapter": 8,
+      "title": "К Римлянам 8 · Новый русский",
+      "cueCount": 39,
+      "narratorId": "new-russian",
+      "file": "projects/nrt_romans_8.json"
+    },
+    {
+      "id": "gh_nrt_romans_9",
+      "translationCode": "NRT",
+      "bookId": "romans",
+      "chapter": 9,
+      "title": "К Римлянам 9 · Новый русский",
+      "cueCount": 33,
+      "narratorId": "new-russian",
+      "file": "projects/nrt_romans_9.json"
+    },
+    {
       "id": "gh_rbo_john_1",
       "translationCode": "RBO",
       "bookId": "john",

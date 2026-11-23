@@ -1,0 +1,127 @@
+{
+  "id": "gh_nrt_romans_2",
+  "translationCode": "NRT",
+  "bookId": "romans",
+  "chapter": 2,
+  "title": "К Римлянам 2 · Новый русский",
+  "narratorId": "new-russian",
+  "audioFileName": "52_02.mp3",
+  "cues": [
+    {
+      "timeMs": 2962,
+      "verseStart": 1
+    },
+    {
+      "timeMs": 16871,
+      "verseStart": 2
+    },
+    {
+      "timeMs": 24496,
+      "verseStart": 3
+    },
+    {
+      "timeMs": 32141,
+      "verseStart": 4
+    },
+    {
+      "timeMs": 43248,
+      "verseStart": 5
+    },
+    {
+      "timeMs": 56316,
+      "verseStart": 6
+    },
+    {
+      "timeMs": 59258,
+      "verseStart": 7
+    },
+    {
+      "timeMs": 66783,
+      "verseStart": 8
+    },
+    {
+      "timeMs": 74188,
+      "verseStart": 9
+    },
+    {
+      "timeMs": 82173,
+      "verseStart": 10
+    },
+    {
+      "timeMs": 90118,
+      "verseStart": 11
+    },
+    {
+      "timeMs": 94421,
+      "verseStart": 12
+    },
+    {
+      "timeMs": 104047,
+      "verseStart": 13
+    },
+    {
+      "timeMs": 109631,
+      "verseStart": 14
+    },
+    {
+      "timeMs": 122759,
+      "verseStart": 15
+    },
+    {
+      "timeMs": 136608,
+      "verseStart": 16
+    },
+    {
+      "timeMs": 153459,
+      "verseStart": 17
+    },
+    {
+      "timeMs": 159943,
+      "verseStart": 18
+    },
+    {
+      "timeMs": 166027,
+      "verseStart": 19
+    },
+    {
+      "timeMs": 171991,
+      "verseStart": 20
+    },
+    {
+      "timeMs": 180556,
+      "verseStart": 21
+    },
+    {
+      "timeMs": 190302,
+      "verseStart": 22
+    },
+    {
+      "timeMs": 200389,
+      "verseStart": 23
+    },
+    {
+      "timeMs": 205993,
+      "verseStart": 24
+    },
+    {
+      "timeMs": 213037,
+      "verseStart": 25
+    },
+    {
+      "timeMs": 223824,
+      "verseStart": 26
+    },
+    {
+      "timeMs": 229448,
+      "verseStart": 27
+    },
+    {
+      "timeMs": 241015,
+      "verseStart": 28
+    },
+    {
+      "timeMs": 248500,
+      "verseStart": 29
+    }
+  ]
+}

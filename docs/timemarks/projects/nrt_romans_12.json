@@ -1,0 +1,95 @@
+{
+  "id": "gh_nrt_romans_12",
+  "translationCode": "NRT",
+  "bookId": "romans",
+  "chapter": 12,
+  "title": "К Римлянам 12 · Новый русский",
+  "narratorId": "new-russian",
+  "audioFileName": "52_12.mp3",
+  "cues": [
+    {
+      "timeMs": 3483,
+      "verseStart": 1
+    },
+    {
+      "timeMs": 18293,
+      "verseStart": 2
+    },
+    {
+      "timeMs": 32984,
+      "verseStart": 3
+    },
+    {
+      "timeMs": 46013,
+      "verseStart": 4
+    },
+    {
+      "timeMs": 52838,
+      "verseStart": 5
+    },
+    {
+      "timeMs": 59683,
+      "verseStart": 6
+    },
+    {
+      "timeMs": 72613,
+      "verseStart": 7
+    },
+    {
+      "timeMs": 80659,
+      "verseStart": 8
+    },
+    {
+      "timeMs": 99492,
+      "verseStart": 9
+    },
+    {
+      "timeMs": 105857,
+      "verseStart": 10
+    },
+    {
+      "timeMs": 112322,
+      "verseStart": 11
+    },
+    {
+      "timeMs": 118766,
+      "verseStart": 12
+    },
+    {
+      "timeMs": 125631,
+      "verseStart": 13
+    },
+    {
+      "timeMs": 133277,
+      "verseStart": 14
+    },
+    {
+      "timeMs": 140302,
+      "verseStart": 15
+    },
+    {
+      "timeMs": 145586,
+      "verseStart": 16
+    },
+    {
+      "timeMs": 156594,
+      "verseStart": 17
+    },
+    {
+      "timeMs": 162898,
+      "verseStart": 18
+    },
+    {
+      "timeMs": 167562,
+      "verseStart": 19
+    },
+    {
+      "timeMs": 180471,
+      "verseStart": 20
+    },
+    {
+      "timeMs": 193441,
+      "verseStart": 21
+    }
+  ]
+}
