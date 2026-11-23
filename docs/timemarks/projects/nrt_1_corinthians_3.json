@@ -1,0 +1,103 @@
+{
+  "id": "gh_nrt_1_corinthians_3",
+  "translationCode": "NRT",
+  "bookId": "1_corinthians",
+  "chapter": 3,
+  "title": "1-е Коринфянам 3 · Новый русский",
+  "narratorId": "new-russian",
+  "audioFileName": "53_03.mp3",
+  "cues": [
+    {
+      "timeMs": 3283,
+      "verseStart": 1
+    },
+    {
+      "timeMs": 16973,
+      "verseStart": 2
+    },
+    {
+      "timeMs": 26160,
+      "verseStart": 3
+    },
+    {
+      "timeMs": 41771,
+      "verseStart": 4
+    },
+    {
+      "timeMs": 49177,
+      "verseStart": 5
+    },
+    {
+      "timeMs": 63288,
+      "verseStart": 6
+    },
+    {
+      "timeMs": 67411,
+      "verseStart": 7
+    },
+    {
+      "timeMs": 76297,
+      "verseStart": 8
+    },
+    {
+      "timeMs": 84383,
+      "verseStart": 9
+    },
+    {
+      "timeMs": 89988,
+      "verseStart": 10
+    },
+    {
+      "timeMs": 103358,
+      "verseStart": 11
+    },
+    {
+      "timeMs": 114186,
+      "verseStart": 12
+    },
+    {
+      "timeMs": 123533,
+      "verseStart": 13
+    },
+    {
+      "timeMs": 135902,
+      "verseStart": 14
+    },
+    {
+      "timeMs": 141246,
+      "verseStart": 15
+    },
+    {
+      "timeMs": 150333,
+      "verseStart": 16
+    },
+    {
+      "timeMs": 158799,
+      "verseStart": 17
+    },
+    {
+      "timeMs": 168226,
+      "verseStart": 18
+    },
+    {
+      "timeMs": 180275,
+      "verseStart": 19
+    },
+    {
+      "timeMs": 189022,
+      "verseStart": 20
+    },
+    {
+      "timeMs": 194926,
+      "verseStart": 21
+    },
+    {
+      "timeMs": 199610,
+      "verseStart": 22
+    },
+    {
+      "timeMs": 210318,
+      "verseStart": 23
+    }
+  ]
+}

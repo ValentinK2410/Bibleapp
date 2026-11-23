@@ -1,0 +1,107 @@
+{
+  "id": "gh_nrt_1_corinthians_16",
+  "translationCode": "NRT",
+  "bookId": "1_corinthians",
+  "chapter": 16,
+  "title": "1-е Коринфянам 16 · Новый русский",
+  "narratorId": "new-russian",
+  "audioFileName": "53_16.mp3",
+  "cues": [
+    {
+      "timeMs": 5104,
+      "verseStart": 1
+    },
+    {
+      "timeMs": 14130,
+      "verseStart": 2
+    },
+    {
+      "timeMs": 26698,
+      "verseStart": 3
+    },
+    {
+      "timeMs": 36765,
+      "verseStart": 4
+    },
+    {
+      "timeMs": 45371,
+      "verseStart": 5
+    },
+    {
+      "timeMs": 50335,
+      "verseStart": 6
+    },
+    {
+      "timeMs": 58160,
+      "verseStart": 7
+    },
+    {
+      "timeMs": 68667,
+      "verseStart": 8
+    },
+    {
+      "timeMs": 71129,
+      "verseStart": 9
+    },
+    {
+      "timeMs": 78534,
+      "verseStart": 10
+    },
+    {
+      "timeMs": 88781,
+      "verseStart": 11
+    },
+    {
+      "timeMs": 100029,
+      "verseStart": 12
+    },
+    {
+      "timeMs": 110916,
+      "verseStart": 13
+    },
+    {
+      "timeMs": 119062,
+      "verseStart": 14
+    },
+    {
+      "timeMs": 123145,
+      "verseStart": 15
+    },
+    {
+      "timeMs": 135853,
+      "verseStart": 16
+    },
+    {
+      "timeMs": 141337,
+      "verseStart": 17
+    },
+    {
+      "timeMs": 148762,
+      "verseStart": 18
+    },
+    {
+      "timeMs": 157708,
+      "verseStart": 19
+    },
+    {
+      "timeMs": 169396,
+      "verseStart": 20
+    },
+    {
+      "timeMs": 175541,
+      "verseStart": 21
+    },
+    {
+      "timeMs": 180564,
+      "verseStart": 22
+    },
+    {
+      "timeMs": 187549,
+      "verseStart": 23
+    },
+    {
+      "timeMs": 192472,
+      "verseStart": 24
+    }
+  ]
+}

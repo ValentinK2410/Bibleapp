@@ -1,0 +1,146 @@
+{
+  "id": "align-1_corinthians-NRT-09",
+  "translationCode": "NRT",
+  "bookId": "1_corinthians",
+  "chapter": 9,
+  "title": "1-е Коринфянам 9 · Новый русский",
+  "audioFilePath": "/data/user/0/com.example.bible.sqlite/files/bible_audio/new-russian/53_09.mp3",
+  "updatedAt": 1795392000000,
+  "cues": [
+    {
+      "timeMs": 5844,
+      "verseStart": 1,
+      "attachments": []
+    },
+    {
+      "timeMs": 16792,
+      "verseStart": 2,
+      "attachments": []
+    },
+    {
+      "timeMs": 29360,
+      "verseStart": 3,
+      "attachments": []
+    },
+    {
+      "timeMs": 32622,
+      "verseStart": 4,
+      "attachments": []
+    },
+    {
+      "timeMs": 36925,
+      "verseStart": 5,
+      "attachments": []
+    },
+    {
+      "timeMs": 46352,
+      "verseStart": 6,
+      "attachments": []
+    },
+    {
+      "timeMs": 51795,
+      "verseStart": 7,
+      "attachments": []
+    },
+    {
+      "timeMs": 64804,
+      "verseStart": 8,
+      "attachments": []
+    },
+    {
+      "timeMs": 74171,
+      "verseStart": 9,
+      "attachments": []
+    },
+    {
+      "timeMs": 83497,
+      "verseStart": 10,
+      "attachments": []
+    },
+    {
+      "timeMs": 98808,
+      "verseStart": 11,
+      "attachments": []
+    },
+    {
+      "timeMs": 107253,
+      "verseStart": 12,
+      "attachments": []
+    },
+    {
+      "timeMs": 124265,
+      "verseStart": 13,
+      "attachments": []
+    },
+    {
+      "timeMs": 136854,
+      "verseStart": 14,
+      "attachments": []
+    },
+    {
+      "timeMs": 145279,
+      "verseStart": 15,
+      "attachments": []
+    },
+    {
+      "timeMs": 161030,
+      "verseStart": 16,
+      "attachments": []
+    },
+    {
+      "timeMs": 170797,
+      "verseStart": 17,
+      "attachments": []
+    },
+    {
+      "timeMs": 183485,
+      "verseStart": 18,
+      "attachments": []
+    },
+    {
+      "timeMs": 196334,
+      "verseStart": 19,
+      "attachments": []
+    },
+    {
+      "timeMs": 206841,
+      "verseStart": 20,
+      "attachments": []
+    },
+    {
+      "timeMs": 224413,
+      "verseStart": 21,
+      "attachments": []
+    },
+    {
+      "timeMs": 241145,
+      "verseStart": 22,
+      "attachments": []
+    },
+    {
+      "timeMs": 252833,
+      "verseStart": 23,
+      "attachments": []
+    },
+    {
+      "timeMs": 261279,
+      "verseStart": 24,
+      "attachments": []
+    },
+    {
+      "timeMs": 273927,
+      "verseStart": 25,
+      "attachments": []
+    },
+    {
+      "timeMs": 286456,
+      "verseStart": 26,
+      "attachments": []
+    },
+    {
+      "timeMs": 291619,
+      "verseStart": 27,
+      "attachments": []
+    }
+  ]
+}

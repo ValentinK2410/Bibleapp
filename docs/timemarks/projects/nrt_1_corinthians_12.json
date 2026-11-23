@@ -1,0 +1,135 @@
+{
+  "id": "gh_nrt_1_corinthians_12",
+  "translationCode": "NRT",
+  "bookId": "1_corinthians",
+  "chapter": 12,
+  "title": "1-е Коринфянам 12 · Новый русский",
+  "narratorId": "new-russian",
+  "audioFileName": "53_12.mp3",
+  "cues": [
+    {
+      "timeMs": 2762,
+      "verseStart": 1
+    },
+    {
+      "timeMs": 7945,
+      "verseStart": 2
+    },
+    {
+      "timeMs": 13569,
+      "verseStart": 3
+    },
+    {
+      "timeMs": 30180,
+      "verseStart": 4
+    },
+    {
+      "timeMs": 33483,
+      "verseStart": 5
+    },
+    {
+      "timeMs": 37886,
+      "verseStart": 6
+    },
+    {
+      "timeMs": 44510,
+      "verseStart": 7
+    },
+    {
+      "timeMs": 49113,
+      "verseStart": 8
+    },
+    {
+      "timeMs": 55898,
+      "verseStart": 9
+    },
+    {
+      "timeMs": 62582,
+      "verseStart": 10
+    },
+    {
+      "timeMs": 76331,
+      "verseStart": 11
+    },
+    {
+      "timeMs": 88379,
+      "verseStart": 12
+    },
+    {
+      "timeMs": 96985,
+      "verseStart": 13
+    },
+    {
+      "timeMs": 109974,
+      "verseStart": 14
+    },
+    {
+      "timeMs": 114237,
+      "verseStart": 15
+    },
+    {
+      "timeMs": 126465,
+      "verseStart": 16
+    },
+    {
+      "timeMs": 138153,
+      "verseStart": 17
+    },
+    {
+      "timeMs": 148260,
+      "verseStart": 18
+    },
+    {
+      "timeMs": 155665,
+      "verseStart": 19
+    },
+    {
+      "timeMs": 162289,
+      "verseStart": 20
+    },
+    {
+      "timeMs": 166892,
+      "verseStart": 21
+    },
+    {
+      "timeMs": 174998,
+      "verseStart": 22
+    },
+    {
+      "timeMs": 183824,
+      "verseStart": 23
+    },
+    {
+      "timeMs": 192489,
+      "verseStart": 24
+    },
+    {
+      "timeMs": 212783,
+      "verseStart": 25
+    },
+    {
+      "timeMs": 220748,
+      "verseStart": 26
+    },
+    {
+      "timeMs": 230395,
+      "verseStart": 27
+    },
+    {
+      "timeMs": 236619,
+      "verseStart": 28
+    },
+    {
+      "timeMs": 257533,
+      "verseStart": 29
+    },
+    {
+      "timeMs": 267220,
+      "verseStart": 30
+    },
+    {
+      "timeMs": 277627,
+      "verseStart": 31
+    }
+  ]
+}

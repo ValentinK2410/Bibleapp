@@ -1,0 +1,95 @@
+{
+  "id": "gh_nrt_1_corinthians_4",
+  "translationCode": "NRT",
+  "bookId": "1_corinthians",
+  "chapter": 4,
+  "title": "1-е Коринфянам 4 · Новый русский",
+  "narratorId": "new-russian",
+  "audioFileName": "53_04.mp3",
+  "cues": [
+    {
+      "timeMs": 5604,
+      "verseStart": 1
+    },
+    {
+      "timeMs": 12089,
+      "verseStart": 2
+    },
+    {
+      "timeMs": 16913,
+      "verseStart": 3
+    },
+    {
+      "timeMs": 24419,
+      "verseStart": 4
+    },
+    {
+      "timeMs": 30964,
+      "verseStart": 5
+    },
+    {
+      "timeMs": 46596,
+      "verseStart": 6
+    },
+    {
+      "timeMs": 64710,
+      "verseStart": 7
+    },
+    {
+      "timeMs": 77080,
+      "verseStart": 8
+    },
+    {
+      "timeMs": 91451,
+      "verseStart": 9
+    },
+    {
+      "timeMs": 109065,
+      "verseStart": 10
+    },
+    {
+      "timeMs": 120093,
+      "verseStart": 11
+    },
+    {
+      "timeMs": 127939,
+      "verseStart": 12
+    },
+    {
+      "timeMs": 135946,
+      "verseStart": 13
+    },
+    {
+      "timeMs": 145713,
+      "verseStart": 14
+    },
+    {
+      "timeMs": 153980,
+      "verseStart": 15
+    },
+    {
+      "timeMs": 166049,
+      "verseStart": 16
+    },
+    {
+      "timeMs": 170332,
+      "verseStart": 17
+    },
+    {
+      "timeMs": 184163,
+      "verseStart": 18
+    },
+    {
+      "timeMs": 189167,
+      "verseStart": 19
+    },
+    {
+      "timeMs": 198754,
+      "verseStart": 20
+    },
+    {
+      "timeMs": 203598,
+      "verseStart": 21
+    }
+  ]
+}

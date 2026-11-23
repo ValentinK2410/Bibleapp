@@ -1,0 +1,63 @@
+{
+  "id": "gh_nrt_1_corinthians_5",
+  "translationCode": "NRT",
+  "bookId": "1_corinthians",
+  "chapter": 5,
+  "title": "1-е Коринфянам 5 · Новый русский",
+  "narratorId": "new-russian",
+  "audioFileName": "53_05.mp3",
+  "cues": [
+    {
+      "timeMs": 3262,
+      "verseStart": 1
+    },
+    {
+      "timeMs": 15611,
+      "verseStart": 2
+    },
+    {
+      "timeMs": 25738,
+      "verseStart": 3
+    },
+    {
+      "timeMs": 34905,
+      "verseStart": 4
+    },
+    {
+      "timeMs": 44772,
+      "verseStart": 5
+    },
+    {
+      "timeMs": 54139,
+      "verseStart": 6
+    },
+    {
+      "timeMs": 62425,
+      "verseStart": 7
+    },
+    {
+      "timeMs": 76855,
+      "verseStart": 8
+    },
+    {
+      "timeMs": 86402,
+      "verseStart": 9
+    },
+    {
+      "timeMs": 92426,
+      "verseStart": 10
+    },
+    {
+      "timeMs": 108238,
+      "verseStart": 11
+    },
+    {
+      "timeMs": 128432,
+      "verseStart": 12
+    },
+    {
+      "timeMs": 135857,
+      "verseStart": 13
+    }
+  ]
+}
