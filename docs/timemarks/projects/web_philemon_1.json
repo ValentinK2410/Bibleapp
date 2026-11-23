@@ -1,0 +1,15 @@
+{
+  "id": "gh_web_philemon_1",
+  "translationCode": "WEB",
+  "bookId": "philemon",
+  "chapter": 1,
+  "title": "К Филимону 1 · WEB (англ.)",
+  "narratorId": "web",
+  "audioFileName": "57_01.mp3",
+  "cues": [
+    {
+      "timeMs": 5024,
+      "verseStart": 1
+    }
+  ]
+}

@@ -1,0 +1,16 @@
+{
+  "id": "align-philemon-WEB-01",
+  "translationCode": "WEB",
+  "bookId": "philemon",
+  "chapter": 1,
+  "title": "К Филимону 1 · WEB (англ.)",
+  "audioFilePath": "/data/user/0/com.example.bible.sqlite/files/bible_audio/web/57_01.mp3",
+  "updatedAt": 1794873600000,
+  "cues": [
+    {
+      "timeMs": 5024,
+      "verseStart": 1,
+      "attachments": []
+    }
+  ]
+}
