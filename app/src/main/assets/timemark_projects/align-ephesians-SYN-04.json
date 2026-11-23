@@ -1,0 +1,171 @@
+{
+  "id": "align-ephesians-SYN-04",
+  "translationCode": "SYN",
+  "bookId": "ephesians",
+  "chapter": 4,
+  "title": "К Ефесянам 4 · Синодальный · Бондаренко",
+  "audioFilePath": "/data/user/0/com.example.bible.sqlite/files/bible_audio/bondarenko/56_04.mp3",
+  "updatedAt": 1795392000000,
+  "cues": [
+    {
+      "timeMs": 3423,
+      "verseStart": 1,
+      "attachments": []
+    },
+    {
+      "timeMs": 11028,
+      "verseStart": 2,
+      "attachments": []
+    },
+    {
+      "timeMs": 18574,
+      "verseStart": 3,
+      "attachments": []
+    },
+    {
+      "timeMs": 23958,
+      "verseStart": 4,
+      "attachments": []
+    },
+    {
+      "timeMs": 31303,
+      "verseStart": 5,
+      "attachments": []
+    },
+    {
+      "timeMs": 36267,
+      "verseStart": 6,
+      "attachments": []
+    },
+    {
+      "timeMs": 45834,
+      "verseStart": 7,
+      "attachments": []
+    },
+    {
+      "timeMs": 50898,
+      "verseStart": 8,
+      "attachments": []
+    },
+    {
+      "timeMs": 58303,
+      "verseStart": 9,
+      "attachments": []
+    },
+    {
+      "timeMs": 65889,
+      "verseStart": 10,
+      "attachments": []
+    },
+    {
+      "timeMs": 72614,
+      "verseStart": 11,
+      "attachments": []
+    },
+    {
+      "timeMs": 81380,
+      "verseStart": 12,
+      "attachments": []
+    },
+    {
+      "timeMs": 86844,
+      "verseStart": 13,
+      "attachments": []
+    },
+    {
+      "timeMs": 96591,
+      "verseStart": 14,
+      "attachments": []
+    },
+    {
+      "timeMs": 107479,
+      "verseStart": 15,
+      "attachments": []
+    },
+    {
+      "timeMs": 114424,
+      "verseStart": 16,
+      "attachments": []
+    },
+    {
+      "timeMs": 131317,
+      "verseStart": 17,
+      "attachments": []
+    },
+    {
+      "timeMs": 139403,
+      "verseStart": 18,
+      "attachments": []
+    },
+    {
+      "timeMs": 147969,
+      "verseStart": 19,
+      "attachments": []
+    },
+    {
+      "timeMs": 156615,
+      "verseStart": 20,
+      "attachments": []
+    },
+    {
+      "timeMs": 158637,
+      "verseStart": 21,
+      "attachments": []
+    },
+    {
+      "timeMs": 164521,
+      "verseStart": 22,
+      "attachments": []
+    },
+    {
+      "timeMs": 170926,
+      "verseStart": 23,
+      "attachments": []
+    },
+    {
+      "timeMs": 173788,
+      "verseStart": 24,
+      "attachments": []
+    },
+    {
+      "timeMs": 182855,
+      "verseStart": 25,
+      "attachments": []
+    },
+    {
+      "timeMs": 191401,
+      "verseStart": 26,
+      "attachments": []
+    },
+    {
+      "timeMs": 196465,
+      "verseStart": 27,
+      "attachments": []
+    },
+    {
+      "timeMs": 198887,
+      "verseStart": 28,
+      "attachments": []
+    },
+    {
+      "timeMs": 208674,
+      "verseStart": 29,
+      "attachments": []
+    },
+    {
+      "timeMs": 220563,
+      "verseStart": 30,
+      "attachments": []
+    },
+    {
+      "timeMs": 226727,
+      "verseStart": 31,
+      "attachments": []
+    },
+    {
+      "timeMs": 236514,
+      "verseStart": 32,
+      "attachments": []
+    }
+  ]
+}

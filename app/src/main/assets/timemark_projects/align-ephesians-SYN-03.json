@@ -1,0 +1,116 @@
+{
+  "id": "align-ephesians-SYN-03",
+  "translationCode": "SYN",
+  "bookId": "ephesians",
+  "chapter": 3,
+  "title": "К Ефесянам 3 · Синодальный · Бондаренко",
+  "audioFilePath": "/data/user/0/com.example.bible.sqlite/files/bible_audio/bondarenko/56_03.mp3",
+  "updatedAt": 1795392000000,
+  "cues": [
+    {
+      "timeMs": 3923,
+      "verseStart": 1,
+      "attachments": []
+    },
+    {
+      "timeMs": 12689,
+      "verseStart": 2,
+      "attachments": []
+    },
+    {
+      "timeMs": 18113,
+      "verseStart": 3,
+      "attachments": []
+    },
+    {
+      "timeMs": 24037,
+      "verseStart": 4,
+      "attachments": []
+    },
+    {
+      "timeMs": 29060,
+      "verseStart": 5,
+      "attachments": []
+    },
+    {
+      "timeMs": 39347,
+      "verseStart": 6,
+      "attachments": []
+    },
+    {
+      "timeMs": 51276,
+      "verseStart": 7,
+      "attachments": []
+    },
+    {
+      "timeMs": 59722,
+      "verseStart": 8,
+      "attachments": []
+    },
+    {
+      "timeMs": 70469,
+      "verseStart": 9,
+      "attachments": []
+    },
+    {
+      "timeMs": 81237,
+      "verseStart": 10,
+      "attachments": []
+    },
+    {
+      "timeMs": 91063,
+      "verseStart": 11,
+      "attachments": []
+    },
+    {
+      "timeMs": 97068,
+      "verseStart": 12,
+      "attachments": []
+    },
+    {
+      "timeMs": 103632,
+      "verseStart": 13,
+      "attachments": []
+    },
+    {
+      "timeMs": 113339,
+      "verseStart": 14,
+      "attachments": []
+    },
+    {
+      "timeMs": 120544,
+      "verseStart": 15,
+      "attachments": []
+    },
+    {
+      "timeMs": 126748,
+      "verseStart": 16,
+      "attachments": []
+    },
+    {
+      "timeMs": 135755,
+      "verseStart": 17,
+      "attachments": []
+    },
+    {
+      "timeMs": 141138,
+      "verseStart": 18,
+      "attachments": []
+    },
+    {
+      "timeMs": 153947,
+      "verseStart": 19,
+      "attachments": []
+    },
+    {
+      "timeMs": 164615,
+      "verseStart": 20,
+      "attachments": []
+    },
+    {
+      "timeMs": 175202,
+      "verseStart": 21,
+      "attachments": []
+    }
+  ]
+}

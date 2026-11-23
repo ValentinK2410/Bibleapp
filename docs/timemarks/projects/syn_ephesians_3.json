@@ -1,0 +1,95 @@
+{
+  "id": "gh_syn_ephesians_3",
+  "translationCode": "SYN",
+  "bookId": "ephesians",
+  "chapter": 3,
+  "title": "К Ефесянам 3 · Синодальный · Бондаренко",
+  "narratorId": "bondarenko",
+  "audioFileName": "56_03.mp3",
+  "cues": [
+    {
+      "timeMs": 3923,
+      "verseStart": 1
+    },
+    {
+      "timeMs": 12689,
+      "verseStart": 2
+    },
+    {
+      "timeMs": 18113,
+      "verseStart": 3
+    },
+    {
+      "timeMs": 24037,
+      "verseStart": 4
+    },
+    {
+      "timeMs": 29060,
+      "verseStart": 5
+    },
+    {
+      "timeMs": 39347,
+      "verseStart": 6
+    },
+    {
+      "timeMs": 51276,
+      "verseStart": 7
+    },
+    {
+      "timeMs": 59722,
+      "verseStart": 8
+    },
+    {
+      "timeMs": 70469,
+      "verseStart": 9
+    },
+    {
+      "timeMs": 81237,
+      "verseStart": 10
+    },
+    {
+      "timeMs": 91063,
+      "verseStart": 11
+    },
+    {
+      "timeMs": 97068,
+      "verseStart": 12
+    },
+    {
+      "timeMs": 103632,
+      "verseStart": 13
+    },
+    {
+      "timeMs": 113339,
+      "verseStart": 14
+    },
+    {
+      "timeMs": 120544,
+      "verseStart": 15
+    },
+    {
+      "timeMs": 126748,
+      "verseStart": 16
+    },
+    {
+      "timeMs": 135755,
+      "verseStart": 17
+    },
+    {
+      "timeMs": 141138,
+      "verseStart": 18
+    },
+    {
+      "timeMs": 153947,
+      "verseStart": 19
+    },
+    {
+      "timeMs": 164615,
+      "verseStart": 20
+    },
+    {
+      "timeMs": 175202,
+      "verseStart": 21
+    }
+  ]
+}

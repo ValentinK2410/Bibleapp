@@ -1,0 +1,103 @@
+{
+  "id": "gh_syn_ephesians_1",
+  "translationCode": "SYN",
+  "bookId": "ephesians",
+  "chapter": 1,
+  "title": "К Ефесянам 1 · Синодальный · Бондаренко",
+  "narratorId": "bondarenko",
+  "audioFileName": "56_01.mp3",
+  "cues": [
+    {
+      "timeMs": 13811,
+      "verseStart": 1
+    },
+    {
+      "timeMs": 24279,
+      "verseStart": 2
+    },
+    {
+      "timeMs": 32225,
+      "verseStart": 3
+    },
+    {
+      "timeMs": 43373,
+      "verseStart": 4
+    },
+    {
+      "timeMs": 52300,
+      "verseStart": 5
+    },
+    {
+      "timeMs": 59566,
+      "verseStart": 6
+    },
+    {
+      "timeMs": 66371,
+      "verseStart": 7
+    },
+    {
+      "timeMs": 74257,
+      "verseStart": 8
+    },
+    {
+      "timeMs": 80422,
+      "verseStart": 9
+    },
+    {
+      "timeMs": 88468,
+      "verseStart": 10
+    },
+    {
+      "timeMs": 98656,
+      "verseStart": 11
+    },
+    {
+      "timeMs": 108563,
+      "verseStart": 12
+    },
+    {
+      "timeMs": 115429,
+      "verseStart": 13
+    },
+    {
+      "timeMs": 126577,
+      "verseStart": 14
+    },
+    {
+      "timeMs": 135464,
+      "verseStart": 15
+    },
+    {
+      "timeMs": 143931,
+      "verseStart": 16
+    },
+    {
+      "timeMs": 149495,
+      "verseStart": 17
+    },
+    {
+      "timeMs": 160063,
+      "verseStart": 18
+    },
+    {
+      "timeMs": 172392,
+      "verseStart": 19
+    },
+    {
+      "timeMs": 180058,
+      "verseStart": 20
+    },
+    {
+      "timeMs": 189385,
+      "verseStart": 21
+    },
+    {
+      "timeMs": 199934,
+      "verseStart": 22
+    },
+    {
+      "timeMs": 207399,
+      "verseStart": 23
+    }
+  ]
+}

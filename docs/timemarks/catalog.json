@@ -5114,6 +5114,66 @@
       "file": "projects/syn_2_corinthians_9.json"
     },
     {
+      "id": "gh_syn_ephesians_1",
+      "translationCode": "SYN",
+      "bookId": "ephesians",
+      "chapter": 1,
+      "title": "К Ефесянам 1 · Синодальный · Бондаренко",
+      "cueCount": 23,
+      "narratorId": "bondarenko",
+      "file": "projects/syn_ephesians_1.json"
+    },
+    {
+      "id": "gh_syn_ephesians_2",
+      "translationCode": "SYN",
+      "bookId": "ephesians",
+      "chapter": 2,
+      "title": "К Ефесянам 2 · Синодальный · Бондаренко",
+      "cueCount": 22,
+      "narratorId": "bondarenko",
+      "file": "projects/syn_ephesians_2.json"
+    },
+    {
+      "id": "gh_syn_ephesians_3",
+      "translationCode": "SYN",
+      "bookId": "ephesians",
+      "chapter": 3,
+      "title": "К Ефесянам 3 · Синодальный · Бондаренко",
+      "cueCount": 21,
+      "narratorId": "bondarenko",
+      "file": "projects/syn_ephesians_3.json"
+    },
+    {
+      "id": "gh_syn_ephesians_4",
+      "translationCode": "SYN",
+      "bookId": "ephesians",
+      "chapter": 4,
+      "title": "К Ефесянам 4 · Синодальный · Бондаренко",
+      "cueCount": 32,
+      "narratorId": "bondarenko",
+      "file": "projects/syn_ephesians_4.json"
+    },
+    {
+      "id": "gh_syn_ephesians_5",
+      "translationCode": "SYN",
+      "bookId": "ephesians",
+      "chapter": 5,
+      "title": "К Ефесянам 5 · Синодальный · Бондаренко",
+      "cueCount": 33,
+      "narratorId": "bondarenko",
+      "file": "projects/syn_ephesians_5.json"
+    },
+    {
+      "id": "gh_syn_ephesians_6",
+      "translationCode": "SYN",
+      "bookId": "ephesians",
+      "chapter": 6,
+      "title": "К Ефесянам 6 · Синодальный · Бондаренко",
+      "cueCount": 24,
+      "narratorId": "bondarenko",
+      "file": "projects/syn_ephesians_6.json"
+    },
+    {
       "id": "gh_syn_galatians_1",
       "translationCode": "SYN",
       "bookId": "galatians",
