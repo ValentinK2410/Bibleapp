@@ -1,0 +1,63 @@
+{
+  "id": "gh_nrt_1_thessalonians_3",
+  "translationCode": "NRT",
+  "bookId": "1_thessalonians",
+  "chapter": 3,
+  "title": "1-е Фессалоникийцам 3 · Новый русский",
+  "narratorId": "new-russian",
+  "audioFileName": "59_03.mp3",
+  "cues": [
+    {
+      "timeMs": 300,
+      "verseStart": 1
+    },
+    {
+      "timeMs": 6385,
+      "verseStart": 2
+    },
+    {
+      "timeMs": 18874,
+      "verseStart": 3
+    },
+    {
+      "timeMs": 26879,
+      "verseStart": 4
+    },
+    {
+      "timeMs": 34665,
+      "verseStart": 5
+    },
+    {
+      "timeMs": 52678,
+      "verseStart": 6
+    },
+    {
+      "timeMs": 67669,
+      "verseStart": 7
+    },
+    {
+      "timeMs": 75655,
+      "verseStart": 8
+    },
+    {
+      "timeMs": 80478,
+      "verseStart": 9
+    },
+    {
+      "timeMs": 89004,
+      "verseStart": 10
+    },
+    {
+      "timeMs": 97670,
+      "verseStart": 11
+    },
+    {
+      "timeMs": 105456,
+      "verseStart": 12
+    },
+    {
+      "timeMs": 116324,
+      "verseStart": 13
+    }
+  ]
+}

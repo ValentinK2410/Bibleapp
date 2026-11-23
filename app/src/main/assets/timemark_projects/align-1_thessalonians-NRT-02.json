@@ -1,0 +1,111 @@
+{
+  "id": "align-1_thessalonians-NRT-02",
+  "translationCode": "NRT",
+  "bookId": "1_thessalonians",
+  "chapter": 2,
+  "title": "1-е Фессалоникийцам 2 · Новый русский",
+  "audioFilePath": "/data/user/0/com.example.bible.sqlite/files/bible_audio/new-russian/59_02.mp3",
+  "updatedAt": 1795392000000,
+  "cues": [
+    {
+      "timeMs": 3302,
+      "verseStart": 1,
+      "attachments": []
+    },
+    {
+      "timeMs": 7666,
+      "verseStart": 2,
+      "attachments": []
+    },
+    {
+      "timeMs": 21416,
+      "verseStart": 3,
+      "attachments": []
+    },
+    {
+      "timeMs": 29101,
+      "verseStart": 4,
+      "attachments": []
+    },
+    {
+      "timeMs": 42511,
+      "verseStart": 5,
+      "attachments": []
+    },
+    {
+      "timeMs": 49937,
+      "verseStart": 6,
+      "attachments": []
+    },
+    {
+      "timeMs": 54780,
+      "verseStart": 7,
+      "attachments": []
+    },
+    {
+      "timeMs": 69471,
+      "verseStart": 8,
+      "attachments": []
+    },
+    {
+      "timeMs": 81420,
+      "verseStart": 9,
+      "attachments": []
+    },
+    {
+      "timeMs": 91947,
+      "verseStart": 10,
+      "attachments": []
+    },
+    {
+      "timeMs": 102535,
+      "verseStart": 11,
+      "attachments": []
+    },
+    {
+      "timeMs": 109080,
+      "verseStart": 12,
+      "attachments": []
+    },
+    {
+      "timeMs": 126673,
+      "verseStart": 13,
+      "attachments": []
+    },
+    {
+      "timeMs": 146247,
+      "verseStart": 14,
+      "attachments": []
+    },
+    {
+      "timeMs": 158196,
+      "verseStart": 15,
+      "attachments": []
+    },
+    {
+      "timeMs": 169324,
+      "verseStart": 16,
+      "attachments": []
+    },
+    {
+      "timeMs": 187017,
+      "verseStart": 17,
+      "attachments": []
+    },
+    {
+      "timeMs": 196924,
+      "verseStart": 18,
+      "attachments": []
+    },
+    {
+      "timeMs": 206471,
+      "verseStart": 19,
+      "attachments": []
+    },
+    {
+      "timeMs": 216439,
+      "verseStart": 20,
+      "attachments": []
+    }
+  ]
+}

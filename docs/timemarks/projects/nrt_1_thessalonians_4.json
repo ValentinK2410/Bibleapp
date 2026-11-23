@@ -1,0 +1,83 @@
+{
+  "id": "gh_nrt_1_thessalonians_4",
+  "translationCode": "NRT",
+  "bookId": "1_thessalonians",
+  "chapter": 4,
+  "title": "1-е Фессалоникийцам 4 · Новый русский",
+  "narratorId": "new-russian",
+  "audioFileName": "59_04.mp3",
+  "cues": [
+    {
+      "timeMs": 3502,
+      "verseStart": 1
+    },
+    {
+      "timeMs": 20294,
+      "verseStart": 2
+    },
+    {
+      "timeMs": 25077,
+      "verseStart": 3
+    },
+    {
+      "timeMs": 30981,
+      "verseStart": 4
+    },
+    {
+      "timeMs": 37726,
+      "verseStart": 5
+    },
+    {
+      "timeMs": 44410,
+      "verseStart": 6
+    },
+    {
+      "timeMs": 57519,
+      "verseStart": 7
+    },
+    {
+      "timeMs": 63623,
+      "verseStart": 8
+    },
+    {
+      "timeMs": 73310,
+      "verseStart": 9
+    },
+    {
+      "timeMs": 81555,
+      "verseStart": 10
+    },
+    {
+      "timeMs": 90181,
+      "verseStart": 11
+    },
+    {
+      "timeMs": 99588,
+      "verseStart": 12
+    },
+    {
+      "timeMs": 110575,
+      "verseStart": 13
+    },
+    {
+      "timeMs": 121703,
+      "verseStart": 14
+    },
+    {
+      "timeMs": 132930,
+      "verseStart": 15
+    },
+    {
+      "timeMs": 148541,
+      "verseStart": 16
+    },
+    {
+      "timeMs": 161830,
+      "verseStart": 17
+    },
+    {
+      "timeMs": 174559,
+      "verseStart": 18
+    }
+  ]
+}

@@ -1,0 +1,101 @@
+{
+  "id": "align-1_thessalonians-NRT-04",
+  "translationCode": "NRT",
+  "bookId": "1_thessalonians",
+  "chapter": 4,
+  "title": "1-е Фессалоникийцам 4 · Новый русский",
+  "audioFilePath": "/data/user/0/com.example.bible.sqlite/files/bible_audio/new-russian/59_04.mp3",
+  "updatedAt": 1795392000000,
+  "cues": [
+    {
+      "timeMs": 3502,
+      "verseStart": 1,
+      "attachments": []
+    },
+    {
+      "timeMs": 20294,
+      "verseStart": 2,
+      "attachments": []
+    },
+    {
+      "timeMs": 25077,
+      "verseStart": 3,
+      "attachments": []
+    },
+    {
+      "timeMs": 30981,
+      "verseStart": 4,
+      "attachments": []
+    },
+    {
+      "timeMs": 37726,
+      "verseStart": 5,
+      "attachments": []
+    },
+    {
+      "timeMs": 44410,
+      "verseStart": 6,
+      "attachments": []
+    },
+    {
+      "timeMs": 57519,
+      "verseStart": 7,
+      "attachments": []
+    },
+    {
+      "timeMs": 63623,
+      "verseStart": 8,
+      "attachments": []
+    },
+    {
+      "timeMs": 73310,
+      "verseStart": 9,
+      "attachments": []
+    },
+    {
+      "timeMs": 81555,
+      "verseStart": 10,
+      "attachments": []
+    },
+    {
+      "timeMs": 90181,
+      "verseStart": 11,
+      "attachments": []
+    },
+    {
+      "timeMs": 99588,
+      "verseStart": 12,
+      "attachments": []
+    },
+    {
+      "timeMs": 110575,
+      "verseStart": 13,
+      "attachments": []
+    },
+    {
+      "timeMs": 121703,
+      "verseStart": 14,
+      "attachments": []
+    },
+    {
+      "timeMs": 132930,
+      "verseStart": 15,
+      "attachments": []
+    },
+    {
+      "timeMs": 148541,
+      "verseStart": 16,
+      "attachments": []
+    },
+    {
+      "timeMs": 161830,
+      "verseStart": 17,
+      "attachments": []
+    },
+    {
+      "timeMs": 174559,
+      "verseStart": 18,
+      "attachments": []
+    }
+  ]
+}

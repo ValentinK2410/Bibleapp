@@ -1,0 +1,151 @@
+{
+  "id": "align-1_thessalonians-NRT-05",
+  "translationCode": "NRT",
+  "bookId": "1_thessalonians",
+  "chapter": 5,
+  "title": "1-е Фессалоникийцам 5 · Новый русский",
+  "audioFilePath": "/data/user/0/com.example.bible.sqlite/files/bible_audio/new-russian/59_05.mp3",
+  "updatedAt": 1795392000000,
+  "cues": [
+    {
+      "timeMs": 4263,
+      "verseStart": 1,
+      "attachments": []
+    },
+    {
+      "timeMs": 8686,
+      "verseStart": 2,
+      "attachments": []
+    },
+    {
+      "timeMs": 15430,
+      "verseStart": 3,
+      "attachments": []
+    },
+    {
+      "timeMs": 28819,
+      "verseStart": 4,
+      "attachments": []
+    },
+    {
+      "timeMs": 35223,
+      "verseStart": 5,
+      "attachments": []
+    },
+    {
+      "timeMs": 41287,
+      "verseStart": 6,
+      "attachments": []
+    },
+    {
+      "timeMs": 47951,
+      "verseStart": 7,
+      "attachments": []
+    },
+    {
+      "timeMs": 53295,
+      "verseStart": 8,
+      "attachments": []
+    },
+    {
+      "timeMs": 66023,
+      "verseStart": 9,
+      "attachments": []
+    },
+    {
+      "timeMs": 75809,
+      "verseStart": 10,
+      "attachments": []
+    },
+    {
+      "timeMs": 85296,
+      "verseStart": 11,
+      "attachments": []
+    },
+    {
+      "timeMs": 94642,
+      "verseStart": 12,
+      "attachments": []
+    },
+    {
+      "timeMs": 106970,
+      "verseStart": 13,
+      "attachments": []
+    },
+    {
+      "timeMs": 116576,
+      "verseStart": 14,
+      "attachments": []
+    },
+    {
+      "timeMs": 128644,
+      "verseStart": 15,
+      "attachments": []
+    },
+    {
+      "timeMs": 137009,
+      "verseStart": 16,
+      "attachments": []
+    },
+    {
+      "timeMs": 138690,
+      "verseStart": 17,
+      "attachments": []
+    },
+    {
+      "timeMs": 140471,
+      "verseStart": 18,
+      "attachments": []
+    },
+    {
+      "timeMs": 150378,
+      "verseStart": 19,
+      "attachments": []
+    },
+    {
+      "timeMs": 152339,
+      "verseStart": 20,
+      "attachments": []
+    },
+    {
+      "timeMs": 154801,
+      "verseStart": 21,
+      "attachments": []
+    },
+    {
+      "timeMs": 157863,
+      "verseStart": 22,
+      "attachments": []
+    },
+    {
+      "timeMs": 165468,
+      "verseStart": 23,
+      "attachments": []
+    },
+    {
+      "timeMs": 181138,
+      "verseStart": 24,
+      "attachments": []
+    },
+    {
+      "timeMs": 187482,
+      "verseStart": 25,
+      "attachments": []
+    },
+    {
+      "timeMs": 190644,
+      "verseStart": 26,
+      "attachments": []
+    },
+    {
+      "timeMs": 194126,
+      "verseStart": 27,
+      "attachments": []
+    },
+    {
+      "timeMs": 199630,
+      "verseStart": 28,
+      "attachments": []
+    }
+  ]
+}

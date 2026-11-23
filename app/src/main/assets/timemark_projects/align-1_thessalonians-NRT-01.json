@@ -1,0 +1,61 @@
+{
+  "id": "align-1_thessalonians-NRT-01",
+  "translationCode": "NRT",
+  "bookId": "1_thessalonians",
+  "chapter": 1,
+  "title": "1-е Фессалоникийцам 1 · Новый русский",
+  "audioFilePath": "/data/user/0/com.example.bible.sqlite/files/bible_audio/new-russian/59_01.mp3",
+  "updatedAt": 1795392000000,
+  "cues": [
+    {
+      "timeMs": 400,
+      "verseStart": 1,
+      "attachments": []
+    },
+    {
+      "timeMs": 17071,
+      "verseStart": 2,
+      "attachments": []
+    },
+    {
+      "timeMs": 23395,
+      "verseStart": 3,
+      "attachments": []
+    },
+    {
+      "timeMs": 37904,
+      "verseStart": 4,
+      "attachments": []
+    },
+    {
+      "timeMs": 42967,
+      "verseStart": 5,
+      "attachments": []
+    },
+    {
+      "timeMs": 57456,
+      "verseStart": 6,
+      "attachments": []
+    },
+    {
+      "timeMs": 67682,
+      "verseStart": 7,
+      "attachments": []
+    },
+    {
+      "timeMs": 71625,
+      "verseStart": 8,
+      "attachments": []
+    },
+    {
+      "timeMs": 84913,
+      "verseStart": 9,
+      "attachments": []
+    },
+    {
+      "timeMs": 95740,
+      "verseStart": 10,
+      "attachments": []
+    }
+  ]
+}
