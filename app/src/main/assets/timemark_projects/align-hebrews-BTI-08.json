@@ -1,0 +1,76 @@
+{
+  "id": "align-hebrews-BTI-08",
+  "translationCode": "BTI",
+  "bookId": "hebrews",
+  "chapter": 8,
+  "title": "К Евреям 8 · Кулаковых",
+  "audioFilePath": "/data/user/0/com.example.bible.sqlite/files/bible_audio/bti/65_08.mp3",
+  "updatedAt": 1795392000000,
+  "cues": [
+    {
+      "timeMs": 3822,
+      "verseStart": 1,
+      "attachments": []
+    },
+    {
+      "timeMs": 12988,
+      "verseStart": 2,
+      "attachments": []
+    },
+    {
+      "timeMs": 22614,
+      "verseStart": 3,
+      "attachments": []
+    },
+    {
+      "timeMs": 39064,
+      "verseStart": 4,
+      "attachments": []
+    },
+    {
+      "timeMs": 51492,
+      "verseStart": 5,
+      "attachments": []
+    },
+    {
+      "timeMs": 74706,
+      "verseStart": 6,
+      "attachments": []
+    },
+    {
+      "timeMs": 90436,
+      "verseStart": 7,
+      "attachments": []
+    },
+    {
+      "timeMs": 95939,
+      "verseStart": 8,
+      "attachments": []
+    },
+    {
+      "timeMs": 116812,
+      "verseStart": 9,
+      "attachments": []
+    },
+    {
+      "timeMs": 136484,
+      "verseStart": 10,
+      "attachments": []
+    },
+    {
+      "timeMs": 161439,
+      "verseStart": 11,
+      "attachments": []
+    },
+    {
+      "timeMs": 180571,
+      "verseStart": 12,
+      "attachments": []
+    },
+    {
+      "timeMs": 193439,
+      "verseStart": 13,
+      "attachments": []
+    }
+  ]
+}

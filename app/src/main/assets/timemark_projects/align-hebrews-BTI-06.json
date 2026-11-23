@@ -1,0 +1,111 @@
+{
+  "id": "align-hebrews-BTI-06",
+  "translationCode": "BTI",
+  "bookId": "hebrews",
+  "chapter": 6,
+  "title": "К Евреям 6 · Кулаковых",
+  "audioFilePath": "/data/user/0/com.example.bible.sqlite/files/bible_audio/bti/65_06.mp3",
+  "updatedAt": 1795392000000,
+  "cues": [
+    {
+      "timeMs": 3022,
+      "verseStart": 1,
+      "attachments": []
+    },
+    {
+      "timeMs": 20555,
+      "verseStart": 2,
+      "attachments": []
+    },
+    {
+      "timeMs": 27399,
+      "verseStart": 3,
+      "attachments": []
+    },
+    {
+      "timeMs": 32603,
+      "verseStart": 4,
+      "attachments": []
+    },
+    {
+      "timeMs": 42690,
+      "verseStart": 5,
+      "attachments": []
+    },
+    {
+      "timeMs": 50315,
+      "verseStart": 6,
+      "attachments": []
+    },
+    {
+      "timeMs": 72131,
+      "verseStart": 7,
+      "attachments": []
+    },
+    {
+      "timeMs": 85700,
+      "verseStart": 8,
+      "attachments": []
+    },
+    {
+      "timeMs": 100691,
+      "verseStart": 9,
+      "attachments": []
+    },
+    {
+      "timeMs": 115741,
+      "verseStart": 10,
+      "attachments": []
+    },
+    {
+      "timeMs": 127189,
+      "verseStart": 11,
+      "attachments": []
+    },
+    {
+      "timeMs": 137497,
+      "verseStart": 12,
+      "attachments": []
+    },
+    {
+      "timeMs": 150186,
+      "verseStart": 13,
+      "attachments": []
+    },
+    {
+      "timeMs": 163215,
+      "verseStart": 14,
+      "attachments": []
+    },
+    {
+      "timeMs": 174903,
+      "verseStart": 15,
+      "attachments": []
+    },
+    {
+      "timeMs": 182588,
+      "verseStart": 16,
+      "attachments": []
+    },
+    {
+      "timeMs": 193116,
+      "verseStart": 17,
+      "attachments": []
+    },
+    {
+      "timeMs": 203663,
+      "verseStart": 18,
+      "attachments": []
+    },
+    {
+      "timeMs": 224218,
+      "verseStart": 19,
+      "attachments": []
+    },
+    {
+      "timeMs": 234025,
+      "verseStart": 20,
+      "attachments": []
+    }
+  ]
+}

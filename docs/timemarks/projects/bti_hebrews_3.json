@@ -1,0 +1,87 @@
+{
+  "id": "gh_bti_hebrews_3",
+  "translationCode": "BTI",
+  "bookId": "hebrews",
+  "chapter": 3,
+  "title": "К Евреям 3 · Кулаковых",
+  "narratorId": "bti",
+  "audioFileName": "65_03.mp3",
+  "cues": [
+    {
+      "timeMs": 4183,
+      "verseStart": 1
+    },
+    {
+      "timeMs": 24837,
+      "verseStart": 2
+    },
+    {
+      "timeMs": 33282,
+      "verseStart": 3
+    },
+    {
+      "timeMs": 44710,
+      "verseStart": 4
+    },
+    {
+      "timeMs": 53516,
+      "verseStart": 5
+    },
+    {
+      "timeMs": 67605,
+      "verseStart": 6
+    },
+    {
+      "timeMs": 83015,
+      "verseStart": 7
+    },
+    {
+      "timeMs": 91441,
+      "verseStart": 8
+    },
+    {
+      "timeMs": 99486,
+      "verseStart": 9
+    },
+    {
+      "timeMs": 108993,
+      "verseStart": 10
+    },
+    {
+      "timeMs": 127825,
+      "verseStart": 11
+    },
+    {
+      "timeMs": 137532,
+      "verseStart": 12
+    },
+    {
+      "timeMs": 149320,
+      "verseStart": 13
+    },
+    {
+      "timeMs": 163129,
+      "verseStart": 14
+    },
+    {
+      "timeMs": 174196,
+      "verseStart": 15
+    },
+    {
+      "timeMs": 185944,
+      "verseStart": 16
+    },
+    {
+      "timeMs": 201274,
+      "verseStart": 17
+    },
+    {
+      "timeMs": 213162,
+      "verseStart": 18
+    },
+    {
+      "timeMs": 219786,
+      "verseStart": 19
+    }
+  ]
+}

@@ -1,0 +1,101 @@
+{
+  "id": "align-hebrews-BTI-02",
+  "translationCode": "BTI",
+  "bookId": "hebrews",
+  "chapter": 2,
+  "title": "К Евреям 2 · Кулаковых",
+  "audioFilePath": "/data/user/0/com.example.bible.sqlite/files/bible_audio/bti/65_02.mp3",
+  "updatedAt": 1795392000000,
+  "cues": [
+    {
+      "timeMs": 4043,
+      "verseStart": 1,
+      "attachments": []
+    },
+    {
+      "timeMs": 11508,
+      "verseStart": 2,
+      "attachments": []
+    },
+    {
+      "timeMs": 24657,
+      "verseStart": 3,
+      "attachments": []
+    },
+    {
+      "timeMs": 43410,
+      "verseStart": 4,
+      "attachments": []
+    },
+    {
+      "timeMs": 60362,
+      "verseStart": 5,
+      "attachments": []
+    },
+    {
+      "timeMs": 67327,
+      "verseStart": 6,
+      "attachments": []
+    },
+    {
+      "timeMs": 84339,
+      "verseStart": 7,
+      "attachments": []
+    },
+    {
+      "timeMs": 93445,
+      "verseStart": 8,
+      "attachments": []
+    },
+    {
+      "timeMs": 112118,
+      "verseStart": 9,
+      "attachments": []
+    },
+    {
+      "timeMs": 135114,
+      "verseStart": 10,
+      "attachments": []
+    },
+    {
+      "timeMs": 158590,
+      "verseStart": 11,
+      "attachments": []
+    },
+    {
+      "timeMs": 170719,
+      "verseStart": 12,
+      "attachments": []
+    },
+    {
+      "timeMs": 182107,
+      "verseStart": 13,
+      "attachments": []
+    },
+    {
+      "timeMs": 196337,
+      "verseStart": 14,
+      "attachments": []
+    },
+    {
+      "timeMs": 213589,
+      "verseStart": 15,
+      "attachments": []
+    },
+    {
+      "timeMs": 221394,
+      "verseStart": 16,
+      "attachments": []
+    },
+    {
+      "timeMs": 228359,
+      "verseStart": 17,
+      "attachments": []
+    },
+    {
+      "timeMs": 247412,
+      "verseStart": 18,
+      "attachments": []
+    }
+  ]
+}

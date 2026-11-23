@@ -1,0 +1,136 @@
+{
+  "id": "align-hebrews-BTI-13",
+  "translationCode": "BTI",
+  "bookId": "hebrews",
+  "chapter": 13,
+  "title": "К Евреям 13 · Кулаковых",
+  "audioFilePath": "/data/user/0/com.example.bible.sqlite/files/bible_audio/bti/65_13.mp3",
+  "updatedAt": 1795392000000,
+  "cues": [
+    {
+      "timeMs": 4403,
+      "verseStart": 1,
+      "attachments": []
+    },
+    {
+      "timeMs": 10187,
+      "verseStart": 2,
+      "attachments": []
+    },
+    {
+      "timeMs": 21755,
+      "verseStart": 3,
+      "attachments": []
+    },
+    {
+      "timeMs": 39087,
+      "verseStart": 4,
+      "attachments": []
+    },
+    {
+      "timeMs": 53396,
+      "verseStart": 5,
+      "attachments": []
+    },
+    {
+      "timeMs": 68366,
+      "verseStart": 6,
+      "attachments": []
+    },
+    {
+      "timeMs": 79854,
+      "verseStart": 7,
+      "attachments": []
+    },
+    {
+      "timeMs": 94304,
+      "verseStart": 8,
+      "attachments": []
+    },
+    {
+      "timeMs": 103950,
+      "verseStart": 9,
+      "attachments": []
+    },
+    {
+      "timeMs": 122483,
+      "verseStart": 10,
+      "attachments": []
+    },
+    {
+      "timeMs": 134591,
+      "verseStart": 11,
+      "attachments": []
+    },
+    {
+      "timeMs": 145839,
+      "verseStart": 12,
+      "attachments": []
+    },
+    {
+      "timeMs": 154925,
+      "verseStart": 13,
+      "attachments": []
+    },
+    {
+      "timeMs": 164712,
+      "verseStart": 14,
+      "attachments": []
+    },
+    {
+      "timeMs": 173237,
+      "verseStart": 15,
+      "attachments": []
+    },
+    {
+      "timeMs": 187387,
+      "verseStart": 16,
+      "attachments": []
+    },
+    {
+      "timeMs": 199035,
+      "verseStart": 17,
+      "attachments": []
+    },
+    {
+      "timeMs": 222651,
+      "verseStart": 18,
+      "attachments": []
+    },
+    {
+      "timeMs": 233918,
+      "verseStart": 19,
+      "attachments": []
+    },
+    {
+      "timeMs": 244546,
+      "verseStart": 20,
+      "attachments": []
+    },
+    {
+      "timeMs": 257975,
+      "verseStart": 21,
+      "attachments": []
+    },
+    {
+      "timeMs": 277988,
+      "verseStart": 22,
+      "attachments": []
+    },
+    {
+      "timeMs": 287795,
+      "verseStart": 23,
+      "attachments": []
+    },
+    {
+      "timeMs": 297361,
+      "verseStart": 24,
+      "attachments": []
+    },
+    {
+      "timeMs": 307508,
+      "verseStart": 25,
+      "attachments": []
+    }
+  ]
+}

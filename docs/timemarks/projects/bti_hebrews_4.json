@@ -1,0 +1,75 @@
+{
+  "id": "gh_bti_hebrews_4",
+  "translationCode": "BTI",
+  "bookId": "hebrews",
+  "chapter": 4,
+  "title": "К Евреям 4 · Кулаковых",
+  "narratorId": "bti",
+  "audioFileName": "65_04.mp3",
+  "cues": [
+    {
+      "timeMs": 3723,
+      "verseStart": 1
+    },
+    {
+      "timeMs": 18012,
+      "verseStart": 2
+    },
+    {
+      "timeMs": 31822,
+      "verseStart": 3
+    },
+    {
+      "timeMs": 57719,
+      "verseStart": 4
+    },
+    {
+      "timeMs": 69927,
+      "verseStart": 5
+    },
+    {
+      "timeMs": 76172,
+      "verseStart": 6
+    },
+    {
+      "timeMs": 91962,
+      "verseStart": 7
+    },
+    {
+      "timeMs": 116679,
+      "verseStart": 8
+    },
+    {
+      "timeMs": 129027,
+      "verseStart": 9
+    },
+    {
+      "timeMs": 137593,
+      "verseStart": 10
+    },
+    {
+      "timeMs": 146059,
+      "verseStart": 11
+    },
+    {
+      "timeMs": 159068,
+      "verseStart": 12
+    },
+    {
+      "timeMs": 186346,
+      "verseStart": 13
+    },
+    {
+      "timeMs": 201416,
+      "verseStart": 14
+    },
+    {
+      "timeMs": 217247,
+      "verseStart": 15
+    },
+    {
+      "timeMs": 236680,
+      "verseStart": 16
+    }
+  ]
+}

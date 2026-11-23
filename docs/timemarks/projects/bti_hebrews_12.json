@@ -1,0 +1,127 @@
+{
+  "id": "gh_bti_hebrews_12",
+  "translationCode": "BTI",
+  "bookId": "hebrews",
+  "chapter": 12,
+  "title": "К Евреям 12 · Кулаковых",
+  "narratorId": "bti",
+  "audioFileName": "65_12.mp3",
+  "cues": [
+    {
+      "timeMs": 4603,
+      "verseStart": 1
+    },
+    {
+      "timeMs": 22015,
+      "verseStart": 2
+    },
+    {
+      "timeMs": 46671,
+      "verseStart": 3
+    },
+    {
+      "timeMs": 58619,
+      "verseStart": 4
+    },
+    {
+      "timeMs": 64363,
+      "verseStart": 5
+    },
+    {
+      "timeMs": 86658,
+      "verseStart": 6
+    },
+    {
+      "timeMs": 99187,
+      "verseStart": 7
+    },
+    {
+      "timeMs": 114377,
+      "verseStart": 8
+    },
+    {
+      "timeMs": 127546,
+      "verseStart": 9
+    },
+    {
+      "timeMs": 146178,
+      "verseStart": 10
+    },
+    {
+      "timeMs": 166172,
+      "verseStart": 11
+    },
+    {
+      "timeMs": 180902,
+      "verseStart": 12
+    },
+    {
+      "timeMs": 186786,
+      "verseStart": 13
+    },
+    {
+      "timeMs": 199494,
+      "verseStart": 14
+    },
+    {
+      "timeMs": 209301,
+      "verseStart": 15
+    },
+    {
+      "timeMs": 220989,
+      "verseStart": 16
+    },
+    {
+      "timeMs": 231395,
+      "verseStart": 17
+    },
+    {
+      "timeMs": 247546,
+      "verseStart": 18
+    },
+    {
+      "timeMs": 261616,
+      "verseStart": 19
+    },
+    {
+      "timeMs": 271863,
+      "verseStart": 20
+    },
+    {
+      "timeMs": 286152,
+      "verseStart": 21
+    },
+    {
+      "timeMs": 295198,
+      "verseStart": 22
+    },
+    {
+      "timeMs": 313891,
+      "verseStart": 23
+    },
+    {
+      "timeMs": 332563,
+      "verseStart": 24
+    },
+    {
+      "timeMs": 346813,
+      "verseStart": 25
+    },
+    {
+      "timeMs": 368588,
+      "verseStart": 26
+    },
+    {
+      "timeMs": 385699,
+      "verseStart": 27
+    },
+    {
+      "timeMs": 402991,
+      "verseStart": 28
+    },
+    {
+      "timeMs": 418081,
+      "verseStart": 29
+    }
+  ]
+}

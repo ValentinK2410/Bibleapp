@@ -1,0 +1,167 @@
+{
+  "id": "gh_bti_hebrews_10",
+  "translationCode": "BTI",
+  "bookId": "hebrews",
+  "chapter": 10,
+  "title": "К Евреям 10 · Кулаковых",
+  "narratorId": "bti",
+  "audioFileName": "65_10.mp3",
+  "cues": [
+    {
+      "timeMs": 4623,
+      "verseStart": 1
+    },
+    {
+      "timeMs": 25317,
+      "verseStart": 2
+    },
+    {
+      "timeMs": 42288,
+      "verseStart": 3
+    },
+    {
+      "timeMs": 52575,
+      "verseStart": 4
+    },
+    {
+      "timeMs": 57318,
+      "verseStart": 5
+    },
+    {
+      "timeMs": 72768,
+      "verseStart": 6
+    },
+    {
+      "timeMs": 79253,
+      "verseStart": 7
+    },
+    {
+      "timeMs": 94443,
+      "verseStart": 8
+    },
+    {
+      "timeMs": 108052,
+      "verseStart": 9
+    },
+    {
+      "timeMs": 129486,
+      "verseStart": 10
+    },
+    {
+      "timeMs": 142535,
+      "verseStart": 11
+    },
+    {
+      "timeMs": 155363,
+      "verseStart": 12
+    },
+    {
+      "timeMs": 165850,
+      "verseStart": 13
+    },
+    {
+      "timeMs": 172715,
+      "verseStart": 14
+    },
+    {
+      "timeMs": 180740,
+      "verseStart": 15
+    },
+    {
+      "timeMs": 185764,
+      "verseStart": 16
+    },
+    {
+      "timeMs": 199012,
+      "verseStart": 17
+    },
+    {
+      "timeMs": 209419,
+      "verseStart": 18
+    },
+    {
+      "timeMs": 216384,
+      "verseStart": 19
+    },
+    {
+      "timeMs": 225750,
+      "verseStart": 20
+    },
+    {
+      "timeMs": 234416,
+      "verseStart": 21
+    },
+    {
+      "timeMs": 242341,
+      "verseStart": 22
+    },
+    {
+      "timeMs": 259873,
+      "verseStart": 23
+    },
+    {
+      "timeMs": 266777,
+      "verseStart": 24
+    },
+    {
+      "timeMs": 274062,
+      "verseStart": 25
+    },
+    {
+      "timeMs": 293395,
+      "verseStart": 26
+    },
+    {
+      "timeMs": 305383,
+      "verseStart": 27
+    },
+    {
+      "timeMs": 316571,
+      "verseStart": 28
+    },
+    {
+      "timeMs": 327938,
+      "verseStart": 29
+    },
+    {
+      "timeMs": 347691,
+      "verseStart": 30
+    },
+    {
+      "timeMs": 363942,
+      "verseStart": 31
+    },
+    {
+      "timeMs": 370646,
+      "verseStart": 32
+    },
+    {
+      "timeMs": 380073,
+      "verseStart": 33
+    },
+    {
+      "timeMs": 391040,
+      "verseStart": 34
+    },
+    {
+      "timeMs": 408372,
+      "verseStart": 35
+    },
+    {
+      "timeMs": 415456,
+      "verseStart": 36
+    },
+    {
+      "timeMs": 424062,
+      "verseStart": 37
+    },
+    {
+      "timeMs": 434849,
+      "verseStart": 38
+    },
+    {
+      "timeMs": 446817,
+      "verseStart": 39
+    }
+  ]
+}

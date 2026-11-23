@@ -1,0 +1,81 @@
+{
+  "id": "align-hebrews-BTI-05",
+  "translationCode": "BTI",
+  "bookId": "hebrews",
+  "chapter": 5,
+  "title": "К Евреям 5 · Кулаковых",
+  "audioFilePath": "/data/user/0/com.example.bible.sqlite/files/bible_audio/bti/65_05.mp3",
+  "updatedAt": 1795392000000,
+  "cues": [
+    {
+      "timeMs": 4684,
+      "verseStart": 1,
+      "attachments": []
+    },
+    {
+      "timeMs": 16252,
+      "verseStart": 2,
+      "attachments": []
+    },
+    {
+      "timeMs": 27661,
+      "verseStart": 3,
+      "attachments": []
+    },
+    {
+      "timeMs": 35366,
+      "verseStart": 4,
+      "attachments": []
+    },
+    {
+      "timeMs": 46515,
+      "verseStart": 5,
+      "attachments": []
+    },
+    {
+      "timeMs": 62787,
+      "verseStart": 6,
+      "attachments": []
+    },
+    {
+      "timeMs": 72234,
+      "verseStart": 7,
+      "attachments": []
+    },
+    {
+      "timeMs": 90808,
+      "verseStart": 8,
+      "attachments": []
+    },
+    {
+      "timeMs": 100455,
+      "verseStart": 9,
+      "attachments": []
+    },
+    {
+      "timeMs": 111203,
+      "verseStart": 10,
+      "attachments": []
+    },
+    {
+      "timeMs": 119249,
+      "verseStart": 11,
+      "attachments": []
+    },
+    {
+      "timeMs": 130017,
+      "verseStart": 12,
+      "attachments": []
+    },
+    {
+      "timeMs": 148811,
+      "verseStart": 13,
+      "attachments": []
+    },
+    {
+      "timeMs": 155816,
+      "verseStart": 14,
+      "attachments": []
+    }
+  ]
+}

@@ -1,0 +1,123 @@
+{
+  "id": "gh_bti_hebrews_9",
+  "translationCode": "BTI",
+  "bookId": "hebrews",
+  "chapter": 9,
+  "title": "К Евреям 9 · Кулаковых",
+  "narratorId": "bti",
+  "audioFileName": "65_09.mp3",
+  "cues": [
+    {
+      "timeMs": 3522,
+      "verseStart": 1
+    },
+    {
+      "timeMs": 11408,
+      "verseStart": 2
+    },
+    {
+      "timeMs": 23496,
+      "verseStart": 3
+    },
+    {
+      "timeMs": 31921,
+      "verseStart": 4
+    },
+    {
+      "timeMs": 51575,
+      "verseStart": 5
+    },
+    {
+      "timeMs": 67085,
+      "verseStart": 6
+    },
+    {
+      "timeMs": 78473,
+      "verseStart": 7
+    },
+    {
+      "timeMs": 96525,
+      "verseStart": 8
+    },
+    {
+      "timeMs": 112976,
+      "verseStart": 9
+    },
+    {
+      "timeMs": 131368,
+      "verseStart": 10
+    },
+    {
+      "timeMs": 150701,
+      "verseStart": 11
+    },
+    {
+      "timeMs": 176558,
+      "verseStart": 12
+    },
+    {
+      "timeMs": 195011,
+      "verseStart": 13
+    },
+    {
+      "timeMs": 208120,
+      "verseStart": 14
+    },
+    {
+      "timeMs": 236559,
+      "verseStart": 15
+    },
+    {
+      "timeMs": 255151,
+      "verseStart": 16
+    },
+    {
+      "timeMs": 261876,
+      "verseStart": 17
+    },
+    {
+      "timeMs": 268940,
+      "verseStart": 18
+    },
+    {
+      "timeMs": 273984,
+      "verseStart": 19
+    },
+    {
+      "timeMs": 296279,
+      "verseStart": 20
+    },
+    {
+      "timeMs": 306005,
+      "verseStart": 21
+    },
+    {
+      "timeMs": 314091,
+      "verseStart": 22
+    },
+    {
+      "timeMs": 323917,
+      "verseStart": 23
+    },
+    {
+      "timeMs": 335305,
+      "verseStart": 24
+    },
+    {
+      "timeMs": 351736,
+      "verseStart": 25
+    },
+    {
+      "timeMs": 366466,
+      "verseStart": 26
+    },
+    {
+      "timeMs": 385298,
+      "verseStart": 27
+    },
+    {
+      "timeMs": 392203,
+      "verseStart": 28
+    }
+  ]
+}
