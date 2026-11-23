@@ -1,0 +1,101 @@
+{
+  "id": "align-colossians-WEB-04",
+  "translationCode": "WEB",
+  "bookId": "colossians",
+  "chapter": 4,
+  "title": "К Колоссянам 4 · WEB (англ.)",
+  "audioFilePath": "/data/user/0/com.example.bible.sqlite/files/bible_audio/web/51_04.mp3",
+  "updatedAt": 1794873600000,
+  "cues": [
+    {
+      "timeMs": 3342,
+      "verseStart": 1,
+      "attachments": []
+    },
+    {
+      "timeMs": 11067,
+      "verseStart": 2,
+      "attachments": []
+    },
+    {
+      "timeMs": 15630,
+      "verseStart": 3,
+      "attachments": []
+    },
+    {
+      "timeMs": 25796,
+      "verseStart": 4,
+      "attachments": []
+    },
+    {
+      "timeMs": 30219,
+      "verseStart": 5,
+      "attachments": []
+    },
+    {
+      "timeMs": 34742,
+      "verseStart": 6,
+      "attachments": []
+    },
+    {
+      "timeMs": 44108,
+      "verseStart": 7,
+      "attachments": []
+    },
+    {
+      "timeMs": 51292,
+      "verseStart": 8,
+      "attachments": []
+    },
+    {
+      "timeMs": 57316,
+      "verseStart": 9,
+      "attachments": []
+    },
+    {
+      "timeMs": 66442,
+      "verseStart": 10,
+      "attachments": []
+    },
+    {
+      "timeMs": 78069,
+      "verseStart": 11,
+      "attachments": []
+    },
+    {
+      "timeMs": 88696,
+      "verseStart": 12,
+      "attachments": []
+    },
+    {
+      "timeMs": 99883,
+      "verseStart": 13,
+      "attachments": []
+    },
+    {
+      "timeMs": 108789,
+      "verseStart": 14,
+      "attachments": []
+    },
+    {
+      "timeMs": 113071,
+      "verseStart": 15,
+      "attachments": []
+    },
+    {
+      "timeMs": 119636,
+      "verseStart": 16,
+      "attachments": []
+    },
+    {
+      "timeMs": 129262,
+      "verseStart": 17,
+      "attachments": []
+    },
+    {
+      "timeMs": 137507,
+      "verseStart": 18,
+      "attachments": []
+    }
+  ]
+}

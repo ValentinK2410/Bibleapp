@@ -1,0 +1,103 @@
+{
+  "id": "gh_web_colossians_2",
+  "translationCode": "WEB",
+  "bookId": "colossians",
+  "chapter": 2,
+  "title": "К Колоссянам 2 · WEB (англ.)",
+  "narratorId": "web",
+  "audioFileName": "51_02.mp3",
+  "cues": [
+    {
+      "timeMs": 2041,
+      "verseStart": 1
+    },
+    {
+      "timeMs": 11528,
+      "verseStart": 2
+    },
+    {
+      "timeMs": 24717,
+      "verseStart": 3
+    },
+    {
+      "timeMs": 30421,
+      "verseStart": 4
+    },
+    {
+      "timeMs": 36085,
+      "verseStart": 5
+    },
+    {
+      "timeMs": 46112,
+      "verseStart": 6
+    },
+    {
+      "timeMs": 52437,
+      "verseStart": 7
+    },
+    {
+      "timeMs": 61563,
+      "verseStart": 8
+    },
+    {
+      "timeMs": 72951,
+      "verseStart": 9
+    },
+    {
+      "timeMs": 77634,
+      "verseStart": 10
+    },
+    {
+      "timeMs": 82898,
+      "verseStart": 11
+    },
+    {
+      "timeMs": 94666,
+      "verseStart": 12
+    },
+    {
+      "timeMs": 105033,
+      "verseStart": 13
+    },
+    {
+      "timeMs": 114960,
+      "verseStart": 14
+    },
+    {
+      "timeMs": 125248,
+      "verseStart": 15
+    },
+    {
+      "timeMs": 133773,
+      "verseStart": 16
+    },
+    {
+      "timeMs": 142680,
+      "verseStart": 17
+    },
+    {
+      "timeMs": 148904,
+      "verseStart": 18
+    },
+    {
+      "timeMs": 161253,
+      "verseStart": 19
+    },
+    {
+      "timeMs": 172440,
+      "verseStart": 20
+    },
+    {
+      "timeMs": 182127,
+      "verseStart": 21
+    },
+    {
+      "timeMs": 185009,
+      "verseStart": 22
+    },
+    {
+      "timeMs": 191554,
+      "verseStart": 23
+    }
+  ]
+}

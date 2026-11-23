@@ -1,0 +1,83 @@
+{
+  "id": "gh_web_colossians_4",
+  "translationCode": "WEB",
+  "bookId": "colossians",
+  "chapter": 4,
+  "title": "К Колоссянам 4 · WEB (англ.)",
+  "narratorId": "web",
+  "audioFileName": "51_04.mp3",
+  "cues": [
+    {
+      "timeMs": 3342,
+      "verseStart": 1
+    },
+    {
+      "timeMs": 11067,
+      "verseStart": 2
+    },
+    {
+      "timeMs": 15630,
+      "verseStart": 3
+    },
+    {
+      "timeMs": 25796,
+      "verseStart": 4
+    },
+    {
+      "timeMs": 30219,
+      "verseStart": 5
+    },
+    {
+      "timeMs": 34742,
+      "verseStart": 6
+    },
+    {
+      "timeMs": 44108,
+      "verseStart": 7
+    },
+    {
+      "timeMs": 51292,
+      "verseStart": 8
+    },
+    {
+      "timeMs": 57316,
+      "verseStart": 9
+    },
+    {
+      "timeMs": 66442,
+      "verseStart": 10
+    },
+    {
+      "timeMs": 78069,
+      "verseStart": 11
+    },
+    {
+      "timeMs": 88696,
+      "verseStart": 12
+    },
+    {
+      "timeMs": 99883,
+      "verseStart": 13
+    },
+    {
+      "timeMs": 108789,
+      "verseStart": 14
+    },
+    {
+      "timeMs": 113071,
+      "verseStart": 15
+    },
+    {
+      "timeMs": 119636,
+      "verseStart": 16
+    },
+    {
+      "timeMs": 129262,
+      "verseStart": 17
+    },
+    {
+      "timeMs": 137507,
+      "verseStart": 18
+    }
+  ]
+}
