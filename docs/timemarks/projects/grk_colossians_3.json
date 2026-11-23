@@ -1,0 +1,111 @@
+{
+  "id": "gh_grk_colossians_3",
+  "translationCode": "PODSTR",
+  "bookId": "colossians",
+  "chapter": 3,
+  "title": "К Колоссянам 3 · Греческий (Koine)",
+  "narratorId": "greek-nt",
+  "audioFileName": "51_03.mp3",
+  "cues": [
+    {
+      "timeMs": 661,
+      "verseStart": 1
+    },
+    {
+      "timeMs": 8707,
+      "verseStart": 2
+    },
+    {
+      "timeMs": 11749,
+      "verseStart": 3
+    },
+    {
+      "timeMs": 17113,
+      "verseStart": 4
+    },
+    {
+      "timeMs": 23959,
+      "verseStart": 5
+    },
+    {
+      "timeMs": 35047,
+      "verseStart": 6
+    },
+    {
+      "timeMs": 37709,
+      "verseStart": 7
+    },
+    {
+      "timeMs": 42153,
+      "verseStart": 8
+    },
+    {
+      "timeMs": 51600,
+      "verseStart": 9
+    },
+    {
+      "timeMs": 58165,
+      "verseStart": 10
+    },
+    {
+      "timeMs": 65350,
+      "verseStart": 11
+    },
+    {
+      "timeMs": 76859,
+      "verseStart": 12
+    },
+    {
+      "timeMs": 88248,
+      "verseStart": 13
+    },
+    {
+      "timeMs": 97575,
+      "verseStart": 14
+    },
+    {
+      "timeMs": 102939,
+      "verseStart": 15
+    },
+    {
+      "timeMs": 112267,
+      "verseStart": 16
+    },
+    {
+      "timeMs": 126798,
+      "verseStart": 17
+    },
+    {
+      "timeMs": 135705,
+      "verseStart": 18
+    },
+    {
+      "timeMs": 140228,
+      "verseStart": 19
+    },
+    {
+      "timeMs": 144992,
+      "verseStart": 20
+    },
+    {
+      "timeMs": 151457,
+      "verseStart": 21
+    },
+    {
+      "timeMs": 156040,
+      "verseStart": 22
+    },
+    {
+      "timeMs": 166568,
+      "verseStart": 23
+    },
+    {
+      "timeMs": 172413,
+      "verseStart": 24
+    },
+    {
+      "timeMs": 179959,
+      "verseStart": 25
+    }
+  ]
+}

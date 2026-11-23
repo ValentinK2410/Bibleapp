@@ -1,0 +1,127 @@
+{
+  "id": "gh_grk_colossians_1",
+  "translationCode": "PODSTR",
+  "bookId": "colossians",
+  "chapter": 1,
+  "title": "К Колоссянам 1 · Греческий (Koine)",
+  "narratorId": "greek-nt",
+  "audioFileName": "51_01.mp3",
+  "cues": [
+    {
+      "timeMs": 721,
+      "verseStart": 1
+    },
+    {
+      "timeMs": 6865,
+      "verseStart": 2
+    },
+    {
+      "timeMs": 14951,
+      "verseStart": 3
+    },
+    {
+      "timeMs": 20775,
+      "verseStart": 4
+    },
+    {
+      "timeMs": 27279,
+      "verseStart": 5
+    },
+    {
+      "timeMs": 35665,
+      "verseStart": 6
+    },
+    {
+      "timeMs": 48995,
+      "verseStart": 7
+    },
+    {
+      "timeMs": 56039,
+      "verseStart": 8
+    },
+    {
+      "timeMs": 60403,
+      "verseStart": 9
+    },
+    {
+      "timeMs": 73812,
+      "verseStart": 10
+    },
+    {
+      "timeMs": 83799,
+      "verseStart": 11
+    },
+    {
+      "timeMs": 92005,
+      "verseStart": 12
+    },
+    {
+      "timeMs": 98790,
+      "verseStart": 13
+    },
+    {
+      "timeMs": 106615,
+      "verseStart": 14
+    },
+    {
+      "timeMs": 111358,
+      "verseStart": 15
+    },
+    {
+      "timeMs": 116482,
+      "verseStart": 16
+    },
+    {
+      "timeMs": 132273,
+      "verseStart": 17
+    },
+    {
+      "timeMs": 136196,
+      "verseStart": 18
+    },
+    {
+      "timeMs": 146543,
+      "verseStart": 19
+    },
+    {
+      "timeMs": 150506,
+      "verseStart": 20
+    },
+    {
+      "timeMs": 162734,
+      "verseStart": 21
+    },
+    {
+      "timeMs": 171481,
+      "verseStart": 22
+    },
+    {
+      "timeMs": 180327,
+      "verseStart": 23
+    },
+    {
+      "timeMs": 196939,
+      "verseStart": 24
+    },
+    {
+      "timeMs": 209848,
+      "verseStart": 25
+    },
+    {
+      "timeMs": 217833,
+      "verseStart": 26
+    },
+    {
+      "timeMs": 225359,
+      "verseStart": 27
+    },
+    {
+      "timeMs": 235766,
+      "verseStart": 28
+    },
+    {
+      "timeMs": 247434,
+      "verseStart": 29
+    }
+  ]
+}

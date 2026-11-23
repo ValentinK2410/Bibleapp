@@ -1,0 +1,156 @@
+{
+  "id": "align-colossians-GRK-01",
+  "translationCode": "PODSTR",
+  "bookId": "colossians",
+  "chapter": 1,
+  "title": "К Колоссянам 1 · Греческий (Koine)",
+  "audioFilePath": "/data/user/0/com.example.bible.sqlite/files/bible_audio/greek-nt/51_01.mp3",
+  "updatedAt": 1794873600000,
+  "cues": [
+    {
+      "timeMs": 721,
+      "verseStart": 1,
+      "attachments": []
+    },
+    {
+      "timeMs": 6865,
+      "verseStart": 2,
+      "attachments": []
+    },
+    {
+      "timeMs": 14951,
+      "verseStart": 3,
+      "attachments": []
+    },
+    {
+      "timeMs": 20775,
+      "verseStart": 4,
+      "attachments": []
+    },
+    {
+      "timeMs": 27279,
+      "verseStart": 5,
+      "attachments": []
+    },
+    {
+      "timeMs": 35665,
+      "verseStart": 6,
+      "attachments": []
+    },
+    {
+      "timeMs": 48995,
+      "verseStart": 7,
+      "attachments": []
+    },
+    {
+      "timeMs": 56039,
+      "verseStart": 8,
+      "attachments": []
+    },
+    {
+      "timeMs": 60403,
+      "verseStart": 9,
+      "attachments": []
+    },
+    {
+      "timeMs": 73812,
+      "verseStart": 10,
+      "attachments": []
+    },
+    {
+      "timeMs": 83799,
+      "verseStart": 11,
+      "attachments": []
+    },
+    {
+      "timeMs": 92005,
+      "verseStart": 12,
+      "attachments": []
+    },
+    {
+      "timeMs": 98790,
+      "verseStart": 13,
+      "attachments": []
+    },
+    {
+      "timeMs": 106615,
+      "verseStart": 14,
+      "attachments": []
+    },
+    {
+      "timeMs": 111358,
+      "verseStart": 15,
+      "attachments": []
+    },
+    {
+      "timeMs": 116482,
+      "verseStart": 16,
+      "attachments": []
+    },
+    {
+      "timeMs": 132273,
+      "verseStart": 17,
+      "attachments": []
+    },
+    {
+      "timeMs": 136196,
+      "verseStart": 18,
+      "attachments": []
+    },
+    {
+      "timeMs": 146543,
+      "verseStart": 19,
+      "attachments": []
+    },
+    {
+      "timeMs": 150506,
+      "verseStart": 20,
+      "attachments": []
+    },
+    {
+      "timeMs": 162734,
+      "verseStart": 21,
+      "attachments": []
+    },
+    {
+      "timeMs": 171481,
+      "verseStart": 22,
+      "attachments": []
+    },
+    {
+      "timeMs": 180327,
+      "verseStart": 23,
+      "attachments": []
+    },
+    {
+      "timeMs": 196939,
+      "verseStart": 24,
+      "attachments": []
+    },
+    {
+      "timeMs": 209848,
+      "verseStart": 25,
+      "attachments": []
+    },
+    {
+      "timeMs": 217833,
+      "verseStart": 26,
+      "attachments": []
+    },
+    {
+      "timeMs": 225359,
+      "verseStart": 27,
+      "attachments": []
+    },
+    {
+      "timeMs": 235766,
+      "verseStart": 28,
+      "attachments": []
+    },
+    {
+      "timeMs": 247434,
+      "verseStart": 29,
+      "attachments": []
+    }
+  ]
+}

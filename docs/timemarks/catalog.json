@@ -1514,6 +1514,46 @@
       "file": "projects/grk_2_corinthians_9.json"
     },
     {
+      "id": "gh_grk_colossians_1",
+      "translationCode": "PODSTR",
+      "bookId": "colossians",
+      "chapter": 1,
+      "title": "К Колоссянам 1 · Греческий (Koine)",
+      "cueCount": 29,
+      "narratorId": "greek-nt",
+      "file": "projects/grk_colossians_1.json"
+    },
+    {
+      "id": "gh_grk_colossians_2",
+      "translationCode": "PODSTR",
+      "bookId": "colossians",
+      "chapter": 2,
+      "title": "К Колоссянам 2 · Греческий (Koine)",
+      "cueCount": 23,
+      "narratorId": "greek-nt",
+      "file": "projects/grk_colossians_2.json"
+    },
+    {
+      "id": "gh_grk_colossians_3",
+      "translationCode": "PODSTR",
+      "bookId": "colossians",
+      "chapter": 3,
+      "title": "К Колоссянам 3 · Греческий (Koine)",
+      "cueCount": 25,
+      "narratorId": "greek-nt",
+      "file": "projects/grk_colossians_3.json"
+    },
+    {
+      "id": "gh_grk_colossians_4",
+      "translationCode": "PODSTR",
+      "bookId": "colossians",
+      "chapter": 4,
+      "title": "К Колоссянам 4 · Греческий (Koine)",
+      "cueCount": 18,
+      "narratorId": "greek-nt",
+      "file": "projects/grk_colossians_4.json"
+    },
+    {
       "id": "gh_grk_ephesians_1",
       "translationCode": "PODSTR",
       "bookId": "ephesians",

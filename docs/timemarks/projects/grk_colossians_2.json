@@ -1,0 +1,103 @@
+{
+  "id": "gh_grk_colossians_2",
+  "translationCode": "PODSTR",
+  "bookId": "colossians",
+  "chapter": 2,
+  "title": "К Колоссянам 2 · Греческий (Koine)",
+  "narratorId": "greek-nt",
+  "audioFileName": "51_02.mp3",
+  "cues": [
+    {
+      "timeMs": 621,
+      "verseStart": 1
+    },
+    {
+      "timeMs": 9687,
+      "verseStart": 2
+    },
+    {
+      "timeMs": 21776,
+      "verseStart": 3
+    },
+    {
+      "timeMs": 26940,
+      "verseStart": 4
+    },
+    {
+      "timeMs": 31704,
+      "verseStart": 5
+    },
+    {
+      "timeMs": 42412,
+      "verseStart": 6
+    },
+    {
+      "timeMs": 47335,
+      "verseStart": 7
+    },
+    {
+      "timeMs": 56542,
+      "verseStart": 8
+    },
+    {
+      "timeMs": 67931,
+      "verseStart": 9
+    },
+    {
+      "timeMs": 72514,
+      "verseStart": 10
+    },
+    {
+      "timeMs": 78319,
+      "verseStart": 11
+    },
+    {
+      "timeMs": 87185,
+      "verseStart": 12
+    },
+    {
+      "timeMs": 97153,
+      "verseStart": 13
+    },
+    {
+      "timeMs": 107661,
+      "verseStart": 14
+    },
+    {
+      "timeMs": 117408,
+      "verseStart": 15
+    },
+    {
+      "timeMs": 124733,
+      "verseStart": 16
+    },
+    {
+      "timeMs": 132279,
+      "verseStart": 17
+    },
+    {
+      "timeMs": 136302,
+      "verseStart": 18
+    },
+    {
+      "timeMs": 147130,
+      "verseStart": 19
+    },
+    {
+      "timeMs": 158519,
+      "verseStart": 20
+    },
+    {
+      "timeMs": 165504,
+      "verseStart": 21
+    },
+    {
+      "timeMs": 168686,
+      "verseStart": 22
+    },
+    {
+      "timeMs": 174791,
+      "verseStart": 23
+    }
+  ]
+}
