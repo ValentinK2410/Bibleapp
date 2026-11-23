@@ -1,0 +1,111 @@
+{
+  "id": "gh_grk_philemon_1",
+  "translationCode": "PODSTR",
+  "bookId": "philemon",
+  "chapter": 1,
+  "title": "К Филимону 1 · Греческий (Koine)",
+  "narratorId": "greek-nt",
+  "audioFileName": "57_01.mp3",
+  "cues": [
+    {
+      "timeMs": 500,
+      "verseStart": 1
+    },
+    {
+      "timeMs": 9006,
+      "verseStart": 2
+    },
+    {
+      "timeMs": 17532,
+      "verseStart": 3
+    },
+    {
+      "timeMs": 23196,
+      "verseStart": 4
+    },
+    {
+      "timeMs": 28780,
+      "verseStart": 5
+    },
+    {
+      "timeMs": 36506,
+      "verseStart": 6
+    },
+    {
+      "timeMs": 45052,
+      "verseStart": 7
+    },
+    {
+      "timeMs": 55099,
+      "verseStart": 8
+    },
+    {
+      "timeMs": 60502,
+      "verseStart": 9
+    },
+    {
+      "timeMs": 68048,
+      "verseStart": 10
+    },
+    {
+      "timeMs": 73211,
+      "verseStart": 11
+    },
+    {
+      "timeMs": 78295,
+      "verseStart": 12
+    },
+    {
+      "timeMs": 83138,
+      "verseStart": 13
+    },
+    {
+      "timeMs": 91724,
+      "verseStart": 14
+    },
+    {
+      "timeMs": 101491,
+      "verseStart": 15
+    },
+    {
+      "timeMs": 107275,
+      "verseStart": 16
+    },
+    {
+      "timeMs": 117843,
+      "verseStart": 17
+    },
+    {
+      "timeMs": 122646,
+      "verseStart": 18
+    },
+    {
+      "timeMs": 127549,
+      "verseStart": 19
+    },
+    {
+      "timeMs": 136576,
+      "verseStart": 20
+    },
+    {
+      "timeMs": 143921,
+      "verseStart": 21
+    },
+    {
+      "timeMs": 150666,
+      "verseStart": 22
+    },
+    {
+      "timeMs": 158751,
+      "verseStart": 23
+    },
+    {
+      "timeMs": 163114,
+      "verseStart": 24
+    },
+    {
+      "timeMs": 167778,
+      "verseStart": 25
+    }
+  ]
+}

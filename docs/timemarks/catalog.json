@@ -2994,6 +2994,16 @@
       "file": "projects/grk_matthew_9.json"
     },
     {
+      "id": "gh_grk_philemon_1",
+      "translationCode": "PODSTR",
+      "bookId": "philemon",
+      "chapter": 1,
+      "title": "К Филимону 1 · Греческий (Koine)",
+      "cueCount": 25,
+      "narratorId": "greek-nt",
+      "file": "projects/grk_philemon_1.json"
+    },
+    {
       "id": "gh_grk_philippians_1",
       "translationCode": "PODSTR",
       "bookId": "philippians",
