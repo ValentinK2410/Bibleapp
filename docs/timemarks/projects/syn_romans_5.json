@@ -1,0 +1,95 @@
+{
+  "id": "gh_syn_romans_5",
+  "translationCode": "SYN",
+  "bookId": "romans",
+  "chapter": 5,
+  "title": "К Римлянам 5 · Синодальный · Бондаренко",
+  "narratorId": "bondarenko",
+  "audioFileName": "52_05.mp3",
+  "cues": [
+    {
+      "timeMs": 2562,
+      "verseStart": 1
+    },
+    {
+      "timeMs": 10287,
+      "verseStart": 2
+    },
+    {
+      "timeMs": 18612,
+      "verseStart": 3
+    },
+    {
+      "timeMs": 25017,
+      "verseStart": 4
+    },
+    {
+      "timeMs": 29460,
+      "verseStart": 5
+    },
+    {
+      "timeMs": 38446,
+      "verseStart": 6
+    },
+    {
+      "timeMs": 45510,
+      "verseStart": 7
+    },
+    {
+      "timeMs": 52055,
+      "verseStart": 8
+    },
+    {
+      "timeMs": 60580,
+      "verseStart": 9
+    },
+    {
+      "timeMs": 67825,
+      "verseStart": 10
+    },
+    {
+      "timeMs": 77131,
+      "verseStart": 11
+    },
+    {
+      "timeMs": 88219,
+      "verseStart": 12
+    },
+    {
+      "timeMs": 99666,
+      "verseStart": 13
+    },
+    {
+      "timeMs": 106291,
+      "verseStart": 14
+    },
+    {
+      "timeMs": 116377,
+      "verseStart": 15
+    },
+    {
+      "timeMs": 134049,
+      "verseStart": 16
+    },
+    {
+      "timeMs": 146577,
+      "verseStart": 17
+    },
+    {
+      "timeMs": 162308,
+      "verseStart": 18
+    },
+    {
+      "timeMs": 173295,
+      "verseStart": 19
+    },
+    {
+      "timeMs": 183942,
+      "verseStart": 20
+    },
+    {
+      "timeMs": 193188,
+      "verseStart": 21
+    }
+  ]
+}

@@ -1,0 +1,111 @@
+{
+  "id": "gh_syn_romans_4",
+  "translationCode": "SYN",
+  "bookId": "romans",
+  "chapter": 4,
+  "title": "К Римлянам 4 · Синодальный · Бондаренко",
+  "narratorId": "bondarenko",
+  "audioFileName": "52_04.mp3",
+  "cues": [
+    {
+      "timeMs": 4603,
+      "verseStart": 1
+    },
+    {
+      "timeMs": 9066,
+      "verseStart": 2
+    },
+    {
+      "timeMs": 14710,
+      "verseStart": 3
+    },
+    {
+      "timeMs": 22455,
+      "verseStart": 4
+    },
+    {
+      "timeMs": 27799,
+      "verseStart": 5
+    },
+    {
+      "timeMs": 37166,
+      "verseStart": 6
+    },
+    {
+      "timeMs": 43970,
+      "verseStart": 7
+    },
+    {
+      "timeMs": 48974,
+      "verseStart": 8
+    },
+    {
+      "timeMs": 53477,
+      "verseStart": 9
+    },
+    {
+      "timeMs": 62083,
+      "verseStart": 10
+    },
+    {
+      "timeMs": 70028,
+      "verseStart": 11
+    },
+    {
+      "timeMs": 84158,
+      "verseStart": 12
+    },
+    {
+      "timeMs": 93464,
+      "verseStart": 13
+    },
+    {
+      "timeMs": 103671,
+      "verseStart": 14
+    },
+    {
+      "timeMs": 110456,
+      "verseStart": 15
+    },
+    {
+      "timeMs": 117421,
+      "verseStart": 16
+    },
+    {
+      "timeMs": 129769,
+      "verseStart": 17
+    },
+    {
+      "timeMs": 143659,
+      "verseStart": 18
+    },
+    {
+      "timeMs": 155367,
+      "verseStart": 19
+    },
+    {
+      "timeMs": 163912,
+      "verseStart": 20
+    },
+    {
+      "timeMs": 171137,
+      "verseStart": 21
+    },
+    {
+      "timeMs": 177001,
+      "verseStart": 22
+    },
+    {
+      "timeMs": 180504,
+      "verseStart": 23
+    },
+    {
+      "timeMs": 185107,
+      "verseStart": 24
+    },
+    {
+      "timeMs": 193593,
+      "verseStart": 25
+    }
+  ]
+}

@@ -1,0 +1,136 @@
+{
+  "id": "align-romans-SYN-07",
+  "translationCode": "SYN",
+  "bookId": "romans",
+  "chapter": 7,
+  "title": "К Римлянам 7 · Синодальный · Бондаренко",
+  "audioFilePath": "/data/user/0/com.example.bible.sqlite/files/bible_audio/bondarenko/52_07.mp3",
+  "updatedAt": 1795392000000,
+  "cues": [
+    {
+      "timeMs": 3702,
+      "verseStart": 1,
+      "attachments": []
+    },
+    {
+      "timeMs": 12108,
+      "verseStart": 2,
+      "attachments": []
+    },
+    {
+      "timeMs": 20413,
+      "verseStart": 3,
+      "attachments": []
+    },
+    {
+      "timeMs": 34122,
+      "verseStart": 4,
+      "attachments": []
+    },
+    {
+      "timeMs": 45570,
+      "verseStart": 5,
+      "attachments": []
+    },
+    {
+      "timeMs": 56657,
+      "verseStart": 6,
+      "attachments": []
+    },
+    {
+      "timeMs": 69826,
+      "verseStart": 7,
+      "attachments": []
+    },
+    {
+      "timeMs": 85496,
+      "verseStart": 8,
+      "attachments": []
+    },
+    {
+      "timeMs": 93881,
+      "verseStart": 9,
+      "attachments": []
+    },
+    {
+      "timeMs": 99285,
+      "verseStart": 10,
+      "attachments": []
+    },
+    {
+      "timeMs": 106730,
+      "verseStart": 11,
+      "attachments": []
+    },
+    {
+      "timeMs": 113734,
+      "verseStart": 12,
+      "attachments": []
+    },
+    {
+      "timeMs": 121739,
+      "verseStart": 13,
+      "attachments": []
+    },
+    {
+      "timeMs": 139271,
+      "verseStart": 14,
+      "attachments": []
+    },
+    {
+      "timeMs": 145635,
+      "verseStart": 15,
+      "attachments": []
+    },
+    {
+      "timeMs": 153880,
+      "verseStart": 16,
+      "attachments": []
+    },
+    {
+      "timeMs": 158844,
+      "verseStart": 17,
+      "attachments": []
+    },
+    {
+      "timeMs": 165068,
+      "verseStart": 18,
+      "attachments": []
+    },
+    {
+      "timeMs": 176295,
+      "verseStart": 19,
+      "attachments": []
+    },
+    {
+      "timeMs": 182419,
+      "verseStart": 20,
+      "attachments": []
+    },
+    {
+      "timeMs": 192485,
+      "verseStart": 21,
+      "attachments": []
+    },
+    {
+      "timeMs": 199010,
+      "verseStart": 22,
+      "attachments": []
+    },
+    {
+      "timeMs": 203313,
+      "verseStart": 23,
+      "attachments": []
+    },
+    {
+      "timeMs": 214460,
+      "verseStart": 24,
+      "attachments": []
+    },
+    {
+      "timeMs": 220764,
+      "verseStart": 25,
+      "attachments": []
+    }
+  ]
+}

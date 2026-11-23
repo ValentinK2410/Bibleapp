@@ -1,0 +1,103 @@
+{
+  "id": "gh_syn_romans_6",
+  "translationCode": "SYN",
+  "bookId": "romans",
+  "chapter": 6,
+  "title": "К Римлянам 6 · Синодальный · Бондаренко",
+  "narratorId": "bondarenko",
+  "audioFileName": "52_06.mp3",
+  "cues": [
+    {
+      "timeMs": 2882,
+      "verseStart": 1
+    },
+    {
+      "timeMs": 9646,
+      "verseStart": 2
+    },
+    {
+      "timeMs": 14429,
+      "verseStart": 3
+    },
+    {
+      "timeMs": 21413,
+      "verseStart": 4
+    },
+    {
+      "timeMs": 32560,
+      "verseStart": 5
+    },
+    {
+      "timeMs": 41266,
+      "verseStart": 6
+    },
+    {
+      "timeMs": 51392,
+      "verseStart": 7
+    },
+    {
+      "timeMs": 54934,
+      "verseStart": 8
+    },
+    {
+      "timeMs": 59937,
+      "verseStart": 9
+    },
+    {
+      "timeMs": 67462,
+      "verseStart": 10
+    },
+    {
+      "timeMs": 76848,
+      "verseStart": 11
+    },
+    {
+      "timeMs": 85513,
+      "verseStart": 12
+    },
+    {
+      "timeMs": 92277,
+      "verseStart": 13
+    },
+    {
+      "timeMs": 105425,
+      "verseStart": 14
+    },
+    {
+      "timeMs": 113330,
+      "verseStart": 15
+    },
+    {
+      "timeMs": 120054,
+      "verseStart": 16
+    },
+    {
+      "timeMs": 133703,
+      "verseStart": 17
+    },
+    {
+      "timeMs": 144029,
+      "verseStart": 18
+    },
+    {
+      "timeMs": 149613,
+      "verseStart": 19
+    },
+    {
+      "timeMs": 168584,
+      "verseStart": 20
+    },
+    {
+      "timeMs": 174488,
+      "verseStart": 21
+    },
+    {
+      "timeMs": 184474,
+      "verseStart": 22
+    },
+    {
+      "timeMs": 197282,
+      "verseStart": 23
+    }
+  ]
+}

@@ -3494,6 +3494,166 @@
       "file": "projects/syn_mark_9.json"
     },
     {
+      "id": "gh_syn_romans_1",
+      "translationCode": "SYN",
+      "bookId": "romans",
+      "chapter": 1,
+      "title": "К Римлянам 1 · Синодальный · Бондаренко",
+      "cueCount": 32,
+      "narratorId": "bondarenko",
+      "file": "projects/syn_romans_1.json"
+    },
+    {
+      "id": "gh_syn_romans_10",
+      "translationCode": "SYN",
+      "bookId": "romans",
+      "chapter": 10,
+      "title": "К Римлянам 10 · Синодальный · Бондаренко",
+      "cueCount": 21,
+      "narratorId": "bondarenko",
+      "file": "projects/syn_romans_10.json"
+    },
+    {
+      "id": "gh_syn_romans_11",
+      "translationCode": "SYN",
+      "bookId": "romans",
+      "chapter": 11,
+      "title": "К Римлянам 11 · Синодальный · Бондаренко",
+      "cueCount": 36,
+      "narratorId": "bondarenko",
+      "file": "projects/syn_romans_11.json"
+    },
+    {
+      "id": "gh_syn_romans_12",
+      "translationCode": "SYN",
+      "bookId": "romans",
+      "chapter": 12,
+      "title": "К Римлянам 12 · Синодальный · Бондаренко",
+      "cueCount": 21,
+      "narratorId": "bondarenko",
+      "file": "projects/syn_romans_12.json"
+    },
+    {
+      "id": "gh_syn_romans_13",
+      "translationCode": "SYN",
+      "bookId": "romans",
+      "chapter": 13,
+      "title": "К Римлянам 13 · Синодальный · Бондаренко",
+      "cueCount": 14,
+      "narratorId": "bondarenko",
+      "file": "projects/syn_romans_13.json"
+    },
+    {
+      "id": "gh_syn_romans_14",
+      "translationCode": "SYN",
+      "bookId": "romans",
+      "chapter": 14,
+      "title": "К Римлянам 14 · Синодальный · Бондаренко",
+      "cueCount": 26,
+      "narratorId": "bondarenko",
+      "file": "projects/syn_romans_14.json"
+    },
+    {
+      "id": "gh_syn_romans_15",
+      "translationCode": "SYN",
+      "bookId": "romans",
+      "chapter": 15,
+      "title": "К Римлянам 15 · Синодальный · Бондаренко",
+      "cueCount": 33,
+      "narratorId": "bondarenko",
+      "file": "projects/syn_romans_15.json"
+    },
+    {
+      "id": "gh_syn_romans_16",
+      "translationCode": "SYN",
+      "bookId": "romans",
+      "chapter": 16,
+      "title": "К Римлянам 16 · Синодальный · Бондаренко",
+      "cueCount": 24,
+      "narratorId": "bondarenko",
+      "file": "projects/syn_romans_16.json"
+    },
+    {
+      "id": "gh_syn_romans_2",
+      "translationCode": "SYN",
+      "bookId": "romans",
+      "chapter": 2,
+      "title": "К Римлянам 2 · Синодальный · Бондаренко",
+      "cueCount": 29,
+      "narratorId": "bondarenko",
+      "file": "projects/syn_romans_2.json"
+    },
+    {
+      "id": "gh_syn_romans_3",
+      "translationCode": "SYN",
+      "bookId": "romans",
+      "chapter": 3,
+      "title": "К Римлянам 3 · Синодальный · Бондаренко",
+      "cueCount": 31,
+      "narratorId": "bondarenko",
+      "file": "projects/syn_romans_3.json"
+    },
+    {
+      "id": "gh_syn_romans_4",
+      "translationCode": "SYN",
+      "bookId": "romans",
+      "chapter": 4,
+      "title": "К Римлянам 4 · Синодальный · Бондаренко",
+      "cueCount": 25,
+      "narratorId": "bondarenko",
+      "file": "projects/syn_romans_4.json"
+    },
+    {
+      "id": "gh_syn_romans_5",
+      "translationCode": "SYN",
+      "bookId": "romans",
+      "chapter": 5,
+      "title": "К Римлянам 5 · Синодальный · Бондаренко",
+      "cueCount": 21,
+      "narratorId": "bondarenko",
+      "file": "projects/syn_romans_5.json"
+    },
+    {
+      "id": "gh_syn_romans_6",
+      "translationCode": "SYN",
+      "bookId": "romans",
+      "chapter": 6,
+      "title": "К Римлянам 6 · Синодальный · Бондаренко",
+      "cueCount": 23,
+      "narratorId": "bondarenko",
+      "file": "projects/syn_romans_6.json"
+    },
+    {
+      "id": "gh_syn_romans_7",
+      "translationCode": "SYN",
+      "bookId": "romans",
+      "chapter": 7,
+      "title": "К Римлянам 7 · Синодальный · Бондаренко",
+      "cueCount": 25,
+      "narratorId": "bondarenko",
+      "file": "projects/syn_romans_7.json"
+    },
+    {
+      "id": "gh_syn_romans_8",
+      "translationCode": "SYN",
+      "bookId": "romans",
+      "chapter": 8,
+      "title": "К Римлянам 8 · Синодальный · Бондаренко",
+      "cueCount": 39,
+      "narratorId": "bondarenko",
+      "file": "projects/syn_romans_8.json"
+    },
+    {
+      "id": "gh_syn_romans_9",
+      "translationCode": "SYN",
+      "bookId": "romans",
+      "chapter": 9,
+      "title": "К Римлянам 9 · Синодальный · Бондаренко",
+      "cueCount": 33,
+      "narratorId": "bondarenko",
+      "file": "projects/syn_romans_9.json"
+    },
+    {
       "id": "gh_web_john_1",
       "translationCode": "WEB",
       "bookId": "john",

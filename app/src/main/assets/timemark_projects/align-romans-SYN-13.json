@@ -1,0 +1,81 @@
+{
+  "id": "align-romans-SYN-13",
+  "translationCode": "SYN",
+  "bookId": "romans",
+  "chapter": 13,
+  "title": "К Римлянам 13 · Синодальный · Бондаренко",
+  "audioFilePath": "/data/user/0/com.example.bible.sqlite/files/bible_audio/bondarenko/52_13.mp3",
+  "updatedAt": 1795392000000,
+  "cues": [
+    {
+      "timeMs": 2982,
+      "verseStart": 1,
+      "attachments": []
+    },
+    {
+      "timeMs": 13830,
+      "verseStart": 2,
+      "attachments": []
+    },
+    {
+      "timeMs": 23137,
+      "verseStart": 3,
+      "attachments": []
+    },
+    {
+      "timeMs": 34565,
+      "verseStart": 4,
+      "attachments": []
+    },
+    {
+      "timeMs": 50816,
+      "verseStart": 5,
+      "attachments": []
+    },
+    {
+      "timeMs": 57641,
+      "verseStart": 6,
+      "attachments": []
+    },
+    {
+      "timeMs": 64826,
+      "verseStart": 7,
+      "attachments": []
+    },
+    {
+      "timeMs": 78676,
+      "verseStart": 8,
+      "attachments": []
+    },
+    {
+      "timeMs": 86582,
+      "verseStart": 9,
+      "attachments": []
+    },
+    {
+      "timeMs": 103154,
+      "verseStart": 10,
+      "attachments": []
+    },
+    {
+      "timeMs": 112160,
+      "verseStart": 11,
+      "attachments": []
+    },
+    {
+      "timeMs": 123088,
+      "verseStart": 12,
+      "attachments": []
+    },
+    {
+      "timeMs": 132074,
+      "verseStart": 13,
+      "attachments": []
+    },
+    {
+      "timeMs": 142122,
+      "verseStart": 14,
+      "attachments": []
+    }
+  ]
+}

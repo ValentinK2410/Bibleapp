@@ -1,0 +1,139 @@
+{
+  "id": "gh_syn_romans_1",
+  "translationCode": "SYN",
+  "bookId": "romans",
+  "chapter": 1,
+  "title": "К Римлянам 1 · Синодальный · Бондаренко",
+  "narratorId": "bondarenko",
+  "audioFileName": "52_01.mp3",
+  "cues": [
+    {
+      "timeMs": 33802,
+      "verseStart": 1
+    },
+    {
+      "timeMs": 41467,
+      "verseStart": 2
+    },
+    {
+      "timeMs": 46630,
+      "verseStart": 3
+    },
+    {
+      "timeMs": 51033,
+      "verseStart": 4
+    },
+    {
+      "timeMs": 61019,
+      "verseStart": 5
+    },
+    {
+      "timeMs": 68724,
+      "verseStart": 6
+    },
+    {
+      "timeMs": 73808,
+      "verseStart": 7
+    },
+    {
+      "timeMs": 88437,
+      "verseStart": 8
+    },
+    {
+      "timeMs": 98483,
+      "verseStart": 9
+    },
+    {
+      "timeMs": 107369,
+      "verseStart": 10
+    },
+    {
+      "timeMs": 114954,
+      "verseStart": 11
+    },
+    {
+      "timeMs": 122139,
+      "verseStart": 12
+    },
+    {
+      "timeMs": 129203,
+      "verseStart": 13
+    },
+    {
+      "timeMs": 143312,
+      "verseStart": 14
+    },
+    {
+      "timeMs": 149556,
+      "verseStart": 15
+    },
+    {
+      "timeMs": 155720,
+      "verseStart": 16
+    },
+    {
+      "timeMs": 167188,
+      "verseStart": 17
+    },
+    {
+      "timeMs": 176213,
+      "verseStart": 18
+    },
+    {
+      "timeMs": 184439,
+      "verseStart": 19
+    },
+    {
+      "timeMs": 189562,
+      "verseStart": 20
+    },
+    {
+      "timeMs": 201710,
+      "verseStart": 21
+    },
+    {
+      "timeMs": 213457,
+      "verseStart": 22
+    },
+    {
+      "timeMs": 216800,
+      "verseStart": 23
+    },
+    {
+      "timeMs": 227366,
+      "verseStart": 24
+    },
+    {
+      "timeMs": 235992,
+      "verseStart": 25
+    },
+    {
+      "timeMs": 247019,
+      "verseStart": 26
+    },
+    {
+      "timeMs": 255184,
+      "verseStart": 27
+    },
+    {
+      "timeMs": 270974,
+      "verseStart": 28
+    },
+    {
+      "timeMs": 279820,
+      "verseStart": 29
+    },
+    {
+      "timeMs": 292508,
+      "verseStart": 30
+    },
+    {
+      "timeMs": 303415,
+      "verseStart": 31
+    },
+    {
+      "timeMs": 310480,
+      "verseStart": 32
+    }
+  ]
+}

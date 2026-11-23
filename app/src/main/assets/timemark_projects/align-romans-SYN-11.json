@@ -1,0 +1,191 @@
+{
+  "id": "align-romans-SYN-11",
+  "translationCode": "SYN",
+  "bookId": "romans",
+  "chapter": 11,
+  "title": "К Римлянам 11 · Синодальный · Бондаренко",
+  "audioFilePath": "/data/user/0/com.example.bible.sqlite/files/bible_audio/bondarenko/52_11.mp3",
+  "updatedAt": 1795392000000,
+  "cues": [
+    {
+      "timeMs": 2762,
+      "verseStart": 1,
+      "attachments": []
+    },
+    {
+      "timeMs": 15230,
+      "verseStart": 2,
+      "attachments": []
+    },
+    {
+      "timeMs": 28639,
+      "verseStart": 3,
+      "attachments": []
+    },
+    {
+      "timeMs": 37885,
+      "verseStart": 4,
+      "attachments": []
+    },
+    {
+      "timeMs": 51174,
+      "verseStart": 5,
+      "attachments": []
+    },
+    {
+      "timeMs": 58459,
+      "verseStart": 6,
+      "attachments": []
+    },
+    {
+      "timeMs": 71548,
+      "verseStart": 7,
+      "attachments": []
+    },
+    {
+      "timeMs": 78392,
+      "verseStart": 8,
+      "attachments": []
+    },
+    {
+      "timeMs": 87378,
+      "verseStart": 9,
+      "attachments": []
+    },
+    {
+      "timeMs": 93502,
+      "verseStart": 10,
+      "attachments": []
+    },
+    {
+      "timeMs": 100467,
+      "verseStart": 11,
+      "attachments": []
+    },
+    {
+      "timeMs": 113536,
+      "verseStart": 12,
+      "attachments": []
+    },
+    {
+      "timeMs": 121621,
+      "verseStart": 13,
+      "attachments": []
+    },
+    {
+      "timeMs": 128045,
+      "verseStart": 14,
+      "attachments": []
+    },
+    {
+      "timeMs": 134630,
+      "verseStart": 15,
+      "attachments": []
+    },
+    {
+      "timeMs": 143436,
+      "verseStart": 16,
+      "attachments": []
+    },
+    {
+      "timeMs": 149380,
+      "verseStart": 17,
+      "attachments": []
+    },
+    {
+      "timeMs": 159266,
+      "verseStart": 18,
+      "attachments": []
+    },
+    {
+      "timeMs": 170734,
+      "verseStart": 19,
+      "attachments": []
+    },
+    {
+      "timeMs": 174396,
+      "verseStart": 20,
+      "attachments": []
+    },
+    {
+      "timeMs": 182722,
+      "verseStart": 21,
+      "attachments": []
+    },
+    {
+      "timeMs": 189686,
+      "verseStart": 22,
+      "attachments": []
+    },
+    {
+      "timeMs": 202035,
+      "verseStart": 23,
+      "attachments": []
+    },
+    {
+      "timeMs": 210000,
+      "verseStart": 24,
+      "attachments": []
+    },
+    {
+      "timeMs": 222208,
+      "verseStart": 25,
+      "attachments": []
+    },
+    {
+      "timeMs": 235377,
+      "verseStart": 26,
+      "attachments": []
+    },
+    {
+      "timeMs": 243622,
+      "verseStart": 27,
+      "attachments": []
+    },
+    {
+      "timeMs": 249746,
+      "verseStart": 28,
+      "attachments": []
+    },
+    {
+      "timeMs": 260554,
+      "verseStart": 29,
+      "attachments": []
+    },
+    {
+      "timeMs": 265617,
+      "verseStart": 30,
+      "attachments": []
+    },
+    {
+      "timeMs": 271201,
+      "verseStart": 31,
+      "attachments": []
+    },
+    {
+      "timeMs": 279346,
+      "verseStart": 32,
+      "attachments": []
+    },
+    {
+      "timeMs": 286491,
+      "verseStart": 33,
+      "attachments": []
+    },
+    {
+      "timeMs": 297338,
+      "verseStart": 34,
+      "attachments": []
+    },
+    {
+      "timeMs": 303362,
+      "verseStart": 35,
+      "attachments": []
+    },
+    {
+      "timeMs": 308726,
+      "verseStart": 36,
+      "attachments": []
+    }
+  ]
+}
