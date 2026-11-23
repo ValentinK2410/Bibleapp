@@ -1,0 +1,111 @@
+{
+  "id": "gh_nrt_philemon_1",
+  "translationCode": "NRT",
+  "bookId": "philemon",
+  "chapter": 1,
+  "title": "К Филимону 1 · Новый русский",
+  "narratorId": "new-russian",
+  "audioFileName": "64_01.mp3",
+  "cues": [
+    {
+      "timeMs": 480,
+      "verseStart": 1
+    },
+    {
+      "timeMs": 9287,
+      "verseStart": 2
+    },
+    {
+      "timeMs": 16633,
+      "verseStart": 3
+    },
+    {
+      "timeMs": 27661,
+      "verseStart": 4
+    },
+    {
+      "timeMs": 31324,
+      "verseStart": 5
+    },
+    {
+      "timeMs": 39090,
+      "verseStart": 6
+    },
+    {
+      "timeMs": 48597,
+      "verseStart": 7
+    },
+    {
+      "timeMs": 60026,
+      "verseStart": 8
+    },
+    {
+      "timeMs": 66350,
+      "verseStart": 9
+    },
+    {
+      "timeMs": 79681,
+      "verseStart": 10
+    },
+    {
+      "timeMs": 86366,
+      "verseStart": 11
+    },
+    {
+      "timeMs": 94032,
+      "verseStart": 12
+    },
+    {
+      "timeMs": 100997,
+      "verseStart": 13
+    },
+    {
+      "timeMs": 111405,
+      "verseStart": 14
+    },
+    {
+      "timeMs": 120872,
+      "verseStart": 15
+    },
+    {
+      "timeMs": 127997,
+      "verseStart": 16
+    },
+    {
+      "timeMs": 141127,
+      "verseStart": 17
+    },
+    {
+      "timeMs": 148313,
+      "verseStart": 18
+    },
+    {
+      "timeMs": 154277,
+      "verseStart": 19
+    },
+    {
+      "timeMs": 167147,
+      "verseStart": 20
+    },
+    {
+      "timeMs": 173232,
+      "verseStart": 21
+    },
+    {
+      "timeMs": 181058,
+      "verseStart": 22
+    },
+    {
+      "timeMs": 195188,
+      "verseStart": 23
+    },
+    {
+      "timeMs": 201994,
+      "verseStart": 24
+    },
+    {
+      "timeMs": 206417,
+      "verseStart": 25
+    }
+  ]
+}

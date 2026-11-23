@@ -4474,6 +4474,16 @@
       "file": "projects/nrt_mark_9.json"
     },
     {
+      "id": "gh_nrt_philemon_1",
+      "translationCode": "NRT",
+      "bookId": "philemon",
+      "chapter": 1,
+      "title": "К Филимону 1 · Новый русский",
+      "cueCount": 25,
+      "narratorId": "new-russian",
+      "file": "projects/nrt_philemon_1.json"
+    },
+    {
       "id": "gh_nrt_philippians_1",
       "translationCode": "NRT",
       "bookId": "philippians",
