@@ -1,0 +1,99 @@
+{
+  "id": "gh_syn_2_timothy_4",
+  "translationCode": "SYN",
+  "bookId": "2_timothy",
+  "chapter": 4,
+  "title": "2-е Тимофею 4 · Синодальный · Бондаренко",
+  "narratorId": "bondarenko",
+  "audioFileName": "62_04.mp3",
+  "cues": [
+    {
+      "timeMs": 4623,
+      "verseStart": 1
+    },
+    {
+      "timeMs": 18153,
+      "verseStart": 2
+    },
+    {
+      "timeMs": 29381,
+      "verseStart": 3
+    },
+    {
+      "timeMs": 41390,
+      "verseStart": 4
+    },
+    {
+      "timeMs": 47574,
+      "verseStart": 5
+    },
+    {
+      "timeMs": 60303,
+      "verseStart": 6
+    },
+    {
+      "timeMs": 66668,
+      "verseStart": 7
+    },
+    {
+      "timeMs": 76315,
+      "verseStart": 8
+    },
+    {
+      "timeMs": 91725,
+      "verseStart": 9
+    },
+    {
+      "timeMs": 94728,
+      "verseStart": 10
+    },
+    {
+      "timeMs": 107817,
+      "verseStart": 11
+    },
+    {
+      "timeMs": 113421,
+      "verseStart": 12
+    },
+    {
+      "timeMs": 116803,
+      "verseStart": 13
+    },
+    {
+      "timeMs": 127451,
+      "verseStart": 14
+    },
+    {
+      "timeMs": 134396,
+      "verseStart": 15
+    },
+    {
+      "timeMs": 141981,
+      "verseStart": 16
+    },
+    {
+      "timeMs": 150447,
+      "verseStart": 17
+    },
+    {
+      "timeMs": 162716,
+      "verseStart": 18
+    },
+    {
+      "timeMs": 176526,
+      "verseStart": 19
+    },
+    {
+      "timeMs": 181249,
+      "verseStart": 20
+    },
+    {
+      "timeMs": 187294,
+      "verseStart": 21
+    },
+    {
+      "timeMs": 199522,
+      "verseStart": 22
+    }
+  ]
+}

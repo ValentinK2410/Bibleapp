@@ -1,0 +1,101 @@
+{
+  "id": "align-2_timothy-SYN-01",
+  "translationCode": "SYN",
+  "bookId": "2_timothy",
+  "chapter": 1,
+  "title": "2-е Тимофею 1 · Синодальный · Бондаренко",
+  "audioFilePath": "/data/user/0/com.example.bible.sqlite/files/bible_audio/bondarenko/62_01.mp3",
+  "updatedAt": 1795392000000,
+  "cues": [
+    {
+      "timeMs": 11749,
+      "verseStart": 1,
+      "attachments": []
+    },
+    {
+      "timeMs": 20015,
+      "verseStart": 2,
+      "attachments": []
+    },
+    {
+      "timeMs": 31784,
+      "verseStart": 3,
+      "attachments": []
+    },
+    {
+      "timeMs": 42653,
+      "verseStart": 4,
+      "attachments": []
+    },
+    {
+      "timeMs": 48197,
+      "verseStart": 5,
+      "attachments": []
+    },
+    {
+      "timeMs": 61427,
+      "verseStart": 6,
+      "attachments": []
+    },
+    {
+      "timeMs": 69513,
+      "verseStart": 7,
+      "attachments": []
+    },
+    {
+      "timeMs": 78280,
+      "verseStart": 8,
+      "attachments": []
+    },
+    {
+      "timeMs": 89949,
+      "verseStart": 9,
+      "attachments": []
+    },
+    {
+      "timeMs": 102418,
+      "verseStart": 10,
+      "attachments": []
+    },
+    {
+      "timeMs": 114387,
+      "verseStart": 11,
+      "attachments": []
+    },
+    {
+      "timeMs": 122814,
+      "verseStart": 12,
+      "attachments": []
+    },
+    {
+      "timeMs": 137104,
+      "verseStart": 13,
+      "attachments": []
+    },
+    {
+      "timeMs": 146151,
+      "verseStart": 14,
+      "attachments": []
+    },
+    {
+      "timeMs": 152456,
+      "verseStart": 15,
+      "attachments": []
+    },
+    {
+      "timeMs": 159341,
+      "verseStart": 16,
+      "attachments": []
+    },
+    {
+      "timeMs": 167648,
+      "verseStart": 17,
+      "attachments": []
+    },
+    {
+      "timeMs": 172611,
+      "verseStart": 18,
+      "attachments": []
+    }
+  ]
+}
