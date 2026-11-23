@@ -1,0 +1,103 @@
+{
+  "id": "gh_bti_philippians_4",
+  "translationCode": "BTI",
+  "bookId": "philippians",
+  "chapter": 4,
+  "title": "К Филиппийцам 4 · Кулаковых",
+  "narratorId": "bti",
+  "audioFileName": "57_04.mp3",
+  "cues": [
+    {
+      "timeMs": 4563,
+      "verseStart": 1
+    },
+    {
+      "timeMs": 18333,
+      "verseStart": 2
+    },
+    {
+      "timeMs": 25538,
+      "verseStart": 3
+    },
+    {
+      "timeMs": 45651,
+      "verseStart": 4
+    },
+    {
+      "timeMs": 57600,
+      "verseStart": 5
+    },
+    {
+      "timeMs": 64024,
+      "verseStart": 6
+    },
+    {
+      "timeMs": 74611,
+      "verseStart": 7
+    },
+    {
+      "timeMs": 88421,
+      "verseStart": 8
+    },
+    {
+      "timeMs": 110296,
+      "verseStart": 9
+    },
+    {
+      "timeMs": 122464,
+      "verseStart": 10
+    },
+    {
+      "timeMs": 137515,
+      "verseStart": 11
+    },
+    {
+      "timeMs": 145300,
+      "verseStart": 12
+    },
+    {
+      "timeMs": 159830,
+      "verseStart": 13
+    },
+    {
+      "timeMs": 165214,
+      "verseStart": 14
+    },
+    {
+      "timeMs": 172419,
+      "verseStart": 15
+    },
+    {
+      "timeMs": 190471,
+      "verseStart": 16
+    },
+    {
+      "timeMs": 195334,
+      "verseStart": 17
+    },
+    {
+      "timeMs": 204561,
+      "verseStart": 18
+    },
+    {
+      "timeMs": 223614,
+      "verseStart": 19
+    },
+    {
+      "timeMs": 234821,
+      "verseStart": 20
+    },
+    {
+      "timeMs": 242487,
+      "verseStart": 21
+    },
+    {
+      "timeMs": 253114,
+      "verseStart": 22
+    },
+    {
+      "timeMs": 259498,
+      "verseStart": 23
+    }
+  ]
+}

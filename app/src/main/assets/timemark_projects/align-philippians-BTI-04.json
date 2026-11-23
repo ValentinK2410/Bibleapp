@@ -1,0 +1,126 @@
+{
+  "id": "align-philippians-BTI-04",
+  "translationCode": "BTI",
+  "bookId": "philippians",
+  "chapter": 4,
+  "title": "К Филиппийцам 4 · Кулаковых",
+  "audioFilePath": "/data/user/0/com.example.bible.sqlite/files/bible_audio/bti/57_04.mp3",
+  "updatedAt": 1795392000000,
+  "cues": [
+    {
+      "timeMs": 4563,
+      "verseStart": 1,
+      "attachments": []
+    },
+    {
+      "timeMs": 18333,
+      "verseStart": 2,
+      "attachments": []
+    },
+    {
+      "timeMs": 25538,
+      "verseStart": 3,
+      "attachments": []
+    },
+    {
+      "timeMs": 45651,
+      "verseStart": 4,
+      "attachments": []
+    },
+    {
+      "timeMs": 57600,
+      "verseStart": 5,
+      "attachments": []
+    },
+    {
+      "timeMs": 64024,
+      "verseStart": 6,
+      "attachments": []
+    },
+    {
+      "timeMs": 74611,
+      "verseStart": 7,
+      "attachments": []
+    },
+    {
+      "timeMs": 88421,
+      "verseStart": 8,
+      "attachments": []
+    },
+    {
+      "timeMs": 110296,
+      "verseStart": 9,
+      "attachments": []
+    },
+    {
+      "timeMs": 122464,
+      "verseStart": 10,
+      "attachments": []
+    },
+    {
+      "timeMs": 137515,
+      "verseStart": 11,
+      "attachments": []
+    },
+    {
+      "timeMs": 145300,
+      "verseStart": 12,
+      "attachments": []
+    },
+    {
+      "timeMs": 159830,
+      "verseStart": 13,
+      "attachments": []
+    },
+    {
+      "timeMs": 165214,
+      "verseStart": 14,
+      "attachments": []
+    },
+    {
+      "timeMs": 172419,
+      "verseStart": 15,
+      "attachments": []
+    },
+    {
+      "timeMs": 190471,
+      "verseStart": 16,
+      "attachments": []
+    },
+    {
+      "timeMs": 195334,
+      "verseStart": 17,
+      "attachments": []
+    },
+    {
+      "timeMs": 204561,
+      "verseStart": 18,
+      "attachments": []
+    },
+    {
+      "timeMs": 223614,
+      "verseStart": 19,
+      "attachments": []
+    },
+    {
+      "timeMs": 234821,
+      "verseStart": 20,
+      "attachments": []
+    },
+    {
+      "timeMs": 242487,
+      "verseStart": 21,
+      "attachments": []
+    },
+    {
+      "timeMs": 253114,
+      "verseStart": 22,
+      "attachments": []
+    },
+    {
+      "timeMs": 259498,
+      "verseStart": 23,
+      "attachments": []
+    }
+  ]
+}

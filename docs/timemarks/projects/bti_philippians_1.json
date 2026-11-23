@@ -1,0 +1,131 @@
+{
+  "id": "gh_bti_philippians_1",
+  "translationCode": "BTI",
+  "bookId": "philippians",
+  "chapter": 1,
+  "title": "К Филиппийцам 1 · Кулаковых",
+  "narratorId": "bti",
+  "audioFileName": "57_01.mp3",
+  "cues": [
+    {
+      "timeMs": 8766,
+      "verseStart": 1
+    },
+    {
+      "timeMs": 22716,
+      "verseStart": 2
+    },
+    {
+      "timeMs": 31842,
+      "verseStart": 3
+    },
+    {
+      "timeMs": 36986,
+      "verseStart": 4
+    },
+    {
+      "timeMs": 43550,
+      "verseStart": 5
+    },
+    {
+      "timeMs": 51636,
+      "verseStart": 6
+    },
+    {
+      "timeMs": 65045,
+      "verseStart": 7
+    },
+    {
+      "timeMs": 85539,
+      "verseStart": 8
+    },
+    {
+      "timeMs": 95626,
+      "verseStart": 9
+    },
+    {
+      "timeMs": 105032,
+      "verseStart": 10
+    },
+    {
+      "timeMs": 114839,
+      "verseStart": 11
+    },
+    {
+      "timeMs": 128068,
+      "verseStart": 12
+    },
+    {
+      "timeMs": 138756,
+      "verseStart": 13
+    },
+    {
+      "timeMs": 148062,
+      "verseStart": 14
+    },
+    {
+      "timeMs": 163112,
+      "verseStart": 15
+    },
+    {
+      "timeMs": 173520,
+      "verseStart": 16
+    },
+    {
+      "timeMs": 180704,
+      "verseStart": 17
+    },
+    {
+      "timeMs": 191832,
+      "verseStart": 18
+    },
+    {
+      "timeMs": 206242,
+      "verseStart": 19
+    },
+    {
+      "timeMs": 217550,
+      "verseStart": 20
+    },
+    {
+      "timeMs": 239505,
+      "verseStart": 21
+    },
+    {
+      "timeMs": 248251,
+      "verseStart": 22
+    },
+    {
+      "timeMs": 255556,
+      "verseStart": 23
+    },
+    {
+      "timeMs": 264963,
+      "verseStart": 24
+    },
+    {
+      "timeMs": 272688,
+      "verseStart": 25
+    },
+    {
+      "timeMs": 286537,
+      "verseStart": 26
+    },
+    {
+      "timeMs": 300587,
+      "verseStart": 27
+    },
+    {
+      "timeMs": 322262,
+      "verseStart": 28
+    },
+    {
+      "timeMs": 340354,
+      "verseStart": 29
+    },
+    {
+      "timeMs": 349541,
+      "verseStart": 30
+    }
+  ]
+}

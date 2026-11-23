@@ -1024,6 +1024,46 @@
       "file": "projects/bti_mark_9.json"
     },
     {
+      "id": "gh_bti_philippians_1",
+      "translationCode": "BTI",
+      "bookId": "philippians",
+      "chapter": 1,
+      "title": "К Филиппийцам 1 · Кулаковых",
+      "cueCount": 30,
+      "narratorId": "bti",
+      "file": "projects/bti_philippians_1.json"
+    },
+    {
+      "id": "gh_bti_philippians_2",
+      "translationCode": "BTI",
+      "bookId": "philippians",
+      "chapter": 2,
+      "title": "К Филиппийцам 2 · Кулаковых",
+      "cueCount": 30,
+      "narratorId": "bti",
+      "file": "projects/bti_philippians_2.json"
+    },
+    {
+      "id": "gh_bti_philippians_3",
+      "translationCode": "BTI",
+      "bookId": "philippians",
+      "chapter": 3,
+      "title": "К Филиппийцам 3 · Кулаковых",
+      "cueCount": 21,
+      "narratorId": "bti",
+      "file": "projects/bti_philippians_3.json"
+    },
+    {
+      "id": "gh_bti_philippians_4",
+      "translationCode": "BTI",
+      "bookId": "philippians",
+      "chapter": 4,
+      "title": "К Филиппийцам 4 · Кулаковых",
+      "cueCount": 23,
+      "narratorId": "bti",
+      "file": "projects/bti_philippians_4.json"
+    },
+    {
       "id": "gh_bti_romans_1",
       "translationCode": "BTI",
       "bookId": "romans",
