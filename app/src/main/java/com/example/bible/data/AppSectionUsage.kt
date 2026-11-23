@@ -61,6 +61,7 @@ object AppSectionUsage {
         Section("quran", "Коран", "Жизнь", "quran"),
         Section(BooksMainMenuOrder.MY_CHURCH, "Моя церковь", "Церковь", "my_church"),
         Section(BooksMainMenuOrder.HOUSE_CARE, "Попечительная о доме", "Жизнь", "house_care"),
+        Section(BooksMainMenuOrder.MY_NOTES, "Мои заметки", "Жизнь", "my_notes"),
         Section("house_cleaning", "Система уборки", "Жизнь", "house_cleaning"),
         Section("house_clean_settings", "Настройки уборки", "Жизнь", "house_clean_settings"),
         Section("house_clean_stats", "Статистика уборки", "Жизнь", "house_clean_stats"),
@@ -137,6 +138,7 @@ object AppSectionUsage {
                 head == "experiment_sms_reactions" ||
                 head == "experiment_sms_speech_overrides" -> "experiment_calls_sms"
             head == "quran_search" || head == "quran_arabic_sandbox" -> "quran"
+            head == "my_notes" || head == "my_note" -> BooksMainMenuOrder.MY_NOTES
             head == "house_place_days" || head == "house_place_day" || head == "house_clean_floor" ||
                 head == "house_clean_zone" || head == "house_clean_task" || head == "house_clean_settings" -> BooksMainMenuOrder.HOUSE_CARE
             head == "theme_studio" -> BooksMainMenuOrder.THEME

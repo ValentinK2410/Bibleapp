@@ -30,6 +30,7 @@ object BooksMainMenuOrder {
     const val THEME = "theme"
     const val MY_CHURCH = "my_church"
     const val HOUSE_CARE = "house_care"
+    const val MY_NOTES = "my_notes"
 
     val allIds: List<String> = listOf(
         SEARCH,
@@ -57,6 +58,7 @@ object BooksMainMenuOrder {
         KIDS,
         MY_CHURCH,
         HOUSE_CARE,
+        MY_NOTES,
         EXPERIMENT,
         TEXT_SIZE,
         THEME,
@@ -82,6 +84,9 @@ object BooksMainMenuOrder {
                 } else if (id == HOUSE_CARE) {
                     val afterChurch = out.indexOf(MY_CHURCH)
                     if (afterChurch >= 0) out.add(afterChurch + 1, id) else out.add(id)
+                } else if (id == MY_NOTES) {
+                    val afterCare = out.indexOf(HOUSE_CARE)
+                    if (afterCare >= 0) out.add(afterCare + 1, id) else out.add(id)
                 } else if (id == THEME) {
                     val afterSearch = out.indexOf(SEARCH)
                     if (afterSearch >= 0) out.add(afterSearch + 1, id) else out.add(0, id)
@@ -129,6 +134,7 @@ object BooksMainMenuOrder {
         THEME -> "Тема"
         MY_CHURCH -> "Моя церковь"
         HOUSE_CARE -> "Попечительная о доме"
+        MY_NOTES -> "Мои заметки"
         else -> id
     }
 }

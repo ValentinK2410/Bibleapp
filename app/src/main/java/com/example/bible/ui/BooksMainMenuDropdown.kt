@@ -30,6 +30,7 @@ import androidx.compose.material.icons.filled.Public
 import androidx.compose.material.icons.filled.Schedule
 import androidx.compose.material.icons.filled.School
 import androidx.compose.material.icons.filled.Search
+import androidx.compose.material.icons.filled.StickyNote2
 import androidx.compose.material.icons.filled.Translate
 import androidx.compose.material.icons.filled.ViewModule
 import androidx.compose.material.icons.automirrored.filled.MenuBook
@@ -260,6 +261,11 @@ fun BooksMainMenuOrderedItems(
                 text = { Text(BooksMainMenuOrder.titleRu(BooksMainMenuOrder.HOUSE_CARE)) },
                 onClick = { closeMenu(); navController.navigate("house_care") },
                 leadingIcon = { Icon(Icons.Filled.CleaningServices, contentDescription = null, tint = primary) },
+            )
+            BooksMainMenuOrder.MY_NOTES -> DropdownMenuItem(
+                text = { Text(BooksMainMenuOrder.titleRu(BooksMainMenuOrder.MY_NOTES)) },
+                onClick = { closeMenu(); navController.navigate("my_notes") },
+                leadingIcon = { Icon(Icons.Filled.StickyNote2, contentDescription = null, tint = primary) },
             )
         }
     }
