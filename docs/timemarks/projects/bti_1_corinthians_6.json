@@ -1,0 +1,91 @@
+{
+  "id": "gh_bti_1_corinthians_6",
+  "translationCode": "BTI",
+  "bookId": "1_corinthians",
+  "chapter": 6,
+  "title": "1-е Коринфянам 6 · Кулаковых",
+  "narratorId": "bti",
+  "audioFileName": "53_06.mp3",
+  "cues": [
+    {
+      "timeMs": 3663,
+      "verseStart": 1
+    },
+    {
+      "timeMs": 12769,
+      "verseStart": 2
+    },
+    {
+      "timeMs": 28821,
+      "verseStart": 3
+    },
+    {
+      "timeMs": 37647,
+      "verseStart": 4
+    },
+    {
+      "timeMs": 50276,
+      "verseStart": 5
+    },
+    {
+      "timeMs": 62625,
+      "verseStart": 6
+    },
+    {
+      "timeMs": 70771,
+      "verseStart": 7
+    },
+    {
+      "timeMs": 83461,
+      "verseStart": 8
+    },
+    {
+      "timeMs": 91767,
+      "verseStart": 9
+    },
+    {
+      "timeMs": 105817,
+      "verseStart": 10
+    },
+    {
+      "timeMs": 115204,
+      "verseStart": 11
+    },
+    {
+      "timeMs": 135038,
+      "verseStart": 12
+    },
+    {
+      "timeMs": 147107,
+      "verseStart": 13
+    },
+    {
+      "timeMs": 163018,
+      "verseStart": 14
+    },
+    {
+      "timeMs": 171304,
+      "verseStart": 15
+    },
+    {
+      "timeMs": 186655,
+      "verseStart": 16
+    },
+    {
+      "timeMs": 200285,
+      "verseStart": 17
+    },
+    {
+      "timeMs": 206650,
+      "verseStart": 18
+    },
+    {
+      "timeMs": 220220,
+      "verseStart": 19
+    },
+    {
+      "timeMs": 234430,
+      "verseStart": 20
+    }
+  ]
+}

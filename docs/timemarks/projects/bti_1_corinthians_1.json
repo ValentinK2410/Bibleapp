@@ -1,0 +1,135 @@
+{
+  "id": "gh_bti_1_corinthians_1",
+  "translationCode": "BTI",
+  "bookId": "1_corinthians",
+  "chapter": 1,
+  "title": "1-е Коринфянам 1 · Кулаковых",
+  "narratorId": "bti",
+  "audioFileName": "53_01.mp3",
+  "cues": [
+    {
+      "timeMs": 10407,
+      "verseStart": 1
+    },
+    {
+      "timeMs": 19533,
+      "verseStart": 2
+    },
+    {
+      "timeMs": 40127,
+      "verseStart": 3
+    },
+    {
+      "timeMs": 50554,
+      "verseStart": 4
+    },
+    {
+      "timeMs": 60561,
+      "verseStart": 5
+    },
+    {
+      "timeMs": 69767,
+      "verseStart": 6
+    },
+    {
+      "timeMs": 76852,
+      "verseStart": 7
+    },
+    {
+      "timeMs": 88700,
+      "verseStart": 8
+    },
+    {
+      "timeMs": 101608,
+      "verseStart": 9
+    },
+    {
+      "timeMs": 112836,
+      "verseStart": 10
+    },
+    {
+      "timeMs": 130728,
+      "verseStart": 11
+    },
+    {
+      "timeMs": 139914,
+      "verseStart": 12
+    },
+    {
+      "timeMs": 151682,
+      "verseStart": 13
+    },
+    {
+      "timeMs": 163470,
+      "verseStart": 14
+    },
+    {
+      "timeMs": 169494,
+      "verseStart": 15
+    },
+    {
+      "timeMs": 175398,
+      "verseStart": 16
+    },
+    {
+      "timeMs": 181462,
+      "verseStart": 17
+    },
+    {
+      "timeMs": 198834,
+      "verseStart": 18
+    },
+    {
+      "timeMs": 213143,
+      "verseStart": 19
+    },
+    {
+      "timeMs": 226772,
+      "verseStart": 20
+    },
+    {
+      "timeMs": 240201,
+      "verseStart": 21
+    },
+    {
+      "timeMs": 257513,
+      "verseStart": 22
+    },
+    {
+      "timeMs": 263717,
+      "verseStart": 23
+    },
+    {
+      "timeMs": 276626,
+      "verseStart": 24
+    },
+    {
+      "timeMs": 288514,
+      "verseStart": 25
+    },
+    {
+      "timeMs": 303484,
+      "verseStart": 26
+    },
+    {
+      "timeMs": 318594,
+      "verseStart": 27
+    },
+    {
+      "timeMs": 333404,
+      "verseStart": 28
+    },
+    {
+      "timeMs": 347954,
+      "verseStart": 29
+    },
+    {
+      "timeMs": 353017,
+      "verseStart": 30
+    },
+    {
+      "timeMs": 370529,
+      "verseStart": 31
+    }
+  ]
+}

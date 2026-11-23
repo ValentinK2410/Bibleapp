@@ -1,0 +1,63 @@
+{
+  "id": "gh_bti_1_corinthians_8",
+  "translationCode": "BTI",
+  "bookId": "1_corinthians",
+  "chapter": 8,
+  "title": "1-е Коринфянам 8 · Кулаковых",
+  "narratorId": "bti",
+  "audioFileName": "53_08.mp3",
+  "cues": [
+    {
+      "timeMs": 3663,
+      "verseStart": 1
+    },
+    {
+      "timeMs": 20835,
+      "verseStart": 2
+    },
+    {
+      "timeMs": 29942,
+      "verseStart": 3
+    },
+    {
+      "timeMs": 38549,
+      "verseStart": 4
+    },
+    {
+      "timeMs": 54901,
+      "verseStart": 5
+    },
+    {
+      "timeMs": 65629,
+      "verseStart": 6
+    },
+    {
+      "timeMs": 86524,
+      "verseStart": 7
+    },
+    {
+      "timeMs": 106759,
+      "verseStart": 8
+    },
+    {
+      "timeMs": 118848,
+      "verseStart": 9
+    },
+    {
+      "timeMs": 125393,
+      "verseStart": 10
+    },
+    {
+      "timeMs": 143726,
+      "verseStart": 11
+    },
+    {
+      "timeMs": 153053,
+      "verseStart": 12
+    },
+    {
+      "timeMs": 165642,
+      "verseStart": 13
+    }
+  ]
+}

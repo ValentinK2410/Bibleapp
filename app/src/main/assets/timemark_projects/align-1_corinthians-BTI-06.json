@@ -1,0 +1,111 @@
+{
+  "id": "align-1_corinthians-BTI-06",
+  "translationCode": "BTI",
+  "bookId": "1_corinthians",
+  "chapter": 6,
+  "title": "1-е Коринфянам 6 · Кулаковых",
+  "audioFilePath": "/data/user/0/com.example.bible.sqlite/files/bible_audio/bti/53_06.mp3",
+  "updatedAt": 1795392000000,
+  "cues": [
+    {
+      "timeMs": 3663,
+      "verseStart": 1,
+      "attachments": []
+    },
+    {
+      "timeMs": 12769,
+      "verseStart": 2,
+      "attachments": []
+    },
+    {
+      "timeMs": 28821,
+      "verseStart": 3,
+      "attachments": []
+    },
+    {
+      "timeMs": 37647,
+      "verseStart": 4,
+      "attachments": []
+    },
+    {
+      "timeMs": 50276,
+      "verseStart": 5,
+      "attachments": []
+    },
+    {
+      "timeMs": 62625,
+      "verseStart": 6,
+      "attachments": []
+    },
+    {
+      "timeMs": 70771,
+      "verseStart": 7,
+      "attachments": []
+    },
+    {
+      "timeMs": 83461,
+      "verseStart": 8,
+      "attachments": []
+    },
+    {
+      "timeMs": 91767,
+      "verseStart": 9,
+      "attachments": []
+    },
+    {
+      "timeMs": 105817,
+      "verseStart": 10,
+      "attachments": []
+    },
+    {
+      "timeMs": 115204,
+      "verseStart": 11,
+      "attachments": []
+    },
+    {
+      "timeMs": 135038,
+      "verseStart": 12,
+      "attachments": []
+    },
+    {
+      "timeMs": 147107,
+      "verseStart": 13,
+      "attachments": []
+    },
+    {
+      "timeMs": 163018,
+      "verseStart": 14,
+      "attachments": []
+    },
+    {
+      "timeMs": 171304,
+      "verseStart": 15,
+      "attachments": []
+    },
+    {
+      "timeMs": 186655,
+      "verseStart": 16,
+      "attachments": []
+    },
+    {
+      "timeMs": 200285,
+      "verseStart": 17,
+      "attachments": []
+    },
+    {
+      "timeMs": 206650,
+      "verseStart": 18,
+      "attachments": []
+    },
+    {
+      "timeMs": 220220,
+      "verseStart": 19,
+      "attachments": []
+    },
+    {
+      "timeMs": 234430,
+      "verseStart": 20,
+      "attachments": []
+    }
+  ]
+}

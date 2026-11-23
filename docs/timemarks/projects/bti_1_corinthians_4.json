@@ -1,0 +1,95 @@
+{
+  "id": "gh_bti_1_corinthians_4",
+  "translationCode": "BTI",
+  "bookId": "1_corinthians",
+  "chapter": 4,
+  "title": "1-е Коринфянам 4 · Кулаковых",
+  "narratorId": "bti",
+  "audioFileName": "53_04.mp3",
+  "cues": [
+    {
+      "timeMs": 3562,
+      "verseStart": 1
+    },
+    {
+      "timeMs": 12949,
+      "verseStart": 2
+    },
+    {
+      "timeMs": 21334,
+      "verseStart": 3
+    },
+    {
+      "timeMs": 32082,
+      "verseStart": 4
+    },
+    {
+      "timeMs": 40847,
+      "verseStart": 5
+    },
+    {
+      "timeMs": 60521,
+      "verseStart": 6
+    },
+    {
+      "timeMs": 80534,
+      "verseStart": 7
+    },
+    {
+      "timeMs": 100527,
+      "verseStart": 8
+    },
+    {
+      "timeMs": 118039,
+      "verseStart": 9
+    },
+    {
+      "timeMs": 139554,
+      "verseStart": 10
+    },
+    {
+      "timeMs": 156885,
+      "verseStart": 11
+    },
+    {
+      "timeMs": 167592,
+      "verseStart": 12
+    },
+    {
+      "timeMs": 183803,
+      "verseStart": 13
+    },
+    {
+      "timeMs": 200174,
+      "verseStart": 14
+    },
+    {
+      "timeMs": 207699,
+      "verseStart": 15
+    },
+    {
+      "timeMs": 224450,
+      "verseStart": 16
+    },
+    {
+      "timeMs": 230955,
+      "verseStart": 17
+    },
+    {
+      "timeMs": 249227,
+      "verseStart": 18
+    },
+    {
+      "timeMs": 256072,
+      "verseStart": 19
+    },
+    {
+      "timeMs": 267519,
+      "verseStart": 20
+    },
+    {
+      "timeMs": 272503,
+      "verseStart": 21
+    }
+  ]
+}

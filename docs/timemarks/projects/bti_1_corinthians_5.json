@@ -1,0 +1,63 @@
+{
+  "id": "gh_bti_1_corinthians_5",
+  "translationCode": "BTI",
+  "bookId": "1_corinthians",
+  "chapter": 5,
+  "title": "1-е Коринфянам 5 · Кулаковых",
+  "narratorId": "bti",
+  "audioFileName": "53_05.mp3",
+  "cues": [
+    {
+      "timeMs": 3723,
+      "verseStart": 1
+    },
+    {
+      "timeMs": 17974,
+      "verseStart": 2
+    },
+    {
+      "timeMs": 29322,
+      "verseStart": 3
+    },
+    {
+      "timeMs": 41312,
+      "verseStart": 4
+    },
+    {
+      "timeMs": 54622,
+      "verseStart": 5
+    },
+    {
+      "timeMs": 70634,
+      "verseStart": 6
+    },
+    {
+      "timeMs": 81282,
+      "verseStart": 7
+    },
+    {
+      "timeMs": 100597,
+      "verseStart": 8
+    },
+    {
+      "timeMs": 115008,
+      "verseStart": 9
+    },
+    {
+      "timeMs": 120892,
+      "verseStart": 10
+    },
+    {
+      "timeMs": 135163,
+      "verseStart": 11
+    },
+    {
+      "timeMs": 164466,
+      "verseStart": 12
+    },
+    {
+      "timeMs": 173452,
+      "verseStart": 13
+    }
+  ]
+}

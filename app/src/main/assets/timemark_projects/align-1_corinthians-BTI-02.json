@@ -1,0 +1,91 @@
+{
+  "id": "align-1_corinthians-BTI-02",
+  "translationCode": "BTI",
+  "bookId": "1_corinthians",
+  "chapter": 2,
+  "title": "1-е Коринфянам 2 · Кулаковых",
+  "audioFilePath": "/data/user/0/com.example.bible.sqlite/files/bible_audio/bti/53_02.mp3",
+  "updatedAt": 1795392000000,
+  "cues": [
+    {
+      "timeMs": 3162,
+      "verseStart": 1,
+      "attachments": []
+    },
+    {
+      "timeMs": 13409,
+      "verseStart": 2,
+      "attachments": []
+    },
+    {
+      "timeMs": 25696,
+      "verseStart": 3,
+      "attachments": []
+    },
+    {
+      "timeMs": 31860,
+      "verseStart": 4,
+      "attachments": []
+    },
+    {
+      "timeMs": 42927,
+      "verseStart": 5,
+      "attachments": []
+    },
+    {
+      "timeMs": 52333,
+      "verseStart": 6,
+      "attachments": []
+    },
+    {
+      "timeMs": 63540,
+      "verseStart": 7,
+      "attachments": []
+    },
+    {
+      "timeMs": 79351,
+      "verseStart": 8,
+      "attachments": []
+    },
+    {
+      "timeMs": 92679,
+      "verseStart": 9,
+      "attachments": []
+    },
+    {
+      "timeMs": 108029,
+      "verseStart": 10,
+      "attachments": []
+    },
+    {
+      "timeMs": 118375,
+      "verseStart": 11,
+      "attachments": []
+    },
+    {
+      "timeMs": 132945,
+      "verseStart": 12,
+      "attachments": []
+    },
+    {
+      "timeMs": 145072,
+      "verseStart": 13,
+      "attachments": []
+    },
+    {
+      "timeMs": 163704,
+      "verseStart": 14,
+      "attachments": []
+    },
+    {
+      "timeMs": 178354,
+      "verseStart": 15,
+      "attachments": []
+    },
+    {
+      "timeMs": 188460,
+      "verseStart": 16,
+      "attachments": []
+    }
+  ]
+}

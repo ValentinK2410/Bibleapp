@@ -1,0 +1,63 @@
+{
+  "id": "gh_bti_1_corinthians_13",
+  "translationCode": "BTI",
+  "bookId": "1_corinthians",
+  "chapter": 13,
+  "title": "1-е Коринфянам 13 · Кулаковых",
+  "narratorId": "bti",
+  "audioFileName": "53_13.mp3",
+  "cues": [
+    {
+      "timeMs": 5284,
+      "verseStart": 1
+    },
+    {
+      "timeMs": 21515,
+      "verseStart": 2
+    },
+    {
+      "timeMs": 40788,
+      "verseStart": 3
+    },
+    {
+      "timeMs": 54957,
+      "verseStart": 4
+    },
+    {
+      "timeMs": 67786,
+      "verseStart": 5
+    },
+    {
+      "timeMs": 79354,
+      "verseStart": 6
+    },
+    {
+      "timeMs": 87620,
+      "verseStart": 7
+    },
+    {
+      "timeMs": 97426,
+      "verseStart": 8
+    },
+    {
+      "timeMs": 108394,
+      "verseStart": 9
+    },
+    {
+      "timeMs": 112697,
+      "verseStart": 10
+    },
+    {
+      "timeMs": 118461,
+      "verseStart": 11
+    },
+    {
+      "timeMs": 132690,
+      "verseStart": 12
+    },
+    {
+      "timeMs": 156446,
+      "verseStart": 13
+    }
+  ]
+}
