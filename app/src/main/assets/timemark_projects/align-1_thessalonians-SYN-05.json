@@ -1,0 +1,151 @@
+{
+  "id": "align-1_thessalonians-SYN-05",
+  "translationCode": "SYN",
+  "bookId": "1_thessalonians",
+  "chapter": 5,
+  "title": "1-е Фессалоникийцам 5 · Синодальный · Бондаренко",
+  "audioFilePath": "/data/user/0/com.example.bible.sqlite/files/bible_audio/bondarenko/59_05.mp3",
+  "updatedAt": 1795392000000,
+  "cues": [
+    {
+      "timeMs": 3403,
+      "verseStart": 1,
+      "attachments": []
+    },
+    {
+      "timeMs": 7946,
+      "verseStart": 2,
+      "attachments": []
+    },
+    {
+      "timeMs": 15071,
+      "verseStart": 3,
+      "attachments": []
+    },
+    {
+      "timeMs": 26940,
+      "verseStart": 4,
+      "attachments": []
+    },
+    {
+      "timeMs": 31244,
+      "verseStart": 5,
+      "attachments": []
+    },
+    {
+      "timeMs": 37889,
+      "verseStart": 6,
+      "attachments": []
+    },
+    {
+      "timeMs": 43833,
+      "verseStart": 7,
+      "attachments": []
+    },
+    {
+      "timeMs": 49918,
+      "verseStart": 8,
+      "attachments": []
+    },
+    {
+      "timeMs": 59164,
+      "verseStart": 9,
+      "attachments": []
+    },
+    {
+      "timeMs": 67191,
+      "verseStart": 10,
+      "attachments": []
+    },
+    {
+      "timeMs": 74976,
+      "verseStart": 11,
+      "attachments": []
+    },
+    {
+      "timeMs": 83543,
+      "verseStart": 12,
+      "attachments": []
+    },
+    {
+      "timeMs": 92610,
+      "verseStart": 13,
+      "attachments": []
+    },
+    {
+      "timeMs": 100175,
+      "verseStart": 14,
+      "attachments": []
+    },
+    {
+      "timeMs": 112364,
+      "verseStart": 15,
+      "attachments": []
+    },
+    {
+      "timeMs": 120451,
+      "verseStart": 16,
+      "attachments": []
+    },
+    {
+      "timeMs": 122552,
+      "verseStart": 17,
+      "attachments": []
+    },
+    {
+      "timeMs": 124914,
+      "verseStart": 18,
+      "attachments": []
+    },
+    {
+      "timeMs": 131519,
+      "verseStart": 19,
+      "attachments": []
+    },
+    {
+      "timeMs": 133881,
+      "verseStart": 20,
+      "attachments": []
+    },
+    {
+      "timeMs": 136663,
+      "verseStart": 21,
+      "attachments": []
+    },
+    {
+      "timeMs": 140205,
+      "verseStart": 22,
+      "attachments": []
+    },
+    {
+      "timeMs": 144228,
+      "verseStart": 23,
+      "attachments": []
+    },
+    {
+      "timeMs": 159660,
+      "verseStart": 24,
+      "attachments": []
+    },
+    {
+      "timeMs": 165204,
+      "verseStart": 25,
+      "attachments": []
+    },
+    {
+      "timeMs": 168987,
+      "verseStart": 26,
+      "attachments": []
+    },
+    {
+      "timeMs": 173330,
+      "verseStart": 27,
+      "attachments": []
+    },
+    {
+      "timeMs": 179315,
+      "verseStart": 28,
+      "attachments": []
+    }
+  ]
+}

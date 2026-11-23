@@ -1,0 +1,123 @@
+{
+  "id": "gh_syn_1_thessalonians_5",
+  "translationCode": "SYN",
+  "bookId": "1_thessalonians",
+  "chapter": 5,
+  "title": "1-е Фессалоникийцам 5 · Синодальный · Бондаренко",
+  "narratorId": "bondarenko",
+  "audioFileName": "59_05.mp3",
+  "cues": [
+    {
+      "timeMs": 3403,
+      "verseStart": 1
+    },
+    {
+      "timeMs": 7946,
+      "verseStart": 2
+    },
+    {
+      "timeMs": 15071,
+      "verseStart": 3
+    },
+    {
+      "timeMs": 26940,
+      "verseStart": 4
+    },
+    {
+      "timeMs": 31244,
+      "verseStart": 5
+    },
+    {
+      "timeMs": 37889,
+      "verseStart": 6
+    },
+    {
+      "timeMs": 43833,
+      "verseStart": 7
+    },
+    {
+      "timeMs": 49918,
+      "verseStart": 8
+    },
+    {
+      "timeMs": 59164,
+      "verseStart": 9
+    },
+    {
+      "timeMs": 67191,
+      "verseStart": 10
+    },
+    {
+      "timeMs": 74976,
+      "verseStart": 11
+    },
+    {
+      "timeMs": 83543,
+      "verseStart": 12
+    },
+    {
+      "timeMs": 92610,
+      "verseStart": 13
+    },
+    {
+      "timeMs": 100175,
+      "verseStart": 14
+    },
+    {
+      "timeMs": 112364,
+      "verseStart": 15
+    },
+    {
+      "timeMs": 120451,
+      "verseStart": 16
+    },
+    {
+      "timeMs": 122552,
+      "verseStart": 17
+    },
+    {
+      "timeMs": 124914,
+      "verseStart": 18
+    },
+    {
+      "timeMs": 131519,
+      "verseStart": 19
+    },
+    {
+      "timeMs": 133881,
+      "verseStart": 20
+    },
+    {
+      "timeMs": 136663,
+      "verseStart": 21
+    },
+    {
+      "timeMs": 140205,
+      "verseStart": 22
+    },
+    {
+      "timeMs": 144228,
+      "verseStart": 23
+    },
+    {
+      "timeMs": 159660,
+      "verseStart": 24
+    },
+    {
+      "timeMs": 165204,
+      "verseStart": 25
+    },
+    {
+      "timeMs": 168987,
+      "verseStart": 26
+    },
+    {
+      "timeMs": 173330,
+      "verseStart": 27
+    },
+    {
+      "timeMs": 179315,
+      "verseStart": 28
+    }
+  ]
+}

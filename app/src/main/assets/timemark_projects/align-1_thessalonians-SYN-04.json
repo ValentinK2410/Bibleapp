@@ -1,0 +1,101 @@
+{
+  "id": "align-1_thessalonians-SYN-04",
+  "translationCode": "SYN",
+  "bookId": "1_thessalonians",
+  "chapter": 4,
+  "title": "1-е Фессалоникийцам 4 · Синодальный · Бондаренко",
+  "audioFilePath": "/data/user/0/com.example.bible.sqlite/files/bible_audio/bondarenko/59_04.mp3",
+  "updatedAt": 1795392000000,
+  "cues": [
+    {
+      "timeMs": 3683,
+      "verseStart": 1,
+      "attachments": []
+    },
+    {
+      "timeMs": 17012,
+      "verseStart": 2,
+      "attachments": []
+    },
+    {
+      "timeMs": 22636,
+      "verseStart": 3,
+      "attachments": []
+    },
+    {
+      "timeMs": 29281,
+      "verseStart": 4,
+      "attachments": []
+    },
+    {
+      "timeMs": 34305,
+      "verseStart": 5,
+      "attachments": []
+    },
+    {
+      "timeMs": 39448,
+      "verseStart": 6,
+      "attachments": []
+    },
+    {
+      "timeMs": 53678,
+      "verseStart": 7,
+      "attachments": []
+    },
+    {
+      "timeMs": 60964,
+      "verseStart": 8,
+      "attachments": []
+    },
+    {
+      "timeMs": 70710,
+      "verseStart": 9,
+      "attachments": []
+    },
+    {
+      "timeMs": 77235,
+      "verseStart": 10,
+      "attachments": []
+    },
+    {
+      "timeMs": 85781,
+      "verseStart": 11,
+      "attachments": []
+    },
+    {
+      "timeMs": 96008,
+      "verseStart": 12,
+      "attachments": []
+    },
+    {
+      "timeMs": 104915,
+      "verseStart": 13,
+      "attachments": []
+    },
+    {
+      "timeMs": 113201,
+      "verseStart": 14,
+      "attachments": []
+    },
+    {
+      "timeMs": 121707,
+      "verseStart": 15,
+      "attachments": []
+    },
+    {
+      "timeMs": 130533,
+      "verseStart": 16,
+      "attachments": []
+    },
+    {
+      "timeMs": 142382,
+      "verseStart": 17,
+      "attachments": []
+    },
+    {
+      "timeMs": 153710,
+      "verseStart": 18,
+      "attachments": []
+    }
+  ]
+}

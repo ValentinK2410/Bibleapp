@@ -1,0 +1,91 @@
+{
+  "id": "gh_syn_1_thessalonians_2",
+  "translationCode": "SYN",
+  "bookId": "1_thessalonians",
+  "chapter": 2,
+  "title": "1-е Фессалоникийцам 2 · Синодальный · Бондаренко",
+  "narratorId": "bondarenko",
+  "audioFileName": "59_02.mp3",
+  "cues": [
+    {
+      "timeMs": 3202,
+      "verseStart": 1
+    },
+    {
+      "timeMs": 8926,
+      "verseStart": 2
+    },
+    {
+      "timeMs": 20474,
+      "verseStart": 3
+    },
+    {
+      "timeMs": 27519,
+      "verseStart": 4
+    },
+    {
+      "timeMs": 39107,
+      "verseStart": 5
+    },
+    {
+      "timeMs": 48534,
+      "verseStart": 6
+    },
+    {
+      "timeMs": 53177,
+      "verseStart": 7
+    },
+    {
+      "timeMs": 64845,
+      "verseStart": 8
+    },
+    {
+      "timeMs": 76293,
+      "verseStart": 9
+    },
+    {
+      "timeMs": 88702,
+      "verseStart": 10
+    },
+    {
+      "timeMs": 97468,
+      "verseStart": 11
+    },
+    {
+      "timeMs": 102431,
+      "verseStart": 12
+    },
+    {
+      "timeMs": 113359,
+      "verseStart": 13
+    },
+    {
+      "timeMs": 133333,
+      "verseStart": 14
+    },
+    {
+      "timeMs": 149384,
+      "verseStart": 15
+    },
+    {
+      "timeMs": 159551,
+      "verseStart": 16
+    },
+    {
+      "timeMs": 172981,
+      "verseStart": 17
+    },
+    {
+      "timeMs": 183388,
+      "verseStart": 18
+    },
+    {
+      "timeMs": 191974,
+      "verseStart": 19
+    },
+    {
+      "timeMs": 201761,
+      "verseStart": 20
+    }
+  ]
+}
