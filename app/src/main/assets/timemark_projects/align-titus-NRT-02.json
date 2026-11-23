@@ -1,0 +1,86 @@
+{
+  "id": "align-titus-NRT-02",
+  "translationCode": "NRT",
+  "bookId": "titus",
+  "chapter": 2,
+  "title": "Титу 2 · Новый русский",
+  "audioFilePath": "/data/user/0/com.example.bible.sqlite/files/bible_audio/new-russian/63_02.mp3",
+  "updatedAt": 1795392000000,
+  "cues": [
+    {
+      "timeMs": 2382,
+      "verseStart": 1,
+      "attachments": []
+    },
+    {
+      "timeMs": 6465,
+      "verseStart": 2,
+      "attachments": []
+    },
+    {
+      "timeMs": 16113,
+      "verseStart": 3,
+      "attachments": []
+    },
+    {
+      "timeMs": 25620,
+      "verseStart": 4,
+      "attachments": []
+    },
+    {
+      "timeMs": 29843,
+      "verseStart": 5,
+      "attachments": []
+    },
+    {
+      "timeMs": 40451,
+      "verseStart": 6,
+      "attachments": []
+    },
+    {
+      "timeMs": 43654,
+      "verseStart": 7,
+      "attachments": []
+    },
+    {
+      "timeMs": 49598,
+      "verseStart": 8,
+      "attachments": []
+    },
+    {
+      "timeMs": 59626,
+      "verseStart": 9,
+      "attachments": []
+    },
+    {
+      "timeMs": 67853,
+      "verseStart": 10,
+      "attachments": []
+    },
+    {
+      "timeMs": 85066,
+      "verseStart": 11,
+      "attachments": []
+    },
+    {
+      "timeMs": 89910,
+      "verseStart": 12,
+      "attachments": []
+    },
+    {
+      "timeMs": 100178,
+      "verseStart": 13,
+      "attachments": []
+    },
+    {
+      "timeMs": 110806,
+      "verseStart": 14,
+      "attachments": []
+    },
+    {
+      "timeMs": 122555,
+      "verseStart": 15,
+      "attachments": []
+    }
+  ]
+}

@@ -1,0 +1,71 @@
+{
+  "id": "gh_nrt_titus_2",
+  "translationCode": "NRT",
+  "bookId": "titus",
+  "chapter": 2,
+  "title": "Титу 2 · Новый русский",
+  "narratorId": "new-russian",
+  "audioFileName": "63_02.mp3",
+  "cues": [
+    {
+      "timeMs": 2382,
+      "verseStart": 1
+    },
+    {
+      "timeMs": 6465,
+      "verseStart": 2
+    },
+    {
+      "timeMs": 16113,
+      "verseStart": 3
+    },
+    {
+      "timeMs": 25620,
+      "verseStart": 4
+    },
+    {
+      "timeMs": 29843,
+      "verseStart": 5
+    },
+    {
+      "timeMs": 40451,
+      "verseStart": 6
+    },
+    {
+      "timeMs": 43654,
+      "verseStart": 7
+    },
+    {
+      "timeMs": 49598,
+      "verseStart": 8
+    },
+    {
+      "timeMs": 59626,
+      "verseStart": 9
+    },
+    {
+      "timeMs": 67853,
+      "verseStart": 10
+    },
+    {
+      "timeMs": 85066,
+      "verseStart": 11
+    },
+    {
+      "timeMs": 89910,
+      "verseStart": 12
+    },
+    {
+      "timeMs": 100178,
+      "verseStart": 13
+    },
+    {
+      "timeMs": 110806,
+      "verseStart": 14
+    },
+    {
+      "timeMs": 122555,
+      "verseStart": 15
+    }
+  ]
+}
