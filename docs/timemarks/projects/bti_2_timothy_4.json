@@ -1,0 +1,99 @@
+{
+  "id": "gh_bti_2_timothy_4",
+  "translationCode": "BTI",
+  "bookId": "2_timothy",
+  "chapter": 4,
+  "title": "2-е Тимофею 4 · Кулаковых",
+  "narratorId": "bti",
+  "audioFileName": "62_04.mp3",
+  "cues": [
+    {
+      "timeMs": 3803,
+      "verseStart": 1
+    },
+    {
+      "timeMs": 18413,
+      "verseStart": 2
+    },
+    {
+      "timeMs": 35645,
+      "verseStart": 3
+    },
+    {
+      "timeMs": 51075,
+      "verseStart": 4
+    },
+    {
+      "timeMs": 59061,
+      "verseStart": 5
+    },
+    {
+      "timeMs": 79315,
+      "verseStart": 6
+    },
+    {
+      "timeMs": 91203,
+      "verseStart": 7
+    },
+    {
+      "timeMs": 104172,
+      "verseStart": 8
+    },
+    {
+      "timeMs": 126127,
+      "verseStart": 9
+    },
+    {
+      "timeMs": 129610,
+      "verseStart": 10
+    },
+    {
+      "timeMs": 144780,
+      "verseStart": 11
+    },
+    {
+      "timeMs": 155808,
+      "verseStart": 12
+    },
+    {
+      "timeMs": 159310,
+      "verseStart": 13
+    },
+    {
+      "timeMs": 170518,
+      "verseStart": 14
+    },
+    {
+      "timeMs": 179444,
+      "verseStart": 15
+    },
+    {
+      "timeMs": 187990,
+      "verseStart": 16
+    },
+    {
+      "timeMs": 200899,
+      "verseStart": 17
+    },
+    {
+      "timeMs": 218811,
+      "verseStart": 18
+    },
+    {
+      "timeMs": 235223,
+      "verseStart": 19
+    },
+    {
+      "timeMs": 242208,
+      "verseStart": 20
+    },
+    {
+      "timeMs": 250894,
+      "verseStart": 21
+    },
+    {
+      "timeMs": 265003,
+      "verseStart": 22
+    }
+  ]
+}

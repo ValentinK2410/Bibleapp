@@ -434,6 +434,46 @@
       "file": "projects/bti_2_thessalonians_3.json"
     },
     {
+      "id": "gh_bti_2_timothy_1",
+      "translationCode": "BTI",
+      "bookId": "2_timothy",
+      "chapter": 1,
+      "title": "2-е Тимофею 1 · Кулаковых",
+      "cueCount": 18,
+      "narratorId": "bti",
+      "file": "projects/bti_2_timothy_1.json"
+    },
+    {
+      "id": "gh_bti_2_timothy_2",
+      "translationCode": "BTI",
+      "bookId": "2_timothy",
+      "chapter": 2,
+      "title": "2-е Тимофею 2 · Кулаковых",
+      "cueCount": 26,
+      "narratorId": "bti",
+      "file": "projects/bti_2_timothy_2.json"
+    },
+    {
+      "id": "gh_bti_2_timothy_3",
+      "translationCode": "BTI",
+      "bookId": "2_timothy",
+      "chapter": 3,
+      "title": "2-е Тимофею 3 · Кулаковых",
+      "cueCount": 17,
+      "narratorId": "bti",
+      "file": "projects/bti_2_timothy_3.json"
+    },
+    {
+      "id": "gh_bti_2_timothy_4",
+      "translationCode": "BTI",
+      "bookId": "2_timothy",
+      "chapter": 4,
+      "title": "2-е Тимофею 4 · Кулаковых",
+      "cueCount": 22,
+      "narratorId": "bti",
+      "file": "projects/bti_2_timothy_4.json"
+    },
+    {
       "id": "gh_bti_colossians_1",
       "translationCode": "BTI",
       "bookId": "colossians",
