@@ -1,0 +1,59 @@
+{
+  "id": "gh_web_2_thessalonians_1",
+  "translationCode": "WEB",
+  "bookId": "2_thessalonians",
+  "chapter": 1,
+  "title": "2-е Фессалоникийцам 1 · WEB (англ.)",
+  "narratorId": "web",
+  "audioFileName": "53_01.mp3",
+  "cues": [
+    {
+      "timeMs": 5624,
+      "verseStart": 1
+    },
+    {
+      "timeMs": 13630,
+      "verseStart": 2
+    },
+    {
+      "timeMs": 19255,
+      "verseStart": 3
+    },
+    {
+      "timeMs": 30323,
+      "verseStart": 4
+    },
+    {
+      "timeMs": 39550,
+      "verseStart": 5
+    },
+    {
+      "timeMs": 48557,
+      "verseStart": 6
+    },
+    {
+      "timeMs": 55122,
+      "verseStart": 7
+    },
+    {
+      "timeMs": 62408,
+      "verseStart": 8
+    },
+    {
+      "timeMs": 70374,
+      "verseStart": 9
+    },
+    {
+      "timeMs": 76599,
+      "verseStart": 10
+    },
+    {
+      "timeMs": 87707,
+      "verseStart": 11
+    },
+    {
+      "timeMs": 98816,
+      "verseStart": 12
+    }
+  ]
+}
