@@ -1,0 +1,95 @@
+{
+  "id": "gh_syn_2_corinthians_5",
+  "translationCode": "SYN",
+  "bookId": "2_corinthians",
+  "chapter": 5,
+  "title": "2-е Коринфянам 5 · Синодальный · Бондаренко",
+  "narratorId": "bondarenko",
+  "audioFileName": "54_05.mp3",
+  "cues": [
+    {
+      "timeMs": 3162,
+      "verseStart": 1
+    },
+    {
+      "timeMs": 16411,
+      "verseStart": 2
+    },
+    {
+      "timeMs": 21074,
+      "verseStart": 3
+    },
+    {
+      "timeMs": 25057,
+      "verseStart": 4
+    },
+    {
+      "timeMs": 37165,
+      "verseStart": 5
+    },
+    {
+      "timeMs": 44370,
+      "verseStart": 6
+    },
+    {
+      "timeMs": 52455,
+      "verseStart": 7
+    },
+    {
+      "timeMs": 55117,
+      "verseStart": 8
+    },
+    {
+      "timeMs": 62322,
+      "verseStart": 9
+    },
+    {
+      "timeMs": 70427,
+      "verseStart": 10
+    },
+    {
+      "timeMs": 83576,
+      "verseStart": 11
+    },
+    {
+      "timeMs": 96164,
+      "verseStart": 12
+    },
+    {
+      "timeMs": 108272,
+      "verseStart": 13
+    },
+    {
+      "timeMs": 116718,
+      "verseStart": 14
+    },
+    {
+      "timeMs": 126905,
+      "verseStart": 15
+    },
+    {
+      "timeMs": 139113,
+      "verseStart": 16
+    },
+    {
+      "timeMs": 148239,
+      "verseStart": 17
+    },
+    {
+      "timeMs": 156965,
+      "verseStart": 18
+    },
+    {
+      "timeMs": 165711,
+      "verseStart": 19
+    },
+    {
+      "timeMs": 176438,
+      "verseStart": 20
+    },
+    {
+      "timeMs": 189687,
+      "verseStart": 21
+    }
+  ]
+}

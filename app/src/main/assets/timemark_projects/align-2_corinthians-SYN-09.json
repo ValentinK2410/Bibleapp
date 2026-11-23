@@ -1,0 +1,86 @@
+{
+  "id": "align-2_corinthians-SYN-09",
+  "translationCode": "SYN",
+  "bookId": "2_corinthians",
+  "chapter": 9,
+  "title": "2-е Коринфянам 9 · Синодальный · Бондаренко",
+  "audioFilePath": "/data/user/0/com.example.bible.sqlite/files/bible_audio/bondarenko/54_09.mp3",
+  "updatedAt": 1795392000000,
+  "cues": [
+    {
+      "timeMs": 3402,
+      "verseStart": 1,
+      "attachments": []
+    },
+    {
+      "timeMs": 8205,
+      "verseStart": 2,
+      "attachments": []
+    },
+    {
+      "timeMs": 20713,
+      "verseStart": 3,
+      "attachments": []
+    },
+    {
+      "timeMs": 30579,
+      "verseStart": 4,
+      "attachments": []
+    },
+    {
+      "timeMs": 40966,
+      "verseStart": 5,
+      "attachments": []
+    },
+    {
+      "timeMs": 56415,
+      "verseStart": 6,
+      "attachments": []
+    },
+    {
+      "timeMs": 64600,
+      "verseStart": 7,
+      "attachments": []
+    },
+    {
+      "timeMs": 74907,
+      "verseStart": 8,
+      "attachments": []
+    },
+    {
+      "timeMs": 85413,
+      "verseStart": 9,
+      "attachments": []
+    },
+    {
+      "timeMs": 93238,
+      "verseStart": 10,
+      "attachments": []
+    },
+    {
+      "timeMs": 102584,
+      "verseStart": 11,
+      "attachments": []
+    },
+    {
+      "timeMs": 111650,
+      "verseStart": 12,
+      "attachments": []
+    },
+    {
+      "timeMs": 122957,
+      "verseStart": 13,
+      "attachments": []
+    },
+    {
+      "timeMs": 134504,
+      "verseStart": 14,
+      "attachments": []
+    },
+    {
+      "timeMs": 141368,
+      "verseStart": 15,
+      "attachments": []
+    }
+  ]
+}

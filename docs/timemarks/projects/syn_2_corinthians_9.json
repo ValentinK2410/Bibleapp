@@ -1,0 +1,71 @@
+{
+  "id": "gh_syn_2_corinthians_9",
+  "translationCode": "SYN",
+  "bookId": "2_corinthians",
+  "chapter": 9,
+  "title": "2-е Коринфянам 9 · Синодальный · Бондаренко",
+  "narratorId": "bondarenko",
+  "audioFileName": "54_09.mp3",
+  "cues": [
+    {
+      "timeMs": 3402,
+      "verseStart": 1
+    },
+    {
+      "timeMs": 8205,
+      "verseStart": 2
+    },
+    {
+      "timeMs": 20713,
+      "verseStart": 3
+    },
+    {
+      "timeMs": 30579,
+      "verseStart": 4
+    },
+    {
+      "timeMs": 40966,
+      "verseStart": 5
+    },
+    {
+      "timeMs": 56415,
+      "verseStart": 6
+    },
+    {
+      "timeMs": 64600,
+      "verseStart": 7
+    },
+    {
+      "timeMs": 74907,
+      "verseStart": 8
+    },
+    {
+      "timeMs": 85413,
+      "verseStart": 9
+    },
+    {
+      "timeMs": 93238,
+      "verseStart": 10
+    },
+    {
+      "timeMs": 102584,
+      "verseStart": 11
+    },
+    {
+      "timeMs": 111650,
+      "verseStart": 12
+    },
+    {
+      "timeMs": 122957,
+      "verseStart": 13
+    },
+    {
+      "timeMs": 134504,
+      "verseStart": 14
+    },
+    {
+      "timeMs": 141368,
+      "verseStart": 15
+    }
+  ]
+}

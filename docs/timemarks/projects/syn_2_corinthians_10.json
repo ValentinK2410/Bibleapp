@@ -1,0 +1,83 @@
+{
+  "id": "gh_syn_2_corinthians_10",
+  "translationCode": "SYN",
+  "bookId": "2_corinthians",
+  "chapter": 10,
+  "title": "2-е Коринфянам 10 · Синодальный · Бондаренко",
+  "narratorId": "bondarenko",
+  "audioFileName": "54_10.mp3",
+  "cues": [
+    {
+      "timeMs": 4363,
+      "verseStart": 1
+    },
+    {
+      "timeMs": 17213,
+      "verseStart": 2
+    },
+    {
+      "timeMs": 29742,
+      "verseStart": 3
+    },
+    {
+      "timeMs": 34165,
+      "verseStart": 4
+    },
+    {
+      "timeMs": 42471,
+      "verseStart": 5
+    },
+    {
+      "timeMs": 51218,
+      "verseStart": 6
+    },
+    {
+      "timeMs": 57723,
+      "verseStart": 7
+    },
+    {
+      "timeMs": 69431,
+      "verseStart": 8
+    },
+    {
+      "timeMs": 81560,
+      "verseStart": 9
+    },
+    {
+      "timeMs": 87064,
+      "verseStart": 10
+    },
+    {
+      "timeMs": 97352,
+      "verseStart": 11
+    },
+    {
+      "timeMs": 105018,
+      "verseStart": 12
+    },
+    {
+      "timeMs": 119528,
+      "verseStart": 13
+    },
+    {
+      "timeMs": 128295,
+      "verseStart": 14
+    },
+    {
+      "timeMs": 137502,
+      "verseStart": 15
+    },
+    {
+      "timeMs": 148010,
+      "verseStart": 16
+    },
+    {
+      "timeMs": 155255,
+      "verseStart": 17
+    },
+    {
+      "timeMs": 158217,
+      "verseStart": 18
+    }
+  ]
+}

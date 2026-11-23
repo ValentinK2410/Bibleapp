@@ -1,0 +1,131 @@
+{
+  "id": "align-2_corinthians-SYN-01",
+  "translationCode": "SYN",
+  "bookId": "2_corinthians",
+  "chapter": 1,
+  "title": "2-е Коринфянам 1 · Синодальный · Бондаренко",
+  "audioFilePath": "/data/user/0/com.example.bible.sqlite/files/bible_audio/bondarenko/54_01.mp3",
+  "updatedAt": 1795392000000,
+  "cues": [
+    {
+      "timeMs": 10207,
+      "verseStart": 1,
+      "attachments": []
+    },
+    {
+      "timeMs": 23336,
+      "verseStart": 2,
+      "attachments": []
+    },
+    {
+      "timeMs": 34843,
+      "verseStart": 3,
+      "attachments": []
+    },
+    {
+      "timeMs": 44010,
+      "verseStart": 4,
+      "attachments": []
+    },
+    {
+      "timeMs": 56678,
+      "verseStart": 5,
+      "attachments": []
+    },
+    {
+      "timeMs": 65104,
+      "verseStart": 6,
+      "attachments": []
+    },
+    {
+      "timeMs": 76151,
+      "verseStart": 7,
+      "attachments": []
+    },
+    {
+      "timeMs": 90581,
+      "verseStart": 8,
+      "attachments": []
+    },
+    {
+      "timeMs": 105451,
+      "verseStart": 9,
+      "attachments": []
+    },
+    {
+      "timeMs": 115517,
+      "verseStart": 10,
+      "attachments": []
+    },
+    {
+      "timeMs": 126145,
+      "verseStart": 11,
+      "attachments": []
+    },
+    {
+      "timeMs": 135971,
+      "verseStart": 12,
+      "attachments": []
+    },
+    {
+      "timeMs": 153363,
+      "verseStart": 13,
+      "attachments": []
+    },
+    {
+      "timeMs": 161989,
+      "verseStart": 14,
+      "attachments": []
+    },
+    {
+      "timeMs": 174797,
+      "verseStart": 15,
+      "attachments": []
+    },
+    {
+      "timeMs": 181562,
+      "verseStart": 16,
+      "attachments": []
+    },
+    {
+      "timeMs": 190508,
+      "verseStart": 17,
+      "attachments": []
+    },
+    {
+      "timeMs": 202576,
+      "verseStart": 18,
+      "attachments": []
+    },
+    {
+      "timeMs": 208460,
+      "verseStart": 19,
+      "attachments": []
+    },
+    {
+      "timeMs": 220027,
+      "verseStart": 20,
+      "attachments": []
+    },
+    {
+      "timeMs": 227632,
+      "verseStart": 21,
+      "attachments": []
+    },
+    {
+      "timeMs": 232636,
+      "verseStart": 22,
+      "attachments": []
+    },
+    {
+      "timeMs": 237939,
+      "verseStart": 23,
+      "attachments": []
+    },
+    {
+      "timeMs": 244264,
+      "verseStart": 24,
+      "attachments": []
+    }
+  ]
+}

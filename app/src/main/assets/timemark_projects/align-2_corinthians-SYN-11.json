@@ -1,0 +1,171 @@
+{
+  "id": "align-2_corinthians-SYN-11",
+  "translationCode": "SYN",
+  "bookId": "2_corinthians",
+  "chapter": 11,
+  "title": "2-е Коринфянам 11 · Синодальный · Бондаренко",
+  "audioFilePath": "/data/user/0/com.example.bible.sqlite/files/bible_audio/bondarenko/54_11.mp3",
+  "updatedAt": 1795392000000,
+  "cues": [
+    {
+      "timeMs": 3963,
+      "verseStart": 1,
+      "attachments": []
+    },
+    {
+      "timeMs": 12249,
+      "verseStart": 2,
+      "attachments": []
+    },
+    {
+      "timeMs": 23857,
+      "verseStart": 3,
+      "attachments": []
+    },
+    {
+      "timeMs": 33864,
+      "verseStart": 4,
+      "attachments": []
+    },
+    {
+      "timeMs": 54138,
+      "verseStart": 5,
+      "attachments": []
+    },
+    {
+      "timeMs": 60002,
+      "verseStart": 6,
+      "attachments": []
+    },
+    {
+      "timeMs": 69108,
+      "verseStart": 7,
+      "attachments": []
+    },
+    {
+      "timeMs": 78735,
+      "verseStart": 8,
+      "attachments": []
+    },
+    {
+      "timeMs": 90443,
+      "verseStart": 9,
+      "attachments": []
+    },
+    {
+      "timeMs": 100710,
+      "verseStart": 10,
+      "attachments": []
+    },
+    {
+      "timeMs": 109696,
+      "verseStart": 11,
+      "attachments": []
+    },
+    {
+      "timeMs": 120564,
+      "verseStart": 12,
+      "attachments": []
+    },
+    {
+      "timeMs": 128289,
+      "verseStart": 13,
+      "attachments": []
+    },
+    {
+      "timeMs": 135914,
+      "verseStart": 14,
+      "attachments": []
+    },
+    {
+      "timeMs": 141858,
+      "verseStart": 15,
+      "attachments": []
+    },
+    {
+      "timeMs": 151865,
+      "verseStart": 16,
+      "attachments": []
+    },
+    {
+      "timeMs": 163113,
+      "verseStart": 17,
+      "attachments": []
+    },
+    {
+      "timeMs": 170198,
+      "verseStart": 18,
+      "attachments": []
+    },
+    {
+      "timeMs": 174781,
+      "verseStart": 19,
+      "attachments": []
+    },
+    {
+      "timeMs": 179404,
+      "verseStart": 20,
+      "attachments": []
+    },
+    {
+      "timeMs": 192273,
+      "verseStart": 21,
+      "attachments": []
+    },
+    {
+      "timeMs": 205403,
+      "verseStart": 22,
+      "attachments": []
+    },
+    {
+      "timeMs": 216490,
+      "verseStart": 23,
+      "attachments": []
+    },
+    {
+      "timeMs": 234423,
+      "verseStart": 24,
+      "attachments": []
+    },
+    {
+      "timeMs": 240567,
+      "verseStart": 25,
+      "attachments": []
+    },
+    {
+      "timeMs": 252715,
+      "verseStart": 26,
+      "attachments": []
+    },
+    {
+      "timeMs": 276692,
+      "verseStart": 27,
+      "attachments": []
+    },
+    {
+      "timeMs": 288040,
+      "verseStart": 28,
+      "attachments": []
+    },
+    {
+      "timeMs": 296766,
+      "verseStart": 29,
+      "attachments": []
+    },
+    {
+      "timeMs": 306653,
+      "verseStart": 30,
+      "attachments": []
+    },
+    {
+      "timeMs": 313217,
+      "verseStart": 31,
+      "attachments": []
+    },
+    {
+      "timeMs": 322504,
+      "verseStart": 32,
+      "attachments": []
+    }
+  ]
+}

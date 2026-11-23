@@ -1,0 +1,107 @@
+{
+  "id": "gh_syn_2_corinthians_8",
+  "translationCode": "SYN",
+  "bookId": "2_corinthians",
+  "chapter": 8,
+  "title": "2-е Коринфянам 8 · Синодальный · Бондаренко",
+  "narratorId": "bondarenko",
+  "audioFileName": "54_08.mp3",
+  "cues": [
+    {
+      "timeMs": 3543,
+      "verseStart": 1
+    },
+    {
+      "timeMs": 9787,
+      "verseStart": 2
+    },
+    {
+      "timeMs": 20916,
+      "verseStart": 3
+    },
+    {
+      "timeMs": 26000,
+      "verseStart": 4
+    },
+    {
+      "timeMs": 31964,
+      "verseStart": 5
+    },
+    {
+      "timeMs": 41031,
+      "verseStart": 6
+    },
+    {
+      "timeMs": 47876,
+      "verseStart": 7
+    },
+    {
+      "timeMs": 61747,
+      "verseStart": 8
+    },
+    {
+      "timeMs": 69673,
+      "verseStart": 9
+    },
+    {
+      "timeMs": 80341,
+      "verseStart": 10
+    },
+    {
+      "timeMs": 89267,
+      "verseStart": 11
+    },
+    {
+      "timeMs": 96873,
+      "verseStart": 12
+    },
+    {
+      "timeMs": 106120,
+      "verseStart": 13
+    },
+    {
+      "timeMs": 113265,
+      "verseStart": 14
+    },
+    {
+      "timeMs": 123213,
+      "verseStart": 15
+    },
+    {
+      "timeMs": 132780,
+      "verseStart": 16
+    },
+    {
+      "timeMs": 138244,
+      "verseStart": 17
+    },
+    {
+      "timeMs": 144789,
+      "verseStart": 18
+    },
+    {
+      "timeMs": 151114,
+      "verseStart": 19
+    },
+    {
+      "timeMs": 162302,
+      "verseStart": 20
+    },
+    {
+      "timeMs": 170288,
+      "verseStart": 21
+    },
+    {
+      "timeMs": 177354,
+      "verseStart": 22
+    },
+    {
+      "timeMs": 190183,
+      "verseStart": 23
+    },
+    {
+      "timeMs": 202593,
+      "verseStart": 24
+    }
+  ]
+}

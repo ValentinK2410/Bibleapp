@@ -1,0 +1,63 @@
+{
+  "id": "gh_syn_2_corinthians_13",
+  "translationCode": "SYN",
+  "bookId": "2_corinthians",
+  "chapter": 13,
+  "title": "2-е Коринфянам 13 · Синодальный · Бондаренко",
+  "narratorId": "bondarenko",
+  "audioFileName": "54_13.mp3",
+  "cues": [
+    {
+      "timeMs": 4123,
+      "verseStart": 1
+    },
+    {
+      "timeMs": 13329,
+      "verseStart": 2
+    },
+    {
+      "timeMs": 27518,
+      "verseStart": 3
+    },
+    {
+      "timeMs": 37605,
+      "verseStart": 4
+    },
+    {
+      "timeMs": 52475,
+      "verseStart": 5
+    },
+    {
+      "timeMs": 68566,
+      "verseStart": 6
+    },
+    {
+      "timeMs": 73729,
+      "verseStart": 7
+    },
+    {
+      "timeMs": 87138,
+      "verseStart": 8
+    },
+    {
+      "timeMs": 92202,
+      "verseStart": 9
+    },
+    {
+      "timeMs": 103830,
+      "verseStart": 10
+    },
+    {
+      "timeMs": 118940,
+      "verseStart": 11
+    },
+    {
+      "timeMs": 132869,
+      "verseStart": 12
+    },
+    {
+      "timeMs": 140934,
+      "verseStart": 13
+    }
+  ]
+}

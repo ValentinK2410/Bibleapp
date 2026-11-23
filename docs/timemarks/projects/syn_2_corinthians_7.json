@@ -1,0 +1,75 @@
+{
+  "id": "gh_syn_2_corinthians_7",
+  "translationCode": "SYN",
+  "bookId": "2_corinthians",
+  "chapter": 7,
+  "title": "2-е Коринфянам 7 · Синодальный · Бондаренко",
+  "narratorId": "bondarenko",
+  "audioFileName": "54_07.mp3",
+  "cues": [
+    {
+      "timeMs": 3582,
+      "verseStart": 1
+    },
+    {
+      "timeMs": 17051,
+      "verseStart": 2
+    },
+    {
+      "timeMs": 25717,
+      "verseStart": 3
+    },
+    {
+      "timeMs": 34923,
+      "verseStart": 4
+    },
+    {
+      "timeMs": 45250,
+      "verseStart": 5
+    },
+    {
+      "timeMs": 58699,
+      "verseStart": 6
+    },
+    {
+      "timeMs": 64383,
+      "verseStart": 7
+    },
+    {
+      "timeMs": 80274,
+      "verseStart": 8
+    },
+    {
+      "timeMs": 91221,
+      "verseStart": 9
+    },
+    {
+      "timeMs": 103690,
+      "verseStart": 10
+    },
+    {
+      "timeMs": 115297,
+      "verseStart": 11
+    },
+    {
+      "timeMs": 138093,
+      "verseStart": 12
+    },
+    {
+      "timeMs": 149340,
+      "verseStart": 13
+    },
+    {
+      "timeMs": 159747,
+      "verseStart": 14
+    },
+    {
+      "timeMs": 171535,
+      "verseStart": 15
+    },
+    {
+      "timeMs": 181442,
+      "verseStart": 16
+    }
+  ]
+}
