@@ -1,0 +1,103 @@
+{
+  "id": "gh_rbo_colossians_2",
+  "translationCode": "RBO",
+  "bookId": "colossians",
+  "chapter": 2,
+  "title": "К Колоссянам 2 · РБО",
+  "narratorId": "rbo",
+  "audioFileName": "58_02.mp3",
+  "cues": [
+    {
+      "timeMs": 4383,
+      "verseStart": 1
+    },
+    {
+      "timeMs": 14230,
+      "verseStart": 2
+    },
+    {
+      "timeMs": 31301,
+      "verseStart": 3
+    },
+    {
+      "timeMs": 36485,
+      "verseStart": 4
+    },
+    {
+      "timeMs": 42529,
+      "verseStart": 5
+    },
+    {
+      "timeMs": 51355,
+      "verseStart": 6
+    },
+    {
+      "timeMs": 58359,
+      "verseStart": 7
+    },
+    {
+      "timeMs": 69247,
+      "verseStart": 8
+    },
+    {
+      "timeMs": 79834,
+      "verseStart": 9
+    },
+    {
+      "timeMs": 87339,
+      "verseStart": 10
+    },
+    {
+      "timeMs": 94104,
+      "verseStart": 11
+    },
+    {
+      "timeMs": 112496,
+      "verseStart": 12
+    },
+    {
+      "timeMs": 123423,
+      "verseStart": 13
+    },
+    {
+      "timeMs": 138734,
+      "verseStart": 14
+    },
+    {
+      "timeMs": 150502,
+      "verseStart": 15
+    },
+    {
+      "timeMs": 160528,
+      "verseStart": 16
+    },
+    {
+      "timeMs": 171276,
+      "verseStart": 17
+    },
+    {
+      "timeMs": 179321,
+      "verseStart": 18
+    },
+    {
+      "timeMs": 194551,
+      "verseStart": 19
+    },
+    {
+      "timeMs": 207920,
+      "verseStart": 20
+    },
+    {
+      "timeMs": 221730,
+      "verseStart": 21
+    },
+    {
+      "timeMs": 226313,
+      "verseStart": 22
+    },
+    {
+      "timeMs": 237560,
+      "verseStart": 23
+    }
+  ]
+}

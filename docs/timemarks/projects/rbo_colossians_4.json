@@ -1,0 +1,83 @@
+{
+  "id": "gh_rbo_colossians_4",
+  "translationCode": "RBO",
+  "bookId": "colossians",
+  "chapter": 4,
+  "title": "К Колоссянам 4 · РБО",
+  "narratorId": "rbo",
+  "audioFileName": "58_04.mp3",
+  "cues": [
+    {
+      "timeMs": 4563,
+      "verseStart": 1
+    },
+    {
+      "timeMs": 14769,
+      "verseStart": 2
+    },
+    {
+      "timeMs": 20573,
+      "verseStart": 3
+    },
+    {
+      "timeMs": 31560,
+      "verseStart": 4
+    },
+    {
+      "timeMs": 38064,
+      "verseStart": 5
+    },
+    {
+      "timeMs": 44008,
+      "verseStart": 6
+    },
+    {
+      "timeMs": 52673,
+      "verseStart": 7
+    },
+    {
+      "timeMs": 61679,
+      "verseStart": 8
+    },
+    {
+      "timeMs": 69043,
+      "verseStart": 9
+    },
+    {
+      "timeMs": 79950,
+      "verseStart": 10
+    },
+    {
+      "timeMs": 94299,
+      "verseStart": 11
+    },
+    {
+      "timeMs": 108168,
+      "verseStart": 12
+    },
+    {
+      "timeMs": 123077,
+      "verseStart": 13
+    },
+    {
+      "timeMs": 130882,
+      "verseStart": 14
+    },
+    {
+      "timeMs": 135785,
+      "verseStart": 15
+    },
+    {
+      "timeMs": 143009,
+      "verseStart": 16
+    },
+    {
+      "timeMs": 152675,
+      "verseStart": 17
+    },
+    {
+      "timeMs": 161541,
+      "verseStart": 18
+    }
+  ]
+}

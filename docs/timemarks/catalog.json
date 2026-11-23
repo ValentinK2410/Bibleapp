@@ -4314,6 +4314,46 @@
       "file": "projects/rbo_2_corinthians_9.json"
     },
     {
+      "id": "gh_rbo_colossians_1",
+      "translationCode": "RBO",
+      "bookId": "colossians",
+      "chapter": 1,
+      "title": "К Колоссянам 1 · РБО",
+      "cueCount": 29,
+      "narratorId": "rbo",
+      "file": "projects/rbo_colossians_1.json"
+    },
+    {
+      "id": "gh_rbo_colossians_2",
+      "translationCode": "RBO",
+      "bookId": "colossians",
+      "chapter": 2,
+      "title": "К Колоссянам 2 · РБО",
+      "cueCount": 23,
+      "narratorId": "rbo",
+      "file": "projects/rbo_colossians_2.json"
+    },
+    {
+      "id": "gh_rbo_colossians_3",
+      "translationCode": "RBO",
+      "bookId": "colossians",
+      "chapter": 3,
+      "title": "К Колоссянам 3 · РБО",
+      "cueCount": 25,
+      "narratorId": "rbo",
+      "file": "projects/rbo_colossians_3.json"
+    },
+    {
+      "id": "gh_rbo_colossians_4",
+      "translationCode": "RBO",
+      "bookId": "colossians",
+      "chapter": 4,
+      "title": "К Колоссянам 4 · РБО",
+      "cueCount": 18,
+      "narratorId": "rbo",
+      "file": "projects/rbo_colossians_4.json"
+    },
+    {
       "id": "gh_rbo_ephesians_1",
       "translationCode": "RBO",
       "bookId": "ephesians",

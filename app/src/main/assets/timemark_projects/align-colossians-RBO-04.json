@@ -1,0 +1,101 @@
+{
+  "id": "align-colossians-RBO-04",
+  "translationCode": "RBO",
+  "bookId": "colossians",
+  "chapter": 4,
+  "title": "К Колоссянам 4 · РБО",
+  "audioFilePath": "/data/user/0/com.example.bible.sqlite/files/bible_audio/rbo/58_04.mp3",
+  "updatedAt": 1795392000000,
+  "cues": [
+    {
+      "timeMs": 4563,
+      "verseStart": 1,
+      "attachments": []
+    },
+    {
+      "timeMs": 14769,
+      "verseStart": 2,
+      "attachments": []
+    },
+    {
+      "timeMs": 20573,
+      "verseStart": 3,
+      "attachments": []
+    },
+    {
+      "timeMs": 31560,
+      "verseStart": 4,
+      "attachments": []
+    },
+    {
+      "timeMs": 38064,
+      "verseStart": 5,
+      "attachments": []
+    },
+    {
+      "timeMs": 44008,
+      "verseStart": 6,
+      "attachments": []
+    },
+    {
+      "timeMs": 52673,
+      "verseStart": 7,
+      "attachments": []
+    },
+    {
+      "timeMs": 61679,
+      "verseStart": 8,
+      "attachments": []
+    },
+    {
+      "timeMs": 69043,
+      "verseStart": 9,
+      "attachments": []
+    },
+    {
+      "timeMs": 79950,
+      "verseStart": 10,
+      "attachments": []
+    },
+    {
+      "timeMs": 94299,
+      "verseStart": 11,
+      "attachments": []
+    },
+    {
+      "timeMs": 108168,
+      "verseStart": 12,
+      "attachments": []
+    },
+    {
+      "timeMs": 123077,
+      "verseStart": 13,
+      "attachments": []
+    },
+    {
+      "timeMs": 130882,
+      "verseStart": 14,
+      "attachments": []
+    },
+    {
+      "timeMs": 135785,
+      "verseStart": 15,
+      "attachments": []
+    },
+    {
+      "timeMs": 143009,
+      "verseStart": 16,
+      "attachments": []
+    },
+    {
+      "timeMs": 152675,
+      "verseStart": 17,
+      "attachments": []
+    },
+    {
+      "timeMs": 161541,
+      "verseStart": 18,
+      "attachments": []
+    }
+  ]
+}
