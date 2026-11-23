@@ -1,0 +1,166 @@
+{
+  "id": "align-galatians-GRK-04",
+  "translationCode": "PODSTR",
+  "bookId": "galatians",
+  "chapter": 4,
+  "title": "К Галатам 4 · Греческий (Koine)",
+  "audioFilePath": "/data/user/0/com.example.bible.sqlite/files/bible_audio/greek-nt/48_04.mp3",
+  "updatedAt": 1794873600000,
+  "cues": [
+    {
+      "timeMs": 640,
+      "verseStart": 1,
+      "attachments": []
+    },
+    {
+      "timeMs": 7845,
+      "verseStart": 2,
+      "attachments": []
+    },
+    {
+      "timeMs": 13208,
+      "verseStart": 3,
+      "attachments": []
+    },
+    {
+      "timeMs": 18812,
+      "verseStart": 4,
+      "attachments": []
+    },
+    {
+      "timeMs": 27797,
+      "verseStart": 5,
+      "attachments": []
+    },
+    {
+      "timeMs": 33581,
+      "verseStart": 6,
+      "attachments": []
+    },
+    {
+      "timeMs": 42726,
+      "verseStart": 7,
+      "attachments": []
+    },
+    {
+      "timeMs": 48730,
+      "verseStart": 8,
+      "attachments": []
+    },
+    {
+      "timeMs": 54033,
+      "verseStart": 9,
+      "attachments": []
+    },
+    {
+      "timeMs": 64620,
+      "verseStart": 10,
+      "attachments": []
+    },
+    {
+      "timeMs": 69163,
+      "verseStart": 11,
+      "attachments": []
+    },
+    {
+      "timeMs": 73085,
+      "verseStart": 12,
+      "attachments": []
+    },
+    {
+      "timeMs": 79469,
+      "verseStart": 13,
+      "attachments": []
+    },
+    {
+      "timeMs": 84752,
+      "verseStart": 14,
+      "attachments": []
+    },
+    {
+      "timeMs": 94718,
+      "verseStart": 15,
+      "attachments": []
+    },
+    {
+      "timeMs": 102543,
+      "verseStart": 16,
+      "attachments": []
+    },
+    {
+      "timeMs": 105825,
+      "verseStart": 17,
+      "attachments": []
+    },
+    {
+      "timeMs": 111369,
+      "verseStart": 18,
+      "attachments": []
+    },
+    {
+      "timeMs": 116732,
+      "verseStart": 19,
+      "attachments": []
+    },
+    {
+      "timeMs": 121155,
+      "verseStart": 20,
+      "attachments": []
+    },
+    {
+      "timeMs": 127639,
+      "verseStart": 21,
+      "attachments": []
+    },
+    {
+      "timeMs": 132322,
+      "verseStart": 22,
+      "attachments": []
+    },
+    {
+      "timeMs": 138866,
+      "verseStart": 23,
+      "attachments": []
+    },
+    {
+      "timeMs": 145330,
+      "verseStart": 24,
+      "attachments": []
+    },
+    {
+      "timeMs": 154995,
+      "verseStart": 25,
+      "attachments": []
+    },
+    {
+      "timeMs": 163541,
+      "verseStart": 26,
+      "attachments": []
+    },
+    {
+      "timeMs": 167923,
+      "verseStart": 27,
+      "attachments": []
+    },
+    {
+      "timeMs": 179230,
+      "verseStart": 28,
+      "attachments": []
+    },
+    {
+      "timeMs": 183013,
+      "verseStart": 29,
+      "attachments": []
+    },
+    {
+      "timeMs": 188656,
+      "verseStart": 30,
+      "attachments": []
+    },
+    {
+      "timeMs": 198562,
+      "verseStart": 31,
+      "attachments": []
+    }
+  ]
+}

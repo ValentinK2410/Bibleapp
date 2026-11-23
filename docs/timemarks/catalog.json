@@ -1354,6 +1354,66 @@
       "file": "projects/grk_2_corinthians_9.json"
     },
     {
+      "id": "gh_grk_galatians_1",
+      "translationCode": "PODSTR",
+      "bookId": "galatians",
+      "chapter": 1,
+      "title": "К Галатам 1 · Греческий (Koine)",
+      "cueCount": 24,
+      "narratorId": "greek-nt",
+      "file": "projects/grk_galatians_1.json"
+    },
+    {
+      "id": "gh_grk_galatians_2",
+      "translationCode": "PODSTR",
+      "bookId": "galatians",
+      "chapter": 2,
+      "title": "К Галатам 2 · Греческий (Koine)",
+      "cueCount": 21,
+      "narratorId": "greek-nt",
+      "file": "projects/grk_galatians_2.json"
+    },
+    {
+      "id": "gh_grk_galatians_3",
+      "translationCode": "PODSTR",
+      "bookId": "galatians",
+      "chapter": 3,
+      "title": "К Галатам 3 · Греческий (Koine)",
+      "cueCount": 29,
+      "narratorId": "greek-nt",
+      "file": "projects/grk_galatians_3.json"
+    },
+    {
+      "id": "gh_grk_galatians_4",
+      "translationCode": "PODSTR",
+      "bookId": "galatians",
+      "chapter": 4,
+      "title": "К Галатам 4 · Греческий (Koine)",
+      "cueCount": 31,
+      "narratorId": "greek-nt",
+      "file": "projects/grk_galatians_4.json"
+    },
+    {
+      "id": "gh_grk_galatians_5",
+      "translationCode": "PODSTR",
+      "bookId": "galatians",
+      "chapter": 5,
+      "title": "К Галатам 5 · Греческий (Koine)",
+      "cueCount": 26,
+      "narratorId": "greek-nt",
+      "file": "projects/grk_galatians_5.json"
+    },
+    {
+      "id": "gh_grk_galatians_6",
+      "translationCode": "PODSTR",
+      "bookId": "galatians",
+      "chapter": 6,
+      "title": "К Галатам 6 · Греческий (Koine)",
+      "cueCount": 18,
+      "narratorId": "greek-nt",
+      "file": "projects/grk_galatians_6.json"
+    },
+    {
       "id": "gh_grk_john_1",
       "translationCode": "PODSTR",
       "bookId": "john",

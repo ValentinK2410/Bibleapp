@@ -1,0 +1,83 @@
+{
+  "id": "gh_grk_galatians_6",
+  "translationCode": "PODSTR",
+  "bookId": "galatians",
+  "chapter": 6,
+  "title": "К Галатам 6 · Греческий (Koine)",
+  "narratorId": "greek-nt",
+  "audioFileName": "48_06.mp3",
+  "cues": [
+    {
+      "timeMs": 841,
+      "verseStart": 1
+    },
+    {
+      "timeMs": 14930,
+      "verseStart": 2
+    },
+    {
+      "timeMs": 21154,
+      "verseStart": 3
+    },
+    {
+      "timeMs": 26158,
+      "verseStart": 4
+    },
+    {
+      "timeMs": 34944,
+      "verseStart": 5
+    },
+    {
+      "timeMs": 38586,
+      "verseStart": 6
+    },
+    {
+      "timeMs": 44110,
+      "verseStart": 7
+    },
+    {
+      "timeMs": 50254,
+      "verseStart": 8
+    },
+    {
+      "timeMs": 60261,
+      "verseStart": 9
+    },
+    {
+      "timeMs": 66865,
+      "verseStart": 10
+    },
+    {
+      "timeMs": 75611,
+      "verseStart": 11
+    },
+    {
+      "timeMs": 79674,
+      "verseStart": 12
+    },
+    {
+      "timeMs": 89481,
+      "verseStart": 13
+    },
+    {
+      "timeMs": 99067,
+      "verseStart": 14
+    },
+    {
+      "timeMs": 108353,
+      "verseStart": 15
+    },
+    {
+      "timeMs": 114938,
+      "verseStart": 16
+    },
+    {
+      "timeMs": 122643,
+      "verseStart": 17
+    },
+    {
+      "timeMs": 130248,
+      "verseStart": 18
+    }
+  ]
+}

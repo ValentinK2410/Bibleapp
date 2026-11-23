@@ -1,0 +1,95 @@
+{
+  "id": "gh_grk_galatians_2",
+  "translationCode": "PODSTR",
+  "bookId": "galatians",
+  "chapter": 2,
+  "title": "К Галатам 2 · Греческий (Koine)",
+  "narratorId": "greek-nt",
+  "audioFileName": "48_02.mp3",
+  "cues": [
+    {
+      "timeMs": 761,
+      "verseStart": 1
+    },
+    {
+      "timeMs": 9887,
+      "verseStart": 2
+    },
+    {
+      "timeMs": 21576,
+      "verseStart": 3
+    },
+    {
+      "timeMs": 27060,
+      "verseStart": 4
+    },
+    {
+      "timeMs": 37668,
+      "verseStart": 5
+    },
+    {
+      "timeMs": 45373,
+      "verseStart": 6
+    },
+    {
+      "timeMs": 57142,
+      "verseStart": 7
+    },
+    {
+      "timeMs": 64907,
+      "verseStart": 8
+    },
+    {
+      "timeMs": 71792,
+      "verseStart": 9
+    },
+    {
+      "timeMs": 86403,
+      "verseStart": 10
+    },
+    {
+      "timeMs": 92287,
+      "verseStart": 11
+    },
+    {
+      "timeMs": 99412,
+      "verseStart": 12
+    },
+    {
+      "timeMs": 110721,
+      "verseStart": 13
+    },
+    {
+      "timeMs": 118266,
+      "verseStart": 14
+    },
+    {
+      "timeMs": 133117,
+      "verseStart": 15
+    },
+    {
+      "timeMs": 136600,
+      "verseStart": 16
+    },
+    {
+      "timeMs": 154813,
+      "verseStart": 17
+    },
+    {
+      "timeMs": 164180,
+      "verseStart": 18
+    },
+    {
+      "timeMs": 169544,
+      "verseStart": 19
+    },
+    {
+      "timeMs": 175888,
+      "verseStart": 20
+    },
+    {
+      "timeMs": 187737,
+      "verseStart": 21
+    }
+  ]
+}

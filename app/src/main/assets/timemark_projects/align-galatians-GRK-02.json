@@ -1,0 +1,116 @@
+{
+  "id": "align-galatians-GRK-02",
+  "translationCode": "PODSTR",
+  "bookId": "galatians",
+  "chapter": 2,
+  "title": "К Галатам 2 · Греческий (Koine)",
+  "audioFilePath": "/data/user/0/com.example.bible.sqlite/files/bible_audio/greek-nt/48_02.mp3",
+  "updatedAt": 1794873600000,
+  "cues": [
+    {
+      "timeMs": 761,
+      "verseStart": 1,
+      "attachments": []
+    },
+    {
+      "timeMs": 9887,
+      "verseStart": 2,
+      "attachments": []
+    },
+    {
+      "timeMs": 21576,
+      "verseStart": 3,
+      "attachments": []
+    },
+    {
+      "timeMs": 27060,
+      "verseStart": 4,
+      "attachments": []
+    },
+    {
+      "timeMs": 37668,
+      "verseStart": 5,
+      "attachments": []
+    },
+    {
+      "timeMs": 45373,
+      "verseStart": 6,
+      "attachments": []
+    },
+    {
+      "timeMs": 57142,
+      "verseStart": 7,
+      "attachments": []
+    },
+    {
+      "timeMs": 64907,
+      "verseStart": 8,
+      "attachments": []
+    },
+    {
+      "timeMs": 71792,
+      "verseStart": 9,
+      "attachments": []
+    },
+    {
+      "timeMs": 86403,
+      "verseStart": 10,
+      "attachments": []
+    },
+    {
+      "timeMs": 92287,
+      "verseStart": 11,
+      "attachments": []
+    },
+    {
+      "timeMs": 99412,
+      "verseStart": 12,
+      "attachments": []
+    },
+    {
+      "timeMs": 110721,
+      "verseStart": 13,
+      "attachments": []
+    },
+    {
+      "timeMs": 118266,
+      "verseStart": 14,
+      "attachments": []
+    },
+    {
+      "timeMs": 133117,
+      "verseStart": 15,
+      "attachments": []
+    },
+    {
+      "timeMs": 136600,
+      "verseStart": 16,
+      "attachments": []
+    },
+    {
+      "timeMs": 154813,
+      "verseStart": 17,
+      "attachments": []
+    },
+    {
+      "timeMs": 164180,
+      "verseStart": 18,
+      "attachments": []
+    },
+    {
+      "timeMs": 169544,
+      "verseStart": 19,
+      "attachments": []
+    },
+    {
+      "timeMs": 175888,
+      "verseStart": 20,
+      "attachments": []
+    },
+    {
+      "timeMs": 187737,
+      "verseStart": 21,
+      "attachments": []
+    }
+  ]
+}

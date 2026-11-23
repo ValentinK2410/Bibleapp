@@ -1,0 +1,101 @@
+{
+  "id": "align-galatians-GRK-06",
+  "translationCode": "PODSTR",
+  "bookId": "galatians",
+  "chapter": 6,
+  "title": "К Галатам 6 · Греческий (Koine)",
+  "audioFilePath": "/data/user/0/com.example.bible.sqlite/files/bible_audio/greek-nt/48_06.mp3",
+  "updatedAt": 1794873600000,
+  "cues": [
+    {
+      "timeMs": 841,
+      "verseStart": 1,
+      "attachments": []
+    },
+    {
+      "timeMs": 14930,
+      "verseStart": 2,
+      "attachments": []
+    },
+    {
+      "timeMs": 21154,
+      "verseStart": 3,
+      "attachments": []
+    },
+    {
+      "timeMs": 26158,
+      "verseStart": 4,
+      "attachments": []
+    },
+    {
+      "timeMs": 34944,
+      "verseStart": 5,
+      "attachments": []
+    },
+    {
+      "timeMs": 38586,
+      "verseStart": 6,
+      "attachments": []
+    },
+    {
+      "timeMs": 44110,
+      "verseStart": 7,
+      "attachments": []
+    },
+    {
+      "timeMs": 50254,
+      "verseStart": 8,
+      "attachments": []
+    },
+    {
+      "timeMs": 60261,
+      "verseStart": 9,
+      "attachments": []
+    },
+    {
+      "timeMs": 66865,
+      "verseStart": 10,
+      "attachments": []
+    },
+    {
+      "timeMs": 75611,
+      "verseStart": 11,
+      "attachments": []
+    },
+    {
+      "timeMs": 79674,
+      "verseStart": 12,
+      "attachments": []
+    },
+    {
+      "timeMs": 89481,
+      "verseStart": 13,
+      "attachments": []
+    },
+    {
+      "timeMs": 99067,
+      "verseStart": 14,
+      "attachments": []
+    },
+    {
+      "timeMs": 108353,
+      "verseStart": 15,
+      "attachments": []
+    },
+    {
+      "timeMs": 114938,
+      "verseStart": 16,
+      "attachments": []
+    },
+    {
+      "timeMs": 122643,
+      "verseStart": 17,
+      "attachments": []
+    },
+    {
+      "timeMs": 130248,
+      "verseStart": 18,
+      "attachments": []
+    }
+  ]
+}

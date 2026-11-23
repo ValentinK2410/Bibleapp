@@ -1,0 +1,115 @@
+{
+  "id": "gh_grk_galatians_5",
+  "translationCode": "PODSTR",
+  "bookId": "galatians",
+  "chapter": 5,
+  "title": "К Галатам 5 · Греческий (Koine)",
+  "narratorId": "greek-nt",
+  "audioFileName": "48_05.mp3",
+  "cues": [
+    {
+      "timeMs": 400,
+      "verseStart": 1
+    },
+    {
+      "timeMs": 7765,
+      "verseStart": 2
+    },
+    {
+      "timeMs": 14650,
+      "verseStart": 3
+    },
+    {
+      "timeMs": 22055,
+      "verseStart": 4
+    },
+    {
+      "timeMs": 27899,
+      "verseStart": 5
+    },
+    {
+      "timeMs": 32962,
+      "verseStart": 6
+    },
+    {
+      "timeMs": 41108,
+      "verseStart": 7
+    },
+    {
+      "timeMs": 45671,
+      "verseStart": 8
+    },
+    {
+      "timeMs": 48593,
+      "verseStart": 9
+    },
+    {
+      "timeMs": 51254,
+      "verseStart": 10
+    },
+    {
+      "timeMs": 59940,
+      "verseStart": 11
+    },
+    {
+      "timeMs": 67525,
+      "verseStart": 12
+    },
+    {
+      "timeMs": 71488,
+      "verseStart": 13
+    },
+    {
+      "timeMs": 80894,
+      "verseStart": 14
+    },
+    {
+      "timeMs": 88019,
+      "verseStart": 15
+    },
+    {
+      "timeMs": 93943,
+      "verseStart": 16
+    },
+    {
+      "timeMs": 99467,
+      "verseStart": 17
+    },
+    {
+      "timeMs": 110194,
+      "verseStart": 18
+    },
+    {
+      "timeMs": 114177,
+      "verseStart": 19
+    },
+    {
+      "timeMs": 120821,
+      "verseStart": 20
+    },
+    {
+      "timeMs": 128526,
+      "verseStart": 21
+    },
+    {
+      "timeMs": 139474,
+      "verseStart": 22
+    },
+    {
+      "timeMs": 147299,
+      "verseStart": 23
+    },
+    {
+      "timeMs": 151822,
+      "verseStart": 24
+    },
+    {
+      "timeMs": 158086,
+      "verseStart": 25
+    },
+    {
+      "timeMs": 161689,
+      "verseStart": 26
+    }
+  ]
+}
