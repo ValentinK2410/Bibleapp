@@ -1,0 +1,131 @@
+{
+  "id": "gh_syn_philippians_1",
+  "translationCode": "SYN",
+  "bookId": "philippians",
+  "chapter": 1,
+  "title": "К Филиппийцам 1 · Синодальный · Бондаренко",
+  "narratorId": "bondarenko",
+  "audioFileName": "57_01.mp3",
+  "cues": [
+    {
+      "timeMs": 13410,
+      "verseStart": 1
+    },
+    {
+      "timeMs": 24577,
+      "verseStart": 2
+    },
+    {
+      "timeMs": 34164,
+      "verseStart": 3
+    },
+    {
+      "timeMs": 38567,
+      "verseStart": 4
+    },
+    {
+      "timeMs": 45212,
+      "verseStart": 5
+    },
+    {
+      "timeMs": 51376,
+      "verseStart": 6
+    },
+    {
+      "timeMs": 59282,
+      "verseStart": 7
+    },
+    {
+      "timeMs": 76154,
+      "verseStart": 8
+    },
+    {
+      "timeMs": 82638,
+      "verseStart": 9
+    },
+    {
+      "timeMs": 90284,
+      "verseStart": 10
+    },
+    {
+      "timeMs": 96408,
+      "verseStart": 11
+    },
+    {
+      "timeMs": 104294,
+      "verseStart": 12
+    },
+    {
+      "timeMs": 111939,
+      "verseStart": 13
+    },
+    {
+      "timeMs": 118524,
+      "verseStart": 14
+    },
+    {
+      "timeMs": 129812,
+      "verseStart": 15
+    },
+    {
+      "timeMs": 137997,
+      "verseStart": 16
+    },
+    {
+      "timeMs": 144922,
+      "verseStart": 17
+    },
+    {
+      "timeMs": 152047,
+      "verseStart": 18
+    },
+    {
+      "timeMs": 161834,
+      "verseStart": 19
+    },
+    {
+      "timeMs": 170080,
+      "verseStart": 20
+    },
+    {
+      "timeMs": 186872,
+      "verseStart": 21
+    },
+    {
+      "timeMs": 194797,
+      "verseStart": 22
+    },
+    {
+      "timeMs": 202223,
+      "verseStart": 23
+    },
+    {
+      "timeMs": 212070,
+      "verseStart": 24
+    },
+    {
+      "timeMs": 217693,
+      "verseStart": 25
+    },
+    {
+      "timeMs": 225459,
+      "verseStart": 26
+    },
+    {
+      "timeMs": 233525,
+      "verseStart": 27
+    },
+    {
+      "timeMs": 249396,
+      "verseStart": 28
+    },
+    {
+      "timeMs": 262125,
+      "verseStart": 29
+    },
+    {
+      "timeMs": 268709,
+      "verseStart": 30
+    }
+  ]
+}

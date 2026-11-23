@@ -6064,6 +6064,46 @@
       "file": "projects/syn_mark_9.json"
     },
     {
+      "id": "gh_syn_philippians_1",
+      "translationCode": "SYN",
+      "bookId": "philippians",
+      "chapter": 1,
+      "title": "К Филиппийцам 1 · Синодальный · Бондаренко",
+      "cueCount": 30,
+      "narratorId": "bondarenko",
+      "file": "projects/syn_philippians_1.json"
+    },
+    {
+      "id": "gh_syn_philippians_2",
+      "translationCode": "SYN",
+      "bookId": "philippians",
+      "chapter": 2,
+      "title": "К Филиппийцам 2 · Синодальный · Бондаренко",
+      "cueCount": 30,
+      "narratorId": "bondarenko",
+      "file": "projects/syn_philippians_2.json"
+    },
+    {
+      "id": "gh_syn_philippians_3",
+      "translationCode": "SYN",
+      "bookId": "philippians",
+      "chapter": 3,
+      "title": "К Филиппийцам 3 · Синодальный · Бондаренко",
+      "cueCount": 21,
+      "narratorId": "bondarenko",
+      "file": "projects/syn_philippians_3.json"
+    },
+    {
+      "id": "gh_syn_philippians_4",
+      "translationCode": "SYN",
+      "bookId": "philippians",
+      "chapter": 4,
+      "title": "К Филиппийцам 4 · Синодальный · Бондаренко",
+      "cueCount": 23,
+      "narratorId": "bondarenko",
+      "file": "projects/syn_philippians_4.json"
+    },
+    {
       "id": "gh_syn_romans_1",
       "translationCode": "SYN",
       "bookId": "romans",

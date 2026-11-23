@@ -1,0 +1,95 @@
+{
+  "id": "gh_syn_philippians_3",
+  "translationCode": "SYN",
+  "bookId": "philippians",
+  "chapter": 3,
+  "title": "К Филиппийцам 3 · Синодальный · Бондаренко",
+  "narratorId": "bondarenko",
+  "audioFileName": "57_03.mp3",
+  "cues": [
+    {
+      "timeMs": 260,
+      "verseStart": 1
+    },
+    {
+      "timeMs": 13309,
+      "verseStart": 2
+    },
+    {
+      "timeMs": 19113,
+      "verseStart": 3
+    },
+    {
+      "timeMs": 29360,
+      "verseStart": 4
+    },
+    {
+      "timeMs": 37505,
+      "verseStart": 5
+    },
+    {
+      "timeMs": 46591,
+      "verseStart": 6
+    },
+    {
+      "timeMs": 53636,
+      "verseStart": 7
+    },
+    {
+      "timeMs": 60340,
+      "verseStart": 8
+    },
+    {
+      "timeMs": 74830,
+      "verseStart": 9
+    },
+    {
+      "timeMs": 86638,
+      "verseStart": 10
+    },
+    {
+      "timeMs": 97225,
+      "verseStart": 11
+    },
+    {
+      "timeMs": 101928,
+      "verseStart": 12
+    },
+    {
+      "timeMs": 113756,
+      "verseStart": 13
+    },
+    {
+      "timeMs": 120440,
+      "verseStart": 14
+    },
+    {
+      "timeMs": 128446,
+      "verseStart": 15
+    },
+    {
+      "timeMs": 139773,
+      "verseStart": 16
+    },
+    {
+      "timeMs": 146978,
+      "verseStart": 17
+    },
+    {
+      "timeMs": 154583,
+      "verseStart": 18
+    },
+    {
+      "timeMs": 164250,
+      "verseStart": 19
+    },
+    {
+      "timeMs": 173976,
+      "verseStart": 20
+    },
+    {
+      "timeMs": 181621,
+      "verseStart": 21
+    }
+  ]
+}
