@@ -1,0 +1,131 @@
+{
+  "id": "gh_nrt_philippians_1",
+  "translationCode": "NRT",
+  "bookId": "philippians",
+  "chapter": 1,
+  "title": "К Филиппийцам 1 · Новый русский",
+  "narratorId": "new-russian",
+  "audioFileName": "57_01.mp3",
+  "cues": [
+    {
+      "timeMs": 380,
+      "verseStart": 1
+    },
+    {
+      "timeMs": 12429,
+      "verseStart": 2
+    },
+    {
+      "timeMs": 21696,
+      "verseStart": 3
+    },
+    {
+      "timeMs": 25438,
+      "verseStart": 4
+    },
+    {
+      "timeMs": 30362,
+      "verseStart": 5
+    },
+    {
+      "timeMs": 38528,
+      "verseStart": 6
+    },
+    {
+      "timeMs": 47154,
+      "verseStart": 7
+    },
+    {
+      "timeMs": 61244,
+      "verseStart": 8
+    },
+    {
+      "timeMs": 67128,
+      "verseStart": 9
+    },
+    {
+      "timeMs": 73933,
+      "verseStart": 10
+    },
+    {
+      "timeMs": 82759,
+      "verseStart": 11
+    },
+    {
+      "timeMs": 95769,
+      "verseStart": 12
+    },
+    {
+      "timeMs": 103534,
+      "verseStart": 13
+    },
+    {
+      "timeMs": 112501,
+      "verseStart": 14
+    },
+    {
+      "timeMs": 123709,
+      "verseStart": 15
+    },
+    {
+      "timeMs": 136558,
+      "verseStart": 16
+    },
+    {
+      "timeMs": 143483,
+      "verseStart": 17
+    },
+    {
+      "timeMs": 154831,
+      "verseStart": 18
+    },
+    {
+      "timeMs": 166179,
+      "verseStart": 19
+    },
+    {
+      "timeMs": 175646,
+      "verseStart": 20
+    },
+    {
+      "timeMs": 191717,
+      "verseStart": 21
+    },
+    {
+      "timeMs": 196741,
+      "verseStart": 22
+    },
+    {
+      "timeMs": 205968,
+      "verseStart": 23
+    },
+    {
+      "timeMs": 213533,
+      "verseStart": 24
+    },
+    {
+      "timeMs": 217196,
+      "verseStart": 25
+    },
+    {
+      "timeMs": 228244,
+      "verseStart": 26
+    },
+    {
+      "timeMs": 238251,
+      "verseStart": 27
+    },
+    {
+      "timeMs": 258886,
+      "verseStart": 28
+    },
+    {
+      "timeMs": 269353,
+      "verseStart": 29
+    },
+    {
+      "timeMs": 274417,
+      "verseStart": 30
+    }
+  ]
+}

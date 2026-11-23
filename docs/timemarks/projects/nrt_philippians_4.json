@@ -1,0 +1,103 @@
+{
+  "id": "gh_nrt_philippians_4",
+  "translationCode": "NRT",
+  "bookId": "philippians",
+  "chapter": 4,
+  "title": "К Филиппийцам 4 · Новый русский",
+  "narratorId": "new-russian",
+  "audioFileName": "57_04.mp3",
+  "cues": [
+    {
+      "timeMs": 1021,
+      "verseStart": 1
+    },
+    {
+      "timeMs": 14829,
+      "verseStart": 2
+    },
+    {
+      "timeMs": 20052,
+      "verseStart": 3
+    },
+    {
+      "timeMs": 36142,
+      "verseStart": 4
+    },
+    {
+      "timeMs": 42946,
+      "verseStart": 5
+    },
+    {
+      "timeMs": 48610,
+      "verseStart": 6
+    },
+    {
+      "timeMs": 57555,
+      "verseStart": 7
+    },
+    {
+      "timeMs": 68202,
+      "verseStart": 8
+    },
+    {
+      "timeMs": 86733,
+      "verseStart": 9
+    },
+    {
+      "timeMs": 106565,
+      "verseStart": 10
+    },
+    {
+      "timeMs": 118293,
+      "verseStart": 11
+    },
+    {
+      "timeMs": 126638,
+      "verseStart": 12
+    },
+    {
+      "timeMs": 141387,
+      "verseStart": 13
+    },
+    {
+      "timeMs": 146650,
+      "verseStart": 14
+    },
+    {
+      "timeMs": 151393,
+      "verseStart": 15
+    },
+    {
+      "timeMs": 166222,
+      "verseStart": 16
+    },
+    {
+      "timeMs": 172586,
+      "verseStart": 17
+    },
+    {
+      "timeMs": 182692,
+      "verseStart": 18
+    },
+    {
+      "timeMs": 197161,
+      "verseStart": 19
+    },
+    {
+      "timeMs": 205286,
+      "verseStart": 20
+    },
+    {
+      "timeMs": 215252,
+      "verseStart": 21
+    },
+    {
+      "timeMs": 224238,
+      "verseStart": 22
+    },
+    {
+      "timeMs": 231242,
+      "verseStart": 23
+    }
+  ]
+}

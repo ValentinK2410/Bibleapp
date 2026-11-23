@@ -1,0 +1,161 @@
+{
+  "id": "align-philippians-NRT-02",
+  "translationCode": "NRT",
+  "bookId": "philippians",
+  "chapter": 2,
+  "title": "К Филиппийцам 2 · Новый русский",
+  "audioFilePath": "/data/user/0/com.example.bible.sqlite/files/bible_audio/new-russian/57_02.mp3",
+  "updatedAt": 1795392000000,
+  "cues": [
+    {
+      "timeMs": 4243,
+      "verseStart": 1,
+      "attachments": []
+    },
+    {
+      "timeMs": 17471,
+      "verseStart": 2,
+      "attachments": []
+    },
+    {
+      "timeMs": 30920,
+      "verseStart": 3,
+      "attachments": []
+    },
+    {
+      "timeMs": 40826,
+      "verseStart": 4,
+      "attachments": []
+    },
+    {
+      "timeMs": 45889,
+      "verseStart": 5,
+      "attachments": []
+    },
+    {
+      "timeMs": 52113,
+      "verseStart": 6,
+      "attachments": []
+    },
+    {
+      "timeMs": 56836,
+      "verseStart": 7,
+      "attachments": []
+    },
+    {
+      "timeMs": 65622,
+      "verseStart": 8,
+      "attachments": []
+    },
+    {
+      "timeMs": 72306,
+      "verseStart": 9,
+      "attachments": []
+    },
+    {
+      "timeMs": 76969,
+      "verseStart": 10,
+      "attachments": []
+    },
+    {
+      "timeMs": 84454,
+      "verseStart": 11,
+      "attachments": []
+    },
+    {
+      "timeMs": 95241,
+      "verseStart": 12,
+      "attachments": []
+    },
+    {
+      "timeMs": 110210,
+      "verseStart": 13,
+      "attachments": []
+    },
+    {
+      "timeMs": 121137,
+      "verseStart": 14,
+      "attachments": []
+    },
+    {
+      "timeMs": 124039,
+      "verseStart": 15,
+      "attachments": []
+    },
+    {
+      "timeMs": 138528,
+      "verseStart": 16,
+      "attachments": []
+    },
+    {
+      "timeMs": 149335,
+      "verseStart": 17,
+      "attachments": []
+    },
+    {
+      "timeMs": 160763,
+      "verseStart": 18,
+      "attachments": []
+    },
+    {
+      "timeMs": 168368,
+      "verseStart": 19,
+      "attachments": []
+    },
+    {
+      "timeMs": 177533,
+      "verseStart": 20,
+      "attachments": []
+    },
+    {
+      "timeMs": 183957,
+      "verseStart": 21,
+      "attachments": []
+    },
+    {
+      "timeMs": 189221,
+      "verseStart": 22,
+      "attachments": []
+    },
+    {
+      "timeMs": 198567,
+      "verseStart": 23,
+      "attachments": []
+    },
+    {
+      "timeMs": 205952,
+      "verseStart": 24,
+      "attachments": []
+    },
+    {
+      "timeMs": 211695,
+      "verseStart": 25,
+      "attachments": []
+    },
+    {
+      "timeMs": 223203,
+      "verseStart": 26,
+      "attachments": []
+    },
+    {
+      "timeMs": 229947,
+      "verseStart": 27,
+      "attachments": []
+    },
+    {
+      "timeMs": 240634,
+      "verseStart": 28,
+      "attachments": []
+    },
+    {
+      "timeMs": 250600,
+      "verseStart": 29,
+      "attachments": []
+    },
+    {
+      "timeMs": 256084,
+      "verseStart": 30,
+      "attachments": []
+    }
+  ]
+}
