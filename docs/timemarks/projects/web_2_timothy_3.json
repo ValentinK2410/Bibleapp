@@ -1,0 +1,79 @@
+{
+  "id": "gh_web_2_timothy_3",
+  "translationCode": "WEB",
+  "bookId": "2_timothy",
+  "chapter": 3,
+  "title": "2-е Тимофею 3 · WEB (англ.)",
+  "narratorId": "web",
+  "audioFileName": "55_03.mp3",
+  "cues": [
+    {
+      "timeMs": 2782,
+      "verseStart": 1
+    },
+    {
+      "timeMs": 8406,
+      "verseStart": 2
+    },
+    {
+      "timeMs": 18553,
+      "verseStart": 3
+    },
+    {
+      "timeMs": 27680,
+      "verseStart": 4
+    },
+    {
+      "timeMs": 33604,
+      "verseStart": 5
+    },
+    {
+      "timeMs": 41330,
+      "verseStart": 6
+    },
+    {
+      "timeMs": 49696,
+      "verseStart": 7
+    },
+    {
+      "timeMs": 54880,
+      "verseStart": 8
+    },
+    {
+      "timeMs": 64046,
+      "verseStart": 9
+    },
+    {
+      "timeMs": 71592,
+      "verseStart": 10
+    },
+    {
+      "timeMs": 79537,
+      "verseStart": 11
+    },
+    {
+      "timeMs": 91366,
+      "verseStart": 12
+    },
+    {
+      "timeMs": 96830,
+      "verseStart": 13
+    },
+    {
+      "timeMs": 103174,
+      "verseStart": 14
+    },
+    {
+      "timeMs": 110079,
+      "verseStart": 15
+    },
+    {
+      "timeMs": 119046,
+      "verseStart": 16
+    },
+    {
+      "timeMs": 128112,
+      "verseStart": 17
+    }
+  ]
+}

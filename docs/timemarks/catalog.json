@@ -7914,6 +7914,46 @@
       "file": "projects/web_2_thessalonians_3.json"
     },
     {
+      "id": "gh_web_2_timothy_1",
+      "translationCode": "WEB",
+      "bookId": "2_timothy",
+      "chapter": 1,
+      "title": "2-е Тимофею 1 · WEB (англ.)",
+      "cueCount": 18,
+      "narratorId": "web",
+      "file": "projects/web_2_timothy_1.json"
+    },
+    {
+      "id": "gh_web_2_timothy_2",
+      "translationCode": "WEB",
+      "bookId": "2_timothy",
+      "chapter": 2,
+      "title": "2-е Тимофею 2 · WEB (англ.)",
+      "cueCount": 26,
+      "narratorId": "web",
+      "file": "projects/web_2_timothy_2.json"
+    },
+    {
+      "id": "gh_web_2_timothy_3",
+      "translationCode": "WEB",
+      "bookId": "2_timothy",
+      "chapter": 3,
+      "title": "2-е Тимофею 3 · WEB (англ.)",
+      "cueCount": 17,
+      "narratorId": "web",
+      "file": "projects/web_2_timothy_3.json"
+    },
+    {
+      "id": "gh_web_2_timothy_4",
+      "translationCode": "WEB",
+      "bookId": "2_timothy",
+      "chapter": 4,
+      "title": "2-е Тимофею 4 · WEB (англ.)",
+      "cueCount": 22,
+      "narratorId": "web",
+      "file": "projects/web_2_timothy_4.json"
+    },
+    {
       "id": "gh_web_colossians_1",
       "translationCode": "WEB",
       "bookId": "colossians",

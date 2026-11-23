@@ -1,0 +1,101 @@
+{
+  "id": "align-2_timothy-WEB-01",
+  "translationCode": "WEB",
+  "bookId": "2_timothy",
+  "chapter": 1,
+  "title": "2-е Тимофею 1 · WEB (англ.)",
+  "audioFilePath": "/data/user/0/com.example.bible.sqlite/files/bible_audio/web/55_01.mp3",
+  "updatedAt": 1794873600000,
+  "cues": [
+    {
+      "timeMs": 5364,
+      "verseStart": 1,
+      "attachments": []
+    },
+    {
+      "timeMs": 11548,
+      "verseStart": 2,
+      "attachments": []
+    },
+    {
+      "timeMs": 21074,
+      "verseStart": 3,
+      "attachments": []
+    },
+    {
+      "timeMs": 29620,
+      "verseStart": 4,
+      "attachments": []
+    },
+    {
+      "timeMs": 35964,
+      "verseStart": 5,
+      "attachments": []
+    },
+    {
+      "timeMs": 48193,
+      "verseStart": 6,
+      "attachments": []
+    },
+    {
+      "timeMs": 55778,
+      "verseStart": 7,
+      "attachments": []
+    },
+    {
+      "timeMs": 62782,
+      "verseStart": 8,
+      "attachments": []
+    },
+    {
+      "timeMs": 73470,
+      "verseStart": 9,
+      "attachments": []
+    },
+    {
+      "timeMs": 86078,
+      "verseStart": 10,
+      "attachments": []
+    },
+    {
+      "timeMs": 96425,
+      "verseStart": 11,
+      "attachments": []
+    },
+    {
+      "timeMs": 102529,
+      "verseStart": 12,
+      "attachments": []
+    },
+    {
+      "timeMs": 117079,
+      "verseStart": 13,
+      "attachments": []
+    },
+    {
+      "timeMs": 124804,
+      "verseStart": 14,
+      "attachments": []
+    },
+    {
+      "timeMs": 131729,
+      "verseStart": 15,
+      "attachments": []
+    },
+    {
+      "timeMs": 141115,
+      "verseStart": 16,
+      "attachments": []
+    },
+    {
+      "timeMs": 147940,
+      "verseStart": 17,
+      "attachments": []
+    },
+    {
+      "timeMs": 152503,
+      "verseStart": 18,
+      "attachments": []
+    }
+  ]
+}

@@ -1,0 +1,115 @@
+{
+  "id": "gh_web_2_timothy_2",
+  "translationCode": "WEB",
+  "bookId": "2_timothy",
+  "chapter": 2,
+  "title": "2-е Тимофею 2 · WEB (англ.)",
+  "narratorId": "web",
+  "audioFileName": "55_02.mp3",
+  "cues": [
+    {
+      "timeMs": 2001,
+      "verseStart": 1
+    },
+    {
+      "timeMs": 7385,
+      "verseStart": 2
+    },
+    {
+      "timeMs": 16771,
+      "verseStart": 3
+    },
+    {
+      "timeMs": 22455,
+      "verseStart": 4
+    },
+    {
+      "timeMs": 31241,
+      "verseStart": 5
+    },
+    {
+      "timeMs": 38825,
+      "verseStart": 6
+    },
+    {
+      "timeMs": 44329,
+      "verseStart": 7
+    },
+    {
+      "timeMs": 49553,
+      "verseStart": 8
+    },
+    {
+      "timeMs": 55336,
+      "verseStart": 9
+    },
+    {
+      "timeMs": 64002,
+      "verseStart": 10
+    },
+    {
+      "timeMs": 73528,
+      "verseStart": 11
+    },
+    {
+      "timeMs": 78852,
+      "verseStart": 12
+    },
+    {
+      "timeMs": 85176,
+      "verseStart": 13
+    },
+    {
+      "timeMs": 92120,
+      "verseStart": 14
+    },
+    {
+      "timeMs": 103188,
+      "verseStart": 15
+    },
+    {
+      "timeMs": 111973,
+      "verseStart": 16
+    },
+    {
+      "timeMs": 117477,
+      "verseStart": 17
+    },
+    {
+      "timeMs": 123301,
+      "verseStart": 18
+    },
+    {
+      "timeMs": 131866,
+      "verseStart": 19
+    },
+    {
+      "timeMs": 145635,
+      "verseStart": 20
+    },
+    {
+      "timeMs": 155862,
+      "verseStart": 21
+    },
+    {
+      "timeMs": 167069,
+      "verseStart": 22
+    },
+    {
+      "timeMs": 177496,
+      "verseStart": 23
+    },
+    {
+      "timeMs": 183840,
+      "verseStart": 24
+    },
+    {
+      "timeMs": 191165,
+      "verseStart": 25
+    },
+    {
+      "timeMs": 198910,
+      "verseStart": 26
+    }
+  ]
+}
