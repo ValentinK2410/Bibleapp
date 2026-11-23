@@ -1,0 +1,119 @@
+{
+  "id": "gh_grk_1_corinthians_9",
+  "translationCode": "PODSTR",
+  "bookId": "1_corinthians",
+  "chapter": 9,
+  "title": "1-е Коринфянам 9 · Греческий (Koine)",
+  "narratorId": "greek-nt",
+  "audioFileName": "46_09.mp3",
+  "cues": [
+    {
+      "timeMs": 600,
+      "verseStart": 1
+    },
+    {
+      "timeMs": 9206,
+      "verseStart": 2
+    },
+    {
+      "timeMs": 16671,
+      "verseStart": 3
+    },
+    {
+      "timeMs": 20754,
+      "verseStart": 4
+    },
+    {
+      "timeMs": 23756,
+      "verseStart": 5
+    },
+    {
+      "timeMs": 31000,
+      "verseStart": 6
+    },
+    {
+      "timeMs": 35243,
+      "verseStart": 7
+    },
+    {
+      "timeMs": 46410,
+      "verseStart": 8
+    },
+    {
+      "timeMs": 50733,
+      "verseStart": 9
+    },
+    {
+      "timeMs": 57377,
+      "verseStart": 10
+    },
+    {
+      "timeMs": 66483,
+      "verseStart": 11
+    },
+    {
+      "timeMs": 72687,
+      "verseStart": 12
+    },
+    {
+      "timeMs": 84875,
+      "verseStart": 13
+    },
+    {
+      "timeMs": 94662,
+      "verseStart": 14
+    },
+    {
+      "timeMs": 100806,
+      "verseStart": 15
+    },
+    {
+      "timeMs": 111713,
+      "verseStart": 16
+    },
+    {
+      "timeMs": 119698,
+      "verseStart": 17
+    },
+    {
+      "timeMs": 124821,
+      "verseStart": 18
+    },
+    {
+      "timeMs": 135008,
+      "verseStart": 19
+    },
+    {
+      "timeMs": 140952,
+      "verseStart": 20
+    },
+    {
+      "timeMs": 150818,
+      "verseStart": 21
+    },
+    {
+      "timeMs": 157843,
+      "verseStart": 22
+    },
+    {
+      "timeMs": 166188,
+      "verseStart": 23
+    },
+    {
+      "timeMs": 171192,
+      "verseStart": 24
+    },
+    {
+      "timeMs": 179777,
+      "verseStart": 25
+    },
+    {
+      "timeMs": 188403,
+      "verseStart": 26
+    },
+    {
+      "timeMs": 193946,
+      "verseStart": 27
+    }
+  ]
+}

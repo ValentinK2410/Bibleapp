@@ -1,0 +1,111 @@
+{
+  "id": "align-1_corinthians-GRK-06",
+  "translationCode": "PODSTR",
+  "bookId": "1_corinthians",
+  "chapter": 6,
+  "title": "1-е Коринфянам 6 · Греческий (Koine)",
+  "audioFilePath": "/data/user/0/com.example.bible.sqlite/files/bible_audio/greek-nt/46_06.mp3",
+  "updatedAt": 1794873600000,
+  "cues": [
+    {
+      "timeMs": 280,
+      "verseStart": 1,
+      "attachments": []
+    },
+    {
+      "timeMs": 7345,
+      "verseStart": 2,
+      "attachments": []
+    },
+    {
+      "timeMs": 15811,
+      "verseStart": 3,
+      "attachments": []
+    },
+    {
+      "timeMs": 19914,
+      "verseStart": 4,
+      "attachments": []
+    },
+    {
+      "timeMs": 26619,
+      "verseStart": 5,
+      "attachments": []
+    },
+    {
+      "timeMs": 34725,
+      "verseStart": 6,
+      "attachments": []
+    },
+    {
+      "timeMs": 39128,
+      "verseStart": 7,
+      "attachments": []
+    },
+    {
+      "timeMs": 48415,
+      "verseStart": 8,
+      "attachments": []
+    },
+    {
+      "timeMs": 52357,
+      "verseStart": 9,
+      "attachments": []
+    },
+    {
+      "timeMs": 63685,
+      "verseStart": 10,
+      "attachments": []
+    },
+    {
+      "timeMs": 70430,
+      "verseStart": 11,
+      "attachments": []
+    },
+    {
+      "timeMs": 81358,
+      "verseStart": 12,
+      "attachments": []
+    },
+    {
+      "timeMs": 88443,
+      "verseStart": 13,
+      "attachments": []
+    },
+    {
+      "timeMs": 99431,
+      "verseStart": 14,
+      "attachments": []
+    },
+    {
+      "timeMs": 104415,
+      "verseStart": 15,
+      "attachments": []
+    },
+    {
+      "timeMs": 112040,
+      "verseStart": 16,
+      "attachments": []
+    },
+    {
+      "timeMs": 118905,
+      "verseStart": 17,
+      "attachments": []
+    },
+    {
+      "timeMs": 122107,
+      "verseStart": 18,
+      "attachments": []
+    },
+    {
+      "timeMs": 131674,
+      "verseStart": 19,
+      "attachments": []
+    },
+    {
+      "timeMs": 139359,
+      "verseStart": 20,
+      "attachments": []
+    }
+  ]
+}

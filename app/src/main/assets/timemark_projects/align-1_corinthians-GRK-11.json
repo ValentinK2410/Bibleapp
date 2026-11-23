@@ -1,0 +1,181 @@
+{
+  "id": "align-1_corinthians-GRK-11",
+  "translationCode": "PODSTR",
+  "bookId": "1_corinthians",
+  "chapter": 11,
+  "title": "1-е Коринфянам 11 · Греческий (Koine)",
+  "audioFilePath": "/data/user/0/com.example.bible.sqlite/files/bible_audio/greek-nt/46_11.mp3",
+  "updatedAt": 1794873600000,
+  "cues": [
+    {
+      "timeMs": 721,
+      "verseStart": 1,
+      "attachments": []
+    },
+    {
+      "timeMs": 3903,
+      "verseStart": 2,
+      "attachments": []
+    },
+    {
+      "timeMs": 10427,
+      "verseStart": 3,
+      "attachments": []
+    },
+    {
+      "timeMs": 19893,
+      "verseStart": 4,
+      "attachments": []
+    },
+    {
+      "timeMs": 26318,
+      "verseStart": 5,
+      "attachments": []
+    },
+    {
+      "timeMs": 36664,
+      "verseStart": 6,
+      "attachments": []
+    },
+    {
+      "timeMs": 45030,
+      "verseStart": 7,
+      "attachments": []
+    },
+    {
+      "timeMs": 53115,
+      "verseStart": 8,
+      "attachments": []
+    },
+    {
+      "timeMs": 57578,
+      "verseStart": 9,
+      "attachments": []
+    },
+    {
+      "timeMs": 62802,
+      "verseStart": 10,
+      "attachments": []
+    },
+    {
+      "timeMs": 68185,
+      "verseStart": 11,
+      "attachments": []
+    },
+    {
+      "timeMs": 73149,
+      "verseStart": 12,
+      "attachments": []
+    },
+    {
+      "timeMs": 80253,
+      "verseStart": 13,
+      "attachments": []
+    },
+    {
+      "timeMs": 85537,
+      "verseStart": 14,
+      "attachments": []
+    },
+    {
+      "timeMs": 91661,
+      "verseStart": 15,
+      "attachments": []
+    },
+    {
+      "timeMs": 97625,
+      "verseStart": 16,
+      "attachments": []
+    },
+    {
+      "timeMs": 104109,
+      "verseStart": 17,
+      "attachments": []
+    },
+    {
+      "timeMs": 110213,
+      "verseStart": 18,
+      "attachments": []
+    },
+    {
+      "timeMs": 117958,
+      "verseStart": 19,
+      "attachments": []
+    },
+    {
+      "timeMs": 123202,
+      "verseStart": 20,
+      "attachments": []
+    },
+    {
+      "timeMs": 127945,
+      "verseStart": 21,
+      "attachments": []
+    },
+    {
+      "timeMs": 133949,
+      "verseStart": 22,
+      "attachments": []
+    },
+    {
+      "timeMs": 146317,
+      "verseStart": 23,
+      "attachments": []
+    },
+    {
+      "timeMs": 154283,
+      "verseStart": 24,
+      "attachments": []
+    },
+    {
+      "timeMs": 162728,
+      "verseStart": 25,
+      "attachments": []
+    },
+    {
+      "timeMs": 174976,
+      "verseStart": 26,
+      "attachments": []
+    },
+    {
+      "timeMs": 183142,
+      "verseStart": 27,
+      "attachments": []
+    },
+    {
+      "timeMs": 192108,
+      "verseStart": 28,
+      "attachments": []
+    },
+    {
+      "timeMs": 198452,
+      "verseStart": 29,
+      "attachments": []
+    },
+    {
+      "timeMs": 204036,
+      "verseStart": 30,
+      "attachments": []
+    },
+    {
+      "timeMs": 208779,
+      "verseStart": 31,
+      "attachments": []
+    },
+    {
+      "timeMs": 212001,
+      "verseStart": 32,
+      "attachments": []
+    },
+    {
+      "timeMs": 217725,
+      "verseStart": 33,
+      "attachments": []
+    },
+    {
+      "timeMs": 222448,
+      "verseStart": 34,
+      "attachments": []
+    }
+  ]
+}

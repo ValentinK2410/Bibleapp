@@ -1,0 +1,91 @@
+{
+  "id": "gh_grk_1_corinthians_6",
+  "translationCode": "PODSTR",
+  "bookId": "1_corinthians",
+  "chapter": 6,
+  "title": "1-е Коринфянам 6 · Греческий (Koine)",
+  "narratorId": "greek-nt",
+  "audioFileName": "46_06.mp3",
+  "cues": [
+    {
+      "timeMs": 280,
+      "verseStart": 1
+    },
+    {
+      "timeMs": 7345,
+      "verseStart": 2
+    },
+    {
+      "timeMs": 15811,
+      "verseStart": 3
+    },
+    {
+      "timeMs": 19914,
+      "verseStart": 4
+    },
+    {
+      "timeMs": 26619,
+      "verseStart": 5
+    },
+    {
+      "timeMs": 34725,
+      "verseStart": 6
+    },
+    {
+      "timeMs": 39128,
+      "verseStart": 7
+    },
+    {
+      "timeMs": 48415,
+      "verseStart": 8
+    },
+    {
+      "timeMs": 52357,
+      "verseStart": 9
+    },
+    {
+      "timeMs": 63685,
+      "verseStart": 10
+    },
+    {
+      "timeMs": 70430,
+      "verseStart": 11
+    },
+    {
+      "timeMs": 81358,
+      "verseStart": 12
+    },
+    {
+      "timeMs": 88443,
+      "verseStart": 13
+    },
+    {
+      "timeMs": 99431,
+      "verseStart": 14
+    },
+    {
+      "timeMs": 104415,
+      "verseStart": 15
+    },
+    {
+      "timeMs": 112040,
+      "verseStart": 16
+    },
+    {
+      "timeMs": 118905,
+      "verseStart": 17
+    },
+    {
+      "timeMs": 122107,
+      "verseStart": 18
+    },
+    {
+      "timeMs": 131674,
+      "verseStart": 19
+    },
+    {
+      "timeMs": 139359,
+      "verseStart": 20
+    }
+  ]
+}

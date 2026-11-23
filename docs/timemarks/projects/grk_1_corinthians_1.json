@@ -1,0 +1,135 @@
+{
+  "id": "gh_grk_1_corinthians_1",
+  "translationCode": "PODSTR",
+  "bookId": "1_corinthians",
+  "chapter": 1,
+  "title": "1-е Коринфянам 1 · Греческий (Koine)",
+  "narratorId": "greek-nt",
+  "audioFileName": "46_01.mp3",
+  "cues": [
+    {
+      "timeMs": 580,
+      "verseStart": 1
+    },
+    {
+      "timeMs": 6905,
+      "verseStart": 2
+    },
+    {
+      "timeMs": 20435,
+      "verseStart": 3
+    },
+    {
+      "timeMs": 25459,
+      "verseStart": 4
+    },
+    {
+      "timeMs": 31763,
+      "verseStart": 5
+    },
+    {
+      "timeMs": 36747,
+      "verseStart": 6
+    },
+    {
+      "timeMs": 40710,
+      "verseStart": 7
+    },
+    {
+      "timeMs": 48596,
+      "verseStart": 8
+    },
+    {
+      "timeMs": 54720,
+      "verseStart": 9
+    },
+    {
+      "timeMs": 60945,
+      "verseStart": 10
+    },
+    {
+      "timeMs": 74415,
+      "verseStart": 11
+    },
+    {
+      "timeMs": 79759,
+      "verseStart": 12
+    },
+    {
+      "timeMs": 87945,
+      "verseStart": 13
+    },
+    {
+      "timeMs": 94810,
+      "verseStart": 14
+    },
+    {
+      "timeMs": 99213,
+      "verseStart": 15
+    },
+    {
+      "timeMs": 103176,
+      "verseStart": 16
+    },
+    {
+      "timeMs": 108560,
+      "verseStart": 17
+    },
+    {
+      "timeMs": 116966,
+      "verseStart": 18
+    },
+    {
+      "timeMs": 124412,
+      "verseStart": 19
+    },
+    {
+      "timeMs": 130817,
+      "verseStart": 20
+    },
+    {
+      "timeMs": 138883,
+      "verseStart": 21
+    },
+    {
+      "timeMs": 149270,
+      "verseStart": 22
+    },
+    {
+      "timeMs": 153473,
+      "verseStart": 23
+    },
+    {
+      "timeMs": 159338,
+      "verseStart": 24
+    },
+    {
+      "timeMs": 165322,
+      "verseStart": 25
+    },
+    {
+      "timeMs": 172587,
+      "verseStart": 26
+    },
+    {
+      "timeMs": 180013,
+      "verseStart": 27
+    },
+    {
+      "timeMs": 190521,
+      "verseStart": 28
+    },
+    {
+      "timeMs": 197846,
+      "verseStart": 29
+    },
+    {
+      "timeMs": 201549,
+      "verseStart": 30
+    },
+    {
+      "timeMs": 210455,
+      "verseStart": 31
+    }
+  ]
+}

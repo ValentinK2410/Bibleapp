@@ -1,0 +1,63 @@
+{
+  "id": "gh_grk_1_corinthians_5",
+  "translationCode": "PODSTR",
+  "bookId": "1_corinthians",
+  "chapter": 5,
+  "title": "1-е Коринфянам 5 · Греческий (Koine)",
+  "narratorId": "greek-nt",
+  "audioFileName": "46_05.mp3",
+  "cues": [
+    {
+      "timeMs": 500,
+      "verseStart": 1
+    },
+    {
+      "timeMs": 8266,
+      "verseStart": 2
+    },
+    {
+      "timeMs": 15751,
+      "verseStart": 3
+    },
+    {
+      "timeMs": 23496,
+      "verseStart": 4
+    },
+    {
+      "timeMs": 31241,
+      "verseStart": 5
+    },
+    {
+      "timeMs": 38787,
+      "verseStart": 6
+    },
+    {
+      "timeMs": 44290,
+      "verseStart": 7
+    },
+    {
+      "timeMs": 52896,
+      "verseStart": 8
+    },
+    {
+      "timeMs": 61702,
+      "verseStart": 9
+    },
+    {
+      "timeMs": 66145,
+      "verseStart": 10
+    },
+    {
+      "timeMs": 75772,
+      "verseStart": 11
+    },
+    {
+      "timeMs": 89201,
+      "verseStart": 12
+    },
+    {
+      "timeMs": 93324,
+      "verseStart": 13
+    }
+  ]
+}

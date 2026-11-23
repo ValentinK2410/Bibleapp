@@ -774,6 +774,166 @@
       "file": "projects/bti_romans_9.json"
     },
     {
+      "id": "gh_grk_1_corinthians_1",
+      "translationCode": "PODSTR",
+      "bookId": "1_corinthians",
+      "chapter": 1,
+      "title": "1-е Коринфянам 1 · Греческий (Koine)",
+      "cueCount": 31,
+      "narratorId": "greek-nt",
+      "file": "projects/grk_1_corinthians_1.json"
+    },
+    {
+      "id": "gh_grk_1_corinthians_10",
+      "translationCode": "PODSTR",
+      "bookId": "1_corinthians",
+      "chapter": 10,
+      "title": "1-е Коринфянам 10 · Греческий (Koine)",
+      "cueCount": 33,
+      "narratorId": "greek-nt",
+      "file": "projects/grk_1_corinthians_10.json"
+    },
+    {
+      "id": "gh_grk_1_corinthians_11",
+      "translationCode": "PODSTR",
+      "bookId": "1_corinthians",
+      "chapter": 11,
+      "title": "1-е Коринфянам 11 · Греческий (Koine)",
+      "cueCount": 34,
+      "narratorId": "greek-nt",
+      "file": "projects/grk_1_corinthians_11.json"
+    },
+    {
+      "id": "gh_grk_1_corinthians_12",
+      "translationCode": "PODSTR",
+      "bookId": "1_corinthians",
+      "chapter": 12,
+      "title": "1-е Коринфянам 12 · Греческий (Koine)",
+      "cueCount": 31,
+      "narratorId": "greek-nt",
+      "file": "projects/grk_1_corinthians_12.json"
+    },
+    {
+      "id": "gh_grk_1_corinthians_13",
+      "translationCode": "PODSTR",
+      "bookId": "1_corinthians",
+      "chapter": 13,
+      "title": "1-е Коринфянам 13 · Греческий (Koine)",
+      "cueCount": 13,
+      "narratorId": "greek-nt",
+      "file": "projects/grk_1_corinthians_13.json"
+    },
+    {
+      "id": "gh_grk_1_corinthians_14",
+      "translationCode": "PODSTR",
+      "bookId": "1_corinthians",
+      "chapter": 14,
+      "title": "1-е Коринфянам 14 · Греческий (Koine)",
+      "cueCount": 40,
+      "narratorId": "greek-nt",
+      "file": "projects/grk_1_corinthians_14.json"
+    },
+    {
+      "id": "gh_grk_1_corinthians_15",
+      "translationCode": "PODSTR",
+      "bookId": "1_corinthians",
+      "chapter": 15,
+      "title": "1-е Коринфянам 15 · Греческий (Koine)",
+      "cueCount": 58,
+      "narratorId": "greek-nt",
+      "file": "projects/grk_1_corinthians_15.json"
+    },
+    {
+      "id": "gh_grk_1_corinthians_16",
+      "translationCode": "PODSTR",
+      "bookId": "1_corinthians",
+      "chapter": 16,
+      "title": "1-е Коринфянам 16 · Греческий (Koine)",
+      "cueCount": 24,
+      "narratorId": "greek-nt",
+      "file": "projects/grk_1_corinthians_16.json"
+    },
+    {
+      "id": "gh_grk_1_corinthians_2",
+      "translationCode": "PODSTR",
+      "bookId": "1_corinthians",
+      "chapter": 2,
+      "title": "1-е Коринфянам 2 · Греческий (Koine)",
+      "cueCount": 16,
+      "narratorId": "greek-nt",
+      "file": "projects/grk_1_corinthians_2.json"
+    },
+    {
+      "id": "gh_grk_1_corinthians_3",
+      "translationCode": "PODSTR",
+      "bookId": "1_corinthians",
+      "chapter": 3,
+      "title": "1-е Коринфянам 3 · Греческий (Koine)",
+      "cueCount": 23,
+      "narratorId": "greek-nt",
+      "file": "projects/grk_1_corinthians_3.json"
+    },
+    {
+      "id": "gh_grk_1_corinthians_4",
+      "translationCode": "PODSTR",
+      "bookId": "1_corinthians",
+      "chapter": 4,
+      "title": "1-е Коринфянам 4 · Греческий (Koine)",
+      "cueCount": 21,
+      "narratorId": "greek-nt",
+      "file": "projects/grk_1_corinthians_4.json"
+    },
+    {
+      "id": "gh_grk_1_corinthians_5",
+      "translationCode": "PODSTR",
+      "bookId": "1_corinthians",
+      "chapter": 5,
+      "title": "1-е Коринфянам 5 · Греческий (Koine)",
+      "cueCount": 13,
+      "narratorId": "greek-nt",
+      "file": "projects/grk_1_corinthians_5.json"
+    },
+    {
+      "id": "gh_grk_1_corinthians_6",
+      "translationCode": "PODSTR",
+      "bookId": "1_corinthians",
+      "chapter": 6,
+      "title": "1-е Коринфянам 6 · Греческий (Koine)",
+      "cueCount": 20,
+      "narratorId": "greek-nt",
+      "file": "projects/grk_1_corinthians_6.json"
+    },
+    {
+      "id": "gh_grk_1_corinthians_7",
+      "translationCode": "PODSTR",
+      "bookId": "1_corinthians",
+      "chapter": 7,
+      "title": "1-е Коринфянам 7 · Греческий (Koine)",
+      "cueCount": 40,
+      "narratorId": "greek-nt",
+      "file": "projects/grk_1_corinthians_7.json"
+    },
+    {
+      "id": "gh_grk_1_corinthians_8",
+      "translationCode": "PODSTR",
+      "bookId": "1_corinthians",
+      "chapter": 8,
+      "title": "1-е Коринфянам 8 · Греческий (Koine)",
+      "cueCount": 13,
+      "narratorId": "greek-nt",
+      "file": "projects/grk_1_corinthians_8.json"
+    },
+    {
+      "id": "gh_grk_1_corinthians_9",
+      "translationCode": "PODSTR",
+      "bookId": "1_corinthians",
+      "chapter": 9,
+      "title": "1-е Коринфянам 9 · Греческий (Koine)",
+      "cueCount": 27,
+      "narratorId": "greek-nt",
+      "file": "projects/grk_1_corinthians_9.json"
+    },
+    {
       "id": "gh_grk_john_1",
       "translationCode": "PODSTR",
       "bookId": "john",

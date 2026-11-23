@@ -1,0 +1,63 @@
+{
+  "id": "gh_grk_1_corinthians_13",
+  "translationCode": "PODSTR",
+  "bookId": "1_corinthians",
+  "chapter": 13,
+  "title": "1-е Коринфянам 13 · Греческий (Koine)",
+  "narratorId": "greek-nt",
+  "audioFileName": "46_13.mp3",
+  "cues": [
+    {
+      "timeMs": 560,
+      "verseStart": 1
+    },
+    {
+      "timeMs": 9627,
+      "verseStart": 2
+    },
+    {
+      "timeMs": 20916,
+      "verseStart": 3
+    },
+    {
+      "timeMs": 29503,
+      "verseStart": 4
+    },
+    {
+      "timeMs": 35888,
+      "verseStart": 5
+    },
+    {
+      "timeMs": 41912,
+      "verseStart": 6
+    },
+    {
+      "timeMs": 45815,
+      "verseStart": 7
+    },
+    {
+      "timeMs": 50639,
+      "verseStart": 8
+    },
+    {
+      "timeMs": 59926,
+      "verseStart": 9
+    },
+    {
+      "timeMs": 63789,
+      "verseStart": 10
+    },
+    {
+      "timeMs": 68273,
+      "verseStart": 11
+    },
+    {
+      "timeMs": 78861,
+      "verseStart": 12
+    },
+    {
+      "timeMs": 90029,
+      "verseStart": 13
+    }
+  ]
+}

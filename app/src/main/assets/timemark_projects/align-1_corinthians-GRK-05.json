@@ -1,0 +1,76 @@
+{
+  "id": "align-1_corinthians-GRK-05",
+  "translationCode": "PODSTR",
+  "bookId": "1_corinthians",
+  "chapter": 5,
+  "title": "1-е Коринфянам 5 · Греческий (Koine)",
+  "audioFilePath": "/data/user/0/com.example.bible.sqlite/files/bible_audio/greek-nt/46_05.mp3",
+  "updatedAt": 1794873600000,
+  "cues": [
+    {
+      "timeMs": 500,
+      "verseStart": 1,
+      "attachments": []
+    },
+    {
+      "timeMs": 8266,
+      "verseStart": 2,
+      "attachments": []
+    },
+    {
+      "timeMs": 15751,
+      "verseStart": 3,
+      "attachments": []
+    },
+    {
+      "timeMs": 23496,
+      "verseStart": 4,
+      "attachments": []
+    },
+    {
+      "timeMs": 31241,
+      "verseStart": 5,
+      "attachments": []
+    },
+    {
+      "timeMs": 38787,
+      "verseStart": 6,
+      "attachments": []
+    },
+    {
+      "timeMs": 44290,
+      "verseStart": 7,
+      "attachments": []
+    },
+    {
+      "timeMs": 52896,
+      "verseStart": 8,
+      "attachments": []
+    },
+    {
+      "timeMs": 61702,
+      "verseStart": 9,
+      "attachments": []
+    },
+    {
+      "timeMs": 66145,
+      "verseStart": 10,
+      "attachments": []
+    },
+    {
+      "timeMs": 75772,
+      "verseStart": 11,
+      "attachments": []
+    },
+    {
+      "timeMs": 89201,
+      "verseStart": 12,
+      "attachments": []
+    },
+    {
+      "timeMs": 93324,
+      "verseStart": 13,
+      "attachments": []
+    }
+  ]
+}

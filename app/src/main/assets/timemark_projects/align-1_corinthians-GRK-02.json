@@ -1,0 +1,91 @@
+{
+  "id": "align-1_corinthians-GRK-02",
+  "translationCode": "PODSTR",
+  "bookId": "1_corinthians",
+  "chapter": 2,
+  "title": "1-е Коринфянам 2 · Греческий (Koine)",
+  "audioFilePath": "/data/user/0/com.example.bible.sqlite/files/bible_audio/greek-nt/46_02.mp3",
+  "updatedAt": 1794873600000,
+  "cues": [
+    {
+      "timeMs": 560,
+      "verseStart": 1,
+      "attachments": []
+    },
+    {
+      "timeMs": 8687,
+      "verseStart": 2,
+      "attachments": []
+    },
+    {
+      "timeMs": 14291,
+      "verseStart": 3,
+      "attachments": []
+    },
+    {
+      "timeMs": 19375,
+      "verseStart": 4,
+      "attachments": []
+    },
+    {
+      "timeMs": 26080,
+      "verseStart": 5,
+      "attachments": []
+    },
+    {
+      "timeMs": 30663,
+      "verseStart": 6,
+      "attachments": []
+    },
+    {
+      "timeMs": 39370,
+      "verseStart": 7,
+      "attachments": []
+    },
+    {
+      "timeMs": 47356,
+      "verseStart": 8,
+      "attachments": []
+    },
+    {
+      "timeMs": 54702,
+      "verseStart": 9,
+      "attachments": []
+    },
+    {
+      "timeMs": 65550,
+      "verseStart": 10,
+      "attachments": []
+    },
+    {
+      "timeMs": 72956,
+      "verseStart": 11,
+      "attachments": []
+    },
+    {
+      "timeMs": 82743,
+      "verseStart": 12,
+      "attachments": []
+    },
+    {
+      "timeMs": 90929,
+      "verseStart": 13,
+      "attachments": []
+    },
+    {
+      "timeMs": 99055,
+      "verseStart": 14,
+      "attachments": []
+    },
+    {
+      "timeMs": 108523,
+      "verseStart": 15,
+      "attachments": []
+    },
+    {
+      "timeMs": 113767,
+      "verseStart": 16,
+      "attachments": []
+    }
+  ]
+}

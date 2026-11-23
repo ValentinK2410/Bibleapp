@@ -1,0 +1,63 @@
+{
+  "id": "gh_grk_1_corinthians_8",
+  "translationCode": "PODSTR",
+  "bookId": "1_corinthians",
+  "chapter": 8,
+  "title": "1-е Коринфянам 8 · Греческий (Koine)",
+  "narratorId": "greek-nt",
+  "audioFileName": "46_08.mp3",
+  "cues": [
+    {
+      "timeMs": 480,
+      "verseStart": 1
+    },
+    {
+      "timeMs": 8487,
+      "verseStart": 2
+    },
+    {
+      "timeMs": 12710,
+      "verseStart": 3
+    },
+    {
+      "timeMs": 16553,
+      "verseStart": 4
+    },
+    {
+      "timeMs": 24399,
+      "verseStart": 5
+    },
+    {
+      "timeMs": 32766,
+      "verseStart": 6
+    },
+    {
+      "timeMs": 43014,
+      "verseStart": 7
+    },
+    {
+      "timeMs": 54483,
+      "verseStart": 8
+    },
+    {
+      "timeMs": 61949,
+      "verseStart": 9
+    },
+    {
+      "timeMs": 67453,
+      "verseStart": 10
+    },
+    {
+      "timeMs": 78682,
+      "verseStart": 11
+    },
+    {
+      "timeMs": 84427,
+      "verseStart": 12
+    },
+    {
+      "timeMs": 92793,
+      "verseStart": 13
+    }
+  ]
+}

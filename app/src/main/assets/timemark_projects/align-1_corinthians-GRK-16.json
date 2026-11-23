@@ -1,0 +1,131 @@
+{
+  "id": "align-1_corinthians-GRK-16",
+  "translationCode": "PODSTR",
+  "bookId": "1_corinthians",
+  "chapter": 16,
+  "title": "1-е Коринфянам 16 · Греческий (Koine)",
+  "audioFilePath": "/data/user/0/com.example.bible.sqlite/files/bible_audio/greek-nt/46_16.mp3",
+  "updatedAt": 1794873600000,
+  "cues": [
+    {
+      "timeMs": 600,
+      "verseStart": 1,
+      "attachments": []
+    },
+    {
+      "timeMs": 8706,
+      "verseStart": 2,
+      "attachments": []
+    },
+    {
+      "timeMs": 17432,
+      "verseStart": 3,
+      "attachments": []
+    },
+    {
+      "timeMs": 25357,
+      "verseStart": 4,
+      "attachments": []
+    },
+    {
+      "timeMs": 29460,
+      "verseStart": 5,
+      "attachments": []
+    },
+    {
+      "timeMs": 35224,
+      "verseStart": 6,
+      "attachments": []
+    },
+    {
+      "timeMs": 41508,
+      "verseStart": 7,
+      "attachments": []
+    },
+    {
+      "timeMs": 49353,
+      "verseStart": 8,
+      "attachments": []
+    },
+    {
+      "timeMs": 52535,
+      "verseStart": 9,
+      "attachments": []
+    },
+    {
+      "timeMs": 57318,
+      "verseStart": 10,
+      "attachments": []
+    },
+    {
+      "timeMs": 64703,
+      "verseStart": 11,
+      "attachments": []
+    },
+    {
+      "timeMs": 73949,
+      "verseStart": 12,
+      "attachments": []
+    },
+    {
+      "timeMs": 85977,
+      "verseStart": 13,
+      "attachments": []
+    },
+    {
+      "timeMs": 91001,
+      "verseStart": 14,
+      "attachments": []
+    },
+    {
+      "timeMs": 93402,
+      "verseStart": 15,
+      "attachments": []
+    },
+    {
+      "timeMs": 102648,
+      "verseStart": 16,
+      "attachments": []
+    },
+    {
+      "timeMs": 108392,
+      "verseStart": 17,
+      "attachments": []
+    },
+    {
+      "timeMs": 115677,
+      "verseStart": 18,
+      "attachments": []
+    },
+    {
+      "timeMs": 121521,
+      "verseStart": 19,
+      "attachments": []
+    },
+    {
+      "timeMs": 129827,
+      "verseStart": 20,
+      "attachments": []
+    },
+    {
+      "timeMs": 134910,
+      "verseStart": 21,
+      "attachments": []
+    },
+    {
+      "timeMs": 137252,
+      "verseStart": 22,
+      "attachments": []
+    },
+    {
+      "timeMs": 141795,
+      "verseStart": 23,
+      "attachments": []
+    },
+    {
+      "timeMs": 144076,
+      "verseStart": 24,
+      "attachments": []
+    }
+  ]
+}
