@@ -1,0 +1,95 @@
+{
+  "id": "gh_syn_1_timothy_6",
+  "translationCode": "SYN",
+  "bookId": "1_timothy",
+  "chapter": 6,
+  "title": "1-е Тимофею 6 · Синодальный · Бондаренко",
+  "narratorId": "bondarenko",
+  "audioFileName": "61_06.mp3",
+  "cues": [
+    {
+      "timeMs": 4863,
+      "verseStart": 1
+    },
+    {
+      "timeMs": 17091,
+      "verseStart": 2
+    },
+    {
+      "timeMs": 37405,
+      "verseStart": 3
+    },
+    {
+      "timeMs": 46071,
+      "verseStart": 4
+    },
+    {
+      "timeMs": 59399,
+      "verseStart": 5
+    },
+    {
+      "timeMs": 72788,
+      "verseStart": 6
+    },
+    {
+      "timeMs": 77932,
+      "verseStart": 7
+    },
+    {
+      "timeMs": 84876,
+      "verseStart": 8
+    },
+    {
+      "timeMs": 89359,
+      "verseStart": 9
+    },
+    {
+      "timeMs": 101167,
+      "verseStart": 10
+    },
+    {
+      "timeMs": 113215,
+      "verseStart": 11
+    },
+    {
+      "timeMs": 125483,
+      "verseStart": 12
+    },
+    {
+      "timeMs": 138752,
+      "verseStart": 13
+    },
+    {
+      "timeMs": 151621,
+      "verseStart": 14
+    },
+    {
+      "timeMs": 159686,
+      "verseStart": 15
+    },
+    {
+      "timeMs": 170613,
+      "verseStart": 16
+    },
+    {
+      "timeMs": 195290,
+      "verseStart": 17
+    },
+    {
+      "timeMs": 209839,
+      "verseStart": 18
+    },
+    {
+      "timeMs": 216964,
+      "verseStart": 19
+    },
+    {
+      "timeMs": 225490,
+      "verseStart": 20
+    },
+    {
+      "timeMs": 237377,
+      "verseStart": 21
+    }
+  ]
+}

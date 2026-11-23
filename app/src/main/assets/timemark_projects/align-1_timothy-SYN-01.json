@@ -1,0 +1,111 @@
+{
+  "id": "align-1_timothy-SYN-01",
+  "translationCode": "SYN",
+  "bookId": "1_timothy",
+  "chapter": 1,
+  "title": "1-е Тимофею 1 · Синодальный · Бондаренко",
+  "audioFilePath": "/data/user/0/com.example.bible.sqlite/files/bible_audio/bondarenko/61_01.mp3",
+  "updatedAt": 1795392000000,
+  "cues": [
+    {
+      "timeMs": 10027,
+      "verseStart": 1,
+      "attachments": []
+    },
+    {
+      "timeMs": 21495,
+      "verseStart": 2,
+      "attachments": []
+    },
+    {
+      "timeMs": 37605,
+      "verseStart": 3,
+      "attachments": []
+    },
+    {
+      "timeMs": 46932,
+      "verseStart": 4,
+      "attachments": []
+    },
+    {
+      "timeMs": 57319,
+      "verseStart": 5,
+      "attachments": []
+    },
+    {
+      "timeMs": 65644,
+      "verseStart": 6,
+      "attachments": []
+    },
+    {
+      "timeMs": 69807,
+      "verseStart": 7,
+      "attachments": []
+    },
+    {
+      "timeMs": 77372,
+      "verseStart": 8,
+      "attachments": []
+    },
+    {
+      "timeMs": 82316,
+      "verseStart": 9,
+      "attachments": []
+    },
+    {
+      "timeMs": 99847,
+      "verseStart": 10,
+      "attachments": []
+    },
+    {
+      "timeMs": 113457,
+      "verseStart": 11,
+      "attachments": []
+    },
+    {
+      "timeMs": 120461,
+      "verseStart": 12,
+      "attachments": []
+    },
+    {
+      "timeMs": 130068,
+      "verseStart": 13,
+      "attachments": []
+    },
+    {
+      "timeMs": 142476,
+      "verseStart": 14,
+      "attachments": []
+    },
+    {
+      "timeMs": 152003,
+      "verseStart": 15,
+      "attachments": []
+    },
+    {
+      "timeMs": 163951,
+      "verseStart": 16,
+      "attachments": []
+    },
+    {
+      "timeMs": 177640,
+      "verseStart": 17,
+      "attachments": []
+    },
+    {
+      "timeMs": 190729,
+      "verseStart": 18,
+      "attachments": []
+    },
+    {
+      "timeMs": 203077,
+      "verseStart": 19,
+      "attachments": []
+    },
+    {
+      "timeMs": 210462,
+      "verseStart": 20,
+      "attachments": []
+    }
+  ]
+}

@@ -1,0 +1,75 @@
+{
+  "id": "gh_syn_1_timothy_3",
+  "translationCode": "SYN",
+  "bookId": "1_timothy",
+  "chapter": 3,
+  "title": "1-е Тимофею 3 · Синодальный · Бондаренко",
+  "narratorId": "bondarenko",
+  "audioFileName": "61_03.mp3",
+  "cues": [
+    {
+      "timeMs": 5504,
+      "verseStart": 1
+    },
+    {
+      "timeMs": 12609,
+      "verseStart": 2
+    },
+    {
+      "timeMs": 27300,
+      "verseStart": 3
+    },
+    {
+      "timeMs": 38068,
+      "verseStart": 4
+    },
+    {
+      "timeMs": 45874,
+      "verseStart": 5
+    },
+    {
+      "timeMs": 53460,
+      "verseStart": 6
+    },
+    {
+      "timeMs": 61246,
+      "verseStart": 7
+    },
+    {
+      "timeMs": 70513,
+      "verseStart": 8
+    },
+    {
+      "timeMs": 78538,
+      "verseStart": 9
+    },
+    {
+      "timeMs": 83302,
+      "verseStart": 10
+    },
+    {
+      "timeMs": 91568,
+      "verseStart": 11
+    },
+    {
+      "timeMs": 99894,
+      "verseStart": 12
+    },
+    {
+      "timeMs": 106479,
+      "verseStart": 13
+    },
+    {
+      "timeMs": 117427,
+      "verseStart": 14
+    },
+    {
+      "timeMs": 121430,
+      "verseStart": 15
+    },
+    {
+      "timeMs": 136041,
+      "verseStart": 16
+    }
+  ]
+}
