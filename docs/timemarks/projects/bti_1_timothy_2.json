@@ -1,0 +1,71 @@
+{
+  "id": "gh_bti_1_timothy_2",
+  "translationCode": "BTI",
+  "bookId": "1_timothy",
+  "chapter": 2,
+  "title": "1-е Тимофею 2 · Кулаковых",
+  "narratorId": "bti",
+  "audioFileName": "61_02.mp3",
+  "cues": [
+    {
+      "timeMs": 4023,
+      "verseStart": 1
+    },
+    {
+      "timeMs": 19292,
+      "verseStart": 2
+    },
+    {
+      "timeMs": 33281,
+      "verseStart": 3
+    },
+    {
+      "timeMs": 38904,
+      "verseStart": 4
+    },
+    {
+      "timeMs": 49131,
+      "verseStart": 5
+    },
+    {
+      "timeMs": 62439,
+      "verseStart": 6
+    },
+    {
+      "timeMs": 72245,
+      "verseStart": 7
+    },
+    {
+      "timeMs": 90076,
+      "verseStart": 8
+    },
+    {
+      "timeMs": 102824,
+      "verseStart": 9
+    },
+    {
+      "timeMs": 118074,
+      "verseStart": 10
+    },
+    {
+      "timeMs": 127680,
+      "verseStart": 11
+    },
+    {
+      "timeMs": 133744,
+      "verseStart": 12
+    },
+    {
+      "timeMs": 145571,
+      "verseStart": 13
+    },
+    {
+      "timeMs": 151115,
+      "verseStart": 14
+    },
+    {
+      "timeMs": 159960,
+      "verseStart": 15
+    }
+  ]
+}

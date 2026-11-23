@@ -1,0 +1,75 @@
+{
+  "id": "gh_bti_1_timothy_4",
+  "translationCode": "BTI",
+  "bookId": "1_timothy",
+  "chapter": 4,
+  "title": "1-е Тимофею 4 · Кулаковых",
+  "narratorId": "bti",
+  "audioFileName": "61_04.mp3",
+  "cues": [
+    {
+      "timeMs": 4763,
+      "verseStart": 1
+    },
+    {
+      "timeMs": 16410,
+      "verseStart": 2
+    },
+    {
+      "timeMs": 22514,
+      "verseStart": 3
+    },
+    {
+      "timeMs": 40985,
+      "verseStart": 4
+    },
+    {
+      "timeMs": 51231,
+      "verseStart": 5
+    },
+    {
+      "timeMs": 56534,
+      "verseStart": 6
+    },
+    {
+      "timeMs": 70042,
+      "verseStart": 7
+    },
+    {
+      "timeMs": 78507,
+      "verseStart": 8
+    },
+    {
+      "timeMs": 94897,
+      "verseStart": 9
+    },
+    {
+      "timeMs": 102762,
+      "verseStart": 10
+    },
+    {
+      "timeMs": 115369,
+      "verseStart": 11
+    },
+    {
+      "timeMs": 119912,
+      "verseStart": 12
+    },
+    {
+      "timeMs": 137683,
+      "verseStart": 13
+    },
+    {
+      "timeMs": 145928,
+      "verseStart": 14
+    },
+    {
+      "timeMs": 154253,
+      "verseStart": 15
+    },
+    {
+      "timeMs": 163278,
+      "verseStart": 16
+    }
+  ]
+}

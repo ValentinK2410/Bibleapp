@@ -1,0 +1,91 @@
+{
+  "id": "align-1_timothy-BTI-03",
+  "translationCode": "BTI",
+  "bookId": "1_timothy",
+  "chapter": 3,
+  "title": "1-е Тимофею 3 · Кулаковых",
+  "audioFilePath": "/data/user/0/com.example.bible.sqlite/files/bible_audio/bti/61_03.mp3",
+  "updatedAt": 1795392000000,
+  "cues": [
+    {
+      "timeMs": 4083,
+      "verseStart": 1,
+      "attachments": []
+    },
+    {
+      "timeMs": 11448,
+      "verseStart": 2,
+      "attachments": []
+    },
+    {
+      "timeMs": 31161,
+      "verseStart": 3,
+      "attachments": []
+    },
+    {
+      "timeMs": 45010,
+      "verseStart": 4,
+      "attachments": []
+    },
+    {
+      "timeMs": 55136,
+      "verseStart": 5,
+      "attachments": []
+    },
+    {
+      "timeMs": 64663,
+      "verseStart": 6,
+      "attachments": []
+    },
+    {
+      "timeMs": 76430,
+      "verseStart": 7,
+      "attachments": []
+    },
+    {
+      "timeMs": 89259,
+      "verseStart": 8,
+      "attachments": []
+    },
+    {
+      "timeMs": 100226,
+      "verseStart": 9,
+      "attachments": []
+    },
+    {
+      "timeMs": 107911,
+      "verseStart": 10,
+      "attachments": []
+    },
+    {
+      "timeMs": 118178,
+      "verseStart": 11,
+      "attachments": []
+    },
+    {
+      "timeMs": 129986,
+      "verseStart": 12,
+      "attachments": []
+    },
+    {
+      "timeMs": 140973,
+      "verseStart": 13,
+      "attachments": []
+    },
+    {
+      "timeMs": 155743,
+      "verseStart": 14,
+      "attachments": []
+    },
+    {
+      "timeMs": 161527,
+      "verseStart": 15,
+      "attachments": []
+    },
+    {
+      "timeMs": 175736,
+      "verseStart": 16,
+      "attachments": []
+    }
+  ]
+}

@@ -1,0 +1,111 @@
+{
+  "id": "align-1_timothy-BTI-01",
+  "translationCode": "BTI",
+  "bookId": "1_timothy",
+  "chapter": 1,
+  "title": "1-е Тимофею 1 · Кулаковых",
+  "audioFilePath": "/data/user/0/com.example.bible.sqlite/files/bible_audio/bti/61_01.mp3",
+  "updatedAt": 1795392000000,
+  "cues": [
+    {
+      "timeMs": 10347,
+      "verseStart": 1,
+      "attachments": []
+    },
+    {
+      "timeMs": 23536,
+      "verseStart": 2,
+      "attachments": []
+    },
+    {
+      "timeMs": 41328,
+      "verseStart": 3,
+      "attachments": []
+    },
+    {
+      "timeMs": 51775,
+      "verseStart": 4,
+      "attachments": []
+    },
+    {
+      "timeMs": 66385,
+      "verseStart": 5,
+      "attachments": []
+    },
+    {
+      "timeMs": 80354,
+      "verseStart": 6,
+      "attachments": []
+    },
+    {
+      "timeMs": 86498,
+      "verseStart": 7,
+      "attachments": []
+    },
+    {
+      "timeMs": 98666,
+      "verseStart": 8,
+      "attachments": []
+    },
+    {
+      "timeMs": 108093,
+      "verseStart": 9,
+      "attachments": []
+    },
+    {
+      "timeMs": 131148,
+      "verseStart": 10,
+      "attachments": []
+    },
+    {
+      "timeMs": 146279,
+      "verseStart": 11,
+      "attachments": []
+    },
+    {
+      "timeMs": 156766,
+      "verseStart": 12,
+      "attachments": []
+    },
+    {
+      "timeMs": 170935,
+      "verseStart": 13,
+      "attachments": []
+    },
+    {
+      "timeMs": 186145,
+      "verseStart": 14,
+      "attachments": []
+    },
+    {
+      "timeMs": 197853,
+      "verseStart": 15,
+      "attachments": []
+    },
+    {
+      "timeMs": 215265,
+      "verseStart": 16,
+      "attachments": []
+    },
+    {
+      "timeMs": 235959,
+      "verseStart": 17,
+      "attachments": []
+    },
+    {
+      "timeMs": 250549,
+      "verseStart": 18,
+      "attachments": []
+    },
+    {
+      "timeMs": 264538,
+      "verseStart": 19,
+      "attachments": []
+    },
+    {
+      "timeMs": 278067,
+      "verseStart": 20,
+      "attachments": []
+    }
+  ]
+}

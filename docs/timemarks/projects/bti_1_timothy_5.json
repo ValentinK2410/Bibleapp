@@ -1,0 +1,111 @@
+{
+  "id": "gh_bti_1_timothy_5",
+  "translationCode": "BTI",
+  "bookId": "1_timothy",
+  "chapter": 5,
+  "title": "1-е Тимофею 5 · Кулаковых",
+  "narratorId": "bti",
+  "audioFileName": "61_05.mp3",
+  "cues": [
+    {
+      "timeMs": 4683,
+      "verseStart": 1
+    },
+    {
+      "timeMs": 16291,
+      "verseStart": 2
+    },
+    {
+      "timeMs": 26558,
+      "verseStart": 3
+    },
+    {
+      "timeMs": 31301,
+      "verseStart": 4
+    },
+    {
+      "timeMs": 48093,
+      "verseStart": 5
+    },
+    {
+      "timeMs": 63123,
+      "verseStart": 6
+    },
+    {
+      "timeMs": 70087,
+      "verseStart": 7
+    },
+    {
+      "timeMs": 76792,
+      "verseStart": 8
+    },
+    {
+      "timeMs": 90081,
+      "verseStart": 9
+    },
+    {
+      "timeMs": 99948,
+      "verseStart": 10
+    },
+    {
+      "timeMs": 119781,
+      "verseStart": 11
+    },
+    {
+      "timeMs": 134371,
+      "verseStart": 12
+    },
+    {
+      "timeMs": 144518,
+      "verseStart": 13
+    },
+    {
+      "timeMs": 160309,
+      "verseStart": 14
+    },
+    {
+      "timeMs": 174298,
+      "verseStart": 15
+    },
+    {
+      "timeMs": 182724,
+      "verseStart": 16
+    },
+    {
+      "timeMs": 199535,
+      "verseStart": 17
+    },
+    {
+      "timeMs": 214825,
+      "verseStart": 18
+    },
+    {
+      "timeMs": 229275,
+      "verseStart": 19
+    },
+    {
+      "timeMs": 237801,
+      "verseStart": 20
+    },
+    {
+      "timeMs": 248048,
+      "verseStart": 21
+    },
+    {
+      "timeMs": 263658,
+      "verseStart": 22
+    },
+    {
+      "timeMs": 275426,
+      "verseStart": 23
+    },
+    {
+      "timeMs": 289696,
+      "verseStart": 24
+    },
+    {
+      "timeMs": 301604,
+      "verseStart": 25
+    }
+  ]
+}

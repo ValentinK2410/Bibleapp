@@ -1,0 +1,136 @@
+{
+  "id": "align-1_timothy-BTI-05",
+  "translationCode": "BTI",
+  "bookId": "1_timothy",
+  "chapter": 5,
+  "title": "1-е Тимофею 5 · Кулаковых",
+  "audioFilePath": "/data/user/0/com.example.bible.sqlite/files/bible_audio/bti/61_05.mp3",
+  "updatedAt": 1795392000000,
+  "cues": [
+    {
+      "timeMs": 4683,
+      "verseStart": 1,
+      "attachments": []
+    },
+    {
+      "timeMs": 16291,
+      "verseStart": 2,
+      "attachments": []
+    },
+    {
+      "timeMs": 26558,
+      "verseStart": 3,
+      "attachments": []
+    },
+    {
+      "timeMs": 31301,
+      "verseStart": 4,
+      "attachments": []
+    },
+    {
+      "timeMs": 48093,
+      "verseStart": 5,
+      "attachments": []
+    },
+    {
+      "timeMs": 63123,
+      "verseStart": 6,
+      "attachments": []
+    },
+    {
+      "timeMs": 70087,
+      "verseStart": 7,
+      "attachments": []
+    },
+    {
+      "timeMs": 76792,
+      "verseStart": 8,
+      "attachments": []
+    },
+    {
+      "timeMs": 90081,
+      "verseStart": 9,
+      "attachments": []
+    },
+    {
+      "timeMs": 99948,
+      "verseStart": 10,
+      "attachments": []
+    },
+    {
+      "timeMs": 119781,
+      "verseStart": 11,
+      "attachments": []
+    },
+    {
+      "timeMs": 134371,
+      "verseStart": 12,
+      "attachments": []
+    },
+    {
+      "timeMs": 144518,
+      "verseStart": 13,
+      "attachments": []
+    },
+    {
+      "timeMs": 160309,
+      "verseStart": 14,
+      "attachments": []
+    },
+    {
+      "timeMs": 174298,
+      "verseStart": 15,
+      "attachments": []
+    },
+    {
+      "timeMs": 182724,
+      "verseStart": 16,
+      "attachments": []
+    },
+    {
+      "timeMs": 199535,
+      "verseStart": 17,
+      "attachments": []
+    },
+    {
+      "timeMs": 214825,
+      "verseStart": 18,
+      "attachments": []
+    },
+    {
+      "timeMs": 229275,
+      "verseStart": 19,
+      "attachments": []
+    },
+    {
+      "timeMs": 237801,
+      "verseStart": 20,
+      "attachments": []
+    },
+    {
+      "timeMs": 248048,
+      "verseStart": 21,
+      "attachments": []
+    },
+    {
+      "timeMs": 263658,
+      "verseStart": 22,
+      "attachments": []
+    },
+    {
+      "timeMs": 275426,
+      "verseStart": 23,
+      "attachments": []
+    },
+    {
+      "timeMs": 289696,
+      "verseStart": 24,
+      "attachments": []
+    },
+    {
+      "timeMs": 301604,
+      "verseStart": 25,
+      "attachments": []
+    }
+  ]
+}

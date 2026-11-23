@@ -1,0 +1,116 @@
+{
+  "id": "align-1_timothy-BTI-06",
+  "translationCode": "BTI",
+  "bookId": "1_timothy",
+  "chapter": 6,
+  "title": "1-е Тимофею 6 · Кулаковых",
+  "audioFilePath": "/data/user/0/com.example.bible.sqlite/files/bible_audio/bti/61_06.mp3",
+  "updatedAt": 1795392000000,
+  "cues": [
+    {
+      "timeMs": 4884,
+      "verseStart": 1,
+      "attachments": []
+    },
+    {
+      "timeMs": 21576,
+      "verseStart": 2,
+      "attachments": []
+    },
+    {
+      "timeMs": 54960,
+      "verseStart": 3,
+      "attachments": []
+    },
+    {
+      "timeMs": 69930,
+      "verseStart": 4,
+      "attachments": []
+    },
+    {
+      "timeMs": 91406,
+      "verseStart": 5,
+      "attachments": []
+    },
+    {
+      "timeMs": 106337,
+      "verseStart": 6,
+      "attachments": []
+    },
+    {
+      "timeMs": 118666,
+      "verseStart": 7,
+      "attachments": []
+    },
+    {
+      "timeMs": 127032,
+      "verseStart": 8,
+      "attachments": []
+    },
+    {
+      "timeMs": 133496,
+      "verseStart": 9,
+      "attachments": []
+    },
+    {
+      "timeMs": 151529,
+      "verseStart": 10,
+      "attachments": []
+    },
+    {
+      "timeMs": 166360,
+      "verseStart": 11,
+      "attachments": []
+    },
+    {
+      "timeMs": 177828,
+      "verseStart": 12,
+      "attachments": []
+    },
+    {
+      "timeMs": 195061,
+      "verseStart": 13,
+      "attachments": []
+    },
+    {
+      "timeMs": 210672,
+      "verseStart": 14,
+      "attachments": []
+    },
+    {
+      "timeMs": 223741,
+      "verseStart": 15,
+      "attachments": []
+    },
+    {
+      "timeMs": 237031,
+      "verseStart": 16,
+      "attachments": []
+    },
+    {
+      "timeMs": 259507,
+      "verseStart": 17,
+      "attachments": []
+    },
+    {
+      "timeMs": 282303,
+      "verseStart": 18,
+      "attachments": []
+    },
+    {
+      "timeMs": 295573,
+      "verseStart": 19,
+      "attachments": []
+    },
+    {
+      "timeMs": 308642,
+      "verseStart": 20,
+      "attachments": []
+    },
+    {
+      "timeMs": 325014,
+      "verseStart": 21,
+      "attachments": []
+    }
+  ]
+}

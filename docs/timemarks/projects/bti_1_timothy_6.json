@@ -1,0 +1,95 @@
+{
+  "id": "gh_bti_1_timothy_6",
+  "translationCode": "BTI",
+  "bookId": "1_timothy",
+  "chapter": 6,
+  "title": "1-е Тимофею 6 · Кулаковых",
+  "narratorId": "bti",
+  "audioFileName": "61_06.mp3",
+  "cues": [
+    {
+      "timeMs": 4884,
+      "verseStart": 1
+    },
+    {
+      "timeMs": 21576,
+      "verseStart": 2
+    },
+    {
+      "timeMs": 54960,
+      "verseStart": 3
+    },
+    {
+      "timeMs": 69930,
+      "verseStart": 4
+    },
+    {
+      "timeMs": 91406,
+      "verseStart": 5
+    },
+    {
+      "timeMs": 106337,
+      "verseStart": 6
+    },
+    {
+      "timeMs": 118666,
+      "verseStart": 7
+    },
+    {
+      "timeMs": 127032,
+      "verseStart": 8
+    },
+    {
+      "timeMs": 133496,
+      "verseStart": 9
+    },
+    {
+      "timeMs": 151529,
+      "verseStart": 10
+    },
+    {
+      "timeMs": 166360,
+      "verseStart": 11
+    },
+    {
+      "timeMs": 177828,
+      "verseStart": 12
+    },
+    {
+      "timeMs": 195061,
+      "verseStart": 13
+    },
+    {
+      "timeMs": 210672,
+      "verseStart": 14
+    },
+    {
+      "timeMs": 223741,
+      "verseStart": 15
+    },
+    {
+      "timeMs": 237031,
+      "verseStart": 16
+    },
+    {
+      "timeMs": 259507,
+      "verseStart": 17
+    },
+    {
+      "timeMs": 282303,
+      "verseStart": 18
+    },
+    {
+      "timeMs": 295573,
+      "verseStart": 19
+    },
+    {
+      "timeMs": 308642,
+      "verseStart": 20
+    },
+    {
+      "timeMs": 325014,
+      "verseStart": 21
+    }
+  ]
+}
