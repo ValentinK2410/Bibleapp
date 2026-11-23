@@ -1,0 +1,83 @@
+{
+  "id": "gh_syn_colossians_4",
+  "translationCode": "SYN",
+  "bookId": "colossians",
+  "chapter": 4,
+  "title": "К Колоссянам 4 · Синодальный · Бондаренко",
+  "narratorId": "bondarenko",
+  "audioFileName": "58_04.mp3",
+  "cues": [
+    {
+      "timeMs": 3983,
+      "verseStart": 1
+    },
+    {
+      "timeMs": 14630,
+      "verseStart": 2
+    },
+    {
+      "timeMs": 21074,
+      "verseStart": 3
+    },
+    {
+      "timeMs": 31541,
+      "verseStart": 4
+    },
+    {
+      "timeMs": 37285,
+      "verseStart": 5
+    },
+    {
+      "timeMs": 42808,
+      "verseStart": 6
+    },
+    {
+      "timeMs": 52454,
+      "verseStart": 7
+    },
+    {
+      "timeMs": 59399,
+      "verseStart": 8
+    },
+    {
+      "timeMs": 66484,
+      "verseStart": 9
+    },
+    {
+      "timeMs": 77171,
+      "verseStart": 10
+    },
+    {
+      "timeMs": 89199,
+      "verseStart": 11
+    },
+    {
+      "timeMs": 101607,
+      "verseStart": 12
+    },
+    {
+      "timeMs": 115916,
+      "verseStart": 13
+    },
+    {
+      "timeMs": 124922,
+      "verseStart": 14
+    },
+    {
+      "timeMs": 131166,
+      "verseStart": 15
+    },
+    {
+      "timeMs": 138311,
+      "verseStart": 16
+    },
+    {
+      "timeMs": 151800,
+      "verseStart": 17
+    },
+    {
+      "timeMs": 159165,
+      "verseStart": 18
+    }
+  ]
+}

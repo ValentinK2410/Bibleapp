@@ -1,0 +1,127 @@
+{
+  "id": "gh_syn_colossians_1",
+  "translationCode": "SYN",
+  "bookId": "colossians",
+  "chapter": 1,
+  "title": "К Колоссянам 1 · Синодальный · Бондаренко",
+  "narratorId": "bondarenko",
+  "audioFileName": "58_01.mp3",
+  "cues": [
+    {
+      "timeMs": 9586,
+      "verseStart": 1
+    },
+    {
+      "timeMs": 15370,
+      "verseStart": 2
+    },
+    {
+      "timeMs": 21594,
+      "verseStart": 3
+    },
+    {
+      "timeMs": 37124,
+      "verseStart": 4
+    },
+    {
+      "timeMs": 43128,
+      "verseStart": 5
+    },
+    {
+      "timeMs": 50312,
+      "verseStart": 6
+    },
+    {
+      "timeMs": 62700,
+      "verseStart": 7
+    },
+    {
+      "timeMs": 71366,
+      "verseStart": 8
+    },
+    {
+      "timeMs": 76369,
+      "verseStart": 9
+    },
+    {
+      "timeMs": 91099,
+      "verseStart": 10
+    },
+    {
+      "timeMs": 102386,
+      "verseStart": 11
+    },
+    {
+      "timeMs": 110912,
+      "verseStart": 12
+    },
+    {
+      "timeMs": 117576,
+      "verseStart": 13
+    },
+    {
+      "timeMs": 124881,
+      "verseStart": 14
+    },
+    {
+      "timeMs": 131265,
+      "verseStart": 15
+    },
+    {
+      "timeMs": 138489,
+      "verseStart": 16
+    },
+    {
+      "timeMs": 154520,
+      "verseStart": 17
+    },
+    {
+      "timeMs": 160904,
+      "verseStart": 18
+    },
+    {
+      "timeMs": 171491,
+      "verseStart": 19
+    },
+    {
+      "timeMs": 177535,
+      "verseStart": 20
+    },
+    {
+      "timeMs": 190763,
+      "verseStart": 21
+    },
+    {
+      "timeMs": 197367,
+      "verseStart": 22
+    },
+    {
+      "timeMs": 208334,
+      "verseStart": 23
+    },
+    {
+      "timeMs": 228527,
+      "verseStart": 24
+    },
+    {
+      "timeMs": 239915,
+      "verseStart": 25
+    },
+    {
+      "timeMs": 249181,
+      "verseStart": 26
+    },
+    {
+      "timeMs": 255285,
+      "verseStart": 27
+    },
+    {
+      "timeMs": 267152,
+      "verseStart": 28
+    },
+    {
+      "timeMs": 279680,
+      "verseStart": 29
+    }
+  ]
+}

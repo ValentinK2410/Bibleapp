@@ -1,0 +1,103 @@
+{
+  "id": "gh_syn_colossians_2",
+  "translationCode": "SYN",
+  "bookId": "colossians",
+  "chapter": 2,
+  "title": "К Колоссянам 2 · Синодальный · Бондаренко",
+  "narratorId": "bondarenko",
+  "audioFileName": "58_02.mp3",
+  "cues": [
+    {
+      "timeMs": 4683,
+      "verseStart": 1
+    },
+    {
+      "timeMs": 17791,
+      "verseStart": 2
+    },
+    {
+      "timeMs": 28597,
+      "verseStart": 3
+    },
+    {
+      "timeMs": 33460,
+      "verseStart": 4
+    },
+    {
+      "timeMs": 40125,
+      "verseStart": 5
+    },
+    {
+      "timeMs": 50991,
+      "verseStart": 6
+    },
+    {
+      "timeMs": 57715,
+      "verseStart": 7
+    },
+    {
+      "timeMs": 67861,
+      "verseStart": 8
+    },
+    {
+      "timeMs": 78728,
+      "verseStart": 9
+    },
+    {
+      "timeMs": 82650,
+      "verseStart": 10
+    },
+    {
+      "timeMs": 89935,
+      "verseStart": 11
+    },
+    {
+      "timeMs": 100802,
+      "verseStart": 12
+    },
+    {
+      "timeMs": 110567,
+      "verseStart": 13
+    },
+    {
+      "timeMs": 119973,
+      "verseStart": 14
+    },
+    {
+      "timeMs": 131340,
+      "verseStart": 15
+    },
+    {
+      "timeMs": 142467,
+      "verseStart": 16
+    },
+    {
+      "timeMs": 152213,
+      "verseStart": 17
+    },
+    {
+      "timeMs": 157236,
+      "verseStart": 18
+    },
+    {
+      "timeMs": 168583,
+      "verseStart": 19
+    },
+    {
+      "timeMs": 179910,
+      "verseStart": 20
+    },
+    {
+      "timeMs": 189015,
+      "verseStart": 21
+    },
+    {
+      "timeMs": 192878,
+      "verseStart": 22
+    },
+    {
+      "timeMs": 199582,
+      "verseStart": 23
+    }
+  ]
+}
