@@ -1,0 +1,116 @@
+{
+  "id": "align-philippians-GRK-03",
+  "translationCode": "PODSTR",
+  "bookId": "philippians",
+  "chapter": 3,
+  "title": "К Филиппийцам 3 · Греческий (Koine)",
+  "audioFilePath": "/data/user/0/com.example.bible.sqlite/files/bible_audio/greek-nt/50_03.mp3",
+  "updatedAt": 1794873600000,
+  "cues": [
+    {
+      "timeMs": 540,
+      "verseStart": 1,
+      "attachments": []
+    },
+    {
+      "timeMs": 8867,
+      "verseStart": 2,
+      "attachments": []
+    },
+    {
+      "timeMs": 14431,
+      "verseStart": 3,
+      "attachments": []
+    },
+    {
+      "timeMs": 22918,
+      "verseStart": 4,
+      "attachments": []
+    },
+    {
+      "timeMs": 30123,
+      "verseStart": 5,
+      "attachments": []
+    },
+    {
+      "timeMs": 38329,
+      "verseStart": 6,
+      "attachments": []
+    },
+    {
+      "timeMs": 44314,
+      "verseStart": 7,
+      "attachments": []
+    },
+    {
+      "timeMs": 49318,
+      "verseStart": 8,
+      "attachments": []
+    },
+    {
+      "timeMs": 61407,
+      "verseStart": 9,
+      "attachments": []
+    },
+    {
+      "timeMs": 70414,
+      "verseStart": 10,
+      "attachments": []
+    },
+    {
+      "timeMs": 79021,
+      "verseStart": 11,
+      "attachments": []
+    },
+    {
+      "timeMs": 83284,
+      "verseStart": 12,
+      "attachments": []
+    },
+    {
+      "timeMs": 90970,
+      "verseStart": 13,
+      "attachments": []
+    },
+    {
+      "timeMs": 101017,
+      "verseStart": 14,
+      "attachments": []
+    },
+    {
+      "timeMs": 107242,
+      "verseStart": 15,
+      "attachments": []
+    },
+    {
+      "timeMs": 115128,
+      "verseStart": 16,
+      "attachments": []
+    },
+    {
+      "timeMs": 118951,
+      "verseStart": 17,
+      "attachments": []
+    },
+    {
+      "timeMs": 126057,
+      "verseStart": 18,
+      "attachments": []
+    },
+    {
+      "timeMs": 133322,
+      "verseStart": 19,
+      "attachments": []
+    },
+    {
+      "timeMs": 141949,
+      "verseStart": 20,
+      "attachments": []
+    },
+    {
+      "timeMs": 149995,
+      "verseStart": 21,
+      "attachments": []
+    }
+  ]
+}

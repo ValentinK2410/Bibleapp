@@ -1,0 +1,95 @@
+{
+  "id": "gh_grk_philippians_3",
+  "translationCode": "PODSTR",
+  "bookId": "philippians",
+  "chapter": 3,
+  "title": "К Филиппийцам 3 · Греческий (Koine)",
+  "narratorId": "greek-nt",
+  "audioFileName": "50_03.mp3",
+  "cues": [
+    {
+      "timeMs": 540,
+      "verseStart": 1
+    },
+    {
+      "timeMs": 8867,
+      "verseStart": 2
+    },
+    {
+      "timeMs": 14431,
+      "verseStart": 3
+    },
+    {
+      "timeMs": 22918,
+      "verseStart": 4
+    },
+    {
+      "timeMs": 30123,
+      "verseStart": 5
+    },
+    {
+      "timeMs": 38329,
+      "verseStart": 6
+    },
+    {
+      "timeMs": 44314,
+      "verseStart": 7
+    },
+    {
+      "timeMs": 49318,
+      "verseStart": 8
+    },
+    {
+      "timeMs": 61407,
+      "verseStart": 9
+    },
+    {
+      "timeMs": 70414,
+      "verseStart": 10
+    },
+    {
+      "timeMs": 79021,
+      "verseStart": 11
+    },
+    {
+      "timeMs": 83284,
+      "verseStart": 12
+    },
+    {
+      "timeMs": 90970,
+      "verseStart": 13
+    },
+    {
+      "timeMs": 101017,
+      "verseStart": 14
+    },
+    {
+      "timeMs": 107242,
+      "verseStart": 15
+    },
+    {
+      "timeMs": 115128,
+      "verseStart": 16
+    },
+    {
+      "timeMs": 118951,
+      "verseStart": 17
+    },
+    {
+      "timeMs": 126057,
+      "verseStart": 18
+    },
+    {
+      "timeMs": 133322,
+      "verseStart": 19
+    },
+    {
+      "timeMs": 141949,
+      "verseStart": 20
+    },
+    {
+      "timeMs": 149995,
+      "verseStart": 21
+    }
+  ]
+}

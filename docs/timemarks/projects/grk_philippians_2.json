@@ -1,0 +1,131 @@
+{
+  "id": "gh_grk_philippians_2",
+  "translationCode": "PODSTR",
+  "bookId": "philippians",
+  "chapter": 2,
+  "title": "К Филиппийцам 2 · Греческий (Koine)",
+  "narratorId": "greek-nt",
+  "audioFileName": "50_02.mp3",
+  "cues": [
+    {
+      "timeMs": 821,
+      "verseStart": 1
+    },
+    {
+      "timeMs": 10427,
+      "verseStart": 2
+    },
+    {
+      "timeMs": 18553,
+      "verseStart": 3
+    },
+    {
+      "timeMs": 26919,
+      "verseStart": 4
+    },
+    {
+      "timeMs": 31922,
+      "verseStart": 5
+    },
+    {
+      "timeMs": 35465,
+      "verseStart": 6
+    },
+    {
+      "timeMs": 41949,
+      "verseStart": 7
+    },
+    {
+      "timeMs": 51036,
+      "verseStart": 8
+    },
+    {
+      "timeMs": 57480,
+      "verseStart": 9
+    },
+    {
+      "timeMs": 63825,
+      "verseStart": 10
+    },
+    {
+      "timeMs": 71090,
+      "verseStart": 11
+    },
+    {
+      "timeMs": 78715,
+      "verseStart": 12
+    },
+    {
+      "timeMs": 93105,
+      "verseStart": 13
+    },
+    {
+      "timeMs": 100330,
+      "verseStart": 14
+    },
+    {
+      "timeMs": 104093,
+      "verseStart": 15
+    },
+    {
+      "timeMs": 115320,
+      "verseStart": 16
+    },
+    {
+      "timeMs": 125728,
+      "verseStart": 17
+    },
+    {
+      "timeMs": 133113,
+      "verseStart": 18
+    },
+    {
+      "timeMs": 137136,
+      "verseStart": 19
+    },
+    {
+      "timeMs": 145641,
+      "verseStart": 20
+    },
+    {
+      "timeMs": 151766,
+      "verseStart": 21
+    },
+    {
+      "timeMs": 156189,
+      "verseStart": 22
+    },
+    {
+      "timeMs": 163654,
+      "verseStart": 23
+    },
+    {
+      "timeMs": 169838,
+      "verseStart": 24
+    },
+    {
+      "timeMs": 174321,
+      "verseStart": 25
+    },
+    {
+      "timeMs": 185489,
+      "verseStart": 26
+    },
+    {
+      "timeMs": 192454,
+      "verseStart": 27
+    },
+    {
+      "timeMs": 203262,
+      "verseStart": 28
+    },
+    {
+      "timeMs": 210907,
+      "verseStart": 29
+    },
+    {
+      "timeMs": 218672,
+      "verseStart": 30
+    }
+  ]
+}

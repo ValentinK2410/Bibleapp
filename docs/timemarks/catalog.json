@@ -2484,6 +2484,46 @@
       "file": "projects/grk_matthew_9.json"
     },
     {
+      "id": "gh_grk_philippians_1",
+      "translationCode": "PODSTR",
+      "bookId": "philippians",
+      "chapter": 1,
+      "title": "К Филиппийцам 1 · Греческий (Koine)",
+      "cueCount": 28,
+      "narratorId": "greek-nt",
+      "file": "projects/grk_philippians_1.json"
+    },
+    {
+      "id": "gh_grk_philippians_2",
+      "translationCode": "PODSTR",
+      "bookId": "philippians",
+      "chapter": 2,
+      "title": "К Филиппийцам 2 · Греческий (Koine)",
+      "cueCount": 30,
+      "narratorId": "greek-nt",
+      "file": "projects/grk_philippians_2.json"
+    },
+    {
+      "id": "gh_grk_philippians_3",
+      "translationCode": "PODSTR",
+      "bookId": "philippians",
+      "chapter": 3,
+      "title": "К Филиппийцам 3 · Греческий (Koine)",
+      "cueCount": 21,
+      "narratorId": "greek-nt",
+      "file": "projects/grk_philippians_3.json"
+    },
+    {
+      "id": "gh_grk_philippians_4",
+      "translationCode": "PODSTR",
+      "bookId": "philippians",
+      "chapter": 4,
+      "title": "К Филиппийцам 4 · Греческий (Koine)",
+      "cueCount": 23,
+      "narratorId": "greek-nt",
+      "file": "projects/grk_philippians_4.json"
+    },
+    {
       "id": "gh_grk_romans_1",
       "translationCode": "PODSTR",
       "bookId": "romans",
