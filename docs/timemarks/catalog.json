@@ -4054,6 +4054,66 @@
       "file": "projects/rbo_2_corinthians_9.json"
     },
     {
+      "id": "gh_rbo_ephesians_1",
+      "translationCode": "RBO",
+      "bookId": "ephesians",
+      "chapter": 1,
+      "title": "К Ефесянам 1 · РБО",
+      "cueCount": 23,
+      "narratorId": "rbo",
+      "file": "projects/rbo_ephesians_1.json"
+    },
+    {
+      "id": "gh_rbo_ephesians_2",
+      "translationCode": "RBO",
+      "bookId": "ephesians",
+      "chapter": 2,
+      "title": "К Ефесянам 2 · РБО",
+      "cueCount": 22,
+      "narratorId": "rbo",
+      "file": "projects/rbo_ephesians_2.json"
+    },
+    {
+      "id": "gh_rbo_ephesians_3",
+      "translationCode": "RBO",
+      "bookId": "ephesians",
+      "chapter": 3,
+      "title": "К Ефесянам 3 · РБО",
+      "cueCount": 21,
+      "narratorId": "rbo",
+      "file": "projects/rbo_ephesians_3.json"
+    },
+    {
+      "id": "gh_rbo_ephesians_4",
+      "translationCode": "RBO",
+      "bookId": "ephesians",
+      "chapter": 4,
+      "title": "К Ефесянам 4 · РБО",
+      "cueCount": 32,
+      "narratorId": "rbo",
+      "file": "projects/rbo_ephesians_4.json"
+    },
+    {
+      "id": "gh_rbo_ephesians_5",
+      "translationCode": "RBO",
+      "bookId": "ephesians",
+      "chapter": 5,
+      "title": "К Ефесянам 5 · РБО",
+      "cueCount": 33,
+      "narratorId": "rbo",
+      "file": "projects/rbo_ephesians_5.json"
+    },
+    {
+      "id": "gh_rbo_ephesians_6",
+      "translationCode": "RBO",
+      "bookId": "ephesians",
+      "chapter": 6,
+      "title": "К Ефесянам 6 · РБО",
+      "cueCount": 24,
+      "narratorId": "rbo",
+      "file": "projects/rbo_ephesians_6.json"
+    },
+    {
       "id": "gh_rbo_galatians_1",
       "translationCode": "RBO",
       "bookId": "galatians",

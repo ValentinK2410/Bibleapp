@@ -1,0 +1,103 @@
+{
+  "id": "gh_rbo_ephesians_1",
+  "translationCode": "RBO",
+  "bookId": "ephesians",
+  "chapter": 1,
+  "title": "К Ефесянам 1 · РБО",
+  "narratorId": "rbo",
+  "audioFileName": "56_01.mp3",
+  "cues": [
+    {
+      "timeMs": 7465,
+      "verseStart": 1
+    },
+    {
+      "timeMs": 17692,
+      "verseStart": 2
+    },
+    {
+      "timeMs": 23877,
+      "verseStart": 3
+    },
+    {
+      "timeMs": 37886,
+      "verseStart": 4
+    },
+    {
+      "timeMs": 48374,
+      "verseStart": 5
+    },
+    {
+      "timeMs": 56919,
+      "verseStart": 6
+    },
+    {
+      "timeMs": 64064,
+      "verseStart": 7
+    },
+    {
+      "timeMs": 72590,
+      "verseStart": 8
+    },
+    {
+      "timeMs": 78234,
+      "verseStart": 9
+    },
+    {
+      "timeMs": 85079,
+      "verseStart": 10
+    },
+    {
+      "timeMs": 98408,
+      "verseStart": 11
+    },
+    {
+      "timeMs": 109396,
+      "verseStart": 12
+    },
+    {
+      "timeMs": 116080,
+      "verseStart": 13
+    },
+    {
+      "timeMs": 129149,
+      "verseStart": 14
+    },
+    {
+      "timeMs": 141438,
+      "verseStart": 15
+    },
+    {
+      "timeMs": 148883,
+      "verseStart": 16
+    },
+    {
+      "timeMs": 154487,
+      "verseStart": 17
+    },
+    {
+      "timeMs": 166555,
+      "verseStart": 18
+    },
+    {
+      "timeMs": 180585,
+      "verseStart": 19
+    },
+    {
+      "timeMs": 187090,
+      "verseStart": 20
+    },
+    {
+      "timeMs": 194895,
+      "verseStart": 21
+    },
+    {
+      "timeMs": 205422,
+      "verseStart": 22
+    },
+    {
+      "timeMs": 213068,
+      "verseStart": 23
+    }
+  ]
+}
