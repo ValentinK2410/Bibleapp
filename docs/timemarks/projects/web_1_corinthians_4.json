@@ -1,0 +1,95 @@
+{
+  "id": "gh_web_1_corinthians_4",
+  "translationCode": "WEB",
+  "bookId": "1_corinthians",
+  "chapter": 4,
+  "title": "1-е Коринфянам 4 · WEB (англ.)",
+  "narratorId": "web",
+  "audioFileName": "46_04.mp3",
+  "cues": [
+    {
+      "timeMs": 3242,
+      "verseStart": 1
+    },
+    {
+      "timeMs": 9306,
+      "verseStart": 2
+    },
+    {
+      "timeMs": 14090,
+      "verseStart": 3
+    },
+    {
+      "timeMs": 22315,
+      "verseStart": 4
+    },
+    {
+      "timeMs": 30361,
+      "verseStart": 5
+    },
+    {
+      "timeMs": 44691,
+      "verseStart": 6
+    },
+    {
+      "timeMs": 60021,
+      "verseStart": 7
+    },
+    {
+      "timeMs": 71569,
+      "verseStart": 8
+    },
+    {
+      "timeMs": 81816,
+      "verseStart": 9
+    },
+    {
+      "timeMs": 93904,
+      "verseStart": 10
+    },
+    {
+      "timeMs": 105392,
+      "verseStart": 11
+    },
+    {
+      "timeMs": 112397,
+      "verseStart": 12
+    },
+    {
+      "timeMs": 119302,
+      "verseStart": 13
+    },
+    {
+      "timeMs": 130189,
+      "verseStart": 14
+    },
+    {
+      "timeMs": 135413,
+      "verseStart": 15
+    },
+    {
+      "timeMs": 145420,
+      "verseStart": 16
+    },
+    {
+      "timeMs": 149763,
+      "verseStart": 17
+    },
+    {
+      "timeMs": 161390,
+      "verseStart": 18
+    },
+    {
+      "timeMs": 164833,
+      "verseStart": 19
+    },
+    {
+      "timeMs": 173839,
+      "verseStart": 20
+    },
+    {
+      "timeMs": 178142,
+      "verseStart": 21
+    }
+  ]
+}

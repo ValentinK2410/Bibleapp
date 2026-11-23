@@ -1,0 +1,111 @@
+{
+  "id": "align-1_corinthians-WEB-06",
+  "translationCode": "WEB",
+  "bookId": "1_corinthians",
+  "chapter": 6,
+  "title": "1-е Коринфянам 6 · WEB (англ.)",
+  "audioFilePath": "/data/user/0/com.example.bible.sqlite/files/bible_audio/web/46_06.mp3",
+  "updatedAt": 1794873600000,
+  "cues": [
+    {
+      "timeMs": 2662,
+      "verseStart": 1,
+      "attachments": []
+    },
+    {
+      "timeMs": 9547,
+      "verseStart": 2,
+      "attachments": []
+    },
+    {
+      "timeMs": 18413,
+      "verseStart": 3,
+      "attachments": []
+    },
+    {
+      "timeMs": 24718,
+      "verseStart": 4,
+      "attachments": []
+    },
+    {
+      "timeMs": 31863,
+      "verseStart": 5,
+      "attachments": []
+    },
+    {
+      "timeMs": 39608,
+      "verseStart": 6,
+      "attachments": []
+    },
+    {
+      "timeMs": 44492,
+      "verseStart": 7,
+      "attachments": []
+    },
+    {
+      "timeMs": 55960,
+      "verseStart": 8,
+      "attachments": []
+    },
+    {
+      "timeMs": 61244,
+      "verseStart": 9,
+      "attachments": []
+    },
+    {
+      "timeMs": 74013,
+      "verseStart": 10,
+      "attachments": []
+    },
+    {
+      "timeMs": 81758,
+      "verseStart": 11,
+      "attachments": []
+    },
+    {
+      "timeMs": 94988,
+      "verseStart": 12,
+      "attachments": []
+    },
+    {
+      "timeMs": 103234,
+      "verseStart": 13,
+      "attachments": []
+    },
+    {
+      "timeMs": 113681,
+      "verseStart": 14,
+      "attachments": []
+    },
+    {
+      "timeMs": 119525,
+      "verseStart": 15,
+      "attachments": []
+    },
+    {
+      "timeMs": 128332,
+      "verseStart": 16,
+      "attachments": []
+    },
+    {
+      "timeMs": 135717,
+      "verseStart": 17,
+      "attachments": []
+    },
+    {
+      "timeMs": 139520,
+      "verseStart": 18,
+      "attachments": []
+    },
+    {
+      "timeMs": 147585,
+      "verseStart": 19,
+      "attachments": []
+    },
+    {
+      "timeMs": 155731,
+      "verseStart": 20,
+      "attachments": []
+    }
+  ]
+}

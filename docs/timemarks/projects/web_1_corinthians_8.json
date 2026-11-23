@@ -1,0 +1,63 @@
+{
+  "id": "gh_web_1_corinthians_8",
+  "translationCode": "WEB",
+  "bookId": "1_corinthians",
+  "chapter": 8,
+  "title": "1-е Коринфянам 8 · WEB (англ.)",
+  "narratorId": "web",
+  "audioFileName": "46_08.mp3",
+  "cues": [
+    {
+      "timeMs": 2702,
+      "verseStart": 1
+    },
+    {
+      "timeMs": 11589,
+      "verseStart": 2
+    },
+    {
+      "timeMs": 16772,
+      "verseStart": 3
+    },
+    {
+      "timeMs": 21015,
+      "verseStart": 4
+    },
+    {
+      "timeMs": 30502,
+      "verseStart": 5
+    },
+    {
+      "timeMs": 37427,
+      "verseStart": 6
+    },
+    {
+      "timeMs": 48696,
+      "verseStart": 7
+    },
+    {
+      "timeMs": 60304,
+      "verseStart": 8
+    },
+    {
+      "timeMs": 68050,
+      "verseStart": 9
+    },
+    {
+      "timeMs": 74675,
+      "verseStart": 10
+    },
+    {
+      "timeMs": 85362,
+      "verseStart": 11
+    },
+    {
+      "timeMs": 90746,
+      "verseStart": 12
+    },
+    {
+      "timeMs": 97011,
+      "verseStart": 13
+    }
+  ]
+}

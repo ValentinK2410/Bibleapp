@@ -1,0 +1,63 @@
+{
+  "id": "gh_web_1_corinthians_5",
+  "translationCode": "WEB",
+  "bookId": "1_corinthians",
+  "chapter": 5,
+  "title": "1-е Коринфянам 5 · WEB (англ.)",
+  "narratorId": "web",
+  "audioFileName": "46_05.mp3",
+  "cues": [
+    {
+      "timeMs": 2362,
+      "verseStart": 1
+    },
+    {
+      "timeMs": 11867,
+      "verseStart": 2
+    },
+    {
+      "timeMs": 18752,
+      "verseStart": 3
+    },
+    {
+      "timeMs": 27517,
+      "verseStart": 4
+    },
+    {
+      "timeMs": 34322,
+      "verseStart": 5
+    },
+    {
+      "timeMs": 42627,
+      "verseStart": 6
+    },
+    {
+      "timeMs": 48230,
+      "verseStart": 7
+    },
+    {
+      "timeMs": 57436,
+      "verseStart": 8
+    },
+    {
+      "timeMs": 67262,
+      "verseStart": 9
+    },
+    {
+      "timeMs": 70504,
+      "verseStart": 10
+    },
+    {
+      "timeMs": 80571,
+      "verseStart": 11
+    },
+    {
+      "timeMs": 94940,
+      "verseStart": 12
+    },
+    {
+      "timeMs": 101764,
+      "verseStart": 13
+    }
+  ]
+}

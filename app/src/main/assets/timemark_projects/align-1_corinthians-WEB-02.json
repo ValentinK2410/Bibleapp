@@ -1,0 +1,91 @@
+{
+  "id": "align-1_corinthians-WEB-02",
+  "translationCode": "WEB",
+  "bookId": "1_corinthians",
+  "chapter": 2,
+  "title": "1-е Коринфянам 2 · WEB (англ.)",
+  "audioFilePath": "/data/user/0/com.example.bible.sqlite/files/bible_audio/web/46_02.mp3",
+  "updatedAt": 1794873600000,
+  "cues": [
+    {
+      "timeMs": 2041,
+      "verseStart": 1,
+      "attachments": []
+    },
+    {
+      "timeMs": 9507,
+      "verseStart": 2,
+      "attachments": []
+    },
+    {
+      "timeMs": 16231,
+      "verseStart": 3,
+      "attachments": []
+    },
+    {
+      "timeMs": 20574,
+      "verseStart": 4,
+      "attachments": []
+    },
+    {
+      "timeMs": 29120,
+      "verseStart": 5,
+      "attachments": []
+    },
+    {
+      "timeMs": 35004,
+      "verseStart": 6,
+      "attachments": []
+    },
+    {
+      "timeMs": 44971,
+      "verseStart": 7,
+      "attachments": []
+    },
+    {
+      "timeMs": 53136,
+      "verseStart": 8,
+      "attachments": []
+    },
+    {
+      "timeMs": 60642,
+      "verseStart": 9,
+      "attachments": []
+    },
+    {
+      "timeMs": 71389,
+      "verseStart": 10,
+      "attachments": []
+    },
+    {
+      "timeMs": 80435,
+      "verseStart": 11,
+      "attachments": []
+    },
+    {
+      "timeMs": 91803,
+      "verseStart": 12,
+      "attachments": []
+    },
+    {
+      "timeMs": 101289,
+      "verseStart": 13,
+      "attachments": []
+    },
+    {
+      "timeMs": 112077,
+      "verseStart": 14,
+      "attachments": []
+    },
+    {
+      "timeMs": 122424,
+      "verseStart": 15,
+      "attachments": []
+    },
+    {
+      "timeMs": 128948,
+      "verseStart": 16,
+      "attachments": []
+    }
+  ]
+}

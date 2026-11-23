@@ -1,0 +1,91 @@
+{
+  "id": "gh_web_1_corinthians_6",
+  "translationCode": "WEB",
+  "bookId": "1_corinthians",
+  "chapter": 6,
+  "title": "1-е Коринфянам 6 · WEB (англ.)",
+  "narratorId": "web",
+  "audioFileName": "46_06.mp3",
+  "cues": [
+    {
+      "timeMs": 2662,
+      "verseStart": 1
+    },
+    {
+      "timeMs": 9547,
+      "verseStart": 2
+    },
+    {
+      "timeMs": 18413,
+      "verseStart": 3
+    },
+    {
+      "timeMs": 24718,
+      "verseStart": 4
+    },
+    {
+      "timeMs": 31863,
+      "verseStart": 5
+    },
+    {
+      "timeMs": 39608,
+      "verseStart": 6
+    },
+    {
+      "timeMs": 44492,
+      "verseStart": 7
+    },
+    {
+      "timeMs": 55960,
+      "verseStart": 8
+    },
+    {
+      "timeMs": 61244,
+      "verseStart": 9
+    },
+    {
+      "timeMs": 74013,
+      "verseStart": 10
+    },
+    {
+      "timeMs": 81758,
+      "verseStart": 11
+    },
+    {
+      "timeMs": 94988,
+      "verseStart": 12
+    },
+    {
+      "timeMs": 103234,
+      "verseStart": 13
+    },
+    {
+      "timeMs": 113681,
+      "verseStart": 14
+    },
+    {
+      "timeMs": 119525,
+      "verseStart": 15
+    },
+    {
+      "timeMs": 128332,
+      "verseStart": 16
+    },
+    {
+      "timeMs": 135717,
+      "verseStart": 17
+    },
+    {
+      "timeMs": 139520,
+      "verseStart": 18
+    },
+    {
+      "timeMs": 147585,
+      "verseStart": 19
+    },
+    {
+      "timeMs": 155731,
+      "verseStart": 20
+    }
+  ]
+}

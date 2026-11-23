@@ -1,0 +1,103 @@
+{
+  "id": "gh_web_1_corinthians_3",
+  "translationCode": "WEB",
+  "bookId": "1_corinthians",
+  "chapter": 3,
+  "title": "1-е Коринфянам 3 · WEB (англ.)",
+  "narratorId": "web",
+  "audioFileName": "46_03.mp3",
+  "cues": [
+    {
+      "timeMs": 2842,
+      "verseStart": 1
+    },
+    {
+      "timeMs": 10969,
+      "verseStart": 2
+    },
+    {
+      "timeMs": 18335,
+      "verseStart": 3
+    },
+    {
+      "timeMs": 27462,
+      "verseStart": 4
+    },
+    {
+      "timeMs": 33447,
+      "verseStart": 5
+    },
+    {
+      "timeMs": 42294,
+      "verseStart": 6
+    },
+    {
+      "timeMs": 47238,
+      "verseStart": 7
+    },
+    {
+      "timeMs": 54263,
+      "verseStart": 8
+    },
+    {
+      "timeMs": 62229,
+      "verseStart": 9
+    },
+    {
+      "timeMs": 69735,
+      "verseStart": 10
+    },
+    {
+      "timeMs": 83006,
+      "verseStart": 11
+    },
+    {
+      "timeMs": 89131,
+      "verseStart": 12
+    },
+    {
+      "timeMs": 96216,
+      "verseStart": 13
+    },
+    {
+      "timeMs": 107385,
+      "verseStart": 14
+    },
+    {
+      "timeMs": 112389,
+      "verseStart": 15
+    },
+    {
+      "timeMs": 122157,
+      "verseStart": 16
+    },
+    {
+      "timeMs": 128182,
+      "verseStart": 17
+    },
+    {
+      "timeMs": 136949,
+      "verseStart": 18
+    },
+    {
+      "timeMs": 146937,
+      "verseStart": 19
+    },
+    {
+      "timeMs": 155043,
+      "verseStart": 20
+    },
+    {
+      "timeMs": 160287,
+      "verseStart": 21
+    },
+    {
+      "timeMs": 165671,
+      "verseStart": 22
+    },
+    {
+      "timeMs": 175499,
+      "verseStart": 23
+    }
+  ]
+}

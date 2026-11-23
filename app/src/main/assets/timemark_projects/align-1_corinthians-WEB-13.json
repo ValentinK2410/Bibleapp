@@ -1,0 +1,76 @@
+{
+  "id": "align-1_corinthians-WEB-13",
+  "translationCode": "WEB",
+  "bookId": "1_corinthians",
+  "chapter": 13,
+  "title": "1-е Коринфянам 13 · WEB (англ.)",
+  "audioFilePath": "/data/user/0/com.example.bible.sqlite/files/bible_audio/web/46_13.mp3",
+  "updatedAt": 1794873600000,
+  "cues": [
+    {
+      "timeMs": 3603,
+      "verseStart": 1,
+      "attachments": []
+    },
+    {
+      "timeMs": 11928,
+      "verseStart": 2,
+      "attachments": []
+    },
+    {
+      "timeMs": 23476,
+      "verseStart": 3,
+      "attachments": []
+    },
+    {
+      "timeMs": 32342,
+      "verseStart": 4,
+      "attachments": []
+    },
+    {
+      "timeMs": 40208,
+      "verseStart": 5,
+      "attachments": []
+    },
+    {
+      "timeMs": 47753,
+      "verseStart": 6,
+      "attachments": []
+    },
+    {
+      "timeMs": 51515,
+      "verseStart": 7,
+      "attachments": []
+    },
+    {
+      "timeMs": 58700,
+      "verseStart": 8,
+      "attachments": []
+    },
+    {
+      "timeMs": 69248,
+      "verseStart": 9,
+      "attachments": []
+    },
+    {
+      "timeMs": 73511,
+      "verseStart": 10,
+      "attachments": []
+    },
+    {
+      "timeMs": 79295,
+      "verseStart": 11,
+      "attachments": []
+    },
+    {
+      "timeMs": 88821,
+      "verseStart": 12,
+      "attachments": []
+    },
+    {
+      "timeMs": 100269,
+      "verseStart": 13,
+      "attachments": []
+    }
+  ]
+}
