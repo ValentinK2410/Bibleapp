@@ -1,0 +1,61 @@
+{
+  "id": "align-1_thessalonians-GRK-01",
+  "translationCode": "PODSTR",
+  "bookId": "1_thessalonians",
+  "chapter": 1,
+  "title": "1-е Фессалоникийцам 1 · Греческий (Koine)",
+  "audioFilePath": "/data/user/0/com.example.bible.sqlite/files/bible_audio/greek-nt/52_01.mp3",
+  "updatedAt": 1794873600000,
+  "cues": [
+    {
+      "timeMs": 681,
+      "verseStart": 1,
+      "attachments": []
+    },
+    {
+      "timeMs": 10830,
+      "verseStart": 2,
+      "attachments": []
+    },
+    {
+      "timeMs": 17355,
+      "verseStart": 3,
+      "attachments": []
+    },
+    {
+      "timeMs": 28886,
+      "verseStart": 4,
+      "attachments": []
+    },
+    {
+      "timeMs": 33750,
+      "verseStart": 5,
+      "attachments": []
+    },
+    {
+      "timeMs": 45560,
+      "verseStart": 6,
+      "attachments": []
+    },
+    {
+      "timeMs": 54148,
+      "verseStart": 7,
+      "attachments": []
+    },
+    {
+      "timeMs": 59993,
+      "verseStart": 8,
+      "attachments": []
+    },
+    {
+      "timeMs": 71823,
+      "verseStart": 9,
+      "attachments": []
+    },
+    {
+      "timeMs": 82673,
+      "verseStart": 10,
+      "attachments": []
+    }
+  ]
+}

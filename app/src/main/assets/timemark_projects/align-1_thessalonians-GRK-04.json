@@ -1,0 +1,101 @@
+{
+  "id": "align-1_thessalonians-GRK-04",
+  "translationCode": "PODSTR",
+  "bookId": "1_thessalonians",
+  "chapter": 4,
+  "title": "1-е Фессалоникийцам 4 · Греческий (Koine)",
+  "audioFilePath": "/data/user/0/com.example.bible.sqlite/files/bible_audio/greek-nt/52_04.mp3",
+  "updatedAt": 1794873600000,
+  "cues": [
+    {
+      "timeMs": 600,
+      "verseStart": 1,
+      "attachments": []
+    },
+    {
+      "timeMs": 15151,
+      "verseStart": 2,
+      "attachments": []
+    },
+    {
+      "timeMs": 19674,
+      "verseStart": 3,
+      "attachments": []
+    },
+    {
+      "timeMs": 25998,
+      "verseStart": 4,
+      "attachments": []
+    },
+    {
+      "timeMs": 31302,
+      "verseStart": 5,
+      "attachments": []
+    },
+    {
+      "timeMs": 36285,
+      "verseStart": 6,
+      "attachments": []
+    },
+    {
+      "timeMs": 48114,
+      "verseStart": 7,
+      "attachments": []
+    },
+    {
+      "timeMs": 52997,
+      "verseStart": 8,
+      "attachments": []
+    },
+    {
+      "timeMs": 61203,
+      "verseStart": 9,
+      "attachments": []
+    },
+    {
+      "timeMs": 69408,
+      "verseStart": 10,
+      "attachments": []
+    },
+    {
+      "timeMs": 78135,
+      "verseStart": 11,
+      "attachments": []
+    },
+    {
+      "timeMs": 86140,
+      "verseStart": 12,
+      "attachments": []
+    },
+    {
+      "timeMs": 91544,
+      "verseStart": 13,
+      "attachments": []
+    },
+    {
+      "timeMs": 100110,
+      "verseStart": 14,
+      "attachments": []
+    },
+    {
+      "timeMs": 108796,
+      "verseStart": 15,
+      "attachments": []
+    },
+    {
+      "timeMs": 119223,
+      "verseStart": 16,
+      "attachments": []
+    },
+    {
+      "timeMs": 130351,
+      "verseStart": 17,
+      "attachments": []
+    },
+    {
+      "timeMs": 142660,
+      "verseStart": 18,
+      "attachments": []
+    }
+  ]
+}

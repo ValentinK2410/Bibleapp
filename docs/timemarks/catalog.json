@@ -1424,6 +1424,56 @@
       "file": "projects/grk_1_corinthians_9.json"
     },
     {
+      "id": "gh_grk_1_thessalonians_1",
+      "translationCode": "PODSTR",
+      "bookId": "1_thessalonians",
+      "chapter": 1,
+      "title": "1-е Фессалоникийцам 1 · Греческий (Koine)",
+      "cueCount": 10,
+      "narratorId": "greek-nt",
+      "file": "projects/grk_1_thessalonians_1.json"
+    },
+    {
+      "id": "gh_grk_1_thessalonians_2",
+      "translationCode": "PODSTR",
+      "bookId": "1_thessalonians",
+      "chapter": 2,
+      "title": "1-е Фессалоникийцам 2 · Греческий (Koine)",
+      "cueCount": 20,
+      "narratorId": "greek-nt",
+      "file": "projects/grk_1_thessalonians_2.json"
+    },
+    {
+      "id": "gh_grk_1_thessalonians_3",
+      "translationCode": "PODSTR",
+      "bookId": "1_thessalonians",
+      "chapter": 3,
+      "title": "1-е Фессалоникийцам 3 · Греческий (Koine)",
+      "cueCount": 13,
+      "narratorId": "greek-nt",
+      "file": "projects/grk_1_thessalonians_3.json"
+    },
+    {
+      "id": "gh_grk_1_thessalonians_4",
+      "translationCode": "PODSTR",
+      "bookId": "1_thessalonians",
+      "chapter": 4,
+      "title": "1-е Фессалоникийцам 4 · Греческий (Koine)",
+      "cueCount": 18,
+      "narratorId": "greek-nt",
+      "file": "projects/grk_1_thessalonians_4.json"
+    },
+    {
+      "id": "gh_grk_1_thessalonians_5",
+      "translationCode": "PODSTR",
+      "bookId": "1_thessalonians",
+      "chapter": 5,
+      "title": "1-е Фессалоникийцам 5 · Греческий (Koine)",
+      "cueCount": 28,
+      "narratorId": "greek-nt",
+      "file": "projects/grk_1_thessalonians_5.json"
+    },
+    {
       "id": "gh_grk_2_corinthians_1",
       "translationCode": "PODSTR",
       "bookId": "2_corinthians",

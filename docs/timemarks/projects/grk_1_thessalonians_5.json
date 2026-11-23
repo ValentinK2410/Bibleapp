@@ -1,0 +1,123 @@
+{
+  "id": "gh_grk_1_thessalonians_5",
+  "translationCode": "PODSTR",
+  "bookId": "1_thessalonians",
+  "chapter": 5,
+  "title": "1-е Фессалоникийцам 5 · Греческий (Koine)",
+  "narratorId": "greek-nt",
+  "audioFileName": "52_05.mp3",
+  "cues": [
+    {
+      "timeMs": 721,
+      "verseStart": 1
+    },
+    {
+      "timeMs": 6005,
+      "verseStart": 2
+    },
+    {
+      "timeMs": 11589,
+      "verseStart": 3
+    },
+    {
+      "timeMs": 22217,
+      "verseStart": 4
+    },
+    {
+      "timeMs": 27341,
+      "verseStart": 5
+    },
+    {
+      "timeMs": 34026,
+      "verseStart": 6
+    },
+    {
+      "timeMs": 38989,
+      "verseStart": 7
+    },
+    {
+      "timeMs": 44634,
+      "verseStart": 8
+    },
+    {
+      "timeMs": 52580,
+      "verseStart": 9
+    },
+    {
+      "timeMs": 59825,
+      "verseStart": 10
+    },
+    {
+      "timeMs": 67010,
+      "verseStart": 11
+    },
+    {
+      "timeMs": 72815,
+      "verseStart": 12
+    },
+    {
+      "timeMs": 80881,
+      "verseStart": 13
+    },
+    {
+      "timeMs": 87266,
+      "verseStart": 14
+    },
+    {
+      "timeMs": 97593,
+      "verseStart": 15
+    },
+    {
+      "timeMs": 105539,
+      "verseStart": 16
+    },
+    {
+      "timeMs": 106900,
+      "verseStart": 17
+    },
+    {
+      "timeMs": 108902,
+      "verseStart": 18
+    },
+    {
+      "timeMs": 114466,
+      "verseStart": 19
+    },
+    {
+      "timeMs": 116147,
+      "verseStart": 20
+    },
+    {
+      "timeMs": 118169,
+      "verseStart": 21
+    },
+    {
+      "timeMs": 121591,
+      "verseStart": 22
+    },
+    {
+      "timeMs": 124894,
+      "verseStart": 23
+    },
+    {
+      "timeMs": 136583,
+      "verseStart": 24
+    },
+    {
+      "timeMs": 139805,
+      "verseStart": 25
+    },
+    {
+      "timeMs": 142367,
+      "verseStart": 26
+    },
+    {
+      "timeMs": 146350,
+      "verseStart": 27
+    },
+    {
+      "timeMs": 151494,
+      "verseStart": 28
+    }
+  ]
+}

@@ -1,0 +1,83 @@
+{
+  "id": "gh_grk_1_thessalonians_4",
+  "translationCode": "PODSTR",
+  "bookId": "1_thessalonians",
+  "chapter": 4,
+  "title": "1-е Фессалоникийцам 4 · Греческий (Koine)",
+  "narratorId": "greek-nt",
+  "audioFileName": "52_04.mp3",
+  "cues": [
+    {
+      "timeMs": 600,
+      "verseStart": 1
+    },
+    {
+      "timeMs": 15151,
+      "verseStart": 2
+    },
+    {
+      "timeMs": 19674,
+      "verseStart": 3
+    },
+    {
+      "timeMs": 25998,
+      "verseStart": 4
+    },
+    {
+      "timeMs": 31302,
+      "verseStart": 5
+    },
+    {
+      "timeMs": 36285,
+      "verseStart": 6
+    },
+    {
+      "timeMs": 48114,
+      "verseStart": 7
+    },
+    {
+      "timeMs": 52997,
+      "verseStart": 8
+    },
+    {
+      "timeMs": 61203,
+      "verseStart": 9
+    },
+    {
+      "timeMs": 69408,
+      "verseStart": 10
+    },
+    {
+      "timeMs": 78135,
+      "verseStart": 11
+    },
+    {
+      "timeMs": 86140,
+      "verseStart": 12
+    },
+    {
+      "timeMs": 91544,
+      "verseStart": 13
+    },
+    {
+      "timeMs": 100110,
+      "verseStart": 14
+    },
+    {
+      "timeMs": 108796,
+      "verseStart": 15
+    },
+    {
+      "timeMs": 119223,
+      "verseStart": 16
+    },
+    {
+      "timeMs": 130351,
+      "verseStart": 17
+    },
+    {
+      "timeMs": 142660,
+      "verseStart": 18
+    }
+  ]
+}
