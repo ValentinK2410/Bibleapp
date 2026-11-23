@@ -1,0 +1,71 @@
+{
+  "id": "align-2_thessalonians-RBO-01",
+  "translationCode": "RBO",
+  "bookId": "2_thessalonians",
+  "chapter": 1,
+  "title": "2-е Фессалоникийцам 1 · РБО",
+  "audioFilePath": "/data/user/0/com.example.bible.sqlite/files/bible_audio/rbo/60_01.mp3",
+  "updatedAt": 1795392000000,
+  "cues": [
+    {
+      "timeMs": 8786,
+      "verseStart": 1,
+      "attachments": []
+    },
+    {
+      "timeMs": 18453,
+      "verseStart": 2,
+      "attachments": []
+    },
+    {
+      "timeMs": 24617,
+      "verseStart": 3,
+      "attachments": []
+    },
+    {
+      "timeMs": 41749,
+      "verseStart": 4,
+      "attachments": []
+    },
+    {
+      "timeMs": 53457,
+      "verseStart": 5,
+      "attachments": []
+    },
+    {
+      "timeMs": 62983,
+      "verseStart": 6,
+      "attachments": []
+    },
+    {
+      "timeMs": 68607,
+      "verseStart": 7,
+      "attachments": []
+    },
+    {
+      "timeMs": 81576,
+      "verseStart": 8,
+      "attachments": []
+    },
+    {
+      "timeMs": 91863,
+      "verseStart": 9,
+      "attachments": []
+    },
+    {
+      "timeMs": 100429,
+      "verseStart": 10,
+      "attachments": []
+    },
+    {
+      "timeMs": 116340,
+      "verseStart": 11,
+      "attachments": []
+    },
+    {
+      "timeMs": 128649,
+      "verseStart": 12,
+      "attachments": []
+    }
+  ]
+}

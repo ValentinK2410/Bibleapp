@@ -1,0 +1,101 @@
+{
+  "id": "align-2_thessalonians-RBO-03",
+  "translationCode": "RBO",
+  "bookId": "2_thessalonians",
+  "chapter": 3,
+  "title": "2-е Фессалоникийцам 3 · РБО",
+  "audioFilePath": "/data/user/0/com.example.bible.sqlite/files/bible_audio/rbo/60_03.mp3",
+  "updatedAt": 1795392000000,
+  "cues": [
+    {
+      "timeMs": 4383,
+      "verseStart": 1,
+      "attachments": []
+    },
+    {
+      "timeMs": 17613,
+      "verseStart": 2,
+      "attachments": []
+    },
+    {
+      "timeMs": 25098,
+      "verseStart": 3,
+      "attachments": []
+    },
+    {
+      "timeMs": 31123,
+      "verseStart": 4,
+      "attachments": []
+    },
+    {
+      "timeMs": 42591,
+      "verseStart": 5,
+      "attachments": []
+    },
+    {
+      "timeMs": 49496,
+      "verseStart": 6,
+      "attachments": []
+    },
+    {
+      "timeMs": 63267,
+      "verseStart": 7,
+      "attachments": []
+    },
+    {
+      "timeMs": 70552,
+      "verseStart": 8,
+      "attachments": []
+    },
+    {
+      "timeMs": 79158,
+      "verseStart": 9,
+      "attachments": []
+    },
+    {
+      "timeMs": 86844,
+      "verseStart": 10,
+      "attachments": []
+    },
+    {
+      "timeMs": 96571,
+      "verseStart": 11,
+      "attachments": []
+    },
+    {
+      "timeMs": 105277,
+      "verseStart": 12,
+      "attachments": []
+    },
+    {
+      "timeMs": 115905,
+      "verseStart": 13,
+      "attachments": []
+    },
+    {
+      "timeMs": 120989,
+      "verseStart": 14,
+      "attachments": []
+    },
+    {
+      "timeMs": 131437,
+      "verseStart": 15,
+      "attachments": []
+    },
+    {
+      "timeMs": 136580,
+      "verseStart": 16,
+      "attachments": []
+    },
+    {
+      "timeMs": 147168,
+      "verseStart": 17,
+      "attachments": []
+    },
+    {
+      "timeMs": 155674,
+      "verseStart": 18,
+      "attachments": []
+    }
+  ]
+}

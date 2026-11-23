@@ -4614,6 +4614,36 @@
       "file": "projects/rbo_2_corinthians_9.json"
     },
     {
+      "id": "gh_rbo_2_thessalonians_1",
+      "translationCode": "RBO",
+      "bookId": "2_thessalonians",
+      "chapter": 1,
+      "title": "2-е Фессалоникийцам 1 · РБО",
+      "cueCount": 12,
+      "narratorId": "rbo",
+      "file": "projects/rbo_2_thessalonians_1.json"
+    },
+    {
+      "id": "gh_rbo_2_thessalonians_2",
+      "translationCode": "RBO",
+      "bookId": "2_thessalonians",
+      "chapter": 2,
+      "title": "2-е Фессалоникийцам 2 · РБО",
+      "cueCount": 17,
+      "narratorId": "rbo",
+      "file": "projects/rbo_2_thessalonians_2.json"
+    },
+    {
+      "id": "gh_rbo_2_thessalonians_3",
+      "translationCode": "RBO",
+      "bookId": "2_thessalonians",
+      "chapter": 3,
+      "title": "2-е Фессалоникийцам 3 · РБО",
+      "cueCount": 18,
+      "narratorId": "rbo",
+      "file": "projects/rbo_2_thessalonians_3.json"
+    },
+    {
       "id": "gh_rbo_colossians_1",
       "translationCode": "RBO",
       "bookId": "colossians",

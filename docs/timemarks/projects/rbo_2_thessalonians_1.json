@@ -1,0 +1,59 @@
+{
+  "id": "gh_rbo_2_thessalonians_1",
+  "translationCode": "RBO",
+  "bookId": "2_thessalonians",
+  "chapter": 1,
+  "title": "2-е Фессалоникийцам 1 · РБО",
+  "narratorId": "rbo",
+  "audioFileName": "60_01.mp3",
+  "cues": [
+    {
+      "timeMs": 8786,
+      "verseStart": 1
+    },
+    {
+      "timeMs": 18453,
+      "verseStart": 2
+    },
+    {
+      "timeMs": 24617,
+      "verseStart": 3
+    },
+    {
+      "timeMs": 41749,
+      "verseStart": 4
+    },
+    {
+      "timeMs": 53457,
+      "verseStart": 5
+    },
+    {
+      "timeMs": 62983,
+      "verseStart": 6
+    },
+    {
+      "timeMs": 68607,
+      "verseStart": 7
+    },
+    {
+      "timeMs": 81576,
+      "verseStart": 8
+    },
+    {
+      "timeMs": 91863,
+      "verseStart": 9
+    },
+    {
+      "timeMs": 100429,
+      "verseStart": 10
+    },
+    {
+      "timeMs": 116340,
+      "verseStart": 11
+    },
+    {
+      "timeMs": 128649,
+      "verseStart": 12
+    }
+  ]
+}
