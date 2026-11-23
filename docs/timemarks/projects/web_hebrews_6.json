@@ -1,0 +1,91 @@
+{
+  "id": "gh_web_hebrews_6",
+  "translationCode": "WEB",
+  "bookId": "hebrews",
+  "chapter": 6,
+  "title": "К Евреям 6 · WEB (англ.)",
+  "narratorId": "web",
+  "audioFileName": "58_06.mp3",
+  "cues": [
+    {
+      "timeMs": 2222,
+      "verseStart": 1
+    },
+    {
+      "timeMs": 13730,
+      "verseStart": 2
+    },
+    {
+      "timeMs": 21375,
+      "verseStart": 3
+    },
+    {
+      "timeMs": 24617,
+      "verseStart": 4
+    },
+    {
+      "timeMs": 32303,
+      "verseStart": 5
+    },
+    {
+      "timeMs": 37106,
+      "verseStart": 6
+    },
+    {
+      "timeMs": 48954,
+      "verseStart": 7
+    },
+    {
+      "timeMs": 58921,
+      "verseStart": 8
+    },
+    {
+      "timeMs": 68328,
+      "verseStart": 9
+    },
+    {
+      "timeMs": 77194,
+      "verseStart": 10
+    },
+    {
+      "timeMs": 86761,
+      "verseStart": 11
+    },
+    {
+      "timeMs": 93606,
+      "verseStart": 12
+    },
+    {
+      "timeMs": 100871,
+      "verseStart": 13
+    },
+    {
+      "timeMs": 107515,
+      "verseStart": 14
+    },
+    {
+      "timeMs": 114680,
+      "verseStart": 15
+    },
+    {
+      "timeMs": 119464,
+      "verseStart": 16
+    },
+    {
+      "timeMs": 127309,
+      "verseStart": 17
+    },
+    {
+      "timeMs": 136196,
+      "verseStart": 18
+    },
+    {
+      "timeMs": 148504,
+      "verseStart": 19
+    },
+    {
+      "timeMs": 156750,
+      "verseStart": 20
+    }
+  ]
+}

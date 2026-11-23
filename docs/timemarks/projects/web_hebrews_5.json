@@ -1,0 +1,67 @@
+{
+  "id": "gh_web_hebrews_5",
+  "translationCode": "WEB",
+  "bookId": "hebrews",
+  "chapter": 5,
+  "title": "К Евреям 5 · WEB (англ.)",
+  "narratorId": "web",
+  "audioFileName": "58_05.mp3",
+  "cues": [
+    {
+      "timeMs": 2282,
+      "verseStart": 1
+    },
+    {
+      "timeMs": 12590,
+      "verseStart": 2
+    },
+    {
+      "timeMs": 21576,
+      "verseStart": 3
+    },
+    {
+      "timeMs": 29282,
+      "verseStart": 4
+    },
+    {
+      "timeMs": 36347,
+      "verseStart": 5
+    },
+    {
+      "timeMs": 46775,
+      "verseStart": 6
+    },
+    {
+      "timeMs": 52820,
+      "verseStart": 7
+    },
+    {
+      "timeMs": 64729,
+      "verseStart": 8
+    },
+    {
+      "timeMs": 70713,
+      "verseStart": 9
+    },
+    {
+      "timeMs": 77598,
+      "verseStart": 10
+    },
+    {
+      "timeMs": 82122,
+      "verseStart": 11
+    },
+    {
+      "timeMs": 89707,
+      "verseStart": 12
+    },
+    {
+      "timeMs": 103938,
+      "verseStart": 13
+    },
+    {
+      "timeMs": 109683,
+      "verseStart": 14
+    }
+  ]
+}

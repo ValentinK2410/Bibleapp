@@ -1,0 +1,67 @@
+{
+  "id": "gh_web_hebrews_1",
+  "translationCode": "WEB",
+  "bookId": "hebrews",
+  "chapter": 1,
+  "title": "К Евреям 1 · WEB (англ.)",
+  "narratorId": "web",
+  "audioFileName": "58_01.mp3",
+  "cues": [
+    {
+      "timeMs": 5824,
+      "verseStart": 1
+    },
+    {
+      "timeMs": 12428,
+      "verseStart": 2
+    },
+    {
+      "timeMs": 21914,
+      "verseStart": 3
+    },
+    {
+      "timeMs": 36503,
+      "verseStart": 4
+    },
+    {
+      "timeMs": 43968,
+      "verseStart": 5
+    },
+    {
+      "timeMs": 57396,
+      "verseStart": 6
+    },
+    {
+      "timeMs": 65521,
+      "verseStart": 7
+    },
+    {
+      "timeMs": 73066,
+      "verseStart": 8
+    },
+    {
+      "timeMs": 82392,
+      "verseStart": 9
+    },
+    {
+      "timeMs": 93499,
+      "verseStart": 10
+    },
+    {
+      "timeMs": 101684,
+      "verseStart": 11
+    },
+    {
+      "timeMs": 108228,
+      "verseStart": 12
+    },
+    {
+      "timeMs": 118975,
+      "verseStart": 13
+    },
+    {
+      "timeMs": 126780,
+      "verseStart": 14
+    }
+  ]
+}

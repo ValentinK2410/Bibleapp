@@ -1,0 +1,76 @@
+{
+  "id": "align-hebrews-WEB-08",
+  "translationCode": "WEB",
+  "bookId": "hebrews",
+  "chapter": 8,
+  "title": "К Евреям 8 · WEB (англ.)",
+  "audioFilePath": "/data/user/0/com.example.bible.sqlite/files/bible_audio/web/58_08.mp3",
+  "updatedAt": 1794873600000,
+  "cues": [
+    {
+      "timeMs": 2482,
+      "verseStart": 1,
+      "attachments": []
+    },
+    {
+      "timeMs": 11048,
+      "verseStart": 2,
+      "attachments": []
+    },
+    {
+      "timeMs": 17533,
+      "verseStart": 3,
+      "attachments": []
+    },
+    {
+      "timeMs": 25939,
+      "verseStart": 4,
+      "attachments": []
+    },
+    {
+      "timeMs": 33145,
+      "verseStart": 5,
+      "attachments": []
+    },
+    {
+      "timeMs": 47355,
+      "verseStart": 6,
+      "attachments": []
+    },
+    {
+      "timeMs": 57763,
+      "verseStart": 7,
+      "attachments": []
+    },
+    {
+      "timeMs": 63427,
+      "verseStart": 8,
+      "attachments": []
+    },
+    {
+      "timeMs": 72193,
+      "verseStart": 9,
+      "attachments": []
+    },
+    {
+      "timeMs": 85343,
+      "verseStart": 10,
+      "attachments": []
+    },
+    {
+      "timeMs": 98413,
+      "verseStart": 11,
+      "attachments": []
+    },
+    {
+      "timeMs": 107840,
+      "verseStart": 12,
+      "attachments": []
+    },
+    {
+      "timeMs": 114985,
+      "verseStart": 13,
+      "attachments": []
+    }
+  ]
+}

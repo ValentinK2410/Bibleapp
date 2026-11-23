@@ -1,0 +1,87 @@
+{
+  "id": "gh_web_hebrews_3",
+  "translationCode": "WEB",
+  "bookId": "hebrews",
+  "chapter": 3,
+  "title": "К Евреям 3 · WEB (англ.)",
+  "narratorId": "web",
+  "audioFileName": "58_03.mp3",
+  "cues": [
+    {
+      "timeMs": 2782,
+      "verseStart": 1
+    },
+    {
+      "timeMs": 11407,
+      "verseStart": 2
+    },
+    {
+      "timeMs": 17531,
+      "verseStart": 3
+    },
+    {
+      "timeMs": 25797,
+      "verseStart": 4
+    },
+    {
+      "timeMs": 32981,
+      "verseStart": 5
+    },
+    {
+      "timeMs": 40726,
+      "verseStart": 6
+    },
+    {
+      "timeMs": 53214,
+      "verseStart": 7
+    },
+    {
+      "timeMs": 58398,
+      "verseStart": 8
+    },
+    {
+      "timeMs": 63881,
+      "verseStart": 9
+    },
+    {
+      "timeMs": 69625,
+      "verseStart": 10
+    },
+    {
+      "timeMs": 77550,
+      "verseStart": 11
+    },
+    {
+      "timeMs": 83334,
+      "verseStart": 12
+    },
+    {
+      "timeMs": 90859,
+      "verseStart": 13
+    },
+    {
+      "timeMs": 99224,
+      "verseStart": 14
+    },
+    {
+      "timeMs": 105548,
+      "verseStart": 15
+    },
+    {
+      "timeMs": 113794,
+      "verseStart": 16
+    },
+    {
+      "timeMs": 121659,
+      "verseStart": 17
+    },
+    {
+      "timeMs": 130584,
+      "verseStart": 18
+    },
+    {
+      "timeMs": 137769,
+      "verseStart": 19
+    }
+  ]
+}

@@ -1,0 +1,127 @@
+{
+  "id": "gh_web_hebrews_12",
+  "translationCode": "WEB",
+  "bookId": "hebrews",
+  "chapter": 12,
+  "title": "К Евреям 12 · WEB (англ.)",
+  "narratorId": "web",
+  "audioFileName": "58_12.mp3",
+  "cues": [
+    {
+      "timeMs": 2742,
+      "verseStart": 1
+    },
+    {
+      "timeMs": 17572,
+      "verseStart": 2
+    },
+    {
+      "timeMs": 31781,
+      "verseStart": 3
+    },
+    {
+      "timeMs": 41768,
+      "verseStart": 4
+    },
+    {
+      "timeMs": 47191,
+      "verseStart": 5
+    },
+    {
+      "timeMs": 58439,
+      "verseStart": 6
+    },
+    {
+      "timeMs": 65243,
+      "verseStart": 7
+    },
+    {
+      "timeMs": 73949,
+      "verseStart": 8
+    },
+    {
+      "timeMs": 82795,
+      "verseStart": 9
+    },
+    {
+      "timeMs": 94022,
+      "verseStart": 10
+    },
+    {
+      "timeMs": 104730,
+      "verseStart": 11
+    },
+    {
+      "timeMs": 117818,
+      "verseStart": 12
+    },
+    {
+      "timeMs": 123042,
+      "verseStart": 13
+    },
+    {
+      "timeMs": 132808,
+      "verseStart": 14
+    },
+    {
+      "timeMs": 138532,
+      "verseStart": 15
+    },
+    {
+      "timeMs": 148078,
+      "verseStart": 16
+    },
+    {
+      "timeMs": 156764,
+      "verseStart": 17
+    },
+    {
+      "timeMs": 167932,
+      "verseStart": 18
+    },
+    {
+      "timeMs": 177398,
+      "verseStart": 19
+    },
+    {
+      "timeMs": 185083,
+      "verseStart": 20
+    },
+    {
+      "timeMs": 194529,
+      "verseStart": 21
+    },
+    {
+      "timeMs": 201034,
+      "verseStart": 22
+    },
+    {
+      "timeMs": 211180,
+      "verseStart": 23
+    },
+    {
+      "timeMs": 221267,
+      "verseStart": 24
+    },
+    {
+      "timeMs": 231814,
+      "verseStart": 25
+    },
+    {
+      "timeMs": 244382,
+      "verseStart": 26
+    },
+    {
+      "timeMs": 255029,
+      "verseStart": 27
+    },
+    {
+      "timeMs": 268538,
+      "verseStart": 28
+    },
+    {
+      "timeMs": 280306,
+      "verseStart": 29
+    }
+  ]
+}

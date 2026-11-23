@@ -1,0 +1,91 @@
+{
+  "id": "align-hebrews-WEB-04",
+  "translationCode": "WEB",
+  "bookId": "hebrews",
+  "chapter": 4,
+  "title": "К Евреям 4 · WEB (англ.)",
+  "audioFilePath": "/data/user/0/com.example.bible.sqlite/files/bible_audio/web/58_04.mp3",
+  "updatedAt": 1794873600000,
+  "cues": [
+    {
+      "timeMs": 3222,
+      "verseStart": 1,
+      "attachments": []
+    },
+    {
+      "timeMs": 11789,
+      "verseStart": 2,
+      "attachments": []
+    },
+    {
+      "timeMs": 21916,
+      "verseStart": 3,
+      "attachments": []
+    },
+    {
+      "timeMs": 35626,
+      "verseStart": 4,
+      "attachments": []
+    },
+    {
+      "timeMs": 43531,
+      "verseStart": 5,
+      "attachments": []
+    },
+    {
+      "timeMs": 49276,
+      "verseStart": 6,
+      "attachments": []
+    },
+    {
+      "timeMs": 57962,
+      "verseStart": 7,
+      "attachments": []
+    },
+    {
+      "timeMs": 72632,
+      "verseStart": 8,
+      "attachments": []
+    },
+    {
+      "timeMs": 79517,
+      "verseStart": 9,
+      "attachments": []
+    },
+    {
+      "timeMs": 84021,
+      "verseStart": 10,
+      "attachments": []
+    },
+    {
+      "timeMs": 90946,
+      "verseStart": 11,
+      "attachments": []
+    },
+    {
+      "timeMs": 98851,
+      "verseStart": 12,
+      "attachments": []
+    },
+    {
+      "timeMs": 115183,
+      "verseStart": 13,
+      "attachments": []
+    },
+    {
+      "timeMs": 125931,
+      "verseStart": 14,
+      "attachments": []
+    },
+    {
+      "timeMs": 135818,
+      "verseStart": 15,
+      "attachments": []
+    },
+    {
+      "timeMs": 148847,
+      "verseStart": 16,
+      "attachments": []
+    }
+  ]
+}

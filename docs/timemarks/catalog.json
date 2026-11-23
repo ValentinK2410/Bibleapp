@@ -8964,6 +8964,136 @@
       "file": "projects/web_galatians_6.json"
     },
     {
+      "id": "gh_web_hebrews_1",
+      "translationCode": "WEB",
+      "bookId": "hebrews",
+      "chapter": 1,
+      "title": "К Евреям 1 · WEB (англ.)",
+      "cueCount": 14,
+      "narratorId": "web",
+      "file": "projects/web_hebrews_1.json"
+    },
+    {
+      "id": "gh_web_hebrews_10",
+      "translationCode": "WEB",
+      "bookId": "hebrews",
+      "chapter": 10,
+      "title": "К Евреям 10 · WEB (англ.)",
+      "cueCount": 39,
+      "narratorId": "web",
+      "file": "projects/web_hebrews_10.json"
+    },
+    {
+      "id": "gh_web_hebrews_11",
+      "translationCode": "WEB",
+      "bookId": "hebrews",
+      "chapter": 11,
+      "title": "К Евреям 11 · WEB (англ.)",
+      "cueCount": 40,
+      "narratorId": "web",
+      "file": "projects/web_hebrews_11.json"
+    },
+    {
+      "id": "gh_web_hebrews_12",
+      "translationCode": "WEB",
+      "bookId": "hebrews",
+      "chapter": 12,
+      "title": "К Евреям 12 · WEB (англ.)",
+      "cueCount": 29,
+      "narratorId": "web",
+      "file": "projects/web_hebrews_12.json"
+    },
+    {
+      "id": "gh_web_hebrews_13",
+      "translationCode": "WEB",
+      "bookId": "hebrews",
+      "chapter": 13,
+      "title": "К Евреям 13 · WEB (англ.)",
+      "cueCount": 25,
+      "narratorId": "web",
+      "file": "projects/web_hebrews_13.json"
+    },
+    {
+      "id": "gh_web_hebrews_2",
+      "translationCode": "WEB",
+      "bookId": "hebrews",
+      "chapter": 2,
+      "title": "К Евреям 2 · WEB (англ.)",
+      "cueCount": 18,
+      "narratorId": "web",
+      "file": "projects/web_hebrews_2.json"
+    },
+    {
+      "id": "gh_web_hebrews_3",
+      "translationCode": "WEB",
+      "bookId": "hebrews",
+      "chapter": 3,
+      "title": "К Евреям 3 · WEB (англ.)",
+      "cueCount": 19,
+      "narratorId": "web",
+      "file": "projects/web_hebrews_3.json"
+    },
+    {
+      "id": "gh_web_hebrews_4",
+      "translationCode": "WEB",
+      "bookId": "hebrews",
+      "chapter": 4,
+      "title": "К Евреям 4 · WEB (англ.)",
+      "cueCount": 16,
+      "narratorId": "web",
+      "file": "projects/web_hebrews_4.json"
+    },
+    {
+      "id": "gh_web_hebrews_5",
+      "translationCode": "WEB",
+      "bookId": "hebrews",
+      "chapter": 5,
+      "title": "К Евреям 5 · WEB (англ.)",
+      "cueCount": 14,
+      "narratorId": "web",
+      "file": "projects/web_hebrews_5.json"
+    },
+    {
+      "id": "gh_web_hebrews_6",
+      "translationCode": "WEB",
+      "bookId": "hebrews",
+      "chapter": 6,
+      "title": "К Евреям 6 · WEB (англ.)",
+      "cueCount": 20,
+      "narratorId": "web",
+      "file": "projects/web_hebrews_6.json"
+    },
+    {
+      "id": "gh_web_hebrews_7",
+      "translationCode": "WEB",
+      "bookId": "hebrews",
+      "chapter": 7,
+      "title": "К Евреям 7 · WEB (англ.)",
+      "cueCount": 28,
+      "narratorId": "web",
+      "file": "projects/web_hebrews_7.json"
+    },
+    {
+      "id": "gh_web_hebrews_8",
+      "translationCode": "WEB",
+      "bookId": "hebrews",
+      "chapter": 8,
+      "title": "К Евреям 8 · WEB (англ.)",
+      "cueCount": 13,
+      "narratorId": "web",
+      "file": "projects/web_hebrews_8.json"
+    },
+    {
+      "id": "gh_web_hebrews_9",
+      "translationCode": "WEB",
+      "bookId": "hebrews",
+      "chapter": 9,
+      "title": "К Евреям 9 · WEB (англ.)",
+      "cueCount": 28,
+      "narratorId": "web",
+      "file": "projects/web_hebrews_9.json"
+    },
+    {
       "id": "gh_web_john_1",
       "translationCode": "WEB",
       "bookId": "john",
