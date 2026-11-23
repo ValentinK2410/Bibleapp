@@ -1,0 +1,111 @@
+{
+  "id": "align-1_timothy-RBO-01",
+  "translationCode": "RBO",
+  "bookId": "1_timothy",
+  "chapter": 1,
+  "title": "1-е Тимофею 1 · РБО",
+  "audioFilePath": "/data/user/0/com.example.bible.sqlite/files/bible_audio/rbo/61_01.mp3",
+  "updatedAt": 1795392000000,
+  "cues": [
+    {
+      "timeMs": 7746,
+      "verseStart": 1,
+      "attachments": []
+    },
+    {
+      "timeMs": 16493,
+      "verseStart": 2,
+      "attachments": []
+    },
+    {
+      "timeMs": 28162,
+      "verseStart": 3,
+      "attachments": []
+    },
+    {
+      "timeMs": 38230,
+      "verseStart": 4,
+      "attachments": []
+    },
+    {
+      "timeMs": 50439,
+      "verseStart": 5,
+      "attachments": []
+    },
+    {
+      "timeMs": 59566,
+      "verseStart": 6,
+      "attachments": []
+    },
+    {
+      "timeMs": 65711,
+      "verseStart": 7,
+      "attachments": []
+    },
+    {
+      "timeMs": 75078,
+      "verseStart": 8,
+      "attachments": []
+    },
+    {
+      "timeMs": 78701,
+      "verseStart": 9,
+      "attachments": []
+    },
+    {
+      "timeMs": 93332,
+      "verseStart": 10,
+      "attachments": []
+    },
+    {
+      "timeMs": 102399,
+      "verseStart": 11,
+      "attachments": []
+    },
+    {
+      "timeMs": 110505,
+      "verseStart": 12,
+      "attachments": []
+    },
+    {
+      "timeMs": 120813,
+      "verseStart": 13,
+      "attachments": []
+    },
+    {
+      "timeMs": 132002,
+      "verseStart": 14,
+      "attachments": []
+    },
+    {
+      "timeMs": 140909,
+      "verseStart": 15,
+      "attachments": []
+    },
+    {
+      "timeMs": 152718,
+      "verseStart": 16,
+      "attachments": []
+    },
+    {
+      "timeMs": 170191,
+      "verseStart": 17,
+      "attachments": []
+    },
+    {
+      "timeMs": 181260,
+      "verseStart": 18,
+      "attachments": []
+    },
+    {
+      "timeMs": 193769,
+      "verseStart": 19,
+      "attachments": []
+    },
+    {
+      "timeMs": 203337,
+      "verseStart": 20,
+      "attachments": []
+    }
+  ]
+}

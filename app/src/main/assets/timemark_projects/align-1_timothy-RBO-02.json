@@ -1,0 +1,86 @@
+{
+  "id": "align-1_timothy-RBO-02",
+  "translationCode": "RBO",
+  "bookId": "1_timothy",
+  "chapter": 2,
+  "title": "1-е Тимофею 2 · РБО",
+  "audioFilePath": "/data/user/0/com.example.bible.sqlite/files/bible_audio/rbo/61_02.mp3",
+  "updatedAt": 1795392000000,
+  "cues": [
+    {
+      "timeMs": 4163,
+      "verseStart": 1,
+      "attachments": []
+    },
+    {
+      "timeMs": 16613,
+      "verseStart": 2,
+      "attachments": []
+    },
+    {
+      "timeMs": 24799,
+      "verseStart": 3,
+      "attachments": []
+    },
+    {
+      "timeMs": 27461,
+      "verseStart": 4,
+      "attachments": []
+    },
+    {
+      "timeMs": 33125,
+      "verseStart": 5,
+      "attachments": []
+    },
+    {
+      "timeMs": 41391,
+      "verseStart": 6,
+      "attachments": []
+    },
+    {
+      "timeMs": 48537,
+      "verseStart": 7,
+      "attachments": []
+    },
+    {
+      "timeMs": 61727,
+      "verseStart": 8,
+      "attachments": []
+    },
+    {
+      "timeMs": 72775,
+      "verseStart": 9,
+      "attachments": []
+    },
+    {
+      "timeMs": 86325,
+      "verseStart": 10,
+      "attachments": []
+    },
+    {
+      "timeMs": 94912,
+      "verseStart": 11,
+      "attachments": []
+    },
+    {
+      "timeMs": 99495,
+      "verseStart": 12,
+      "attachments": []
+    },
+    {
+      "timeMs": 106020,
+      "verseStart": 13,
+      "attachments": []
+    },
+    {
+      "timeMs": 110964,
+      "verseStart": 14,
+      "attachments": []
+    },
+    {
+      "timeMs": 116989,
+      "verseStart": 15,
+      "attachments": []
+    }
+  ]
+}

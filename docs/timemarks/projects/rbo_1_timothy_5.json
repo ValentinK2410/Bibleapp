@@ -1,0 +1,111 @@
+{
+  "id": "gh_rbo_1_timothy_5",
+  "translationCode": "RBO",
+  "bookId": "1_timothy",
+  "chapter": 5,
+  "title": "1-е Тимофею 5 · РБО",
+  "narratorId": "rbo",
+  "audioFileName": "61_05.mp3",
+  "cues": [
+    {
+      "timeMs": 4203,
+      "verseStart": 1
+    },
+    {
+      "timeMs": 14369,
+      "verseStart": 2
+    },
+    {
+      "timeMs": 23275,
+      "verseStart": 3
+    },
+    {
+      "timeMs": 27918,
+      "verseStart": 4
+    },
+    {
+      "timeMs": 44268,
+      "verseStart": 5
+    },
+    {
+      "timeMs": 55155,
+      "verseStart": 6
+    },
+    {
+      "timeMs": 60518,
+      "verseStart": 7
+    },
+    {
+      "timeMs": 64621,
+      "verseStart": 8
+    },
+    {
+      "timeMs": 74107,
+      "verseStart": 9
+    },
+    {
+      "timeMs": 81672,
+      "verseStart": 10
+    },
+    {
+      "timeMs": 98302,
+      "verseStart": 11
+    },
+    {
+      "timeMs": 106087,
+      "verseStart": 12
+    },
+    {
+      "timeMs": 111811,
+      "verseStart": 13
+    },
+    {
+      "timeMs": 126720,
+      "verseStart": 14
+    },
+    {
+      "timeMs": 138667,
+      "verseStart": 15
+    },
+    {
+      "timeMs": 144071,
+      "verseStart": 16
+    },
+    {
+      "timeMs": 155918,
+      "verseStart": 17
+    },
+    {
+      "timeMs": 166005,
+      "verseStart": 18
+    },
+    {
+      "timeMs": 175010,
+      "verseStart": 19
+    },
+    {
+      "timeMs": 182035,
+      "verseStart": 20
+    },
+    {
+      "timeMs": 189620,
+      "verseStart": 21
+    },
+    {
+      "timeMs": 203749,
+      "verseStart": 22
+    },
+    {
+      "timeMs": 212494,
+      "verseStart": 23
+    },
+    {
+      "timeMs": 219659,
+      "verseStart": 24
+    },
+    {
+      "timeMs": 228164,
+      "verseStart": 25
+    }
+  ]
+}

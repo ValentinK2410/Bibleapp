@@ -1,0 +1,75 @@
+{
+  "id": "gh_rbo_1_timothy_3",
+  "translationCode": "RBO",
+  "bookId": "1_timothy",
+  "chapter": 3,
+  "title": "1-е Тимофею 3 · РБО",
+  "narratorId": "rbo",
+  "audioFileName": "61_03.mp3",
+  "cues": [
+    {
+      "timeMs": 4363,
+      "verseStart": 1
+    },
+    {
+      "timeMs": 12069,
+      "verseStart": 2
+    },
+    {
+      "timeMs": 27340,
+      "verseStart": 3
+    },
+    {
+      "timeMs": 35085,
+      "verseStart": 4
+    },
+    {
+      "timeMs": 42210,
+      "verseStart": 5
+    },
+    {
+      "timeMs": 50376,
+      "verseStart": 6
+    },
+    {
+      "timeMs": 58422,
+      "verseStart": 7
+    },
+    {
+      "timeMs": 67128,
+      "verseStart": 8
+    },
+    {
+      "timeMs": 76194,
+      "verseStart": 9
+    },
+    {
+      "timeMs": 83159,
+      "verseStart": 10
+    },
+    {
+      "timeMs": 90765,
+      "verseStart": 11
+    },
+    {
+      "timeMs": 99051,
+      "verseStart": 12
+    },
+    {
+      "timeMs": 107016,
+      "verseStart": 13
+    },
+    {
+      "timeMs": 117924,
+      "verseStart": 14
+    },
+    {
+      "timeMs": 121607,
+      "verseStart": 15
+    },
+    {
+      "timeMs": 133895,
+      "verseStart": 16
+    }
+  ]
+}
