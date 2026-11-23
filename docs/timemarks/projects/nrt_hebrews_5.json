@@ -1,0 +1,67 @@
+{
+  "id": "gh_nrt_hebrews_5",
+  "translationCode": "NRT",
+  "bookId": "hebrews",
+  "chapter": 5,
+  "title": "К Евреям 5 · Новый русский",
+  "narratorId": "new-russian",
+  "audioFileName": "65_05.mp3",
+  "cues": [
+    {
+      "timeMs": 400,
+      "verseStart": 1
+    },
+    {
+      "timeMs": 12870,
+      "verseStart": 2
+    },
+    {
+      "timeMs": 21956,
+      "verseStart": 3
+    },
+    {
+      "timeMs": 28882,
+      "verseStart": 4
+    },
+    {
+      "timeMs": 37768,
+      "verseStart": 5
+    },
+    {
+      "timeMs": 47736,
+      "verseStart": 6
+    },
+    {
+      "timeMs": 53680,
+      "verseStart": 7
+    },
+    {
+      "timeMs": 66390,
+      "verseStart": 8
+    },
+    {
+      "timeMs": 72074,
+      "verseStart": 9
+    },
+    {
+      "timeMs": 79179,
+      "verseStart": 10
+    },
+    {
+      "timeMs": 87686,
+      "verseStart": 11
+    },
+    {
+      "timeMs": 97073,
+      "verseStart": 12
+    },
+    {
+      "timeMs": 111683,
+      "verseStart": 13
+    },
+    {
+      "timeMs": 118048,
+      "verseStart": 14
+    }
+  ]
+}

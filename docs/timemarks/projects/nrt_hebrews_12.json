@@ -1,0 +1,127 @@
+{
+  "id": "gh_nrt_hebrews_12",
+  "translationCode": "NRT",
+  "bookId": "hebrews",
+  "chapter": 12,
+  "title": "К Евреям 12 · Новый русский",
+  "narratorId": "new-russian",
+  "audioFileName": "65_12.mp3",
+  "cues": [
+    {
+      "timeMs": 3242,
+      "verseStart": 1
+    },
+    {
+      "timeMs": 19593,
+      "verseStart": 2
+    },
+    {
+      "timeMs": 36965,
+      "verseStart": 3
+    },
+    {
+      "timeMs": 47512,
+      "verseStart": 4
+    },
+    {
+      "timeMs": 51635,
+      "verseStart": 5
+    },
+    {
+      "timeMs": 64424,
+      "verseStart": 6
+    },
+    {
+      "timeMs": 70628,
+      "verseStart": 7
+    },
+    {
+      "timeMs": 81776,
+      "verseStart": 8
+    },
+    {
+      "timeMs": 90101,
+      "verseStart": 9
+    },
+    {
+      "timeMs": 102810,
+      "verseStart": 10
+    },
+    {
+      "timeMs": 115579,
+      "verseStart": 11
+    },
+    {
+      "timeMs": 127287,
+      "verseStart": 12
+    },
+    {
+      "timeMs": 131910,
+      "verseStart": 13
+    },
+    {
+      "timeMs": 144859,
+      "verseStart": 14
+    },
+    {
+      "timeMs": 152124,
+      "verseStart": 15
+    },
+    {
+      "timeMs": 165473,
+      "verseStart": 16
+    },
+    {
+      "timeMs": 176620,
+      "verseStart": 17
+    },
+    {
+      "timeMs": 187168,
+      "verseStart": 18
+    },
+    {
+      "timeMs": 195333,
+      "verseStart": 19
+    },
+    {
+      "timeMs": 205340,
+      "verseStart": 20
+    },
+    {
+      "timeMs": 214907,
+      "verseStart": 21
+    },
+    {
+      "timeMs": 220210,
+      "verseStart": 22
+    },
+    {
+      "timeMs": 232619,
+      "verseStart": 23
+    },
+    {
+      "timeMs": 245427,
+      "verseStart": 24
+    },
+    {
+      "timeMs": 254494,
+      "verseStart": 25
+    },
+    {
+      "timeMs": 270204,
+      "verseStart": 26
+    },
+    {
+      "timeMs": 281172,
+      "verseStart": 27
+    },
+    {
+      "timeMs": 293920,
+      "verseStart": 28
+    },
+    {
+      "timeMs": 307109,
+      "verseStart": 29
+    }
+  ]
+}

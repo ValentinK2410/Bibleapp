@@ -1,0 +1,67 @@
+{
+  "id": "gh_nrt_hebrews_1",
+  "translationCode": "NRT",
+  "bookId": "hebrews",
+  "chapter": 1,
+  "title": "К Евреям 1 · Новый русский",
+  "narratorId": "new-russian",
+  "audioFileName": "65_01.mp3",
+  "cues": [
+    {
+      "timeMs": 1201,
+      "verseStart": 1
+    },
+    {
+      "timeMs": 10927,
+      "verseStart": 2
+    },
+    {
+      "timeMs": 22094,
+      "verseStart": 3
+    },
+    {
+      "timeMs": 45589,
+      "verseStart": 4
+    },
+    {
+      "timeMs": 52553,
+      "verseStart": 5
+    },
+    {
+      "timeMs": 66522,
+      "verseStart": 6
+    },
+    {
+      "timeMs": 73286,
+      "verseStart": 7
+    },
+    {
+      "timeMs": 81151,
+      "verseStart": 8
+    },
+    {
+      "timeMs": 89276,
+      "verseStart": 9
+    },
+    {
+      "timeMs": 102665,
+      "verseStart": 10
+    },
+    {
+      "timeMs": 111830,
+      "verseStart": 11
+    },
+    {
+      "timeMs": 118194,
+      "verseStart": 12
+    },
+    {
+      "timeMs": 129642,
+      "verseStart": 13
+    },
+    {
+      "timeMs": 139948,
+      "verseStart": 14
+    }
+  ]
+}

@@ -1,0 +1,151 @@
+{
+  "id": "align-hebrews-NRT-09",
+  "translationCode": "NRT",
+  "bookId": "hebrews",
+  "chapter": 9,
+  "title": "К Евреям 9 · Новый русский",
+  "audioFilePath": "/data/user/0/com.example.bible.sqlite/files/bible_audio/new-russian/65_09.mp3",
+  "updatedAt": 1795392000000,
+  "cues": [
+    {
+      "timeMs": 4003,
+      "verseStart": 1,
+      "attachments": []
+    },
+    {
+      "timeMs": 10307,
+      "verseStart": 2,
+      "attachments": []
+    },
+    {
+      "timeMs": 20894,
+      "verseStart": 3,
+      "attachments": []
+    },
+    {
+      "timeMs": 26938,
+      "verseStart": 4,
+      "attachments": []
+    },
+    {
+      "timeMs": 42709,
+      "verseStart": 5,
+      "attachments": []
+    },
+    {
+      "timeMs": 55317,
+      "verseStart": 6,
+      "attachments": []
+    },
+    {
+      "timeMs": 65364,
+      "verseStart": 7,
+      "attachments": []
+    },
+    {
+      "timeMs": 77412,
+      "verseStart": 8,
+      "attachments": []
+    },
+    {
+      "timeMs": 85918,
+      "verseStart": 9,
+      "attachments": []
+    },
+    {
+      "timeMs": 94944,
+      "verseStart": 10,
+      "attachments": []
+    },
+    {
+      "timeMs": 112816,
+      "verseStart": 11,
+      "attachments": []
+    },
+    {
+      "timeMs": 125504,
+      "verseStart": 12,
+      "attachments": []
+    },
+    {
+      "timeMs": 136832,
+      "verseStart": 13,
+      "attachments": []
+    },
+    {
+      "timeMs": 146578,
+      "verseStart": 14,
+      "attachments": []
+    },
+    {
+      "timeMs": 164050,
+      "verseStart": 15,
+      "attachments": []
+    },
+    {
+      "timeMs": 179681,
+      "verseStart": 16,
+      "attachments": []
+    },
+    {
+      "timeMs": 185084,
+      "verseStart": 17,
+      "attachments": []
+    },
+    {
+      "timeMs": 193770,
+      "verseStart": 18,
+      "attachments": []
+    },
+    {
+      "timeMs": 197392,
+      "verseStart": 19,
+      "attachments": []
+    },
+    {
+      "timeMs": 213703,
+      "verseStart": 20,
+      "attachments": []
+    },
+    {
+      "timeMs": 220428,
+      "verseStart": 21,
+      "attachments": []
+    },
+    {
+      "timeMs": 226112,
+      "verseStart": 22,
+      "attachments": []
+    },
+    {
+      "timeMs": 232516,
+      "verseStart": 23,
+      "attachments": []
+    },
+    {
+      "timeMs": 243223,
+      "verseStart": 24,
+      "attachments": []
+    },
+    {
+      "timeMs": 257253,
+      "verseStart": 25,
+      "attachments": []
+    },
+    {
+      "timeMs": 267960,
+      "verseStart": 26,
+      "attachments": []
+    },
+    {
+      "timeMs": 285752,
+      "verseStart": 27,
+      "attachments": []
+    },
+    {
+      "timeMs": 291556,
+      "verseStart": 28,
+      "attachments": []
+    }
+  ]
+}

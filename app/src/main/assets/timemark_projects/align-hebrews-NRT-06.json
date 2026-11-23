@@ -1,0 +1,111 @@
+{
+  "id": "align-hebrews-NRT-06",
+  "translationCode": "NRT",
+  "bookId": "hebrews",
+  "chapter": 6,
+  "title": "К Евреям 6 · Новый русский",
+  "audioFilePath": "/data/user/0/com.example.bible.sqlite/files/bible_audio/new-russian/65_06.mp3",
+  "updatedAt": 1795392000000,
+  "cues": [
+    {
+      "timeMs": 280,
+      "verseStart": 1,
+      "attachments": []
+    },
+    {
+      "timeMs": 15150,
+      "verseStart": 2,
+      "attachments": []
+    },
+    {
+      "timeMs": 21455,
+      "verseStart": 3,
+      "attachments": []
+    },
+    {
+      "timeMs": 24217,
+      "verseStart": 4,
+      "attachments": []
+    },
+    {
+      "timeMs": 33403,
+      "verseStart": 5,
+      "attachments": []
+    },
+    {
+      "timeMs": 39647,
+      "verseStart": 6,
+      "attachments": []
+    },
+    {
+      "timeMs": 52876,
+      "verseStart": 7,
+      "attachments": []
+    },
+    {
+      "timeMs": 61883,
+      "verseStart": 8,
+      "attachments": []
+    },
+    {
+      "timeMs": 72450,
+      "verseStart": 9,
+      "attachments": []
+    },
+    {
+      "timeMs": 80796,
+      "verseStart": 10,
+      "attachments": []
+    },
+    {
+      "timeMs": 92183,
+      "verseStart": 11,
+      "attachments": []
+    },
+    {
+      "timeMs": 100169,
+      "verseStart": 12,
+      "attachments": []
+    },
+    {
+      "timeMs": 111296,
+      "verseStart": 13,
+      "attachments": []
+    },
+    {
+      "timeMs": 120323,
+      "verseStart": 14,
+      "attachments": []
+    },
+    {
+      "timeMs": 127608,
+      "verseStart": 15,
+      "attachments": []
+    },
+    {
+      "timeMs": 131891,
+      "verseStart": 16,
+      "attachments": []
+    },
+    {
+      "timeMs": 139956,
+      "verseStart": 17,
+      "attachments": []
+    },
+    {
+      "timeMs": 149303,
+      "verseStart": 18,
+      "attachments": []
+    },
+    {
+      "timeMs": 164793,
+      "verseStart": 19,
+      "attachments": []
+    },
+    {
+      "timeMs": 176461,
+      "verseStart": 20,
+      "attachments": []
+    }
+  ]
+}

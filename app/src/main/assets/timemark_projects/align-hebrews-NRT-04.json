@@ -1,0 +1,91 @@
+{
+  "id": "align-hebrews-NRT-04",
+  "translationCode": "NRT",
+  "bookId": "hebrews",
+  "chapter": 4,
+  "title": "К Евреям 4 · Новый русский",
+  "audioFilePath": "/data/user/0/com.example.bible.sqlite/files/bible_audio/new-russian/65_04.mp3",
+  "updatedAt": 1795392000000,
+  "cues": [
+    {
+      "timeMs": 3743,
+      "verseStart": 1,
+      "attachments": []
+    },
+    {
+      "timeMs": 18212,
+      "verseStart": 2,
+      "attachments": []
+    },
+    {
+      "timeMs": 31441,
+      "verseStart": 3,
+      "attachments": []
+    },
+    {
+      "timeMs": 52435,
+      "verseStart": 4,
+      "attachments": []
+    },
+    {
+      "timeMs": 60160,
+      "verseStart": 5,
+      "attachments": []
+    },
+    {
+      "timeMs": 64563,
+      "verseStart": 6,
+      "attachments": []
+    },
+    {
+      "timeMs": 75690,
+      "verseStart": 7,
+      "attachments": []
+    },
+    {
+      "timeMs": 94683,
+      "verseStart": 8,
+      "attachments": []
+    },
+    {
+      "timeMs": 104409,
+      "verseStart": 9,
+      "attachments": []
+    },
+    {
+      "timeMs": 109012,
+      "verseStart": 10,
+      "attachments": []
+    },
+    {
+      "timeMs": 116917,
+      "verseStart": 11,
+      "attachments": []
+    },
+    {
+      "timeMs": 128265,
+      "verseStart": 12,
+      "attachments": []
+    },
+    {
+      "timeMs": 150940,
+      "verseStart": 13,
+      "attachments": []
+    },
+    {
+      "timeMs": 167371,
+      "verseStart": 14,
+      "attachments": []
+    },
+    {
+      "timeMs": 181060,
+      "verseStart": 15,
+      "attachments": []
+    },
+    {
+      "timeMs": 193008,
+      "verseStart": 16,
+      "attachments": []
+    }
+  ]
+}

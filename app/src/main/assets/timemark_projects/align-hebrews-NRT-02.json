@@ -1,0 +1,101 @@
+{
+  "id": "align-hebrews-NRT-02",
+  "translationCode": "NRT",
+  "bookId": "hebrews",
+  "chapter": 2,
+  "title": "К Евреям 2 · Новый русский",
+  "audioFilePath": "/data/user/0/com.example.bible.sqlite/files/bible_audio/new-russian/65_02.mp3",
+  "updatedAt": 1795392000000,
+  "cues": [
+    {
+      "timeMs": 4523,
+      "verseStart": 1,
+      "attachments": []
+    },
+    {
+      "timeMs": 14889,
+      "verseStart": 2,
+      "attachments": []
+    },
+    {
+      "timeMs": 23834,
+      "verseStart": 3,
+      "attachments": []
+    },
+    {
+      "timeMs": 40384,
+      "verseStart": 4,
+      "attachments": []
+    },
+    {
+      "timeMs": 58575,
+      "verseStart": 5,
+      "attachments": []
+    },
+    {
+      "timeMs": 64159,
+      "verseStart": 6,
+      "attachments": []
+    },
+    {
+      "timeMs": 74645,
+      "verseStart": 7,
+      "attachments": []
+    },
+    {
+      "timeMs": 80809,
+      "verseStart": 8,
+      "attachments": []
+    },
+    {
+      "timeMs": 93356,
+      "verseStart": 9,
+      "attachments": []
+    },
+    {
+      "timeMs": 110727,
+      "verseStart": 10,
+      "attachments": []
+    },
+    {
+      "timeMs": 126856,
+      "verseStart": 11,
+      "attachments": []
+    },
+    {
+      "timeMs": 138643,
+      "verseStart": 12,
+      "attachments": []
+    },
+    {
+      "timeMs": 146388,
+      "verseStart": 13,
+      "attachments": []
+    },
+    {
+      "timeMs": 155534,
+      "verseStart": 14,
+      "attachments": []
+    },
+    {
+      "timeMs": 169942,
+      "verseStart": 15,
+      "attachments": []
+    },
+    {
+      "timeMs": 177167,
+      "verseStart": 16,
+      "attachments": []
+    },
+    {
+      "timeMs": 181369,
+      "verseStart": 17,
+      "attachments": []
+    },
+    {
+      "timeMs": 196098,
+      "verseStart": 18,
+      "attachments": []
+    }
+  ]
+}

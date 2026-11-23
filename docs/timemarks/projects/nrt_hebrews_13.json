@@ -1,0 +1,111 @@
+{
+  "id": "gh_nrt_hebrews_13",
+  "translationCode": "NRT",
+  "bookId": "hebrews",
+  "chapter": 13,
+  "title": "К Евреям 13 · Новый русский",
+  "narratorId": "new-russian",
+  "audioFileName": "65_13.mp3",
+  "cues": [
+    {
+      "timeMs": 3322,
+      "verseStart": 1
+    },
+    {
+      "timeMs": 6004,
+      "verseStart": 2
+    },
+    {
+      "timeMs": 14430,
+      "verseStart": 3
+    },
+    {
+      "timeMs": 25677,
+      "verseStart": 4
+    },
+    {
+      "timeMs": 39887,
+      "verseStart": 5
+    },
+    {
+      "timeMs": 50674,
+      "verseStart": 6
+    },
+    {
+      "timeMs": 60220,
+      "verseStart": 7
+    },
+    {
+      "timeMs": 69807,
+      "verseStart": 8
+    },
+    {
+      "timeMs": 75470,
+      "verseStart": 9
+    },
+    {
+      "timeMs": 91621,
+      "verseStart": 10
+    },
+    {
+      "timeMs": 97945,
+      "verseStart": 11
+    },
+    {
+      "timeMs": 108753,
+      "verseStart": 12
+    },
+    {
+      "timeMs": 115997,
+      "verseStart": 13
+    },
+    {
+      "timeMs": 125204,
+      "verseStart": 14
+    },
+    {
+      "timeMs": 129727,
+      "verseStart": 15
+    },
+    {
+      "timeMs": 138973,
+      "verseStart": 16
+    },
+    {
+      "timeMs": 145917,
+      "verseStart": 17
+    },
+    {
+      "timeMs": 165410,
+      "verseStart": 18
+    },
+    {
+      "timeMs": 173716,
+      "verseStart": 19
+    },
+    {
+      "timeMs": 179820,
+      "verseStart": 20
+    },
+    {
+      "timeMs": 193209,
+      "verseStart": 21
+    },
+    {
+      "timeMs": 209380,
+      "verseStart": 22
+    },
+    {
+      "timeMs": 218886,
+      "verseStart": 23
+    },
+    {
+      "timeMs": 226611,
+      "verseStart": 24
+    },
+    {
+      "timeMs": 235117,
+      "verseStart": 25
+    }
+  ]
+}

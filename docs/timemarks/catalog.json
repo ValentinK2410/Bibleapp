@@ -4004,6 +4004,136 @@
       "file": "projects/nrt_galatians_6.json"
     },
     {
+      "id": "gh_nrt_hebrews_1",
+      "translationCode": "NRT",
+      "bookId": "hebrews",
+      "chapter": 1,
+      "title": "К Евреям 1 · Новый русский",
+      "cueCount": 14,
+      "narratorId": "new-russian",
+      "file": "projects/nrt_hebrews_1.json"
+    },
+    {
+      "id": "gh_nrt_hebrews_10",
+      "translationCode": "NRT",
+      "bookId": "hebrews",
+      "chapter": 10,
+      "title": "К Евреям 10 · Новый русский",
+      "cueCount": 39,
+      "narratorId": "new-russian",
+      "file": "projects/nrt_hebrews_10.json"
+    },
+    {
+      "id": "gh_nrt_hebrews_11",
+      "translationCode": "NRT",
+      "bookId": "hebrews",
+      "chapter": 11,
+      "title": "К Евреям 11 · Новый русский",
+      "cueCount": 40,
+      "narratorId": "new-russian",
+      "file": "projects/nrt_hebrews_11.json"
+    },
+    {
+      "id": "gh_nrt_hebrews_12",
+      "translationCode": "NRT",
+      "bookId": "hebrews",
+      "chapter": 12,
+      "title": "К Евреям 12 · Новый русский",
+      "cueCount": 29,
+      "narratorId": "new-russian",
+      "file": "projects/nrt_hebrews_12.json"
+    },
+    {
+      "id": "gh_nrt_hebrews_13",
+      "translationCode": "NRT",
+      "bookId": "hebrews",
+      "chapter": 13,
+      "title": "К Евреям 13 · Новый русский",
+      "cueCount": 25,
+      "narratorId": "new-russian",
+      "file": "projects/nrt_hebrews_13.json"
+    },
+    {
+      "id": "gh_nrt_hebrews_2",
+      "translationCode": "NRT",
+      "bookId": "hebrews",
+      "chapter": 2,
+      "title": "К Евреям 2 · Новый русский",
+      "cueCount": 18,
+      "narratorId": "new-russian",
+      "file": "projects/nrt_hebrews_2.json"
+    },
+    {
+      "id": "gh_nrt_hebrews_3",
+      "translationCode": "NRT",
+      "bookId": "hebrews",
+      "chapter": 3,
+      "title": "К Евреям 3 · Новый русский",
+      "cueCount": 19,
+      "narratorId": "new-russian",
+      "file": "projects/nrt_hebrews_3.json"
+    },
+    {
+      "id": "gh_nrt_hebrews_4",
+      "translationCode": "NRT",
+      "bookId": "hebrews",
+      "chapter": 4,
+      "title": "К Евреям 4 · Новый русский",
+      "cueCount": 16,
+      "narratorId": "new-russian",
+      "file": "projects/nrt_hebrews_4.json"
+    },
+    {
+      "id": "gh_nrt_hebrews_5",
+      "translationCode": "NRT",
+      "bookId": "hebrews",
+      "chapter": 5,
+      "title": "К Евреям 5 · Новый русский",
+      "cueCount": 14,
+      "narratorId": "new-russian",
+      "file": "projects/nrt_hebrews_5.json"
+    },
+    {
+      "id": "gh_nrt_hebrews_6",
+      "translationCode": "NRT",
+      "bookId": "hebrews",
+      "chapter": 6,
+      "title": "К Евреям 6 · Новый русский",
+      "cueCount": 20,
+      "narratorId": "new-russian",
+      "file": "projects/nrt_hebrews_6.json"
+    },
+    {
+      "id": "gh_nrt_hebrews_7",
+      "translationCode": "NRT",
+      "bookId": "hebrews",
+      "chapter": 7,
+      "title": "К Евреям 7 · Новый русский",
+      "cueCount": 28,
+      "narratorId": "new-russian",
+      "file": "projects/nrt_hebrews_7.json"
+    },
+    {
+      "id": "gh_nrt_hebrews_8",
+      "translationCode": "NRT",
+      "bookId": "hebrews",
+      "chapter": 8,
+      "title": "К Евреям 8 · Новый русский",
+      "cueCount": 13,
+      "narratorId": "new-russian",
+      "file": "projects/nrt_hebrews_8.json"
+    },
+    {
+      "id": "gh_nrt_hebrews_9",
+      "translationCode": "NRT",
+      "bookId": "hebrews",
+      "chapter": 9,
+      "title": "К Евреям 9 · Новый русский",
+      "cueCount": 28,
+      "narratorId": "new-russian",
+      "file": "projects/nrt_hebrews_9.json"
+    },
+    {
       "id": "gh_nrt_john_1",
       "translationCode": "NRT",
       "bookId": "john",

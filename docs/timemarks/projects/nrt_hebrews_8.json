@@ -1,0 +1,63 @@
+{
+  "id": "gh_nrt_hebrews_8",
+  "translationCode": "NRT",
+  "bookId": "hebrews",
+  "chapter": 8,
+  "title": "К Евреям 8 · Новый русский",
+  "narratorId": "new-russian",
+  "audioFileName": "65_08.mp3",
+  "cues": [
+    {
+      "timeMs": 4203,
+      "verseStart": 1
+    },
+    {
+      "timeMs": 17610,
+      "verseStart": 2
+    },
+    {
+      "timeMs": 25335,
+      "verseStart": 3
+    },
+    {
+      "timeMs": 37022,
+      "verseStart": 4
+    },
+    {
+      "timeMs": 47128,
+      "verseStart": 5
+    },
+    {
+      "timeMs": 64878,
+      "verseStart": 6
+    },
+    {
+      "timeMs": 79047,
+      "verseStart": 7
+    },
+    {
+      "timeMs": 84270,
+      "verseStart": 8
+    },
+    {
+      "timeMs": 95496,
+      "verseStart": 9
+    },
+    {
+      "timeMs": 109505,
+      "verseStart": 10
+    },
+    {
+      "timeMs": 124113,
+      "verseStart": 11
+    },
+    {
+      "timeMs": 133879,
+      "verseStart": 12
+    },
+    {
+      "timeMs": 139042,
+      "verseStart": 13
+    }
+  ]
+}
