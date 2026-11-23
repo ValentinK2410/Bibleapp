@@ -1,0 +1,86 @@
+{
+  "id": "align-titus-BTI-03",
+  "translationCode": "BTI",
+  "bookId": "titus",
+  "chapter": 3,
+  "title": "Титу 3 · Кулаковых",
+  "audioFilePath": "/data/user/0/com.example.bible.sqlite/files/bible_audio/bti/63_03.mp3",
+  "updatedAt": 1795392000000,
+  "cues": [
+    {
+      "timeMs": 3662,
+      "verseStart": 1,
+      "attachments": []
+    },
+    {
+      "timeMs": 15890,
+      "verseStart": 2,
+      "attachments": []
+    },
+    {
+      "timeMs": 25497,
+      "verseStart": 3,
+      "attachments": []
+    },
+    {
+      "timeMs": 49252,
+      "verseStart": 4,
+      "attachments": []
+    },
+    {
+      "timeMs": 57918,
+      "verseStart": 5,
+      "attachments": []
+    },
+    {
+      "timeMs": 73428,
+      "verseStart": 6,
+      "attachments": []
+    },
+    {
+      "timeMs": 82113,
+      "verseStart": 7,
+      "attachments": []
+    },
+    {
+      "timeMs": 94882,
+      "verseStart": 8,
+      "attachments": []
+    },
+    {
+      "timeMs": 114635,
+      "verseStart": 9,
+      "attachments": []
+    },
+    {
+      "timeMs": 127923,
+      "verseStart": 10,
+      "attachments": []
+    },
+    {
+      "timeMs": 135748,
+      "verseStart": 11,
+      "attachments": []
+    },
+    {
+      "timeMs": 145955,
+      "verseStart": 12,
+      "attachments": []
+    },
+    {
+      "timeMs": 156602,
+      "verseStart": 13,
+      "attachments": []
+    },
+    {
+      "timeMs": 166689,
+      "verseStart": 14,
+      "attachments": []
+    },
+    {
+      "timeMs": 177816,
+      "verseStart": 15,
+      "attachments": []
+    }
+  ]
+}

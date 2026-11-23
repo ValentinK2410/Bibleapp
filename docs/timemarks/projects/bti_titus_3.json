@@ -1,0 +1,71 @@
+{
+  "id": "gh_bti_titus_3",
+  "translationCode": "BTI",
+  "bookId": "titus",
+  "chapter": 3,
+  "title": "Титу 3 · Кулаковых",
+  "narratorId": "bti",
+  "audioFileName": "63_03.mp3",
+  "cues": [
+    {
+      "timeMs": 3662,
+      "verseStart": 1
+    },
+    {
+      "timeMs": 15890,
+      "verseStart": 2
+    },
+    {
+      "timeMs": 25497,
+      "verseStart": 3
+    },
+    {
+      "timeMs": 49252,
+      "verseStart": 4
+    },
+    {
+      "timeMs": 57918,
+      "verseStart": 5
+    },
+    {
+      "timeMs": 73428,
+      "verseStart": 6
+    },
+    {
+      "timeMs": 82113,
+      "verseStart": 7
+    },
+    {
+      "timeMs": 94882,
+      "verseStart": 8
+    },
+    {
+      "timeMs": 114635,
+      "verseStart": 9
+    },
+    {
+      "timeMs": 127923,
+      "verseStart": 10
+    },
+    {
+      "timeMs": 135748,
+      "verseStart": 11
+    },
+    {
+      "timeMs": 145955,
+      "verseStart": 12
+    },
+    {
+      "timeMs": 156602,
+      "verseStart": 13
+    },
+    {
+      "timeMs": 166689,
+      "verseStart": 14
+    },
+    {
+      "timeMs": 177816,
+      "verseStart": 15
+    }
+  ]
+}

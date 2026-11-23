@@ -1444,6 +1444,36 @@
       "file": "projects/bti_romans_9.json"
     },
     {
+      "id": "gh_bti_titus_1",
+      "translationCode": "BTI",
+      "bookId": "titus",
+      "chapter": 1,
+      "title": "Титу 1 · Кулаковых",
+      "cueCount": 16,
+      "narratorId": "bti",
+      "file": "projects/bti_titus_1.json"
+    },
+    {
+      "id": "gh_bti_titus_2",
+      "translationCode": "BTI",
+      "bookId": "titus",
+      "chapter": 2,
+      "title": "Титу 2 · Кулаковых",
+      "cueCount": 15,
+      "narratorId": "bti",
+      "file": "projects/bti_titus_2.json"
+    },
+    {
+      "id": "gh_bti_titus_3",
+      "translationCode": "BTI",
+      "bookId": "titus",
+      "chapter": 3,
+      "title": "Титу 3 · Кулаковых",
+      "cueCount": 15,
+      "narratorId": "bti",
+      "file": "projects/bti_titus_3.json"
+    },
+    {
       "id": "gh_grk_1_corinthians_1",
       "translationCode": "PODSTR",
       "bookId": "1_corinthians",
