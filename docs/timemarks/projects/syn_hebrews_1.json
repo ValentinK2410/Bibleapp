@@ -1,0 +1,67 @@
+{
+  "id": "gh_syn_hebrews_1",
+  "translationCode": "SYN",
+  "bookId": "hebrews",
+  "chapter": 1,
+  "title": "К Евреям 1 · Синодальный · Бондаренко",
+  "narratorId": "bondarenko",
+  "audioFileName": "65_01.mp3",
+  "cues": [
+    {
+      "timeMs": 19195,
+      "verseStart": 1
+    },
+    {
+      "timeMs": 27762,
+      "verseStart": 2
+    },
+    {
+      "timeMs": 39651,
+      "verseStart": 3
+    },
+    {
+      "timeMs": 58105,
+      "verseStart": 4
+    },
+    {
+      "timeMs": 68333,
+      "verseStart": 5
+    },
+    {
+      "timeMs": 87048,
+      "verseStart": 6
+    },
+    {
+      "timeMs": 96355,
+      "verseStart": 7
+    },
+    {
+      "timeMs": 106923,
+      "verseStart": 8
+    },
+    {
+      "timeMs": 120514,
+      "verseStart": 9
+    },
+    {
+      "timeMs": 134605,
+      "verseStart": 10
+    },
+    {
+      "timeMs": 144652,
+      "verseStart": 11
+    },
+    {
+      "timeMs": 152178,
+      "verseStart": 12
+    },
+    {
+      "timeMs": 164208,
+      "verseStart": 13
+    },
+    {
+      "timeMs": 176497,
+      "verseStart": 14
+    }
+  ]
+}

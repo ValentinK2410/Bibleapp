@@ -1,0 +1,167 @@
+{
+  "id": "gh_syn_hebrews_10",
+  "translationCode": "SYN",
+  "bookId": "hebrews",
+  "chapter": 10,
+  "title": "К Евреям 10 · Синодальный · Бондаренко",
+  "narratorId": "bondarenko",
+  "audioFileName": "65_10.mp3",
+  "cues": [
+    {
+      "timeMs": 3683,
+      "verseStart": 1
+    },
+    {
+      "timeMs": 20915,
+      "verseStart": 2
+    },
+    {
+      "timeMs": 33223,
+      "verseStart": 3
+    },
+    {
+      "timeMs": 36886,
+      "verseStart": 4
+    },
+    {
+      "timeMs": 44692,
+      "verseStart": 5
+    },
+    {
+      "timeMs": 57020,
+      "verseStart": 6
+    },
+    {
+      "timeMs": 61664,
+      "verseStart": 7
+    },
+    {
+      "timeMs": 71651,
+      "verseStart": 8
+    },
+    {
+      "timeMs": 85020,
+      "verseStart": 9
+    },
+    {
+      "timeMs": 98610,
+      "verseStart": 10
+    },
+    {
+      "timeMs": 106996,
+      "verseStart": 11
+    },
+    {
+      "timeMs": 119164,
+      "verseStart": 12
+    },
+    {
+      "timeMs": 126649,
+      "verseStart": 13
+    },
+    {
+      "timeMs": 133614,
+      "verseStart": 14
+    },
+    {
+      "timeMs": 142441,
+      "verseStart": 15
+    },
+    {
+      "timeMs": 147884,
+      "verseStart": 16
+    },
+    {
+      "timeMs": 161774,
+      "verseStart": 17
+    },
+    {
+      "timeMs": 169380,
+      "verseStart": 18
+    },
+    {
+      "timeMs": 176845,
+      "verseStart": 19
+    },
+    {
+      "timeMs": 187713,
+      "verseStart": 20
+    },
+    {
+      "timeMs": 194217,
+      "verseStart": 21
+    },
+    {
+      "timeMs": 198720,
+      "verseStart": 22
+    },
+    {
+      "timeMs": 210509,
+      "verseStart": 23
+    },
+    {
+      "timeMs": 219675,
+      "verseStart": 24
+    },
+    {
+      "timeMs": 227340,
+      "verseStart": 25
+    },
+    {
+      "timeMs": 244072,
+      "verseStart": 26
+    },
+    {
+      "timeMs": 252398,
+      "verseStart": 27
+    },
+    {
+      "timeMs": 263646,
+      "verseStart": 28
+    },
+    {
+      "timeMs": 273953,
+      "verseStart": 29
+    },
+    {
+      "timeMs": 291446,
+      "verseStart": 30
+    },
+    {
+      "timeMs": 311760,
+      "verseStart": 31
+    },
+    {
+      "timeMs": 318205,
+      "verseStart": 32
+    },
+    {
+      "timeMs": 328592,
+      "verseStart": 33
+    },
+    {
+      "timeMs": 340260,
+      "verseStart": 34
+    },
+    {
+      "timeMs": 356612,
+      "verseStart": 35
+    },
+    {
+      "timeMs": 365278,
+      "verseStart": 36
+    },
+    {
+      "timeMs": 372823,
+      "verseStart": 37
+    },
+    {
+      "timeMs": 381629,
+      "verseStart": 38
+    },
+    {
+      "timeMs": 392137,
+      "verseStart": 39
+    }
+  ]
+}

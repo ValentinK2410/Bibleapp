@@ -1,0 +1,123 @@
+{
+  "id": "gh_syn_hebrews_9",
+  "translationCode": "SYN",
+  "bookId": "hebrews",
+  "chapter": 9,
+  "title": "К Евреям 9 · Синодальный · Бондаренко",
+  "narratorId": "bondarenko",
+  "audioFileName": "65_09.mp3",
+  "cues": [
+    {
+      "timeMs": 3542,
+      "verseStart": 1
+    },
+    {
+      "timeMs": 9446,
+      "verseStart": 2
+    },
+    {
+      "timeMs": 20914,
+      "verseStart": 3
+    },
+    {
+      "timeMs": 27098,
+      "verseStart": 4
+    },
+    {
+      "timeMs": 41527,
+      "verseStart": 5
+    },
+    {
+      "timeMs": 50493,
+      "verseStart": 6
+    },
+    {
+      "timeMs": 57458,
+      "verseStart": 7
+    },
+    {
+      "timeMs": 70306,
+      "verseStart": 8
+    },
+    {
+      "timeMs": 80352,
+      "verseStart": 9
+    },
+    {
+      "timeMs": 93181,
+      "verseStart": 10
+    },
+    {
+      "timeMs": 108691,
+      "verseStart": 11
+    },
+    {
+      "timeMs": 124581,
+      "verseStart": 12
+    },
+    {
+      "timeMs": 138410,
+      "verseStart": 13
+    },
+    {
+      "timeMs": 149918,
+      "verseStart": 14
+    },
+    {
+      "timeMs": 169511,
+      "verseStart": 15
+    },
+    {
+      "timeMs": 188883,
+      "verseStart": 16
+    },
+    {
+      "timeMs": 196248,
+      "verseStart": 17
+    },
+    {
+      "timeMs": 206075,
+      "verseStart": 18
+    },
+    {
+      "timeMs": 212119,
+      "verseStart": 19
+    },
+    {
+      "timeMs": 227849,
+      "verseStart": 20
+    },
+    {
+      "timeMs": 234653,
+      "verseStart": 21
+    },
+    {
+      "timeMs": 240657,
+      "verseStart": 22
+    },
+    {
+      "timeMs": 249983,
+      "verseStart": 23
+    },
+    {
+      "timeMs": 261271,
+      "verseStart": 24
+    },
+    {
+      "timeMs": 274119,
+      "verseStart": 25
+    },
+    {
+      "timeMs": 283305,
+      "verseStart": 26
+    },
+    {
+      "timeMs": 297434,
+      "verseStart": 27
+    },
+    {
+      "timeMs": 303018,
+      "verseStart": 28
+    }
+  ]
+}

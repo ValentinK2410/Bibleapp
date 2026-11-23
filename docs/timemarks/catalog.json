@@ -6964,6 +6964,136 @@
       "file": "projects/syn_galatians_6.json"
     },
     {
+      "id": "gh_syn_hebrews_1",
+      "translationCode": "SYN",
+      "bookId": "hebrews",
+      "chapter": 1,
+      "title": "К Евреям 1 · Синодальный · Бондаренко",
+      "cueCount": 14,
+      "narratorId": "bondarenko",
+      "file": "projects/syn_hebrews_1.json"
+    },
+    {
+      "id": "gh_syn_hebrews_10",
+      "translationCode": "SYN",
+      "bookId": "hebrews",
+      "chapter": 10,
+      "title": "К Евреям 10 · Синодальный · Бондаренко",
+      "cueCount": 39,
+      "narratorId": "bondarenko",
+      "file": "projects/syn_hebrews_10.json"
+    },
+    {
+      "id": "gh_syn_hebrews_11",
+      "translationCode": "SYN",
+      "bookId": "hebrews",
+      "chapter": 11,
+      "title": "К Евреям 11 · Синодальный · Бондаренко",
+      "cueCount": 40,
+      "narratorId": "bondarenko",
+      "file": "projects/syn_hebrews_11.json"
+    },
+    {
+      "id": "gh_syn_hebrews_12",
+      "translationCode": "SYN",
+      "bookId": "hebrews",
+      "chapter": 12,
+      "title": "К Евреям 12 · Синодальный · Бондаренко",
+      "cueCount": 29,
+      "narratorId": "bondarenko",
+      "file": "projects/syn_hebrews_12.json"
+    },
+    {
+      "id": "gh_syn_hebrews_13",
+      "translationCode": "SYN",
+      "bookId": "hebrews",
+      "chapter": 13,
+      "title": "К Евреям 13 · Синодальный · Бондаренко",
+      "cueCount": 25,
+      "narratorId": "bondarenko",
+      "file": "projects/syn_hebrews_13.json"
+    },
+    {
+      "id": "gh_syn_hebrews_2",
+      "translationCode": "SYN",
+      "bookId": "hebrews",
+      "chapter": 2,
+      "title": "К Евреям 2 · Синодальный · Бондаренко",
+      "cueCount": 18,
+      "narratorId": "bondarenko",
+      "file": "projects/syn_hebrews_2.json"
+    },
+    {
+      "id": "gh_syn_hebrews_3",
+      "translationCode": "SYN",
+      "bookId": "hebrews",
+      "chapter": 3,
+      "title": "К Евреям 3 · Синодальный · Бондаренко",
+      "cueCount": 19,
+      "narratorId": "bondarenko",
+      "file": "projects/syn_hebrews_3.json"
+    },
+    {
+      "id": "gh_syn_hebrews_4",
+      "translationCode": "SYN",
+      "bookId": "hebrews",
+      "chapter": 4,
+      "title": "К Евреям 4 · Синодальный · Бондаренко",
+      "cueCount": 16,
+      "narratorId": "bondarenko",
+      "file": "projects/syn_hebrews_4.json"
+    },
+    {
+      "id": "gh_syn_hebrews_5",
+      "translationCode": "SYN",
+      "bookId": "hebrews",
+      "chapter": 5,
+      "title": "К Евреям 5 · Синодальный · Бондаренко",
+      "cueCount": 14,
+      "narratorId": "bondarenko",
+      "file": "projects/syn_hebrews_5.json"
+    },
+    {
+      "id": "gh_syn_hebrews_6",
+      "translationCode": "SYN",
+      "bookId": "hebrews",
+      "chapter": 6,
+      "title": "К Евреям 6 · Синодальный · Бондаренко",
+      "cueCount": 20,
+      "narratorId": "bondarenko",
+      "file": "projects/syn_hebrews_6.json"
+    },
+    {
+      "id": "gh_syn_hebrews_7",
+      "translationCode": "SYN",
+      "bookId": "hebrews",
+      "chapter": 7,
+      "title": "К Евреям 7 · Синодальный · Бондаренко",
+      "cueCount": 28,
+      "narratorId": "bondarenko",
+      "file": "projects/syn_hebrews_7.json"
+    },
+    {
+      "id": "gh_syn_hebrews_8",
+      "translationCode": "SYN",
+      "bookId": "hebrews",
+      "chapter": 8,
+      "title": "К Евреям 8 · Синодальный · Бондаренко",
+      "cueCount": 13,
+      "narratorId": "bondarenko",
+      "file": "projects/syn_hebrews_8.json"
+    },
+    {
+      "id": "gh_syn_hebrews_9",
+      "translationCode": "SYN",
+      "bookId": "hebrews",
+      "chapter": 9,
+      "title": "К Евреям 9 · Синодальный · Бондаренко",
+      "cueCount": 28,
+      "narratorId": "bondarenko",
+      "file": "projects/syn_hebrews_9.json"
+    },
+    {
       "id": "gh_syn_john_1",
       "translationCode": "SYN",
       "bookId": "john",

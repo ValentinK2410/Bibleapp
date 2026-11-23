@@ -1,0 +1,127 @@
+{
+  "id": "gh_syn_hebrews_12",
+  "translationCode": "SYN",
+  "bookId": "hebrews",
+  "chapter": 12,
+  "title": "К Евреям 12 · Синодальный · Бондаренко",
+  "narratorId": "bondarenko",
+  "audioFileName": "65_12.mp3",
+  "cues": [
+    {
+      "timeMs": 4783,
+      "verseStart": 1
+    },
+    {
+      "timeMs": 22355,
+      "verseStart": 2
+    },
+    {
+      "timeMs": 41628,
+      "verseStart": 3
+    },
+    {
+      "timeMs": 53636,
+      "verseStart": 4
+    },
+    {
+      "timeMs": 58219,
+      "verseStart": 5
+    },
+    {
+      "timeMs": 74010,
+      "verseStart": 6
+    },
+    {
+      "timeMs": 85077,
+      "verseStart": 7
+    },
+    {
+      "timeMs": 99127,
+      "verseStart": 8
+    },
+    {
+      "timeMs": 109614,
+      "verseStart": 9
+    },
+    {
+      "timeMs": 122843,
+      "verseStart": 10
+    },
+    {
+      "timeMs": 134731,
+      "verseStart": 11
+    },
+    {
+      "timeMs": 148360,
+      "verseStart": 12
+    },
+    {
+      "timeMs": 154184,
+      "verseStart": 13
+    },
+    {
+      "timeMs": 164331,
+      "verseStart": 14
+    },
+    {
+      "timeMs": 173117,
+      "verseStart": 15
+    },
+    {
+      "timeMs": 186946,
+      "verseStart": 16
+    },
+    {
+      "timeMs": 199154,
+      "verseStart": 17
+    },
+    {
+      "timeMs": 213744,
+      "verseStart": 18
+    },
+    {
+      "timeMs": 223230,
+      "verseStart": 19
+    },
+    {
+      "timeMs": 231596,
+      "verseStart": 20
+    },
+    {
+      "timeMs": 243464,
+      "verseStart": 21
+    },
+    {
+      "timeMs": 251589,
+      "verseStart": 22
+    },
+    {
+      "timeMs": 261416,
+      "verseStart": 23
+    },
+    {
+      "timeMs": 274585,
+      "verseStart": 24
+    },
+    {
+      "timeMs": 285712,
+      "verseStart": 25
+    },
+    {
+      "timeMs": 305666,
+      "verseStart": 26
+    },
+    {
+      "timeMs": 318334,
+      "verseStart": 27
+    },
+    {
+      "timeMs": 332404,
+      "verseStart": 28
+    },
+    {
+      "timeMs": 347514,
+      "verseStart": 29
+    }
+  ]
+}

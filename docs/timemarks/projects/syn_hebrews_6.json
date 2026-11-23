@@ -1,0 +1,91 @@
+{
+  "id": "gh_syn_hebrews_6",
+  "translationCode": "SYN",
+  "bookId": "hebrews",
+  "chapter": 6,
+  "title": "К Евреям 6 · Синодальный · Бондаренко",
+  "narratorId": "bondarenko",
+  "audioFileName": "65_06.mp3",
+  "cues": [
+    {
+      "timeMs": 2962,
+      "verseStart": 1
+    },
+    {
+      "timeMs": 15551,
+      "verseStart": 2
+    },
+    {
+      "timeMs": 23456,
+      "verseStart": 3
+    },
+    {
+      "timeMs": 29280,
+      "verseStart": 4
+    },
+    {
+      "timeMs": 40408,
+      "verseStart": 5
+    },
+    {
+      "timeMs": 45532,
+      "verseStart": 6
+    },
+    {
+      "timeMs": 57840,
+      "verseStart": 7
+    },
+    {
+      "timeMs": 73131,
+      "verseStart": 8
+    },
+    {
+      "timeMs": 86320,
+      "verseStart": 9
+    },
+    {
+      "timeMs": 96287,
+      "verseStart": 10
+    },
+    {
+      "timeMs": 109076,
+      "verseStart": 11
+    },
+    {
+      "timeMs": 119683,
+      "verseStart": 12
+    },
+    {
+      "timeMs": 131231,
+      "verseStart": 13
+    },
+    {
+      "timeMs": 140878,
+      "verseStart": 14
+    },
+    {
+      "timeMs": 151205,
+      "verseStart": 15
+    },
+    {
+      "timeMs": 157549,
+      "verseStart": 16
+    },
+    {
+      "timeMs": 165615,
+      "verseStart": 17
+    },
+    {
+      "timeMs": 177043,
+      "verseStart": 18
+    },
+    {
+      "timeMs": 190792,
+      "verseStart": 19
+    },
+    {
+      "timeMs": 201500,
+      "verseStart": 20
+    }
+  ]
+}

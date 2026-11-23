@@ -1,0 +1,101 @@
+{
+  "id": "align-hebrews-SYN-02",
+  "translationCode": "SYN",
+  "bookId": "hebrews",
+  "chapter": 2,
+  "title": "К Евреям 2 · Синодальный · Бондаренко",
+  "audioFilePath": "/data/user/0/com.example.bible.sqlite/files/bible_audio/bondarenko/65_02.mp3",
+  "updatedAt": 1795392000000,
+  "cues": [
+    {
+      "timeMs": 3543,
+      "verseStart": 1,
+      "attachments": []
+    },
+    {
+      "timeMs": 10628,
+      "verseStart": 2,
+      "attachments": []
+    },
+    {
+      "timeMs": 22476,
+      "verseStart": 3,
+      "attachments": []
+    },
+    {
+      "timeMs": 37027,
+      "verseStart": 4,
+      "attachments": []
+    },
+    {
+      "timeMs": 50136,
+      "verseStart": 5,
+      "attachments": []
+    },
+    {
+      "timeMs": 55660,
+      "verseStart": 6,
+      "attachments": []
+    },
+    {
+      "timeMs": 72552,
+      "verseStart": 7,
+      "attachments": []
+    },
+    {
+      "timeMs": 83280,
+      "verseStart": 8,
+      "attachments": []
+    },
+    {
+      "timeMs": 100973,
+      "verseStart": 9,
+      "attachments": []
+    },
+    {
+      "timeMs": 118645,
+      "verseStart": 10,
+      "attachments": []
+    },
+    {
+      "timeMs": 136878,
+      "verseStart": 11,
+      "attachments": []
+    },
+    {
+      "timeMs": 148186,
+      "verseStart": 12,
+      "attachments": []
+    },
+    {
+      "timeMs": 155111,
+      "verseStart": 13,
+      "attachments": []
+    },
+    {
+      "timeMs": 170462,
+      "verseStart": 14,
+      "attachments": []
+    },
+    {
+      "timeMs": 183152,
+      "verseStart": 15,
+      "attachments": []
+    },
+    {
+      "timeMs": 191498,
+      "verseStart": 16,
+      "attachments": []
+    },
+    {
+      "timeMs": 199343,
+      "verseStart": 17,
+      "attachments": []
+    },
+    {
+      "timeMs": 213633,
+      "verseStart": 18,
+      "attachments": []
+    }
+  ]
+}

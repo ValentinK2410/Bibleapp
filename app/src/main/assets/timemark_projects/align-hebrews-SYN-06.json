@@ -1,0 +1,111 @@
+{
+  "id": "align-hebrews-SYN-06",
+  "translationCode": "SYN",
+  "bookId": "hebrews",
+  "chapter": 6,
+  "title": "К Евреям 6 · Синодальный · Бондаренко",
+  "audioFilePath": "/data/user/0/com.example.bible.sqlite/files/bible_audio/bondarenko/65_06.mp3",
+  "updatedAt": 1795392000000,
+  "cues": [
+    {
+      "timeMs": 2962,
+      "verseStart": 1,
+      "attachments": []
+    },
+    {
+      "timeMs": 15551,
+      "verseStart": 2,
+      "attachments": []
+    },
+    {
+      "timeMs": 23456,
+      "verseStart": 3,
+      "attachments": []
+    },
+    {
+      "timeMs": 29280,
+      "verseStart": 4,
+      "attachments": []
+    },
+    {
+      "timeMs": 40408,
+      "verseStart": 5,
+      "attachments": []
+    },
+    {
+      "timeMs": 45532,
+      "verseStart": 6,
+      "attachments": []
+    },
+    {
+      "timeMs": 57840,
+      "verseStart": 7,
+      "attachments": []
+    },
+    {
+      "timeMs": 73131,
+      "verseStart": 8,
+      "attachments": []
+    },
+    {
+      "timeMs": 86320,
+      "verseStart": 9,
+      "attachments": []
+    },
+    {
+      "timeMs": 96287,
+      "verseStart": 10,
+      "attachments": []
+    },
+    {
+      "timeMs": 109076,
+      "verseStart": 11,
+      "attachments": []
+    },
+    {
+      "timeMs": 119683,
+      "verseStart": 12,
+      "attachments": []
+    },
+    {
+      "timeMs": 131231,
+      "verseStart": 13,
+      "attachments": []
+    },
+    {
+      "timeMs": 140878,
+      "verseStart": 14,
+      "attachments": []
+    },
+    {
+      "timeMs": 151205,
+      "verseStart": 15,
+      "attachments": []
+    },
+    {
+      "timeMs": 157549,
+      "verseStart": 16,
+      "attachments": []
+    },
+    {
+      "timeMs": 165615,
+      "verseStart": 17,
+      "attachments": []
+    },
+    {
+      "timeMs": 177043,
+      "verseStart": 18,
+      "attachments": []
+    },
+    {
+      "timeMs": 190792,
+      "verseStart": 19,
+      "attachments": []
+    },
+    {
+      "timeMs": 201500,
+      "verseStart": 20,
+      "attachments": []
+    }
+  ]
+}

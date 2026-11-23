@@ -1,0 +1,76 @@
+{
+  "id": "align-hebrews-SYN-08",
+  "translationCode": "SYN",
+  "bookId": "hebrews",
+  "chapter": 8,
+  "title": "К Евреям 8 · Синодальный · Бондаренко",
+  "audioFilePath": "/data/user/0/com.example.bible.sqlite/files/bible_audio/bondarenko/65_08.mp3",
+  "updatedAt": 1795392000000,
+  "cues": [
+    {
+      "timeMs": 2682,
+      "verseStart": 1,
+      "attachments": []
+    },
+    {
+      "timeMs": 14670,
+      "verseStart": 2,
+      "attachments": []
+    },
+    {
+      "timeMs": 25878,
+      "verseStart": 3,
+      "attachments": []
+    },
+    {
+      "timeMs": 37326,
+      "verseStart": 4,
+      "attachments": []
+    },
+    {
+      "timeMs": 47814,
+      "verseStart": 5,
+      "attachments": []
+    },
+    {
+      "timeMs": 63765,
+      "verseStart": 6,
+      "attachments": []
+    },
+    {
+      "timeMs": 77935,
+      "verseStart": 7,
+      "attachments": []
+    },
+    {
+      "timeMs": 88603,
+      "verseStart": 8,
+      "attachments": []
+    },
+    {
+      "timeMs": 102973,
+      "verseStart": 9,
+      "attachments": []
+    },
+    {
+      "timeMs": 121566,
+      "verseStart": 10,
+      "attachments": []
+    },
+    {
+      "timeMs": 145403,
+      "verseStart": 11,
+      "attachments": []
+    },
+    {
+      "timeMs": 159833,
+      "verseStart": 12,
+      "attachments": []
+    },
+    {
+      "timeMs": 170941,
+      "verseStart": 13,
+      "attachments": []
+    }
+  ]
+}

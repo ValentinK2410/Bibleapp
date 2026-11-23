@@ -1,0 +1,136 @@
+{
+  "id": "align-hebrews-SYN-13",
+  "translationCode": "SYN",
+  "bookId": "hebrews",
+  "chapter": 13,
+  "title": "К Евреям 13 · Синодальный · Бондаренко",
+  "audioFilePath": "/data/user/0/com.example.bible.sqlite/files/bible_audio/bondarenko/65_13.mp3",
+  "updatedAt": 1795392000000,
+  "cues": [
+    {
+      "timeMs": 4443,
+      "verseStart": 1,
+      "attachments": []
+    },
+    {
+      "timeMs": 9507,
+      "verseStart": 2,
+      "attachments": []
+    },
+    {
+      "timeMs": 18173,
+      "verseStart": 3,
+      "attachments": []
+    },
+    {
+      "timeMs": 28580,
+      "verseStart": 4,
+      "attachments": []
+    },
+    {
+      "timeMs": 40748,
+      "verseStart": 5,
+      "attachments": []
+    },
+    {
+      "timeMs": 52917,
+      "verseStart": 6,
+      "attachments": []
+    },
+    {
+      "timeMs": 63704,
+      "verseStart": 7,
+      "attachments": []
+    },
+    {
+      "timeMs": 75853,
+      "verseStart": 8,
+      "attachments": []
+    },
+    {
+      "timeMs": 82237,
+      "verseStart": 9,
+      "attachments": []
+    },
+    {
+      "timeMs": 97628,
+      "verseStart": 10,
+      "attachments": []
+    },
+    {
+      "timeMs": 104652,
+      "verseStart": 11,
+      "attachments": []
+    },
+    {
+      "timeMs": 114179,
+      "verseStart": 12,
+      "attachments": []
+    },
+    {
+      "timeMs": 123806,
+      "verseStart": 13,
+      "attachments": []
+    },
+    {
+      "timeMs": 128109,
+      "verseStart": 14,
+      "attachments": []
+    },
+    {
+      "timeMs": 135454,
+      "verseStart": 15,
+      "attachments": []
+    },
+    {
+      "timeMs": 147242,
+      "verseStart": 16,
+      "attachments": []
+    },
+    {
+      "timeMs": 155207,
+      "verseStart": 17,
+      "attachments": []
+    },
+    {
+      "timeMs": 173660,
+      "verseStart": 18,
+      "attachments": []
+    },
+    {
+      "timeMs": 183327,
+      "verseStart": 19,
+      "attachments": []
+    },
+    {
+      "timeMs": 191513,
+      "verseStart": 20,
+      "attachments": []
+    },
+    {
+      "timeMs": 202700,
+      "verseStart": 21,
+      "attachments": []
+    },
+    {
+      "timeMs": 223615,
+      "verseStart": 22,
+      "attachments": []
+    },
+    {
+      "timeMs": 233902,
+      "verseStart": 23,
+      "attachments": []
+    },
+    {
+      "timeMs": 243849,
+      "verseStart": 24,
+      "attachments": []
+    },
+    {
+      "timeMs": 252355,
+      "verseStart": 25,
+      "attachments": []
+    }
+  ]
+}

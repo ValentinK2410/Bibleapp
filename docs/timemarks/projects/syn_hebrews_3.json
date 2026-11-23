@@ -1,0 +1,87 @@
+{
+  "id": "gh_syn_hebrews_3",
+  "translationCode": "SYN",
+  "bookId": "hebrews",
+  "chapter": 3,
+  "title": "К Евреям 3 · Синодальный · Бондаренко",
+  "narratorId": "bondarenko",
+  "audioFileName": "65_03.mp3",
+  "cues": [
+    {
+      "timeMs": 3382,
+      "verseStart": 1
+    },
+    {
+      "timeMs": 17212,
+      "verseStart": 2
+    },
+    {
+      "timeMs": 24918,
+      "verseStart": 3
+    },
+    {
+      "timeMs": 36185,
+      "verseStart": 4
+    },
+    {
+      "timeMs": 43911,
+      "verseStart": 5
+    },
+    {
+      "timeMs": 53357,
+      "verseStart": 6
+    },
+    {
+      "timeMs": 70349,
+      "verseStart": 7
+    },
+    {
+      "timeMs": 78055,
+      "verseStart": 8
+    },
+    {
+      "timeMs": 85000,
+      "verseStart": 9
+    },
+    {
+      "timeMs": 91744,
+      "verseStart": 10
+    },
+    {
+      "timeMs": 102512,
+      "verseStart": 11
+    },
+    {
+      "timeMs": 110498,
+      "verseStart": 12
+    },
+    {
+      "timeMs": 121025,
+      "verseStart": 13
+    },
+    {
+      "timeMs": 133053,
+      "verseStart": 14
+    },
+    {
+      "timeMs": 141299,
+      "verseStart": 15
+    },
+    {
+      "timeMs": 152527,
+      "verseStart": 16
+    },
+    {
+      "timeMs": 162994,
+      "verseStart": 17
+    },
+    {
+      "timeMs": 174282,
+      "verseStart": 18
+    },
+    {
+      "timeMs": 182448,
+      "verseStart": 19
+    }
+  ]
+}
