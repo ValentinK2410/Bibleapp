@@ -1244,6 +1244,16 @@
       "file": "projects/bti_mark_9.json"
     },
     {
+      "id": "gh_bti_philemon_1",
+      "translationCode": "BTI",
+      "bookId": "philemon",
+      "chapter": 1,
+      "title": "К Филимону 1 · Кулаковых",
+      "cueCount": 25,
+      "narratorId": "bti",
+      "file": "projects/bti_philemon_1.json"
+    },
+    {
       "id": "gh_bti_philippians_1",
       "translationCode": "BTI",
       "bookId": "philippians",
