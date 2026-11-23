@@ -3524,6 +3524,166 @@
       "file": "projects/rbo_romans_9.json"
     },
     {
+      "id": "gh_syn_1_corinthians_1",
+      "translationCode": "SYN",
+      "bookId": "1_corinthians",
+      "chapter": 1,
+      "title": "1-е Коринфянам 1 · Синодальный · Бондаренко",
+      "cueCount": 31,
+      "narratorId": "bondarenko",
+      "file": "projects/syn_1_corinthians_1.json"
+    },
+    {
+      "id": "gh_syn_1_corinthians_10",
+      "translationCode": "SYN",
+      "bookId": "1_corinthians",
+      "chapter": 10,
+      "title": "1-е Коринфянам 10 · Синодальный · Бондаренко",
+      "cueCount": 33,
+      "narratorId": "bondarenko",
+      "file": "projects/syn_1_corinthians_10.json"
+    },
+    {
+      "id": "gh_syn_1_corinthians_11",
+      "translationCode": "SYN",
+      "bookId": "1_corinthians",
+      "chapter": 11,
+      "title": "1-е Коринфянам 11 · Синодальный · Бондаренко",
+      "cueCount": 34,
+      "narratorId": "bondarenko",
+      "file": "projects/syn_1_corinthians_11.json"
+    },
+    {
+      "id": "gh_syn_1_corinthians_12",
+      "translationCode": "SYN",
+      "bookId": "1_corinthians",
+      "chapter": 12,
+      "title": "1-е Коринфянам 12 · Синодальный · Бондаренко",
+      "cueCount": 31,
+      "narratorId": "bondarenko",
+      "file": "projects/syn_1_corinthians_12.json"
+    },
+    {
+      "id": "gh_syn_1_corinthians_13",
+      "translationCode": "SYN",
+      "bookId": "1_corinthians",
+      "chapter": 13,
+      "title": "1-е Коринфянам 13 · Синодальный · Бондаренко",
+      "cueCount": 13,
+      "narratorId": "bondarenko",
+      "file": "projects/syn_1_corinthians_13.json"
+    },
+    {
+      "id": "gh_syn_1_corinthians_14",
+      "translationCode": "SYN",
+      "bookId": "1_corinthians",
+      "chapter": 14,
+      "title": "1-е Коринфянам 14 · Синодальный · Бондаренко",
+      "cueCount": 40,
+      "narratorId": "bondarenko",
+      "file": "projects/syn_1_corinthians_14.json"
+    },
+    {
+      "id": "gh_syn_1_corinthians_15",
+      "translationCode": "SYN",
+      "bookId": "1_corinthians",
+      "chapter": 15,
+      "title": "1-е Коринфянам 15 · Синодальный · Бондаренко",
+      "cueCount": 58,
+      "narratorId": "bondarenko",
+      "file": "projects/syn_1_corinthians_15.json"
+    },
+    {
+      "id": "gh_syn_1_corinthians_16",
+      "translationCode": "SYN",
+      "bookId": "1_corinthians",
+      "chapter": 16,
+      "title": "1-е Коринфянам 16 · Синодальный · Бондаренко",
+      "cueCount": 24,
+      "narratorId": "bondarenko",
+      "file": "projects/syn_1_corinthians_16.json"
+    },
+    {
+      "id": "gh_syn_1_corinthians_2",
+      "translationCode": "SYN",
+      "bookId": "1_corinthians",
+      "chapter": 2,
+      "title": "1-е Коринфянам 2 · Синодальный · Бондаренко",
+      "cueCount": 16,
+      "narratorId": "bondarenko",
+      "file": "projects/syn_1_corinthians_2.json"
+    },
+    {
+      "id": "gh_syn_1_corinthians_3",
+      "translationCode": "SYN",
+      "bookId": "1_corinthians",
+      "chapter": 3,
+      "title": "1-е Коринфянам 3 · Синодальный · Бондаренко",
+      "cueCount": 23,
+      "narratorId": "bondarenko",
+      "file": "projects/syn_1_corinthians_3.json"
+    },
+    {
+      "id": "gh_syn_1_corinthians_4",
+      "translationCode": "SYN",
+      "bookId": "1_corinthians",
+      "chapter": 4,
+      "title": "1-е Коринфянам 4 · Синодальный · Бондаренко",
+      "cueCount": 21,
+      "narratorId": "bondarenko",
+      "file": "projects/syn_1_corinthians_4.json"
+    },
+    {
+      "id": "gh_syn_1_corinthians_5",
+      "translationCode": "SYN",
+      "bookId": "1_corinthians",
+      "chapter": 5,
+      "title": "1-е Коринфянам 5 · Синодальный · Бондаренко",
+      "cueCount": 13,
+      "narratorId": "bondarenko",
+      "file": "projects/syn_1_corinthians_5.json"
+    },
+    {
+      "id": "gh_syn_1_corinthians_6",
+      "translationCode": "SYN",
+      "bookId": "1_corinthians",
+      "chapter": 6,
+      "title": "1-е Коринфянам 6 · Синодальный · Бондаренко",
+      "cueCount": 20,
+      "narratorId": "bondarenko",
+      "file": "projects/syn_1_corinthians_6.json"
+    },
+    {
+      "id": "gh_syn_1_corinthians_7",
+      "translationCode": "SYN",
+      "bookId": "1_corinthians",
+      "chapter": 7,
+      "title": "1-е Коринфянам 7 · Синодальный · Бондаренко",
+      "cueCount": 40,
+      "narratorId": "bondarenko",
+      "file": "projects/syn_1_corinthians_7.json"
+    },
+    {
+      "id": "gh_syn_1_corinthians_8",
+      "translationCode": "SYN",
+      "bookId": "1_corinthians",
+      "chapter": 8,
+      "title": "1-е Коринфянам 8 · Синодальный · Бондаренко",
+      "cueCount": 13,
+      "narratorId": "bondarenko",
+      "file": "projects/syn_1_corinthians_8.json"
+    },
+    {
+      "id": "gh_syn_1_corinthians_9",
+      "translationCode": "SYN",
+      "bookId": "1_corinthians",
+      "chapter": 9,
+      "title": "1-е Коринфянам 9 · Синодальный · Бондаренко",
+      "cueCount": 27,
+      "narratorId": "bondarenko",
+      "file": "projects/syn_1_corinthians_9.json"
+    },
+    {
       "id": "gh_syn_john_1",
       "translationCode": "SYN",
       "bookId": "john",

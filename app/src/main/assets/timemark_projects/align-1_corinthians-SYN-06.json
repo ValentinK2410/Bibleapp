@@ -1,0 +1,111 @@
+{
+  "id": "align-1_corinthians-SYN-06",
+  "translationCode": "SYN",
+  "bookId": "1_corinthians",
+  "chapter": 6,
+  "title": "1-е Коринфянам 6 · Синодальный · Бондаренко",
+  "audioFilePath": "/data/user/0/com.example.bible.sqlite/files/bible_audio/bondarenko/53_06.mp3",
+  "updatedAt": 1795392000000,
+  "cues": [
+    {
+      "timeMs": 3602,
+      "verseStart": 1,
+      "attachments": []
+    },
+    {
+      "timeMs": 11027,
+      "verseStart": 2,
+      "attachments": []
+    },
+    {
+      "timeMs": 22715,
+      "verseStart": 3,
+      "attachments": []
+    },
+    {
+      "timeMs": 28779,
+      "verseStart": 4,
+      "attachments": []
+    },
+    {
+      "timeMs": 37925,
+      "verseStart": 5,
+      "attachments": []
+    },
+    {
+      "timeMs": 47751,
+      "verseStart": 6,
+      "attachments": []
+    },
+    {
+      "timeMs": 52655,
+      "verseStart": 7,
+      "attachments": []
+    },
+    {
+      "timeMs": 65123,
+      "verseStart": 8,
+      "attachments": []
+    },
+    {
+      "timeMs": 71247,
+      "verseStart": 9,
+      "attachments": []
+    },
+    {
+      "timeMs": 84415,
+      "verseStart": 10,
+      "attachments": []
+    },
+    {
+      "timeMs": 92641,
+      "verseStart": 11,
+      "attachments": []
+    },
+    {
+      "timeMs": 105549,
+      "verseStart": 12,
+      "attachments": []
+    },
+    {
+      "timeMs": 113995,
+      "verseStart": 13,
+      "attachments": []
+    },
+    {
+      "timeMs": 127924,
+      "verseStart": 14,
+      "attachments": []
+    },
+    {
+      "timeMs": 133688,
+      "verseStart": 15,
+      "attachments": []
+    },
+    {
+      "timeMs": 147357,
+      "verseStart": 16,
+      "attachments": []
+    },
+    {
+      "timeMs": 157443,
+      "verseStart": 17,
+      "attachments": []
+    },
+    {
+      "timeMs": 163427,
+      "verseStart": 18,
+      "attachments": []
+    },
+    {
+      "timeMs": 173374,
+      "verseStart": 19,
+      "attachments": []
+    },
+    {
+      "timeMs": 184461,
+      "verseStart": 20,
+      "attachments": []
+    }
+  ]
+}

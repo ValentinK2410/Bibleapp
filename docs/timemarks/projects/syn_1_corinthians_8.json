@@ -1,0 +1,63 @@
+{
+  "id": "gh_syn_1_corinthians_8",
+  "translationCode": "SYN",
+  "bookId": "1_corinthians",
+  "chapter": 8,
+  "title": "1-е Коринфянам 8 · Синодальный · Бондаренко",
+  "narratorId": "bondarenko",
+  "audioFileName": "53_08.mp3",
+  "cues": [
+    {
+      "timeMs": 2842,
+      "verseStart": 1
+    },
+    {
+      "timeMs": 13609,
+      "verseStart": 2
+    },
+    {
+      "timeMs": 20414,
+      "verseStart": 3
+    },
+    {
+      "timeMs": 25337,
+      "verseStart": 4
+    },
+    {
+      "timeMs": 35584,
+      "verseStart": 5
+    },
+    {
+      "timeMs": 42229,
+      "verseStart": 6
+    },
+    {
+      "timeMs": 57620,
+      "verseStart": 7
+    },
+    {
+      "timeMs": 72250,
+      "verseStart": 8
+    },
+    {
+      "timeMs": 80836,
+      "verseStart": 9
+    },
+    {
+      "timeMs": 87460,
+      "verseStart": 10
+    },
+    {
+      "timeMs": 100789,
+      "verseStart": 11
+    },
+    {
+      "timeMs": 107434,
+      "verseStart": 12
+    },
+    {
+      "timeMs": 116660,
+      "verseStart": 13
+    }
+  ]
+}

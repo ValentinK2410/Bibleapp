@@ -1,0 +1,119 @@
+{
+  "id": "gh_syn_1_corinthians_9",
+  "translationCode": "SYN",
+  "bookId": "1_corinthians",
+  "chapter": 9,
+  "title": "1-е Коринфянам 9 · Синодальный · Бондаренко",
+  "narratorId": "bondarenko",
+  "audioFileName": "53_09.mp3",
+  "cues": [
+    {
+      "timeMs": 2842,
+      "verseStart": 1
+    },
+    {
+      "timeMs": 14211,
+      "verseStart": 2
+    },
+    {
+      "timeMs": 24298,
+      "verseStart": 3
+    },
+    {
+      "timeMs": 28601,
+      "verseStart": 4
+    },
+    {
+      "timeMs": 32424,
+      "verseStart": 5
+    },
+    {
+      "timeMs": 41411,
+      "verseStart": 6
+    },
+    {
+      "timeMs": 46074,
+      "verseStart": 7
+    },
+    {
+      "timeMs": 57983,
+      "verseStart": 8
+    },
+    {
+      "timeMs": 64969,
+      "verseStart": 9
+    },
+    {
+      "timeMs": 74035,
+      "verseStart": 10
+    },
+    {
+      "timeMs": 87345,
+      "verseStart": 11
+    },
+    {
+      "timeMs": 94130,
+      "verseStart": 12
+    },
+    {
+      "timeMs": 108461,
+      "verseStart": 13
+    },
+    {
+      "timeMs": 118448,
+      "verseStart": 14
+    },
+    {
+      "timeMs": 125494,
+      "verseStart": 15
+    },
+    {
+      "timeMs": 137423,
+      "verseStart": 16
+    },
+    {
+      "timeMs": 148491,
+      "verseStart": 17
+    },
+    {
+      "timeMs": 158218,
+      "verseStart": 18
+    },
+    {
+      "timeMs": 170307,
+      "verseStart": 19
+    },
+    {
+      "timeMs": 177172,
+      "verseStart": 20
+    },
+    {
+      "timeMs": 186659,
+      "verseStart": 21
+    },
+    {
+      "timeMs": 196607,
+      "verseStart": 22
+    },
+    {
+      "timeMs": 208236,
+      "verseStart": 23
+    },
+    {
+      "timeMs": 214961,
+      "verseStart": 24
+    },
+    {
+      "timeMs": 223847,
+      "verseStart": 25
+    },
+    {
+      "timeMs": 232614,
+      "verseStart": 26
+    },
+    {
+      "timeMs": 238838,
+      "verseStart": 27
+    }
+  ]
+}

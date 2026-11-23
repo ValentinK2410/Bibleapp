@@ -1,0 +1,63 @@
+{
+  "id": "gh_syn_1_corinthians_5",
+  "translationCode": "SYN",
+  "bookId": "1_corinthians",
+  "chapter": 5,
+  "title": "1-е Коринфянам 5 · Синодальный · Бондаренко",
+  "narratorId": "bondarenko",
+  "audioFileName": "53_05.mp3",
+  "cues": [
+    {
+      "timeMs": 3022,
+      "verseStart": 1
+    },
+    {
+      "timeMs": 19555,
+      "verseStart": 2
+    },
+    {
+      "timeMs": 27602,
+      "verseStart": 3
+    },
+    {
+      "timeMs": 36068,
+      "verseStart": 4
+    },
+    {
+      "timeMs": 46857,
+      "verseStart": 5
+    },
+    {
+      "timeMs": 56104,
+      "verseStart": 6
+    },
+    {
+      "timeMs": 63610,
+      "verseStart": 7
+    },
+    {
+      "timeMs": 75399,
+      "verseStart": 8
+    },
+    {
+      "timeMs": 87028,
+      "verseStart": 9
+    },
+    {
+      "timeMs": 91832,
+      "verseStart": 10
+    },
+    {
+      "timeMs": 102840,
+      "verseStart": 11
+    },
+    {
+      "timeMs": 120494,
+      "verseStart": 12
+    },
+    {
+      "timeMs": 125458,
+      "verseStart": 13
+    }
+  ]
+}

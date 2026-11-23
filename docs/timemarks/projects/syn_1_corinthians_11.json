@@ -1,0 +1,147 @@
+{
+  "id": "gh_syn_1_corinthians_11",
+  "translationCode": "SYN",
+  "bookId": "1_corinthians",
+  "chapter": 11,
+  "title": "1-е Коринфянам 11 · Синодальный · Бондаренко",
+  "narratorId": "bondarenko",
+  "audioFileName": "53_11.mp3",
+  "cues": [
+    {
+      "timeMs": 3202,
+      "verseStart": 1
+    },
+    {
+      "timeMs": 8966,
+      "verseStart": 2
+    },
+    {
+      "timeMs": 17571,
+      "verseStart": 3
+    },
+    {
+      "timeMs": 28118,
+      "verseStart": 4
+    },
+    {
+      "timeMs": 35823,
+      "verseStart": 5
+    },
+    {
+      "timeMs": 48131,
+      "verseStart": 6
+    },
+    {
+      "timeMs": 59318,
+      "verseStart": 7
+    },
+    {
+      "timeMs": 67884,
+      "verseStart": 8
+    },
+    {
+      "timeMs": 72067,
+      "verseStart": 9
+    },
+    {
+      "timeMs": 76970,
+      "verseStart": 10
+    },
+    {
+      "timeMs": 83734,
+      "verseStart": 11
+    },
+    {
+      "timeMs": 89738,
+      "verseStart": 12
+    },
+    {
+      "timeMs": 97703,
+      "verseStart": 13
+    },
+    {
+      "timeMs": 103807,
+      "verseStart": 14
+    },
+    {
+      "timeMs": 110311,
+      "verseStart": 15
+    },
+    {
+      "timeMs": 117896,
+      "verseStart": 16
+    },
+    {
+      "timeMs": 125161,
+      "verseStart": 17
+    },
+    {
+      "timeMs": 130764,
+      "verseStart": 18
+    },
+    {
+      "timeMs": 139990,
+      "verseStart": 19
+    },
+    {
+      "timeMs": 146174,
+      "verseStart": 20
+    },
+    {
+      "timeMs": 152318,
+      "verseStart": 21
+    },
+    {
+      "timeMs": 161044,
+      "verseStart": 22
+    },
+    {
+      "timeMs": 178075,
+      "verseStart": 23
+    },
+    {
+      "timeMs": 189022,
+      "verseStart": 24
+    },
+    {
+      "timeMs": 202511,
+      "verseStart": 25
+    },
+    {
+      "timeMs": 215559,
+      "verseStart": 26
+    },
+    {
+      "timeMs": 227987,
+      "verseStart": 27
+    },
+    {
+      "timeMs": 239755,
+      "verseStart": 28
+    },
+    {
+      "timeMs": 247660,
+      "verseStart": 29
+    },
+    {
+      "timeMs": 256686,
+      "verseStart": 30
+    },
+    {
+      "timeMs": 262530,
+      "verseStart": 31
+    },
+    {
+      "timeMs": 268253,
+      "verseStart": 32
+    },
+    {
+      "timeMs": 277019,
+      "verseStart": 33
+    },
+    {
+      "timeMs": 283163,
+      "verseStart": 34
+    }
+  ]
+}

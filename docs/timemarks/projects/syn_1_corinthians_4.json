@@ -1,0 +1,95 @@
+{
+  "id": "gh_syn_1_corinthians_4",
+  "translationCode": "SYN",
+  "bookId": "1_corinthians",
+  "chapter": 4,
+  "title": "1-е Коринфянам 4 · Синодальный · Бондаренко",
+  "narratorId": "bondarenko",
+  "audioFileName": "53_04.mp3",
+  "cues": [
+    {
+      "timeMs": 3162,
+      "verseStart": 1
+    },
+    {
+      "timeMs": 11889,
+      "verseStart": 2
+    },
+    {
+      "timeMs": 16452,
+      "verseStart": 3
+    },
+    {
+      "timeMs": 25679,
+      "verseStart": 4
+    },
+    {
+      "timeMs": 35266,
+      "verseStart": 5
+    },
+    {
+      "timeMs": 50397,
+      "verseStart": 6
+    },
+    {
+      "timeMs": 62426,
+      "verseStart": 7
+    },
+    {
+      "timeMs": 73053,
+      "verseStart": 8
+    },
+    {
+      "timeMs": 86863,
+      "verseStart": 9
+    },
+    {
+      "timeMs": 99272,
+      "verseStart": 10
+    },
+    {
+      "timeMs": 111341,
+      "verseStart": 11
+    },
+    {
+      "timeMs": 116785,
+      "verseStart": 12
+    },
+    {
+      "timeMs": 125411,
+      "verseStart": 13
+    },
+    {
+      "timeMs": 134978,
+      "verseStart": 14
+    },
+    {
+      "timeMs": 142544,
+      "verseStart": 15
+    },
+    {
+      "timeMs": 153432,
+      "verseStart": 16
+    },
+    {
+      "timeMs": 159576,
+      "verseStart": 17
+    },
+    {
+      "timeMs": 173526,
+      "verseStart": 18
+    },
+    {
+      "timeMs": 178610,
+      "verseStart": 19
+    },
+    {
+      "timeMs": 186216,
+      "verseStart": 20
+    },
+    {
+      "timeMs": 191359,
+      "verseStart": 21
+    }
+  ]
+}
