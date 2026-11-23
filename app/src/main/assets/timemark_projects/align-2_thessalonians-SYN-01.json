@@ -1,0 +1,71 @@
+{
+  "id": "align-2_thessalonians-SYN-01",
+  "translationCode": "SYN",
+  "bookId": "2_thessalonians",
+  "chapter": 1,
+  "title": "2-е Фессалоникийцам 1 · Синодальный · Бондаренко",
+  "audioFilePath": "/data/user/0/com.example.bible.sqlite/files/bible_audio/bondarenko/60_01.mp3",
+  "updatedAt": 1795392000000,
+  "cues": [
+    {
+      "timeMs": 15211,
+      "verseStart": 1,
+      "attachments": []
+    },
+    {
+      "timeMs": 23877,
+      "verseStart": 2,
+      "attachments": []
+    },
+    {
+      "timeMs": 33724,
+      "verseStart": 3,
+      "attachments": []
+    },
+    {
+      "timeMs": 46553,
+      "verseStart": 4,
+      "attachments": []
+    },
+    {
+      "timeMs": 56900,
+      "verseStart": 5,
+      "attachments": []
+    },
+    {
+      "timeMs": 66707,
+      "verseStart": 6,
+      "attachments": []
+    },
+    {
+      "timeMs": 71911,
+      "verseStart": 7,
+      "attachments": []
+    },
+    {
+      "timeMs": 81017,
+      "verseStart": 8,
+      "attachments": []
+    },
+    {
+      "timeMs": 91145,
+      "verseStart": 9,
+      "attachments": []
+    },
+    {
+      "timeMs": 99030,
+      "verseStart": 10,
+      "attachments": []
+    },
+    {
+      "timeMs": 111659,
+      "verseStart": 11,
+      "attachments": []
+    },
+    {
+      "timeMs": 124148,
+      "verseStart": 12,
+      "attachments": []
+    }
+  ]
+}

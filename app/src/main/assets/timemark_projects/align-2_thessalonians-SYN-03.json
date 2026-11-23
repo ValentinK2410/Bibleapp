@@ -1,0 +1,101 @@
+{
+  "id": "align-2_thessalonians-SYN-03",
+  "translationCode": "SYN",
+  "bookId": "2_thessalonians",
+  "chapter": 3,
+  "title": "2-е Фессалоникийцам 3 · Синодальный · Бондаренко",
+  "audioFilePath": "/data/user/0/com.example.bible.sqlite/files/bible_audio/bondarenko/60_03.mp3",
+  "updatedAt": 1795392000000,
+  "cues": [
+    {
+      "timeMs": 3383,
+      "verseStart": 1,
+      "attachments": []
+    },
+    {
+      "timeMs": 11269,
+      "verseStart": 2,
+      "attachments": []
+    },
+    {
+      "timeMs": 18735,
+      "verseStart": 3,
+      "attachments": []
+    },
+    {
+      "timeMs": 24540,
+      "verseStart": 4,
+      "attachments": []
+    },
+    {
+      "timeMs": 32066,
+      "verseStart": 5,
+      "attachments": []
+    },
+    {
+      "timeMs": 40893,
+      "verseStart": 6,
+      "attachments": []
+    },
+    {
+      "timeMs": 53743,
+      "verseStart": 7,
+      "attachments": []
+    },
+    {
+      "timeMs": 59928,
+      "verseStart": 8,
+      "attachments": []
+    },
+    {
+      "timeMs": 67594,
+      "verseStart": 9,
+      "attachments": []
+    },
+    {
+      "timeMs": 75420,
+      "verseStart": 10,
+      "attachments": []
+    },
+    {
+      "timeMs": 84788,
+      "verseStart": 11,
+      "attachments": []
+    },
+    {
+      "timeMs": 92093,
+      "verseStart": 12,
+      "attachments": []
+    },
+    {
+      "timeMs": 102382,
+      "verseStart": 13,
+      "attachments": []
+    },
+    {
+      "timeMs": 106765,
+      "verseStart": 14,
+      "attachments": []
+    },
+    {
+      "timeMs": 116353,
+      "verseStart": 15,
+      "attachments": []
+    },
+    {
+      "timeMs": 123298,
+      "verseStart": 16,
+      "attachments": []
+    },
+    {
+      "timeMs": 133446,
+      "verseStart": 17,
+      "attachments": []
+    },
+    {
+      "timeMs": 145316,
+      "verseStart": 18,
+      "attachments": []
+    }
+  ]
+}
