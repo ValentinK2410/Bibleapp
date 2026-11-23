@@ -1,0 +1,127 @@
+{
+  "id": "gh_grk_hebrews_12",
+  "translationCode": "PODSTR",
+  "bookId": "hebrews",
+  "chapter": 12,
+  "title": "К Евреям 12 · Греческий (Koine)",
+  "narratorId": "greek-nt",
+  "audioFileName": "58_12.mp3",
+  "cues": [
+    {
+      "timeMs": 781,
+      "verseStart": 1
+    },
+    {
+      "timeMs": 14571,
+      "verseStart": 2
+    },
+    {
+      "timeMs": 29421,
+      "verseStart": 3
+    },
+    {
+      "timeMs": 40289,
+      "verseStart": 4
+    },
+    {
+      "timeMs": 45933,
+      "verseStart": 5
+    },
+    {
+      "timeMs": 56781,
+      "verseStart": 6
+    },
+    {
+      "timeMs": 62425,
+      "verseStart": 7
+    },
+    {
+      "timeMs": 69591,
+      "verseStart": 8
+    },
+    {
+      "timeMs": 76235,
+      "verseStart": 9
+    },
+    {
+      "timeMs": 86763,
+      "verseStart": 10
+    },
+    {
+      "timeMs": 95589,
+      "verseStart": 11
+    },
+    {
+      "timeMs": 107058,
+      "verseStart": 12
+    },
+    {
+      "timeMs": 112722,
+      "verseStart": 13
+    },
+    {
+      "timeMs": 119947,
+      "verseStart": 14
+    },
+    {
+      "timeMs": 126352,
+      "verseStart": 15
+    },
+    {
+      "timeMs": 136179,
+      "verseStart": 16
+    },
+    {
+      "timeMs": 143624,
+      "verseStart": 17
+    },
+    {
+      "timeMs": 154993,
+      "verseStart": 18
+    },
+    {
+      "timeMs": 161117,
+      "verseStart": 19
+    },
+    {
+      "timeMs": 168502,
+      "verseStart": 20
+    },
+    {
+      "timeMs": 174647,
+      "verseStart": 21
+    },
+    {
+      "timeMs": 180951,
+      "verseStart": 22
+    },
+    {
+      "timeMs": 188397,
+      "verseStart": 23
+    },
+    {
+      "timeMs": 196703,
+      "verseStart": 24
+    },
+    {
+      "timeMs": 202847,
+      "verseStart": 25
+    },
+    {
+      "timeMs": 214856,
+      "verseStart": 26
+    },
+    {
+      "timeMs": 224423,
+      "verseStart": 27
+    },
+    {
+      "timeMs": 232028,
+      "verseStart": 28
+    },
+    {
+      "timeMs": 241595,
+      "verseStart": 29
+    }
+  ]
+}

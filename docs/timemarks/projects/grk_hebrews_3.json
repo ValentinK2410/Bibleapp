@@ -1,0 +1,87 @@
+{
+  "id": "gh_grk_hebrews_3",
+  "translationCode": "PODSTR",
+  "bookId": "hebrews",
+  "chapter": 3,
+  "title": "К Евреям 3 · Греческий (Koine)",
+  "narratorId": "greek-nt",
+  "audioFileName": "58_03.mp3",
+  "cues": [
+    {
+      "timeMs": 660,
+      "verseStart": 1
+    },
+    {
+      "timeMs": 10207,
+      "verseStart": 2
+    },
+    {
+      "timeMs": 15850,
+      "verseStart": 3
+    },
+    {
+      "timeMs": 24036,
+      "verseStart": 4
+    },
+    {
+      "timeMs": 30220,
+      "verseStart": 5
+    },
+    {
+      "timeMs": 37064,
+      "verseStart": 6
+    },
+    {
+      "timeMs": 47711,
+      "verseStart": 7
+    },
+    {
+      "timeMs": 53975,
+      "verseStart": 8
+    },
+    {
+      "timeMs": 61080,
+      "verseStart": 9
+    },
+    {
+      "timeMs": 66964,
+      "verseStart": 10
+    },
+    {
+      "timeMs": 75990,
+      "verseStart": 11
+    },
+    {
+      "timeMs": 81574,
+      "verseStart": 12
+    },
+    {
+      "timeMs": 90059,
+      "verseStart": 13
+    },
+    {
+      "timeMs": 100366,
+      "verseStart": 14
+    },
+    {
+      "timeMs": 107831,
+      "verseStart": 15
+    },
+    {
+      "timeMs": 116156,
+      "verseStart": 16
+    },
+    {
+      "timeMs": 122921,
+      "verseStart": 17
+    },
+    {
+      "timeMs": 130666,
+      "verseStart": 18
+    },
+    {
+      "timeMs": 136850,
+      "verseStart": 19
+    }
+  ]
+}

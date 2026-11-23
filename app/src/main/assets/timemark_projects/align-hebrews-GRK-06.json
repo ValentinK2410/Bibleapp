@@ -1,0 +1,111 @@
+{
+  "id": "align-hebrews-GRK-06",
+  "translationCode": "PODSTR",
+  "bookId": "hebrews",
+  "chapter": 6,
+  "title": "К Евреям 6 · Греческий (Koine)",
+  "audioFilePath": "/data/user/0/com.example.bible.sqlite/files/bible_audio/greek-nt/58_06.mp3",
+  "updatedAt": 1794873600000,
+  "cues": [
+    {
+      "timeMs": 600,
+      "verseStart": 1,
+      "attachments": []
+    },
+    {
+      "timeMs": 13709,
+      "verseStart": 2,
+      "attachments": []
+    },
+    {
+      "timeMs": 20293,
+      "verseStart": 3,
+      "attachments": []
+    },
+    {
+      "timeMs": 23936,
+      "verseStart": 4,
+      "attachments": []
+    },
+    {
+      "timeMs": 32962,
+      "verseStart": 5,
+      "attachments": []
+    },
+    {
+      "timeMs": 37565,
+      "verseStart": 6,
+      "attachments": []
+    },
+    {
+      "timeMs": 46651,
+      "verseStart": 7,
+      "attachments": []
+    },
+    {
+      "timeMs": 58058,
+      "verseStart": 8,
+      "attachments": []
+    },
+    {
+      "timeMs": 65083,
+      "verseStart": 9,
+      "attachments": []
+    },
+    {
+      "timeMs": 72327,
+      "verseStart": 10,
+      "attachments": []
+    },
+    {
+      "timeMs": 83155,
+      "verseStart": 11,
+      "attachments": []
+    },
+    {
+      "timeMs": 90780,
+      "verseStart": 12,
+      "attachments": []
+    },
+    {
+      "timeMs": 98685,
+      "verseStart": 13,
+      "attachments": []
+    },
+    {
+      "timeMs": 106230,
+      "verseStart": 14,
+      "attachments": []
+    },
+    {
+      "timeMs": 111473,
+      "verseStart": 15,
+      "attachments": []
+    },
+    {
+      "timeMs": 115776,
+      "verseStart": 16,
+      "attachments": []
+    },
+    {
+      "timeMs": 122901,
+      "verseStart": 17,
+      "attachments": []
+    },
+    {
+      "timeMs": 131866,
+      "verseStart": 18,
+      "attachments": []
+    },
+    {
+      "timeMs": 143274,
+      "verseStart": 19,
+      "attachments": []
+    },
+    {
+      "timeMs": 151920,
+      "verseStart": 20,
+      "attachments": []
+    }
+  ]
+}

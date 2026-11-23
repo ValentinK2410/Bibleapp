@@ -1,0 +1,167 @@
+{
+  "id": "gh_grk_hebrews_10",
+  "translationCode": "PODSTR",
+  "bookId": "hebrews",
+  "chapter": 10,
+  "title": "К Евреям 10 · Греческий (Koine)",
+  "narratorId": "greek-nt",
+  "audioFileName": "58_10.mp3",
+  "cues": [
+    {
+      "timeMs": 400,
+      "verseStart": 1
+    },
+    {
+      "timeMs": 15151,
+      "verseStart": 2
+    },
+    {
+      "timeMs": 24297,
+      "verseStart": 3
+    },
+    {
+      "timeMs": 28020,
+      "verseStart": 4
+    },
+    {
+      "timeMs": 32643,
+      "verseStart": 5
+    },
+    {
+      "timeMs": 41429,
+      "verseStart": 6
+    },
+    {
+      "timeMs": 45151,
+      "verseStart": 7
+    },
+    {
+      "timeMs": 52837,
+      "verseStart": 8
+    },
+    {
+      "timeMs": 62503,
+      "verseStart": 9
+    },
+    {
+      "timeMs": 69989,
+      "verseStart": 10
+    },
+    {
+      "timeMs": 76493,
+      "verseStart": 11
+    },
+    {
+      "timeMs": 86940,
+      "verseStart": 12
+    },
+    {
+      "timeMs": 94286,
+      "verseStart": 13
+    },
+    {
+      "timeMs": 99929,
+      "verseStart": 14
+    },
+    {
+      "timeMs": 105293,
+      "verseStart": 15
+    },
+    {
+      "timeMs": 110036,
+      "verseStart": 16
+    },
+    {
+      "timeMs": 121524,
+      "verseStart": 17
+    },
+    {
+      "timeMs": 126768,
+      "verseStart": 18
+    },
+    {
+      "timeMs": 131331,
+      "verseStart": 19
+    },
+    {
+      "timeMs": 137155,
+      "verseStart": 20
+    },
+    {
+      "timeMs": 143960,
+      "verseStart": 21
+    },
+    {
+      "timeMs": 147022,
+      "verseStart": 22
+    },
+    {
+      "timeMs": 158890,
+      "verseStart": 23
+    },
+    {
+      "timeMs": 164814,
+      "verseStart": 24
+    },
+    {
+      "timeMs": 169418,
+      "verseStart": 25
+    },
+    {
+      "timeMs": 180085,
+      "verseStart": 26
+    },
+    {
+      "timeMs": 188611,
+      "verseStart": 27
+    },
+    {
+      "timeMs": 194695,
+      "verseStart": 28
+    },
+    {
+      "timeMs": 201360,
+      "verseStart": 29
+    },
+    {
+      "timeMs": 214249,
+      "verseStart": 30
+    },
+    {
+      "timeMs": 222054,
+      "verseStart": 31
+    },
+    {
+      "timeMs": 225497,
+      "verseStart": 32
+    },
+    {
+      "timeMs": 232622,
+      "verseStart": 33
+    },
+    {
+      "timeMs": 240327,
+      "verseStart": 34
+    },
+    {
+      "timeMs": 252095,
+      "verseStart": 35
+    },
+    {
+      "timeMs": 257419,
+      "verseStart": 36
+    },
+    {
+      "timeMs": 264564,
+      "verseStart": 37
+    },
+    {
+      "timeMs": 269327,
+      "verseStart": 38
+    },
+    {
+      "timeMs": 276292,
+      "verseStart": 39
+    }
+  ]
+}

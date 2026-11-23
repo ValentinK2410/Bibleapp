@@ -1,0 +1,67 @@
+{
+  "id": "gh_grk_hebrews_1",
+  "translationCode": "PODSTR",
+  "bookId": "hebrews",
+  "chapter": 1,
+  "title": "К Евреям 1 · Греческий (Koine)",
+  "narratorId": "greek-nt",
+  "audioFileName": "58_01.mp3",
+  "cues": [
+    {
+      "timeMs": 540,
+      "verseStart": 1
+    },
+    {
+      "timeMs": 6765,
+      "verseStart": 2
+    },
+    {
+      "timeMs": 15251,
+      "verseStart": 3
+    },
+    {
+      "timeMs": 31482,
+      "verseStart": 4
+    },
+    {
+      "timeMs": 38587,
+      "verseStart": 5
+    },
+    {
+      "timeMs": 50135,
+      "verseStart": 6
+    },
+    {
+      "timeMs": 58620,
+      "verseStart": 7
+    },
+    {
+      "timeMs": 66546,
+      "verseStart": 8
+    },
+    {
+      "timeMs": 76313,
+      "verseStart": 9
+    },
+    {
+      "timeMs": 87120,
+      "verseStart": 10
+    },
+    {
+      "timeMs": 94485,
+      "verseStart": 11
+    },
+    {
+      "timeMs": 100409,
+      "verseStart": 12
+    },
+    {
+      "timeMs": 110816,
+      "verseStart": 13
+    },
+    {
+      "timeMs": 119862,
+      "verseStart": 14
+    }
+  ]
+}

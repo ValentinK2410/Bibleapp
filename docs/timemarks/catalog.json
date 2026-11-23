@@ -2114,6 +2114,136 @@
       "file": "projects/grk_galatians_6.json"
     },
     {
+      "id": "gh_grk_hebrews_1",
+      "translationCode": "PODSTR",
+      "bookId": "hebrews",
+      "chapter": 1,
+      "title": "К Евреям 1 · Греческий (Koine)",
+      "cueCount": 14,
+      "narratorId": "greek-nt",
+      "file": "projects/grk_hebrews_1.json"
+    },
+    {
+      "id": "gh_grk_hebrews_10",
+      "translationCode": "PODSTR",
+      "bookId": "hebrews",
+      "chapter": 10,
+      "title": "К Евреям 10 · Греческий (Koine)",
+      "cueCount": 39,
+      "narratorId": "greek-nt",
+      "file": "projects/grk_hebrews_10.json"
+    },
+    {
+      "id": "gh_grk_hebrews_11",
+      "translationCode": "PODSTR",
+      "bookId": "hebrews",
+      "chapter": 11,
+      "title": "К Евреям 11 · Греческий (Koine)",
+      "cueCount": 40,
+      "narratorId": "greek-nt",
+      "file": "projects/grk_hebrews_11.json"
+    },
+    {
+      "id": "gh_grk_hebrews_12",
+      "translationCode": "PODSTR",
+      "bookId": "hebrews",
+      "chapter": 12,
+      "title": "К Евреям 12 · Греческий (Koine)",
+      "cueCount": 29,
+      "narratorId": "greek-nt",
+      "file": "projects/grk_hebrews_12.json"
+    },
+    {
+      "id": "gh_grk_hebrews_13",
+      "translationCode": "PODSTR",
+      "bookId": "hebrews",
+      "chapter": 13,
+      "title": "К Евреям 13 · Греческий (Koine)",
+      "cueCount": 25,
+      "narratorId": "greek-nt",
+      "file": "projects/grk_hebrews_13.json"
+    },
+    {
+      "id": "gh_grk_hebrews_2",
+      "translationCode": "PODSTR",
+      "bookId": "hebrews",
+      "chapter": 2,
+      "title": "К Евреям 2 · Греческий (Koine)",
+      "cueCount": 18,
+      "narratorId": "greek-nt",
+      "file": "projects/grk_hebrews_2.json"
+    },
+    {
+      "id": "gh_grk_hebrews_3",
+      "translationCode": "PODSTR",
+      "bookId": "hebrews",
+      "chapter": 3,
+      "title": "К Евреям 3 · Греческий (Koine)",
+      "cueCount": 19,
+      "narratorId": "greek-nt",
+      "file": "projects/grk_hebrews_3.json"
+    },
+    {
+      "id": "gh_grk_hebrews_4",
+      "translationCode": "PODSTR",
+      "bookId": "hebrews",
+      "chapter": 4,
+      "title": "К Евреям 4 · Греческий (Koine)",
+      "cueCount": 16,
+      "narratorId": "greek-nt",
+      "file": "projects/grk_hebrews_4.json"
+    },
+    {
+      "id": "gh_grk_hebrews_5",
+      "translationCode": "PODSTR",
+      "bookId": "hebrews",
+      "chapter": 5,
+      "title": "К Евреям 5 · Греческий (Koine)",
+      "cueCount": 14,
+      "narratorId": "greek-nt",
+      "file": "projects/grk_hebrews_5.json"
+    },
+    {
+      "id": "gh_grk_hebrews_6",
+      "translationCode": "PODSTR",
+      "bookId": "hebrews",
+      "chapter": 6,
+      "title": "К Евреям 6 · Греческий (Koine)",
+      "cueCount": 20,
+      "narratorId": "greek-nt",
+      "file": "projects/grk_hebrews_6.json"
+    },
+    {
+      "id": "gh_grk_hebrews_7",
+      "translationCode": "PODSTR",
+      "bookId": "hebrews",
+      "chapter": 7,
+      "title": "К Евреям 7 · Греческий (Koine)",
+      "cueCount": 28,
+      "narratorId": "greek-nt",
+      "file": "projects/grk_hebrews_7.json"
+    },
+    {
+      "id": "gh_grk_hebrews_8",
+      "translationCode": "PODSTR",
+      "bookId": "hebrews",
+      "chapter": 8,
+      "title": "К Евреям 8 · Греческий (Koine)",
+      "cueCount": 13,
+      "narratorId": "greek-nt",
+      "file": "projects/grk_hebrews_8.json"
+    },
+    {
+      "id": "gh_grk_hebrews_9",
+      "translationCode": "PODSTR",
+      "bookId": "hebrews",
+      "chapter": 9,
+      "title": "К Евреям 9 · Греческий (Koine)",
+      "cueCount": 28,
+      "narratorId": "greek-nt",
+      "file": "projects/grk_hebrews_9.json"
+    },
+    {
       "id": "gh_grk_john_1",
       "translationCode": "PODSTR",
       "bookId": "john",

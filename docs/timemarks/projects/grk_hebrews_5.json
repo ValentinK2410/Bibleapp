@@ -1,0 +1,67 @@
+{
+  "id": "gh_grk_hebrews_5",
+  "translationCode": "PODSTR",
+  "bookId": "hebrews",
+  "chapter": 5,
+  "title": "К Евреям 5 · Греческий (Koine)",
+  "narratorId": "greek-nt",
+  "audioFileName": "58_05.mp3",
+  "cues": [
+    {
+      "timeMs": 761,
+      "verseStart": 1
+    },
+    {
+      "timeMs": 11548,
+      "verseStart": 2
+    },
+    {
+      "timeMs": 18353,
+      "verseStart": 3
+    },
+    {
+      "timeMs": 24957,
+      "verseStart": 4
+    },
+    {
+      "timeMs": 31782,
+      "verseStart": 5
+    },
+    {
+      "timeMs": 41909,
+      "verseStart": 6
+    },
+    {
+      "timeMs": 48253,
+      "verseStart": 7
+    },
+    {
+      "timeMs": 62123,
+      "verseStart": 8
+    },
+    {
+      "timeMs": 66345,
+      "verseStart": 9
+    },
+    {
+      "timeMs": 71709,
+      "verseStart": 10
+    },
+    {
+      "timeMs": 76552,
+      "verseStart": 11
+    },
+    {
+      "timeMs": 83137,
+      "verseStart": 12
+    },
+    {
+      "timeMs": 96286,
+      "verseStart": 13
+    },
+    {
+      "timeMs": 101429,
+      "verseStart": 14
+    }
+  ]
+}

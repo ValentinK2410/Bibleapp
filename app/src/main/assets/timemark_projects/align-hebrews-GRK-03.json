@@ -1,0 +1,106 @@
+{
+  "id": "align-hebrews-GRK-03",
+  "translationCode": "PODSTR",
+  "bookId": "hebrews",
+  "chapter": 3,
+  "title": "К Евреям 3 · Греческий (Koine)",
+  "audioFilePath": "/data/user/0/com.example.bible.sqlite/files/bible_audio/greek-nt/58_03.mp3",
+  "updatedAt": 1794873600000,
+  "cues": [
+    {
+      "timeMs": 660,
+      "verseStart": 1,
+      "attachments": []
+    },
+    {
+      "timeMs": 10207,
+      "verseStart": 2,
+      "attachments": []
+    },
+    {
+      "timeMs": 15850,
+      "verseStart": 3,
+      "attachments": []
+    },
+    {
+      "timeMs": 24036,
+      "verseStart": 4,
+      "attachments": []
+    },
+    {
+      "timeMs": 30220,
+      "verseStart": 5,
+      "attachments": []
+    },
+    {
+      "timeMs": 37064,
+      "verseStart": 6,
+      "attachments": []
+    },
+    {
+      "timeMs": 47711,
+      "verseStart": 7,
+      "attachments": []
+    },
+    {
+      "timeMs": 53975,
+      "verseStart": 8,
+      "attachments": []
+    },
+    {
+      "timeMs": 61080,
+      "verseStart": 9,
+      "attachments": []
+    },
+    {
+      "timeMs": 66964,
+      "verseStart": 10,
+      "attachments": []
+    },
+    {
+      "timeMs": 75990,
+      "verseStart": 11,
+      "attachments": []
+    },
+    {
+      "timeMs": 81574,
+      "verseStart": 12,
+      "attachments": []
+    },
+    {
+      "timeMs": 90059,
+      "verseStart": 13,
+      "attachments": []
+    },
+    {
+      "timeMs": 100366,
+      "verseStart": 14,
+      "attachments": []
+    },
+    {
+      "timeMs": 107831,
+      "verseStart": 15,
+      "attachments": []
+    },
+    {
+      "timeMs": 116156,
+      "verseStart": 16,
+      "attachments": []
+    },
+    {
+      "timeMs": 122921,
+      "verseStart": 17,
+      "attachments": []
+    },
+    {
+      "timeMs": 130666,
+      "verseStart": 18,
+      "attachments": []
+    },
+    {
+      "timeMs": 136850,
+      "verseStart": 19,
+      "attachments": []
+    }
+  ]
+}

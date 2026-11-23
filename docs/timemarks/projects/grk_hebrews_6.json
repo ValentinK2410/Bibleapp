@@ -1,0 +1,91 @@
+{
+  "id": "gh_grk_hebrews_6",
+  "translationCode": "PODSTR",
+  "bookId": "hebrews",
+  "chapter": 6,
+  "title": "К Евреям 6 · Греческий (Koine)",
+  "narratorId": "greek-nt",
+  "audioFileName": "58_06.mp3",
+  "cues": [
+    {
+      "timeMs": 600,
+      "verseStart": 1
+    },
+    {
+      "timeMs": 13709,
+      "verseStart": 2
+    },
+    {
+      "timeMs": 20293,
+      "verseStart": 3
+    },
+    {
+      "timeMs": 23936,
+      "verseStart": 4
+    },
+    {
+      "timeMs": 32962,
+      "verseStart": 5
+    },
+    {
+      "timeMs": 37565,
+      "verseStart": 6
+    },
+    {
+      "timeMs": 46651,
+      "verseStart": 7
+    },
+    {
+      "timeMs": 58058,
+      "verseStart": 8
+    },
+    {
+      "timeMs": 65083,
+      "verseStart": 9
+    },
+    {
+      "timeMs": 72327,
+      "verseStart": 10
+    },
+    {
+      "timeMs": 83155,
+      "verseStart": 11
+    },
+    {
+      "timeMs": 90780,
+      "verseStart": 12
+    },
+    {
+      "timeMs": 98685,
+      "verseStart": 13
+    },
+    {
+      "timeMs": 106230,
+      "verseStart": 14
+    },
+    {
+      "timeMs": 111473,
+      "verseStart": 15
+    },
+    {
+      "timeMs": 115776,
+      "verseStart": 16
+    },
+    {
+      "timeMs": 122901,
+      "verseStart": 17
+    },
+    {
+      "timeMs": 131866,
+      "verseStart": 18
+    },
+    {
+      "timeMs": 143274,
+      "verseStart": 19
+    },
+    {
+      "timeMs": 151920,
+      "verseStart": 20
+    }
+  ]
+}

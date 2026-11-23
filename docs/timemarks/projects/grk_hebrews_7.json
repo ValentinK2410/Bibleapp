@@ -1,0 +1,123 @@
+{
+  "id": "gh_grk_hebrews_7",
+  "translationCode": "PODSTR",
+  "bookId": "hebrews",
+  "chapter": 7,
+  "title": "К Евреям 7 · Греческий (Koine)",
+  "narratorId": "greek-nt",
+  "audioFileName": "58_07.mp3",
+  "cues": [
+    {
+      "timeMs": 560,
+      "verseStart": 1
+    },
+    {
+      "timeMs": 12108,
+      "verseStart": 2
+    },
+    {
+      "timeMs": 23695,
+      "verseStart": 3
+    },
+    {
+      "timeMs": 35983,
+      "verseStart": 4
+    },
+    {
+      "timeMs": 42226,
+      "verseStart": 5
+    },
+    {
+      "timeMs": 56736,
+      "verseStart": 6
+    },
+    {
+      "timeMs": 64580,
+      "verseStart": 7
+    },
+    {
+      "timeMs": 69684,
+      "verseStart": 8
+    },
+    {
+      "timeMs": 76548,
+      "verseStart": 9
+    },
+    {
+      "timeMs": 81971,
+      "verseStart": 10
+    },
+    {
+      "timeMs": 87715,
+      "verseStart": 11
+    },
+    {
+      "timeMs": 102304,
+      "verseStart": 12
+    },
+    {
+      "timeMs": 107787,
+      "verseStart": 13
+    },
+    {
+      "timeMs": 114792,
+      "verseStart": 14
+    },
+    {
+      "timeMs": 122797,
+      "verseStart": 15
+    },
+    {
+      "timeMs": 129961,
+      "verseStart": 16
+    },
+    {
+      "timeMs": 135645,
+      "verseStart": 17
+    },
+    {
+      "timeMs": 141609,
+      "verseStart": 18
+    },
+    {
+      "timeMs": 148213,
+      "verseStart": 19
+    },
+    {
+      "timeMs": 155958,
+      "verseStart": 20
+    },
+    {
+      "timeMs": 162562,
+      "verseStart": 21
+    },
+    {
+      "timeMs": 171507,
+      "verseStart": 22
+    },
+    {
+      "timeMs": 176130,
+      "verseStart": 23
+    },
+    {
+      "timeMs": 181293,
+      "verseStart": 24
+    },
+    {
+      "timeMs": 186517,
+      "verseStart": 25
+    },
+    {
+      "timeMs": 195562,
+      "verseStart": 26
+    },
+    {
+      "timeMs": 206969,
+      "verseStart": 27
+    },
+    {
+      "timeMs": 220198,
+      "verseStart": 28
+    }
+  ]
+}

@@ -1,0 +1,136 @@
+{
+  "id": "align-hebrews-GRK-13",
+  "translationCode": "PODSTR",
+  "bookId": "hebrews",
+  "chapter": 13,
+  "title": "К Евреям 13 · Греческий (Koine)",
+  "audioFilePath": "/data/user/0/com.example.bible.sqlite/files/bible_audio/greek-nt/58_13.mp3",
+  "updatedAt": 1794873600000,
+  "cues": [
+    {
+      "timeMs": 721,
+      "verseStart": 1,
+      "attachments": []
+    },
+    {
+      "timeMs": 2602,
+      "verseStart": 2,
+      "attachments": []
+    },
+    {
+      "timeMs": 10227,
+      "verseStart": 3,
+      "attachments": []
+    },
+    {
+      "timeMs": 17473,
+      "verseStart": 4,
+      "attachments": []
+    },
+    {
+      "timeMs": 24798,
+      "verseStart": 5,
+      "attachments": []
+    },
+    {
+      "timeMs": 33685,
+      "verseStart": 6,
+      "attachments": []
+    },
+    {
+      "timeMs": 40670,
+      "verseStart": 7,
+      "attachments": []
+    },
+    {
+      "timeMs": 51898,
+      "verseStart": 8,
+      "attachments": []
+    },
+    {
+      "timeMs": 56962,
+      "verseStart": 9,
+      "attachments": []
+    },
+    {
+      "timeMs": 68350,
+      "verseStart": 10,
+      "attachments": []
+    },
+    {
+      "timeMs": 74935,
+      "verseStart": 11,
+      "attachments": []
+    },
+    {
+      "timeMs": 84462,
+      "verseStart": 12,
+      "attachments": []
+    },
+    {
+      "timeMs": 91467,
+      "verseStart": 13,
+      "attachments": []
+    },
+    {
+      "timeMs": 98212,
+      "verseStart": 14,
+      "attachments": []
+    },
+    {
+      "timeMs": 103295,
+      "verseStart": 15,
+      "attachments": []
+    },
+    {
+      "timeMs": 112282,
+      "verseStart": 16,
+      "attachments": []
+    },
+    {
+      "timeMs": 119827,
+      "verseStart": 17,
+      "attachments": []
+    },
+    {
+      "timeMs": 135599,
+      "verseStart": 18,
+      "attachments": []
+    },
+    {
+      "timeMs": 143625,
+      "verseStart": 19,
+      "attachments": []
+    },
+    {
+      "timeMs": 148988,
+      "verseStart": 20,
+      "attachments": []
+    },
+    {
+      "timeMs": 158535,
+      "verseStart": 21,
+      "attachments": []
+    },
+    {
+      "timeMs": 172025,
+      "verseStart": 22,
+      "attachments": []
+    },
+    {
+      "timeMs": 178850,
+      "verseStart": 23,
+      "attachments": []
+    },
+    {
+      "timeMs": 186376,
+      "verseStart": 24,
+      "attachments": []
+    },
+    {
+      "timeMs": 193581,
+      "verseStart": 25,
+      "attachments": []
+    }
+  ]
+}
