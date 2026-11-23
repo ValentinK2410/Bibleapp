@@ -1,0 +1,143 @@
+{
+  "id": "gh_bti_ephesians_5",
+  "translationCode": "BTI",
+  "bookId": "ephesians",
+  "chapter": 5,
+  "title": "К Ефесянам 5 · Кулаковых",
+  "narratorId": "bti",
+  "audioFileName": "56_05.mp3",
+  "cues": [
+    {
+      "timeMs": 3803,
+      "verseStart": 1
+    },
+    {
+      "timeMs": 11748,
+      "verseStart": 2
+    },
+    {
+      "timeMs": 28239,
+      "verseStart": 3
+    },
+    {
+      "timeMs": 40527,
+      "verseStart": 4
+    },
+    {
+      "timeMs": 56198,
+      "verseStart": 5
+    },
+    {
+      "timeMs": 76351,
+      "verseStart": 6
+    },
+    {
+      "timeMs": 85958,
+      "verseStart": 7
+    },
+    {
+      "timeMs": 90581,
+      "verseStart": 8
+    },
+    {
+      "timeMs": 101869,
+      "verseStart": 9
+    },
+    {
+      "timeMs": 106372,
+      "verseStart": 10
+    },
+    {
+      "timeMs": 113196,
+      "verseStart": 11
+    },
+    {
+      "timeMs": 121482,
+      "verseStart": 12
+    },
+    {
+      "timeMs": 128547,
+      "verseStart": 13
+    },
+    {
+      "timeMs": 136352,
+      "verseStart": 14
+    },
+    {
+      "timeMs": 151642,
+      "verseStart": 15
+    },
+    {
+      "timeMs": 161068,
+      "verseStart": 16
+    },
+    {
+      "timeMs": 168573,
+      "verseStart": 17
+    },
+    {
+      "timeMs": 174978,
+      "verseStart": 18
+    },
+    {
+      "timeMs": 185185,
+      "verseStart": 19
+    },
+    {
+      "timeMs": 197693,
+      "verseStart": 20
+    },
+    {
+      "timeMs": 208260,
+      "verseStart": 21
+    },
+    {
+      "timeMs": 215385,
+      "verseStart": 22
+    },
+    {
+      "timeMs": 220108,
+      "verseStart": 23
+    },
+    {
+      "timeMs": 234158,
+      "verseStart": 24
+    },
+    {
+      "timeMs": 243964,
+      "verseStart": 25
+    },
+    {
+      "timeMs": 253851,
+      "verseStart": 26
+    },
+    {
+      "timeMs": 260675,
+      "verseStart": 27
+    },
+    {
+      "timeMs": 279628,
+      "verseStart": 28
+    },
+    {
+      "timeMs": 291076,
+      "verseStart": 29
+    },
+    {
+      "timeMs": 300943,
+      "verseStart": 30
+    },
+    {
+      "timeMs": 305386,
+      "verseStart": 31
+    },
+    {
+      "timeMs": 320035,
+      "verseStart": 32
+    },
+    {
+      "timeMs": 328701,
+      "verseStart": 33
+    }
+  ]
+}

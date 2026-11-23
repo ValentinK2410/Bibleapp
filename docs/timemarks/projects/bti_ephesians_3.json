@@ -1,0 +1,91 @@
+{
+  "id": "gh_bti_ephesians_3",
+  "translationCode": "BTI",
+  "bookId": "ephesians",
+  "chapter": 3,
+  "title": "К Ефесянам 3 · Кулаковых",
+  "narratorId": "bti",
+  "audioFileName": "56_03.mp3",
+  "cues": [
+    {
+      "timeMs": 3322,
+      "verseStart": 1
+    },
+    {
+      "timeMs": 11548,
+      "verseStart": 2
+    },
+    {
+      "timeMs": 18473,
+      "verseStart": 3
+    },
+    {
+      "timeMs": 24837,
+      "verseStart": 4
+    },
+    {
+      "timeMs": 30601,
+      "verseStart": 5
+    },
+    {
+      "timeMs": 41308,
+      "verseStart": 6
+    },
+    {
+      "timeMs": 63503,
+      "verseStart": 7
+    },
+    {
+      "timeMs": 75131,
+      "verseStart": 8
+    },
+    {
+      "timeMs": 88020,
+      "verseStart": 9
+    },
+    {
+      "timeMs": 98827,
+      "verseStart": 10
+    },
+    {
+      "timeMs": 110775,
+      "verseStart": 11
+    },
+    {
+      "timeMs": 122323,
+      "verseStart": 12
+    },
+    {
+      "timeMs": 129788,
+      "verseStart": 13
+    },
+    {
+      "timeMs": 139475,
+      "verseStart": 14
+    },
+    {
+      "timeMs": 143278,
+      "verseStart": 15
+    },
+    {
+      "timeMs": 150222,
+      "verseStart": 16
+    },
+    {
+      "timeMs": 161850,
+      "verseStart": 17
+    },
+    {
+      "timeMs": 186347,
+      "verseStart": 19
+    },
+    {
+      "timeMs": 199636,
+      "verseStart": 20
+    },
+    {
+      "timeMs": 214426,
+      "verseStart": 21
+    }
+  ]
+}

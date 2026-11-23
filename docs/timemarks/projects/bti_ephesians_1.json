@@ -1,0 +1,99 @@
+{
+  "id": "gh_bti_ephesians_1",
+  "translationCode": "BTI",
+  "bookId": "ephesians",
+  "chapter": 1,
+  "title": "К Ефесянам 1 · Кулаковых",
+  "narratorId": "bti",
+  "audioFileName": "56_01.mp3",
+  "cues": [
+    {
+      "timeMs": 11068,
+      "verseStart": 1
+    },
+    {
+      "timeMs": 25197,
+      "verseStart": 2
+    },
+    {
+      "timeMs": 34143,
+      "verseStart": 3
+    },
+    {
+      "timeMs": 48733,
+      "verseStart": 4
+    },
+    {
+      "timeMs": 61782,
+      "verseStart": 5
+    },
+    {
+      "timeMs": 70888,
+      "verseStart": 6
+    },
+    {
+      "timeMs": 81236,
+      "verseStart": 7
+    },
+    {
+      "timeMs": 91523,
+      "verseStart": 8
+    },
+    {
+      "timeMs": 100569,
+      "verseStart": 9
+    },
+    {
+      "timeMs": 113117,
+      "verseStart": 10
+    },
+    {
+      "timeMs": 129028,
+      "verseStart": 11
+    },
+    {
+      "timeMs": 142998,
+      "verseStart": 12
+    },
+    {
+      "timeMs": 152604,
+      "verseStart": 13
+    },
+    {
+      "timeMs": 170877,
+      "verseStart": 14
+    },
+    {
+      "timeMs": 187388,
+      "verseStart": 15
+    },
+    {
+      "timeMs": 196014,
+      "verseStart": 16
+    },
+    {
+      "timeMs": 204160,
+      "verseStart": 17
+    },
+    {
+      "timeMs": 218789,
+      "verseStart": 18
+    },
+    {
+      "timeMs": 234420,
+      "verseStart": 19
+    },
+    {
+      "timeMs": 256255,
+      "verseStart": 21
+    },
+    {
+      "timeMs": 268684,
+      "verseStart": 22
+    },
+    {
+      "timeMs": 276869,
+      "verseStart": 23
+    }
+  ]
+}
