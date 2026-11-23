@@ -1,0 +1,127 @@
+{
+  "id": "gh_web_galatians_3",
+  "translationCode": "WEB",
+  "bookId": "galatians",
+  "chapter": 3,
+  "title": "К Галатам 3 · WEB (англ.)",
+  "narratorId": "web",
+  "audioFileName": "48_03.mp3",
+  "cues": [
+    {
+      "timeMs": 2802,
+      "verseStart": 1
+    },
+    {
+      "timeMs": 15992,
+      "verseStart": 2
+    },
+    {
+      "timeMs": 25338,
+      "verseStart": 3
+    },
+    {
+      "timeMs": 33144,
+      "verseStart": 4
+    },
+    {
+      "timeMs": 41110,
+      "verseStart": 5
+    },
+    {
+      "timeMs": 51017,
+      "verseStart": 6
+    },
+    {
+      "timeMs": 56881,
+      "verseStart": 7
+    },
+    {
+      "timeMs": 63066,
+      "verseStart": 8
+    },
+    {
+      "timeMs": 76656,
+      "verseStart": 9
+    },
+    {
+      "timeMs": 81779,
+      "verseStart": 10
+    },
+    {
+      "timeMs": 95149,
+      "verseStart": 11
+    },
+    {
+      "timeMs": 104056,
+      "verseStart": 12
+    },
+    {
+      "timeMs": 111321,
+      "verseStart": 13
+    },
+    {
+      "timeMs": 121688,
+      "verseStart": 14
+    },
+    {
+      "timeMs": 131515,
+      "verseStart": 15
+    },
+    {
+      "timeMs": 142423,
+      "verseStart": 16
+    },
+    {
+      "timeMs": 156974,
+      "verseStart": 17
+    },
+    {
+      "timeMs": 170864,
+      "verseStart": 18
+    },
+    {
+      "timeMs": 179951,
+      "verseStart": 19
+    },
+    {
+      "timeMs": 194981,
+      "verseStart": 20
+    },
+    {
+      "timeMs": 201967,
+      "verseStart": 21
+    },
+    {
+      "timeMs": 214075,
+      "verseStart": 22
+    },
+    {
+      "timeMs": 222541,
+      "verseStart": 23
+    },
+    {
+      "timeMs": 230427,
+      "verseStart": 24
+    },
+    {
+      "timeMs": 238333,
+      "verseStart": 25
+    },
+    {
+      "timeMs": 243256,
+      "verseStart": 26
+    },
+    {
+      "timeMs": 248000,
+      "verseStart": 27
+    },
+    {
+      "timeMs": 253404,
+      "verseStart": 28
+    },
+    {
+      "timeMs": 264532,
+      "verseStart": 29
+    }
+  ]
+}

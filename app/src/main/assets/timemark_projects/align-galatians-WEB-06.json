@@ -1,0 +1,101 @@
+{
+  "id": "align-galatians-WEB-06",
+  "translationCode": "WEB",
+  "bookId": "galatians",
+  "chapter": 6,
+  "title": "К Галатам 6 · WEB (англ.)",
+  "audioFilePath": "/data/user/0/com.example.bible.sqlite/files/bible_audio/web/48_06.mp3",
+  "updatedAt": 1794873600000,
+  "cues": [
+    {
+      "timeMs": 2682,
+      "verseStart": 1,
+      "attachments": []
+    },
+    {
+      "timeMs": 16732,
+      "verseStart": 2,
+      "attachments": []
+    },
+    {
+      "timeMs": 22055,
+      "verseStart": 3,
+      "attachments": []
+    },
+    {
+      "timeMs": 28059,
+      "verseStart": 4,
+      "attachments": []
+    },
+    {
+      "timeMs": 36485,
+      "verseStart": 5,
+      "attachments": []
+    },
+    {
+      "timeMs": 40948,
+      "verseStart": 6,
+      "attachments": []
+    },
+    {
+      "timeMs": 47533,
+      "verseStart": 7,
+      "attachments": []
+    },
+    {
+      "timeMs": 57099,
+      "verseStart": 8,
+      "attachments": []
+    },
+    {
+      "timeMs": 68327,
+      "verseStart": 9,
+      "attachments": []
+    },
+    {
+      "timeMs": 75832,
+      "verseStart": 10,
+      "attachments": []
+    },
+    {
+      "timeMs": 84658,
+      "verseStart": 11,
+      "attachments": []
+    },
+    {
+      "timeMs": 90042,
+      "verseStart": 12,
+      "attachments": []
+    },
+    {
+      "timeMs": 100729,
+      "verseStart": 13,
+      "attachments": []
+    },
+    {
+      "timeMs": 110115,
+      "verseStart": 14,
+      "attachments": []
+    },
+    {
+      "timeMs": 121503,
+      "verseStart": 15,
+      "attachments": []
+    },
+    {
+      "timeMs": 131710,
+      "verseStart": 16,
+      "attachments": []
+    },
+    {
+      "timeMs": 140436,
+      "verseStart": 17,
+      "attachments": []
+    },
+    {
+      "timeMs": 149923,
+      "verseStart": 18,
+      "attachments": []
+    }
+  ]
+}

@@ -6174,6 +6174,66 @@
       "file": "projects/web_2_corinthians_9.json"
     },
     {
+      "id": "gh_web_galatians_1",
+      "translationCode": "WEB",
+      "bookId": "galatians",
+      "chapter": 1,
+      "title": "К Галатам 1 · WEB (англ.)",
+      "cueCount": 24,
+      "narratorId": "web",
+      "file": "projects/web_galatians_1.json"
+    },
+    {
+      "id": "gh_web_galatians_2",
+      "translationCode": "WEB",
+      "bookId": "galatians",
+      "chapter": 2,
+      "title": "К Галатам 2 · WEB (англ.)",
+      "cueCount": 21,
+      "narratorId": "web",
+      "file": "projects/web_galatians_2.json"
+    },
+    {
+      "id": "gh_web_galatians_3",
+      "translationCode": "WEB",
+      "bookId": "galatians",
+      "chapter": 3,
+      "title": "К Галатам 3 · WEB (англ.)",
+      "cueCount": 29,
+      "narratorId": "web",
+      "file": "projects/web_galatians_3.json"
+    },
+    {
+      "id": "gh_web_galatians_4",
+      "translationCode": "WEB",
+      "bookId": "galatians",
+      "chapter": 4,
+      "title": "К Галатам 4 · WEB (англ.)",
+      "cueCount": 31,
+      "narratorId": "web",
+      "file": "projects/web_galatians_4.json"
+    },
+    {
+      "id": "gh_web_galatians_5",
+      "translationCode": "WEB",
+      "bookId": "galatians",
+      "chapter": 5,
+      "title": "К Галатам 5 · WEB (англ.)",
+      "cueCount": 26,
+      "narratorId": "web",
+      "file": "projects/web_galatians_5.json"
+    },
+    {
+      "id": "gh_web_galatians_6",
+      "translationCode": "WEB",
+      "bookId": "galatians",
+      "chapter": 6,
+      "title": "К Галатам 6 · WEB (англ.)",
+      "cueCount": 18,
+      "narratorId": "web",
+      "file": "projects/web_galatians_6.json"
+    },
+    {
       "id": "gh_web_john_1",
       "translationCode": "WEB",
       "bookId": "john",

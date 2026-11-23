@@ -1,0 +1,83 @@
+{
+  "id": "gh_web_galatians_6",
+  "translationCode": "WEB",
+  "bookId": "galatians",
+  "chapter": 6,
+  "title": "К Галатам 6 · WEB (англ.)",
+  "narratorId": "web",
+  "audioFileName": "48_06.mp3",
+  "cues": [
+    {
+      "timeMs": 2682,
+      "verseStart": 1
+    },
+    {
+      "timeMs": 16732,
+      "verseStart": 2
+    },
+    {
+      "timeMs": 22055,
+      "verseStart": 3
+    },
+    {
+      "timeMs": 28059,
+      "verseStart": 4
+    },
+    {
+      "timeMs": 36485,
+      "verseStart": 5
+    },
+    {
+      "timeMs": 40948,
+      "verseStart": 6
+    },
+    {
+      "timeMs": 47533,
+      "verseStart": 7
+    },
+    {
+      "timeMs": 57099,
+      "verseStart": 8
+    },
+    {
+      "timeMs": 68327,
+      "verseStart": 9
+    },
+    {
+      "timeMs": 75832,
+      "verseStart": 10
+    },
+    {
+      "timeMs": 84658,
+      "verseStart": 11
+    },
+    {
+      "timeMs": 90042,
+      "verseStart": 12
+    },
+    {
+      "timeMs": 100729,
+      "verseStart": 13
+    },
+    {
+      "timeMs": 110115,
+      "verseStart": 14
+    },
+    {
+      "timeMs": 121503,
+      "verseStart": 15
+    },
+    {
+      "timeMs": 131710,
+      "verseStart": 16
+    },
+    {
+      "timeMs": 140436,
+      "verseStart": 17
+    },
+    {
+      "timeMs": 149923,
+      "verseStart": 18
+    }
+  ]
+}

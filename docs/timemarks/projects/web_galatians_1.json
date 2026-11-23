@@ -1,0 +1,107 @@
+{
+  "id": "gh_web_galatians_1",
+  "translationCode": "WEB",
+  "bookId": "galatians",
+  "chapter": 1,
+  "title": "К Галатам 1 · WEB (англ.)",
+  "narratorId": "web",
+  "audioFileName": "48_01.mp3",
+  "cues": [
+    {
+      "timeMs": 5544,
+      "verseStart": 1
+    },
+    {
+      "timeMs": 13709,
+      "verseStart": 2
+    },
+    {
+      "timeMs": 18352,
+      "verseStart": 3
+    },
+    {
+      "timeMs": 23516,
+      "verseStart": 4
+    },
+    {
+      "timeMs": 31922,
+      "verseStart": 5
+    },
+    {
+      "timeMs": 39006,
+      "verseStart": 6
+    },
+    {
+      "timeMs": 46591,
+      "verseStart": 7
+    },
+    {
+      "timeMs": 53136,
+      "verseStart": 8
+    },
+    {
+      "timeMs": 62182,
+      "verseStart": 9
+    },
+    {
+      "timeMs": 72009,
+      "verseStart": 10
+    },
+    {
+      "timeMs": 83276,
+      "verseStart": 11
+    },
+    {
+      "timeMs": 89440,
+      "verseStart": 12
+    },
+    {
+      "timeMs": 96605,
+      "verseStart": 13
+    },
+    {
+      "timeMs": 106012,
+      "verseStart": 14
+    },
+    {
+      "timeMs": 115478,
+      "verseStart": 15
+    },
+    {
+      "timeMs": 120802,
+      "verseStart": 16
+    },
+    {
+      "timeMs": 128947,
+      "verseStart": 17
+    },
+    {
+      "timeMs": 137993,
+      "verseStart": 18
+    },
+    {
+      "timeMs": 144417,
+      "verseStart": 19
+    },
+    {
+      "timeMs": 149341,
+      "verseStart": 20
+    },
+    {
+      "timeMs": 154825,
+      "verseStart": 21
+    },
+    {
+      "timeMs": 158487,
+      "verseStart": 22
+    },
+    {
+      "timeMs": 162950,
+      "verseStart": 23
+    },
+    {
+      "timeMs": 171816,
+      "verseStart": 24
+    }
+  ]
+}
