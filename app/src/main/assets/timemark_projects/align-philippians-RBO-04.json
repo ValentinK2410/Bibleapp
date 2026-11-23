@@ -1,0 +1,126 @@
+{
+  "id": "align-philippians-RBO-04",
+  "translationCode": "RBO",
+  "bookId": "philippians",
+  "chapter": 4,
+  "title": "К Филиппийцам 4 · РБО",
+  "audioFilePath": "/data/user/0/com.example.bible.sqlite/files/bible_audio/rbo/57_04.mp3",
+  "updatedAt": 1795392000000,
+  "cues": [
+    {
+      "timeMs": 4383,
+      "verseStart": 1,
+      "attachments": []
+    },
+    {
+      "timeMs": 15231,
+      "verseStart": 2,
+      "attachments": []
+    },
+    {
+      "timeMs": 21935,
+      "verseStart": 3,
+      "attachments": []
+    },
+    {
+      "timeMs": 37806,
+      "verseStart": 4,
+      "attachments": []
+    },
+    {
+      "timeMs": 46532,
+      "verseStart": 5,
+      "attachments": []
+    },
+    {
+      "timeMs": 51616,
+      "verseStart": 6,
+      "attachments": []
+    },
+    {
+      "timeMs": 62103,
+      "verseStart": 7,
+      "attachments": []
+    },
+    {
+      "timeMs": 74091,
+      "verseStart": 8,
+      "attachments": []
+    },
+    {
+      "timeMs": 89922,
+      "verseStart": 9,
+      "attachments": []
+    },
+    {
+      "timeMs": 99889,
+      "verseStart": 10,
+      "attachments": []
+    },
+    {
+      "timeMs": 114219,
+      "verseStart": 11,
+      "attachments": []
+    },
+    {
+      "timeMs": 120143,
+      "verseStart": 12,
+      "attachments": []
+    },
+    {
+      "timeMs": 130510,
+      "verseStart": 13,
+      "attachments": []
+    },
+    {
+      "timeMs": 135193,
+      "verseStart": 14,
+      "attachments": []
+    },
+    {
+      "timeMs": 140137,
+      "verseStart": 15,
+      "attachments": []
+    },
+    {
+      "timeMs": 153145,
+      "verseStart": 16,
+      "attachments": []
+    },
+    {
+      "timeMs": 157208,
+      "verseStart": 17,
+      "attachments": []
+    },
+    {
+      "timeMs": 167976,
+      "verseStart": 18,
+      "attachments": []
+    },
+    {
+      "timeMs": 186969,
+      "verseStart": 19,
+      "attachments": []
+    },
+    {
+      "timeMs": 194514,
+      "verseStart": 20,
+      "attachments": []
+    },
+    {
+      "timeMs": 201319,
+      "verseStart": 21,
+      "attachments": []
+    },
+    {
+      "timeMs": 211025,
+      "verseStart": 22,
+      "attachments": []
+    },
+    {
+      "timeMs": 217850,
+      "verseStart": 23,
+      "attachments": []
+    }
+  ]
+}

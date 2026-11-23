@@ -1,0 +1,131 @@
+{
+  "id": "gh_rbo_philippians_2",
+  "translationCode": "RBO",
+  "bookId": "philippians",
+  "chapter": 2,
+  "title": "К Филиппийцам 2 · РБО",
+  "narratorId": "rbo",
+  "audioFileName": "57_02.mp3",
+  "cues": [
+    {
+      "timeMs": 4423,
+      "verseStart": 1
+    },
+    {
+      "timeMs": 16992,
+      "verseStart": 2
+    },
+    {
+      "timeMs": 31202,
+      "verseStart": 3
+    },
+    {
+      "timeMs": 41229,
+      "verseStart": 4
+    },
+    {
+      "timeMs": 46293,
+      "verseStart": 5
+    },
+    {
+      "timeMs": 51957,
+      "verseStart": 6
+    },
+    {
+      "timeMs": 56980,
+      "verseStart": 7
+    },
+    {
+      "timeMs": 66067,
+      "verseStart": 8
+    },
+    {
+      "timeMs": 74333,
+      "verseStart": 9
+    },
+    {
+      "timeMs": 79997,
+      "verseStart": 10
+    },
+    {
+      "timeMs": 87542,
+      "verseStart": 11
+    },
+    {
+      "timeMs": 96088,
+      "verseStart": 12
+    },
+    {
+      "timeMs": 113821,
+      "verseStart": 13
+    },
+    {
+      "timeMs": 122587,
+      "verseStart": 14
+    },
+    {
+      "timeMs": 126170,
+      "verseStart": 15
+    },
+    {
+      "timeMs": 142361,
+      "verseStart": 16
+    },
+    {
+      "timeMs": 155610,
+      "verseStart": 17
+    },
+    {
+      "timeMs": 169580,
+      "verseStart": 18
+    },
+    {
+      "timeMs": 174084,
+      "verseStart": 19
+    },
+    {
+      "timeMs": 186412,
+      "verseStart": 20
+    },
+    {
+      "timeMs": 193097,
+      "verseStart": 21
+    },
+    {
+      "timeMs": 199001,
+      "verseStart": 22
+    },
+    {
+      "timeMs": 207487,
+      "verseStart": 23
+    },
+    {
+      "timeMs": 214572,
+      "verseStart": 24
+    },
+    {
+      "timeMs": 220617,
+      "verseStart": 25
+    },
+    {
+      "timeMs": 232985,
+      "verseStart": 26
+    },
+    {
+      "timeMs": 240731,
+      "verseStart": 27
+    },
+    {
+      "timeMs": 253420,
+      "verseStart": 28
+    },
+    {
+      "timeMs": 262786,
+      "verseStart": 29
+    },
+    {
+      "timeMs": 269011,
+      "verseStart": 30
+    }
+  ]
+}

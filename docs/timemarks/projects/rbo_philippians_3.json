@@ -1,0 +1,95 @@
+{
+  "id": "gh_rbo_philippians_3",
+  "translationCode": "RBO",
+  "bookId": "philippians",
+  "chapter": 3,
+  "title": "К Филиппийцам 3 · РБО",
+  "narratorId": "rbo",
+  "audioFileName": "57_03.mp3",
+  "cues": [
+    {
+      "timeMs": 4343,
+      "verseStart": 1
+    },
+    {
+      "timeMs": 15951,
+      "verseStart": 2
+    },
+    {
+      "timeMs": 23916,
+      "verseStart": 3
+    },
+    {
+      "timeMs": 36625,
+      "verseStart": 4
+    },
+    {
+      "timeMs": 47012,
+      "verseStart": 5
+    },
+    {
+      "timeMs": 57339,
+      "verseStart": 6
+    },
+    {
+      "timeMs": 67266,
+      "verseStart": 7
+    },
+    {
+      "timeMs": 74631,
+      "verseStart": 8
+    },
+    {
+      "timeMs": 93684,
+      "verseStart": 9
+    },
+    {
+      "timeMs": 115419,
+      "verseStart": 10
+    },
+    {
+      "timeMs": 126107,
+      "verseStart": 11
+    },
+    {
+      "timeMs": 131550,
+      "verseStart": 12
+    },
+    {
+      "timeMs": 145400,
+      "verseStart": 13
+    },
+    {
+      "timeMs": 156328,
+      "verseStart": 14
+    },
+    {
+      "timeMs": 169577,
+      "verseStart": 15
+    },
+    {
+      "timeMs": 182726,
+      "verseStart": 16
+    },
+    {
+      "timeMs": 189750,
+      "verseStart": 17
+    },
+    {
+      "timeMs": 200518,
+      "verseStart": 18
+    },
+    {
+      "timeMs": 209744,
+      "verseStart": 19
+    },
+    {
+      "timeMs": 219031,
+      "verseStart": 20
+    },
+    {
+      "timeMs": 228257,
+      "verseStart": 21
+    }
+  ]
+}
