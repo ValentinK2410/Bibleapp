@@ -1834,6 +1834,46 @@
       "file": "projects/grk_2_thessalonians_3.json"
     },
     {
+      "id": "gh_grk_2_timothy_1",
+      "translationCode": "PODSTR",
+      "bookId": "2_timothy",
+      "chapter": 1,
+      "title": "2-е Тимофею 1 · Греческий (Koine)",
+      "cueCount": 18,
+      "narratorId": "greek-nt",
+      "file": "projects/grk_2_timothy_1.json"
+    },
+    {
+      "id": "gh_grk_2_timothy_2",
+      "translationCode": "PODSTR",
+      "bookId": "2_timothy",
+      "chapter": 2,
+      "title": "2-е Тимофею 2 · Греческий (Koine)",
+      "cueCount": 26,
+      "narratorId": "greek-nt",
+      "file": "projects/grk_2_timothy_2.json"
+    },
+    {
+      "id": "gh_grk_2_timothy_3",
+      "translationCode": "PODSTR",
+      "bookId": "2_timothy",
+      "chapter": 3,
+      "title": "2-е Тимофею 3 · Греческий (Koine)",
+      "cueCount": 17,
+      "narratorId": "greek-nt",
+      "file": "projects/grk_2_timothy_3.json"
+    },
+    {
+      "id": "gh_grk_2_timothy_4",
+      "translationCode": "PODSTR",
+      "bookId": "2_timothy",
+      "chapter": 4,
+      "title": "2-е Тимофею 4 · Греческий (Koine)",
+      "cueCount": 22,
+      "narratorId": "greek-nt",
+      "file": "projects/grk_2_timothy_4.json"
+    },
+    {
       "id": "gh_grk_colossians_1",
       "translationCode": "PODSTR",
       "bookId": "colossians",

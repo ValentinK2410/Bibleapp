@@ -1,0 +1,99 @@
+{
+  "id": "gh_grk_2_timothy_4",
+  "translationCode": "PODSTR",
+  "bookId": "2_timothy",
+  "chapter": 4,
+  "title": "2-е Тимофею 4 · Греческий (Koine)",
+  "narratorId": "greek-nt",
+  "audioFileName": "55_04.mp3",
+  "cues": [
+    {
+      "timeMs": 640,
+      "verseStart": 1
+    },
+    {
+      "timeMs": 10847,
+      "verseStart": 2
+    },
+    {
+      "timeMs": 21213,
+      "verseStart": 3
+    },
+    {
+      "timeMs": 32560,
+      "verseStart": 4
+    },
+    {
+      "timeMs": 39125,
+      "verseStart": 5
+    },
+    {
+      "timeMs": 47630,
+      "verseStart": 6
+    },
+    {
+      "timeMs": 52813,
+      "verseStart": 7
+    },
+    {
+      "timeMs": 58977,
+      "verseStart": 8
+    },
+    {
+      "timeMs": 73026,
+      "verseStart": 9
+    },
+    {
+      "timeMs": 75828,
+      "verseStart": 10
+    },
+    {
+      "timeMs": 85694,
+      "verseStart": 11
+    },
+    {
+      "timeMs": 93639,
+      "verseStart": 12
+    },
+    {
+      "timeMs": 96260,
+      "verseStart": 13
+    },
+    {
+      "timeMs": 104065,
+      "verseStart": 14
+    },
+    {
+      "timeMs": 110970,
+      "verseStart": 15
+    },
+    {
+      "timeMs": 116393,
+      "verseStart": 16
+    },
+    {
+      "timeMs": 123898,
+      "verseStart": 17
+    },
+    {
+      "timeMs": 135165,
+      "verseStart": 18
+    },
+    {
+      "timeMs": 145891,
+      "verseStart": 19
+    },
+    {
+      "timeMs": 150114,
+      "verseStart": 20
+    },
+    {
+      "timeMs": 155958,
+      "verseStart": 21
+    },
+    {
+      "timeMs": 163883,
+      "verseStart": 22
+    }
+  ]
+}

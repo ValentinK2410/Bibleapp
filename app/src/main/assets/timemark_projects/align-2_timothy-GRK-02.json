@@ -1,0 +1,141 @@
+{
+  "id": "align-2_timothy-GRK-02",
+  "translationCode": "PODSTR",
+  "bookId": "2_timothy",
+  "chapter": 2,
+  "title": "2-е Тимофею 2 · Греческий (Koine)",
+  "audioFilePath": "/data/user/0/com.example.bible.sqlite/files/bible_audio/greek-nt/55_02.mp3",
+  "updatedAt": 1794873600000,
+  "cues": [
+    {
+      "timeMs": 641,
+      "verseStart": 1,
+      "attachments": []
+    },
+    {
+      "timeMs": 5464,
+      "verseStart": 2,
+      "attachments": []
+    },
+    {
+      "timeMs": 14411,
+      "verseStart": 3,
+      "attachments": []
+    },
+    {
+      "timeMs": 18374,
+      "verseStart": 4,
+      "attachments": []
+    },
+    {
+      "timeMs": 25719,
+      "verseStart": 5,
+      "attachments": []
+    },
+    {
+      "timeMs": 30803,
+      "verseStart": 6,
+      "attachments": []
+    },
+    {
+      "timeMs": 35106,
+      "verseStart": 7,
+      "attachments": []
+    },
+    {
+      "timeMs": 39309,
+      "verseStart": 8,
+      "attachments": []
+    },
+    {
+      "timeMs": 46034,
+      "verseStart": 9,
+      "attachments": []
+    },
+    {
+      "timeMs": 52599,
+      "verseStart": 10,
+      "attachments": []
+    },
+    {
+      "timeMs": 62106,
+      "verseStart": 11,
+      "attachments": []
+    },
+    {
+      "timeMs": 66510,
+      "verseStart": 12,
+      "attachments": []
+    },
+    {
+      "timeMs": 72834,
+      "verseStart": 13,
+      "attachments": []
+    },
+    {
+      "timeMs": 78659,
+      "verseStart": 14,
+      "attachments": []
+    },
+    {
+      "timeMs": 87905,
+      "verseStart": 15,
+      "attachments": []
+    },
+    {
+      "timeMs": 96112,
+      "verseStart": 16,
+      "attachments": []
+    },
+    {
+      "timeMs": 101816,
+      "verseStart": 17,
+      "attachments": []
+    },
+    {
+      "timeMs": 107240,
+      "verseStart": 18,
+      "attachments": []
+    },
+    {
+      "timeMs": 114966,
+      "verseStart": 19,
+      "attachments": []
+    },
+    {
+      "timeMs": 127135,
+      "verseStart": 20,
+      "attachments": []
+    },
+    {
+      "timeMs": 136582,
+      "verseStart": 21,
+      "attachments": []
+    },
+    {
+      "timeMs": 147350,
+      "verseStart": 22,
+      "attachments": []
+    },
+    {
+      "timeMs": 158258,
+      "verseStart": 23,
+      "attachments": []
+    },
+    {
+      "timeMs": 163502,
+      "verseStart": 24,
+      "attachments": []
+    },
+    {
+      "timeMs": 170487,
+      "verseStart": 25,
+      "attachments": []
+    },
+    {
+      "timeMs": 179253,
+      "verseStart": 26,
+      "attachments": []
+    }
+  ]
+}
