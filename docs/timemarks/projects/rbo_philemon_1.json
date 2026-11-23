@@ -1,0 +1,111 @@
+{
+  "id": "gh_rbo_philemon_1",
+  "translationCode": "RBO",
+  "bookId": "philemon",
+  "chapter": 1,
+  "title": "К Филимону 1 · РБО",
+  "narratorId": "rbo",
+  "audioFileName": "64_01.mp3",
+  "cues": [
+    {
+      "timeMs": 3983,
+      "verseStart": 1
+    },
+    {
+      "timeMs": 11969,
+      "verseStart": 2
+    },
+    {
+      "timeMs": 19414,
+      "verseStart": 3
+    },
+    {
+      "timeMs": 25598,
+      "verseStart": 4
+    },
+    {
+      "timeMs": 30562,
+      "verseStart": 5
+    },
+    {
+      "timeMs": 38507,
+      "verseStart": 6
+    },
+    {
+      "timeMs": 49515,
+      "verseStart": 7
+    },
+    {
+      "timeMs": 59963,
+      "verseStart": 8
+    },
+    {
+      "timeMs": 65827,
+      "verseStart": 9
+    },
+    {
+      "timeMs": 75874,
+      "verseStart": 10
+    },
+    {
+      "timeMs": 82839,
+      "verseStart": 11
+    },
+    {
+      "timeMs": 89944,
+      "verseStart": 12
+    },
+    {
+      "timeMs": 95328,
+      "verseStart": 13
+    },
+    {
+      "timeMs": 104354,
+      "verseStart": 14
+    },
+    {
+      "timeMs": 113641,
+      "verseStart": 15
+    },
+    {
+      "timeMs": 118924,
+      "verseStart": 16
+    },
+    {
+      "timeMs": 133955,
+      "verseStart": 17
+    },
+    {
+      "timeMs": 140339,
+      "verseStart": 18
+    },
+    {
+      "timeMs": 147084,
+      "verseStart": 19
+    },
+    {
+      "timeMs": 161294,
+      "verseStart": 20
+    },
+    {
+      "timeMs": 170781,
+      "verseStart": 21
+    },
+    {
+      "timeMs": 179267,
+      "verseStart": 22
+    },
+    {
+      "timeMs": 188674,
+      "verseStart": 23
+    },
+    {
+      "timeMs": 195639,
+      "verseStart": 24
+    },
+    {
+      "timeMs": 201843,
+      "verseStart": 25
+    }
+  ]
+}

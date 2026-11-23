@@ -5954,6 +5954,16 @@
       "file": "projects/rbo_mark_9.json"
     },
     {
+      "id": "gh_rbo_philemon_1",
+      "translationCode": "RBO",
+      "bookId": "philemon",
+      "chapter": 1,
+      "title": "К Филимону 1 · РБО",
+      "cueCount": 25,
+      "narratorId": "rbo",
+      "file": "projects/rbo_philemon_1.json"
+    },
+    {
       "id": "gh_rbo_philippians_1",
       "translationCode": "RBO",
       "bookId": "philippians",
