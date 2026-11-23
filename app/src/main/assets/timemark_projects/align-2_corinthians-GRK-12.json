@@ -1,0 +1,116 @@
+{
+  "id": "align-2_corinthians-GRK-12",
+  "translationCode": "PODSTR",
+  "bookId": "2_corinthians",
+  "chapter": 12,
+  "title": "2-е Коринфянам 12 · Греческий (Koine)",
+  "audioFilePath": "/data/user/0/com.example.bible.sqlite/files/bible_audio/greek-nt/47_12.mp3",
+  "updatedAt": 1794873600000,
+  "cues": [
+    {
+      "timeMs": 620,
+      "verseStart": 1,
+      "attachments": []
+    },
+    {
+      "timeMs": 7285,
+      "verseStart": 2,
+      "attachments": []
+    },
+    {
+      "timeMs": 20134,
+      "verseStart": 3,
+      "attachments": []
+    },
+    {
+      "timeMs": 27139,
+      "verseStart": 4,
+      "attachments": []
+    },
+    {
+      "timeMs": 33824,
+      "verseStart": 5,
+      "attachments": []
+    },
+    {
+      "timeMs": 40068,
+      "verseStart": 6,
+      "attachments": []
+    },
+    {
+      "timeMs": 49755,
+      "verseStart": 7,
+      "attachments": []
+    },
+    {
+      "timeMs": 60503,
+      "verseStart": 8,
+      "attachments": []
+    },
+    {
+      "timeMs": 64846,
+      "verseStart": 9,
+      "attachments": []
+    },
+    {
+      "timeMs": 77254,
+      "verseStart": 10,
+      "attachments": []
+    },
+    {
+      "timeMs": 88022,
+      "verseStart": 11,
+      "attachments": []
+    },
+    {
+      "timeMs": 98149,
+      "verseStart": 12,
+      "attachments": []
+    },
+    {
+      "timeMs": 106095,
+      "verseStart": 13,
+      "attachments": []
+    },
+    {
+      "timeMs": 115862,
+      "verseStart": 14,
+      "attachments": []
+    },
+    {
+      "timeMs": 129211,
+      "verseStart": 15,
+      "attachments": []
+    },
+    {
+      "timeMs": 137317,
+      "verseStart": 16,
+      "attachments": []
+    },
+    {
+      "timeMs": 143101,
+      "verseStart": 17,
+      "attachments": []
+    },
+    {
+      "timeMs": 147624,
+      "verseStart": 18,
+      "attachments": []
+    },
+    {
+      "timeMs": 157331,
+      "verseStart": 19,
+      "attachments": []
+    },
+    {
+      "timeMs": 165937,
+      "verseStart": 20,
+      "attachments": []
+    },
+    {
+      "timeMs": 179947,
+      "verseStart": 21,
+      "attachments": []
+    }
+  ]
+}

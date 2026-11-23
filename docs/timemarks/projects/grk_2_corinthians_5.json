@@ -1,0 +1,95 @@
+{
+  "id": "gh_grk_2_corinthians_5",
+  "translationCode": "PODSTR",
+  "bookId": "2_corinthians",
+  "chapter": 5,
+  "title": "2-е Коринфянам 5 · Греческий (Koine)",
+  "narratorId": "greek-nt",
+  "audioFileName": "47_05.mp3",
+  "cues": [
+    {
+      "timeMs": 340,
+      "verseStart": 1
+    },
+    {
+      "timeMs": 11308,
+      "verseStart": 2
+    },
+    {
+      "timeMs": 18252,
+      "verseStart": 3
+    },
+    {
+      "timeMs": 22095,
+      "verseStart": 4
+    },
+    {
+      "timeMs": 32822,
+      "verseStart": 5
+    },
+    {
+      "timeMs": 39607,
+      "verseStart": 6
+    },
+    {
+      "timeMs": 46832,
+      "verseStart": 7
+    },
+    {
+      "timeMs": 50334,
+      "verseStart": 8
+    },
+    {
+      "timeMs": 56999,
+      "verseStart": 9
+    },
+    {
+      "timeMs": 63983,
+      "verseStart": 10
+    },
+    {
+      "timeMs": 76192,
+      "verseStart": 11
+    },
+    {
+      "timeMs": 86259,
+      "verseStart": 12
+    },
+    {
+      "timeMs": 97346,
+      "verseStart": 13
+    },
+    {
+      "timeMs": 101649,
+      "verseStart": 14
+    },
+    {
+      "timeMs": 109935,
+      "verseStart": 15
+    },
+    {
+      "timeMs": 118140,
+      "verseStart": 16
+    },
+    {
+      "timeMs": 126806,
+      "verseStart": 17
+    },
+    {
+      "timeMs": 133691,
+      "verseStart": 18
+    },
+    {
+      "timeMs": 141736,
+      "verseStart": 19
+    },
+    {
+      "timeMs": 151903,
+      "verseStart": 20
+    },
+    {
+      "timeMs": 160249,
+      "verseStart": 21
+    }
+  ]
+}
