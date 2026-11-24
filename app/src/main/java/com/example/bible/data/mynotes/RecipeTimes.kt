@@ -15,6 +15,12 @@ internal data class RecipeIngredientParts(
     val name: String,
 )
 
+/** Строка карточки ингредиентов: свой id для чекбокса и уже отделённое количество. */
+internal data class RecipeIngredientRow(
+    val id: String,
+    val parts: RecipeIngredientParts,
+)
+
 private val timeNumber = """(?:\d+\s*/\s*\d+|\d+(?:[.,]\d+)?|[½¼¾⅓⅔⅛⅜⅝⅞])"""
 
 /**
@@ -131,6 +137,96 @@ internal fun splitRecipeIngredient(text: String): RecipeIngredientParts {
         )
     }
     return RecipeIngredientParts(amount = null, name = trimmed)
+}
+
+private val ingredientBullet = Regex("""[•●∙·▪◦‣]""")
+
+/** Тире с пробелами вокруг. Диапазон «2 - 3» (цифры с обеих сторон) не трогаем. */
+private val ingredientListDash = Regex("""[ \t]+[-–—−][ \t]+""")
+
+private val leadingIngredientBullet = Regex("""^[-–—−*•●∙·▪◦‣]+\s*""")
+
+/**
+ * Делит текст на отдельные ингредиенты.
+ * Разделители: перевод строки, запятая, точка с запятой и маркеры «-» / «•».
+ * Запятая в числе («1,5») и диапазон («2-3», «2 - 3») остаются внутри пункта.
+ * Запятая в скобках («мука (пшеничная, высший сорт)») тоже не делит пункт.
+ */
+internal fun splitRecipeIngredientList(text: String): List<String> {
+    if (text.isBlank()) return emptyList()
+    val normalized = text
+        .replace("\r\n", "\n")
+        .replace('\r', '\n')
+        .replace(ingredientBullet, "\n")
+        .let(::unwrapIngredientListDashes)
+    val items = mutableListOf<String>()
+    normalized.split('\n').forEach { rawLine ->
+        splitIngredientSeparators(rawLine).forEach { piece ->
+            val item = piece.trim().replace(leadingIngredientBullet, "").trim()
+            if (item.isNotEmpty()) items += item
+        }
+    }
+    return items
+}
+
+/** Разворачивает сохранённые строки в пункты карточки. У одиночного пункта id строки сохраняется. */
+internal fun expandRecipeIngredientLines(lines: List<RecipeLine>): List<RecipeIngredientRow> {
+    return lines.flatMap { line ->
+        val pieces = splitRecipeIngredientList(line.text)
+        pieces.mapIndexed { index, piece ->
+            RecipeIngredientRow(
+                id = if (pieces.size == 1) line.id else "${line.id}#$index",
+                parts = splitRecipeIngredient(piece),
+            )
+        }
+    }
+}
+
+private fun unwrapIngredientListDashes(text: String): String {
+    return ingredientListDash.replace(text) { match ->
+        val before = text.getOrNull(match.range.first - 1)
+        val after = text.getOrNull(match.range.last + 1)
+        if (before?.isDigit() == true && after?.isDigit() == true) match.value else "\n"
+    }
+}
+
+private fun splitIngredientSeparators(text: String): List<String> {
+    val result = mutableListOf<String>()
+    val current = StringBuilder()
+    var depth = 0
+    var index = 0
+    while (index < text.length) {
+        val ch = text[index]
+        when (ch) {
+            '(', '[', '«' -> {
+                depth++
+                current.append(ch)
+            }
+            ')', ']', '»' -> {
+                if (depth > 0) depth--
+                current.append(ch)
+            }
+            ';', ',' -> {
+                val decimalComma = ch == ',' && isDecimalComma(text, index)
+                if (depth == 0 && !decimalComma) {
+                    result += current.toString()
+                    current.clear()
+                } else {
+                    current.append(ch)
+                }
+            }
+            else -> current.append(ch)
+        }
+        index++
+    }
+    result += current.toString()
+    return result
+}
+
+private fun isDecimalComma(text: String, index: Int): Boolean {
+    val previous = text.getOrNull(index - 1)
+    val next = text.getOrNull(index + 1)
+    return previous != null && previous.isDigit() && next != null && next.isDigit()
 }
 
 /** Есть что показать в режиме просмотра рецепта. Пустой черновик открывается сразу в правке. */

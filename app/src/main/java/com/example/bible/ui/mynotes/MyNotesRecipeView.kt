@@ -60,7 +60,7 @@ import com.example.bible.data.mynotes.NotePalette
 import com.example.bible.data.mynotes.RecipeIngredientParts
 import com.example.bible.data.mynotes.RecipeLine
 import com.example.bible.data.mynotes.RecipeTextPiece
-import com.example.bible.data.mynotes.splitRecipeIngredient
+import com.example.bible.data.mynotes.expandRecipeIngredientLines
 import com.example.bible.data.mynotes.splitRecipeTimes
 import com.example.bible.ui.theme.BibleTheme
 
@@ -76,7 +76,7 @@ internal fun RecipeReader(
     val dark = MaterialTheme.colorScheme.background.luminance() < 0.5f
     val accent = note.palette.accent(dark)
     val container = note.palette.container(dark)
-    val visibleIngredients = ingredients.filter { it.text.isNotBlank() }
+    val ingredientRows = expandRecipeIngredientLines(ingredients)
     val visibleSteps = steps.mapIndexedNotNull { index, line ->
         if (line.text.isBlank()) null else (index + 1) to line
     }
@@ -87,20 +87,20 @@ internal fun RecipeReader(
         verticalArrangement = Arrangement.spacedBy(16.dp),
     ) {
         RecipeHeader(note, accent, container)
-        if (visibleIngredients.isNotEmpty()) {
+        if (ingredientRows.isNotEmpty()) {
             RecipeSection(title = "Ингредиенты", accent = accent) {
                 RecipePlaque(container = container, accent = accent) {
-                    val parsed = visibleIngredients.map { it to splitRecipeIngredient(it.text) }
-                    val showAmount = parsed.any { it.second.amount != null }
-                    parsed.forEach { (line, parts) ->
-                        IngredientLine(
-                            line = line,
-                            parts = parts,
-                            showAmount = showAmount,
-                            checked = line.id in checkedIngredientIds,
-                            accent = accent,
-                            onToggle = { onToggleIngredient(line.id) },
-                        )
+                    val showAmount = ingredientRows.any { it.parts.amount != null }
+                    Column(Modifier.fillMaxWidth()) {
+                        ingredientRows.forEach { row ->
+                            IngredientLine(
+                                parts = row.parts,
+                                showAmount = showAmount,
+                                checked = row.id in checkedIngredientIds,
+                                accent = accent,
+                                onToggle = { onToggleIngredient(row.id) },
+                            )
+                        }
                     }
                 }
             }
@@ -241,7 +241,6 @@ private fun RecipePlaque(
 
 @Composable
 private fun IngredientLine(
-    line: RecipeLine,
     parts: RecipeIngredientParts,
     showAmount: Boolean,
     checked: Boolean,

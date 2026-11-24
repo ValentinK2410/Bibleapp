@@ -4,8 +4,10 @@ import com.example.bible.data.mynotes.MyNote
 import com.example.bible.data.mynotes.MyNoteKind
 import com.example.bible.data.mynotes.RecipeLine
 import com.example.bible.data.mynotes.RecipeTextPiece
+import com.example.bible.data.mynotes.expandRecipeIngredientLines
 import com.example.bible.data.mynotes.hasRecipeText
 import com.example.bible.data.mynotes.splitRecipeIngredient
+import com.example.bible.data.mynotes.splitRecipeIngredientList
 import com.example.bible.data.mynotes.splitRecipeTimes
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
@@ -114,6 +116,101 @@ class RecipeTimesTest {
         assertAmount("Кефир", null, "Кефир")
         assertAmount("10 мин кипячения", null, "10 мин кипячения")
         assertAmount("   ", null, "")
+    }
+
+    @Test
+    fun splitsIngredientListsOnNewlinesCommasSemicolonsAndBullets() {
+        assertEquals(
+            listOf("картошка", "лавровый лист", "морковь"),
+            splitRecipeIngredientList("картошка\nлавровый лист\nморковь"),
+        )
+        assertEquals(
+            listOf("картошка", "лавровый лист", "морковь"),
+            splitRecipeIngredientList("картошка\r\nлавровый лист\rморковь"),
+        )
+        assertEquals(
+            listOf("картошка", "лавровый лист", "морковь"),
+            splitRecipeIngredientList("картошка, лавровый лист, морковь"),
+        )
+        assertEquals(
+            listOf("картошка", "лавровый лист", "морковь"),
+            splitRecipeIngredientList("картошка,лавровый лист;морковь"),
+        )
+        assertEquals(
+            listOf("картошка", "лавровый лист"),
+            splitRecipeIngredientList("- картошка\n- лавровый лист"),
+        )
+        assertEquals(
+            listOf("картошка", "лавровый лист"),
+            splitRecipeIngredientList("-картошка\n•лавровый лист"),
+        )
+        assertEquals(
+            listOf("картошка", "лавровый лист", "лук"),
+            splitRecipeIngredientList("• картошка • лавровый лист • лук"),
+        )
+        assertEquals(
+            listOf("картошка", "лавровый лист"),
+            splitRecipeIngredientList("* картошка\n* лавровый лист"),
+        )
+        assertEquals(
+            listOf("картошка", "2 лука"),
+            splitRecipeIngredientList("картошка - 2 лука"),
+        )
+        assertEquals(
+            listOf("картошка", "лавровый лист", "лук"),
+            splitRecipeIngredientList("- картошка, лавровый лист; лук"),
+        )
+        assertEquals(listOf("Кефир"), splitRecipeIngredientList("Кефир"))
+        assertEquals(listOf("какой-то продукт"), splitRecipeIngredientList("какой-то продукт"))
+        assertEquals(emptyList<String>(), splitRecipeIngredientList("  \n\t•\n - "))
+    }
+
+    @Test
+    fun keepsDecimalCommasRangesAndParentheticalCommas() {
+        assertEquals(
+            listOf("1,5 ст. л. масла", "200 г муки"),
+            splitRecipeIngredientList("1,5 ст. л. масла, 200 г муки"),
+        )
+        assertEquals(
+            listOf("2-3 зубчика чеснока"),
+            splitRecipeIngredientList("2-3 зубчика чеснока"),
+        )
+        assertEquals(
+            listOf("2 - 3 зубчика чеснока"),
+            splitRecipeIngredientList("2 - 3 зубчика чеснока"),
+        )
+        assertEquals(
+            listOf("1,5 - 2 ст. л. сахара", "соль"),
+            splitRecipeIngredientList("1,5 - 2 ст. л. сахара, соль"),
+        )
+        assertEquals(
+            listOf("мука (пшеничная, высшего сорта)", "сахар"),
+            splitRecipeIngredientList("мука (пшеничная, высшего сорта), сахар"),
+        )
+        assertEquals(
+            listOf("по вкусу соль и перец"),
+            splitRecipeIngredientList("по вкусу соль и перец"),
+        )
+    }
+
+    @Test
+    fun expandsStoredLinesIntoSeparateCheckboxRows() {
+        val rows = expandRecipeIngredientLines(
+            listOf(
+                RecipeLine("a", "картошка"),
+                RecipeLine("b", "лавровый лист\nморковь, лук"),
+                RecipeLine("c", "   "),
+                RecipeLine("d", "1,5 ст. л. масла, 200 г муки"),
+            ),
+        )
+        assertEquals(listOf("a", "b#0", "b#1", "b#2", "d#0", "d#1"), rows.map { it.id })
+        assertEquals(
+            listOf("картошка", "лавровый лист", "морковь", "лук", "масла", "муки"),
+            rows.map { it.parts.name },
+        )
+        assertEquals(null, rows[0].parts.amount)
+        assertEquals("1,5 ст. л.", rows[4].parts.amount)
+        assertEquals("200 г", rows[5].parts.amount)
     }
 
     @Test
