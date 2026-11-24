@@ -1,4 +1,7 @@
-@file:OptIn(androidx.compose.material3.ExperimentalMaterial3Api::class)
+@file:OptIn(
+    androidx.compose.material3.ExperimentalMaterial3Api::class,
+    androidx.compose.foundation.ExperimentalFoundationApi::class,
+)
 
 package com.example.bible.ui.mynotes
 
@@ -9,6 +12,8 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.horizontalScroll
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.ime
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -24,6 +29,8 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.foundation.relocation.BringIntoViewRequester
+import androidx.compose.foundation.relocation.bringIntoViewRequester
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.verticalScroll
@@ -36,6 +43,8 @@ import androidx.compose.material.icons.filled.CleaningServices
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.DragHandle
+import androidx.compose.material.icons.filled.Edit
+import androidx.compose.material.icons.filled.Visibility
 import androidx.compose.material.icons.filled.PushPin
 import androidx.compose.material.icons.automirrored.filled.Undo
 import androidx.compose.material3.AlertDialog
@@ -66,7 +75,9 @@ import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.focus.onFocusEvent
 import androidx.compose.ui.graphics.luminance
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalHapticFeedback
@@ -80,6 +91,7 @@ import com.example.bible.data.mynotes.MyNoteKind
 import com.example.bible.data.mynotes.NotePalette
 import com.example.bible.data.mynotes.RecipeLine
 import com.example.bible.data.mynotes.TaskPriority
+import com.example.bible.data.mynotes.hasRecipeText
 import com.example.bible.ui.theme.BibleTheme
 import java.time.LocalDate
 import java.util.Locale
@@ -104,6 +116,8 @@ fun MyNoteEditorScreen(
     var dirty by remember { mutableStateOf(false) }
     var closing by remember { mutableStateOf(false) }
     var skipSave by remember { mutableStateOf(false) }
+    var recipeViewing by remember(noteId) { mutableStateOf(false) }
+    var checkedIngredients by remember(noteId) { mutableStateOf(emptySet<String>()) }
     val checks = remember { mutableStateListOf<CheckItem>() }
     val ingredients = remember { mutableStateListOf<RecipeLine>() }
     val steps = remember { mutableStateListOf<RecipeLine>() }
@@ -121,6 +135,7 @@ fun MyNoteEditorScreen(
             ingredients.addAll(loaded.ingredients)
             steps.clear()
             steps.addAll(loaded.steps)
+            recipeViewing = loaded.hasRecipeText()
             ready = true
         }
     }
@@ -172,6 +187,16 @@ fun MyNoteEditorScreen(
             steps = steps,
             onNote = { note = it; dirty = true },
             onDirty = { dirty = true },
+            recipeViewing = recipeViewing,
+            onToggleRecipeView = { recipeViewing = !recipeViewing },
+            checkedIngredientIds = checkedIngredients,
+            onToggleIngredient = { id ->
+                checkedIngredients = if (id in checkedIngredients) {
+                    checkedIngredients - id
+                } else {
+                    checkedIngredients + id
+                }
+            },
             onClose = ::close,
             onPin = {
                 val next = !currentNote.pinned
@@ -200,6 +225,10 @@ private fun MyNoteEditorContent(
     steps: SnapshotStateList<RecipeLine>,
     onNote: (MyNote) -> Unit,
     onDirty: () -> Unit,
+    recipeViewing: Boolean = false,
+    onToggleRecipeView: () -> Unit = {},
+    checkedIngredientIds: Set<String> = emptySet(),
+    onToggleIngredient: (String) -> Unit = {},
     onClose: () -> Unit,
     onPin: () -> Unit,
     onDelete: () -> Unit,
@@ -215,6 +244,15 @@ private fun MyNoteEditorContent(
                     }
                 },
                 actions = {
+                    if (note.kind == MyNoteKind.RECIPE) {
+                        IconButton(onClick = onToggleRecipeView) {
+                            Icon(
+                                if (recipeViewing) Icons.Filled.Edit else Icons.Filled.Visibility,
+                                contentDescription = if (recipeViewing) "Редактировать" else "Просмотр",
+                                tint = MaterialTheme.colorScheme.primary,
+                            )
+                        }
+                    }
                     IconButton(onClick = onPin) {
                         Icon(
                             Icons.Filled.PushPin,
@@ -241,14 +279,25 @@ private fun MyNoteEditorContent(
                 onDirty = onDirty,
                 modifier = Modifier.fillMaxSize().padding(padding).imePadding(),
             )
-            MyNoteKind.RECIPE -> RecipeEditor(
-                note = note,
-                ingredients = ingredients,
-                steps = steps,
-                onNote = onNote,
-                onDirty = onDirty,
-                modifier = Modifier.fillMaxSize().padding(padding).imePadding(),
-            )
+            MyNoteKind.RECIPE -> if (recipeViewing) {
+                RecipeReader(
+                    note = note,
+                    ingredients = ingredients,
+                    steps = steps,
+                    checkedIngredientIds = checkedIngredientIds,
+                    onToggleIngredient = onToggleIngredient,
+                    modifier = Modifier.fillMaxSize().padding(padding),
+                )
+            } else {
+                RecipeEditor(
+                    note = note,
+                    ingredients = ingredients,
+                    steps = steps,
+                    onNote = onNote,
+                    onDirty = onDirty,
+                    modifier = Modifier.fillMaxSize().padding(padding).imePadding(),
+                )
+            }
             MyNoteKind.SKETCH -> SketchEditor(
                 note = note,
                 onNote = onNote,
@@ -308,8 +357,9 @@ private fun SimpleEditor(
         OutlinedTextField(
             value = note.body,
             onValueChange = { onNote(note.copy(body = it)) },
-            modifier = Modifier.fillMaxWidth().height(if (note.kind == MyNoteKind.TEXT) 280.dp else 160.dp),
+            modifier = Modifier.fillMaxWidth().revealWhileEditing(),
             label = { Text(if (note.kind == MyNoteKind.TASK) "Заметка к задаче" else "Текст") },
+            minLines = if (note.kind == MyNoteKind.TEXT) 8 else 4,
         )
         Spacer(Modifier.height(24.dp))
     }
@@ -336,7 +386,7 @@ private fun ChecklistEditor(
     LazyColumn(
         state = listState,
         modifier = modifier,
-        contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp),
+        contentPadding = PaddingValues(start = 16.dp, end = 16.dp, top = 8.dp, bottom = 32.dp),
         verticalArrangement = Arrangement.spacedBy(8.dp),
     ) {
         item(key = "title") { TitleField(note, onNote) }
@@ -402,25 +452,23 @@ private fun RecipeEditor(
     LazyColumn(
         state = listState,
         modifier = modifier,
-        contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp),
+        contentPadding = PaddingValues(start = 16.dp, end = 16.dp, top = 8.dp, bottom = 32.dp),
         verticalArrangement = Arrangement.spacedBy(8.dp),
     ) {
         item(key = "title") { TitleField(note, onNote) }
         item(key = "colors") { PaletteRow(note.palette) { onNote(note.copy(palette = it)) } }
         item(key = "meta") {
-            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+            Row(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalAlignment = Alignment.Top) {
                 OutlinedTextField(
                     value = note.servings,
                     onValueChange = { onNote(note.copy(servings = it)) },
-                    modifier = Modifier.weight(1f),
-                    singleLine = true,
+                    modifier = Modifier.weight(1f).revealWhileEditing(),
                     label = { Text("Порции") },
                 )
                 OutlinedTextField(
                     value = note.cookTime,
                     onValueChange = { onNote(note.copy(cookTime = it)) },
-                    modifier = Modifier.weight(1f),
-                    singleLine = true,
+                    modifier = Modifier.weight(1f).revealWhileEditing(),
                     label = { Text("Время") },
                 )
             }
@@ -469,6 +517,16 @@ private fun RecipeEditor(
                 Icon(Icons.Filled.Add, contentDescription = null)
                 Text("Шаг", modifier = Modifier.padding(start = 6.dp))
             }
+        }
+        item(key = "notes") {
+            OutlinedTextField(
+                value = note.body,
+                onValueChange = { onNote(note.copy(body = it)) },
+                modifier = Modifier.fillMaxWidth().revealWhileEditing(),
+                label = { Text("Заметки") },
+                placeholder = { Text("Подача, замены, совет") },
+                minLines = 3,
+            )
         }
     }
 }
@@ -560,8 +618,7 @@ private fun TitleField(note: MyNote, onNote: (MyNote) -> Unit) {
     OutlinedTextField(
         value = note.title,
         onValueChange = { onNote(note.copy(title = it)) },
-        modifier = Modifier.fillMaxWidth(),
-        singleLine = true,
+        modifier = Modifier.fillMaxWidth().revealWhileEditing(),
         label = { Text("Название") },
         placeholder = { Text(note.kind.hintRu()) },
     )
@@ -631,7 +688,7 @@ private fun CheckRow(
 ) {
     val elevation by animateDpAsState(if (dragging) 6.dp else 0.dp, label = "check-drag")
     Surface(shadowElevation = elevation, shape = MaterialTheme.shapes.medium, modifier = Modifier.fillMaxWidth()) {
-        Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.padding(start = 4.dp)) {
+        Row(verticalAlignment = Alignment.Top, modifier = Modifier.padding(start = 4.dp)) {
             IconButton(onClick = onToggle) {
                 Icon(
                     if (item.done) Icons.Filled.CheckBox else Icons.Filled.CheckBoxOutlineBlank,
@@ -641,8 +698,7 @@ private fun CheckRow(
             OutlinedTextField(
                 value = item.text,
                 onValueChange = onText,
-                modifier = Modifier.weight(1f),
-                singleLine = true,
+                modifier = Modifier.weight(1f).padding(vertical = 4.dp).revealWhileEditing(),
                 placeholder = { Text("Пункт списка") },
                 textStyle = MaterialTheme.typography.bodyLarge.copy(
                     textDecoration = if (item.done) TextDecoration.LineThrough else null,
@@ -669,13 +725,16 @@ private fun RecipeRow(
 ) {
     val elevation by animateDpAsState(if (dragging) 6.dp else 0.dp, label = "recipe-drag")
     Surface(shadowElevation = elevation, shape = MaterialTheme.shapes.medium, modifier = Modifier.fillMaxWidth()) {
-        Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.padding(start = 8.dp)) {
-            Text(prefix, style = MaterialTheme.typography.titleSmall, modifier = Modifier.padding(end = 6.dp))
+        Row(verticalAlignment = Alignment.Top, modifier = Modifier.padding(start = 8.dp)) {
+            Text(
+                prefix,
+                style = MaterialTheme.typography.titleSmall,
+                modifier = Modifier.padding(top = 20.dp, end = 6.dp),
+            )
             OutlinedTextField(
                 value = text,
                 onValueChange = onText,
-                modifier = Modifier.weight(1f),
-                singleLine = true,
+                modifier = Modifier.weight(1f).padding(vertical = 4.dp).revealWhileEditing(),
                 placeholder = { Text("Текст") },
             )
             IconButton(onClick = onRemove) {
@@ -686,6 +745,23 @@ private fun RecipeRow(
             }
         }
     }
+}
+
+@Composable
+private fun Modifier.revealWhileEditing(): Modifier {
+    val requester = remember { BringIntoViewRequester() }
+    var focused by remember { mutableStateOf(false) }
+    val imeBottom = WindowInsets.ime.getBottom(LocalDensity.current)
+    LaunchedEffect(focused, imeBottom) {
+        if (!focused || imeBottom == 0) return@LaunchedEffect
+        delay(80)
+        requester.bringIntoView()
+    }
+    return this
+        .bringIntoViewRequester(requester)
+        .onFocusEvent { state ->
+            if (focused != state.isFocused) focused = state.isFocused
+        }
 }
 
 private fun moveRecipe(lines: SnapshotStateList<RecipeLine>, fromKey: Any, toKey: Any): Boolean {
