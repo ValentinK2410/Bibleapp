@@ -5,6 +5,8 @@ import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.gestures.detectTapGestures
+import androidx.compose.foundation.gestures.detectVerticalDragGestures
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.ime
@@ -85,6 +87,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.draw.clip
@@ -573,6 +576,8 @@ fun NoteEditorScreen(
     onOpenAiSettings: () -> Unit,
 ) {
     var isViewMode by remember(initialNote.id) { mutableStateOf(false) }
+    // Переключатель показа нижнего блока Библии
+    var showBiblePane by remember(initialNote.id) { mutableStateOf(initialNote.hasVerseRef()) }
     var bibleNavRequest by remember { mutableStateOf<NoteBibleNavigation?>(null) }
     var lastNavLinkKey by remember { mutableStateOf<String?>(null) }
     var lastNavShowFullChapter by remember { mutableStateOf(false) }
@@ -624,6 +629,7 @@ fun NoteEditorScreen(
         linkStart: Int = -1,
     ) {
         if (embeddedBible == null || parsed.verses.isEmpty()) return
+        showBiblePane = true
         if (parsed.audio != null) {
             val key = NoteScriptureLinks.formatNavigationAnnotation(
                 parsed.bookId,
@@ -958,6 +964,15 @@ fun NoteEditorScreen(
                     }
                 },
                 actions = {
+                    if (embeddedBible != null) {
+                        IconButton(onClick = { showBiblePane = !showBiblePane }) {
+                            Icon(
+                                Icons.AutoMirrored.Filled.MenuBook,
+                                contentDescription = if (showBiblePane) "Скрыть Библию" else "Показать Библию",
+                                tint = if (showBiblePane) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.outline,
+                            )
+                        }
+                    }
                     IconButton(onClick = { isViewMode = !isViewMode }) {
                         if (isViewMode) {
                             Icon(Icons.Default.Edit, contentDescription = stringResource(R.string.note_switch_to_edit))
@@ -1420,7 +1435,7 @@ fun NoteEditorScreen(
             var contentHeightPx by remember { mutableIntStateOf(1) }
             val density = LocalDensity.current
             val keyboardOpen = WindowInsets.ime.getBottom(density) > 0
-            val notePaneFraction = splitFraction.coerceIn(0.25f, 0.75f)
+            val biblePaneVisible = !keyboardOpen && showBiblePane
             LaunchedEffect(keyboardOpen) {
                 if (keyboardOpen) resizeMode = false
             }
@@ -1434,29 +1449,113 @@ fun NoteEditorScreen(
                 Column(Modifier.fillMaxSize()) {
                     noteEditorBody(
                         Modifier
-                            .weight(if (keyboardOpen) 1f else notePaneFraction)
+                            .weight(if (keyboardOpen || !showBiblePane) 1f else splitFraction)
                             .fillMaxWidth(),
                     )
-                    if (!keyboardOpen) {
-                        VerticalSplitHandle(
-                            onDragDeltaPx = { dy ->
-                                if (contentHeightPx > 0) {
-                                    splitFraction = (splitFraction + dy / contentHeightPx).coerceIn(0.25f, 0.75f)
-                                }
-                            },
-                            onLongPress = {
-                                dragFraction = splitFraction
-                                resizeMode = true
-                            },
-                        )
+                    if (biblePaneVisible) {
+                        Box(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .height(40.dp)
+                                .background(MaterialTheme.colorScheme.surfaceContainerHigh),
+                        ) {
+                            Row(
+                                modifier = Modifier
+                                    .fillMaxSize()
+                                    .padding(horizontal = 8.dp),
+                                verticalAlignment = Alignment.CenterVertically,
+                            ) {
+                                Text(
+                                    "📖 Текст Библии",
+                                    fontSize = 12.sp,
+                                    fontWeight = FontWeight.SemiBold,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                    modifier = Modifier.weight(1f),
+                                )
+                                Box(
+                                    Modifier
+                                        .width(44.dp)
+                                        .height(4.dp)
+                                        .background(
+                                            MaterialTheme.colorScheme.primary,
+                                            RoundedCornerShape(2.dp),
+                                        ),
+                                )
+                                Spacer(Modifier.weight(1f))
+                            }
+                            Box(
+                                modifier = Modifier
+                                    .matchParentSize()
+                                    .padding(end = 96.dp)
+                                    .pointerInput(Unit) {
+                                        detectVerticalDragGestures { change, dragAmount ->
+                                            change.consume()
+                                            if (contentHeightPx > 0) {
+                                                splitFraction =
+                                                    (splitFraction + dragAmount / contentHeightPx)
+                                                        .coerceIn(0.25f, 0.75f)
+                                            }
+                                        }
+                                    }
+                                    .pointerInput(Unit) {
+                                        detectTapGestures(onLongPress = {
+                                            dragFraction = splitFraction
+                                            resizeMode = true
+                                        })
+                                    },
+                            )
+                            TextButton(
+                                onClick = { showBiblePane = false },
+                                modifier = Modifier
+                                    .align(Alignment.CenterEnd)
+                                    .padding(end = 4.dp),
+                                contentPadding = PaddingValues(0.dp),
+                            ) {
+                                Text(
+                                    "Скрыть ▲",
+                                    fontSize = 11.sp,
+                                    color = MaterialTheme.colorScheme.outline,
+                                )
+                            }
+                        }
+                    }
+                    if (!keyboardOpen && !showBiblePane) {
+                        Surface(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .clickable { showBiblePane = true },
+                            color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.6f),
+                        ) {
+                            Row(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(vertical = 10.dp),
+                                horizontalArrangement = Arrangement.Center,
+                                verticalAlignment = Alignment.CenterVertically,
+                            ) {
+                                Icon(
+                                    Icons.AutoMirrored.Filled.MenuBook,
+                                    contentDescription = "Показать Библию",
+                                    tint = MaterialTheme.colorScheme.primary,
+                                    modifier = Modifier.size(18.dp),
+                                )
+                                Spacer(Modifier.width(8.dp))
+                                Text(
+                                    "Показать Библию для исследования ▼",
+                                    style = MaterialTheme.typography.labelMedium,
+                                    fontWeight = FontWeight.Bold,
+                                    color = MaterialTheme.colorScheme.primary,
+                                )
+                            }
+                        }
                     }
                     Box(
                         modifier = Modifier
                             .then(
-                                if (keyboardOpen) {
-                                    Modifier.height(0.dp)
+                                if (biblePaneVisible) {
+                                    Modifier.weight((1f - splitFraction).coerceAtLeast(0.01f))
                                 } else {
-                                    Modifier.weight((1f - notePaneFraction).coerceAtLeast(0.01f))
+                                    Modifier.height(0.dp)
                                 },
                             )
                             .fillMaxWidth(),

@@ -1,14 +1,19 @@
 package com.example.bible.ui.housecare
 
+import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material.icons.filled.KeyboardArrowRight
@@ -16,6 +21,7 @@ import androidx.compose.material.icons.filled.KeyboardArrowUp
 import androidx.compose.material.icons.filled.NightsStay
 import androidx.compose.material.icons.filled.WbTwilight
 import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Checkbox
 import androidx.compose.material3.CheckboxDefaults
 import androidx.compose.material3.HorizontalDivider
@@ -96,6 +102,7 @@ internal fun HabitBlocks(
         listOf(CleaningHabit.KIND_MORNING to "Утренние привычки", CleaningHabit.KIND_EVENING to "Вечерние привычки")
             .forEach { (kind, label) ->
                 HabitBlock(
+                    kind = kind,
                     title = label,
                     icon = if (kind == CleaningHabit.KIND_MORNING) Icons.Default.WbTwilight else Icons.Default.NightsStay,
                     habits = data.habitsOn(placeId, kind, date),
@@ -296,6 +303,7 @@ private class HabitEdit(val habit: CleaningHabit, val kind: String)
 
 @Composable
 private fun HabitBlock(
+    kind: String,
     title: String,
     icon: ImageVector,
     habits: List<CleaningHabit>,
@@ -312,8 +320,26 @@ private fun HabitBlock(
     onCopyWeek: () -> Unit,
     onCopyMonth: () -> Unit,
 ) {
+    val isMorning = kind == CleaningHabit.KIND_MORNING
+    val containerBg = if (isMorning) Color(0xFFFEF9C3) else Color(0xFF1E293B)
+    val borderColor = if (isMorning) Color(0xFFFDE047) else Color(0xFF334155)
+    val titleColor = if (isMorning) Color(0xFF713F12) else Color(0xFFF8FAFC)
+    val subtitleColor = if (isMorning) Color(0xFF854D0E) else Color(0xFF94A3B8)
+    val itemTextColor = if (isMorning) Color(0xFF422006) else Color(0xFFF1F5F9)
+    val itemDoneTextColor = if (isMorning) Color(0xFFA16207) else Color(0xFF64748B)
+    val iconTint = if (isMorning) Color(0xFFD97706) else Color(0xFF818CF8)
+    val badgeBg = if (isMorning) Color(0xFFFEF08A) else Color(0xFF334155)
+    val buttonTint = if (isMorning) Color(0xFF854D0E) else Color(0xFFCBD5E1)
+    val dividerColor = if (isMorning) Color(0xFFFACC15).copy(alpha = 0.5f) else Color(0xFF334155)
+    val actionColors = ButtonDefaults.textButtonColors(
+        contentColor = buttonTint,
+        disabledContentColor = buttonTint.copy(alpha = 0.38f),
+    )
     val done = habits.count { doneOf(it) }
-    GroupCard {
+    GroupCard(
+        container = containerBg,
+        modifier = Modifier.border(1.dp, borderColor, RoundedCornerShape(20.dp)),
+    ) {
         Column(
             modifier = Modifier.padding(horizontal = 14.dp, vertical = 12.dp),
             verticalArrangement = Arrangement.spacedBy(2.dp),
@@ -330,19 +356,24 @@ private fun HabitBlock(
                 Icon(
                     if (collapsed) Icons.Default.KeyboardArrowRight else Icons.Default.KeyboardArrowDown,
                     contentDescription = if (collapsed) "Развернуть" else "Свернуть",
-                    tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                    tint = iconTint,
                     modifier = Modifier.size(22.dp),
                 )
-                BadgeCircle(size = 36.dp) {
+                BadgeCircle(size = 36.dp, container = badgeBg) {
                     Icon(
                         icon,
                         contentDescription = null,
-                        tint = MaterialTheme.colorScheme.primary,
+                        tint = iconTint,
                         modifier = Modifier.size(19.dp),
                     )
                 }
                 Column(modifier = Modifier.weight(1f)) {
-                    Text(title, style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.SemiBold)
+                    Text(
+                        title,
+                        style = MaterialTheme.typography.titleSmall,
+                        fontWeight = FontWeight.SemiBold,
+                        color = titleColor,
+                    )
                     Text(
                         if (habits.isEmpty()) {
                             if (ownsDay) "Пока пусто · список этого дня" else "Пока пусто · общий список"
@@ -351,17 +382,23 @@ private fun HabitBlock(
                             "$done из ${habits.size} · $scope"
                         },
                         style = MaterialTheme.typography.labelSmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        color = subtitleColor,
                     )
                 }
                 if (habits.isNotEmpty()) {
-                    StatusPill("$done/${habits.size}", pillToneOf(done, habits.size))
+                    HabitCountChip(
+                        text = "$done/${habits.size}",
+                        tone = pillToneOf(done, habits.size),
+                        isMorning = isMorning,
+                        fallbackBg = badgeBg,
+                        fallbackFg = titleColor,
+                    )
                 }
             }
             if (!collapsed) {
                 HorizontalDivider(
                     modifier = Modifier.padding(vertical = 8.dp),
-                    color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.45f),
+                    color = dividerColor,
                 )
                 habits.forEachIndexed { index, habit ->
                     val isDone = doneOf(habit)
@@ -378,7 +415,8 @@ private fun HabitBlock(
                             checked = isDone,
                             onCheckedChange = { onToggle(habit) },
                             colors = CheckboxDefaults.colors(
-                                checkedColor = cleaningGreen,
+                                checkedColor = if (isMorning) Color(0xFFD97706) else Color(0xFF818CF8),
+                                uncheckedColor = buttonTint,
                                 checkmarkColor = Color.White,
                             ),
                         )
@@ -387,11 +425,7 @@ private fun HabitBlock(
                             style = MaterialTheme.typography.bodyMedium,
                             fontWeight = if (isDone) FontWeight.Normal else FontWeight.Medium,
                             textDecoration = if (isDone) TextDecoration.LineThrough else null,
-                            color = if (isDone) {
-                                MaterialTheme.colorScheme.onSurfaceVariant
-                            } else {
-                                MaterialTheme.colorScheme.onSurface
-                            },
+                            color = if (isDone) itemDoneTextColor else itemTextColor,
                             modifier = Modifier.weight(1f),
                         )
                         if (habits.size > 1) {
@@ -403,6 +437,7 @@ private fun HabitBlock(
                                 Icon(
                                     Icons.Default.KeyboardArrowUp,
                                     contentDescription = "Выше",
+                                    tint = buttonTint.copy(alpha = if (index > 0) 1f else 0.38f),
                                     modifier = Modifier.size(19.dp),
                                 )
                             }
@@ -414,6 +449,7 @@ private fun HabitBlock(
                                 Icon(
                                     Icons.Default.KeyboardArrowDown,
                                     contentDescription = "Ниже",
+                                    tint = buttonTint.copy(alpha = if (index < habits.lastIndex) 1f else 0.38f),
                                     modifier = Modifier.size(19.dp),
                                 )
                             }
@@ -422,7 +458,7 @@ private fun HabitBlock(
                             Icon(
                                 Icons.Default.Edit,
                                 contentDescription = "Изменить или удалить",
-                                tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                                tint = buttonTint,
                                 modifier = Modifier.size(17.dp),
                             )
                         }
@@ -432,29 +468,114 @@ private fun HabitBlock(
                     Text(
                         "Помолиться, почистить зубы, помыть посуду…",
                         style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        color = subtitleColor,
                         modifier = Modifier.padding(start = 10.dp, top = 2.dp, bottom = 6.dp),
                     )
                 }
-                AddInlineRow(label = "Добавить привычку", onClick = onAdd)
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clip(RoundedCornerShape(14.dp))
+                        .clickable(onClick = onAdd)
+                        .padding(horizontal = 10.dp, vertical = 9.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(10.dp),
+                ) {
+                    Box(
+                        modifier = Modifier
+                            .size(32.dp)
+                            .background(badgeBg, CircleShape),
+                        contentAlignment = Alignment.Center,
+                    ) {
+                        Icon(
+                            Icons.Default.Add,
+                            contentDescription = null,
+                            tint = iconTint,
+                            modifier = Modifier.size(18.dp),
+                        )
+                    }
+                    Text(
+                        "Добавить привычку",
+                        style = MaterialTheme.typography.bodyMedium,
+                        fontWeight = FontWeight.Medium,
+                        color = buttonTint,
+                    )
+                }
                 Row(modifier = Modifier.fillMaxWidth()) {
-                    TextButton(onClick = onSaveTemplate, enabled = habits.isNotEmpty(), modifier = Modifier.weight(1f)) {
+                    TextButton(
+                        onClick = onSaveTemplate,
+                        enabled = habits.isNotEmpty(),
+                        modifier = Modifier.weight(1f),
+                        colors = actionColors,
+                    ) {
                         Text("В шаблон")
                     }
-                    TextButton(onClick = onApplyTemplate, modifier = Modifier.weight(1f)) {
+                    TextButton(
+                        onClick = onApplyTemplate,
+                        modifier = Modifier.weight(1f),
+                        colors = actionColors,
+                    ) {
                         Text("Из шаблона")
                     }
                 }
                 Row(modifier = Modifier.fillMaxWidth()) {
-                    TextButton(onClick = onCopyWeek, enabled = habits.isNotEmpty(), modifier = Modifier.weight(1f)) {
+                    TextButton(
+                        onClick = onCopyWeek,
+                        enabled = habits.isNotEmpty(),
+                        modifier = Modifier.weight(1f),
+                        colors = actionColors,
+                    ) {
                         Text("На неделю")
                     }
-                    TextButton(onClick = onCopyMonth, enabled = habits.isNotEmpty(), modifier = Modifier.weight(1f)) {
+                    TextButton(
+                        onClick = onCopyMonth,
+                        enabled = habits.isNotEmpty(),
+                        modifier = Modifier.weight(1f),
+                        colors = actionColors,
+                    ) {
                         Text("На месяц")
                     }
                 }
             }
         }
+    }
+}
+
+/** Счётчик «сделано» на карточке привычек: свои цвета, чтобы читался и на жёлтом утре, и на тёмном вечере. */
+@Composable
+private fun HabitCountChip(
+    text: String,
+    tone: PillTone,
+    isMorning: Boolean,
+    fallbackBg: Color,
+    fallbackFg: Color,
+) {
+    val (background, foreground) = when (tone) {
+        PillTone.Done -> if (isMorning) {
+            Color(0xFFDCFCE7) to Color(0xFF166534)
+        } else {
+            Color(0xFF14532D) to Color(0xFFBBF7D0)
+        }
+        PillTone.Pending -> if (isMorning) {
+            Color(0xFFFEE2E2) to Color(0xFF991B1B)
+        } else {
+            Color(0xFF7F1D1D) to Color(0xFFFECACA)
+        }
+        PillTone.Muted -> fallbackBg to fallbackFg
+    }
+    Box(
+        modifier = Modifier
+            .background(background, RoundedCornerShape(50))
+            .padding(horizontal = 10.dp, vertical = 4.dp),
+        contentAlignment = Alignment.Center,
+    ) {
+        Text(
+            text,
+            style = MaterialTheme.typography.labelSmall,
+            fontWeight = FontWeight.SemiBold,
+            color = foreground,
+            maxLines = 1,
+        )
     }
 }
 
