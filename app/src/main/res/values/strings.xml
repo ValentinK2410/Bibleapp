@@ -825,7 +825,6 @@
     <string name="timemark_attachment_text">текст</string>
     <string name="timemark_delete_cd">Удалить</string>
     <string name="timemark_saved_project_line">%1$s · %2$s %3$d гл.</string>
-    <string name="timemark_reader_section_title">Таймкоды</string>
     <string name="timemark_reader_audio_missing">Файл озвучки не найден</string>
     <string name="timemark_reader_play_cd">Воспроизвести таймкоды</string>
     <string name="timemark_source_label">Режим:</string>

@@ -11,12 +11,6 @@ fun verseRangeForTimemarkPosition(positionMs: Long, cues: List<TimemarkCue>): In
     return active.verseStart..end
 }
 
-fun activeTimemarkCue(positionMs: Long, cues: List<TimemarkCue>): TimemarkCue? {
-    if (cues.isEmpty()) return null
-    val sorted = cues.sortedBy { it.timeMs }
-    return sorted.lastOrNull { it.timeMs <= positionMs }
-}
-
 /** Позиция трека (мс) для начала озвучки с указанного стиха по меткам проекта. */
 fun timeMsForTimemarkVerse(verseNum: Int, cues: List<TimemarkCue>): Long? {
     if (cues.isEmpty() || verseNum < 1) return null
@@ -114,11 +108,4 @@ fun versesHeardByEstimate(
         if (ranges.any { (from, to) -> start < to && end > from }) heard += verse
     }
     return heard.toList()
-}
-
-fun formatTimemarkTimeMs(ms: Long): String {
-    val s = (ms / 1000).toInt()
-    val m = s / 60
-    val r = s % 60
-    return "%d:%02d".format(m, r)
 }
