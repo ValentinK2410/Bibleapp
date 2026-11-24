@@ -2852,7 +2852,6 @@ private fun BibleNavHost(
                 if (showNarratorPicker) viewModel.recordReadingToolUse("Выбор озвучки")
             }
             val bibleAudioState by com.example.bible.data.BibleAudioPlayer.state.collectAsState()
-            var bibleAudioBarInsetDp by remember { mutableStateOf(0.dp) }
             val readerContext = LocalContext.current
             val semanticHighlightSession by viewModel.semanticHighlightSession.collectAsStateWithLifecycle()
             val readerUserLexiconRules by viewModel.readerUserLexiconRules.collectAsStateWithLifecycle()
@@ -3452,7 +3451,9 @@ private fun BibleNavHost(
                     delay(1600)
                     fontButtonsShown = false
                 }
-                Box(
+                // Текст занимает оставшуюся высоту, панель озвучки стоит под ним —
+                // в ландшафте оба видны сразу, стихи не уезжают под плеер.
+                Column(
                     modifier = Modifier
                         .padding(padding)
                         .fillMaxSize()
@@ -3467,6 +3468,7 @@ private fun BibleNavHost(
                             }
                         },
                 ) {
+                Box(Modifier.weight(1f).fillMaxWidth()) {
                 Column(modifier = Modifier.fillMaxSize()) {
                     val selectedTabArgb = translationTabColors[translations[pagerState.currentPage].code]
                     val tabIndicatorColor = selectedTabArgb?.let { Color(it) } ?: MaterialTheme.colorScheme.primary
@@ -3508,6 +3510,7 @@ private fun BibleNavHost(
                             )
                         }
                     }
+                    Box(Modifier.weight(1f).fillMaxWidth()) {
                     ProvideReaderFontScale(multiplier = readerFontScale) {
                         HorizontalPager(
                             state = pagerState,
@@ -3654,7 +3657,6 @@ private fun BibleNavHost(
                                         getAudioProgress = { viewModel.getAudioProgress() },
                                         onSeekAudio = { viewModel.seekAudio(it) },
                                         onPauseMainAudioForAttachment = { viewModel.pauseAudioIfPlaying() },
-                                        bibleChapterAudioBarBottomInset = bibleAudioBarInsetDp,
                                         timemarkProject = timemarkForPage,
                                         chapterHasTimemarks = pageHasTimemarks,
                                         timemarksMatchNarration = timemarkForPage != null,
@@ -3758,18 +3760,17 @@ private fun BibleNavHost(
                             }
                         }
                     }
+                    }
                 }
-                BibleAudioBar(
-                    modifier = Modifier.align(Alignment.BottomCenter),
-                    onBarHeightChanged = { bibleAudioBarInsetDp = it },
-                )
                 ReaderFontScaleFabControls(
                     readerFontScale = readerFontScale,
                     onAdjustFontScale = { delta -> viewModel.adjustReaderFontScale(delta) },
                     modifier = Modifier.align(Alignment.BottomEnd),
-                    bottomInset = bibleAudioBarInsetDp,
+                    bottomInset = 8.dp,
                     shown = fontButtonsShown,
                 )
+                }
+                BibleAudioBar(modifier = Modifier.fillMaxWidth())
                 }
             }
             if (showTabColorsDialog) {
