@@ -2902,21 +2902,6 @@ private fun BibleNavHost(
                     chapterNum,
                 )
             }
-            val timemarksMatchNarration = remember(
-                translation,
-                bookId,
-                chapterNum,
-                readingAudioNarrator.id,
-                timemarkProjectsRefresh,
-            ) {
-                TimemarkStore.findProjectMatchingNarration(
-                    readerContext,
-                    translation.code,
-                    bookId,
-                    chapterNum,
-                    readingAudioNarrator.id,
-                ) != null
-            }
             LaunchedEffect(bookId) {
                 val st = com.example.bible.data.BibleAudioPlayer.state.value
                 if (
@@ -3578,19 +3563,6 @@ private fun BibleNavHost(
                                     )
                                 }
                             }
-                            val pageHasTimemarks = remember(
-                                pageTrans,
-                                bookId,
-                                chapterNum,
-                                timemarkProjectsRefresh,
-                            ) {
-                                TimemarkStore.hasTimemarksForChapter(
-                                    readerContext,
-                                    pageTrans.code,
-                                    bookId,
-                                    chapterNum,
-                                )
-                            }
                             val timemarkForPage = remember(
                                 pageTrans,
                                 bookId,
@@ -3676,8 +3648,6 @@ private fun BibleNavHost(
                                         onSeekAudio = { viewModel.seekAudio(it) },
                                         onPauseMainAudioForAttachment = { viewModel.pauseAudioIfPlaying() },
                                         timemarkProject = timemarkForPage,
-                                        chapterHasTimemarks = pageHasTimemarks,
-                                        timemarksMatchNarration = timemarkForPage != null,
                                         mediaLibraryImages = bibleUserImages,
                                         mediaLibraryVideos = bibleUserVideos,
                                         mediaLibraryAudios = bibleUserAudios,
@@ -6651,10 +6621,6 @@ private fun ReaderContent(
     bibleChapterAudioBarBottomInset: Dp = 0.dp,
     /** Сохранённый проект таймкодов для этой главы (перевод должен совпадать с [translation]). */
     timemarkProject: TimemarkProject? = null,
-    /** Есть ли сохранённые таймкоды для главы (независимо от текущей озвучки). */
-    chapterHasTimemarks: Boolean = false,
-    /** Таймкоды совпадают с выбранной озвучкой. */
-    timemarksMatchNarration: Boolean = false,
     /** Картинки из «Медиа → Картинки» для вложений к стиху. */
     mediaLibraryImages: List<com.example.bible.data.BibleUserImage> = emptyList(),
     /** Видео из «Медиа → Видео» (лексикон, вложения). */
@@ -7020,11 +6986,6 @@ private fun ReaderContent(
                             }
                         }
                     }
-                }
-                if (chapterHasTimemarks && !(timemarkProject != null && chapterAudioOnThisPage && bibleChapterAudioState.isPlaying)) {
-                    TimemarkChapterHintBanner(
-                        matchesCurrentNarration = timemarksMatchNarration,
-                    )
                 }
             }
             itemsIndexed(

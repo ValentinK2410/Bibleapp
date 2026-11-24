@@ -942,8 +942,6 @@
     <string name="timemark_github_ok">Скачано проектов: %1$d. Включите озвучку главы.</string>
     <string name="timemark_github_export_all">Файл для GitHub (без аудио)</string>
     <string name="timemark_github_export_chooser">Отправить JSON для GitHub</string>
-    <string name="timemark_reader_chapter_hint">У этой главы есть таймкоды — нажмите 🎧 в шапке для озвучки с подсветкой стихов</string>
-    <string name="timemark_reader_chapter_hint_active">Таймкоды готовы — включите озвучку кнопкой 🎧 в шапке</string>
     <string name="timemark_listen_with_cues_cd">Слушать с таймкодами</string>
     <string name="timemark_chapter_has_cues_cd">У главы есть таймкоды</string>
     <string name="song_lyric_sync_cd">Автоподсветка текста по таймкоду</string>
