@@ -605,10 +605,15 @@ fun DualBibleScreen(
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(MaterialTheme.colorScheme.background)
-            .onSizeChanged { totalHeightPx = it.height },
+            .background(MaterialTheme.colorScheme.background),
     ) {
         Column(Modifier.fillMaxSize()) {
+        Column(
+            Modifier
+                .weight(1f)
+                .fillMaxWidth()
+                .onSizeChanged { totalHeightPx = it.height },
+        ) {
             // Pane 1
             Box(
                 modifier = Modifier
@@ -723,6 +728,8 @@ fun DualBibleScreen(
                 )
             }
         }
+        BibleAudioBar(modifier = Modifier.fillMaxWidth())
+        }
 
         if (resizeMode) {
             ResizeOverlay(
@@ -742,9 +749,6 @@ fun DualBibleScreen(
             )
         }
 
-        BibleAudioBar(
-            modifier = Modifier.align(Alignment.BottomCenter),
-        )
     }
 }
 

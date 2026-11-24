@@ -1,5 +1,6 @@
 package com.example.bible.ui
 
+import android.content.res.Configuration
 import android.widget.Toast
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.animateContentSize
@@ -8,7 +9,10 @@ import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.horizontalScroll
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.FlowRow
@@ -16,8 +20,10 @@ import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.defaultMinSize
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -31,6 +37,8 @@ import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.CloudDownload
 import androidx.compose.material.icons.filled.Headphones
+import androidx.compose.material.icons.filled.KeyboardArrowDown
+import androidx.compose.material.icons.filled.KeyboardArrowUp
 import androidx.compose.material.icons.filled.Pause
 import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material.icons.filled.Remove
@@ -66,13 +74,16 @@ import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.onGloballyPositioned
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
@@ -83,6 +94,8 @@ import com.example.bible.data.BibleAudioPlayer
 import com.example.bible.data.BibleAudioRepeatMode
 import com.example.bible.data.BibleCanon
 import com.example.bible.data.BibleVerse
+import com.example.bible.data.BibleVerseRepeatConfig
+import com.example.bible.ui.theme.BibleTheme
 import com.example.bible.data.NoteScriptureLinks
 import com.example.bible.data.TranslationId
 import com.example.bible.data.localAudioFile
@@ -100,7 +113,6 @@ fun BibleAudioBar(
     /** Высота панели — чтобы список стихов имел нижний отступ и не уходил под плеер */
     onBarHeightChanged: ((Dp) -> Unit)? = null,
 ) {
-    val density = LocalDensity.current
     val ps by BibleAudioPlayer.state.collectAsState()
     val continueChapters by BibleAudioPlayer.continueChapters.collectAsState()
     val repeatMode by BibleAudioPlayer.repeatMode.collectAsState()
@@ -123,6 +135,8 @@ fun BibleAudioBar(
     var showSleepDialog by remember { mutableStateOf(false) }
     var showRepeatDialog by remember { mutableStateOf(false) }
     var showOffsetAdjust by remember { mutableStateOf(false) }
+    var playerCollapsed by rememberSaveable { mutableStateOf(false) }
+    val landscape = LocalConfiguration.current.orientation == Configuration.ORIENTATION_LANDSCAPE
 
     LaunchedEffect(ps.isPlaying) {
         while (ps.isPlaying) {
@@ -189,6 +203,8 @@ fun BibleAudioBar(
         if (isTtsLoopActive && !isAudioActive) {
             TtsVerseRepeatBarContent(
                 ttsState = ttsLoopState,
+                collapsed = playerCollapsed,
+                onToggleCollapsed = { playerCollapsed = !playerCollapsed },
                 onBarHeightChanged = onBarHeightChanged,
                 onOpenRepeatDialog = { showRepeatDialog = true },
             )
@@ -234,24 +250,29 @@ fun BibleAudioBar(
             }
         }
 
-        Surface(
-            modifier = Modifier
-                .fillMaxWidth()
-                .animateContentSize()
-                .onGloballyPositioned { coords ->
-                    onBarHeightChanged?.invoke(
-                        with(density) { coords.size.height.toDp() },
-                    )
-                },
-            shape = RoundedCornerShape(topStart = 14.dp, topEnd = 14.dp),
-            shadowElevation = 8.dp,
-            tonalElevation = 3.dp,
+        AudioBarFrame(
+            landscape = landscape,
+            collapsed = playerCollapsed,
+            onBarHeightChanged = onBarHeightChanged,
         ) {
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(horizontal = 10.dp, vertical = 6.dp),
+                    .padding(
+                        horizontal = if (landscape || playerCollapsed) 6.dp else 10.dp,
+                        vertical = if (landscape || playerCollapsed) 2.dp else 6.dp,
+                    ),
             ) {
+                if (playerCollapsed) {
+                    BibleAudioCollapsedBar(
+                        title = "$bookName ${ps.chapter} · ${narrator.name}",
+                        isPlaying = ps.isPlaying,
+                        isLoading = ps.isLoading,
+                        onTogglePlay = { BibleAudioPlayer.togglePlay() },
+                        onExpand = { playerCollapsed = false },
+                        onClose = { stopReaderChapterAudio() },
+                    )
+                } else {
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     verticalAlignment = Alignment.CenterVertically,
@@ -322,7 +343,7 @@ fun BibleAudioBar(
                                 },
                                 modifier = Modifier
                                     .weight(1f)
-                                    .height(22.dp),
+                                    .height(if (landscape) 18.dp else 22.dp),
                             )
                             Text(
                                 formatMs(ps.durationMs),
@@ -416,6 +437,11 @@ fun BibleAudioBar(
                         )
                     }
 
+                    BibleAudioCollapseButton(
+                        collapsed = false,
+                        onClick = { playerCollapsed = true },
+                    )
+
                     IconButton(
                         onClick = { stopReaderChapterAudio() },
                         modifier = Modifier.size(28.dp),
@@ -429,6 +455,24 @@ fun BibleAudioBar(
                     }
                 }
 
+                if (landscape) {
+                    ChapterAudioLandscapeOptions(
+                        repeatMode = repeatMode,
+                        repeatTargetCount = repeatTargetCount,
+                        continueChapters = continueChapters,
+                        verseRepeatConfig = verseRepeatConfig,
+                        playbackSpeed = playbackSpeed,
+                        startOffsetMs = startOffsetMs,
+                        endOffsetMs = endOffsetMs,
+                        showOffsetAdjust = showOffsetAdjust,
+                        onToggleOffsetAdjust = { showOffsetAdjust = !showOffsetAdjust },
+                        sleepRemaining = sleepRemaining,
+                        sleepAwaitChapter = sleepAwaitChapter,
+                        error = ps.error,
+                        onOpenRepeatDialog = { showRepeatDialog = true },
+                    )
+                }
+                if (!landscape) {
                 // Ряд быстрого переключения режима повтора (Глава / Книга / Повтор главы / Повтор книги / Стихи)
                 Row(
                     modifier = Modifier
@@ -698,6 +742,8 @@ fun BibleAudioBar(
                         color = MaterialTheme.colorScheme.error,
                     )
                 }
+                } // портрет: полные ряды режимов, скорости и отрывка
+                } // развёрнутая панель
             }
         }
     }
@@ -706,11 +752,13 @@ fun BibleAudioBar(
 @Composable
 private fun TtsVerseRepeatBarContent(
     ttsState: ReaderVerseTtsLoopState,
+    collapsed: Boolean,
+    onToggleCollapsed: () -> Unit,
     onBarHeightChanged: ((Dp) -> Unit)?,
     onOpenRepeatDialog: () -> Unit,
 ) {
     val context = LocalContext.current
-    val density = LocalDensity.current
+    val landscape = LocalConfiguration.current.orientation == Configuration.ORIENTATION_LANDSCAPE
     val bookName = BibleCanon.byId(ttsState.bookId)?.nameRu ?: ttsState.bookId
     val loopBadge = if (ttsState.repeatEnabled) {
         val cnt = if (ttsState.targetLoops <= 0) "∞" else "${(ttsState.completedLoops + 1).coerceAtMost(ttsState.targetLoops)}/${ttsState.targetLoops}"
@@ -719,23 +767,30 @@ private fun TtsVerseRepeatBarContent(
         "1 раз"
     }
 
-    Surface(
-        modifier = Modifier
-            .fillMaxWidth()
-            .animateContentSize()
-            .onGloballyPositioned { coords ->
-                onBarHeightChanged?.invoke(with(density) { coords.size.height.toDp() })
-            },
-        shape = RoundedCornerShape(topStart = 14.dp, topEnd = 14.dp),
-        shadowElevation = 8.dp,
-        tonalElevation = 3.dp,
+    AudioBarFrame(
+        landscape = landscape,
+        collapsed = collapsed,
+        onBarHeightChanged = onBarHeightChanged,
     ) {
         Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(horizontal = 10.dp, vertical = 8.dp),
-            verticalArrangement = Arrangement.spacedBy(4.dp),
+                .padding(
+                    horizontal = if (landscape || collapsed) 6.dp else 10.dp,
+                    vertical = if (landscape || collapsed) 2.dp else 8.dp,
+                ),
+            verticalArrangement = Arrangement.spacedBy(if (landscape) 2.dp else 4.dp),
         ) {
+            if (collapsed) {
+                BibleAudioCollapsedBar(
+                    title = "🗣️ $bookName ${ttsState.chapter}: ${ttsState.rangeLabelRu}",
+                    isPlaying = ttsState.isPlaying,
+                    isLoading = false,
+                    onTogglePlay = { ReaderVerseTtsLooper.togglePlay(context) },
+                    onExpand = onToggleCollapsed,
+                    onClose = { ReaderVerseTtsLooper.stop() },
+                )
+            } else {
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 verticalAlignment = Alignment.CenterVertically,
@@ -792,6 +847,10 @@ private fun TtsVerseRepeatBarContent(
                         modifier = Modifier.size(20.dp),
                     )
                 }
+                BibleAudioCollapseButton(
+                    collapsed = false,
+                    onClick = onToggleCollapsed,
+                )
                 IconButton(
                     onClick = { ReaderVerseTtsLooper.stop() },
                     modifier = Modifier.size(28.dp),
@@ -836,6 +895,7 @@ private fun TtsVerseRepeatBarContent(
                     label = { Text("Изменить стихи / Диктор", style = MaterialTheme.typography.labelSmall) },
                 )
             }
+            } // развёрнутый повтор TTS
         }
     }
 }
@@ -1453,4 +1513,446 @@ private fun formatMs(ms: Int): String {
 private fun formatSleepCountdown(ms: Long): String {
     val s = (ms / 1000).coerceAtLeast(0)
     return "%d:%02d".format(s / 60, s % 60)
+}
+
+/**
+ * Общая рамка панели: в ландшафте высота ограничена, чтобы над плеером
+ * оставалась колонка текста. Лишние контролы прокручиваются внутри панели.
+ */
+@Composable
+private fun AudioBarFrame(
+    landscape: Boolean,
+    collapsed: Boolean,
+    onBarHeightChanged: ((Dp) -> Unit)?,
+    content: @Composable () -> Unit,
+) {
+    val density = LocalDensity.current
+    val scroll = rememberScrollState()
+    BoxWithConstraints(Modifier.fillMaxWidth()) {
+        val incoming = maxHeight.value.takeIf { it.isFinite() }?.toInt() ?: 0
+        val capModifier = if (landscape) {
+            Modifier
+                .heightIn(max = landscapeAudioBarMaxHeightDp(incoming, collapsed).dp)
+                .verticalScroll(scroll)
+        } else {
+            Modifier
+        }
+        Surface(
+            modifier = Modifier
+                .fillMaxWidth()
+                .then(capModifier)
+                .animateContentSize()
+                .onGloballyPositioned { coords ->
+                    onBarHeightChanged?.invoke(with(density) { coords.size.height.toDp() })
+                },
+            shape = RoundedCornerShape(topStart = 14.dp, topEnd = 14.dp),
+            shadowElevation = 8.dp,
+            tonalElevation = 3.dp,
+        ) {
+            content()
+        }
+    }
+}
+
+@Composable
+private fun BibleAudioCollapseButton(
+    collapsed: Boolean,
+    onClick: () -> Unit,
+) {
+    IconButton(
+        onClick = onClick,
+        modifier = Modifier.size(32.dp),
+    ) {
+        Icon(
+            imageVector = if (collapsed) Icons.Default.KeyboardArrowUp else Icons.Default.KeyboardArrowDown,
+            contentDescription = if (collapsed) "Развернуть плеер" else "Свернуть плеер",
+            modifier = Modifier.size(22.dp),
+        )
+    }
+}
+
+@Composable
+internal fun BibleAudioCollapsedBar(
+    title: String,
+    isPlaying: Boolean,
+    isLoading: Boolean,
+    onTogglePlay: () -> Unit,
+    onExpand: () -> Unit,
+    onClose: () -> Unit,
+) {
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        if (isLoading) {
+            CircularProgressIndicator(Modifier.size(32.dp), strokeWidth = 3.dp)
+        } else {
+            FilledTonalIconButton(
+                onClick = onTogglePlay,
+                modifier = Modifier.size(32.dp),
+            ) {
+                Icon(
+                    if (isPlaying) Icons.Default.Pause else Icons.Default.PlayArrow,
+                    contentDescription = stringResource(
+                        if (isPlaying) R.string.audio_pause else R.string.audio_resume,
+                    ),
+                    modifier = Modifier.size(20.dp),
+                )
+            }
+        }
+        Text(
+            text = title,
+            modifier = Modifier
+                .weight(1f)
+                .padding(horizontal = 8.dp),
+            style = MaterialTheme.typography.labelMedium,
+            fontWeight = FontWeight.Bold,
+            maxLines = 1,
+            overflow = TextOverflow.Ellipsis,
+        )
+        BibleAudioCollapseButton(collapsed = true, onClick = onExpand)
+        IconButton(
+            onClick = onClose,
+            modifier = Modifier.size(28.dp),
+        ) {
+            Icon(
+                Icons.Default.Close,
+                contentDescription = "Закрыть",
+                modifier = Modifier.size(16.dp),
+                tint = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+        }
+    }
+}
+
+/** Одна горизонтальная лента режимов: в ландшафте вторая строка панели, без роста вниз. */
+@Composable
+private fun ChapterAudioLandscapeOptions(
+    repeatMode: BibleAudioRepeatMode,
+    repeatTargetCount: Int,
+    continueChapters: Boolean,
+    verseRepeatConfig: BibleVerseRepeatConfig?,
+    playbackSpeed: Float,
+    startOffsetMs: Int,
+    endOffsetMs: Int,
+    showOffsetAdjust: Boolean,
+    onToggleOffsetAdjust: () -> Unit,
+    sleepRemaining: Long?,
+    sleepAwaitChapter: Boolean,
+    error: String?,
+    onOpenRepeatDialog: () -> Unit,
+) {
+    val context = LocalContext.current
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .horizontalScroll(rememberScrollState()),
+        horizontalArrangement = Arrangement.spacedBy(6.dp),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        Text(
+            stringResource(R.string.bible_audio_speed),
+            style = MaterialTheme.typography.labelSmall,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+        )
+        SPEED_STEPS.forEach { s ->
+            FilterChip(
+                selected = kotlin.math.abs(playbackSpeed - s) < 0.01f,
+                onClick = { BibleAudioPlayer.setPlaybackSpeed(s) },
+                label = {
+                    Text(
+                        if (s == 1f) "1×" else "${s}×".replace(".0", ""),
+                        style = MaterialTheme.typography.labelSmall,
+                    )
+                },
+            )
+        }
+        FilterChip(
+            selected = repeatMode == BibleAudioRepeatMode.OFF && !continueChapters && verseRepeatConfig == null,
+            onClick = {
+                resetReaderVerseRangeToFullChapter()
+                BibleAudioPlayer.setRepeatMode(BibleAudioRepeatMode.OFF)
+                BibleAudioPlayer.setContinueChapters(false)
+            },
+            label = { Text("1 глава", style = MaterialTheme.typography.labelSmall) },
+        )
+        FilterChip(
+            selected = repeatMode == BibleAudioRepeatMode.OFF && continueChapters,
+            onClick = {
+                resetReaderVerseRangeToFullChapter()
+                BibleAudioPlayer.setRepeatMode(BibleAudioRepeatMode.OFF)
+                BibleAudioPlayer.setContinueChapters(true)
+            },
+            label = { Text("Книга подряд", style = MaterialTheme.typography.labelSmall) },
+        )
+        FilterChip(
+            selected = repeatMode == BibleAudioRepeatMode.CHAPTER,
+            onClick = {
+                if (repeatMode == BibleAudioRepeatMode.CHAPTER) {
+                    BibleAudioPlayer.setRepeatMode(BibleAudioRepeatMode.OFF)
+                } else {
+                    resetReaderVerseRangeToFullChapter()
+                    BibleAudioPlayer.setContinueChapters(false)
+                    BibleAudioPlayer.setRepeatMode(BibleAudioRepeatMode.CHAPTER, repeatTargetCount)
+                }
+            },
+            label = { Text("🔂 Повтор главы", style = MaterialTheme.typography.labelSmall) },
+        )
+        FilterChip(
+            selected = repeatMode == BibleAudioRepeatMode.BOOK,
+            onClick = {
+                if (repeatMode == BibleAudioRepeatMode.BOOK) {
+                    BibleAudioPlayer.setRepeatMode(BibleAudioRepeatMode.OFF)
+                } else {
+                    resetReaderVerseRangeToFullChapter()
+                    BibleAudioPlayer.setRepeatMode(BibleAudioRepeatMode.BOOK, repeatTargetCount)
+                }
+            },
+            label = { Text("🔁 Повтор книги", style = MaterialTheme.typography.labelSmall) },
+        )
+        FilterChip(
+            selected = repeatMode == BibleAudioRepeatMode.VERSES || verseRepeatConfig != null,
+            onClick = onOpenRepeatDialog,
+            label = {
+                val label = verseRepeatConfig?.let { "🔂 Стихи (${it.labelRu})" } ?: "🔂 Стихи…"
+                Text(label, style = MaterialTheme.typography.labelSmall)
+            },
+        )
+        if (repeatMode != BibleAudioRepeatMode.OFF) {
+            REPEAT_COUNT_STEPS.forEach { count ->
+                FilterChip(
+                    selected = repeatTargetCount == count,
+                    onClick = { BibleAudioPlayer.setRepeatTargetCount(count) },
+                    label = {
+                        Text(
+                            if (count == 0) "∞" else "${count}×",
+                            style = MaterialTheme.typography.labelSmall,
+                        )
+                    },
+                )
+            }
+        }
+        verseRepeatConfig?.let { cfg ->
+            Text(
+                text = if (repeatMode == BibleAudioRepeatMode.VERSES) {
+                    "🔂 ${cfg.labelRu}"
+                } else {
+                    "🎧 ${cfg.labelRu}"
+                },
+                style = MaterialTheme.typography.labelSmall,
+                fontWeight = FontWeight.Bold,
+                maxLines = 1,
+            )
+            FilterChip(
+                selected = repeatMode == BibleAudioRepeatMode.VERSES,
+                onClick = {
+                    if (repeatMode == BibleAudioRepeatMode.VERSES) {
+                        BibleAudioPlayer.setRepeatMode(BibleAudioRepeatMode.OFF)
+                        BibleAudioPlayer.setVerseRepeatConfig(cfg)
+                    } else {
+                        BibleAudioPlayer.setRepeatMode(BibleAudioRepeatMode.VERSES, repeatTargetCount)
+                        BibleAudioPlayer.setVerseRepeatConfig(cfg)
+                        restartActiveVerseRepeatIfConfigured(context)
+                    }
+                },
+                label = {
+                    Text(
+                        if (repeatMode == BibleAudioRepeatMode.VERSES) "Повтор вкл" else "Повторять",
+                        style = MaterialTheme.typography.labelSmall,
+                    )
+                },
+            )
+            AssistChip(
+                onClick = onToggleOffsetAdjust,
+                leadingIcon = {
+                    Icon(Icons.Default.Tune, contentDescription = null, modifier = Modifier.size(14.dp))
+                },
+                label = {
+                    val hasOff = startOffsetMs != 0 || endOffsetMs != 0
+                    Text(
+                        if (hasOff) {
+                            "Границы (${formatSignedSec(startOffsetMs)}/${formatSignedSec(endOffsetMs)})"
+                        } else {
+                            "Границы ±2с"
+                        },
+                        style = MaterialTheme.typography.labelSmall,
+                    )
+                },
+            )
+            if (showOffsetAdjust) {
+                Text(
+                    "Начало ${formatSignedSec(startOffsetMs)}",
+                    style = MaterialTheme.typography.labelSmall,
+                    maxLines = 1,
+                )
+                TextButton(
+                    onClick = { nudgeReaderVerseLoopStart(-2_000) },
+                    contentPadding = PaddingValues(horizontal = 6.dp, vertical = 0.dp),
+                    modifier = Modifier.defaultMinSize(minWidth = 1.dp, minHeight = 26.dp),
+                ) { Text("−2с", style = MaterialTheme.typography.labelSmall) }
+                TextButton(
+                    onClick = { nudgeReaderVerseLoopStart(2_000) },
+                    contentPadding = PaddingValues(horizontal = 6.dp, vertical = 0.dp),
+                    modifier = Modifier.defaultMinSize(minWidth = 1.dp, minHeight = 26.dp),
+                ) { Text("+2с", style = MaterialTheme.typography.labelSmall) }
+                Text(
+                    "Конец ${formatSignedSec(endOffsetMs)}",
+                    style = MaterialTheme.typography.labelSmall,
+                    maxLines = 1,
+                )
+                TextButton(
+                    onClick = { BibleAudioPlayer.adjustSegmentLoopEndOffsetMs(-2_000) },
+                    contentPadding = PaddingValues(horizontal = 6.dp, vertical = 0.dp),
+                    modifier = Modifier.defaultMinSize(minWidth = 1.dp, minHeight = 26.dp),
+                ) { Text("−2с", style = MaterialTheme.typography.labelSmall) }
+                TextButton(
+                    onClick = { BibleAudioPlayer.adjustSegmentLoopEndOffsetMs(2_000) },
+                    contentPadding = PaddingValues(horizontal = 6.dp, vertical = 0.dp),
+                    modifier = Modifier.defaultMinSize(minWidth = 1.dp, minHeight = 26.dp),
+                ) { Text("+2с", style = MaterialTheme.typography.labelSmall) }
+            }
+            TextButton(
+                onClick = {
+                    resetReaderVerseRangeToFullChapter()
+                    BibleAudioPlayer.setRepeatMode(BibleAudioRepeatMode.OFF)
+                },
+                contentPadding = PaddingValues(horizontal = 6.dp, vertical = 0.dp),
+                modifier = Modifier.defaultMinSize(minWidth = 1.dp, minHeight = 28.dp),
+            ) {
+                Text("Вся глава", style = MaterialTheme.typography.labelSmall)
+            }
+        }
+        if (sleepRemaining != null) {
+            Text(
+                stringResource(R.string.bible_audio_sleep_remaining, formatSleepCountdown(sleepRemaining)),
+                style = MaterialTheme.typography.labelSmall,
+                color = MaterialTheme.colorScheme.primary,
+                maxLines = 1,
+            )
+        }
+        if (sleepAwaitChapter) {
+            Text(
+                stringResource(R.string.bible_audio_sleep_after_chapter),
+                style = MaterialTheme.typography.labelSmall,
+                color = MaterialTheme.colorScheme.tertiary,
+                maxLines = 1,
+            )
+        }
+        if (error != null) {
+            Text(
+                error,
+                style = MaterialTheme.typography.labelSmall,
+                color = MaterialTheme.colorScheme.error,
+                maxLines = 1,
+            )
+        }
+    }
+}
+
+@Preview(name = "Плеер свёрнут", widthDp = 360, heightDp = 96, showBackground = true)
+@Preview(
+    name = "Плеер свёрнут, тёмная",
+    widthDp = 360,
+    heightDp = 96,
+    showBackground = true,
+    uiMode = Configuration.UI_MODE_NIGHT_YES,
+)
+@Composable
+private fun BibleAudioCollapsedBarPreview() {
+    BibleTheme(darkTheme = isSystemInDarkTheme()) {
+        Surface(color = MaterialTheme.colorScheme.surface) {
+            BibleAudioCollapsedBar(
+                title = "Бытие 1 · Бондаренко",
+                isPlaying = true,
+                isLoading = false,
+                onTogglePlay = {},
+                onExpand = {},
+                onClose = {},
+            )
+        }
+    }
+}
+
+@Preview(name = "Ландшафт: текст над плеером", widthDp = 800, heightDp = 280, showBackground = true)
+@Preview(
+    name = "Ландшафт: текст над плеером, тёмная",
+    widthDp = 800,
+    heightDp = 280,
+    showBackground = true,
+    uiMode = Configuration.UI_MODE_NIGHT_YES,
+)
+@Composable
+private fun BibleAudioLandscapeStackPreview() {
+    BibleTheme(darkTheme = isSystemInDarkTheme()) {
+        Column(
+            Modifier
+                .fillMaxSize()
+                .background(MaterialTheme.colorScheme.background),
+        ) {
+            Box(
+                Modifier
+                    .weight(1f)
+                    .fillMaxWidth(),
+                contentAlignment = Alignment.Center,
+            ) {
+                Text(
+                    "Текст главы над плеером",
+                    style = MaterialTheme.typography.bodyLarge,
+                )
+            }
+            AudioBarFrame(
+                landscape = true,
+                collapsed = false,
+                onBarHeightChanged = null,
+            ) {
+                Column(
+                    Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 6.dp, vertical = 2.dp),
+                ) {
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        FilledTonalIconButton(
+                            onClick = {},
+                            modifier = Modifier.size(32.dp),
+                        ) {
+                            Icon(
+                                Icons.Default.Pause,
+                                contentDescription = "Пауза",
+                                modifier = Modifier.size(20.dp),
+                            )
+                        }
+                        Text(
+                            "Бытие 1 · Бондаренко",
+                            modifier = Modifier
+                                .weight(1f)
+                                .padding(horizontal = 8.dp),
+                            style = MaterialTheme.typography.labelMedium,
+                            fontWeight = FontWeight.Bold,
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis,
+                        )
+                        BibleAudioCollapseButton(collapsed = false, onClick = {})
+                        IconButton(onClick = {}, modifier = Modifier.size(28.dp)) {
+                            Icon(Icons.Default.Close, contentDescription = "Закрыть", modifier = Modifier.size(16.dp))
+                        }
+                    }
+                    ChapterAudioLandscapeOptions(
+                        repeatMode = BibleAudioRepeatMode.OFF,
+                        repeatTargetCount = 0,
+                        continueChapters = false,
+                        verseRepeatConfig = null,
+                        playbackSpeed = 1f,
+                        startOffsetMs = 0,
+                        endOffsetMs = 0,
+                        showOffsetAdjust = false,
+                        onToggleOffsetAdjust = {},
+                        sleepRemaining = null,
+                        sleepAwaitChapter = false,
+                        error = null,
+                        onOpenRepeatDialog = {},
+                    )
+                }
+            }
+        }
+    }
 }
