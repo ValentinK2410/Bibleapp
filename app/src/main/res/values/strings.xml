@@ -506,6 +506,7 @@
     <string name="theme_preset_leather">Кожаный свиток</string>
     <string name="toggle_bookmark">Закладка</string>
     <string name="book_picker_title">Библия</string>
+    <string name="return_to_last_place">Вернуться туда, где я был</string>
     <string name="book_picker_long_press_tts_on">Озвучивать названия при долгом нажатии</string>
     <string name="book_picker_long_press_tts_off">Не озвучивать названия при долгом нажатии</string>
     <string name="no_chapters_loaded">Для этой книги пока нет загруженного текста. Добавьте полный текст в ресурсы приложения.</string>

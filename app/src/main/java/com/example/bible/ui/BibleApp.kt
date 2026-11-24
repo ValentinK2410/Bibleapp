@@ -50,6 +50,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.filled.ArrowForward
+import androidx.compose.material.icons.automirrored.filled.Undo
 import androidx.compose.material.icons.automirrored.filled.List
 import androidx.compose.material.icons.automirrored.filled.VolumeUp
 import androidx.compose.material.icons.filled.Add
@@ -214,7 +215,12 @@ import com.example.bible.data.AttachmentKind
 import com.example.bible.data.VerseAttachment
 import com.example.bible.data.VerseAttachmentStore
 import com.example.bible.data.HistoryEntry
+import com.example.bible.data.LastLocation
+import com.example.bible.data.LastLocationSession
 import com.example.bible.data.LastSessionResumeKind
+import com.example.bible.data.ReadingAnchor
+import com.example.bible.data.SharedPrefsLastLocationStore
+import com.example.bible.data.navArgumentsForLastLocation
 import com.example.bible.data.ReadingTraceEntry
 import com.example.bible.data.isValidForRestore
 import com.example.bible.data.ResumePersistAction
@@ -742,9 +748,26 @@ private fun BibleNavHost(
     val scope = rememberCoroutineScope()
     val navLifecycleOwner = LocalLifecycleOwner.current
 
+    val lastLocationContext = LocalContext.current.applicationContext
+    val lastLocationStore = remember { SharedPrefsLastLocationStore(lastLocationContext) }
+    val lastLocationSession = remember { LastLocationSession(lastLocationStore.load()) }
+    var lastLocation by remember { mutableStateOf(lastLocationSession.current) }
+    var lastLocationReadingTick by remember { mutableIntStateOf(0) }
+    val publishLastLocation: (LastLocation?) -> Unit = { updated ->
+        if (updated != null) {
+            lastLocationStore.save(updated)
+            lastLocation = lastLocationSession.current
+        }
+    }
+    val onLastReadingPlace: (ReadingAnchor) -> Unit = { anchor ->
+        if (lastLocationSession.noteReading(anchor, System.currentTimeMillis())) {
+            lastLocationReadingTick++
+        }
+    }
     DisposableEffect(navLifecycleOwner, navController, translation) {
         val observer = LifecycleEventObserver { _, event ->
             if (event == Lifecycle.Event.ON_STOP) {
+                publishLastLocation(lastLocationSession.flushNow())
                 scope.launch {
                     val action = resumePersistActionForNavDestination(navController, translation)
                     preferences.applyResumePersistAction(action)
@@ -756,6 +779,25 @@ private fun BibleNavHost(
     }
 
     val navBackStackEntry by navController.currentBackStackEntryAsState()
+    LaunchedEffect(lastLocationReadingTick) {
+        if (lastLocationReadingTick == 0) return@LaunchedEffect
+        delay(LastLocationSession.DEBOUNCE_MS)
+        publishLastLocation(lastLocationSession.flushDue(System.currentTimeMillis()))
+    }
+    LaunchedEffect(navBackStackEntry?.id) {
+        val entry = navBackStackEntry
+        val pattern = entry?.destination?.route
+        val captured = if (pattern.isNullOrBlank()) {
+            null
+        } else {
+            LastLocation.capture(
+                routePattern = pattern,
+                args = navArgumentsForLastLocation(pattern, entry.arguments),
+                translationCode = translation.code,
+            )
+        }
+        publishLastLocation(lastLocationSession.onDestination(entry?.id.orEmpty(), captured))
+    }
     var wasOnReadRoute by remember { mutableStateOf(false) }
     LaunchedEffect(navBackStackEntry?.destination?.route) {
         val route = navBackStackEntry?.destination?.route.orEmpty()
@@ -842,6 +884,30 @@ private fun BibleNavHost(
                                 }
                             },
                             actions = {
+                                val returnPlace = lastLocation
+                                val returnRoute = returnPlace?.navigableRoute()
+                                if (returnPlace != null && returnRoute != null) {
+                                    IconButton(
+                                        onClick = {
+                                            scope.launch {
+                                                if (
+                                                    returnPlace.restoresGlobalTranslation() &&
+                                                    returnPlace.translationCode.isNotBlank()
+                                                ) {
+                                                    viewModel.setTranslation(
+                                                        TranslationId.fromCode(returnPlace.translationCode),
+                                                    )
+                                                }
+                                                openDeepLinkRoute(navController, returnRoute)
+                                            }
+                                        },
+                                    ) {
+                                        Icon(
+                                            Icons.AutoMirrored.Filled.Undo,
+                                            contentDescription = stringResource(R.string.return_to_last_place),
+                                        )
+                                    }
+                                }
                                 IconButton(
                                     onClick = {
                                         viewModel.setBookPickerLongPressTts(!bookPickerLongPressTts)
@@ -1204,7 +1270,8 @@ private fun BibleNavHost(
             }
         }
         composable(
-            route = "dual?bookId={bookId}&chapter={chapter}",
+            route = "dual?bookId={bookId}&chapter={chapter}&verse={verse}&primary={primary}" +
+                "&companion={companion}&cBook={cBook}&cChapter={cChapter}&cVerse={cVerse}",
             arguments = listOf(
                 navArgument("bookId") {
                     type = NavType.StringType
@@ -1215,18 +1282,64 @@ private fun BibleNavHost(
                     type = NavType.IntType
                     defaultValue = 0
                 },
+                navArgument("verse") {
+                    type = NavType.IntType
+                    defaultValue = 0
+                },
+                navArgument("primary") {
+                    type = NavType.StringType
+                    nullable = true
+                    defaultValue = null
+                },
+                navArgument("companion") {
+                    type = NavType.StringType
+                    nullable = true
+                    defaultValue = null
+                },
+                navArgument("cBook") {
+                    type = NavType.StringType
+                    nullable = true
+                    defaultValue = null
+                },
+                navArgument("cChapter") {
+                    type = NavType.IntType
+                    defaultValue = 0
+                },
+                navArgument("cVerse") {
+                    type = NavType.IntType
+                    defaultValue = 0
+                },
             ),
         ) { entry ->
             val dualBookId = entry.arguments?.getString("bookId")
             val dualChapter = entry.arguments?.getInt("chapter")?.takeIf { it > 0 }
-            val dualInitialPanes = remember(dualBookId, dualChapter, translation) {
+            val dualVerse = entry.arguments?.getInt("verse") ?: 0
+            val dualPrimary = entry.arguments?.getString("primary")
+                ?.takeIf { it.isNotBlank() }
+                ?.let { TranslationId.fromCode(it) }
+                ?: translation
+            val dualCompanion = entry.arguments?.getString("companion")
+                ?.takeIf { it.isNotBlank() }
+                ?.let { TranslationId.fromCode(it) }
+                ?: defaultDualCompanionTranslation(dualPrimary)
+            val dualCompanionBook = entry.arguments?.getString("cBook")?.takeIf { it.isNotBlank() } ?: dualBookId
+            val dualCompanionChapter = entry.arguments?.getInt("cChapter")?.takeIf { it > 0 } ?: dualChapter
+            val dualCompanionVerse = entry.arguments?.getInt("cVerse")?.takeIf { it > 0 } ?: dualVerse
+            val dualInitialPanes = remember(
+                dualBookId,
+                dualChapter,
+                dualPrimary,
+                dualCompanion,
+                dualCompanionBook,
+                dualCompanionChapter,
+            ) {
                 if (dualBookId != null && dualChapter != null) {
                     listOf(
-                        PaneState(translation, dualBookId, dualChapter),
+                        PaneState(dualPrimary, dualBookId, dualChapter),
                         PaneState(
-                            defaultDualCompanionTranslation(translation),
-                            dualBookId,
-                            dualChapter,
+                            dualCompanion,
+                            dualCompanionBook,
+                            dualCompanionChapter,
                         ),
                     )
                 } else {
@@ -1317,6 +1430,9 @@ private fun BibleNavHost(
                 booksMainMenuOrder = booksMainMenuOrder,
                 narratorId = narratorId,
                 isDarkTheme = isDark,
+                initialScrollVerse = dualVerse,
+                initialCompanionScrollVerse = dualCompanionVerse,
+                onReadingPlace = onLastReadingPlace,
             )
         }
         composable("azbuka") {
@@ -2694,6 +2810,16 @@ private fun BibleNavHost(
             }
             LaunchedEffect(scrollVerse) {
                 if (scrollVerse > 0) readerVisibleVerse = scrollVerse
+            }
+            LaunchedEffect(bookId, chapterNum, readerVisibleVerse, translation) {
+                onLastReadingPlace(
+                    ReadingAnchor(
+                        translationCode = translation.code,
+                        bookId = bookId,
+                        chapter = chapterNum,
+                        verse = readerVisibleVerse.coerceAtLeast(1),
+                    ),
+                )
             }
             val chapterShortTitle = readerChapterTitle(bookId, chapterNum, readerVisibleVerse)
 
