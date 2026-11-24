@@ -6822,7 +6822,6 @@ private fun ReaderContent(
             }
     }
     val bibleChapterAudioState by BibleAudioPlayer.state.collectAsState()
-    var timemarkBarInset by remember(timemarkProject?.id) { mutableStateOf(0.dp) }
     val chapterAudioOnThisPage = bibleChapterAudioState.bookId == bookId &&
         bibleChapterAudioState.chapter == chapter
     val timemarkVerseRange = remember(
@@ -6883,11 +6882,6 @@ private fun ReaderContent(
             listState.animateTimemarkVerseToTop(idx)
         }
     }
-    LaunchedEffect(timemarkProject?.id, chapterAudioOnThisPage) {
-        if (timemarkProject == null || !chapterAudioOnThisPage) {
-            timemarkBarInset = 0.dp
-        }
-    }
 
     val multiSelectPad = if (multiSelect.isActive && multiSelect.count > 0) 56.dp else 0.dp
     val bottomPad = (if (selectionInfo != null) 88.dp else 16.dp) + multiSelectPad
@@ -6904,7 +6898,6 @@ private fun ReaderContent(
     val bottomObstruction = maxOf(
         biblePad,
         if (mediaBarVisible) 88.dp else 0.dp,
-        timemarkBarInset,
     )
     val interlinearChapterWordStarts = remember(verses) {
         var acc = 0
@@ -7302,13 +7295,6 @@ private fun ReaderContent(
             modifier = Modifier.align(Alignment.BottomCenter),
             horizontalAlignment = Alignment.CenterHorizontally,
         ) {
-            if (timemarkProject != null && chapterAudioOnThisPage) {
-                TimemarkReaderBar(
-                    project = timemarkProject,
-                    positionMs = bibleChapterAudioState.positionMs.toLong(),
-                    onHeightChanged = { timemarkBarInset = it },
-                )
-            }
             AudioPlayerBar(
                 playbackState = audioPlaybackState,
                 playbackSpeed = audioPlaybackSpeed,
