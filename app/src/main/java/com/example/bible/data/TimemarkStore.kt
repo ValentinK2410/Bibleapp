@@ -4,14 +4,30 @@ import android.content.Context
 import org.json.JSONArray
 import org.json.JSONObject
 import java.io.File
+import java.util.concurrent.atomic.AtomicInteger
 
 /**
  * Сохранение проектов таймкодов в каталоге timemark_projects (JSON-файлы).
  */
 object TimemarkStore {
 
+    private data class PresenceCache(
+        val epoch: Int,
+        val dirPath: String,
+        val index: TimemarkPresenceIndex,
+    )
+
+    private val presenceEpoch = AtomicInteger(0)
+
+    @Volatile
+    private var presenceCache: PresenceCache? = null
+
     private fun dir(context: Context): File =
         File(context.filesDir, "timemark_projects").also { it.mkdirs() }
+
+    private fun invalidatePresenceCache() {
+        presenceEpoch.incrementAndGet()
+    }
 
     /**
      * Копирует готовые таймкоды из assets.
@@ -21,6 +37,7 @@ object TimemarkStore {
     fun importBundled(context: Context) {
         val names = context.assets.list("timemark_projects") ?: return
         val out = dir(context)
+        var changed = false
         for (name in names) {
             if (!name.endsWith(".json")) continue
             val dest = File(out, name)
@@ -28,10 +45,12 @@ object TimemarkStore {
                 val bytes = input.readBytes()
                 val assetJson = bytes.toString(Charsets.UTF_8)
                 val existing = if (dest.isFile) runCatching { dest.readText() }.getOrNull() else null
-                if (!shouldReplaceBundled(existing, assetJson)) continue
+                if (!shouldReplaceBundled(existing, assetJson)) return@use
                 dest.writeBytes(bytes)
+                changed = true
             }
         }
+        if (changed) invalidatePresenceCache()
     }
 
     /** Комплектный JSON заменяет местный, если его updatedAt новее или местный файл не читается. */
@@ -62,10 +81,12 @@ object TimemarkStore {
     fun save(context: Context, project: TimemarkProject) {
         val f = File(dir(context), "${project.id}.json")
         f.writeText(toJson(project.copy(updatedAt = System.currentTimeMillis())))
+        invalidatePresenceCache()
     }
 
     fun delete(context: Context, id: String) {
         File(dir(context), "$id.json").delete()
+        invalidatePresenceCache()
     }
 
     /** Удаляет все сохранённые проекты таймкодов для данной книги (любой перевод, любая глава). */
@@ -158,17 +179,50 @@ object TimemarkStore {
 
     /**
      * Книги и главы с непустыми таймкодами сразу по всем переводам.
-     * Нужно на экранах выбора: открытый перевод не должен скрывать чужие метки.
+     * Открытый перевод не должен скрывать чужие метки.
+     * Последний посчитанный индекс можно взять сразу, не читая файлы.
+     */
+    fun peekPresenceIndex(context: Context): TimemarkPresenceIndex {
+        val cached = presenceCache ?: return TimemarkPresenceIndex.Empty
+        if (cached.dirPath != dir(context).absolutePath) return TimemarkPresenceIndex.Empty
+        return cached.index
+    }
+
+    /**
+     * Индекс из памяти, если проекты с прошлого построения не сохраняли, не удаляли и не импортировали.
+     * Иначе читает каталог заново.
      */
     fun presenceIndex(context: Context): TimemarkPresenceIndex {
+        val dirPath = dir(context).absolutePath
+        val epoch = presenceEpoch.get()
+        val cached = presenceCache
+        if (cached != null && cached.epoch == epoch && cached.dirPath == dirPath) {
+            return cached.index
+        }
+        return reloadPresenceIndex(context)
+    }
+
+    /** Всегда перечитывает каталог. Экран вызывает это в фоне при возврате на передний план. */
+    fun reloadPresenceIndex(context: Context): TimemarkPresenceIndex {
+        val dirPath = dir(context).absolutePath
+        val epoch = presenceEpoch.get()
+        val index = buildPresenceIndex(context)
+        if (presenceEpoch.get() == epoch) {
+            presenceCache = PresenceCache(epoch, dirPath, index)
+        }
+        return index
+    }
+
+    private fun buildPresenceIndex(context: Context): TimemarkPresenceIndex {
         val byBook = mutableMapOf<String, MutableSet<String>>()
         val byChapter = mutableMapOf<String, MutableMap<Int, MutableSet<String>>>()
-        for (p in listAllProjects(context)) {
-            if (p.cues.isEmpty() || p.bookId.isBlank() || p.translationCode.isBlank()) continue
-            byBook.getOrPut(p.bookId) { mutableSetOf() }.add(p.translationCode)
-            byChapter.getOrPut(p.bookId) { mutableMapOf() }
-                .getOrPut(p.chapter) { mutableSetOf() }
-                .add(p.translationCode)
+        for (file in listProjectFiles(context)) {
+            val header = readPresenceHeader(file) ?: continue
+            if (!header.hasCues) continue
+            byBook.getOrPut(header.bookId) { mutableSetOf() }.add(header.translationCode)
+            byChapter.getOrPut(header.bookId) { mutableMapOf() }
+                .getOrPut(header.chapter) { mutableSetOf() }
+                .add(header.translationCode)
         }
         return TimemarkPresenceIndex(
             translationsByBook = byBook.mapValues { it.value.toSet() },
@@ -177,6 +231,11 @@ object TimemarkStore {
             },
         )
     }
+
+    private fun readPresenceHeader(file: File): TimemarkPresenceHeader? =
+        runCatching {
+            file.bufferedReader(Charsets.UTF_8).use { reader -> scanTimemarkPresence(reader) }
+        }.getOrNull()
 
     /**
      * Один проект (самый свежий), если нужна обратная совместимость.
