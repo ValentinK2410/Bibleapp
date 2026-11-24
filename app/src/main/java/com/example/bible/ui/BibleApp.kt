@@ -131,6 +131,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.produceState
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.rememberCoroutineScope
@@ -636,6 +637,16 @@ private fun openDeepLinkRoute(navController: NavHostController, route: String) {
     }
 }
 
+private object HomeBooksAudioCache {
+    private val values = java.util.concurrent.ConcurrentHashMap<String, Set<String>>()
+
+    fun get(key: String): Set<String>? = values[key]
+
+    fun put(key: String, value: Set<String>) {
+        values[key] = value
+    }
+}
+
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class)
 @Composable
 private fun BibleNavHost(
@@ -973,11 +984,22 @@ private fun BibleNavHost(
             ) { padding ->
                 val topPad = padding.calculateTopPadding()
                 val bottomPad = padding.calculateBottomPadding()
-                val booksWithAudio = remember(translation, narratorId, downloadTick) {
-                    val fromAssets = viewModel.booksWithAudio(translation)
-                    val eff = com.example.bible.data.narratorForTranslation(translation, narratorId).id
-                    val downloaded = viewModel.booksWithDownloadedAudio(eff)
-                    fromAssets + downloaded
+                val booksAudioKey = "${translation.code}|$narratorId|$downloadTick"
+                val booksWithAudio by produceState(
+                    initialValue = HomeBooksAudioCache.get(booksAudioKey).orEmpty(),
+                    booksAudioKey,
+                ) {
+                    HomeBooksAudioCache.get(booksAudioKey)?.let { cached ->
+                        value = cached
+                        return@produceState
+                    }
+                    val loaded = withContext(Dispatchers.IO) {
+                        val fromAssets = viewModel.booksWithAudio(translation)
+                        val eff = com.example.bible.data.narratorForTranslation(translation, narratorId).id
+                        fromAssets + viewModel.booksWithDownloadedAudio(eff)
+                    }
+                    HomeBooksAudioCache.put(booksAudioKey, loaded)
+                    value = loaded
                 }
                 val dailyVerse = remember { DailyVerse.forToday() }
                 Column(
@@ -1000,6 +1022,22 @@ private fun BibleNavHost(
                                 coverageListen,
                                 coverageListenVerses,
                             )
+                        }
+                        val onBookClick = remember(viewModel) {
+                            { bookId: String ->
+                                com.example.bible.data.BibleAudioPlayer.stopForNavigation()
+                                viewModel.passagePickerSelectBook(bookId)
+                            }
+                        }
+                        val onBookLongPress = remember(bookNameTts, bookPickerLongPressTts) {
+                            { entry: CanonBookEntry ->
+                                previewBook = entry
+                                if (bookPickerLongPressTts) {
+                                    bookNameTts.speak(entry.nameRu)
+                                } else {
+                                    bookNameTts.stop()
+                                }
+                            }
                         }
                         val openDailyVerse = {
                             navController.navigate("read/${dailyVerse.bookId}/${dailyVerse.chapter}/${dailyVerse.verse}")
@@ -1038,18 +1076,8 @@ private fun BibleNavHost(
                                             passageActivity = passageActivity,
                                             readVerseKeys = coverageReadVerses,
                                             listenVerseKeys = coverageListenVerses,
-                                            onBookClick = { bookId ->
-                                                com.example.bible.data.BibleAudioPlayer.stopForNavigation()
-                                                viewModel.passagePickerSelectBook(bookId)
-                                            },
-                                            onBookLongPress = { entry ->
-                                                previewBook = entry
-                                                if (bookPickerLongPressTts) {
-                                                    bookNameTts.speak(entry.nameRu)
-                                                } else {
-                                                    bookNameTts.stop()
-                                                }
-                                            },
+                                            onBookClick = onBookClick,
+                                            onBookLongPress = onBookLongPress,
                                         )
                                     }
                                     DailyVerseCard(
@@ -1083,18 +1111,8 @@ private fun BibleNavHost(
                             passageActivity = passageActivity,
                             readVerseKeys = coverageReadVerses,
                             listenVerseKeys = coverageListenVerses,
-                            onBookClick = { bookId ->
-                                com.example.bible.data.BibleAudioPlayer.stopForNavigation()
-                                viewModel.passagePickerSelectBook(bookId)
-                            },
-                            onBookLongPress = { entry ->
-                                previewBook = entry
-                                if (bookPickerLongPressTts) {
-                                    bookNameTts.speak(entry.nameRu)
-                                } else {
-                                    bookNameTts.stop()
-                                }
-                            },
+                            onBookClick = onBookClick,
+                            onBookLongPress = onBookLongPress,
                         )
                         }
                     } else when (val shellState = rememberBookShell(library, translation, pickerBookId!!)) {

@@ -67,6 +67,37 @@ object PassageActivity {
     fun maxCount(json: String, kind: String, trackId: String, bookId: String): Int =
         hits(json, kind, trackId, bookId).maxOfOrNull { it.count } ?: 0
 
+    /**
+     * Максимум [maxCount] сразу по всем книгам.
+     * Строка активности разбирается один раз, а не заново на каждую книгу.
+     * [trackForBook] выбирает дорожку: у подстрочника она разная для Ветхого и Нового Завета.
+     */
+    fun maxCountByBook(
+        json: String,
+        kind: String,
+        trackForBook: (bookId: String) -> String,
+    ): Map<String, Int> {
+        if (json.isBlank() || kind.isBlank()) return emptyMap()
+        val lastByVerse = LinkedHashMap<String, VerseCount>()
+        var start = 0
+        val length = json.length
+        while (start < length) {
+            var end = json.indexOf(';', start)
+            if (end < 0) end = length
+            if (end > start) {
+                considerMaxCount(json, start, end, kind, trackForBook, lastByVerse)
+            }
+            start = end + 1
+        }
+        if (lastByVerse.isEmpty()) return emptyMap()
+        val out = HashMap<String, Int>()
+        for (hit in lastByVerse.values) {
+            val prev = out[hit.bookId]
+            if (prev == null || hit.count > prev) out[hit.bookId] = hit.count
+        }
+        return out
+    }
+
     /** Строки для окна книги: главы и стихи, число раз и последнее время. */
     fun linesForBook(
         json: String,
@@ -136,6 +167,44 @@ object PassageActivity {
         if (epochMs <= 0L) return ""
         val date = Instant.ofEpochMilli(epochMs).atZone(ZoneId.systemDefault())
         return date.format(WHEN_FORMAT)
+    }
+
+    private class VerseCount(val bookId: String, val count: Int)
+
+    private fun considerMaxCount(
+        json: String,
+        start: Int,
+        end: Int,
+        kind: String,
+        trackForBook: (bookId: String) -> String,
+        lastByVerse: MutableMap<String, VerseCount>,
+    ) {
+        val eq = json.indexOf('=', start)
+        if (eq <= start || eq >= end) return
+        val kindEnd = start + kind.length
+        if (kindEnd >= eq || json[kindEnd] != '|') return
+        if (!json.regionMatches(start, kind, 0, kind.length)) return
+        val trackStart = kindEnd + 1
+        val trackEnd = json.indexOf('|', trackStart)
+        if (trackEnd <= trackStart || trackEnd >= eq) return
+        val bookEnd = json.indexOf('|', trackEnd + 1)
+        if (bookEnd <= trackEnd + 1 || bookEnd >= eq) return
+        val chapterEnd = json.indexOf('|', bookEnd + 1)
+        if (chapterEnd <= bookEnd + 1 || chapterEnd >= eq) return
+        if (json.indexOf('|', chapterEnd + 1) in (chapterEnd + 1) until eq) return
+        if (json.substring(bookEnd + 1, chapterEnd).toIntOrNull() == null) return
+        if (json.substring(chapterEnd + 1, eq).toIntOrNull() == null) return
+        val bookId = json.substring(trackEnd + 1, bookEnd)
+        if (bookId.isEmpty()) return
+        val track = json.substring(trackStart, trackEnd)
+        if (track != trackForBook(bookId)) return
+        val verseKey = json.substring(start, eq)
+        val (count, _) = decodeValue(json.substring(eq + 1, end))
+        if (count <= 0) {
+            lastByVerse.remove(verseKey)
+        } else {
+            lastByVerse[verseKey] = VerseCount(bookId, count)
+        }
     }
 
     private fun key(kind: String, trackId: String, bookId: String, chapter: Int, verse: Int) =

@@ -48,6 +48,7 @@ import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.produceState
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -71,6 +72,8 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import com.example.bible.data.BibleCanon
 import com.example.bible.data.BibleCoverage
 import com.example.bible.data.BiblePreferences
@@ -330,8 +333,26 @@ fun rememberTranslationTabColorsMap(): Map<String, Int> {
 @Composable
 fun rememberTimemarkPresenceIndex(): TimemarkPresenceIndex {
     val context = LocalContext.current
+    val appContext = remember(context) { context.applicationContext }
     val tick = rememberTimemarkCatalogTick()
-    return remember(tick) { TimemarkStore.presenceIndex(context) }
+    val index by produceState(
+        initialValue = TimemarkStore.peekPresenceIndex(appContext),
+        appContext,
+        tick,
+    ) {
+        value = withContext(Dispatchers.IO) {
+            TimemarkStore.reloadPresenceIndex(appContext)
+        }
+    }
+    return index
+}
+
+@Composable
+private fun rememberListenRepeats(
+    passageActivity: String,
+    translation: TranslationId?,
+): Map<String, Int> = remember(passageActivity, translation) {
+    BibleCoverage.listenRepeatCounts(passageActivity, translation)
 }
 
 @Composable
@@ -584,6 +605,7 @@ fun BookSelectionGrid(
     var infoBook by remember { mutableStateOf<CanonBookEntry?>(null) }
     val presence = rememberTimemarkPresenceIndex()
     val tabColors = rememberTranslationTabColorsMap()
+    val listenRepeatsByBook = rememberListenRepeats(passageActivity, translation)
 
     CompositionLocalProvider(LocalLayoutDirection provides LayoutDirection.Ltr) {
         Box(modifier.fillMaxSize()) {
@@ -619,26 +641,33 @@ fun BookSelectionGrid(
                         items = section.books,
                         key = { it.id },
                     ) { entry ->
+                        val coverage = coverageByBook[entry.id]
+                        val onClick = remember(entry.id, onBookClick) {
+                            {
+                                selectedId = entry.id
+                                onBookClick(entry.id)
+                            }
+                        }
+                        val onLongClick = remember(entry.id, onBookLongPress) {
+                            {
+                                infoBook = entry
+                                onBookLongPress(entry)
+                            }
+                        }
                         BookCell(
                             entry = entry,
                             selected = selectedId == entry.id,
                             hasAudio = entry.id in booksWithAudio,
-                            readChapters = coverageByBook[entry.id]?.readChapters ?: 0,
-                            listenedChapters = coverageByBook[entry.id]?.listenedChapters ?: 0,
-                            listenedVerses = coverageByBook[entry.id]?.listenedVerses ?: 0,
-                            listenedOpenChapters = coverageByBook[entry.id]?.listenedOpenChapters ?: 0,
-                            listenRepeats = listenRepeatCount(passageActivity, translation, entry.id),
+                            readChapters = coverage?.readChapters ?: 0,
+                            listenedChapters = coverage?.listenedChapters ?: 0,
+                            listenedVerses = coverage?.listenedVerses ?: 0,
+                            listenedOpenChapters = coverage?.listenedOpenChapters ?: 0,
+                            listenRepeats = listenRepeatsByBook[entry.id] ?: 0,
                             readProgressColor = readProgressColor,
                             timemarkCodes = presence.forBook(entry.id),
                             tabColors = tabColors,
-                            onClick = {
-                                selectedId = entry.id
-                                onBookClick(entry.id)
-                            },
-                            onLongClick = {
-                                infoBook = entry
-                                onBookLongPress(entry)
-                            },
+                            onClick = onClick,
+                            onLongClick = onLongClick,
                         )
                     }
                 }
@@ -678,6 +707,7 @@ private fun BookSelectionList(
 ) {
     val presence = rememberTimemarkPresenceIndex()
     val tabColors = rememberTranslationTabColorsMap()
+    val listenRepeatsByBook = rememberListenRepeats(passageActivity, translation)
     var infoBook by remember { mutableStateOf<CanonBookEntry?>(null) }
     Box(modifier.fillMaxSize()) {
     LazyColumn(
@@ -706,76 +736,29 @@ private fun BookSelectionList(
                 }
             }
             lazyColumnItems(section.books, key = { it.id }) { entry ->
-                val textColor = groupTextColor(entry.group)
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .combinedClickable(
-                            onClick = { onBookClick(entry.id) },
-                            onLongClick = {
-                                infoBook = entry
-                                onBookLongPress(entry)
-                            },
-                        )
-                        .padding(start = 16.dp, end = 16.dp, top = 10.dp, bottom = 10.dp),
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(12.dp),
-                ) {
-                    Box(
-                        Modifier
-                            .size(width = 4.dp, height = 20.dp)
-                            .clip(RoundedCornerShape(2.dp))
-                            .background(textColor.copy(alpha = 0.65f)),
-                    )
-                    Text(
-                        text = entry.abbrRu,
-                        color = textColor,
-                        fontWeight = FontWeight.Bold,
-                        fontSize = 15.sp,
-                        fontFamily = FontFamily.SansSerif,
-                        modifier = Modifier.defaultMinSize(minWidth = 48.dp),
-                    )
-                    Text(
-                        text = entry.nameRu,
-                        color = textColor.copy(alpha = 0.88f),
-                        fontSize = 13.sp,
-                        fontFamily = FontFamily.SansSerif,
-                        modifier = Modifier.weight(1f),
-                        maxLines = 1,
-                        overflow = TextOverflow.Ellipsis,
-                    )
-                    CoverageMiniMarks(
-                        read = coverageByBook[entry.id]?.readChapters ?: 0,
-                        listened = coverageByBook[entry.id]?.listenedChapters ?: 0,
-                        listenedVerses = coverageByBook[entry.id]?.listenedVerses ?: 0,
-                        listenedOpenChapters = coverageByBook[entry.id]?.listenedOpenChapters ?: 0,
-                        chapters = entry.chapters,
-                        readColor = readProgressColor,
-                        compact = false,
-                    )
-                    Text(
-                        text = "${entry.chapters} гл.",
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        fontSize = 11.sp,
-                        fontFamily = FontFamily.SansSerif,
-                    )
-                    TimemarkPresenceDots(
-                        translationCodes = presence.forBook(entry.id),
-                        tabColors = tabColors,
-                    )
-                    if (entry.id in booksWithAudio) {
-                        Icon(
-                            Icons.Default.Headphones,
-                            contentDescription = null,
-                            tint = MaterialTheme.colorScheme.primary,
-                            modifier = Modifier.size(18.dp),
-                        )
+                val coverage = coverageByBook[entry.id]
+                val onClick = remember(entry.id, onBookClick) {
+                    { onBookClick(entry.id) }
+                }
+                val onLongClick = remember(entry.id, onBookLongPress) {
+                    {
+                        infoBook = entry
+                        onBookLongPress(entry)
                     }
                 }
-                HorizontalDivider(
-                    modifier = Modifier.padding(start = 32.dp),
-                    color = MaterialTheme.colorScheme.outlineVariant,
-                    thickness = 0.5.dp,
+                BookListRow(
+                    entry = entry,
+                    hasAudio = entry.id in booksWithAudio,
+                    readChapters = coverage?.readChapters ?: 0,
+                    listenedChapters = coverage?.listenedChapters ?: 0,
+                    listenedVerses = coverage?.listenedVerses ?: 0,
+                    listenedOpenChapters = coverage?.listenedOpenChapters ?: 0,
+                    listenRepeats = listenRepeatsByBook[entry.id] ?: 0,
+                    readProgressColor = readProgressColor,
+                    timemarkCodes = presence.forBook(entry.id),
+                    tabColors = tabColors,
+                    onClick = onClick,
+                    onLongClick = onLongClick,
                 )
             }
         }
@@ -798,17 +781,91 @@ private fun BookSelectionList(
     }
 }
 
-private fun listenRepeatCount(
-    activity: String,
-    translation: TranslationId?,
-    bookId: String,
-): Int {
-    if (translation == null || activity.isBlank()) return 0
-    return PassageActivity.maxCount(
-        activity,
-        PassageActivity.LISTEN,
-        BibleCoverage.listenTrackFor(translation, bookId),
-        bookId,
+@OptIn(ExperimentalFoundationApi::class)
+@Composable
+private fun BookListRow(
+    entry: CanonBookEntry,
+    hasAudio: Boolean,
+    readChapters: Int,
+    listenedChapters: Int,
+    listenedVerses: Int,
+    listenedOpenChapters: Int,
+    listenRepeats: Int,
+    readProgressColor: Color?,
+    timemarkCodes: Set<String>,
+    tabColors: Map<String, Int>,
+    onClick: () -> Unit,
+    onLongClick: () -> Unit,
+) {
+    val textColor = groupTextColor(entry.group)
+    val scheme = MaterialTheme.colorScheme
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .combinedClickable(
+                onClick = onClick,
+                onLongClick = onLongClick,
+            )
+            .padding(start = 16.dp, end = 16.dp, top = 10.dp, bottom = 10.dp),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(12.dp),
+    ) {
+        Box(
+            Modifier
+                .size(width = 4.dp, height = 20.dp)
+                .clip(RoundedCornerShape(2.dp))
+                .background(textColor.copy(alpha = 0.65f)),
+        )
+        Text(
+            text = entry.abbrRu,
+            color = textColor,
+            fontWeight = FontWeight.Bold,
+            fontSize = 15.sp,
+            fontFamily = FontFamily.SansSerif,
+            modifier = Modifier.defaultMinSize(minWidth = 48.dp),
+        )
+        Text(
+            text = entry.nameRu,
+            color = textColor.copy(alpha = 0.88f),
+            fontSize = 13.sp,
+            fontFamily = FontFamily.SansSerif,
+            modifier = Modifier.weight(1f),
+            maxLines = 1,
+            overflow = TextOverflow.Ellipsis,
+        )
+        CoverageMiniMarks(
+            read = readChapters,
+            listened = listenedChapters,
+            listenedVerses = listenedVerses,
+            listenedOpenChapters = listenedOpenChapters,
+            listenRepeats = listenRepeats,
+            chapters = entry.chapters,
+            readColor = readProgressColor,
+            compact = false,
+        )
+        Text(
+            text = "${entry.chapters} гл.",
+            color = scheme.onSurfaceVariant,
+            fontSize = 11.sp,
+            fontFamily = FontFamily.SansSerif,
+        )
+        TimemarkPresenceDots(
+            translationCodes = timemarkCodes,
+            tabColors = tabColors,
+        )
+        if (hasAudio) {
+            Icon(
+                Icons.Default.Headphones,
+                contentDescription = null,
+                tint = scheme.primary,
+                modifier = Modifier.size(18.dp),
+            )
+        }
+    }
+    HorizontalDivider(
+        modifier = Modifier.padding(start = 32.dp),
+        color = scheme.outlineVariant,
+        thickness = 0.5.dp,
     )
 }
 

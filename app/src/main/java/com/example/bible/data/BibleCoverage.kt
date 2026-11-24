@@ -48,6 +48,18 @@ object BibleCoverage {
             translation.code
         }
 
+    /**
+     * Сколько раз слушали каждую книгу открытого перевода.
+     * Один разбор [activity] вместо повторного разбора на каждой плитке.
+     * В карте только книги с ненулевым числом. Нет перевода или пустая строка — пустая карта.
+     */
+    fun listenRepeatCounts(activity: String, translation: TranslationId?): Map<String, Int> {
+        if (translation == null || activity.isBlank()) return emptyMap()
+        return PassageActivity.maxCountByBook(activity, PassageActivity.LISTEN) { bookId ->
+            listenTrackFor(translation, bookId)
+        }
+    }
+
     fun percent(done: Int, total: Int): Int =
         if (total <= 0) 0 else ((done.coerceAtLeast(0) * 100L) / total).toInt().coerceIn(0, 100)
 
