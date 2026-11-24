@@ -1,7 +1,7 @@
 {
   "format": "bible_timemark_catalog",
   "version": 1,
-  "updatedAt": "2026-11-24",
+  "updatedAt": "2026-11-25",
   "items": [
     {
       "id": "gh_bti_1_corinthians_1",
@@ -9989,7 +9989,7 @@
       "bookId": "philemon",
       "chapter": 1,
       "title": "К Филимону 1 · WEB (англ.)",
-      "cueCount": 1,
+      "cueCount": 25,
       "narratorId": "web",
       "file": "projects/web_philemon_1.json"
     },
