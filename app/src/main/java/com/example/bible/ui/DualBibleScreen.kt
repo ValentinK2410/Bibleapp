@@ -26,6 +26,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items as gridItems
@@ -102,6 +103,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
 import com.example.bible.R
+import com.example.bible.data.ReadingAnchor
 import com.example.bible.data.BibleBook
 import com.example.bible.data.BibleCanon
 import com.example.bible.data.BibleChapter
@@ -196,6 +198,25 @@ data class VerseScrollRequest(
 
 /** Строка-заголовок перед списком стихов в [ReaderPane]. */
 private const val READER_LAZY_HEADER_ITEMS = 1
+
+/** Первый стих, который ещё не уехал за верхний край списка (как в обычной читалке). */
+private fun topVisibleDualVerse(
+    listState: LazyListState,
+    verses: List<BibleVerse>,
+): Int? {
+    if (verses.isEmpty()) return null
+    val info = listState.layoutInfo
+    if (info.visibleItemsInfo.isEmpty()) return null
+    var fallback: Int? = null
+    for (item in info.visibleItemsInfo.sortedBy { it.index }) {
+        val verseIdx = item.index - READER_LAZY_HEADER_ITEMS
+        if (verseIdx !in verses.indices) continue
+        val number = verses[verseIdx].number
+        fallback = number
+        if (item.offset >= 0) return number
+    }
+    return fallback
+}
 
 data class ScrollSyncState(
     val sourcePane: Int = -1,
@@ -547,6 +568,12 @@ fun DualBibleScreen(
     booksMainMenuOrder: List<String> = BooksMainMenuOrder.allIds,
     narratorId: String = "bondarenko",
     isDarkTheme: Boolean = false,
+    /** Стих верхнего окна, который нужно прижать к верху при открытии. */
+    initialScrollVerse: Int = 0,
+    /** Стих нижнего окна. 0 — тот же, что у верхнего. */
+    initialCompanionScrollVerse: Int = 0,
+    /** Верхний видимый стих и оба окна. Нужен кнопке «вернуться». */
+    onReadingPlace: ((ReadingAnchor) -> Unit)? = null,
 ) {
     var panes by remember(initialPanes) {
         mutableStateOf(
@@ -562,6 +589,41 @@ fun DualBibleScreen(
     var dragFraction by remember { mutableFloatStateOf(0.5f) }
     var totalHeightPx by remember { mutableIntStateOf(1) }
     var scrollSync by remember { mutableStateOf(ScrollSyncState()) }
+    var pane0Verse by remember { mutableIntStateOf(initialScrollVerse) }
+    var pane1Verse by remember { mutableIntStateOf(initialCompanionScrollVerse) }
+    val pane0Key = panes.getOrNull(0)?.let { "${it.bookId}/${it.chapter}" }
+    val pane1Key = panes.getOrNull(1)?.let { "${it.bookId}/${it.chapter}" }
+    var pane0ChapterKey by remember { mutableStateOf<String?>(null) }
+    var pane1ChapterKey by remember { mutableStateOf<String?>(null) }
+    LaunchedEffect(pane0Key) {
+        if (pane0ChapterKey != null && pane0ChapterKey != pane0Key) pane0Verse = 0
+        pane0ChapterKey = pane0Key
+    }
+    LaunchedEffect(pane1Key) {
+        if (pane1ChapterKey != null && pane1ChapterKey != pane1Key) pane1Verse = 0
+        pane1ChapterKey = pane1Key
+    }
+    LaunchedEffect(panes, pane0Verse, pane1Verse, onReadingPlace) {
+        val callback = onReadingPlace ?: return@LaunchedEffect
+        val primary = panes.getOrNull(0) ?: return@LaunchedEffect
+        val bookId = primary.bookId ?: return@LaunchedEffect
+        val chapter = primary.chapter ?: return@LaunchedEffect
+        val verse = pane0Verse
+        if (verse < 1) return@LaunchedEffect
+        val secondary = panes.getOrNull(1)
+        callback(
+            ReadingAnchor(
+                translationCode = primary.translation.code,
+                bookId = bookId,
+                chapter = chapter,
+                verse = verse,
+                companionTranslationCode = secondary?.translation?.code.orEmpty(),
+                companionBookId = secondary?.bookId.orEmpty(),
+                companionChapter = secondary?.chapter ?: 0,
+                companionVerse = pane1Verse,
+            ),
+        )
+    }
 
     fun applyPaneUpdate(index: Int, newState: PaneState) {
         panes = if (syncMode) {
@@ -664,6 +726,8 @@ fun DualBibleScreen(
                     onOpenGigaChatSettings = onOpenGigaChatSettings,
                     translationTabColors = translationTabColors,
                     readerChrome = dualChrome,
+                    initialScrollVerse = initialScrollVerse,
+                    onTopVisibleVerse = { pane0Verse = it },
                 )
             }
 
@@ -725,6 +789,8 @@ fun DualBibleScreen(
                     onOpenGigaChatSettings = onOpenGigaChatSettings,
                     translationTabColors = translationTabColors,
                     readerChrome = dualChrome,
+                    initialScrollVerse = initialCompanionScrollVerse,
+                    onTopVisibleVerse = { pane1Verse = it },
                 )
             }
         }
@@ -1503,6 +1569,8 @@ internal fun BiblePaneColumn(
     onOpenGigaChatSettings: () -> Unit = onOpenDeepSeekSettings,
     translationTabColors: Map<String, Int> = emptyMap(),
     readerChrome: DualReaderChrome? = null,
+    initialScrollVerse: Int = 0,
+    onTopVisibleVerse: ((Int) -> Unit)? = null,
 ) {
     val paneContext = LocalContext.current
     var showQuickNav by remember { mutableStateOf(false) }
@@ -1771,6 +1839,8 @@ internal fun BiblePaneColumn(
                             viewModel = viewModel,
                             onOpenDeepSeekSettings = onOpenDeepSeekSettings,
                     onOpenGigaChatSettings = onOpenGigaChatSettings,
+                            initialScrollVerse = initialScrollVerse,
+                            onTopVisibleVerse = onTopVisibleVerse,
                         )
                     }
                     !isOnlinePane && chapterLoad is BibleChapterLoadState.Loading -> {
@@ -2017,6 +2087,8 @@ private fun ReaderPane(
     viewModel: BibleViewModel? = null,
     onOpenDeepSeekSettings: () -> Unit = {},
     onOpenGigaChatSettings: () -> Unit = onOpenDeepSeekSettings,
+    initialScrollVerse: Int = 0,
+    onTopVisibleVerse: ((Int) -> Unit)? = null,
 ) {
     val verseNumbersWithNotes = remember(userNotes, bookId, chapterNum) {
         userNotes.verseNumbersWithNotesInChapter(bookId, chapterNum)
@@ -2113,7 +2185,6 @@ private fun ReaderPane(
             fontWeight = MaterialTheme.typography.bodyMedium.fontWeight,
         )
 
-        val listState = rememberLazyListState()
         val isSyncScrolling = remember { mutableStateOf(false) }
         val activeLinkRequest = scrollToVerseRequest?.takeIf { it.matchesChapter(bookId, chapterNum) }
         val highlightVerses = activeLinkRequest?.verses.orEmpty()
@@ -2126,6 +2197,51 @@ private fun ReaderPane(
             } else {
                 verses
             }
+        }
+        val initialListIndex = if (initialScrollVerse > 0) {
+            val exact = displayVerses.indexOfFirst { it.number == initialScrollVerse }
+            if (exact >= 0) exact + READER_LAZY_HEADER_ITEMS else 0
+        } else {
+            0
+        }
+        val listState = rememberLazyListState(initialFirstVisibleItemIndex = initialListIndex)
+        var placedInitialVerse by remember { mutableStateOf(initialScrollVerse <= 0) }
+        var appliedInitialScroll by remember { mutableStateOf(false) }
+        LaunchedEffect(initialScrollVerse, displayVerses) {
+            if (appliedInitialScroll) return@LaunchedEffect
+            if (initialScrollVerse <= 0 || displayVerses.isEmpty()) {
+                placedInitialVerse = true
+                return@LaunchedEffect
+            }
+            if (scrollToVerseRequest != null) {
+                placedInitialVerse = true
+                appliedInitialScroll = true
+                return@LaunchedEffect
+            }
+            val verseIdx = displayVerses.indexOfFirst { it.number == initialScrollVerse }
+            if (verseIdx >= 0) {
+                listState.scrollToItem(verseIdx + READER_LAZY_HEADER_ITEMS, scrollOffset = 0)
+            }
+            appliedInitialScroll = true
+            placedInitialVerse = true
+        }
+        LaunchedEffect(listState, displayVerses, onTopVisibleVerse, initialScrollVerse) {
+            if (onTopVisibleVerse == null) return@LaunchedEffect
+            snapshotFlow {
+                topVisibleDualVerse(listState, displayVerses) to listState.isScrollInProgress
+            }
+                .distinctUntilChanged()
+                .collect { (verse, scrolling) ->
+                    if (verse == null) return@collect
+                    if (!placedInitialVerse) {
+                        if (verse == initialScrollVerse || scrolling) {
+                            placedInitialVerse = true
+                        } else {
+                            return@collect
+                        }
+                    }
+                    onTopVisibleVerse(verse)
+                }
         }
 
         LaunchedEffect(scrollToVerseRequest?.nonce, displayVerses, verses.size) {
