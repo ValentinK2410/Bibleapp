@@ -14,6 +14,7 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -25,6 +26,8 @@ import androidx.compose.foundation.lazy.grid.rememberLazyGridState
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.text.KeyboardActions
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -79,7 +82,9 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.luminance
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.LocalHapticFeedback
+import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.text.style.TextOverflow
@@ -235,6 +240,7 @@ internal fun MyNotesBrowser(
     onCreateClick: () -> Unit,
     snackbarHost: @Composable () -> Unit = {},
 ) {
+    val focus = LocalFocusManager.current
     val visible = document.visible(query)
     val visibleIds = visible.map { it.id }
     val byId = visible.associateBy { it.id }
@@ -313,14 +319,16 @@ internal fun MyNotesBrowser(
             Modifier
                 .fillMaxSize()
                 .padding(padding)
+                .imePadding()
                 .padding(horizontal = 16.dp),
         ) {
             OutlinedTextField(
                 value = query,
                 onValueChange = onQuery,
                 modifier = Modifier.fillMaxWidth(),
-                singleLine = true,
                 placeholder = { Text("Поиск по заметкам") },
+                keyboardOptions = KeyboardOptions(imeAction = ImeAction.Search),
+                keyboardActions = KeyboardActions(onSearch = { focus.clearFocus() }),
                 leadingIcon = { Icon(Icons.Filled.Search, contentDescription = null) },
                 trailingIcon = if (query.isNotEmpty()) {
                     {
@@ -392,13 +400,14 @@ internal fun MyNotesBrowser(
                     )
                 }
             }
+            val listModifier = Modifier.weight(1f).fillMaxWidth()
             when {
-                !loaded -> Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                !loaded -> Box(listModifier, contentAlignment = Alignment.Center) {
                     CircularProgressIndicator()
                 }
                 rows.isEmpty() -> NotesEmpty(
                     filtered = query.isNotBlank() || document.filterKind != null,
-                    modifier = Modifier.fillMaxSize(),
+                    modifier = listModifier,
                 )
                 document.grid -> NotesGrid(
                     rows = rows,
@@ -409,7 +418,7 @@ internal fun MyNotesBrowser(
                     onDelete = onDelete,
                     onMove = ::moveRows,
                     onDragEnd = ::finishDrag,
-                    modifier = Modifier.fillMaxSize(),
+                    modifier = listModifier,
                 )
                 else -> NotesColumn(
                     rows = rows,
@@ -420,7 +429,7 @@ internal fun MyNotesBrowser(
                     onDelete = onDelete,
                     onMove = ::moveRows,
                     onDragEnd = ::finishDrag,
-                    modifier = Modifier.fillMaxSize(),
+                    modifier = listModifier,
                 )
             }
         }
