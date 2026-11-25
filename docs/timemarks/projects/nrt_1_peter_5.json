@@ -1,0 +1,67 @@
+{
+  "id": "gh_nrt_1_peter_5",
+  "translationCode": "NRT",
+  "bookId": "1_peter",
+  "chapter": 5,
+  "title": "1-е Петра 5 · Новый русский",
+  "narratorId": "new-russian",
+  "audioFileName": "46_05.mp3",
+  "cues": [
+    {
+      "timeMs": 3222,
+      "verseStart": 1
+    },
+    {
+      "timeMs": 14350,
+      "verseStart": 2
+    },
+    {
+      "timeMs": 29261,
+      "verseStart": 3
+    },
+    {
+      "timeMs": 35105,
+      "verseStart": 4
+    },
+    {
+      "timeMs": 46193,
+      "verseStart": 5
+    },
+    {
+      "timeMs": 59983,
+      "verseStart": 6
+    },
+    {
+      "timeMs": 66028,
+      "verseStart": 7
+    },
+    {
+      "timeMs": 70731,
+      "verseStart": 8
+    },
+    {
+      "timeMs": 79197,
+      "verseStart": 9
+    },
+    {
+      "timeMs": 88204,
+      "verseStart": 10
+    },
+    {
+      "timeMs": 106537,
+      "verseStart": 11
+    },
+    {
+      "timeMs": 115023,
+      "verseStart": 12
+    },
+    {
+      "timeMs": 131034,
+      "verseStart": 13
+    },
+    {
+      "timeMs": 137899,
+      "verseStart": 14
+    }
+  ]
+}

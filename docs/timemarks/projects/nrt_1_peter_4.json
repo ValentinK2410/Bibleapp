@@ -1,0 +1,87 @@
+{
+  "id": "gh_nrt_1_peter_4",
+  "translationCode": "NRT",
+  "bookId": "1_peter",
+  "chapter": 4,
+  "title": "1-е Петра 4 · Новый русский",
+  "narratorId": "new-russian",
+  "audioFileName": "46_04.mp3",
+  "cues": [
+    {
+      "timeMs": 2662,
+      "verseStart": 1
+    },
+    {
+      "timeMs": 11668,
+      "verseStart": 2
+    },
+    {
+      "timeMs": 19994,
+      "verseStart": 3
+    },
+    {
+      "timeMs": 34104,
+      "verseStart": 4
+    },
+    {
+      "timeMs": 41909,
+      "verseStart": 5
+    },
+    {
+      "timeMs": 48814,
+      "verseStart": 6
+    },
+    {
+      "timeMs": 61443,
+      "verseStart": 7
+    },
+    {
+      "timeMs": 71069,
+      "verseStart": 8
+    },
+    {
+      "timeMs": 78254,
+      "verseStart": 9
+    },
+    {
+      "timeMs": 81957,
+      "verseStart": 10
+    },
+    {
+      "timeMs": 90463,
+      "verseStart": 11
+    },
+    {
+      "timeMs": 114419,
+      "verseStart": 12
+    },
+    {
+      "timeMs": 123165,
+      "verseStart": 13
+    },
+    {
+      "timeMs": 136094,
+      "verseStart": 14
+    },
+    {
+      "timeMs": 147282,
+      "verseStart": 15
+    },
+    {
+      "timeMs": 156528,
+      "verseStart": 16
+    },
+    {
+      "timeMs": 166755,
+      "verseStart": 17
+    },
+    {
+      "timeMs": 179644,
+      "verseStart": 18
+    },
+    {
+      "timeMs": 187070,
+      "verseStart": 19
+    }
+  ]
+}

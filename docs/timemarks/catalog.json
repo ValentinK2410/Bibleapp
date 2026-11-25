@@ -4374,6 +4374,56 @@
       "file": "projects/nrt_1_corinthians_9.json"
     },
     {
+      "id": "gh_nrt_1_peter_1",
+      "translationCode": "NRT",
+      "bookId": "1_peter",
+      "chapter": 1,
+      "title": "1-е Петра 1 · Новый русский",
+      "cueCount": 25,
+      "narratorId": "new-russian",
+      "file": "projects/nrt_1_peter_1.json"
+    },
+    {
+      "id": "gh_nrt_1_peter_2",
+      "translationCode": "NRT",
+      "bookId": "1_peter",
+      "chapter": 2,
+      "title": "1-е Петра 2 · Новый русский",
+      "cueCount": 25,
+      "narratorId": "new-russian",
+      "file": "projects/nrt_1_peter_2.json"
+    },
+    {
+      "id": "gh_nrt_1_peter_3",
+      "translationCode": "NRT",
+      "bookId": "1_peter",
+      "chapter": 3,
+      "title": "1-е Петра 3 · Новый русский",
+      "cueCount": 22,
+      "narratorId": "new-russian",
+      "file": "projects/nrt_1_peter_3.json"
+    },
+    {
+      "id": "gh_nrt_1_peter_4",
+      "translationCode": "NRT",
+      "bookId": "1_peter",
+      "chapter": 4,
+      "title": "1-е Петра 4 · Новый русский",
+      "cueCount": 19,
+      "narratorId": "new-russian",
+      "file": "projects/nrt_1_peter_4.json"
+    },
+    {
+      "id": "gh_nrt_1_peter_5",
+      "translationCode": "NRT",
+      "bookId": "1_peter",
+      "chapter": 5,
+      "title": "1-е Петра 5 · Новый русский",
+      "cueCount": 14,
+      "narratorId": "new-russian",
+      "file": "projects/nrt_1_peter_5.json"
+    },
+    {
       "id": "gh_nrt_1_thessalonians_1",
       "translationCode": "NRT",
       "bookId": "1_thessalonians",

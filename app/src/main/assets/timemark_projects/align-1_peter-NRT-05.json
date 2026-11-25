@@ -1,0 +1,81 @@
+{
+  "id": "align-1_peter-NRT-05",
+  "translationCode": "NRT",
+  "bookId": "1_peter",
+  "chapter": 5,
+  "title": "1-е Петра 5 · Новый русский",
+  "audioFilePath": "/data/user/0/com.example.bible.sqlite/files/bible_audio/new-russian/46_05.mp3",
+  "updatedAt": 1795478400000,
+  "cues": [
+    {
+      "timeMs": 3222,
+      "verseStart": 1,
+      "attachments": []
+    },
+    {
+      "timeMs": 14350,
+      "verseStart": 2,
+      "attachments": []
+    },
+    {
+      "timeMs": 29261,
+      "verseStart": 3,
+      "attachments": []
+    },
+    {
+      "timeMs": 35105,
+      "verseStart": 4,
+      "attachments": []
+    },
+    {
+      "timeMs": 46193,
+      "verseStart": 5,
+      "attachments": []
+    },
+    {
+      "timeMs": 59983,
+      "verseStart": 6,
+      "attachments": []
+    },
+    {
+      "timeMs": 66028,
+      "verseStart": 7,
+      "attachments": []
+    },
+    {
+      "timeMs": 70731,
+      "verseStart": 8,
+      "attachments": []
+    },
+    {
+      "timeMs": 79197,
+      "verseStart": 9,
+      "attachments": []
+    },
+    {
+      "timeMs": 88204,
+      "verseStart": 10,
+      "attachments": []
+    },
+    {
+      "timeMs": 106537,
+      "verseStart": 11,
+      "attachments": []
+    },
+    {
+      "timeMs": 115023,
+      "verseStart": 12,
+      "attachments": []
+    },
+    {
+      "timeMs": 131034,
+      "verseStart": 13,
+      "attachments": []
+    },
+    {
+      "timeMs": 137899,
+      "verseStart": 14,
+      "attachments": []
+    }
+  ]
+}

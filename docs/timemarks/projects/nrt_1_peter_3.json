@@ -1,0 +1,99 @@
+{
+  "id": "gh_nrt_1_peter_3",
+  "translationCode": "NRT",
+  "bookId": "1_peter",
+  "chapter": 3,
+  "title": "1-е Петра 3 · Новый русский",
+  "narratorId": "new-russian",
+  "audioFileName": "46_03.mp3",
+  "cues": [
+    {
+      "timeMs": 3823,
+      "verseStart": 1
+    },
+    {
+      "timeMs": 16012,
+      "verseStart": 2
+    },
+    {
+      "timeMs": 20235,
+      "verseStart": 3
+    },
+    {
+      "timeMs": 28201,
+      "verseStart": 4
+    },
+    {
+      "timeMs": 37068,
+      "verseStart": 5
+    },
+    {
+      "timeMs": 45154,
+      "verseStart": 6
+    },
+    {
+      "timeMs": 55502,
+      "verseStart": 7
+    },
+    {
+      "timeMs": 76397,
+      "verseStart": 8
+    },
+    {
+      "timeMs": 87306,
+      "verseStart": 9
+    },
+    {
+      "timeMs": 97913,
+      "verseStart": 10
+    },
+    {
+      "timeMs": 107701,
+      "verseStart": 11
+    },
+    {
+      "timeMs": 113705,
+      "verseStart": 12
+    },
+    {
+      "timeMs": 124033,
+      "verseStart": 13
+    },
+    {
+      "timeMs": 128757,
+      "verseStart": 14
+    },
+    {
+      "timeMs": 135722,
+      "verseStart": 15
+    },
+    {
+      "timeMs": 149332,
+      "verseStart": 16
+    },
+    {
+      "timeMs": 157798,
+      "verseStart": 17
+    },
+    {
+      "timeMs": 163923,
+      "verseStart": 18
+    },
+    {
+      "timeMs": 176592,
+      "verseStart": 19
+    },
+    {
+      "timeMs": 181576,
+      "verseStart": 20
+    },
+    {
+      "timeMs": 195827,
+      "verseStart": 21
+    },
+    {
+      "timeMs": 211078,
+      "verseStart": 22
+    }
+  ]
+}
