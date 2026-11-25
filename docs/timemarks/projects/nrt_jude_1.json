@@ -1,0 +1,111 @@
+{
+  "id": "gh_nrt_jude_1",
+  "translationCode": "NRT",
+  "bookId": "jude",
+  "chapter": 1,
+  "title": "Иуды 1 · Новый русский",
+  "narratorId": "new-russian",
+  "audioFileName": "51_01.mp3",
+  "cues": [
+    {
+      "timeMs": 2902,
+      "verseStart": 1
+    },
+    {
+      "timeMs": 12869,
+      "verseStart": 2
+    },
+    {
+      "timeMs": 21815,
+      "verseStart": 3
+    },
+    {
+      "timeMs": 35083,
+      "verseStart": 4
+    },
+    {
+      "timeMs": 53756,
+      "verseStart": 5
+    },
+    {
+      "timeMs": 65684,
+      "verseStart": 6
+    },
+    {
+      "timeMs": 76671,
+      "verseStart": 7
+    },
+    {
+      "timeMs": 90520,
+      "verseStart": 8
+    },
+    {
+      "timeMs": 97625,
+      "verseStart": 9
+    },
+    {
+      "timeMs": 111834,
+      "verseStart": 10
+    },
+    {
+      "timeMs": 121801,
+      "verseStart": 11
+    },
+    {
+      "timeMs": 132928,
+      "verseStart": 12
+    },
+    {
+      "timeMs": 151621,
+      "verseStart": 13
+    },
+    {
+      "timeMs": 162048,
+      "verseStart": 14
+    },
+    {
+      "timeMs": 171974,
+      "verseStart": 15
+    },
+    {
+      "timeMs": 187705,
+      "verseStart": 16
+    },
+    {
+      "timeMs": 202135,
+      "verseStart": 17
+    },
+    {
+      "timeMs": 210160,
+      "verseStart": 18
+    },
+    {
+      "timeMs": 218465,
+      "verseStart": 19
+    },
+    {
+      "timeMs": 227011,
+      "verseStart": 20
+    },
+    {
+      "timeMs": 234856,
+      "verseStart": 21
+    },
+    {
+      "timeMs": 242942,
+      "verseStart": 22
+    },
+    {
+      "timeMs": 246884,
+      "verseStart": 23
+    },
+    {
+      "timeMs": 262515,
+      "verseStart": 24
+    },
+    {
+      "timeMs": 271821,
+      "verseStart": 25
+    }
+  ]
+}

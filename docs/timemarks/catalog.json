@@ -5924,6 +5924,16 @@
       "file": "projects/nrt_john_9.json"
     },
     {
+      "id": "gh_nrt_jude_1",
+      "translationCode": "NRT",
+      "bookId": "jude",
+      "chapter": 1,
+      "title": "Иуды 1 · Новый русский",
+      "cueCount": 25,
+      "narratorId": "new-russian",
+      "file": "projects/nrt_jude_1.json"
+    },
+    {
       "id": "gh_nrt_luke_1",
       "translationCode": "NRT",
       "bookId": "luke",
