@@ -1,0 +1,51 @@
+{
+  "id": "gh_nrt_1_john_1",
+  "translationCode": "NRT",
+  "bookId": "1_john",
+  "chapter": 1,
+  "title": "1-е Иоанна 1 · Новый русский",
+  "narratorId": "new-russian",
+  "audioFileName": "48_01.mp3",
+  "cues": [
+    {
+      "timeMs": 5044,
+      "verseStart": 1
+    },
+    {
+      "timeMs": 16212,
+      "verseStart": 2
+    },
+    {
+      "timeMs": 28101,
+      "verseStart": 3
+    },
+    {
+      "timeMs": 41071,
+      "verseStart": 4
+    },
+    {
+      "timeMs": 48476,
+      "verseStart": 5
+    },
+    {
+      "timeMs": 58704,
+      "verseStart": 6
+    },
+    {
+      "timeMs": 67130,
+      "verseStart": 7
+    },
+    {
+      "timeMs": 78498,
+      "verseStart": 8
+    },
+    {
+      "timeMs": 86624,
+      "verseStart": 9
+    },
+    {
+      "timeMs": 96312,
+      "verseStart": 10
+    }
+  ]
+}

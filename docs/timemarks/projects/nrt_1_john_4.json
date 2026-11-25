@@ -1,0 +1,95 @@
+{
+  "id": "gh_nrt_1_john_4",
+  "translationCode": "NRT",
+  "bookId": "1_john",
+  "chapter": 4,
+  "title": "1-е Иоанна 4 · Новый русский",
+  "narratorId": "new-russian",
+  "audioFileName": "48_04.mp3",
+  "cues": [
+    {
+      "timeMs": 2122,
+      "verseStart": 1
+    },
+    {
+      "timeMs": 14331,
+      "verseStart": 2
+    },
+    {
+      "timeMs": 25459,
+      "verseStart": 3
+    },
+    {
+      "timeMs": 36228,
+      "verseStart": 4
+    },
+    {
+      "timeMs": 45855,
+      "verseStart": 5
+    },
+    {
+      "timeMs": 52000,
+      "verseStart": 6
+    },
+    {
+      "timeMs": 67531,
+      "verseStart": 7
+    },
+    {
+      "timeMs": 77399,
+      "verseStart": 8
+    },
+    {
+      "timeMs": 83263,
+      "verseStart": 9
+    },
+    {
+      "timeMs": 94012,
+      "verseStart": 10
+    },
+    {
+      "timeMs": 105580,
+      "verseStart": 11
+    },
+    {
+      "timeMs": 112846,
+      "verseStart": 12
+    },
+    {
+      "timeMs": 124875,
+      "verseStart": 13
+    },
+    {
+      "timeMs": 130539,
+      "verseStart": 14
+    },
+    {
+      "timeMs": 137204,
+      "verseStart": 15
+    },
+    {
+      "timeMs": 145611,
+      "verseStart": 16
+    },
+    {
+      "timeMs": 159421,
+      "verseStart": 17
+    },
+    {
+      "timeMs": 172171,
+      "verseStart": 18
+    },
+    {
+      "timeMs": 185922,
+      "verseStart": 19
+    },
+    {
+      "timeMs": 190325,
+      "verseStart": 20
+    },
+    {
+      "timeMs": 204376,
+      "verseStart": 21
+    }
+  ]
+}

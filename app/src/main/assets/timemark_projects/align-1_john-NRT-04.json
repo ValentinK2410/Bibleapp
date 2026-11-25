@@ -1,0 +1,116 @@
+{
+  "id": "align-1_john-NRT-04",
+  "translationCode": "NRT",
+  "bookId": "1_john",
+  "chapter": 4,
+  "title": "1-е Иоанна 4 · Новый русский",
+  "audioFilePath": "/data/user/0/com.example.bible.sqlite/files/bible_audio/new-russian/48_04.mp3",
+  "updatedAt": 1795478400000,
+  "cues": [
+    {
+      "timeMs": 2122,
+      "verseStart": 1,
+      "attachments": []
+    },
+    {
+      "timeMs": 14331,
+      "verseStart": 2,
+      "attachments": []
+    },
+    {
+      "timeMs": 25459,
+      "verseStart": 3,
+      "attachments": []
+    },
+    {
+      "timeMs": 36228,
+      "verseStart": 4,
+      "attachments": []
+    },
+    {
+      "timeMs": 45855,
+      "verseStart": 5,
+      "attachments": []
+    },
+    {
+      "timeMs": 52000,
+      "verseStart": 6,
+      "attachments": []
+    },
+    {
+      "timeMs": 67531,
+      "verseStart": 7,
+      "attachments": []
+    },
+    {
+      "timeMs": 77399,
+      "verseStart": 8,
+      "attachments": []
+    },
+    {
+      "timeMs": 83263,
+      "verseStart": 9,
+      "attachments": []
+    },
+    {
+      "timeMs": 94012,
+      "verseStart": 10,
+      "attachments": []
+    },
+    {
+      "timeMs": 105580,
+      "verseStart": 11,
+      "attachments": []
+    },
+    {
+      "timeMs": 112846,
+      "verseStart": 12,
+      "attachments": []
+    },
+    {
+      "timeMs": 124875,
+      "verseStart": 13,
+      "attachments": []
+    },
+    {
+      "timeMs": 130539,
+      "verseStart": 14,
+      "attachments": []
+    },
+    {
+      "timeMs": 137204,
+      "verseStart": 15,
+      "attachments": []
+    },
+    {
+      "timeMs": 145611,
+      "verseStart": 16,
+      "attachments": []
+    },
+    {
+      "timeMs": 159421,
+      "verseStart": 17,
+      "attachments": []
+    },
+    {
+      "timeMs": 172171,
+      "verseStart": 18,
+      "attachments": []
+    },
+    {
+      "timeMs": 185922,
+      "verseStart": 19,
+      "attachments": []
+    },
+    {
+      "timeMs": 190325,
+      "verseStart": 20,
+      "attachments": []
+    },
+    {
+      "timeMs": 204376,
+      "verseStart": 21,
+      "attachments": []
+    }
+  ]
+}

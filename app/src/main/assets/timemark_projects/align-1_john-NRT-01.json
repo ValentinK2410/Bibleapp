@@ -1,0 +1,61 @@
+{
+  "id": "align-1_john-NRT-01",
+  "translationCode": "NRT",
+  "bookId": "1_john",
+  "chapter": 1,
+  "title": "1-е Иоанна 1 · Новый русский",
+  "audioFilePath": "/data/user/0/com.example.bible.sqlite/files/bible_audio/new-russian/48_01.mp3",
+  "updatedAt": 1795478400000,
+  "cues": [
+    {
+      "timeMs": 5044,
+      "verseStart": 1,
+      "attachments": []
+    },
+    {
+      "timeMs": 16212,
+      "verseStart": 2,
+      "attachments": []
+    },
+    {
+      "timeMs": 28101,
+      "verseStart": 3,
+      "attachments": []
+    },
+    {
+      "timeMs": 41071,
+      "verseStart": 4,
+      "attachments": []
+    },
+    {
+      "timeMs": 48476,
+      "verseStart": 5,
+      "attachments": []
+    },
+    {
+      "timeMs": 58704,
+      "verseStart": 6,
+      "attachments": []
+    },
+    {
+      "timeMs": 67130,
+      "verseStart": 7,
+      "attachments": []
+    },
+    {
+      "timeMs": 78498,
+      "verseStart": 8,
+      "attachments": []
+    },
+    {
+      "timeMs": 86624,
+      "verseStart": 9,
+      "attachments": []
+    },
+    {
+      "timeMs": 96312,
+      "verseStart": 10,
+      "attachments": []
+    }
+  ]
+}
