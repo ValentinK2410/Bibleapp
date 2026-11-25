@@ -11344,6 +11344,16 @@
       "file": "projects/web_2_timothy_4.json"
     },
     {
+      "id": "gh_web_3_john_1",
+      "translationCode": "WEB",
+      "bookId": "3_john",
+      "chapter": 1,
+      "title": "3-е Иоанна 1 · WEB (англ.)",
+      "cueCount": 14,
+      "narratorId": "web",
+      "file": "projects/web_3_john_1.json"
+    },
+    {
       "id": "gh_web_acts_1",
       "translationCode": "WEB",
       "bookId": "acts",

@@ -1,0 +1,67 @@
+{
+  "id": "gh_web_3_john_1",
+  "translationCode": "WEB",
+  "bookId": "3_john",
+  "chapter": 1,
+  "title": "3-е Иоанна 1 · WEB (англ.)",
+  "narratorId": "web",
+  "audioFileName": "64_01.mp3",
+  "cues": [
+    {
+      "timeMs": 3222,
+      "verseStart": 1
+    },
+    {
+      "timeMs": 8525,
+      "verseStart": 2
+    },
+    {
+      "timeMs": 15510,
+      "verseStart": 3
+    },
+    {
+      "timeMs": 23334,
+      "verseStart": 4
+    },
+    {
+      "timeMs": 28538,
+      "verseStart": 5
+    },
+    {
+      "timeMs": 34061,
+      "verseStart": 6
+    },
+    {
+      "timeMs": 43547,
+      "verseStart": 7
+    },
+    {
+      "timeMs": 49390,
+      "verseStart": 8
+    },
+    {
+      "timeMs": 56034,
+      "verseStart": 9
+    },
+    {
+      "timeMs": 63939,
+      "verseStart": 10
+    },
+    {
+      "timeMs": 79989,
+      "verseStart": 11
+    },
+    {
+      "timeMs": 91416,
+      "verseStart": 12
+    },
+    {
+      "timeMs": 102023,
+      "verseStart": 13
+    },
+    {
+      "timeMs": 106105,
+      "verseStart": 14
+    }
+  ]
+}
