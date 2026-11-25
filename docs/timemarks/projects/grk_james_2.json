@@ -1,0 +1,115 @@
+{
+  "id": "gh_grk_james_2",
+  "translationCode": "PODSTR",
+  "bookId": "james",
+  "chapter": 2,
+  "title": "Иакова 2 · Греческий (Koine)",
+  "narratorId": "greek-nt",
+  "audioFileName": "59_02.mp3",
+  "cues": [
+    {
+      "timeMs": 560,
+      "verseStart": 1
+    },
+    {
+      "timeMs": 7386,
+      "verseStart": 2
+    },
+    {
+      "timeMs": 16612,
+      "verseStart": 3
+    },
+    {
+      "timeMs": 29922,
+      "verseStart": 4
+    },
+    {
+      "timeMs": 34506,
+      "verseStart": 5
+    },
+    {
+      "timeMs": 45954,
+      "verseStart": 6
+    },
+    {
+      "timeMs": 54061,
+      "verseStart": 7
+    },
+    {
+      "timeMs": 58284,
+      "verseStart": 8
+    },
+    {
+      "timeMs": 65949,
+      "verseStart": 9
+    },
+    {
+      "timeMs": 72895,
+      "verseStart": 10
+    },
+    {
+      "timeMs": 78679,
+      "verseStart": 11
+    },
+    {
+      "timeMs": 87225,
+      "verseStart": 12
+    },
+    {
+      "timeMs": 92269,
+      "verseStart": 13
+    },
+    {
+      "timeMs": 97813,
+      "verseStart": 14
+    },
+    {
+      "timeMs": 105379,
+      "verseStart": 15
+    },
+    {
+      "timeMs": 110943,
+      "verseStart": 16
+    },
+    {
+      "timeMs": 120750,
+      "verseStart": 17
+    },
+    {
+      "timeMs": 125534,
+      "verseStart": 18
+    },
+    {
+      "timeMs": 135401,
+      "verseStart": 19
+    },
+    {
+      "timeMs": 141746,
+      "verseStart": 20
+    },
+    {
+      "timeMs": 147090,
+      "verseStart": 21
+    },
+    {
+      "timeMs": 154416,
+      "verseStart": 22
+    },
+    {
+      "timeMs": 160280,
+      "verseStart": 23
+    },
+    {
+      "timeMs": 169927,
+      "verseStart": 24
+    },
+    {
+      "timeMs": 174371,
+      "verseStart": 25
+    },
+    {
+      "timeMs": 182196,
+      "verseStart": 26
+    }
+  ]
+}

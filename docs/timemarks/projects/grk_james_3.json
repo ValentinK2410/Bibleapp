@@ -1,0 +1,83 @@
+{
+  "id": "gh_grk_james_3",
+  "translationCode": "PODSTR",
+  "bookId": "james",
+  "chapter": 3,
+  "title": "Иакова 3 · Греческий (Koine)",
+  "narratorId": "greek-nt",
+  "audioFileName": "59_03.mp3",
+  "cues": [
+    {
+      "timeMs": 901,
+      "verseStart": 1
+    },
+    {
+      "timeMs": 6644,
+      "verseStart": 2
+    },
+    {
+      "timeMs": 15770,
+      "verseStart": 3
+    },
+    {
+      "timeMs": 23895,
+      "verseStart": 4
+    },
+    {
+      "timeMs": 34782,
+      "verseStart": 5
+    },
+    {
+      "timeMs": 43127,
+      "verseStart": 6
+    },
+    {
+      "timeMs": 57196,
+      "verseStart": 7
+    },
+    {
+      "timeMs": 65721,
+      "verseStart": 8
+    },
+    {
+      "timeMs": 73606,
+      "verseStart": 9
+    },
+    {
+      "timeMs": 82212,
+      "verseStart": 10
+    },
+    {
+      "timeMs": 90017,
+      "verseStart": 11
+    },
+    {
+      "timeMs": 94359,
+      "verseStart": 12
+    },
+    {
+      "timeMs": 102204,
+      "verseStart": 13
+    },
+    {
+      "timeMs": 110269,
+      "verseStart": 14
+    },
+    {
+      "timeMs": 119095,
+      "verseStart": 15
+    },
+    {
+      "timeMs": 126299,
+      "verseStart": 16
+    },
+    {
+      "timeMs": 132143,
+      "verseStart": 17
+    },
+    {
+      "timeMs": 144371,
+      "verseStart": 18
+    }
+  ]
+}

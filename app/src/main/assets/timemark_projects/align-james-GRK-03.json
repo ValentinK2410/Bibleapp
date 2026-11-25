@@ -1,0 +1,101 @@
+{
+  "id": "align-james-GRK-03",
+  "translationCode": "PODSTR",
+  "bookId": "james",
+  "chapter": 3,
+  "title": "Иакова 3 · Греческий (Koine)",
+  "audioFilePath": "/data/user/0/com.example.bible.sqlite/files/bible_audio/greek-nt/59_03.mp3",
+  "updatedAt": 1794873600000,
+  "cues": [
+    {
+      "timeMs": 901,
+      "verseStart": 1,
+      "attachments": []
+    },
+    {
+      "timeMs": 6644,
+      "verseStart": 2,
+      "attachments": []
+    },
+    {
+      "timeMs": 15770,
+      "verseStart": 3,
+      "attachments": []
+    },
+    {
+      "timeMs": 23895,
+      "verseStart": 4,
+      "attachments": []
+    },
+    {
+      "timeMs": 34782,
+      "verseStart": 5,
+      "attachments": []
+    },
+    {
+      "timeMs": 43127,
+      "verseStart": 6,
+      "attachments": []
+    },
+    {
+      "timeMs": 57196,
+      "verseStart": 7,
+      "attachments": []
+    },
+    {
+      "timeMs": 65721,
+      "verseStart": 8,
+      "attachments": []
+    },
+    {
+      "timeMs": 73606,
+      "verseStart": 9,
+      "attachments": []
+    },
+    {
+      "timeMs": 82212,
+      "verseStart": 10,
+      "attachments": []
+    },
+    {
+      "timeMs": 90017,
+      "verseStart": 11,
+      "attachments": []
+    },
+    {
+      "timeMs": 94359,
+      "verseStart": 12,
+      "attachments": []
+    },
+    {
+      "timeMs": 102204,
+      "verseStart": 13,
+      "attachments": []
+    },
+    {
+      "timeMs": 110269,
+      "verseStart": 14,
+      "attachments": []
+    },
+    {
+      "timeMs": 119095,
+      "verseStart": 15,
+      "attachments": []
+    },
+    {
+      "timeMs": 126299,
+      "verseStart": 16,
+      "attachments": []
+    },
+    {
+      "timeMs": 132143,
+      "verseStart": 17,
+      "attachments": []
+    },
+    {
+      "timeMs": 144371,
+      "verseStart": 18,
+      "attachments": []
+    }
+  ]
+}

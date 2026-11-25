@@ -1,0 +1,111 @@
+{
+  "id": "align-james-GRK-05",
+  "translationCode": "PODSTR",
+  "bookId": "james",
+  "chapter": 5,
+  "title": "Иакова 5 · Греческий (Koine)",
+  "audioFilePath": "/data/user/0/com.example.bible.sqlite/files/bible_audio/greek-nt/59_05.mp3",
+  "updatedAt": 1794873600000,
+  "cues": [
+    {
+      "timeMs": 740,
+      "verseStart": 1,
+      "attachments": []
+    },
+    {
+      "timeMs": 8225,
+      "verseStart": 2,
+      "attachments": []
+    },
+    {
+      "timeMs": 13208,
+      "verseStart": 3,
+      "attachments": []
+    },
+    {
+      "timeMs": 25055,
+      "verseStart": 4,
+      "attachments": []
+    },
+    {
+      "timeMs": 36782,
+      "verseStart": 5,
+      "attachments": []
+    },
+    {
+      "timeMs": 43286,
+      "verseStart": 6,
+      "attachments": []
+    },
+    {
+      "timeMs": 48189,
+      "verseStart": 7,
+      "attachments": []
+    },
+    {
+      "timeMs": 61177,
+      "verseStart": 8,
+      "attachments": []
+    },
+    {
+      "timeMs": 67901,
+      "verseStart": 9,
+      "attachments": []
+    },
+    {
+      "timeMs": 74745,
+      "verseStart": 10,
+      "attachments": []
+    },
+    {
+      "timeMs": 82830,
+      "verseStart": 11,
+      "attachments": []
+    },
+    {
+      "timeMs": 94457,
+      "verseStart": 12,
+      "attachments": []
+    },
+    {
+      "timeMs": 107285,
+      "verseStart": 13,
+      "attachments": []
+    },
+    {
+      "timeMs": 112488,
+      "verseStart": 14,
+      "attachments": []
+    },
+    {
+      "timeMs": 122474,
+      "verseStart": 15,
+      "attachments": []
+    },
+    {
+      "timeMs": 131700,
+      "verseStart": 16,
+      "attachments": []
+    },
+    {
+      "timeMs": 141566,
+      "verseStart": 17,
+      "attachments": []
+    },
+    {
+      "timeMs": 151092,
+      "verseStart": 18,
+      "attachments": []
+    },
+    {
+      "timeMs": 157916,
+      "verseStart": 19,
+      "attachments": []
+    },
+    {
+      "timeMs": 164140,
+      "verseStart": 20,
+      "attachments": []
+    }
+  ]
+}

@@ -2934,6 +2934,56 @@
       "file": "projects/grk_hebrews_9.json"
     },
     {
+      "id": "gh_grk_james_1",
+      "translationCode": "PODSTR",
+      "bookId": "james",
+      "chapter": 1,
+      "title": "Иакова 1 · Греческий (Koine)",
+      "cueCount": 27,
+      "narratorId": "greek-nt",
+      "file": "projects/grk_james_1.json"
+    },
+    {
+      "id": "gh_grk_james_2",
+      "translationCode": "PODSTR",
+      "bookId": "james",
+      "chapter": 2,
+      "title": "Иакова 2 · Греческий (Koine)",
+      "cueCount": 26,
+      "narratorId": "greek-nt",
+      "file": "projects/grk_james_2.json"
+    },
+    {
+      "id": "gh_grk_james_3",
+      "translationCode": "PODSTR",
+      "bookId": "james",
+      "chapter": 3,
+      "title": "Иакова 3 · Греческий (Koine)",
+      "cueCount": 18,
+      "narratorId": "greek-nt",
+      "file": "projects/grk_james_3.json"
+    },
+    {
+      "id": "gh_grk_james_4",
+      "translationCode": "PODSTR",
+      "bookId": "james",
+      "chapter": 4,
+      "title": "Иакова 4 · Греческий (Koine)",
+      "cueCount": 17,
+      "narratorId": "greek-nt",
+      "file": "projects/grk_james_4.json"
+    },
+    {
+      "id": "gh_grk_james_5",
+      "translationCode": "PODSTR",
+      "bookId": "james",
+      "chapter": 5,
+      "title": "Иакова 5 · Греческий (Koine)",
+      "cueCount": 20,
+      "narratorId": "greek-nt",
+      "file": "projects/grk_james_5.json"
+    },
+    {
       "id": "gh_grk_john_1",
       "translationCode": "PODSTR",
       "bookId": "john",
