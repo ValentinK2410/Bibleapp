@@ -1,0 +1,141 @@
+{
+  "id": "align-james-WEB-02",
+  "translationCode": "WEB",
+  "bookId": "james",
+  "chapter": 2,
+  "title": "Иакова 2 · WEB (англ.)",
+  "audioFilePath": "/data/user/0/com.example.bible.sqlite/files/bible_audio/web/59_02.mp3",
+  "updatedAt": 1794873600000,
+  "cues": [
+    {
+      "timeMs": 2562,
+      "verseStart": 1,
+      "attachments": []
+    },
+    {
+      "timeMs": 11509,
+      "verseStart": 2,
+      "attachments": []
+    },
+    {
+      "timeMs": 18854,
+      "verseStart": 3,
+      "attachments": []
+    },
+    {
+      "timeMs": 31403,
+      "verseStart": 4,
+      "attachments": []
+    },
+    {
+      "timeMs": 38849,
+      "verseStart": 5,
+      "attachments": []
+    },
+    {
+      "timeMs": 50257,
+      "verseStart": 6,
+      "attachments": []
+    },
+    {
+      "timeMs": 59184,
+      "verseStart": 7,
+      "attachments": []
+    },
+    {
+      "timeMs": 65088,
+      "verseStart": 8,
+      "attachments": []
+    },
+    {
+      "timeMs": 73515,
+      "verseStart": 9,
+      "attachments": []
+    },
+    {
+      "timeMs": 81501,
+      "verseStart": 10,
+      "attachments": []
+    },
+    {
+      "timeMs": 89186,
+      "verseStart": 11,
+      "attachments": []
+    },
+    {
+      "timeMs": 102936,
+      "verseStart": 12,
+      "attachments": []
+    },
+    {
+      "timeMs": 109301,
+      "verseStart": 13,
+      "attachments": []
+    },
+    {
+      "timeMs": 117827,
+      "verseStart": 14,
+      "attachments": []
+    },
+    {
+      "timeMs": 126534,
+      "verseStart": 15,
+      "attachments": []
+    },
+    {
+      "timeMs": 130057,
+      "verseStart": 16,
+      "attachments": []
+    },
+    {
+      "timeMs": 141805,
+      "verseStart": 17,
+      "attachments": []
+    },
+    {
+      "timeMs": 147590,
+      "verseStart": 18,
+      "attachments": []
+    },
+    {
+      "timeMs": 157657,
+      "verseStart": 19,
+      "attachments": []
+    },
+    {
+      "timeMs": 165483,
+      "verseStart": 20,
+      "attachments": []
+    },
+    {
+      "timeMs": 172028,
+      "verseStart": 21,
+      "attachments": []
+    },
+    {
+      "timeMs": 178993,
+      "verseStart": 22,
+      "attachments": []
+    },
+    {
+      "timeMs": 184817,
+      "verseStart": 23,
+      "attachments": []
+    },
+    {
+      "timeMs": 195045,
+      "verseStart": 24,
+      "attachments": []
+    },
+    {
+      "timeMs": 200929,
+      "verseStart": 25,
+      "attachments": []
+    },
+    {
+      "timeMs": 208975,
+      "verseStart": 26,
+      "attachments": []
+    }
+  ]
+}

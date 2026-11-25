@@ -1,0 +1,96 @@
+{
+  "id": "align-james-WEB-04",
+  "translationCode": "WEB",
+  "bookId": "james",
+  "chapter": 4,
+  "title": "Иакова 4 · WEB (англ.)",
+  "audioFilePath": "/data/user/0/com.example.bible.sqlite/files/bible_audio/web/59_04.mp3",
+  "updatedAt": 1794873600000,
+  "cues": [
+    {
+      "timeMs": 3222,
+      "verseStart": 1,
+      "attachments": []
+    },
+    {
+      "timeMs": 9867,
+      "verseStart": 2,
+      "attachments": []
+    },
+    {
+      "timeMs": 20033,
+      "verseStart": 3,
+      "attachments": []
+    },
+    {
+      "timeMs": 26458,
+      "verseStart": 4,
+      "attachments": []
+    },
+    {
+      "timeMs": 37145,
+      "verseStart": 5,
+      "attachments": []
+    },
+    {
+      "timeMs": 43689,
+      "verseStart": 6,
+      "attachments": []
+    },
+    {
+      "timeMs": 51174,
+      "verseStart": 7,
+      "attachments": []
+    },
+    {
+      "timeMs": 56798,
+      "verseStart": 8,
+      "attachments": []
+    },
+    {
+      "timeMs": 65744,
+      "verseStart": 9,
+      "attachments": []
+    },
+    {
+      "timeMs": 72048,
+      "verseStart": 10,
+      "attachments": []
+    },
+    {
+      "timeMs": 77272,
+      "verseStart": 11,
+      "attachments": []
+    },
+    {
+      "timeMs": 91381,
+      "verseStart": 12,
+      "attachments": []
+    },
+    {
+      "timeMs": 98426,
+      "verseStart": 13,
+      "attachments": []
+    },
+    {
+      "timeMs": 106751,
+      "verseStart": 14,
+      "attachments": []
+    },
+    {
+      "timeMs": 116898,
+      "verseStart": 15,
+      "attachments": []
+    },
+    {
+      "timeMs": 122442,
+      "verseStart": 16,
+      "attachments": []
+    },
+    {
+      "timeMs": 127505,
+      "verseStart": 17,
+      "attachments": []
+    }
+  ]
+}

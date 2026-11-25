@@ -1,0 +1,111 @@
+{
+  "id": "align-james-WEB-05",
+  "translationCode": "WEB",
+  "bookId": "james",
+  "chapter": 5,
+  "title": "Иакова 5 · WEB (англ.)",
+  "audioFilePath": "/data/user/0/com.example.bible.sqlite/files/bible_audio/web/59_05.mp3",
+  "updatedAt": 1794873600000,
+  "cues": [
+    {
+      "timeMs": 2362,
+      "verseStart": 1,
+      "attachments": []
+    },
+    {
+      "timeMs": 7706,
+      "verseStart": 2,
+      "attachments": []
+    },
+    {
+      "timeMs": 10968,
+      "verseStart": 3,
+      "attachments": []
+    },
+    {
+      "timeMs": 22596,
+      "verseStart": 4,
+      "attachments": []
+    },
+    {
+      "timeMs": 35265,
+      "verseStart": 5,
+      "attachments": []
+    },
+    {
+      "timeMs": 41230,
+      "verseStart": 6,
+      "attachments": []
+    },
+    {
+      "timeMs": 46914,
+      "verseStart": 7,
+      "attachments": []
+    },
+    {
+      "timeMs": 59162,
+      "verseStart": 8,
+      "attachments": []
+    },
+    {
+      "timeMs": 65407,
+      "verseStart": 9,
+      "attachments": []
+    },
+    {
+      "timeMs": 73252,
+      "verseStart": 10,
+      "attachments": []
+    },
+    {
+      "timeMs": 81038,
+      "verseStart": 11,
+      "attachments": []
+    },
+    {
+      "timeMs": 92466,
+      "verseStart": 12,
+      "attachments": []
+    },
+    {
+      "timeMs": 107457,
+      "verseStart": 13,
+      "attachments": []
+    },
+    {
+      "timeMs": 113261,
+      "verseStart": 14,
+      "attachments": []
+    },
+    {
+      "timeMs": 121167,
+      "verseStart": 15,
+      "attachments": []
+    },
+    {
+      "timeMs": 129973,
+      "verseStart": 16,
+      "attachments": []
+    },
+    {
+      "timeMs": 141301,
+      "verseStart": 17,
+      "attachments": []
+    },
+    {
+      "timeMs": 151849,
+      "verseStart": 18,
+      "attachments": []
+    },
+    {
+      "timeMs": 157993,
+      "verseStart": 19,
+      "attachments": []
+    },
+    {
+      "timeMs": 162937,
+      "verseStart": 20,
+      "attachments": []
+    }
+  ]
+}

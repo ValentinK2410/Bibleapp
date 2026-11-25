@@ -1,0 +1,91 @@
+{
+  "id": "gh_web_james_5",
+  "translationCode": "WEB",
+  "bookId": "james",
+  "chapter": 5,
+  "title": "Иакова 5 · WEB (англ.)",
+  "narratorId": "web",
+  "audioFileName": "59_05.mp3",
+  "cues": [
+    {
+      "timeMs": 2362,
+      "verseStart": 1
+    },
+    {
+      "timeMs": 7706,
+      "verseStart": 2
+    },
+    {
+      "timeMs": 10968,
+      "verseStart": 3
+    },
+    {
+      "timeMs": 22596,
+      "verseStart": 4
+    },
+    {
+      "timeMs": 35265,
+      "verseStart": 5
+    },
+    {
+      "timeMs": 41230,
+      "verseStart": 6
+    },
+    {
+      "timeMs": 46914,
+      "verseStart": 7
+    },
+    {
+      "timeMs": 59162,
+      "verseStart": 8
+    },
+    {
+      "timeMs": 65407,
+      "verseStart": 9
+    },
+    {
+      "timeMs": 73252,
+      "verseStart": 10
+    },
+    {
+      "timeMs": 81038,
+      "verseStart": 11
+    },
+    {
+      "timeMs": 92466,
+      "verseStart": 12
+    },
+    {
+      "timeMs": 107457,
+      "verseStart": 13
+    },
+    {
+      "timeMs": 113261,
+      "verseStart": 14
+    },
+    {
+      "timeMs": 121167,
+      "verseStart": 15
+    },
+    {
+      "timeMs": 129973,
+      "verseStart": 16
+    },
+    {
+      "timeMs": 141301,
+      "verseStart": 17
+    },
+    {
+      "timeMs": 151849,
+      "verseStart": 18
+    },
+    {
+      "timeMs": 157993,
+      "verseStart": 19
+    },
+    {
+      "timeMs": 162937,
+      "verseStart": 20
+    }
+  ]
+}

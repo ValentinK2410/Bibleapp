@@ -1,0 +1,115 @@
+{
+  "id": "gh_web_james_2",
+  "translationCode": "WEB",
+  "bookId": "james",
+  "chapter": 2,
+  "title": "Иакова 2 · WEB (англ.)",
+  "narratorId": "web",
+  "audioFileName": "59_02.mp3",
+  "cues": [
+    {
+      "timeMs": 2562,
+      "verseStart": 1
+    },
+    {
+      "timeMs": 11509,
+      "verseStart": 2
+    },
+    {
+      "timeMs": 18854,
+      "verseStart": 3
+    },
+    {
+      "timeMs": 31403,
+      "verseStart": 4
+    },
+    {
+      "timeMs": 38849,
+      "verseStart": 5
+    },
+    {
+      "timeMs": 50257,
+      "verseStart": 6
+    },
+    {
+      "timeMs": 59184,
+      "verseStart": 7
+    },
+    {
+      "timeMs": 65088,
+      "verseStart": 8
+    },
+    {
+      "timeMs": 73515,
+      "verseStart": 9
+    },
+    {
+      "timeMs": 81501,
+      "verseStart": 10
+    },
+    {
+      "timeMs": 89186,
+      "verseStart": 11
+    },
+    {
+      "timeMs": 102936,
+      "verseStart": 12
+    },
+    {
+      "timeMs": 109301,
+      "verseStart": 13
+    },
+    {
+      "timeMs": 117827,
+      "verseStart": 14
+    },
+    {
+      "timeMs": 126534,
+      "verseStart": 15
+    },
+    {
+      "timeMs": 130057,
+      "verseStart": 16
+    },
+    {
+      "timeMs": 141805,
+      "verseStart": 17
+    },
+    {
+      "timeMs": 147590,
+      "verseStart": 18
+    },
+    {
+      "timeMs": 157657,
+      "verseStart": 19
+    },
+    {
+      "timeMs": 165483,
+      "verseStart": 20
+    },
+    {
+      "timeMs": 172028,
+      "verseStart": 21
+    },
+    {
+      "timeMs": 178993,
+      "verseStart": 22
+    },
+    {
+      "timeMs": 184817,
+      "verseStart": 23
+    },
+    {
+      "timeMs": 195045,
+      "verseStart": 24
+    },
+    {
+      "timeMs": 200929,
+      "verseStart": 25
+    },
+    {
+      "timeMs": 208975,
+      "verseStart": 26
+    }
+  ]
+}

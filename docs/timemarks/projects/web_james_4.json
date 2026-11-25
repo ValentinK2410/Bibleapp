@@ -1,0 +1,79 @@
+{
+  "id": "gh_web_james_4",
+  "translationCode": "WEB",
+  "bookId": "james",
+  "chapter": 4,
+  "title": "Иакова 4 · WEB (англ.)",
+  "narratorId": "web",
+  "audioFileName": "59_04.mp3",
+  "cues": [
+    {
+      "timeMs": 3222,
+      "verseStart": 1
+    },
+    {
+      "timeMs": 9867,
+      "verseStart": 2
+    },
+    {
+      "timeMs": 20033,
+      "verseStart": 3
+    },
+    {
+      "timeMs": 26458,
+      "verseStart": 4
+    },
+    {
+      "timeMs": 37145,
+      "verseStart": 5
+    },
+    {
+      "timeMs": 43689,
+      "verseStart": 6
+    },
+    {
+      "timeMs": 51174,
+      "verseStart": 7
+    },
+    {
+      "timeMs": 56798,
+      "verseStart": 8
+    },
+    {
+      "timeMs": 65744,
+      "verseStart": 9
+    },
+    {
+      "timeMs": 72048,
+      "verseStart": 10
+    },
+    {
+      "timeMs": 77272,
+      "verseStart": 11
+    },
+    {
+      "timeMs": 91381,
+      "verseStart": 12
+    },
+    {
+      "timeMs": 98426,
+      "verseStart": 13
+    },
+    {
+      "timeMs": 106751,
+      "verseStart": 14
+    },
+    {
+      "timeMs": 116898,
+      "verseStart": 15
+    },
+    {
+      "timeMs": 122442,
+      "verseStart": 16
+    },
+    {
+      "timeMs": 127505,
+      "verseStart": 17
+    }
+  ]
+}

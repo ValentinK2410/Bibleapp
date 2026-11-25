@@ -1,0 +1,83 @@
+{
+  "id": "gh_web_james_3",
+  "translationCode": "WEB",
+  "bookId": "james",
+  "chapter": 3,
+  "title": "Иакова 3 · WEB (англ.)",
+  "narratorId": "web",
+  "audioFileName": "59_03.mp3",
+  "cues": [
+    {
+      "timeMs": 2822,
+      "verseStart": 1
+    },
+    {
+      "timeMs": 9407,
+      "verseStart": 2
+    },
+    {
+      "timeMs": 18633,
+      "verseStart": 3
+    },
+    {
+      "timeMs": 25678,
+      "verseStart": 4
+    },
+    {
+      "timeMs": 36686,
+      "verseStart": 5
+    },
+    {
+      "timeMs": 47093,
+      "verseStart": 6
+    },
+    {
+      "timeMs": 61083,
+      "verseStart": 7
+    },
+    {
+      "timeMs": 69228,
+      "verseStart": 8
+    },
+    {
+      "timeMs": 76313,
+      "verseStart": 9
+    },
+    {
+      "timeMs": 84639,
+      "verseStart": 10
+    },
+    {
+      "timeMs": 91424,
+      "verseStart": 11
+    },
+    {
+      "timeMs": 95627,
+      "verseStart": 12
+    },
+    {
+      "timeMs": 105854,
+      "verseStart": 13
+    },
+    {
+      "timeMs": 115280,
+      "verseStart": 14
+    },
+    {
+      "timeMs": 121845,
+      "verseStart": 15
+    },
+    {
+      "timeMs": 127429,
+      "verseStart": 16
+    },
+    {
+      "timeMs": 132452,
+      "verseStart": 17
+    },
+    {
+      "timeMs": 145541,
+      "verseStart": 18
+    }
+  ]
+}
