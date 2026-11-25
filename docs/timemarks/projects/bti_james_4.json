@@ -1,0 +1,79 @@
+{
+  "id": "gh_bti_james_4",
+  "translationCode": "BTI",
+  "bookId": "james",
+  "chapter": 4,
+  "title": "Иакова 4 · Кулаковых",
+  "narratorId": "bti",
+  "audioFileName": "45_04.mp3",
+  "cues": [
+    {
+      "timeMs": 4743,
+      "verseStart": 1
+    },
+    {
+      "timeMs": 15530,
+      "verseStart": 2
+    },
+    {
+      "timeMs": 37364,
+      "verseStart": 3
+    },
+    {
+      "timeMs": 48652,
+      "verseStart": 4
+    },
+    {
+      "timeMs": 69385,
+      "verseStart": 5
+    },
+    {
+      "timeMs": 80973,
+      "verseStart": 6
+    },
+    {
+      "timeMs": 95242,
+      "verseStart": 7
+    },
+    {
+      "timeMs": 103667,
+      "verseStart": 8
+    },
+    {
+      "timeMs": 118097,
+      "verseStart": 9
+    },
+    {
+      "timeMs": 131946,
+      "verseStart": 10
+    },
+    {
+      "timeMs": 138770,
+      "verseStart": 11
+    },
+    {
+      "timeMs": 166749,
+      "verseStart": 12
+    },
+    {
+      "timeMs": 186922,
+      "verseStart": 13
+    },
+    {
+      "timeMs": 203813,
+      "verseStart": 14
+    },
+    {
+      "timeMs": 221824,
+      "verseStart": 15
+    },
+    {
+      "timeMs": 237254,
+      "verseStart": 16
+    },
+    {
+      "timeMs": 245540,
+      "verseStart": 17
+    }
+  ]
+}

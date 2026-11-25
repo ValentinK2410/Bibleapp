@@ -1,0 +1,101 @@
+{
+  "id": "align-james-BTI-03",
+  "translationCode": "BTI",
+  "bookId": "james",
+  "chapter": 3,
+  "title": "Иакова 3 · Кулаковых",
+  "audioFilePath": "/data/user/0/com.example.bible.sqlite/files/bible_audio/bti/45_03.mp3",
+  "updatedAt": 1795478400000,
+  "cues": [
+    {
+      "timeMs": 5524,
+      "verseStart": 1,
+      "attachments": []
+    },
+    {
+      "timeMs": 19975,
+      "verseStart": 2,
+      "attachments": []
+    },
+    {
+      "timeMs": 33244,
+      "verseStart": 3,
+      "attachments": []
+    },
+    {
+      "timeMs": 43372,
+      "verseStart": 4,
+      "attachments": []
+    },
+    {
+      "timeMs": 58563,
+      "verseStart": 5,
+      "attachments": []
+    },
+    {
+      "timeMs": 76556,
+      "verseStart": 6,
+      "attachments": []
+    },
+    {
+      "timeMs": 100493,
+      "verseStart": 7,
+      "attachments": []
+    },
+    {
+      "timeMs": 109660,
+      "verseStart": 8,
+      "attachments": []
+    },
+    {
+      "timeMs": 122789,
+      "verseStart": 9,
+      "attachments": []
+    },
+    {
+      "timeMs": 134898,
+      "verseStart": 10,
+      "attachments": []
+    },
+    {
+      "timeMs": 145205,
+      "verseStart": 11,
+      "attachments": []
+    },
+    {
+      "timeMs": 151770,
+      "verseStart": 12,
+      "attachments": []
+    },
+    {
+      "timeMs": 166081,
+      "verseStart": 13,
+      "attachments": []
+    },
+    {
+      "timeMs": 182272,
+      "verseStart": 14,
+      "attachments": []
+    },
+    {
+      "timeMs": 196963,
+      "verseStart": 15,
+      "attachments": []
+    },
+    {
+      "timeMs": 205989,
+      "verseStart": 16,
+      "attachments": []
+    },
+    {
+      "timeMs": 213995,
+      "verseStart": 17,
+      "attachments": []
+    },
+    {
+      "timeMs": 239154,
+      "verseStart": 18,
+      "attachments": []
+    }
+  ]
+}

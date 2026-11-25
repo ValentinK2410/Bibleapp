@@ -1,0 +1,83 @@
+{
+  "id": "gh_bti_james_3",
+  "translationCode": "BTI",
+  "bookId": "james",
+  "chapter": 3,
+  "title": "Иакова 3 · Кулаковых",
+  "narratorId": "bti",
+  "audioFileName": "45_03.mp3",
+  "cues": [
+    {
+      "timeMs": 5524,
+      "verseStart": 1
+    },
+    {
+      "timeMs": 19975,
+      "verseStart": 2
+    },
+    {
+      "timeMs": 33244,
+      "verseStart": 3
+    },
+    {
+      "timeMs": 43372,
+      "verseStart": 4
+    },
+    {
+      "timeMs": 58563,
+      "verseStart": 5
+    },
+    {
+      "timeMs": 76556,
+      "verseStart": 6
+    },
+    {
+      "timeMs": 100493,
+      "verseStart": 7
+    },
+    {
+      "timeMs": 109660,
+      "verseStart": 8
+    },
+    {
+      "timeMs": 122789,
+      "verseStart": 9
+    },
+    {
+      "timeMs": 134898,
+      "verseStart": 10
+    },
+    {
+      "timeMs": 145205,
+      "verseStart": 11
+    },
+    {
+      "timeMs": 151770,
+      "verseStart": 12
+    },
+    {
+      "timeMs": 166081,
+      "verseStart": 13
+    },
+    {
+      "timeMs": 182272,
+      "verseStart": 14
+    },
+    {
+      "timeMs": 196963,
+      "verseStart": 15
+    },
+    {
+      "timeMs": 205989,
+      "verseStart": 16
+    },
+    {
+      "timeMs": 213995,
+      "verseStart": 17
+    },
+    {
+      "timeMs": 239154,
+      "verseStart": 18
+    }
+  ]
+}

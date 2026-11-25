@@ -1,0 +1,91 @@
+{
+  "id": "gh_bti_james_5",
+  "translationCode": "BTI",
+  "bookId": "james",
+  "chapter": 5,
+  "title": "Иакова 5 · Кулаковых",
+  "narratorId": "bti",
+  "audioFileName": "45_05.mp3",
+  "cues": [
+    {
+      "timeMs": 4503,
+      "verseStart": 1
+    },
+    {
+      "timeMs": 14930,
+      "verseStart": 2
+    },
+    {
+      "timeMs": 21114,
+      "verseStart": 3
+    },
+    {
+      "timeMs": 40848,
+      "verseStart": 4
+    },
+    {
+      "timeMs": 55097,
+      "verseStart": 5
+    },
+    {
+      "timeMs": 67125,
+      "verseStart": 6
+    },
+    {
+      "timeMs": 76952,
+      "verseStart": 7
+    },
+    {
+      "timeMs": 98686,
+      "verseStart": 8
+    },
+    {
+      "timeMs": 107432,
+      "verseStart": 9
+    },
+    {
+      "timeMs": 117139,
+      "verseStart": 10
+    },
+    {
+      "timeMs": 128166,
+      "verseStart": 11
+    },
+    {
+      "timeMs": 149200,
+      "verseStart": 12
+    },
+    {
+      "timeMs": 173397,
+      "verseStart": 13
+    },
+    {
+      "timeMs": 181982,
+      "verseStart": 14
+    },
+    {
+      "timeMs": 193710,
+      "verseStart": 15
+    },
+    {
+      "timeMs": 208380,
+      "verseStart": 16
+    },
+    {
+      "timeMs": 222350,
+      "verseStart": 17
+    },
+    {
+      "timeMs": 240222,
+      "verseStart": 18
+    },
+    {
+      "timeMs": 251169,
+      "verseStart": 19
+    },
+    {
+      "timeMs": 261056,
+      "verseStart": 20
+    }
+  ]
+}
