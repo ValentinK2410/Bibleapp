@@ -1,0 +1,99 @@
+{
+  "id": "gh_nrt_2_peter_2",
+  "translationCode": "NRT",
+  "bookId": "2_peter",
+  "chapter": 2,
+  "title": "2-е Петра 2 · Новый русский",
+  "narratorId": "new-russian",
+  "audioFileName": "47_02.mp3",
+  "cues": [
+    {
+      "timeMs": 2942,
+      "verseStart": 1
+    },
+    {
+      "timeMs": 18433,
+      "verseStart": 2
+    },
+    {
+      "timeMs": 26739,
+      "verseStart": 3
+    },
+    {
+      "timeMs": 39167,
+      "verseStart": 4
+    },
+    {
+      "timeMs": 50175,
+      "verseStart": 5
+    },
+    {
+      "timeMs": 61202,
+      "verseStart": 6
+    },
+    {
+      "timeMs": 69268,
+      "verseStart": 7
+    },
+    {
+      "timeMs": 75913,
+      "verseStart": 8
+    },
+    {
+      "timeMs": 84799,
+      "verseStart": 9
+    },
+    {
+      "timeMs": 95686,
+      "verseStart": 10
+    },
+    {
+      "timeMs": 109036,
+      "verseStart": 11
+    },
+    {
+      "timeMs": 120584,
+      "verseStart": 12
+    },
+    {
+      "timeMs": 136615,
+      "verseStart": 13
+    },
+    {
+      "timeMs": 160231,
+      "verseStart": 14
+    },
+    {
+      "timeMs": 170358,
+      "verseStart": 15
+    },
+    {
+      "timeMs": 178484,
+      "verseStart": 16
+    },
+    {
+      "timeMs": 190912,
+      "verseStart": 17
+    },
+    {
+      "timeMs": 198718,
+      "verseStart": 18
+    },
+    {
+      "timeMs": 213448,
+      "verseStart": 19
+    },
+    {
+      "timeMs": 223135,
+      "verseStart": 20
+    },
+    {
+      "timeMs": 243909,
+      "verseStart": 21
+    },
+    {
+      "timeMs": 254596,
+      "verseStart": 22
+    }
+  ]
+}

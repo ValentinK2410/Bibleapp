@@ -1,0 +1,121 @@
+{
+  "id": "align-2_peter-NRT-02",
+  "translationCode": "NRT",
+  "bookId": "2_peter",
+  "chapter": 2,
+  "title": "2-е Петра 2 · Новый русский",
+  "audioFilePath": "/data/user/0/com.example.bible.sqlite/files/bible_audio/new-russian/47_02.mp3",
+  "updatedAt": 1795478400000,
+  "cues": [
+    {
+      "timeMs": 2942,
+      "verseStart": 1,
+      "attachments": []
+    },
+    {
+      "timeMs": 18433,
+      "verseStart": 2,
+      "attachments": []
+    },
+    {
+      "timeMs": 26739,
+      "verseStart": 3,
+      "attachments": []
+    },
+    {
+      "timeMs": 39167,
+      "verseStart": 4,
+      "attachments": []
+    },
+    {
+      "timeMs": 50175,
+      "verseStart": 5,
+      "attachments": []
+    },
+    {
+      "timeMs": 61202,
+      "verseStart": 6,
+      "attachments": []
+    },
+    {
+      "timeMs": 69268,
+      "verseStart": 7,
+      "attachments": []
+    },
+    {
+      "timeMs": 75913,
+      "verseStart": 8,
+      "attachments": []
+    },
+    {
+      "timeMs": 84799,
+      "verseStart": 9,
+      "attachments": []
+    },
+    {
+      "timeMs": 95686,
+      "verseStart": 10,
+      "attachments": []
+    },
+    {
+      "timeMs": 109036,
+      "verseStart": 11,
+      "attachments": []
+    },
+    {
+      "timeMs": 120584,
+      "verseStart": 12,
+      "attachments": []
+    },
+    {
+      "timeMs": 136615,
+      "verseStart": 13,
+      "attachments": []
+    },
+    {
+      "timeMs": 160231,
+      "verseStart": 14,
+      "attachments": []
+    },
+    {
+      "timeMs": 170358,
+      "verseStart": 15,
+      "attachments": []
+    },
+    {
+      "timeMs": 178484,
+      "verseStart": 16,
+      "attachments": []
+    },
+    {
+      "timeMs": 190912,
+      "verseStart": 17,
+      "attachments": []
+    },
+    {
+      "timeMs": 198718,
+      "verseStart": 18,
+      "attachments": []
+    },
+    {
+      "timeMs": 213448,
+      "verseStart": 19,
+      "attachments": []
+    },
+    {
+      "timeMs": 223135,
+      "verseStart": 20,
+      "attachments": []
+    },
+    {
+      "timeMs": 243909,
+      "verseStart": 21,
+      "attachments": []
+    },
+    {
+      "timeMs": 254596,
+      "verseStart": 22,
+      "attachments": []
+    }
+  ]
+}

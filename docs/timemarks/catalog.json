@@ -4744,6 +4744,36 @@
       "file": "projects/nrt_2_corinthians_9.json"
     },
     {
+      "id": "gh_nrt_2_peter_1",
+      "translationCode": "NRT",
+      "bookId": "2_peter",
+      "chapter": 1,
+      "title": "2-е Петра 1 · Новый русский",
+      "cueCount": 21,
+      "narratorId": "new-russian",
+      "file": "projects/nrt_2_peter_1.json"
+    },
+    {
+      "id": "gh_nrt_2_peter_2",
+      "translationCode": "NRT",
+      "bookId": "2_peter",
+      "chapter": 2,
+      "title": "2-е Петра 2 · Новый русский",
+      "cueCount": 22,
+      "narratorId": "new-russian",
+      "file": "projects/nrt_2_peter_2.json"
+    },
+    {
+      "id": "gh_nrt_2_peter_3",
+      "translationCode": "NRT",
+      "bookId": "2_peter",
+      "chapter": 3,
+      "title": "2-е Петра 3 · Новый русский",
+      "cueCount": 18,
+      "narratorId": "new-russian",
+      "file": "projects/nrt_2_peter_3.json"
+    },
+    {
       "id": "gh_nrt_2_thessalonians_1",
       "translationCode": "NRT",
       "bookId": "2_thessalonians",
