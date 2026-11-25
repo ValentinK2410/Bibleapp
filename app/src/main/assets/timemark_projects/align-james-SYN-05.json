@@ -1,0 +1,111 @@
+{
+  "id": "align-james-SYN-05",
+  "translationCode": "SYN",
+  "bookId": "james",
+  "chapter": 5,
+  "title": "Иакова 5 · Синодальный · Бондаренко",
+  "audioFilePath": "/data/user/0/com.example.bible.sqlite/files/bible_audio/bondarenko/45_05.mp3",
+  "updatedAt": 1795478400000,
+  "cues": [
+    {
+      "timeMs": 5124,
+      "verseStart": 1,
+      "attachments": []
+    },
+    {
+      "timeMs": 14211,
+      "verseStart": 2,
+      "attachments": []
+    },
+    {
+      "timeMs": 19314,
+      "verseStart": 3,
+      "attachments": []
+    },
+    {
+      "timeMs": 32684,
+      "verseStart": 4,
+      "attachments": []
+    },
+    {
+      "timeMs": 44073,
+      "verseStart": 5,
+      "attachments": []
+    },
+    {
+      "timeMs": 52239,
+      "verseStart": 6,
+      "attachments": []
+    },
+    {
+      "timeMs": 60365,
+      "verseStart": 7,
+      "attachments": []
+    },
+    {
+      "timeMs": 77097,
+      "verseStart": 8,
+      "attachments": []
+    },
+    {
+      "timeMs": 84983,
+      "verseStart": 9,
+      "attachments": []
+    },
+    {
+      "timeMs": 93349,
+      "verseStart": 10,
+      "attachments": []
+    },
+    {
+      "timeMs": 101876,
+      "verseStart": 11,
+      "attachments": []
+    },
+    {
+      "timeMs": 118108,
+      "verseStart": 12,
+      "attachments": []
+    },
+    {
+      "timeMs": 133339,
+      "verseStart": 13,
+      "attachments": []
+    },
+    {
+      "timeMs": 141525,
+      "verseStart": 14,
+      "attachments": []
+    },
+    {
+      "timeMs": 151412,
+      "verseStart": 15,
+      "attachments": []
+    },
+    {
+      "timeMs": 161480,
+      "verseStart": 16,
+      "attachments": []
+    },
+    {
+      "timeMs": 171187,
+      "verseStart": 17,
+      "attachments": []
+    },
+    {
+      "timeMs": 180914,
+      "verseStart": 18,
+      "attachments": []
+    },
+    {
+      "timeMs": 188320,
+      "verseStart": 19,
+      "attachments": []
+    },
+    {
+      "timeMs": 195585,
+      "verseStart": 20,
+      "attachments": []
+    }
+  ]
+}

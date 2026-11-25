@@ -1,0 +1,83 @@
+{
+  "id": "gh_syn_james_3",
+  "translationCode": "SYN",
+  "bookId": "james",
+  "chapter": 3,
+  "title": "Иакова 3 · Синодальный · Бондаренко",
+  "narratorId": "bondarenko",
+  "audioFileName": "45_03.mp3",
+  "cues": [
+    {
+      "timeMs": 4583,
+      "verseStart": 1
+    },
+    {
+      "timeMs": 13149,
+      "verseStart": 2
+    },
+    {
+      "timeMs": 23436,
+      "verseStart": 3
+    },
+    {
+      "timeMs": 30101,
+      "verseStart": 4
+    },
+    {
+      "timeMs": 40028,
+      "verseStart": 5
+    },
+    {
+      "timeMs": 48774,
+      "verseStart": 6
+    },
+    {
+      "timeMs": 63585,
+      "verseStart": 7
+    },
+    {
+      "timeMs": 73712,
+      "verseStart": 8
+    },
+    {
+      "timeMs": 81817,
+      "verseStart": 9
+    },
+    {
+      "timeMs": 89923,
+      "verseStart": 10
+    },
+    {
+      "timeMs": 97929,
+      "verseStart": 11
+    },
+    {
+      "timeMs": 103012,
+      "verseStart": 12
+    },
+    {
+      "timeMs": 115961,
+      "verseStart": 13
+    },
+    {
+      "timeMs": 126208,
+      "verseStart": 14
+    },
+    {
+      "timeMs": 135375,
+      "verseStart": 15
+    },
+    {
+      "timeMs": 141999,
+      "verseStart": 16
+    },
+    {
+      "timeMs": 147183,
+      "verseStart": 17
+    },
+    {
+      "timeMs": 163795,
+      "verseStart": 18
+    }
+  ]
+}
