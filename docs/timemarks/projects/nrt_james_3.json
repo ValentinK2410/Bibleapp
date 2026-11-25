@@ -1,0 +1,83 @@
+{
+  "id": "gh_nrt_james_3",
+  "translationCode": "NRT",
+  "bookId": "james",
+  "chapter": 3,
+  "title": "Иакова 3 · Новый русский",
+  "narratorId": "new-russian",
+  "audioFileName": "45_03.mp3",
+  "cues": [
+    {
+      "timeMs": 2782,
+      "verseStart": 1
+    },
+    {
+      "timeMs": 14230,
+      "verseStart": 2
+    },
+    {
+      "timeMs": 23437,
+      "verseStart": 3
+    },
+    {
+      "timeMs": 30462,
+      "verseStart": 4
+    },
+    {
+      "timeMs": 42971,
+      "verseStart": 5
+    },
+    {
+      "timeMs": 54380,
+      "verseStart": 6
+    },
+    {
+      "timeMs": 70011,
+      "verseStart": 7
+    },
+    {
+      "timeMs": 78977,
+      "verseStart": 8
+    },
+    {
+      "timeMs": 89025,
+      "verseStart": 9
+    },
+    {
+      "timeMs": 96250,
+      "verseStart": 10
+    },
+    {
+      "timeMs": 103355,
+      "verseStart": 11
+    },
+    {
+      "timeMs": 109219,
+      "verseStart": 12
+    },
+    {
+      "timeMs": 123810,
+      "verseStart": 13
+    },
+    {
+      "timeMs": 134878,
+      "verseStart": 14
+    },
+    {
+      "timeMs": 143304,
+      "verseStart": 15
+    },
+    {
+      "timeMs": 151770,
+      "verseStart": 16
+    },
+    {
+      "timeMs": 159496,
+      "verseStart": 17
+    },
+    {
+      "timeMs": 173986,
+      "verseStart": 18
+    }
+  ]
+}

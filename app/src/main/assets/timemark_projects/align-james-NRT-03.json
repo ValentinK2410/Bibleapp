@@ -1,0 +1,101 @@
+{
+  "id": "align-james-NRT-03",
+  "translationCode": "NRT",
+  "bookId": "james",
+  "chapter": 3,
+  "title": "Иакова 3 · Новый русский",
+  "audioFilePath": "/data/user/0/com.example.bible.sqlite/files/bible_audio/new-russian/45_03.mp3",
+  "updatedAt": 1795478400000,
+  "cues": [
+    {
+      "timeMs": 2782,
+      "verseStart": 1,
+      "attachments": []
+    },
+    {
+      "timeMs": 14230,
+      "verseStart": 2,
+      "attachments": []
+    },
+    {
+      "timeMs": 23437,
+      "verseStart": 3,
+      "attachments": []
+    },
+    {
+      "timeMs": 30462,
+      "verseStart": 4,
+      "attachments": []
+    },
+    {
+      "timeMs": 42971,
+      "verseStart": 5,
+      "attachments": []
+    },
+    {
+      "timeMs": 54380,
+      "verseStart": 6,
+      "attachments": []
+    },
+    {
+      "timeMs": 70011,
+      "verseStart": 7,
+      "attachments": []
+    },
+    {
+      "timeMs": 78977,
+      "verseStart": 8,
+      "attachments": []
+    },
+    {
+      "timeMs": 89025,
+      "verseStart": 9,
+      "attachments": []
+    },
+    {
+      "timeMs": 96250,
+      "verseStart": 10,
+      "attachments": []
+    },
+    {
+      "timeMs": 103355,
+      "verseStart": 11,
+      "attachments": []
+    },
+    {
+      "timeMs": 109219,
+      "verseStart": 12,
+      "attachments": []
+    },
+    {
+      "timeMs": 123810,
+      "verseStart": 13,
+      "attachments": []
+    },
+    {
+      "timeMs": 134878,
+      "verseStart": 14,
+      "attachments": []
+    },
+    {
+      "timeMs": 143304,
+      "verseStart": 15,
+      "attachments": []
+    },
+    {
+      "timeMs": 151770,
+      "verseStart": 16,
+      "attachments": []
+    },
+    {
+      "timeMs": 159496,
+      "verseStart": 17,
+      "attachments": []
+    },
+    {
+      "timeMs": 173986,
+      "verseStart": 18,
+      "attachments": []
+    }
+  ]
+}

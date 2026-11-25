@@ -1,0 +1,119 @@
+{
+  "id": "gh_nrt_james_1",
+  "translationCode": "NRT",
+  "bookId": "james",
+  "chapter": 1,
+  "title": "Иакова 1 · Новый русский",
+  "narratorId": "new-russian",
+  "audioFileName": "45_01.mp3",
+  "cues": [
+    {
+      "timeMs": 741,
+      "verseStart": 1
+    },
+    {
+      "timeMs": 11247,
+      "verseStart": 2
+    },
+    {
+      "timeMs": 22034,
+      "verseStart": 3
+    },
+    {
+      "timeMs": 26837,
+      "verseStart": 4
+    },
+    {
+      "timeMs": 34842,
+      "verseStart": 5
+    },
+    {
+      "timeMs": 45509,
+      "verseStart": 6
+    },
+    {
+      "timeMs": 56096,
+      "verseStart": 7
+    },
+    {
+      "timeMs": 60218,
+      "verseStart": 8
+    },
+    {
+      "timeMs": 69584,
+      "verseStart": 9
+    },
+    {
+      "timeMs": 75528,
+      "verseStart": 10
+    },
+    {
+      "timeMs": 82192,
+      "verseStart": 11
+    },
+    {
+      "timeMs": 94981,
+      "verseStart": 12
+    },
+    {
+      "timeMs": 104967,
+      "verseStart": 13
+    },
+    {
+      "timeMs": 115574,
+      "verseStart": 14
+    },
+    {
+      "timeMs": 123179,
+      "verseStart": 15
+    },
+    {
+      "timeMs": 130303,
+      "verseStart": 16
+    },
+    {
+      "timeMs": 133925,
+      "verseStart": 17
+    },
+    {
+      "timeMs": 143972,
+      "verseStart": 18
+    },
+    {
+      "timeMs": 156120,
+      "verseStart": 19
+    },
+    {
+      "timeMs": 164785,
+      "verseStart": 20
+    },
+    {
+      "timeMs": 167827,
+      "verseStart": 21
+    },
+    {
+      "timeMs": 178534,
+      "verseStart": 22
+    },
+    {
+      "timeMs": 185879,
+      "verseStart": 23
+    },
+    {
+      "timeMs": 192143,
+      "verseStart": 24
+    },
+    {
+      "timeMs": 197086,
+      "verseStart": 25
+    },
+    {
+      "timeMs": 211075,
+      "verseStart": 26
+    },
+    {
+      "timeMs": 221321,
+      "verseStart": 27
+    }
+  ]
+}
