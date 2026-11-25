@@ -11184,6 +11184,16 @@
       "file": "projects/web_2_corinthians_9.json"
     },
     {
+      "id": "gh_web_2_john_1",
+      "translationCode": "WEB",
+      "bookId": "2_john",
+      "chapter": 1,
+      "title": "2-е Иоанна 1 · WEB (англ.)",
+      "cueCount": 13,
+      "narratorId": "web",
+      "file": "projects/web_2_john_1.json"
+    },
+    {
       "id": "gh_web_2_peter_1",
       "translationCode": "WEB",
       "bookId": "2_peter",

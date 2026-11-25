@@ -1,0 +1,76 @@
+{
+  "id": "align-2_john-WEB-01",
+  "translationCode": "WEB",
+  "bookId": "2_john",
+  "chapter": 1,
+  "title": "2-е Иоанна 1 · WEB (англ.)",
+  "audioFilePath": "/data/user/0/com.example.bible.sqlite/files/bible_audio/web/63_01.mp3",
+  "updatedAt": 1794873600000,
+  "cues": [
+    {
+      "timeMs": 3342,
+      "verseStart": 1,
+      "attachments": []
+    },
+    {
+      "timeMs": 11828,
+      "verseStart": 2,
+      "attachments": []
+    },
+    {
+      "timeMs": 16430,
+      "verseStart": 3,
+      "attachments": []
+    },
+    {
+      "timeMs": 25656,
+      "verseStart": 4,
+      "attachments": []
+    },
+    {
+      "timeMs": 32581,
+      "verseStart": 5,
+      "attachments": []
+    },
+    {
+      "timeMs": 42127,
+      "verseStart": 6,
+      "attachments": []
+    },
+    {
+      "timeMs": 53214,
+      "verseStart": 7,
+      "attachments": []
+    },
+    {
+      "timeMs": 63040,
+      "verseStart": 8,
+      "attachments": []
+    },
+    {
+      "timeMs": 71205,
+      "verseStart": 9,
+      "attachments": []
+    },
+    {
+      "timeMs": 82572,
+      "verseStart": 10,
+      "attachments": []
+    },
+    {
+      "timeMs": 89917,
+      "verseStart": 11,
+      "attachments": []
+    },
+    {
+      "timeMs": 95701,
+      "verseStart": 12,
+      "attachments": []
+    },
+    {
+      "timeMs": 106788,
+      "verseStart": 13,
+      "attachments": []
+    }
+  ]
+}

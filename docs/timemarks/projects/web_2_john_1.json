@@ -1,0 +1,63 @@
+{
+  "id": "gh_web_2_john_1",
+  "translationCode": "WEB",
+  "bookId": "2_john",
+  "chapter": 1,
+  "title": "2-е Иоанна 1 · WEB (англ.)",
+  "narratorId": "web",
+  "audioFileName": "63_01.mp3",
+  "cues": [
+    {
+      "timeMs": 3342,
+      "verseStart": 1
+    },
+    {
+      "timeMs": 11828,
+      "verseStart": 2
+    },
+    {
+      "timeMs": 16430,
+      "verseStart": 3
+    },
+    {
+      "timeMs": 25656,
+      "verseStart": 4
+    },
+    {
+      "timeMs": 32581,
+      "verseStart": 5
+    },
+    {
+      "timeMs": 42127,
+      "verseStart": 6
+    },
+    {
+      "timeMs": 53214,
+      "verseStart": 7
+    },
+    {
+      "timeMs": 63040,
+      "verseStart": 8
+    },
+    {
+      "timeMs": 71205,
+      "verseStart": 9
+    },
+    {
+      "timeMs": 82572,
+      "verseStart": 10
+    },
+    {
+      "timeMs": 89917,
+      "verseStart": 11
+    },
+    {
+      "timeMs": 95701,
+      "verseStart": 12
+    },
+    {
+      "timeMs": 106788,
+      "verseStart": 13
+    }
+  ]
+}
