@@ -1,0 +1,95 @@
+{
+  "id": "gh_rbo_1_john_4",
+  "translationCode": "RBO",
+  "bookId": "1_john",
+  "chapter": 4,
+  "title": "1-е Иоанна 4 · РБО",
+  "narratorId": "rbo",
+  "audioFileName": "48_04.mp3",
+  "cues": [
+    {
+      "timeMs": 4463,
+      "verseStart": 1
+    },
+    {
+      "timeMs": 16252,
+      "verseStart": 2
+    },
+    {
+      "timeMs": 27100,
+      "verseStart": 3
+    },
+    {
+      "timeMs": 39149,
+      "verseStart": 4
+    },
+    {
+      "timeMs": 45934,
+      "verseStart": 5
+    },
+    {
+      "timeMs": 52518,
+      "verseStart": 6
+    },
+    {
+      "timeMs": 65428,
+      "verseStart": 7
+    },
+    {
+      "timeMs": 77597,
+      "verseStart": 8
+    },
+    {
+      "timeMs": 83301,
+      "verseStart": 9
+    },
+    {
+      "timeMs": 93729,
+      "verseStart": 10
+    },
+    {
+      "timeMs": 107499,
+      "verseStart": 11
+    },
+    {
+      "timeMs": 114023,
+      "verseStart": 12
+    },
+    {
+      "timeMs": 125652,
+      "verseStart": 13
+    },
+    {
+      "timeMs": 132437,
+      "verseStart": 14
+    },
+    {
+      "timeMs": 139282,
+      "verseStart": 15
+    },
+    {
+      "timeMs": 146827,
+      "verseStart": 16
+    },
+    {
+      "timeMs": 160417,
+      "verseStart": 17
+    },
+    {
+      "timeMs": 170044,
+      "verseStart": 18
+    },
+    {
+      "timeMs": 182714,
+      "verseStart": 19
+    },
+    {
+      "timeMs": 186857,
+      "verseStart": 20
+    },
+    {
+      "timeMs": 200407,
+      "verseStart": 21
+    }
+  ]
+}

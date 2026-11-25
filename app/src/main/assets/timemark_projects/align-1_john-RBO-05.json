@@ -1,0 +1,116 @@
+{
+  "id": "align-1_john-RBO-05",
+  "translationCode": "RBO",
+  "bookId": "1_john",
+  "chapter": 5,
+  "title": "1-е Иоанна 5 · РБО",
+  "audioFilePath": "/data/user/0/com.example.bible.sqlite/files/bible_audio/rbo/48_05.mp3",
+  "updatedAt": 1795478400000,
+  "cues": [
+    {
+      "timeMs": 4123,
+      "verseStart": 1,
+      "attachments": []
+    },
+    {
+      "timeMs": 15390,
+      "verseStart": 2,
+      "attachments": []
+    },
+    {
+      "timeMs": 26278,
+      "verseStart": 3,
+      "attachments": []
+    },
+    {
+      "timeMs": 35984,
+      "verseStart": 4,
+      "attachments": []
+    },
+    {
+      "timeMs": 45771,
+      "verseStart": 5,
+      "attachments": []
+    },
+    {
+      "timeMs": 53076,
+      "verseStart": 6,
+      "attachments": []
+    },
+    {
+      "timeMs": 69867,
+      "verseStart": 7,
+      "attachments": []
+    },
+    {
+      "timeMs": 71888,
+      "verseStart": 8,
+      "attachments": []
+    },
+    {
+      "timeMs": 79934,
+      "verseStart": 9,
+      "attachments": []
+    },
+    {
+      "timeMs": 92082,
+      "verseStart": 10,
+      "attachments": []
+    },
+    {
+      "timeMs": 106852,
+      "verseStart": 11,
+      "attachments": []
+    },
+    {
+      "timeMs": 114457,
+      "verseStart": 12,
+      "attachments": []
+    },
+    {
+      "timeMs": 123223,
+      "verseStart": 13,
+      "attachments": []
+    },
+    {
+      "timeMs": 131528,
+      "verseStart": 14,
+      "attachments": []
+    },
+    {
+      "timeMs": 140955,
+      "verseStart": 15,
+      "attachments": []
+    },
+    {
+      "timeMs": 150301,
+      "verseStart": 16,
+      "attachments": []
+    },
+    {
+      "timeMs": 170634,
+      "verseStart": 17,
+      "attachments": []
+    },
+    {
+      "timeMs": 176698,
+      "verseStart": 18,
+      "attachments": []
+    },
+    {
+      "timeMs": 186645,
+      "verseStart": 19,
+      "attachments": []
+    },
+    {
+      "timeMs": 192469,
+      "verseStart": 20,
+      "attachments": []
+    },
+    {
+      "timeMs": 212242,
+      "verseStart": 21,
+      "attachments": []
+    }
+  ]
+}

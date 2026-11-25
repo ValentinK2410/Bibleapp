@@ -6604,6 +6604,56 @@
       "file": "projects/rbo_1_corinthians_9.json"
     },
     {
+      "id": "gh_rbo_1_john_1",
+      "translationCode": "RBO",
+      "bookId": "1_john",
+      "chapter": 1,
+      "title": "1-е Иоанна 1 · РБО",
+      "cueCount": 10,
+      "narratorId": "rbo",
+      "file": "projects/rbo_1_john_1.json"
+    },
+    {
+      "id": "gh_rbo_1_john_2",
+      "translationCode": "RBO",
+      "bookId": "1_john",
+      "chapter": 2,
+      "title": "1-е Иоанна 2 · РБО",
+      "cueCount": 29,
+      "narratorId": "rbo",
+      "file": "projects/rbo_1_john_2.json"
+    },
+    {
+      "id": "gh_rbo_1_john_3",
+      "translationCode": "RBO",
+      "bookId": "1_john",
+      "chapter": 3,
+      "title": "1-е Иоанна 3 · РБО",
+      "cueCount": 24,
+      "narratorId": "rbo",
+      "file": "projects/rbo_1_john_3.json"
+    },
+    {
+      "id": "gh_rbo_1_john_4",
+      "translationCode": "RBO",
+      "bookId": "1_john",
+      "chapter": 4,
+      "title": "1-е Иоанна 4 · РБО",
+      "cueCount": 21,
+      "narratorId": "rbo",
+      "file": "projects/rbo_1_john_4.json"
+    },
+    {
+      "id": "gh_rbo_1_john_5",
+      "translationCode": "RBO",
+      "bookId": "1_john",
+      "chapter": 5,
+      "title": "1-е Иоанна 5 · РБО",
+      "cueCount": 21,
+      "narratorId": "rbo",
+      "file": "projects/rbo_1_john_5.json"
+    },
+    {
       "id": "gh_rbo_1_peter_1",
       "translationCode": "RBO",
       "bookId": "1_peter",

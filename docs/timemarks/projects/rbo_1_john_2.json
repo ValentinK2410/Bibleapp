@@ -1,0 +1,127 @@
+{
+  "id": "gh_rbo_1_john_2",
+  "translationCode": "RBO",
+  "bookId": "1_john",
+  "chapter": 2,
+  "title": "1-е Иоанна 2 · РБО",
+  "narratorId": "rbo",
+  "audioFileName": "48_02.mp3",
+  "cues": [
+    {
+      "timeMs": 4483,
+      "verseStart": 1
+    },
+    {
+      "timeMs": 18373,
+      "verseStart": 2
+    },
+    {
+      "timeMs": 27700,
+      "verseStart": 3
+    },
+    {
+      "timeMs": 35746,
+      "verseStart": 4
+    },
+    {
+      "timeMs": 44332,
+      "verseStart": 5
+    },
+    {
+      "timeMs": 54739,
+      "verseStart": 6
+    },
+    {
+      "timeMs": 60103,
+      "verseStart": 7
+    },
+    {
+      "timeMs": 73213,
+      "verseStart": 8
+    },
+    {
+      "timeMs": 87022,
+      "verseStart": 9
+    },
+    {
+      "timeMs": 93267,
+      "verseStart": 10
+    },
+    {
+      "timeMs": 98931,
+      "verseStart": 11
+    },
+    {
+      "timeMs": 107517,
+      "verseStart": 12
+    },
+    {
+      "timeMs": 114882,
+      "verseStart": 13
+    },
+    {
+      "timeMs": 126110,
+      "verseStart": 14
+    },
+    {
+      "timeMs": 146385,
+      "verseStart": 15
+    },
+    {
+      "timeMs": 153970,
+      "verseStart": 16
+    },
+    {
+      "timeMs": 165759,
+      "verseStart": 17
+    },
+    {
+      "timeMs": 175506,
+      "verseStart": 18
+    },
+    {
+      "timeMs": 190216,
+      "verseStart": 19
+    },
+    {
+      "timeMs": 205067,
+      "verseStart": 20
+    },
+    {
+      "timeMs": 211612,
+      "verseStart": 21
+    },
+    {
+      "timeMs": 222740,
+      "verseStart": 22
+    },
+    {
+      "timeMs": 236450,
+      "verseStart": 23
+    },
+    {
+      "timeMs": 243875,
+      "verseStart": 24
+    },
+    {
+      "timeMs": 255303,
+      "verseStart": 25
+    },
+    {
+      "timeMs": 261848,
+      "verseStart": 26
+    },
+    {
+      "timeMs": 266311,
+      "verseStart": 27
+    },
+    {
+      "timeMs": 286906,
+      "verseStart": 28
+    },
+    {
+      "timeMs": 298654,
+      "verseStart": 29
+    }
+  ]
+}

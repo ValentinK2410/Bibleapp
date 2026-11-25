@@ -1,0 +1,61 @@
+{
+  "id": "align-1_john-RBO-01",
+  "translationCode": "RBO",
+  "bookId": "1_john",
+  "chapter": 1,
+  "title": "1-е Иоанна 1 · РБО",
+  "audioFilePath": "/data/user/0/com.example.bible.sqlite/files/bible_audio/rbo/48_01.mp3",
+  "updatedAt": 1795478400000,
+  "cues": [
+    {
+      "timeMs": 7965,
+      "verseStart": 1,
+      "attachments": []
+    },
+    {
+      "timeMs": 23834,
+      "verseStart": 2,
+      "attachments": []
+    },
+    {
+      "timeMs": 35641,
+      "verseStart": 3,
+      "attachments": []
+    },
+    {
+      "timeMs": 47388,
+      "verseStart": 4,
+      "attachments": []
+    },
+    {
+      "timeMs": 52011,
+      "verseStart": 5,
+      "attachments": []
+    },
+    {
+      "timeMs": 62578,
+      "verseStart": 6,
+      "attachments": []
+    },
+    {
+      "timeMs": 72744,
+      "verseStart": 7,
+      "attachments": []
+    },
+    {
+      "timeMs": 84991,
+      "verseStart": 8,
+      "attachments": []
+    },
+    {
+      "timeMs": 92095,
+      "verseStart": 9,
+      "attachments": []
+    },
+    {
+      "timeMs": 102321,
+      "verseStart": 10,
+      "attachments": []
+    }
+  ]
+}

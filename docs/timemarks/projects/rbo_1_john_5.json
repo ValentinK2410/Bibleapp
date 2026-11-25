@@ -1,0 +1,95 @@
+{
+  "id": "gh_rbo_1_john_5",
+  "translationCode": "RBO",
+  "bookId": "1_john",
+  "chapter": 5,
+  "title": "1-е Иоанна 5 · РБО",
+  "narratorId": "rbo",
+  "audioFileName": "48_05.mp3",
+  "cues": [
+    {
+      "timeMs": 4123,
+      "verseStart": 1
+    },
+    {
+      "timeMs": 15390,
+      "verseStart": 2
+    },
+    {
+      "timeMs": 26278,
+      "verseStart": 3
+    },
+    {
+      "timeMs": 35984,
+      "verseStart": 4
+    },
+    {
+      "timeMs": 45771,
+      "verseStart": 5
+    },
+    {
+      "timeMs": 53076,
+      "verseStart": 6
+    },
+    {
+      "timeMs": 69867,
+      "verseStart": 7
+    },
+    {
+      "timeMs": 71888,
+      "verseStart": 8
+    },
+    {
+      "timeMs": 79934,
+      "verseStart": 9
+    },
+    {
+      "timeMs": 92082,
+      "verseStart": 10
+    },
+    {
+      "timeMs": 106852,
+      "verseStart": 11
+    },
+    {
+      "timeMs": 114457,
+      "verseStart": 12
+    },
+    {
+      "timeMs": 123223,
+      "verseStart": 13
+    },
+    {
+      "timeMs": 131528,
+      "verseStart": 14
+    },
+    {
+      "timeMs": 140955,
+      "verseStart": 15
+    },
+    {
+      "timeMs": 150301,
+      "verseStart": 16
+    },
+    {
+      "timeMs": 170634,
+      "verseStart": 17
+    },
+    {
+      "timeMs": 176698,
+      "verseStart": 18
+    },
+    {
+      "timeMs": 186645,
+      "verseStart": 19
+    },
+    {
+      "timeMs": 192469,
+      "verseStart": 20
+    },
+    {
+      "timeMs": 212242,
+      "verseStart": 21
+    }
+  ]
+}

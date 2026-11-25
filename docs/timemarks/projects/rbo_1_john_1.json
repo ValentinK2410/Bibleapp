@@ -1,0 +1,51 @@
+{
+  "id": "gh_rbo_1_john_1",
+  "translationCode": "RBO",
+  "bookId": "1_john",
+  "chapter": 1,
+  "title": "1-е Иоанна 1 · РБО",
+  "narratorId": "rbo",
+  "audioFileName": "48_01.mp3",
+  "cues": [
+    {
+      "timeMs": 7965,
+      "verseStart": 1
+    },
+    {
+      "timeMs": 23834,
+      "verseStart": 2
+    },
+    {
+      "timeMs": 35641,
+      "verseStart": 3
+    },
+    {
+      "timeMs": 47388,
+      "verseStart": 4
+    },
+    {
+      "timeMs": 52011,
+      "verseStart": 5
+    },
+    {
+      "timeMs": 62578,
+      "verseStart": 6
+    },
+    {
+      "timeMs": 72744,
+      "verseStart": 7
+    },
+    {
+      "timeMs": 84991,
+      "verseStart": 8
+    },
+    {
+      "timeMs": 92095,
+      "verseStart": 9
+    },
+    {
+      "timeMs": 102321,
+      "verseStart": 10
+    }
+  ]
+}
