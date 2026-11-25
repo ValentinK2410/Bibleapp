@@ -1454,6 +1454,16 @@
       "file": "projects/bti_john_9.json"
     },
     {
+      "id": "gh_bti_jude_1",
+      "translationCode": "BTI",
+      "bookId": "jude",
+      "chapter": 1,
+      "title": "Иуды 1 · Кулаковых",
+      "cueCount": 25,
+      "narratorId": "bti",
+      "file": "projects/bti_jude_1.json"
+    },
+    {
       "id": "gh_bti_luke_1",
       "translationCode": "BTI",
       "bookId": "luke",
