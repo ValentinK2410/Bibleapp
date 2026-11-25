@@ -8024,6 +8024,16 @@
       "file": "projects/rbo_john_9.json"
     },
     {
+      "id": "gh_rbo_jude_1",
+      "translationCode": "RBO",
+      "bookId": "jude",
+      "chapter": 1,
+      "title": "Иуды 1 · РБО",
+      "cueCount": 25,
+      "narratorId": "rbo",
+      "file": "projects/rbo_jude_1.json"
+    },
+    {
       "id": "gh_rbo_luke_1",
       "translationCode": "RBO",
       "bookId": "luke",
