@@ -1,0 +1,86 @@
+{
+  "id": "align-3_john-SYN-01",
+  "translationCode": "SYN",
+  "bookId": "3_john",
+  "chapter": 1,
+  "title": "3-е Иоанна 1 · Синодальный · Бондаренко",
+  "audioFilePath": "/data/user/0/com.example.bible.sqlite/files/bible_audio/bondarenko/50_01.mp3",
+  "updatedAt": 1795478400000,
+  "cues": [
+    {
+      "timeMs": 11167,
+      "verseStart": 1,
+      "attachments": []
+    },
+    {
+      "timeMs": 19833,
+      "verseStart": 2,
+      "attachments": []
+    },
+    {
+      "timeMs": 30160,
+      "verseStart": 3,
+      "attachments": []
+    },
+    {
+      "timeMs": 40666,
+      "verseStart": 4,
+      "attachments": []
+    },
+    {
+      "timeMs": 48832,
+      "verseStart": 5,
+      "attachments": []
+    },
+    {
+      "timeMs": 57657,
+      "verseStart": 6,
+      "attachments": []
+    },
+    {
+      "timeMs": 69285,
+      "verseStart": 7,
+      "attachments": []
+    },
+    {
+      "timeMs": 76189,
+      "verseStart": 8,
+      "attachments": []
+    },
+    {
+      "timeMs": 84515,
+      "verseStart": 9,
+      "attachments": []
+    },
+    {
+      "timeMs": 94221,
+      "verseStart": 10,
+      "attachments": []
+    },
+    {
+      "timeMs": 114994,
+      "verseStart": 11,
+      "attachments": []
+    },
+    {
+      "timeMs": 130144,
+      "verseStart": 12,
+      "attachments": []
+    },
+    {
+      "timeMs": 144634,
+      "verseStart": 13,
+      "attachments": []
+    },
+    {
+      "timeMs": 152839,
+      "verseStart": 14,
+      "attachments": []
+    },
+    {
+      "timeMs": 161465,
+      "verseStart": 15,
+      "attachments": []
+    }
+  ]
+}

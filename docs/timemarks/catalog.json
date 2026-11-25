@@ -9224,6 +9224,16 @@
       "file": "projects/syn_2_timothy_4.json"
     },
     {
+      "id": "gh_syn_3_john_1",
+      "translationCode": "SYN",
+      "bookId": "3_john",
+      "chapter": 1,
+      "title": "3-е Иоанна 1 · Синодальный · Бондаренко",
+      "cueCount": 15,
+      "narratorId": "bondarenko",
+      "file": "projects/syn_3_john_1.json"
+    },
+    {
       "id": "gh_syn_acts_1",
       "translationCode": "SYN",
       "bookId": "acts",
