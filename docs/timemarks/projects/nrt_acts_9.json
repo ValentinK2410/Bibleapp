@@ -1,0 +1,183 @@
+{
+  "id": "gh_nrt_acts_9",
+  "translationCode": "NRT",
+  "bookId": "acts",
+  "chapter": 9,
+  "title": "Деяния 9 · Новый русский",
+  "narratorId": "new-russian",
+  "audioFileName": "44_09.mp3",
+  "cues": [
+    {
+      "timeMs": 3743,
+      "verseStart": 1
+    },
+    {
+      "timeMs": 11628,
+      "verseStart": 2
+    },
+    {
+      "timeMs": 26518,
+      "verseStart": 3
+    },
+    {
+      "timeMs": 32382,
+      "verseStart": 4
+    },
+    {
+      "timeMs": 40127,
+      "verseStart": 5
+    },
+    {
+      "timeMs": 48172,
+      "verseStart": 6
+    },
+    {
+      "timeMs": 53856,
+      "verseStart": 7
+    },
+    {
+      "timeMs": 62021,
+      "verseStart": 8
+    },
+    {
+      "timeMs": 72068,
+      "verseStart": 9
+    },
+    {
+      "timeMs": 76511,
+      "verseStart": 10
+    },
+    {
+      "timeMs": 86718,
+      "verseStart": 11
+    },
+    {
+      "timeMs": 97225,
+      "verseStart": 12
+    },
+    {
+      "timeMs": 106131,
+      "verseStart": 13
+    },
+    {
+      "timeMs": 116738,
+      "verseStart": 14
+    },
+    {
+      "timeMs": 124763,
+      "verseStart": 15
+    },
+    {
+      "timeMs": 140714,
+      "verseStart": 16
+    },
+    {
+      "timeMs": 147839,
+      "verseStart": 17
+    },
+    {
+      "timeMs": 167131,
+      "verseStart": 18
+    },
+    {
+      "timeMs": 176538,
+      "verseStart": 19
+    },
+    {
+      "timeMs": 188185,
+      "verseStart": 20
+    },
+    {
+      "timeMs": 193969,
+      "verseStart": 21
+    },
+    {
+      "timeMs": 208719,
+      "verseStart": 22
+    },
+    {
+      "timeMs": 219026,
+      "verseStart": 23
+    },
+    {
+      "timeMs": 225790,
+      "verseStart": 24
+    },
+    {
+      "timeMs": 233716,
+      "verseStart": 25
+    },
+    {
+      "timeMs": 245183,
+      "verseStart": 26
+    },
+    {
+      "timeMs": 253709,
+      "verseStart": 27
+    },
+    {
+      "timeMs": 266658,
+      "verseStart": 28
+    },
+    {
+      "timeMs": 274483,
+      "verseStart": 29
+    },
+    {
+      "timeMs": 280947,
+      "verseStart": 30
+    },
+    {
+      "timeMs": 287872,
+      "verseStart": 31
+    },
+    {
+      "timeMs": 308446,
+      "verseStart": 32
+    },
+    {
+      "timeMs": 315230,
+      "verseStart": 33
+    },
+    {
+      "timeMs": 321875,
+      "verseStart": 34
+    },
+    {
+      "timeMs": 332341,
+      "verseStart": 35
+    },
+    {
+      "timeMs": 344189,
+      "verseStart": 36
+    },
+    {
+      "timeMs": 352995,
+      "verseStart": 37
+    },
+    {
+      "timeMs": 359179,
+      "verseStart": 38
+    },
+    {
+      "timeMs": 370587,
+      "verseStart": 39
+    },
+    {
+      "timeMs": 387518,
+      "verseStart": 40
+    },
+    {
+      "timeMs": 403809,
+      "verseStart": 41
+    },
+    {
+      "timeMs": 413756,
+      "verseStart": 42
+    },
+    {
+      "timeMs": 421781,
+      "verseStart": 43
+    }
+  ]
+}

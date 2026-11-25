@@ -1,0 +1,86 @@
+{
+  "id": "align-acts-NRT-06",
+  "translationCode": "NRT",
+  "bookId": "acts",
+  "chapter": 6,
+  "title": "Деяния 6 · Новый русский",
+  "audioFilePath": "/data/user/0/com.example.bible.sqlite/files/bible_audio/new-russian/44_06.mp3",
+  "updatedAt": 1795478400000,
+  "cues": [
+    {
+      "timeMs": 4163,
+      "verseStart": 1,
+      "attachments": []
+    },
+    {
+      "timeMs": 10007,
+      "verseStart": 2,
+      "attachments": []
+    },
+    {
+      "timeMs": 28920,
+      "verseStart": 3,
+      "attachments": []
+    },
+    {
+      "timeMs": 41429,
+      "verseStart": 4,
+      "attachments": []
+    },
+    {
+      "timeMs": 46753,
+      "verseStart": 5,
+      "attachments": []
+    },
+    {
+      "timeMs": 63004,
+      "verseStart": 6,
+      "attachments": []
+    },
+    {
+      "timeMs": 67467,
+      "verseStart": 7,
+      "attachments": []
+    },
+    {
+      "timeMs": 81177,
+      "verseStart": 8,
+      "attachments": []
+    },
+    {
+      "timeMs": 89222,
+      "verseStart": 9,
+      "attachments": []
+    },
+    {
+      "timeMs": 102772,
+      "verseStart": 10,
+      "attachments": []
+    },
+    {
+      "timeMs": 109657,
+      "verseStart": 11,
+      "attachments": []
+    },
+    {
+      "timeMs": 119103,
+      "verseStart": 12,
+      "attachments": []
+    },
+    {
+      "timeMs": 128310,
+      "verseStart": 13,
+      "attachments": []
+    },
+    {
+      "timeMs": 137476,
+      "verseStart": 14,
+      "attachments": []
+    },
+    {
+      "timeMs": 146863,
+      "verseStart": 15,
+      "attachments": []
+    }
+  ]
+}

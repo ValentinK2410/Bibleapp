@@ -1,0 +1,71 @@
+{
+  "id": "gh_nrt_acts_6",
+  "translationCode": "NRT",
+  "bookId": "acts",
+  "chapter": 6,
+  "title": "Деяния 6 · Новый русский",
+  "narratorId": "new-russian",
+  "audioFileName": "44_06.mp3",
+  "cues": [
+    {
+      "timeMs": 4163,
+      "verseStart": 1
+    },
+    {
+      "timeMs": 10007,
+      "verseStart": 2
+    },
+    {
+      "timeMs": 28920,
+      "verseStart": 3
+    },
+    {
+      "timeMs": 41429,
+      "verseStart": 4
+    },
+    {
+      "timeMs": 46753,
+      "verseStart": 5
+    },
+    {
+      "timeMs": 63004,
+      "verseStart": 6
+    },
+    {
+      "timeMs": 67467,
+      "verseStart": 7
+    },
+    {
+      "timeMs": 81177,
+      "verseStart": 8
+    },
+    {
+      "timeMs": 89222,
+      "verseStart": 9
+    },
+    {
+      "timeMs": 102772,
+      "verseStart": 10
+    },
+    {
+      "timeMs": 109657,
+      "verseStart": 11
+    },
+    {
+      "timeMs": 119103,
+      "verseStart": 12
+    },
+    {
+      "timeMs": 128310,
+      "verseStart": 13
+    },
+    {
+      "timeMs": 137476,
+      "verseStart": 14
+    },
+    {
+      "timeMs": 146863,
+      "verseStart": 15
+    }
+  ]
+}

@@ -1,0 +1,221 @@
+{
+  "id": "align-acts-NRT-05",
+  "translationCode": "NRT",
+  "bookId": "acts",
+  "chapter": 5,
+  "title": "Деяния 5 · Новый русский",
+  "audioFilePath": "/data/user/0/com.example.bible.sqlite/files/bible_audio/new-russian/44_05.mp3",
+  "updatedAt": 1795478400000,
+  "cues": [
+    {
+      "timeMs": 3823,
+      "verseStart": 1,
+      "attachments": []
+    },
+    {
+      "timeMs": 10567,
+      "verseStart": 2,
+      "attachments": []
+    },
+    {
+      "timeMs": 20114,
+      "verseStart": 3,
+      "attachments": []
+    },
+    {
+      "timeMs": 34904,
+      "verseStart": 4,
+      "attachments": []
+    },
+    {
+      "timeMs": 48874,
+      "verseStart": 5,
+      "attachments": []
+    },
+    {
+      "timeMs": 56139,
+      "verseStart": 6,
+      "attachments": []
+    },
+    {
+      "timeMs": 61782,
+      "verseStart": 7,
+      "attachments": []
+    },
+    {
+      "timeMs": 66846,
+      "verseStart": 8,
+      "attachments": []
+    },
+    {
+      "timeMs": 75952,
+      "verseStart": 9,
+      "attachments": []
+    },
+    {
+      "timeMs": 90362,
+      "verseStart": 10,
+      "attachments": []
+    },
+    {
+      "timeMs": 101029,
+      "verseStart": 11,
+      "attachments": []
+    },
+    {
+      "timeMs": 111557,
+      "verseStart": 12,
+      "attachments": []
+    },
+    {
+      "timeMs": 120343,
+      "verseStart": 13,
+      "attachments": []
+    },
+    {
+      "timeMs": 125726,
+      "verseStart": 14,
+      "attachments": []
+    },
+    {
+      "timeMs": 132611,
+      "verseStart": 15,
+      "attachments": []
+    },
+    {
+      "timeMs": 143579,
+      "verseStart": 16,
+      "attachments": []
+    },
+    {
+      "timeMs": 158189,
+      "verseStart": 17,
+      "attachments": []
+    },
+    {
+      "timeMs": 166494,
+      "verseStart": 18,
+      "attachments": []
+    },
+    {
+      "timeMs": 171318,
+      "verseStart": 19,
+      "attachments": []
+    },
+    {
+      "timeMs": 176982,
+      "verseStart": 20,
+      "attachments": []
+    },
+    {
+      "timeMs": 184467,
+      "verseStart": 21,
+      "attachments": []
+    },
+    {
+      "timeMs": 199417,
+      "verseStart": 22,
+      "attachments": []
+    },
+    {
+      "timeMs": 205361,
+      "verseStart": 23,
+      "attachments": []
+    },
+    {
+      "timeMs": 213266,
+      "verseStart": 24,
+      "attachments": []
+    },
+    {
+      "timeMs": 221692,
+      "verseStart": 25,
+      "attachments": []
+    },
+    {
+      "timeMs": 229438,
+      "verseStart": 26,
+      "attachments": []
+    },
+    {
+      "timeMs": 240805,
+      "verseStart": 27,
+      "attachments": []
+    },
+    {
+      "timeMs": 247390,
+      "verseStart": 28,
+      "attachments": []
+    },
+    {
+      "timeMs": 259358,
+      "verseStart": 29,
+      "attachments": []
+    },
+    {
+      "timeMs": 266023,
+      "verseStart": 30,
+      "attachments": []
+    },
+    {
+      "timeMs": 272747,
+      "verseStart": 31,
+      "attachments": []
+    },
+    {
+      "timeMs": 284115,
+      "verseStart": 32,
+      "attachments": []
+    },
+    {
+      "timeMs": 291620,
+      "verseStart": 33,
+      "attachments": []
+    },
+    {
+      "timeMs": 297885,
+      "verseStart": 34,
+      "attachments": []
+    },
+    {
+      "timeMs": 310913,
+      "verseStart": 35,
+      "attachments": []
+    },
+    {
+      "timeMs": 319499,
+      "verseStart": 36,
+      "attachments": []
+    },
+    {
+      "timeMs": 335210,
+      "verseStart": 37,
+      "attachments": []
+    },
+    {
+      "timeMs": 346278,
+      "verseStart": 38,
+      "attachments": []
+    },
+    {
+      "timeMs": 358766,
+      "verseStart": 39,
+      "attachments": []
+    },
+    {
+      "timeMs": 369954,
+      "verseStart": 40,
+      "attachments": []
+    },
+    {
+      "timeMs": 379320,
+      "verseStart": 41,
+      "attachments": []
+    },
+    {
+      "timeMs": 389067,
+      "verseStart": 42,
+      "attachments": []
+    }
+  ]
+}

@@ -1,0 +1,131 @@
+{
+  "id": "gh_nrt_acts_11",
+  "translationCode": "NRT",
+  "bookId": "acts",
+  "chapter": 11,
+  "title": "Деяния 11 · Новый русский",
+  "narratorId": "new-russian",
+  "audioFileName": "44_11.mp3",
+  "cues": [
+    {
+      "timeMs": 4163,
+      "verseStart": 1
+    },
+    {
+      "timeMs": 10347,
+      "verseStart": 2
+    },
+    {
+      "timeMs": 16211,
+      "verseStart": 3
+    },
+    {
+      "timeMs": 20694,
+      "verseStart": 4
+    },
+    {
+      "timeMs": 25457,
+      "verseStart": 5
+    },
+    {
+      "timeMs": 39046,
+      "verseStart": 6
+    },
+    {
+      "timeMs": 45370,
+      "verseStart": 7
+    },
+    {
+      "timeMs": 51875,
+      "verseStart": 8
+    },
+    {
+      "timeMs": 59560,
+      "verseStart": 9
+    },
+    {
+      "timeMs": 66785,
+      "verseStart": 10
+    },
+    {
+      "timeMs": 71888,
+      "verseStart": 11
+    },
+    {
+      "timeMs": 79033,
+      "verseStart": 12
+    },
+    {
+      "timeMs": 89940,
+      "verseStart": 13
+    },
+    {
+      "timeMs": 100727,
+      "verseStart": 14
+    },
+    {
+      "timeMs": 105991,
+      "verseStart": 15
+    },
+    {
+      "timeMs": 112595,
+      "verseStart": 16
+    },
+    {
+      "timeMs": 120040,
+      "verseStart": 17
+    },
+    {
+      "timeMs": 131367,
+      "verseStart": 18
+    },
+    {
+      "timeMs": 147538,
+      "verseStart": 19
+    },
+    {
+      "timeMs": 161768,
+      "verseStart": 20
+    },
+    {
+      "timeMs": 171934,
+      "verseStart": 21
+    },
+    {
+      "timeMs": 178159,
+      "verseStart": 22
+    },
+    {
+      "timeMs": 184403,
+      "verseStart": 23
+    },
+    {
+      "timeMs": 193569,
+      "verseStart": 24
+    },
+    {
+      "timeMs": 201174,
+      "verseStart": 25
+    },
+    {
+      "timeMs": 206077,
+      "verseStart": 26
+    },
+    {
+      "timeMs": 220647,
+      "verseStart": 27
+    },
+    {
+      "timeMs": 225770,
+      "verseStart": 28
+    },
+    {
+      "timeMs": 235837,
+      "verseStart": 29
+    },
+    {
+      "timeMs": 243882,
+      "verseStart": 30
+    }
+  ]
+}

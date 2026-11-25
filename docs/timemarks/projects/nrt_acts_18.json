@@ -1,0 +1,123 @@
+{
+  "id": "gh_nrt_acts_18",
+  "translationCode": "NRT",
+  "bookId": "acts",
+  "chapter": 18,
+  "title": "Деяния 18 · Новый русский",
+  "narratorId": "new-russian",
+  "audioFileName": "44_18.mp3",
+  "cues": [
+    {
+      "timeMs": 2782,
+      "verseStart": 1
+    },
+    {
+      "timeMs": 7525,
+      "verseStart": 2
+    },
+    {
+      "timeMs": 22876,
+      "verseStart": 3
+    },
+    {
+      "timeMs": 30161,
+      "verseStart": 4
+    },
+    {
+      "timeMs": 37306,
+      "verseStart": 5
+    },
+    {
+      "timeMs": 48313,
+      "verseStart": 6
+    },
+    {
+      "timeMs": 61843,
+      "verseStart": 7
+    },
+    {
+      "timeMs": 70449,
+      "verseStart": 8
+    },
+    {
+      "timeMs": 80956,
+      "verseStart": 9
+    },
+    {
+      "timeMs": 88161,
+      "verseStart": 10
+    },
+    {
+      "timeMs": 95786,
+      "verseStart": 11
+    },
+    {
+      "timeMs": 101330,
+      "verseStart": 12
+    },
+    {
+      "timeMs": 110476,
+      "verseStart": 13
+    },
+    {
+      "timeMs": 118002,
+      "verseStart": 14
+    },
+    {
+      "timeMs": 133752,
+      "verseStart": 15
+    },
+    {
+      "timeMs": 146321,
+      "verseStart": 16
+    },
+    {
+      "timeMs": 149203,
+      "verseStart": 17
+    },
+    {
+      "timeMs": 164814,
+      "verseStart": 18
+    },
+    {
+      "timeMs": 180565,
+      "verseStart": 19
+    },
+    {
+      "timeMs": 189231,
+      "verseStart": 20
+    },
+    {
+      "timeMs": 195455,
+      "verseStart": 21
+    },
+    {
+      "timeMs": 203060,
+      "verseStart": 22
+    },
+    {
+      "timeMs": 211226,
+      "verseStart": 23
+    },
+    {
+      "timeMs": 226657,
+      "verseStart": 24
+    },
+    {
+      "timeMs": 235703,
+      "verseStart": 25
+    },
+    {
+      "timeMs": 246150,
+      "verseStart": 26
+    },
+    {
+      "timeMs": 257438,
+      "verseStart": 27
+    },
+    {
+      "timeMs": 273509,
+      "verseStart": 28
+    }
+  ]
+}
