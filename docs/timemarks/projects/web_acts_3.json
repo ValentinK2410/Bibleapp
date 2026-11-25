@@ -1,0 +1,115 @@
+{
+  "id": "gh_web_acts_3",
+  "translationCode": "WEB",
+  "bookId": "acts",
+  "chapter": 3,
+  "title": "Деяния 3 · WEB (англ.)",
+  "narratorId": "web",
+  "audioFileName": "44_03.mp3",
+  "cues": [
+    {
+      "timeMs": 3022,
+      "verseStart": 1
+    },
+    {
+      "timeMs": 9527,
+      "verseStart": 2
+    },
+    {
+      "timeMs": 20255,
+      "verseStart": 3
+    },
+    {
+      "timeMs": 24778,
+      "verseStart": 4
+    },
+    {
+      "timeMs": 31022,
+      "verseStart": 5
+    },
+    {
+      "timeMs": 35526,
+      "verseStart": 6
+    },
+    {
+      "timeMs": 48815,
+      "verseStart": 7
+    },
+    {
+      "timeMs": 55760,
+      "verseStart": 8
+    },
+    {
+      "timeMs": 64126,
+      "verseStart": 9
+    },
+    {
+      "timeMs": 67269,
+      "verseStart": 10
+    },
+    {
+      "timeMs": 76495,
+      "verseStart": 11
+    },
+    {
+      "timeMs": 86322,
+      "verseStart": 12
+    },
+    {
+      "timeMs": 100693,
+      "verseStart": 13
+    },
+    {
+      "timeMs": 115063,
+      "verseStart": 14
+    },
+    {
+      "timeMs": 121408,
+      "verseStart": 15
+    },
+    {
+      "timeMs": 128613,
+      "verseStart": 16
+    },
+    {
+      "timeMs": 143584,
+      "verseStart": 17
+    },
+    {
+      "timeMs": 151349,
+      "verseStart": 18
+    },
+    {
+      "timeMs": 161136,
+      "verseStart": 19
+    },
+    {
+      "timeMs": 169543,
+      "verseStart": 20
+    },
+    {
+      "timeMs": 173946,
+      "verseStart": 21
+    },
+    {
+      "timeMs": 185234,
+      "verseStart": 22
+    },
+    {
+      "timeMs": 199584,
+      "verseStart": 23
+    },
+    {
+      "timeMs": 207590,
+      "verseStart": 24
+    },
+    {
+      "timeMs": 217357,
+      "verseStart": 25
+    },
+    {
+      "timeMs": 229846,
+      "verseStart": 26
+    }
+  ]
+}

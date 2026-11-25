@@ -1,0 +1,171 @@
+{
+  "id": "gh_web_acts_21",
+  "translationCode": "WEB",
+  "bookId": "acts",
+  "chapter": 21,
+  "title": "Деяния 21 · WEB (англ.)",
+  "narratorId": "web",
+  "audioFileName": "44_21.mp3",
+  "cues": [
+    {
+      "timeMs": 3682,
+      "verseStart": 1
+    },
+    {
+      "timeMs": 14830,
+      "verseStart": 2
+    },
+    {
+      "timeMs": 21474,
+      "verseStart": 3
+    },
+    {
+      "timeMs": 32281,
+      "verseStart": 4
+    },
+    {
+      "timeMs": 40907,
+      "verseStart": 5
+    },
+    {
+      "timeMs": 54616,
+      "verseStart": 6
+    },
+    {
+      "timeMs": 61160,
+      "verseStart": 7
+    },
+    {
+      "timeMs": 69446,
+      "verseStart": 8
+    },
+    {
+      "timeMs": 80613,
+      "verseStart": 9
+    },
+    {
+      "timeMs": 85716,
+      "verseStart": 10
+    },
+    {
+      "timeMs": 92381,
+      "verseStart": 11
+    },
+    {
+      "timeMs": 108191,
+      "verseStart": 12
+    },
+    {
+      "timeMs": 114715,
+      "verseStart": 13
+    },
+    {
+      "timeMs": 128104,
+      "verseStart": 14
+    },
+    {
+      "timeMs": 134688,
+      "verseStart": 15
+    },
+    {
+      "timeMs": 139572,
+      "verseStart": 16
+    },
+    {
+      "timeMs": 148918,
+      "verseStart": 17
+    },
+    {
+      "timeMs": 153561,
+      "verseStart": 18
+    },
+    {
+      "timeMs": 159685,
+      "verseStart": 19
+    },
+    {
+      "timeMs": 166810,
+      "verseStart": 20
+    },
+    {
+      "timeMs": 178217,
+      "verseStart": 21
+    },
+    {
+      "timeMs": 191846,
+      "verseStart": 22
+    },
+    {
+      "timeMs": 198530,
+      "verseStart": 23
+    },
+    {
+      "timeMs": 204514,
+      "verseStart": 24
+    },
+    {
+      "timeMs": 221425,
+      "verseStart": 25
+    },
+    {
+      "timeMs": 237136,
+      "verseStart": 26
+    },
+    {
+      "timeMs": 250224,
+      "verseStart": 27
+    },
+    {
+      "timeMs": 258650,
+      "verseStart": 28
+    },
+    {
+      "timeMs": 272279,
+      "verseStart": 29
+    },
+    {
+      "timeMs": 279263,
+      "verseStart": 30
+    },
+    {
+      "timeMs": 288650,
+      "verseStart": 31
+    },
+    {
+      "timeMs": 295294,
+      "verseStart": 32
+    },
+    {
+      "timeMs": 304740,
+      "verseStart": 33
+    },
+    {
+      "timeMs": 312425,
+      "verseStart": 34
+    },
+    {
+      "timeMs": 321711,
+      "verseStart": 35
+    },
+    {
+      "timeMs": 328256,
+      "verseStart": 36
+    },
+    {
+      "timeMs": 333259,
+      "verseStart": 37
+    },
+    {
+      "timeMs": 342365,
+      "verseStart": 38
+    },
+    {
+      "timeMs": 352591,
+      "verseStart": 39
+    },
+    {
+      "timeMs": 363299,
+      "verseStart": 40
+    }
+  ]
+}

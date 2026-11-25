@@ -1,0 +1,111 @@
+{
+  "id": "gh_web_acts_12",
+  "translationCode": "WEB",
+  "bookId": "acts",
+  "chapter": 12,
+  "title": "Деяния 12 · WEB (англ.)",
+  "narratorId": "web",
+  "audioFileName": "44_12.mp3",
+  "cues": [
+    {
+      "timeMs": 2842,
+      "verseStart": 1
+    },
+    {
+      "timeMs": 8967,
+      "verseStart": 2
+    },
+    {
+      "timeMs": 12549,
+      "verseStart": 3
+    },
+    {
+      "timeMs": 21676,
+      "verseStart": 4
+    },
+    {
+      "timeMs": 32464,
+      "verseStart": 5
+    },
+    {
+      "timeMs": 39489,
+      "verseStart": 6
+    },
+    {
+      "timeMs": 50036,
+      "verseStart": 7
+    },
+    {
+      "timeMs": 63666,
+      "verseStart": 8
+    },
+    {
+      "timeMs": 75355,
+      "verseStart": 9
+    },
+    {
+      "timeMs": 83841,
+      "verseStart": 10
+    },
+    {
+      "timeMs": 99472,
+      "verseStart": 11
+    },
+    {
+      "timeMs": 113502,
+      "verseStart": 12
+    },
+    {
+      "timeMs": 122789,
+      "verseStart": 13
+    },
+    {
+      "timeMs": 128573,
+      "verseStart": 14
+    },
+    {
+      "timeMs": 136239,
+      "verseStart": 15
+    },
+    {
+      "timeMs": 146126,
+      "verseStart": 16
+    },
+    {
+      "timeMs": 152391,
+      "verseStart": 17
+    },
+    {
+      "timeMs": 170424,
+      "verseStart": 18
+    },
+    {
+      "timeMs": 176969,
+      "verseStart": 19
+    },
+    {
+      "timeMs": 189618,
+      "verseStart": 20
+    },
+    {
+      "timeMs": 203988,
+      "verseStart": 21
+    },
+    {
+      "timeMs": 210753,
+      "verseStart": 22
+    },
+    {
+      "timeMs": 216998,
+      "verseStart": 23
+    },
+    {
+      "timeMs": 226064,
+      "verseStart": 24
+    },
+    {
+      "timeMs": 230527,
+      "verseStart": 25
+    }
+  ]
+}

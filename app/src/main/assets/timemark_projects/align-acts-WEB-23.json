@@ -1,0 +1,186 @@
+{
+  "id": "align-acts-WEB-23",
+  "translationCode": "WEB",
+  "bookId": "acts",
+  "chapter": 23,
+  "title": "Деяния 23 · WEB (англ.)",
+  "audioFilePath": "/data/user/0/com.example.bible.sqlite/files/bible_audio/web/44_23.mp3",
+  "updatedAt": 1794873600000,
+  "cues": [
+    {
+      "timeMs": 3262,
+      "verseStart": 1,
+      "attachments": []
+    },
+    {
+      "timeMs": 13469,
+      "verseStart": 2,
+      "attachments": []
+    },
+    {
+      "timeMs": 18773,
+      "verseStart": 3,
+      "attachments": []
+    },
+    {
+      "timeMs": 31962,
+      "verseStart": 4,
+      "attachments": []
+    },
+    {
+      "timeMs": 36826,
+      "verseStart": 5,
+      "attachments": []
+    },
+    {
+      "timeMs": 47473,
+      "verseStart": 6,
+      "attachments": []
+    },
+    {
+      "timeMs": 64165,
+      "verseStart": 7,
+      "attachments": []
+    },
+    {
+      "timeMs": 72210,
+      "verseStart": 8,
+      "attachments": []
+    },
+    {
+      "timeMs": 79455,
+      "verseStart": 9,
+      "attachments": []
+    },
+    {
+      "timeMs": 94586,
+      "verseStart": 10,
+      "attachments": []
+    },
+    {
+      "timeMs": 109096,
+      "verseStart": 11,
+      "attachments": []
+    },
+    {
+      "timeMs": 123886,
+      "verseStart": 12,
+      "attachments": []
+    },
+    {
+      "timeMs": 133533,
+      "verseStart": 13,
+      "attachments": []
+    },
+    {
+      "timeMs": 137336,
+      "verseStart": 14,
+      "attachments": []
+    },
+    {
+      "timeMs": 145702,
+      "verseStart": 15,
+      "attachments": []
+    },
+    {
+      "timeMs": 160592,
+      "verseStart": 16,
+      "attachments": []
+    },
+    {
+      "timeMs": 168598,
+      "verseStart": 17,
+      "attachments": []
+    },
+    {
+      "timeMs": 177164,
+      "verseStart": 18,
+      "attachments": []
+    },
+    {
+      "timeMs": 186690,
+      "verseStart": 19,
+      "attachments": []
+    },
+    {
+      "timeMs": 194436,
+      "verseStart": 20,
+      "attachments": []
+    },
+    {
+      "timeMs": 203702,
+      "verseStart": 21,
+      "attachments": []
+    },
+    {
+      "timeMs": 217572,
+      "verseStart": 22,
+      "attachments": []
+    },
+    {
+      "timeMs": 225898,
+      "verseStart": 23,
+      "attachments": []
+    },
+    {
+      "timeMs": 237326,
+      "verseStart": 24,
+      "attachments": []
+    },
+    {
+      "timeMs": 243650,
+      "verseStart": 25,
+      "attachments": []
+    },
+    {
+      "timeMs": 246592,
+      "verseStart": 26,
+      "attachments": []
+    },
+    {
+      "timeMs": 251555,
+      "verseStart": 27,
+      "attachments": []
+    },
+    {
+      "timeMs": 260141,
+      "verseStart": 28,
+      "attachments": []
+    },
+    {
+      "timeMs": 265525,
+      "verseStart": 29,
+      "attachments": []
+    },
+    {
+      "timeMs": 273891,
+      "verseStart": 30,
+      "attachments": []
+    },
+    {
+      "timeMs": 287060,
+      "verseStart": 31,
+      "attachments": []
+    },
+    {
+      "timeMs": 293585,
+      "verseStart": 32,
+      "attachments": []
+    },
+    {
+      "timeMs": 297407,
+      "verseStart": 33,
+      "attachments": []
+    },
+    {
+      "timeMs": 303372,
+      "verseStart": 34,
+      "attachments": []
+    },
+    {
+      "timeMs": 311117,
+      "verseStart": 35,
+      "attachments": []
+    }
+  ]
+}

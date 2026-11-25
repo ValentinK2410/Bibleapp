@@ -1,0 +1,71 @@
+{
+  "id": "gh_web_acts_6",
+  "translationCode": "WEB",
+  "bookId": "acts",
+  "chapter": 6,
+  "title": "Деяния 6 · WEB (англ.)",
+  "narratorId": "web",
+  "audioFileName": "44_06.mp3",
+  "cues": [
+    {
+      "timeMs": 2682,
+      "verseStart": 1
+    },
+    {
+      "timeMs": 14549,
+      "verseStart": 2
+    },
+    {
+      "timeMs": 23575,
+      "verseStart": 3
+    },
+    {
+      "timeMs": 32541,
+      "verseStart": 4
+    },
+    {
+      "timeMs": 38345,
+      "verseStart": 5
+    },
+    {
+      "timeMs": 53734,
+      "verseStart": 6
+    },
+    {
+      "timeMs": 61239,
+      "verseStart": 7
+    },
+    {
+      "timeMs": 71226,
+      "verseStart": 8
+    },
+    {
+      "timeMs": 78370,
+      "verseStart": 9
+    },
+    {
+      "timeMs": 90898,
+      "verseStart": 10
+    },
+    {
+      "timeMs": 95701,
+      "verseStart": 11
+    },
+    {
+      "timeMs": 103806,
+      "verseStart": 12
+    },
+    {
+      "timeMs": 110831,
+      "verseStart": 13
+    },
+    {
+      "timeMs": 118376,
+      "verseStart": 14
+    },
+    {
+      "timeMs": 126841,
+      "verseStart": 15
+    }
+  ]
+}

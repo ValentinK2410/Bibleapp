@@ -1,0 +1,141 @@
+{
+  "id": "align-acts-WEB-01",
+  "translationCode": "WEB",
+  "bookId": "acts",
+  "chapter": 1,
+  "title": "Деяния 1 · WEB (англ.)",
+  "audioFilePath": "/data/user/0/com.example.bible.sqlite/files/bible_audio/web/44_01.mp3",
+  "updatedAt": 1794873600000,
+  "cues": [
+    {
+      "timeMs": 4903,
+      "verseStart": 1,
+      "attachments": []
+    },
+    {
+      "timeMs": 11348,
+      "verseStart": 2,
+      "attachments": []
+    },
+    {
+      "timeMs": 19073,
+      "verseStart": 3,
+      "attachments": []
+    },
+    {
+      "timeMs": 31681,
+      "verseStart": 4,
+      "attachments": []
+    },
+    {
+      "timeMs": 43469,
+      "verseStart": 5,
+      "attachments": []
+    },
+    {
+      "timeMs": 51675,
+      "verseStart": 6,
+      "attachments": []
+    },
+    {
+      "timeMs": 60380,
+      "verseStart": 7,
+      "attachments": []
+    },
+    {
+      "timeMs": 68086,
+      "verseStart": 8,
+      "attachments": []
+    },
+    {
+      "timeMs": 82335,
+      "verseStart": 9,
+      "attachments": []
+    },
+    {
+      "timeMs": 90421,
+      "verseStart": 10,
+      "attachments": []
+    },
+    {
+      "timeMs": 97665,
+      "verseStart": 11,
+      "attachments": []
+    },
+    {
+      "timeMs": 112696,
+      "verseStart": 12,
+      "attachments": []
+    },
+    {
+      "timeMs": 120941,
+      "verseStart": 13,
+      "attachments": []
+    },
+    {
+      "timeMs": 138873,
+      "verseStart": 14,
+      "attachments": []
+    },
+    {
+      "timeMs": 148560,
+      "verseStart": 15,
+      "attachments": []
+    },
+    {
+      "timeMs": 156585,
+      "verseStart": 16,
+      "attachments": []
+    },
+    {
+      "timeMs": 168533,
+      "verseStart": 17,
+      "attachments": []
+    },
+    {
+      "timeMs": 173576,
+      "verseStart": 18,
+      "attachments": []
+    },
+    {
+      "timeMs": 183143,
+      "verseStart": 19,
+      "attachments": []
+    },
+    {
+      "timeMs": 194150,
+      "verseStart": 20,
+      "attachments": []
+    },
+    {
+      "timeMs": 204717,
+      "verseStart": 21,
+      "attachments": []
+    },
+    {
+      "timeMs": 211041,
+      "verseStart": 22,
+      "attachments": []
+    },
+    {
+      "timeMs": 222229,
+      "verseStart": 23,
+      "attachments": []
+    },
+    {
+      "timeMs": 229334,
+      "verseStart": 24,
+      "attachments": []
+    },
+    {
+      "timeMs": 236899,
+      "verseStart": 25,
+      "attachments": []
+    },
+    {
+      "timeMs": 246565,
+      "verseStart": 26,
+      "attachments": []
+    }
+  ]
+}

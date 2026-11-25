@@ -1,0 +1,131 @@
+{
+  "id": "gh_web_acts_11",
+  "translationCode": "WEB",
+  "bookId": "acts",
+  "chapter": 11,
+  "title": "Деяния 11 · WEB (англ.)",
+  "narratorId": "web",
+  "audioFileName": "44_11.mp3",
+  "cues": [
+    {
+      "timeMs": 2482,
+      "verseStart": 1
+    },
+    {
+      "timeMs": 9046,
+      "verseStart": 2
+    },
+    {
+      "timeMs": 13690,
+      "verseStart": 3
+    },
+    {
+      "timeMs": 19994,
+      "verseStart": 4
+    },
+    {
+      "timeMs": 26078,
+      "verseStart": 5
+    },
+    {
+      "timeMs": 40188,
+      "verseStart": 6
+    },
+    {
+      "timeMs": 51216,
+      "verseStart": 7
+    },
+    {
+      "timeMs": 56359,
+      "verseStart": 8
+    },
+    {
+      "timeMs": 62724,
+      "verseStart": 9
+    },
+    {
+      "timeMs": 69509,
+      "verseStart": 10
+    },
+    {
+      "timeMs": 74592,
+      "verseStart": 11
+    },
+    {
+      "timeMs": 83738,
+      "verseStart": 12
+    },
+    {
+      "timeMs": 92925,
+      "verseStart": 13
+    },
+    {
+      "timeMs": 102051,
+      "verseStart": 14
+    },
+    {
+      "timeMs": 107395,
+      "verseStart": 15
+    },
+    {
+      "timeMs": 114000,
+      "verseStart": 16
+    },
+    {
+      "timeMs": 124607,
+      "verseStart": 17
+    },
+    {
+      "timeMs": 136515,
+      "verseStart": 18
+    },
+    {
+      "timeMs": 148584,
+      "verseStart": 19
+    },
+    {
+      "timeMs": 161513,
+      "verseStart": 20
+    },
+    {
+      "timeMs": 169879,
+      "verseStart": 21
+    },
+    {
+      "timeMs": 176963,
+      "verseStart": 22
+    },
+    {
+      "timeMs": 185850,
+      "verseStart": 23
+    },
+    {
+      "timeMs": 194656,
+      "verseStart": 24
+    },
+    {
+      "timeMs": 202962,
+      "verseStart": 25
+    },
+    {
+      "timeMs": 207125,
+      "verseStart": 26
+    },
+    {
+      "timeMs": 221995,
+      "verseStart": 27
+    },
+    {
+      "timeMs": 225898,
+      "verseStart": 28
+    },
+    {
+      "timeMs": 237526,
+      "verseStart": 29
+    },
+    {
+      "timeMs": 244431,
+      "verseStart": 30
+    }
+  ]
+}
