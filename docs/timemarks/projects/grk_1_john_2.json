@@ -1,0 +1,127 @@
+{
+  "id": "gh_grk_1_john_2",
+  "translationCode": "PODSTR",
+  "bookId": "1_john",
+  "chapter": 2,
+  "title": "1-е Иоанна 2 · Греческий (Koine)",
+  "narratorId": "greek-nt",
+  "audioFileName": "62_02.mp3",
+  "cues": [
+    {
+      "timeMs": 420,
+      "verseStart": 1
+    },
+    {
+      "timeMs": 11848,
+      "verseStart": 2
+    },
+    {
+      "timeMs": 20414,
+      "verseStart": 3
+    },
+    {
+      "timeMs": 26879,
+      "verseStart": 4
+    },
+    {
+      "timeMs": 35605,
+      "verseStart": 5
+    },
+    {
+      "timeMs": 45292,
+      "verseStart": 6
+    },
+    {
+      "timeMs": 51976,
+      "verseStart": 7
+    },
+    {
+      "timeMs": 63564,
+      "verseStart": 8
+    },
+    {
+      "timeMs": 74752,
+      "verseStart": 9
+    },
+    {
+      "timeMs": 82518,
+      "verseStart": 10
+    },
+    {
+      "timeMs": 88802,
+      "verseStart": 11
+    },
+    {
+      "timeMs": 100610,
+      "verseStart": 12
+    },
+    {
+      "timeMs": 106674,
+      "verseStart": 13
+    },
+    {
+      "timeMs": 120744,
+      "verseStart": 14
+    },
+    {
+      "timeMs": 133873,
+      "verseStart": 15
+    },
+    {
+      "timeMs": 142019,
+      "verseStart": 16
+    },
+    {
+      "timeMs": 154007,
+      "verseStart": 17
+    },
+    {
+      "timeMs": 162193,
+      "verseStart": 18
+    },
+    {
+      "timeMs": 174682,
+      "verseStart": 19
+    },
+    {
+      "timeMs": 186810,
+      "verseStart": 20
+    },
+    {
+      "timeMs": 191453,
+      "verseStart": 21
+    },
+    {
+      "timeMs": 200980,
+      "verseStart": 22
+    },
+    {
+      "timeMs": 212308,
+      "verseStart": 23
+    },
+    {
+      "timeMs": 220053,
+      "verseStart": 24
+    },
+    {
+      "timeMs": 231121,
+      "verseStart": 25
+    },
+    {
+      "timeMs": 237526,
+      "verseStart": 26
+    },
+    {
+      "timeMs": 241128,
+      "verseStart": 27
+    },
+    {
+      "timeMs": 259281,
+      "verseStart": 28
+    },
+    {
+      "timeMs": 268947,
+      "verseStart": 29
+    }
+  ]
+}

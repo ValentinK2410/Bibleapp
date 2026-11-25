@@ -2184,6 +2184,56 @@
       "file": "projects/grk_1_corinthians_9.json"
     },
     {
+      "id": "gh_grk_1_john_1",
+      "translationCode": "PODSTR",
+      "bookId": "1_john",
+      "chapter": 1,
+      "title": "1-е Иоанна 1 · Греческий (Koine)",
+      "cueCount": 10,
+      "narratorId": "greek-nt",
+      "file": "projects/grk_1_john_1.json"
+    },
+    {
+      "id": "gh_grk_1_john_2",
+      "translationCode": "PODSTR",
+      "bookId": "1_john",
+      "chapter": 2,
+      "title": "1-е Иоанна 2 · Греческий (Koine)",
+      "cueCount": 29,
+      "narratorId": "greek-nt",
+      "file": "projects/grk_1_john_2.json"
+    },
+    {
+      "id": "gh_grk_1_john_3",
+      "translationCode": "PODSTR",
+      "bookId": "1_john",
+      "chapter": 3,
+      "title": "1-е Иоанна 3 · Греческий (Koine)",
+      "cueCount": 24,
+      "narratorId": "greek-nt",
+      "file": "projects/grk_1_john_3.json"
+    },
+    {
+      "id": "gh_grk_1_john_4",
+      "translationCode": "PODSTR",
+      "bookId": "1_john",
+      "chapter": 4,
+      "title": "1-е Иоанна 4 · Греческий (Koine)",
+      "cueCount": 21,
+      "narratorId": "greek-nt",
+      "file": "projects/grk_1_john_4.json"
+    },
+    {
+      "id": "gh_grk_1_john_5",
+      "translationCode": "PODSTR",
+      "bookId": "1_john",
+      "chapter": 5,
+      "title": "1-е Иоанна 5 · Греческий (Koine)",
+      "cueCount": 21,
+      "narratorId": "greek-nt",
+      "file": "projects/grk_1_john_5.json"
+    },
+    {
       "id": "gh_grk_1_peter_1",
       "translationCode": "PODSTR",
       "bookId": "1_peter",

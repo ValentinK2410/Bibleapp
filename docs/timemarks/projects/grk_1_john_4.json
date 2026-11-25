@@ -1,0 +1,95 @@
+{
+  "id": "gh_grk_1_john_4",
+  "translationCode": "PODSTR",
+  "bookId": "1_john",
+  "chapter": 4,
+  "title": "1-е Иоанна 4 · Греческий (Koine)",
+  "narratorId": "greek-nt",
+  "audioFileName": "62_04.mp3",
+  "cues": [
+    {
+      "timeMs": 1181,
+      "verseStart": 1
+    },
+    {
+      "timeMs": 13150,
+      "verseStart": 2
+    },
+    {
+      "timeMs": 21736,
+      "verseStart": 3
+    },
+    {
+      "timeMs": 33524,
+      "verseStart": 4
+    },
+    {
+      "timeMs": 41950,
+      "verseStart": 5
+    },
+    {
+      "timeMs": 48255,
+      "verseStart": 6
+    },
+    {
+      "timeMs": 61504,
+      "verseStart": 7
+    },
+    {
+      "timeMs": 71111,
+      "verseStart": 8
+    },
+    {
+      "timeMs": 76615,
+      "verseStart": 9
+    },
+    {
+      "timeMs": 87863,
+      "verseStart": 10
+    },
+    {
+      "timeMs": 99371,
+      "verseStart": 11
+    },
+    {
+      "timeMs": 105516,
+      "verseStart": 12
+    },
+    {
+      "timeMs": 114502,
+      "verseStart": 13
+    },
+    {
+      "timeMs": 122168,
+      "verseStart": 14
+    },
+    {
+      "timeMs": 129373,
+      "verseStart": 15
+    },
+    {
+      "timeMs": 136998,
+      "verseStart": 16
+    },
+    {
+      "timeMs": 149588,
+      "verseStart": 17
+    },
+    {
+      "timeMs": 161416,
+      "verseStart": 18
+    },
+    {
+      "timeMs": 172724,
+      "verseStart": 19
+    },
+    {
+      "timeMs": 177227,
+      "verseStart": 20
+    },
+    {
+      "timeMs": 191097,
+      "verseStart": 21
+    }
+  ]
+}

@@ -1,0 +1,116 @@
+{
+  "id": "align-1_john-GRK-04",
+  "translationCode": "PODSTR",
+  "bookId": "1_john",
+  "chapter": 4,
+  "title": "1-е Иоанна 4 · Греческий (Koine)",
+  "audioFilePath": "/data/user/0/com.example.bible.sqlite/files/bible_audio/greek-nt/62_04.mp3",
+  "updatedAt": 1794873600000,
+  "cues": [
+    {
+      "timeMs": 1181,
+      "verseStart": 1,
+      "attachments": []
+    },
+    {
+      "timeMs": 13150,
+      "verseStart": 2,
+      "attachments": []
+    },
+    {
+      "timeMs": 21736,
+      "verseStart": 3,
+      "attachments": []
+    },
+    {
+      "timeMs": 33524,
+      "verseStart": 4,
+      "attachments": []
+    },
+    {
+      "timeMs": 41950,
+      "verseStart": 5,
+      "attachments": []
+    },
+    {
+      "timeMs": 48255,
+      "verseStart": 6,
+      "attachments": []
+    },
+    {
+      "timeMs": 61504,
+      "verseStart": 7,
+      "attachments": []
+    },
+    {
+      "timeMs": 71111,
+      "verseStart": 8,
+      "attachments": []
+    },
+    {
+      "timeMs": 76615,
+      "verseStart": 9,
+      "attachments": []
+    },
+    {
+      "timeMs": 87863,
+      "verseStart": 10,
+      "attachments": []
+    },
+    {
+      "timeMs": 99371,
+      "verseStart": 11,
+      "attachments": []
+    },
+    {
+      "timeMs": 105516,
+      "verseStart": 12,
+      "attachments": []
+    },
+    {
+      "timeMs": 114502,
+      "verseStart": 13,
+      "attachments": []
+    },
+    {
+      "timeMs": 122168,
+      "verseStart": 14,
+      "attachments": []
+    },
+    {
+      "timeMs": 129373,
+      "verseStart": 15,
+      "attachments": []
+    },
+    {
+      "timeMs": 136998,
+      "verseStart": 16,
+      "attachments": []
+    },
+    {
+      "timeMs": 149588,
+      "verseStart": 17,
+      "attachments": []
+    },
+    {
+      "timeMs": 161416,
+      "verseStart": 18,
+      "attachments": []
+    },
+    {
+      "timeMs": 172724,
+      "verseStart": 19,
+      "attachments": []
+    },
+    {
+      "timeMs": 177227,
+      "verseStart": 20,
+      "attachments": []
+    },
+    {
+      "timeMs": 191097,
+      "verseStart": 21,
+      "attachments": []
+    }
+  ]
+}
