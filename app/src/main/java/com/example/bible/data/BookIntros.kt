@@ -9,8 +9,8 @@ import org.json.JSONArray
 import org.json.JSONObject
 
 /**
- * Краткая справка о книге: суть, авторство, повод, дата и откуда взяты сведения.
- * Тексты лежат в assets, не в вёрстке. Файл читается один раз вне главного потока.
+ * Краткая справка о книге и список древних рукописей.
+ * Тексты лежат в assets и читаются один раз вне главного потока.
  */
 data class AncientManuscript(
     val name: String,
@@ -22,20 +22,14 @@ data class AncientManuscript(
 )
 
 data class BookIntro(
-    val genre: String,
-    val author: String,
-    val occasion: String,
-    val date: String,
-    val source: String,
+    val summary: String,
+    val source: String = "",
     val manuscripts: List<AncientManuscript> = emptyList(),
 ) {
-    fun displayLines(): List<String> = listOf(
-        "Суть: $genre",
-        "Автор: $author",
-        "Повод: $occasion",
-        "Время: $date",
-        "Источник справки: $source",
-    )
+    fun displayLines(): List<String> = buildList {
+        add(summary)
+        if (source.isNotBlank()) add("Источник справки: $source")
+    }
 }
 
 object BookIntros {
@@ -68,11 +62,8 @@ object BookIntros {
             val id = keys.next()
             val item = root.getJSONObject(id)
             out[id] = BookIntro(
-                genre = item.getString("genre").trim(),
-                author = item.getString("author").trim(),
-                occasion = item.getString("occasion").trim(),
-                date = item.getString("date").trim(),
-                source = item.getString("source").trim(),
+                summary = item.optString("summary").trim(),
+                source = item.optString("source").trim(),
                 manuscripts = item.optJSONArray("manuscripts").toManuscripts(),
             )
         }
