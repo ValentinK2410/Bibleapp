@@ -1,0 +1,116 @@
+{
+  "id": "align-2_peter-SYN-01",
+  "translationCode": "SYN",
+  "bookId": "2_peter",
+  "chapter": 1,
+  "title": "2-е Петра 1 · Синодальный · Бондаренко",
+  "audioFilePath": "/data/user/0/com.example.bible.sqlite/files/bible_audio/bondarenko/47_01.mp3",
+  "updatedAt": 1795478400000,
+  "cues": [
+    {
+      "timeMs": 16231,
+      "verseStart": 1,
+      "attachments": []
+    },
+    {
+      "timeMs": 30401,
+      "verseStart": 2,
+      "attachments": []
+    },
+    {
+      "timeMs": 42750,
+      "verseStart": 3,
+      "attachments": []
+    },
+    {
+      "timeMs": 54858,
+      "verseStart": 4,
+      "attachments": []
+    },
+    {
+      "timeMs": 71249,
+      "verseStart": 5,
+      "attachments": []
+    },
+    {
+      "timeMs": 82337,
+      "verseStart": 6,
+      "attachments": []
+    },
+    {
+      "timeMs": 90783,
+      "verseStart": 7,
+      "attachments": []
+    },
+    {
+      "timeMs": 96927,
+      "verseStart": 8,
+      "attachments": []
+    },
+    {
+      "timeMs": 110256,
+      "verseStart": 9,
+      "attachments": []
+    },
+    {
+      "timeMs": 122024,
+      "verseStart": 10,
+      "attachments": []
+    },
+    {
+      "timeMs": 136334,
+      "verseStart": 11,
+      "attachments": []
+    },
+    {
+      "timeMs": 149943,
+      "verseStart": 12,
+      "attachments": []
+    },
+    {
+      "timeMs": 160491,
+      "verseStart": 13,
+      "attachments": []
+    },
+    {
+      "timeMs": 169137,
+      "verseStart": 14,
+      "attachments": []
+    },
+    {
+      "timeMs": 178503,
+      "verseStart": 15,
+      "attachments": []
+    },
+    {
+      "timeMs": 187469,
+      "verseStart": 16,
+      "attachments": []
+    },
+    {
+      "timeMs": 201179,
+      "verseStart": 17,
+      "attachments": []
+    },
+    {
+      "timeMs": 219491,
+      "verseStart": 18,
+      "attachments": []
+    },
+    {
+      "timeMs": 228638,
+      "verseStart": 19,
+      "attachments": []
+    },
+    {
+      "timeMs": 248191,
+      "verseStart": 20,
+      "attachments": []
+    },
+    {
+      "timeMs": 256717,
+      "verseStart": 21,
+      "attachments": []
+    }
+  ]
+}

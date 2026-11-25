@@ -8724,6 +8724,36 @@
       "file": "projects/syn_2_corinthians_9.json"
     },
     {
+      "id": "gh_syn_2_peter_1",
+      "translationCode": "SYN",
+      "bookId": "2_peter",
+      "chapter": 1,
+      "title": "2-е Петра 1 · Синодальный · Бондаренко",
+      "cueCount": 21,
+      "narratorId": "bondarenko",
+      "file": "projects/syn_2_peter_1.json"
+    },
+    {
+      "id": "gh_syn_2_peter_2",
+      "translationCode": "SYN",
+      "bookId": "2_peter",
+      "chapter": 2,
+      "title": "2-е Петра 2 · Синодальный · Бондаренко",
+      "cueCount": 22,
+      "narratorId": "bondarenko",
+      "file": "projects/syn_2_peter_2.json"
+    },
+    {
+      "id": "gh_syn_2_peter_3",
+      "translationCode": "SYN",
+      "bookId": "2_peter",
+      "chapter": 3,
+      "title": "2-е Петра 3 · Синодальный · Бондаренко",
+      "cueCount": 18,
+      "narratorId": "bondarenko",
+      "file": "projects/syn_2_peter_3.json"
+    },
+    {
       "id": "gh_syn_2_thessalonians_1",
       "translationCode": "SYN",
       "bookId": "2_thessalonians",

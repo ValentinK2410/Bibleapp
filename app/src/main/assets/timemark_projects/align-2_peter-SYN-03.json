@@ -1,0 +1,101 @@
+{
+  "id": "align-2_peter-SYN-03",
+  "translationCode": "SYN",
+  "bookId": "2_peter",
+  "chapter": 3,
+  "title": "2-е Петра 3 · Синодальный · Бондаренко",
+  "audioFilePath": "/data/user/0/com.example.bible.sqlite/files/bible_audio/bondarenko/47_03.mp3",
+  "updatedAt": 1795478400000,
+  "cues": [
+    {
+      "timeMs": 6424,
+      "verseStart": 1,
+      "attachments": []
+    },
+    {
+      "timeMs": 15870,
+      "verseStart": 2,
+      "attachments": []
+    },
+    {
+      "timeMs": 27418,
+      "verseStart": 3,
+      "attachments": []
+    },
+    {
+      "timeMs": 37744,
+      "verseStart": 4,
+      "attachments": []
+    },
+    {
+      "timeMs": 51333,
+      "verseStart": 5,
+      "attachments": []
+    },
+    {
+      "timeMs": 61119,
+      "verseStart": 6,
+      "attachments": []
+    },
+    {
+      "timeMs": 66383,
+      "verseStart": 7,
+      "attachments": []
+    },
+    {
+      "timeMs": 80172,
+      "verseStart": 8,
+      "attachments": []
+    },
+    {
+      "timeMs": 93740,
+      "verseStart": 9,
+      "attachments": []
+    },
+    {
+      "timeMs": 109130,
+      "verseStart": 10,
+      "attachments": []
+    },
+    {
+      "timeMs": 124840,
+      "verseStart": 11,
+      "attachments": []
+    },
+    {
+      "timeMs": 133066,
+      "verseStart": 12,
+      "attachments": []
+    },
+    {
+      "timeMs": 145193,
+      "verseStart": 13,
+      "attachments": []
+    },
+    {
+      "timeMs": 156461,
+      "verseStart": 14,
+      "attachments": []
+    },
+    {
+      "timeMs": 166767,
+      "verseStart": 15,
+      "attachments": []
+    },
+    {
+      "timeMs": 177774,
+      "verseStart": 16,
+      "attachments": []
+    },
+    {
+      "timeMs": 194025,
+      "verseStart": 17,
+      "attachments": []
+    },
+    {
+      "timeMs": 208734,
+      "verseStart": 18,
+      "attachments": []
+    }
+  ]
+}

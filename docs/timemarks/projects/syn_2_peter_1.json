@@ -1,0 +1,95 @@
+{
+  "id": "gh_syn_2_peter_1",
+  "translationCode": "SYN",
+  "bookId": "2_peter",
+  "chapter": 1,
+  "title": "2-е Петра 1 · Синодальный · Бондаренко",
+  "narratorId": "bondarenko",
+  "audioFileName": "47_01.mp3",
+  "cues": [
+    {
+      "timeMs": 16231,
+      "verseStart": 1
+    },
+    {
+      "timeMs": 30401,
+      "verseStart": 2
+    },
+    {
+      "timeMs": 42750,
+      "verseStart": 3
+    },
+    {
+      "timeMs": 54858,
+      "verseStart": 4
+    },
+    {
+      "timeMs": 71249,
+      "verseStart": 5
+    },
+    {
+      "timeMs": 82337,
+      "verseStart": 6
+    },
+    {
+      "timeMs": 90783,
+      "verseStart": 7
+    },
+    {
+      "timeMs": 96927,
+      "verseStart": 8
+    },
+    {
+      "timeMs": 110256,
+      "verseStart": 9
+    },
+    {
+      "timeMs": 122024,
+      "verseStart": 10
+    },
+    {
+      "timeMs": 136334,
+      "verseStart": 11
+    },
+    {
+      "timeMs": 149943,
+      "verseStart": 12
+    },
+    {
+      "timeMs": 160491,
+      "verseStart": 13
+    },
+    {
+      "timeMs": 169137,
+      "verseStart": 14
+    },
+    {
+      "timeMs": 178503,
+      "verseStart": 15
+    },
+    {
+      "timeMs": 187469,
+      "verseStart": 16
+    },
+    {
+      "timeMs": 201179,
+      "verseStart": 17
+    },
+    {
+      "timeMs": 219491,
+      "verseStart": 18
+    },
+    {
+      "timeMs": 228638,
+      "verseStart": 19
+    },
+    {
+      "timeMs": 248191,
+      "verseStart": 20
+    },
+    {
+      "timeMs": 256717,
+      "verseStart": 21
+    }
+  ]
+}
