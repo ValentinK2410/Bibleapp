@@ -1,0 +1,116 @@
+{
+  "id": "align-2_peter-BTI-01",
+  "translationCode": "BTI",
+  "bookId": "2_peter",
+  "chapter": 1,
+  "title": "2-е Петра 1 · Кулаковых",
+  "audioFilePath": "/data/user/0/com.example.bible.sqlite/files/bible_audio/bti/47_01.mp3",
+  "updatedAt": 1795478400000,
+  "cues": [
+    {
+      "timeMs": 9907,
+      "verseStart": 1,
+      "attachments": []
+    },
+    {
+      "timeMs": 29160,
+      "verseStart": 2,
+      "attachments": []
+    },
+    {
+      "timeMs": 44111,
+      "verseStart": 3,
+      "attachments": []
+    },
+    {
+      "timeMs": 62624,
+      "verseStart": 4,
+      "attachments": []
+    },
+    {
+      "timeMs": 85019,
+      "verseStart": 5,
+      "attachments": []
+    },
+    {
+      "timeMs": 96327,
+      "verseStart": 6,
+      "attachments": []
+    },
+    {
+      "timeMs": 105394,
+      "verseStart": 7,
+      "attachments": []
+    },
+    {
+      "timeMs": 114580,
+      "verseStart": 8,
+      "attachments": []
+    },
+    {
+      "timeMs": 127189,
+      "verseStart": 9,
+      "attachments": []
+    },
+    {
+      "timeMs": 140598,
+      "verseStart": 10,
+      "attachments": []
+    },
+    {
+      "timeMs": 153647,
+      "verseStart": 11,
+      "attachments": []
+    },
+    {
+      "timeMs": 165295,
+      "verseStart": 12,
+      "attachments": []
+    },
+    {
+      "timeMs": 176363,
+      "verseStart": 13,
+      "attachments": []
+    },
+    {
+      "timeMs": 187050,
+      "verseStart": 14,
+      "attachments": []
+    },
+    {
+      "timeMs": 198378,
+      "verseStart": 15,
+      "attachments": []
+    },
+    {
+      "timeMs": 210507,
+      "verseStart": 16,
+      "attachments": []
+    },
+    {
+      "timeMs": 229180,
+      "verseStart": 17,
+      "attachments": []
+    },
+    {
+      "timeMs": 251655,
+      "verseStart": 18,
+      "attachments": []
+    },
+    {
+      "timeMs": 261542,
+      "verseStart": 19,
+      "attachments": []
+    },
+    {
+      "timeMs": 291563,
+      "verseStart": 20,
+      "attachments": []
+    },
+    {
+      "timeMs": 300990,
+      "verseStart": 21,
+      "attachments": []
+    }
+  ]
+}

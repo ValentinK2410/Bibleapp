@@ -454,6 +454,36 @@
       "file": "projects/bti_2_corinthians_9.json"
     },
     {
+      "id": "gh_bti_2_peter_1",
+      "translationCode": "BTI",
+      "bookId": "2_peter",
+      "chapter": 1,
+      "title": "2-е Петра 1 · Кулаковых",
+      "cueCount": 21,
+      "narratorId": "bti",
+      "file": "projects/bti_2_peter_1.json"
+    },
+    {
+      "id": "gh_bti_2_peter_2",
+      "translationCode": "BTI",
+      "bookId": "2_peter",
+      "chapter": 2,
+      "title": "2-е Петра 2 · Кулаковых",
+      "cueCount": 22,
+      "narratorId": "bti",
+      "file": "projects/bti_2_peter_2.json"
+    },
+    {
+      "id": "gh_bti_2_peter_3",
+      "translationCode": "BTI",
+      "bookId": "2_peter",
+      "chapter": 3,
+      "title": "2-е Петра 3 · Кулаковых",
+      "cueCount": 18,
+      "narratorId": "bti",
+      "file": "projects/bti_2_peter_3.json"
+    },
+    {
       "id": "gh_bti_2_thessalonians_1",
       "translationCode": "BTI",
       "bookId": "2_thessalonians",

@@ -1,0 +1,99 @@
+{
+  "id": "gh_bti_2_peter_2",
+  "translationCode": "BTI",
+  "bookId": "2_peter",
+  "chapter": 2,
+  "title": "2-е Петра 2 · Кулаковых",
+  "narratorId": "bti",
+  "audioFileName": "47_02.mp3",
+  "cues": [
+    {
+      "timeMs": 4323,
+      "verseStart": 1
+    },
+    {
+      "timeMs": 29280,
+      "verseStart": 2
+    },
+    {
+      "timeMs": 41288,
+      "verseStart": 3
+    },
+    {
+      "timeMs": 60401,
+      "verseStart": 4
+    },
+    {
+      "timeMs": 75371,
+      "verseStart": 5
+    },
+    {
+      "timeMs": 88720,
+      "verseStart": 6
+    },
+    {
+      "timeMs": 102390,
+      "verseStart": 7
+    },
+    {
+      "timeMs": 110535,
+      "verseStart": 8
+    },
+    {
+      "timeMs": 127427,
+      "verseStart": 9
+    },
+    {
+      "timeMs": 144798,
+      "verseStart": 10
+    },
+    {
+      "timeMs": 164512,
+      "verseStart": 11
+    },
+    {
+      "timeMs": 175199,
+      "verseStart": 12
+    },
+    {
+      "timeMs": 198995,
+      "verseStart": 13
+    },
+    {
+      "timeMs": 219149,
+      "verseStart": 14
+    },
+    {
+      "timeMs": 236601,
+      "verseStart": 15
+    },
+    {
+      "timeMs": 250931,
+      "verseStart": 16
+    },
+    {
+      "timeMs": 267062,
+      "verseStart": 17
+    },
+    {
+      "timeMs": 279930,
+      "verseStart": 18
+    },
+    {
+      "timeMs": 296542,
+      "verseStart": 19
+    },
+    {
+      "timeMs": 312893,
+      "verseStart": 20
+    },
+    {
+      "timeMs": 338050,
+      "verseStart": 21
+    },
+    {
+      "timeMs": 354921,
+      "verseStart": 22
+    }
+  ]
+}

@@ -1,0 +1,101 @@
+{
+  "id": "align-2_peter-BTI-03",
+  "translationCode": "BTI",
+  "bookId": "2_peter",
+  "chapter": 3,
+  "title": "2-е Петра 3 · Кулаковых",
+  "audioFilePath": "/data/user/0/com.example.bible.sqlite/files/bible_audio/bti/47_03.mp3",
+  "updatedAt": 1795478400000,
+  "cues": [
+    {
+      "timeMs": 5364,
+      "verseStart": 1,
+      "attachments": []
+    },
+    {
+      "timeMs": 17472,
+      "verseStart": 2,
+      "attachments": []
+    },
+    {
+      "timeMs": 32083,
+      "verseStart": 3,
+      "attachments": []
+    },
+    {
+      "timeMs": 43250,
+      "verseStart": 4,
+      "attachments": []
+    },
+    {
+      "timeMs": 62064,
+      "verseStart": 5,
+      "attachments": []
+    },
+    {
+      "timeMs": 78295,
+      "verseStart": 6,
+      "attachments": []
+    },
+    {
+      "timeMs": 87221,
+      "verseStart": 7,
+      "attachments": []
+    },
+    {
+      "timeMs": 104733,
+      "verseStart": 8,
+      "attachments": []
+    },
+    {
+      "timeMs": 117342,
+      "verseStart": 9,
+      "attachments": []
+    },
+    {
+      "timeMs": 136736,
+      "verseStart": 10,
+      "attachments": []
+    },
+    {
+      "timeMs": 160873,
+      "verseStart": 11,
+      "attachments": []
+    },
+    {
+      "timeMs": 172361,
+      "verseStart": 12,
+      "attachments": []
+    },
+    {
+      "timeMs": 187031,
+      "verseStart": 13,
+      "attachments": []
+    },
+    {
+      "timeMs": 201701,
+      "verseStart": 14,
+      "attachments": []
+    },
+    {
+      "timeMs": 217072,
+      "verseStart": 15,
+      "attachments": []
+    },
+    {
+      "timeMs": 233944,
+      "verseStart": 16,
+      "attachments": []
+    },
+    {
+      "timeMs": 254038,
+      "verseStart": 17,
+      "attachments": []
+    },
+    {
+      "timeMs": 270530,
+      "verseStart": 18,
+      "attachments": []
+    }
+  ]
+}
