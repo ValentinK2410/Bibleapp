@@ -1,0 +1,106 @@
+{
+  "id": "align-1_peter-BTI-04",
+  "translationCode": "BTI",
+  "bookId": "1_peter",
+  "chapter": 4,
+  "title": "1-е Петра 4 · Кулаковых",
+  "audioFilePath": "/data/user/0/com.example.bible.sqlite/files/bible_audio/bti/46_04.mp3",
+  "updatedAt": 1795478400000,
+  "cues": [
+    {
+      "timeMs": 5104,
+      "verseStart": 1,
+      "attachments": []
+    },
+    {
+      "timeMs": 23616,
+      "verseStart": 2,
+      "attachments": []
+    },
+    {
+      "timeMs": 34784,
+      "verseStart": 3,
+      "attachments": []
+    },
+    {
+      "timeMs": 48534,
+      "verseStart": 4,
+      "attachments": []
+    },
+    {
+      "timeMs": 60322,
+      "verseStart": 5,
+      "attachments": []
+    },
+    {
+      "timeMs": 70409,
+      "verseStart": 6,
+      "attachments": []
+    },
+    {
+      "timeMs": 90963,
+      "verseStart": 7,
+      "attachments": []
+    },
+    {
+      "timeMs": 100550,
+      "verseStart": 8,
+      "attachments": []
+    },
+    {
+      "timeMs": 110877,
+      "verseStart": 9,
+      "attachments": []
+    },
+    {
+      "timeMs": 118122,
+      "verseStart": 10,
+      "attachments": []
+    },
+    {
+      "timeMs": 132572,
+      "verseStart": 11,
+      "attachments": []
+    },
+    {
+      "timeMs": 161392,
+      "verseStart": 12,
+      "attachments": []
+    },
+    {
+      "timeMs": 177243,
+      "verseStart": 13,
+      "attachments": []
+    },
+    {
+      "timeMs": 194075,
+      "verseStart": 14,
+      "attachments": []
+    },
+    {
+      "timeMs": 206084,
+      "verseStart": 15,
+      "attachments": []
+    },
+    {
+      "timeMs": 222815,
+      "verseStart": 16,
+      "attachments": []
+    },
+    {
+      "timeMs": 237285,
+      "verseStart": 17,
+      "attachments": []
+    },
+    {
+      "timeMs": 259621,
+      "verseStart": 18,
+      "attachments": []
+    },
+    {
+      "timeMs": 271349,
+      "verseStart": 19,
+      "attachments": []
+    }
+  ]
+}

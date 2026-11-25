@@ -164,6 +164,56 @@
       "file": "projects/bti_1_corinthians_9.json"
     },
     {
+      "id": "gh_bti_1_peter_1",
+      "translationCode": "BTI",
+      "bookId": "1_peter",
+      "chapter": 1,
+      "title": "1-е Петра 1 · Кулаковых",
+      "cueCount": 25,
+      "narratorId": "bti",
+      "file": "projects/bti_1_peter_1.json"
+    },
+    {
+      "id": "gh_bti_1_peter_2",
+      "translationCode": "BTI",
+      "bookId": "1_peter",
+      "chapter": 2,
+      "title": "1-е Петра 2 · Кулаковых",
+      "cueCount": 25,
+      "narratorId": "bti",
+      "file": "projects/bti_1_peter_2.json"
+    },
+    {
+      "id": "gh_bti_1_peter_3",
+      "translationCode": "BTI",
+      "bookId": "1_peter",
+      "chapter": 3,
+      "title": "1-е Петра 3 · Кулаковых",
+      "cueCount": 22,
+      "narratorId": "bti",
+      "file": "projects/bti_1_peter_3.json"
+    },
+    {
+      "id": "gh_bti_1_peter_4",
+      "translationCode": "BTI",
+      "bookId": "1_peter",
+      "chapter": 4,
+      "title": "1-е Петра 4 · Кулаковых",
+      "cueCount": 19,
+      "narratorId": "bti",
+      "file": "projects/bti_1_peter_4.json"
+    },
+    {
+      "id": "gh_bti_1_peter_5",
+      "translationCode": "BTI",
+      "bookId": "1_peter",
+      "chapter": 5,
+      "title": "1-е Петра 5 · Кулаковых",
+      "cueCount": 14,
+      "narratorId": "bti",
+      "file": "projects/bti_1_peter_5.json"
+    },
+    {
       "id": "gh_bti_1_thessalonians_1",
       "translationCode": "BTI",
       "bookId": "1_thessalonians",

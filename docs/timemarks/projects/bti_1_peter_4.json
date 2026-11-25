@@ -1,0 +1,87 @@
+{
+  "id": "gh_bti_1_peter_4",
+  "translationCode": "BTI",
+  "bookId": "1_peter",
+  "chapter": 4,
+  "title": "1-е Петра 4 · Кулаковых",
+  "narratorId": "bti",
+  "audioFileName": "46_04.mp3",
+  "cues": [
+    {
+      "timeMs": 5104,
+      "verseStart": 1
+    },
+    {
+      "timeMs": 23616,
+      "verseStart": 2
+    },
+    {
+      "timeMs": 34784,
+      "verseStart": 3
+    },
+    {
+      "timeMs": 48534,
+      "verseStart": 4
+    },
+    {
+      "timeMs": 60322,
+      "verseStart": 5
+    },
+    {
+      "timeMs": 70409,
+      "verseStart": 6
+    },
+    {
+      "timeMs": 90963,
+      "verseStart": 7
+    },
+    {
+      "timeMs": 100550,
+      "verseStart": 8
+    },
+    {
+      "timeMs": 110877,
+      "verseStart": 9
+    },
+    {
+      "timeMs": 118122,
+      "verseStart": 10
+    },
+    {
+      "timeMs": 132572,
+      "verseStart": 11
+    },
+    {
+      "timeMs": 161392,
+      "verseStart": 12
+    },
+    {
+      "timeMs": 177243,
+      "verseStart": 13
+    },
+    {
+      "timeMs": 194075,
+      "verseStart": 14
+    },
+    {
+      "timeMs": 206084,
+      "verseStart": 15
+    },
+    {
+      "timeMs": 222815,
+      "verseStart": 16
+    },
+    {
+      "timeMs": 237285,
+      "verseStart": 17
+    },
+    {
+      "timeMs": 259621,
+      "verseStart": 18
+    },
+    {
+      "timeMs": 271349,
+      "verseStart": 19
+    }
+  ]
+}
