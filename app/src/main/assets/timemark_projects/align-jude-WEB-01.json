@@ -1,0 +1,136 @@
+{
+  "id": "align-jude-WEB-01",
+  "translationCode": "WEB",
+  "bookId": "jude",
+  "chapter": 1,
+  "title": "Иуды 1 · WEB (англ.)",
+  "audioFilePath": "/data/user/0/com.example.bible.sqlite/files/bible_audio/web/65_01.mp3",
+  "updatedAt": 1794873600000,
+  "cues": [
+    {
+      "timeMs": 4083,
+      "verseStart": 1,
+      "attachments": []
+    },
+    {
+      "timeMs": 13589,
+      "verseStart": 2,
+      "attachments": []
+    },
+    {
+      "timeMs": 19353,
+      "verseStart": 3,
+      "attachments": []
+    },
+    {
+      "timeMs": 32761,
+      "verseStart": 4,
+      "attachments": []
+    },
+    {
+      "timeMs": 48731,
+      "verseStart": 5,
+      "attachments": []
+    },
+    {
+      "timeMs": 60119,
+      "verseStart": 6,
+      "attachments": []
+    },
+    {
+      "timeMs": 71026,
+      "verseStart": 7,
+      "attachments": []
+    },
+    {
+      "timeMs": 84635,
+      "verseStart": 8,
+      "attachments": []
+    },
+    {
+      "timeMs": 93260,
+      "verseStart": 9,
+      "attachments": []
+    },
+    {
+      "timeMs": 106989,
+      "verseStart": 10,
+      "attachments": []
+    },
+    {
+      "timeMs": 118837,
+      "verseStart": 11,
+      "attachments": []
+    },
+    {
+      "timeMs": 131445,
+      "verseStart": 12,
+      "attachments": []
+    },
+    {
+      "timeMs": 147915,
+      "verseStart": 13,
+      "attachments": []
+    },
+    {
+      "timeMs": 158983,
+      "verseStart": 14,
+      "attachments": []
+    },
+    {
+      "timeMs": 167808,
+      "verseStart": 15,
+      "attachments": []
+    },
+    {
+      "timeMs": 183558,
+      "verseStart": 16,
+      "attachments": []
+    },
+    {
+      "timeMs": 196627,
+      "verseStart": 17,
+      "attachments": []
+    },
+    {
+      "timeMs": 204332,
+      "verseStart": 18,
+      "attachments": []
+    },
+    {
+      "timeMs": 211537,
+      "verseStart": 19,
+      "attachments": []
+    },
+    {
+      "timeMs": 217540,
+      "verseStart": 20,
+      "attachments": []
+    },
+    {
+      "timeMs": 223985,
+      "verseStart": 21,
+      "attachments": []
+    },
+    {
+      "timeMs": 231589,
+      "verseStart": 22,
+      "attachments": []
+    },
+    {
+      "timeMs": 235632,
+      "verseStart": 23,
+      "attachments": []
+    },
+    {
+      "timeMs": 244758,
+      "verseStart": 24,
+      "attachments": []
+    },
+    {
+      "timeMs": 252883,
+      "verseStart": 25,
+      "attachments": []
+    }
+  ]
+}

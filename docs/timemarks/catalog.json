@@ -12234,6 +12234,16 @@
       "file": "projects/web_john_9.json"
     },
     {
+      "id": "gh_web_jude_1",
+      "translationCode": "WEB",
+      "bookId": "jude",
+      "chapter": 1,
+      "title": "Иуды 1 · WEB (англ.)",
+      "cueCount": 25,
+      "narratorId": "web",
+      "file": "projects/web_jude_1.json"
+    },
+    {
       "id": "gh_web_luke_1",
       "translationCode": "WEB",
       "bookId": "luke",

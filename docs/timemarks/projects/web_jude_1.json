@@ -1,0 +1,111 @@
+{
+  "id": "gh_web_jude_1",
+  "translationCode": "WEB",
+  "bookId": "jude",
+  "chapter": 1,
+  "title": "Иуды 1 · WEB (англ.)",
+  "narratorId": "web",
+  "audioFileName": "65_01.mp3",
+  "cues": [
+    {
+      "timeMs": 4083,
+      "verseStart": 1
+    },
+    {
+      "timeMs": 13589,
+      "verseStart": 2
+    },
+    {
+      "timeMs": 19353,
+      "verseStart": 3
+    },
+    {
+      "timeMs": 32761,
+      "verseStart": 4
+    },
+    {
+      "timeMs": 48731,
+      "verseStart": 5
+    },
+    {
+      "timeMs": 60119,
+      "verseStart": 6
+    },
+    {
+      "timeMs": 71026,
+      "verseStart": 7
+    },
+    {
+      "timeMs": 84635,
+      "verseStart": 8
+    },
+    {
+      "timeMs": 93260,
+      "verseStart": 9
+    },
+    {
+      "timeMs": 106989,
+      "verseStart": 10
+    },
+    {
+      "timeMs": 118837,
+      "verseStart": 11
+    },
+    {
+      "timeMs": 131445,
+      "verseStart": 12
+    },
+    {
+      "timeMs": 147915,
+      "verseStart": 13
+    },
+    {
+      "timeMs": 158983,
+      "verseStart": 14
+    },
+    {
+      "timeMs": 167808,
+      "verseStart": 15
+    },
+    {
+      "timeMs": 183558,
+      "verseStart": 16
+    },
+    {
+      "timeMs": 196627,
+      "verseStart": 17
+    },
+    {
+      "timeMs": 204332,
+      "verseStart": 18
+    },
+    {
+      "timeMs": 211537,
+      "verseStart": 19
+    },
+    {
+      "timeMs": 217540,
+      "verseStart": 20
+    },
+    {
+      "timeMs": 223985,
+      "verseStart": 21
+    },
+    {
+      "timeMs": 231589,
+      "verseStart": 22
+    },
+    {
+      "timeMs": 235632,
+      "verseStart": 23
+    },
+    {
+      "timeMs": 244758,
+      "verseStart": 24
+    },
+    {
+      "timeMs": 252883,
+      "verseStart": 25
+    }
+  ]
+}
