@@ -7094,6 +7094,56 @@
       "file": "projects/rbo_hebrews_9.json"
     },
     {
+      "id": "gh_rbo_james_1",
+      "translationCode": "RBO",
+      "bookId": "james",
+      "chapter": 1,
+      "title": "Иакова 1 · РБО",
+      "cueCount": 27,
+      "narratorId": "rbo",
+      "file": "projects/rbo_james_1.json"
+    },
+    {
+      "id": "gh_rbo_james_2",
+      "translationCode": "RBO",
+      "bookId": "james",
+      "chapter": 2,
+      "title": "Иакова 2 · РБО",
+      "cueCount": 26,
+      "narratorId": "rbo",
+      "file": "projects/rbo_james_2.json"
+    },
+    {
+      "id": "gh_rbo_james_3",
+      "translationCode": "RBO",
+      "bookId": "james",
+      "chapter": 3,
+      "title": "Иакова 3 · РБО",
+      "cueCount": 18,
+      "narratorId": "rbo",
+      "file": "projects/rbo_james_3.json"
+    },
+    {
+      "id": "gh_rbo_james_4",
+      "translationCode": "RBO",
+      "bookId": "james",
+      "chapter": 4,
+      "title": "Иакова 4 · РБО",
+      "cueCount": 17,
+      "narratorId": "rbo",
+      "file": "projects/rbo_james_4.json"
+    },
+    {
+      "id": "gh_rbo_james_5",
+      "translationCode": "RBO",
+      "bookId": "james",
+      "chapter": 5,
+      "title": "Иакова 5 · РБО",
+      "cueCount": 20,
+      "narratorId": "rbo",
+      "file": "projects/rbo_james_5.json"
+    },
+    {
       "id": "gh_rbo_john_1",
       "translationCode": "RBO",
       "bookId": "john",

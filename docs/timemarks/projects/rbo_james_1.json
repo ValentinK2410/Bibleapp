@@ -1,0 +1,119 @@
+{
+  "id": "gh_rbo_james_1",
+  "translationCode": "RBO",
+  "bookId": "james",
+  "chapter": 1,
+  "title": "Иакова 1 · РБО",
+  "narratorId": "rbo",
+  "audioFileName": "45_01.mp3",
+  "cues": [
+    {
+      "timeMs": 5804,
+      "verseStart": 1
+    },
+    {
+      "timeMs": 14871,
+      "verseStart": 2
+    },
+    {
+      "timeMs": 23037,
+      "verseStart": 3
+    },
+    {
+      "timeMs": 30282,
+      "verseStart": 4
+    },
+    {
+      "timeMs": 41290,
+      "verseStart": 5
+    },
+    {
+      "timeMs": 51638,
+      "verseStart": 6
+    },
+    {
+      "timeMs": 61585,
+      "verseStart": 7
+    },
+    {
+      "timeMs": 63686,
+      "verseStart": 8
+    },
+    {
+      "timeMs": 71912,
+      "verseStart": 9
+    },
+    {
+      "timeMs": 76436,
+      "verseStart": 10
+    },
+    {
+      "timeMs": 85222,
+      "verseStart": 11
+    },
+    {
+      "timeMs": 100633,
+      "verseStart": 12
+    },
+    {
+      "timeMs": 112262,
+      "verseStart": 13
+    },
+    {
+      "timeMs": 123910,
+      "verseStart": 14
+    },
+    {
+      "timeMs": 130755,
+      "verseStart": 15
+    },
+    {
+      "timeMs": 139321,
+      "verseStart": 16
+    },
+    {
+      "timeMs": 142724,
+      "verseStart": 17
+    },
+    {
+      "timeMs": 153552,
+      "verseStart": 18
+    },
+    {
+      "timeMs": 160957,
+      "verseStart": 19
+    },
+    {
+      "timeMs": 171284,
+      "verseStart": 20
+    },
+    {
+      "timeMs": 177489,
+      "verseStart": 21
+    },
+    {
+      "timeMs": 188797,
+      "verseStart": 22
+    },
+    {
+      "timeMs": 195362,
+      "verseStart": 23
+    },
+    {
+      "timeMs": 202727,
+      "verseStart": 24
+    },
+    {
+      "timeMs": 209952,
+      "verseStart": 25
+    },
+    {
+      "timeMs": 227505,
+      "verseStart": 26
+    },
+    {
+      "timeMs": 237673,
+      "verseStart": 27
+    }
+  ]
+}

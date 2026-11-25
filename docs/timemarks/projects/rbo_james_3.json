@@ -1,0 +1,83 @@
+{
+  "id": "gh_rbo_james_3",
+  "translationCode": "RBO",
+  "bookId": "james",
+  "chapter": 3,
+  "title": "Иакова 3 · РБО",
+  "narratorId": "rbo",
+  "audioFileName": "45_03.mp3",
+  "cues": [
+    {
+      "timeMs": 4463,
+      "verseStart": 1
+    },
+    {
+      "timeMs": 13689,
+      "verseStart": 2
+    },
+    {
+      "timeMs": 24076,
+      "verseStart": 3
+    },
+    {
+      "timeMs": 30501,
+      "verseStart": 4
+    },
+    {
+      "timeMs": 42329,
+      "verseStart": 5
+    },
+    {
+      "timeMs": 54777,
+      "verseStart": 6
+    },
+    {
+      "timeMs": 73850,
+      "verseStart": 7
+    },
+    {
+      "timeMs": 83236,
+      "verseStart": 8
+    },
+    {
+      "timeMs": 93223,
+      "verseStart": 9
+    },
+    {
+      "timeMs": 101789,
+      "verseStart": 10
+    },
+    {
+      "timeMs": 110815,
+      "verseStart": 11
+    },
+    {
+      "timeMs": 116378,
+      "verseStart": 12
+    },
+    {
+      "timeMs": 128126,
+      "verseStart": 13
+    },
+    {
+      "timeMs": 140575,
+      "verseStart": 14
+    },
+    {
+      "timeMs": 149361,
+      "verseStart": 15
+    },
+    {
+      "timeMs": 158327,
+      "verseStart": 16
+    },
+    {
+      "timeMs": 164711,
+      "verseStart": 17
+    },
+    {
+      "timeMs": 181983,
+      "verseStart": 18
+    }
+  ]
+}

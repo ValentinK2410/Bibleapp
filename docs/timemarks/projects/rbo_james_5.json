@@ -1,0 +1,91 @@
+{
+  "id": "gh_rbo_james_5",
+  "translationCode": "RBO",
+  "bookId": "james",
+  "chapter": 5,
+  "title": "Иакова 5 · РБО",
+  "narratorId": "rbo",
+  "audioFileName": "45_05.mp3",
+  "cues": [
+    {
+      "timeMs": 4283,
+      "verseStart": 1
+    },
+    {
+      "timeMs": 12648,
+      "verseStart": 2
+    },
+    {
+      "timeMs": 17551,
+      "verseStart": 3
+    },
+    {
+      "timeMs": 33061,
+      "verseStart": 4
+    },
+    {
+      "timeMs": 43208,
+      "verseStart": 5
+    },
+    {
+      "timeMs": 49152,
+      "verseStart": 6
+    },
+    {
+      "timeMs": 54696,
+      "verseStart": 7
+    },
+    {
+      "timeMs": 70226,
+      "verseStart": 8
+    },
+    {
+      "timeMs": 77791,
+      "verseStart": 9
+    },
+    {
+      "timeMs": 87257,
+      "verseStart": 10
+    },
+    {
+      "timeMs": 95982,
+      "verseStart": 11
+    },
+    {
+      "timeMs": 110612,
+      "verseStart": 12
+    },
+    {
+      "timeMs": 124841,
+      "verseStart": 13
+    },
+    {
+      "timeMs": 131125,
+      "verseStart": 14
+    },
+    {
+      "timeMs": 139611,
+      "verseStart": 15
+    },
+    {
+      "timeMs": 147176,
+      "verseStart": 16
+    },
+    {
+      "timeMs": 158403,
+      "verseStart": 17
+    },
+    {
+      "timeMs": 167869,
+      "verseStart": 18
+    },
+    {
+      "timeMs": 174113,
+      "verseStart": 19
+    },
+    {
+      "timeMs": 181178,
+      "verseStart": 20
+    }
+  ]
+}

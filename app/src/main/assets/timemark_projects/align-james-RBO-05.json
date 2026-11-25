@@ -1,0 +1,111 @@
+{
+  "id": "align-james-RBO-05",
+  "translationCode": "RBO",
+  "bookId": "james",
+  "chapter": 5,
+  "title": "Иакова 5 · РБО",
+  "audioFilePath": "/data/user/0/com.example.bible.sqlite/files/bible_audio/rbo/45_05.mp3",
+  "updatedAt": 1795478400000,
+  "cues": [
+    {
+      "timeMs": 4283,
+      "verseStart": 1,
+      "attachments": []
+    },
+    {
+      "timeMs": 12648,
+      "verseStart": 2,
+      "attachments": []
+    },
+    {
+      "timeMs": 17551,
+      "verseStart": 3,
+      "attachments": []
+    },
+    {
+      "timeMs": 33061,
+      "verseStart": 4,
+      "attachments": []
+    },
+    {
+      "timeMs": 43208,
+      "verseStart": 5,
+      "attachments": []
+    },
+    {
+      "timeMs": 49152,
+      "verseStart": 6,
+      "attachments": []
+    },
+    {
+      "timeMs": 54696,
+      "verseStart": 7,
+      "attachments": []
+    },
+    {
+      "timeMs": 70226,
+      "verseStart": 8,
+      "attachments": []
+    },
+    {
+      "timeMs": 77791,
+      "verseStart": 9,
+      "attachments": []
+    },
+    {
+      "timeMs": 87257,
+      "verseStart": 10,
+      "attachments": []
+    },
+    {
+      "timeMs": 95982,
+      "verseStart": 11,
+      "attachments": []
+    },
+    {
+      "timeMs": 110612,
+      "verseStart": 12,
+      "attachments": []
+    },
+    {
+      "timeMs": 124841,
+      "verseStart": 13,
+      "attachments": []
+    },
+    {
+      "timeMs": 131125,
+      "verseStart": 14,
+      "attachments": []
+    },
+    {
+      "timeMs": 139611,
+      "verseStart": 15,
+      "attachments": []
+    },
+    {
+      "timeMs": 147176,
+      "verseStart": 16,
+      "attachments": []
+    },
+    {
+      "timeMs": 158403,
+      "verseStart": 17,
+      "attachments": []
+    },
+    {
+      "timeMs": 167869,
+      "verseStart": 18,
+      "attachments": []
+    },
+    {
+      "timeMs": 174113,
+      "verseStart": 19,
+      "attachments": []
+    },
+    {
+      "timeMs": 181178,
+      "verseStart": 20,
+      "attachments": []
+    }
+  ]
+}
