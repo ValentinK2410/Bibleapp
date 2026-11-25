@@ -1,0 +1,127 @@
+{
+  "id": "gh_bti_1_john_2",
+  "translationCode": "BTI",
+  "bookId": "1_john",
+  "chapter": 2,
+  "title": "1-е Иоанна 2 · Кулаковых",
+  "narratorId": "bti",
+  "audioFileName": "48_02.mp3",
+  "cues": [
+    {
+      "timeMs": 3863,
+      "verseStart": 1
+    },
+    {
+      "timeMs": 21635,
+      "verseStart": 2
+    },
+    {
+      "timeMs": 35104,
+      "verseStart": 3
+    },
+    {
+      "timeMs": 40848,
+      "verseStart": 4
+    },
+    {
+      "timeMs": 53697,
+      "verseStart": 5
+    },
+    {
+      "timeMs": 64224,
+      "verseStart": 6
+    },
+    {
+      "timeMs": 73390,
+      "verseStart": 7
+    },
+    {
+      "timeMs": 89521,
+      "verseStart": 8
+    },
+    {
+      "timeMs": 108394,
+      "verseStart": 9
+    },
+    {
+      "timeMs": 118661,
+      "verseStart": 10
+    },
+    {
+      "timeMs": 129408,
+      "verseStart": 11
+    },
+    {
+      "timeMs": 144639,
+      "verseStart": 12
+    },
+    {
+      "timeMs": 152885,
+      "verseStart": 13
+    },
+    {
+      "timeMs": 167715,
+      "verseStart": 14
+    },
+    {
+      "timeMs": 198356,
+      "verseStart": 15
+    },
+    {
+      "timeMs": 207682,
+      "verseStart": 16
+    },
+    {
+      "timeMs": 222132,
+      "verseStart": 17
+    },
+    {
+      "timeMs": 234861,
+      "verseStart": 18
+    },
+    {
+      "timeMs": 254114,
+      "verseStart": 19
+    },
+    {
+      "timeMs": 277390,
+      "verseStart": 20
+    },
+    {
+      "timeMs": 285375,
+      "verseStart": 21
+    },
+    {
+      "timeMs": 302026,
+      "verseStart": 22
+    },
+    {
+      "timeMs": 317177,
+      "verseStart": 23
+    },
+    {
+      "timeMs": 328224,
+      "verseStart": 24
+    },
+    {
+      "timeMs": 342814,
+      "verseStart": 25
+    },
+    {
+      "timeMs": 350399,
+      "verseStart": 26
+    },
+    {
+      "timeMs": 356364,
+      "verseStart": 27
+    },
+    {
+      "timeMs": 383122,
+      "verseStart": 28
+    },
+    {
+      "timeMs": 397552,
+      "verseStart": 29
+    }
+  ]
+}

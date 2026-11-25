@@ -1,0 +1,95 @@
+{
+  "id": "gh_bti_1_john_4",
+  "translationCode": "BTI",
+  "bookId": "1_john",
+  "chapter": 4,
+  "title": "1-е Иоанна 4 · Кулаковых",
+  "narratorId": "bti",
+  "audioFileName": "48_04.mp3",
+  "cues": [
+    {
+      "timeMs": 4263,
+      "verseStart": 1
+    },
+    {
+      "timeMs": 18273,
+      "verseStart": 2
+    },
+    {
+      "timeMs": 31322,
+      "verseStart": 3
+    },
+    {
+      "timeMs": 48333,
+      "verseStart": 4
+    },
+    {
+      "timeMs": 61362,
+      "verseStart": 5
+    },
+    {
+      "timeMs": 72830,
+      "verseStart": 6
+    },
+    {
+      "timeMs": 92524,
+      "verseStart": 7
+    },
+    {
+      "timeMs": 104652,
+      "verseStart": 8
+    },
+    {
+      "timeMs": 113398,
+      "verseStart": 9
+    },
+    {
+      "timeMs": 126867,
+      "verseStart": 10
+    },
+    {
+      "timeMs": 143959,
+      "verseStart": 11
+    },
+    {
+      "timeMs": 153085,
+      "verseStart": 12
+    },
+    {
+      "timeMs": 171298,
+      "verseStart": 13
+    },
+    {
+      "timeMs": 181525,
+      "verseStart": 14
+    },
+    {
+      "timeMs": 189590,
+      "verseStart": 15
+    },
+    {
+      "timeMs": 199257,
+      "verseStart": 16
+    },
+    {
+      "timeMs": 213707,
+      "verseStart": 17
+    },
+    {
+      "timeMs": 227976,
+      "verseStart": 18
+    },
+    {
+      "timeMs": 245789,
+      "verseStart": 19
+    },
+    {
+      "timeMs": 253794,
+      "verseStart": 20
+    },
+    {
+      "timeMs": 274568,
+      "verseStart": 21
+    }
+  ]
+}
