@@ -1,0 +1,66 @@
+{
+  "id": "align-revelation-BTI-10",
+  "translationCode": "BTI",
+  "bookId": "revelation",
+  "chapter": 10,
+  "title": "Откровение 10 · Кулаковых",
+  "audioFilePath": "/data/user/0/com.example.bible.sqlite/files/bible_audio/bti/66_10.mp3",
+  "updatedAt": 1795478400000,
+  "cues": [
+    {
+      "timeMs": 4223,
+      "verseStart": 1,
+      "attachments": []
+    },
+    {
+      "timeMs": 27238,
+      "verseStart": 2,
+      "attachments": []
+    },
+    {
+      "timeMs": 38165,
+      "verseStart": 3,
+      "attachments": []
+    },
+    {
+      "timeMs": 54055,
+      "verseStart": 4,
+      "attachments": []
+    },
+    {
+      "timeMs": 76349,
+      "verseStart": 5,
+      "attachments": []
+    },
+    {
+      "timeMs": 86616,
+      "verseStart": 6,
+      "attachments": []
+    },
+    {
+      "timeMs": 105928,
+      "verseStart": 7,
+      "attachments": []
+    },
+    {
+      "timeMs": 123099,
+      "verseStart": 8,
+      "attachments": []
+    },
+    {
+      "timeMs": 142332,
+      "verseStart": 9,
+      "attachments": []
+    },
+    {
+      "timeMs": 167168,
+      "verseStart": 10,
+      "attachments": []
+    },
+    {
+      "timeMs": 190363,
+      "verseStart": 11,
+      "attachments": []
+    }
+  ]
+}

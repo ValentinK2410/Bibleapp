@@ -1,0 +1,51 @@
+{
+  "id": "align-revelation-BTI-15",
+  "translationCode": "BTI",
+  "bookId": "revelation",
+  "chapter": 15,
+  "title": "Откровение 15 · Кулаковых",
+  "audioFilePath": "/data/user/0/com.example.bible.sqlite/files/bible_audio/bti/66_15.mp3",
+  "updatedAt": 1795478400000,
+  "cues": [
+    {
+      "timeMs": 4043,
+      "verseStart": 1,
+      "attachments": []
+    },
+    {
+      "timeMs": 30942,
+      "verseStart": 2,
+      "attachments": []
+    },
+    {
+      "timeMs": 53118,
+      "verseStart": 3,
+      "attachments": []
+    },
+    {
+      "timeMs": 77075,
+      "verseStart": 4,
+      "attachments": []
+    },
+    {
+      "timeMs": 102533,
+      "verseStart": 5,
+      "attachments": []
+    },
+    {
+      "timeMs": 112280,
+      "verseStart": 6,
+      "attachments": []
+    },
+    {
+      "timeMs": 127951,
+      "verseStart": 7,
+      "attachments": []
+    },
+    {
+      "timeMs": 144583,
+      "verseStart": 8,
+      "attachments": []
+    }
+  ]
+}

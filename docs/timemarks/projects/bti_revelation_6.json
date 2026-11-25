@@ -1,0 +1,79 @@
+{
+  "id": "gh_bti_revelation_6",
+  "translationCode": "BTI",
+  "bookId": "revelation",
+  "chapter": 6,
+  "title": "Откровение 6 · Кулаковых",
+  "narratorId": "bti",
+  "audioFileName": "66_06.mp3",
+  "cues": [
+    {
+      "timeMs": 4503,
+      "verseStart": 1
+    },
+    {
+      "timeMs": 23576,
+      "verseStart": 2
+    },
+    {
+      "timeMs": 42668,
+      "verseStart": 3
+    },
+    {
+      "timeMs": 53635,
+      "verseStart": 4
+    },
+    {
+      "timeMs": 76130,
+      "verseStart": 5
+    },
+    {
+      "timeMs": 97724,
+      "verseStart": 6
+    },
+    {
+      "timeMs": 119999,
+      "verseStart": 7
+    },
+    {
+      "timeMs": 133668,
+      "verseStart": 8
+    },
+    {
+      "timeMs": 165229,
+      "verseStart": 9
+    },
+    {
+      "timeMs": 180559,
+      "verseStart": 10
+    },
+    {
+      "timeMs": 198430,
+      "verseStart": 11
+    },
+    {
+      "timeMs": 224988,
+      "verseStart": 12
+    },
+    {
+      "timeMs": 245942,
+      "verseStart": 13
+    },
+    {
+      "timeMs": 258710,
+      "verseStart": 14
+    },
+    {
+      "timeMs": 269137,
+      "verseStart": 15
+    },
+    {
+      "timeMs": 288009,
+      "verseStart": 16
+    },
+    {
+      "timeMs": 301158,
+      "verseStart": 17
+    }
+  ]
+}

@@ -1,0 +1,79 @@
+{
+  "id": "gh_bti_revelation_7",
+  "translationCode": "BTI",
+  "bookId": "revelation",
+  "chapter": 7,
+  "title": "Откровение 7 · Кулаковых",
+  "narratorId": "bti",
+  "audioFileName": "66_07.mp3",
+  "cues": [
+    {
+      "timeMs": 3402,
+      "verseStart": 1
+    },
+    {
+      "timeMs": 21655,
+      "verseStart": 2
+    },
+    {
+      "timeMs": 42389,
+      "verseStart": 3
+    },
+    {
+      "timeMs": 57779,
+      "verseStart": 4
+    },
+    {
+      "timeMs": 71849,
+      "verseStart": 5
+    },
+    {
+      "timeMs": 84418,
+      "verseStart": 6
+    },
+    {
+      "timeMs": 96346,
+      "verseStart": 7
+    },
+    {
+      "timeMs": 109615,
+      "verseStart": 8
+    },
+    {
+      "timeMs": 127907,
+      "verseStart": 9
+    },
+    {
+      "timeMs": 149162,
+      "verseStart": 10
+    },
+    {
+      "timeMs": 163472,
+      "verseStart": 11
+    },
+    {
+      "timeMs": 177741,
+      "verseStart": 12
+    },
+    {
+      "timeMs": 197635,
+      "verseStart": 13
+    },
+    {
+      "timeMs": 210363,
+      "verseStart": 14
+    },
+    {
+      "timeMs": 233459,
+      "verseStart": 15
+    },
+    {
+      "timeMs": 254594,
+      "verseStart": 16
+    },
+    {
+      "timeMs": 267202,
+      "verseStart": 17
+    }
+  ]
+}

@@ -1,0 +1,96 @@
+{
+  "id": "align-revelation-BTI-06",
+  "translationCode": "BTI",
+  "bookId": "revelation",
+  "chapter": 6,
+  "title": "Откровение 6 · Кулаковых",
+  "audioFilePath": "/data/user/0/com.example.bible.sqlite/files/bible_audio/bti/66_06.mp3",
+  "updatedAt": 1795478400000,
+  "cues": [
+    {
+      "timeMs": 4503,
+      "verseStart": 1,
+      "attachments": []
+    },
+    {
+      "timeMs": 23576,
+      "verseStart": 2,
+      "attachments": []
+    },
+    {
+      "timeMs": 42668,
+      "verseStart": 3,
+      "attachments": []
+    },
+    {
+      "timeMs": 53635,
+      "verseStart": 4,
+      "attachments": []
+    },
+    {
+      "timeMs": 76130,
+      "verseStart": 5,
+      "attachments": []
+    },
+    {
+      "timeMs": 97724,
+      "verseStart": 6,
+      "attachments": []
+    },
+    {
+      "timeMs": 119999,
+      "verseStart": 7,
+      "attachments": []
+    },
+    {
+      "timeMs": 133668,
+      "verseStart": 8,
+      "attachments": []
+    },
+    {
+      "timeMs": 165229,
+      "verseStart": 9,
+      "attachments": []
+    },
+    {
+      "timeMs": 180559,
+      "verseStart": 10,
+      "attachments": []
+    },
+    {
+      "timeMs": 198430,
+      "verseStart": 11,
+      "attachments": []
+    },
+    {
+      "timeMs": 224988,
+      "verseStart": 12,
+      "attachments": []
+    },
+    {
+      "timeMs": 245942,
+      "verseStart": 13,
+      "attachments": []
+    },
+    {
+      "timeMs": 258710,
+      "verseStart": 14,
+      "attachments": []
+    },
+    {
+      "timeMs": 269137,
+      "verseStart": 15,
+      "attachments": []
+    },
+    {
+      "timeMs": 288009,
+      "verseStart": 16,
+      "attachments": []
+    },
+    {
+      "timeMs": 301158,
+      "verseStart": 17,
+      "attachments": []
+    }
+  ]
+}

@@ -1,0 +1,116 @@
+{
+  "id": "align-revelation-BTI-22",
+  "translationCode": "BTI",
+  "bookId": "revelation",
+  "chapter": 22,
+  "title": "Откровение 22 · Кулаковых",
+  "audioFilePath": "/data/user/0/com.example.bible.sqlite/files/bible_audio/bti/66_22.mp3",
+  "updatedAt": 1795478400000,
+  "cues": [
+    {
+      "timeMs": 7265,
+      "verseStart": 1,
+      "attachments": []
+    },
+    {
+      "timeMs": 20914,
+      "verseStart": 2,
+      "attachments": []
+    },
+    {
+      "timeMs": 40287,
+      "verseStart": 3,
+      "attachments": []
+    },
+    {
+      "timeMs": 56397,
+      "verseStart": 4,
+      "attachments": []
+    },
+    {
+      "timeMs": 64423,
+      "verseStart": 5,
+      "attachments": []
+    },
+    {
+      "timeMs": 85237,
+      "verseStart": 6,
+      "attachments": []
+    },
+    {
+      "timeMs": 106551,
+      "verseStart": 7,
+      "attachments": []
+    },
+    {
+      "timeMs": 121881,
+      "verseStart": 8,
+      "attachments": []
+    },
+    {
+      "timeMs": 140533,
+      "verseStart": 9,
+      "attachments": []
+    },
+    {
+      "timeMs": 165029,
+      "verseStart": 10,
+      "attachments": []
+    },
+    {
+      "timeMs": 177578,
+      "verseStart": 11,
+      "attachments": []
+    },
+    {
+      "timeMs": 199913,
+      "verseStart": 12,
+      "attachments": []
+    },
+    {
+      "timeMs": 218385,
+      "verseStart": 13,
+      "attachments": []
+    },
+    {
+      "timeMs": 229953,
+      "verseStart": 14,
+      "attachments": []
+    },
+    {
+      "timeMs": 246443,
+      "verseStart": 15,
+      "attachments": []
+    },
+    {
+      "timeMs": 263355,
+      "verseStart": 16,
+      "attachments": []
+    },
+    {
+      "timeMs": 285689,
+      "verseStart": 17,
+      "attachments": []
+    },
+    {
+      "timeMs": 312988,
+      "verseStart": 18,
+      "attachments": []
+    },
+    {
+      "timeMs": 330219,
+      "verseStart": 19,
+      "attachments": []
+    },
+    {
+      "timeMs": 352414,
+      "verseStart": 20,
+      "attachments": []
+    },
+    {
+      "timeMs": 370486,
+      "verseStart": 21,
+      "attachments": []
+    }
+  ]
+}

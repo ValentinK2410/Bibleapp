@@ -1914,6 +1914,226 @@
       "file": "projects/bti_philippians_4.json"
     },
     {
+      "id": "gh_bti_revelation_1",
+      "translationCode": "BTI",
+      "bookId": "revelation",
+      "chapter": 1,
+      "title": "Откровение 1 · Кулаковых",
+      "cueCount": 20,
+      "narratorId": "bti",
+      "file": "projects/bti_revelation_1.json"
+    },
+    {
+      "id": "gh_bti_revelation_10",
+      "translationCode": "BTI",
+      "bookId": "revelation",
+      "chapter": 10,
+      "title": "Откровение 10 · Кулаковых",
+      "cueCount": 11,
+      "narratorId": "bti",
+      "file": "projects/bti_revelation_10.json"
+    },
+    {
+      "id": "gh_bti_revelation_11",
+      "translationCode": "BTI",
+      "bookId": "revelation",
+      "chapter": 11,
+      "title": "Откровение 11 · Кулаковых",
+      "cueCount": 19,
+      "narratorId": "bti",
+      "file": "projects/bti_revelation_11.json"
+    },
+    {
+      "id": "gh_bti_revelation_12",
+      "translationCode": "BTI",
+      "bookId": "revelation",
+      "chapter": 12,
+      "title": "Откровение 12 · Кулаковых",
+      "cueCount": 17,
+      "narratorId": "bti",
+      "file": "projects/bti_revelation_12.json"
+    },
+    {
+      "id": "gh_bti_revelation_13",
+      "translationCode": "BTI",
+      "bookId": "revelation",
+      "chapter": 13,
+      "title": "Откровение 13 · Кулаковых",
+      "cueCount": 18,
+      "narratorId": "bti",
+      "file": "projects/bti_revelation_13.json"
+    },
+    {
+      "id": "gh_bti_revelation_14",
+      "translationCode": "BTI",
+      "bookId": "revelation",
+      "chapter": 14,
+      "title": "Откровение 14 · Кулаковых",
+      "cueCount": 20,
+      "narratorId": "bti",
+      "file": "projects/bti_revelation_14.json"
+    },
+    {
+      "id": "gh_bti_revelation_15",
+      "translationCode": "BTI",
+      "bookId": "revelation",
+      "chapter": 15,
+      "title": "Откровение 15 · Кулаковых",
+      "cueCount": 8,
+      "narratorId": "bti",
+      "file": "projects/bti_revelation_15.json"
+    },
+    {
+      "id": "gh_bti_revelation_16",
+      "translationCode": "BTI",
+      "bookId": "revelation",
+      "chapter": 16,
+      "title": "Откровение 16 · Кулаковых",
+      "cueCount": 21,
+      "narratorId": "bti",
+      "file": "projects/bti_revelation_16.json"
+    },
+    {
+      "id": "gh_bti_revelation_17",
+      "translationCode": "BTI",
+      "bookId": "revelation",
+      "chapter": 17,
+      "title": "Откровение 17 · Кулаковых",
+      "cueCount": 18,
+      "narratorId": "bti",
+      "file": "projects/bti_revelation_17.json"
+    },
+    {
+      "id": "gh_bti_revelation_18",
+      "translationCode": "BTI",
+      "bookId": "revelation",
+      "chapter": 18,
+      "title": "Откровение 18 · Кулаковых",
+      "cueCount": 24,
+      "narratorId": "bti",
+      "file": "projects/bti_revelation_18.json"
+    },
+    {
+      "id": "gh_bti_revelation_19",
+      "translationCode": "BTI",
+      "bookId": "revelation",
+      "chapter": 19,
+      "title": "Откровение 19 · Кулаковых",
+      "cueCount": 21,
+      "narratorId": "bti",
+      "file": "projects/bti_revelation_19.json"
+    },
+    {
+      "id": "gh_bti_revelation_2",
+      "translationCode": "BTI",
+      "bookId": "revelation",
+      "chapter": 2,
+      "title": "Откровение 2 · Кулаковых",
+      "cueCount": 28,
+      "narratorId": "bti",
+      "file": "projects/bti_revelation_2.json"
+    },
+    {
+      "id": "gh_bti_revelation_20",
+      "translationCode": "BTI",
+      "bookId": "revelation",
+      "chapter": 20,
+      "title": "Откровение 20 · Кулаковых",
+      "cueCount": 15,
+      "narratorId": "bti",
+      "file": "projects/bti_revelation_20.json"
+    },
+    {
+      "id": "gh_bti_revelation_21",
+      "translationCode": "BTI",
+      "bookId": "revelation",
+      "chapter": 21,
+      "title": "Откровение 21 · Кулаковых",
+      "cueCount": 27,
+      "narratorId": "bti",
+      "file": "projects/bti_revelation_21.json"
+    },
+    {
+      "id": "gh_bti_revelation_22",
+      "translationCode": "BTI",
+      "bookId": "revelation",
+      "chapter": 22,
+      "title": "Откровение 22 · Кулаковых",
+      "cueCount": 21,
+      "narratorId": "bti",
+      "file": "projects/bti_revelation_22.json"
+    },
+    {
+      "id": "gh_bti_revelation_3",
+      "translationCode": "BTI",
+      "bookId": "revelation",
+      "chapter": 3,
+      "title": "Откровение 3 · Кулаковых",
+      "cueCount": 22,
+      "narratorId": "bti",
+      "file": "projects/bti_revelation_3.json"
+    },
+    {
+      "id": "gh_bti_revelation_4",
+      "translationCode": "BTI",
+      "bookId": "revelation",
+      "chapter": 4,
+      "title": "Откровение 4 · Кулаковых",
+      "cueCount": 11,
+      "narratorId": "bti",
+      "file": "projects/bti_revelation_4.json"
+    },
+    {
+      "id": "gh_bti_revelation_5",
+      "translationCode": "BTI",
+      "bookId": "revelation",
+      "chapter": 5,
+      "title": "Откровение 5 · Кулаковых",
+      "cueCount": 14,
+      "narratorId": "bti",
+      "file": "projects/bti_revelation_5.json"
+    },
+    {
+      "id": "gh_bti_revelation_6",
+      "translationCode": "BTI",
+      "bookId": "revelation",
+      "chapter": 6,
+      "title": "Откровение 6 · Кулаковых",
+      "cueCount": 17,
+      "narratorId": "bti",
+      "file": "projects/bti_revelation_6.json"
+    },
+    {
+      "id": "gh_bti_revelation_7",
+      "translationCode": "BTI",
+      "bookId": "revelation",
+      "chapter": 7,
+      "title": "Откровение 7 · Кулаковых",
+      "cueCount": 17,
+      "narratorId": "bti",
+      "file": "projects/bti_revelation_7.json"
+    },
+    {
+      "id": "gh_bti_revelation_8",
+      "translationCode": "BTI",
+      "bookId": "revelation",
+      "chapter": 8,
+      "title": "Откровение 8 · Кулаковых",
+      "cueCount": 13,
+      "narratorId": "bti",
+      "file": "projects/bti_revelation_8.json"
+    },
+    {
+      "id": "gh_bti_revelation_9",
+      "translationCode": "BTI",
+      "bookId": "revelation",
+      "chapter": 9,
+      "title": "Откровение 9 · Кулаковых",
+      "cueCount": 21,
+      "narratorId": "bti",
+      "file": "projects/bti_revelation_9.json"
+    },
+    {
       "id": "gh_bti_romans_1",
       "translationCode": "BTI",
       "bookId": "romans",

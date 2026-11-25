@@ -1,0 +1,67 @@
+{
+  "id": "gh_bti_revelation_5",
+  "translationCode": "BTI",
+  "bookId": "revelation",
+  "chapter": 5,
+  "title": "Откровение 5 · Кулаковых",
+  "narratorId": "bti",
+  "audioFileName": "66_05.mp3",
+  "cues": [
+    {
+      "timeMs": 3822,
+      "verseStart": 1
+    },
+    {
+      "timeMs": 15910,
+      "verseStart": 2
+    },
+    {
+      "timeMs": 30099,
+      "verseStart": 3
+    },
+    {
+      "timeMs": 42307,
+      "verseStart": 4
+    },
+    {
+      "timeMs": 55575,
+      "verseStart": 5
+    },
+    {
+      "timeMs": 78630,
+      "verseStart": 6
+    },
+    {
+      "timeMs": 108589,
+      "verseStart": 7
+    },
+    {
+      "timeMs": 117794,
+      "verseStart": 8
+    },
+    {
+      "timeMs": 137187,
+      "verseStart": 9
+    },
+    {
+      "timeMs": 167286,
+      "verseStart": 10
+    },
+    {
+      "timeMs": 181715,
+      "verseStart": 11
+    },
+    {
+      "timeMs": 196644,
+      "verseStart": 12
+    },
+    {
+      "timeMs": 217457,
+      "verseStart": 13
+    },
+    {
+      "timeMs": 246236,
+      "verseStart": 14
+    }
+  ]
+}

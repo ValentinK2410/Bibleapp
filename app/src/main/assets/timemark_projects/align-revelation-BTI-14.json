@@ -1,0 +1,111 @@
+{
+  "id": "align-revelation-BTI-14",
+  "translationCode": "BTI",
+  "bookId": "revelation",
+  "chapter": 14,
+  "title": "Откровение 14 · Кулаковых",
+  "audioFilePath": "/data/user/0/com.example.bible.sqlite/files/bible_audio/bti/66_14.mp3",
+  "updatedAt": 1795478400000,
+  "cues": [
+    {
+      "timeMs": 4783,
+      "verseStart": 1,
+      "attachments": []
+    },
+    {
+      "timeMs": 25917,
+      "verseStart": 2,
+      "attachments": []
+    },
+    {
+      "timeMs": 42608,
+      "verseStart": 3,
+      "attachments": []
+    },
+    {
+      "timeMs": 67145,
+      "verseStart": 4,
+      "attachments": []
+    },
+    {
+      "timeMs": 90800,
+      "verseStart": 5,
+      "attachments": []
+    },
+    {
+      "timeMs": 98926,
+      "verseStart": 6,
+      "attachments": []
+    },
+    {
+      "timeMs": 118999,
+      "verseStart": 7,
+      "attachments": []
+    },
+    {
+      "timeMs": 144696,
+      "verseStart": 8,
+      "attachments": []
+    },
+    {
+      "timeMs": 165690,
+      "verseStart": 9,
+      "attachments": []
+    },
+    {
+      "timeMs": 187284,
+      "verseStart": 10,
+      "attachments": []
+    },
+    {
+      "timeMs": 210600,
+      "verseStart": 11,
+      "attachments": []
+    },
+    {
+      "timeMs": 234195,
+      "verseStart": 12,
+      "attachments": []
+    },
+    {
+      "timeMs": 248305,
+      "verseStart": 13,
+      "attachments": []
+    },
+    {
+      "timeMs": 279165,
+      "verseStart": 14,
+      "attachments": []
+    },
+    {
+      "timeMs": 298158,
+      "verseStart": 15,
+      "attachments": []
+    },
+    {
+      "timeMs": 317631,
+      "verseStart": 16,
+      "attachments": []
+    },
+    {
+      "timeMs": 327777,
+      "verseStart": 17,
+      "attachments": []
+    },
+    {
+      "timeMs": 335482,
+      "verseStart": 18,
+      "attachments": []
+    },
+    {
+      "timeMs": 366403,
+      "verseStart": 19,
+      "attachments": []
+    },
+    {
+      "timeMs": 380712,
+      "verseStart": 20,
+      "attachments": []
+    }
+  ]
+}

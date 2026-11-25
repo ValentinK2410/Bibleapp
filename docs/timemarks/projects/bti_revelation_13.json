@@ -1,0 +1,83 @@
+{
+  "id": "gh_bti_revelation_13",
+  "translationCode": "BTI",
+  "bookId": "revelation",
+  "chapter": 13,
+  "title": "Откровение 13 · Кулаковых",
+  "narratorId": "bti",
+  "audioFileName": "66_13.mp3",
+  "cues": [
+    {
+      "timeMs": 140,
+      "verseStart": 1
+    },
+    {
+      "timeMs": 19274,
+      "verseStart": 2
+    },
+    {
+      "timeMs": 38568,
+      "verseStart": 3
+    },
+    {
+      "timeMs": 57302,
+      "verseStart": 4
+    },
+    {
+      "timeMs": 76636,
+      "verseStart": 5
+    },
+    {
+      "timeMs": 87924,
+      "verseStart": 6
+    },
+    {
+      "timeMs": 103515,
+      "verseStart": 7
+    },
+    {
+      "timeMs": 118286,
+      "verseStart": 8
+    },
+    {
+      "timeMs": 133517,
+      "verseStart": 9
+    },
+    {
+      "timeMs": 138641,
+      "verseStart": 10
+    },
+    {
+      "timeMs": 160717,
+      "verseStart": 11
+    },
+    {
+      "timeMs": 176809,
+      "verseStart": 12
+    },
+    {
+      "timeMs": 196823,
+      "verseStart": 13
+    },
+    {
+      "timeMs": 205249,
+      "verseStart": 14
+    },
+    {
+      "timeMs": 229627,
+      "verseStart": 15
+    },
+    {
+      "timeMs": 244978,
+      "verseStart": 16
+    },
+    {
+      "timeMs": 259789,
+      "verseStart": 17
+    },
+    {
+      "timeMs": 276201,
+      "verseStart": 18
+    }
+  ]
+}

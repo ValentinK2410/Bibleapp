@@ -1,0 +1,76 @@
+{
+  "id": "align-revelation-BTI-08",
+  "translationCode": "BTI",
+  "bookId": "revelation",
+  "chapter": 8,
+  "title": "Откровение 8 · Кулаковых",
+  "audioFilePath": "/data/user/0/com.example.bible.sqlite/files/bible_audio/bti/66_08.mp3",
+  "updatedAt": 1795478400000,
+  "cues": [
+    {
+      "timeMs": 3522,
+      "verseStart": 1,
+      "attachments": []
+    },
+    {
+      "timeMs": 18412,
+      "verseStart": 2,
+      "attachments": []
+    },
+    {
+      "timeMs": 28079,
+      "verseStart": 3,
+      "attachments": []
+    },
+    {
+      "timeMs": 49493,
+      "verseStart": 4,
+      "attachments": []
+    },
+    {
+      "timeMs": 58238,
+      "verseStart": 5,
+      "attachments": []
+    },
+    {
+      "timeMs": 75970,
+      "verseStart": 6,
+      "attachments": []
+    },
+    {
+      "timeMs": 82634,
+      "verseStart": 7,
+      "attachments": []
+    },
+    {
+      "timeMs": 101527,
+      "verseStart": 8,
+      "attachments": []
+    },
+    {
+      "timeMs": 113595,
+      "verseStart": 9,
+      "attachments": []
+    },
+    {
+      "timeMs": 120579,
+      "verseStart": 10,
+      "attachments": []
+    },
+    {
+      "timeMs": 135609,
+      "verseStart": 11,
+      "attachments": []
+    },
+    {
+      "timeMs": 151960,
+      "verseStart": 12,
+      "attachments": []
+    },
+    {
+      "timeMs": 172013,
+      "verseStart": 13,
+      "attachments": []
+    }
+  ]
+}

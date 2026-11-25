@@ -1,0 +1,95 @@
+{
+  "id": "gh_bti_revelation_9",
+  "translationCode": "BTI",
+  "bookId": "revelation",
+  "chapter": 9,
+  "title": "Откровение 9 · Кулаковых",
+  "narratorId": "bti",
+  "audioFileName": "66_09.mp3",
+  "cues": [
+    {
+      "timeMs": 3543,
+      "verseStart": 1
+    },
+    {
+      "timeMs": 20074,
+      "verseStart": 2
+    },
+    {
+      "timeMs": 38147,
+      "verseStart": 3
+    },
+    {
+      "timeMs": 50916,
+      "verseStart": 4
+    },
+    {
+      "timeMs": 69469,
+      "verseStart": 5
+    },
+    {
+      "timeMs": 87242,
+      "verseStart": 6
+    },
+    {
+      "timeMs": 104534,
+      "verseStart": 7
+    },
+    {
+      "timeMs": 121426,
+      "verseStart": 8
+    },
+    {
+      "timeMs": 129572,
+      "verseStart": 9
+    },
+    {
+      "timeMs": 145584,
+      "verseStart": 10
+    },
+    {
+      "timeMs": 160734,
+      "verseStart": 11
+    },
+    {
+      "timeMs": 179047,
+      "verseStart": 12
+    },
+    {
+      "timeMs": 187313,
+      "verseStart": 13
+    },
+    {
+      "timeMs": 199042,
+      "verseStart": 14
+    },
+    {
+      "timeMs": 212111,
+      "verseStart": 15
+    },
+    {
+      "timeMs": 226461,
+      "verseStart": 16
+    },
+    {
+      "timeMs": 235067,
+      "verseStart": 17
+    },
+    {
+      "timeMs": 262487,
+      "verseStart": 18
+    },
+    {
+      "timeMs": 275436,
+      "verseStart": 19
+    },
+    {
+      "timeMs": 294009,
+      "verseStart": 20
+    },
+    {
+      "timeMs": 323330,
+      "verseStart": 21
+    }
+  ]
+}

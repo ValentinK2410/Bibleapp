@@ -1,0 +1,55 @@
+{
+  "id": "gh_bti_revelation_4",
+  "translationCode": "BTI",
+  "bookId": "revelation",
+  "chapter": 4,
+  "title": "Откровение 4 · Кулаковых",
+  "narratorId": "bti",
+  "audioFileName": "66_04.mp3",
+  "cues": [
+    {
+      "timeMs": 3682,
+      "verseStart": 1
+    },
+    {
+      "timeMs": 27537,
+      "verseStart": 2
+    },
+    {
+      "timeMs": 38844,
+      "verseStart": 3
+    },
+    {
+      "timeMs": 51531,
+      "verseStart": 4
+    },
+    {
+      "timeMs": 68261,
+      "verseStart": 5
+    },
+    {
+      "timeMs": 82330,
+      "verseStart": 6
+    },
+    {
+      "timeMs": 106204,
+      "verseStart": 7
+    },
+    {
+      "timeMs": 125496,
+      "verseStart": 8
+    },
+    {
+      "timeMs": 156975,
+      "verseStart": 9
+    },
+    {
+      "timeMs": 169442,
+      "verseStart": 10
+    },
+    {
+      "timeMs": 187573,
+      "verseStart": 11
+    }
+  ]
+}

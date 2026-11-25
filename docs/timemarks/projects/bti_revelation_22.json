@@ -1,0 +1,95 @@
+{
+  "id": "gh_bti_revelation_22",
+  "translationCode": "BTI",
+  "bookId": "revelation",
+  "chapter": 22,
+  "title": "Откровение 22 · Кулаковых",
+  "narratorId": "bti",
+  "audioFileName": "66_22.mp3",
+  "cues": [
+    {
+      "timeMs": 7265,
+      "verseStart": 1
+    },
+    {
+      "timeMs": 20914,
+      "verseStart": 2
+    },
+    {
+      "timeMs": 40287,
+      "verseStart": 3
+    },
+    {
+      "timeMs": 56397,
+      "verseStart": 4
+    },
+    {
+      "timeMs": 64423,
+      "verseStart": 5
+    },
+    {
+      "timeMs": 85237,
+      "verseStart": 6
+    },
+    {
+      "timeMs": 106551,
+      "verseStart": 7
+    },
+    {
+      "timeMs": 121881,
+      "verseStart": 8
+    },
+    {
+      "timeMs": 140533,
+      "verseStart": 9
+    },
+    {
+      "timeMs": 165029,
+      "verseStart": 10
+    },
+    {
+      "timeMs": 177578,
+      "verseStart": 11
+    },
+    {
+      "timeMs": 199913,
+      "verseStart": 12
+    },
+    {
+      "timeMs": 218385,
+      "verseStart": 13
+    },
+    {
+      "timeMs": 229953,
+      "verseStart": 14
+    },
+    {
+      "timeMs": 246443,
+      "verseStart": 15
+    },
+    {
+      "timeMs": 263355,
+      "verseStart": 16
+    },
+    {
+      "timeMs": 285689,
+      "verseStart": 17
+    },
+    {
+      "timeMs": 312988,
+      "verseStart": 18
+    },
+    {
+      "timeMs": 330219,
+      "verseStart": 19
+    },
+    {
+      "timeMs": 352414,
+      "verseStart": 20
+    },
+    {
+      "timeMs": 370486,
+      "verseStart": 21
+    }
+  ]
+}

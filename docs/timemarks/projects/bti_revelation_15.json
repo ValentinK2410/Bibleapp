@@ -1,0 +1,43 @@
+{
+  "id": "gh_bti_revelation_15",
+  "translationCode": "BTI",
+  "bookId": "revelation",
+  "chapter": 15,
+  "title": "Откровение 15 · Кулаковых",
+  "narratorId": "bti",
+  "audioFileName": "66_15.mp3",
+  "cues": [
+    {
+      "timeMs": 4043,
+      "verseStart": 1
+    },
+    {
+      "timeMs": 30942,
+      "verseStart": 2
+    },
+    {
+      "timeMs": 53118,
+      "verseStart": 3
+    },
+    {
+      "timeMs": 77075,
+      "verseStart": 4
+    },
+    {
+      "timeMs": 102533,
+      "verseStart": 5
+    },
+    {
+      "timeMs": 112280,
+      "verseStart": 6
+    },
+    {
+      "timeMs": 127951,
+      "verseStart": 7
+    },
+    {
+      "timeMs": 144583,
+      "verseStart": 8
+    }
+  ]
+}

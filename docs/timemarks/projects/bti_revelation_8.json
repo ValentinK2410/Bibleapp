@@ -1,0 +1,63 @@
+{
+  "id": "gh_bti_revelation_8",
+  "translationCode": "BTI",
+  "bookId": "revelation",
+  "chapter": 8,
+  "title": "Откровение 8 · Кулаковых",
+  "narratorId": "bti",
+  "audioFileName": "66_08.mp3",
+  "cues": [
+    {
+      "timeMs": 3522,
+      "verseStart": 1
+    },
+    {
+      "timeMs": 18412,
+      "verseStart": 2
+    },
+    {
+      "timeMs": 28079,
+      "verseStart": 3
+    },
+    {
+      "timeMs": 49493,
+      "verseStart": 4
+    },
+    {
+      "timeMs": 58238,
+      "verseStart": 5
+    },
+    {
+      "timeMs": 75970,
+      "verseStart": 6
+    },
+    {
+      "timeMs": 82634,
+      "verseStart": 7
+    },
+    {
+      "timeMs": 101527,
+      "verseStart": 8
+    },
+    {
+      "timeMs": 113595,
+      "verseStart": 9
+    },
+    {
+      "timeMs": 120579,
+      "verseStart": 10
+    },
+    {
+      "timeMs": 135609,
+      "verseStart": 11
+    },
+    {
+      "timeMs": 151960,
+      "verseStart": 12
+    },
+    {
+      "timeMs": 172013,
+      "verseStart": 13
+    }
+  ]
+}

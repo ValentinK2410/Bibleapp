@@ -1,0 +1,55 @@
+{
+  "id": "gh_bti_revelation_10",
+  "translationCode": "BTI",
+  "bookId": "revelation",
+  "chapter": 10,
+  "title": "Откровение 10 · Кулаковых",
+  "narratorId": "bti",
+  "audioFileName": "66_10.mp3",
+  "cues": [
+    {
+      "timeMs": 4223,
+      "verseStart": 1
+    },
+    {
+      "timeMs": 27238,
+      "verseStart": 2
+    },
+    {
+      "timeMs": 38165,
+      "verseStart": 3
+    },
+    {
+      "timeMs": 54055,
+      "verseStart": 4
+    },
+    {
+      "timeMs": 76349,
+      "verseStart": 5
+    },
+    {
+      "timeMs": 86616,
+      "verseStart": 6
+    },
+    {
+      "timeMs": 105928,
+      "verseStart": 7
+    },
+    {
+      "timeMs": 123099,
+      "verseStart": 8
+    },
+    {
+      "timeMs": 142332,
+      "verseStart": 9
+    },
+    {
+      "timeMs": 167168,
+      "verseStart": 10
+    },
+    {
+      "timeMs": 190363,
+      "verseStart": 11
+    }
+  ]
+}

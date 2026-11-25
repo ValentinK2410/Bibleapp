@@ -1,0 +1,66 @@
+{
+  "id": "align-revelation-BTI-04",
+  "translationCode": "BTI",
+  "bookId": "revelation",
+  "chapter": 4,
+  "title": "Откровение 4 · Кулаковых",
+  "audioFilePath": "/data/user/0/com.example.bible.sqlite/files/bible_audio/bti/66_04.mp3",
+  "updatedAt": 1795478400000,
+  "cues": [
+    {
+      "timeMs": 3682,
+      "verseStart": 1,
+      "attachments": []
+    },
+    {
+      "timeMs": 27537,
+      "verseStart": 2,
+      "attachments": []
+    },
+    {
+      "timeMs": 38844,
+      "verseStart": 3,
+      "attachments": []
+    },
+    {
+      "timeMs": 51531,
+      "verseStart": 4,
+      "attachments": []
+    },
+    {
+      "timeMs": 68261,
+      "verseStart": 5,
+      "attachments": []
+    },
+    {
+      "timeMs": 82330,
+      "verseStart": 6,
+      "attachments": []
+    },
+    {
+      "timeMs": 106204,
+      "verseStart": 7,
+      "attachments": []
+    },
+    {
+      "timeMs": 125496,
+      "verseStart": 8,
+      "attachments": []
+    },
+    {
+      "timeMs": 156975,
+      "verseStart": 9,
+      "attachments": []
+    },
+    {
+      "timeMs": 169442,
+      "verseStart": 10,
+      "attachments": []
+    },
+    {
+      "timeMs": 187573,
+      "verseStart": 11,
+      "attachments": []
+    }
+  ]
+}

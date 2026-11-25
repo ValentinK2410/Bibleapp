@@ -1,0 +1,101 @@
+{
+  "id": "align-revelation-BTI-17",
+  "translationCode": "BTI",
+  "bookId": "revelation",
+  "chapter": 17,
+  "title": "Откровение 17 · Кулаковых",
+  "audioFilePath": "/data/user/0/com.example.bible.sqlite/files/bible_audio/bti/66_17.mp3",
+  "updatedAt": 1795478400000,
+  "cues": [
+    {
+      "timeMs": 6604,
+      "verseStart": 1,
+      "attachments": []
+    },
+    {
+      "timeMs": 24596,
+      "verseStart": 2,
+      "attachments": []
+    },
+    {
+      "timeMs": 37184,
+      "verseStart": 3,
+      "attachments": []
+    },
+    {
+      "timeMs": 67443,
+      "verseStart": 4,
+      "attachments": []
+    },
+    {
+      "timeMs": 93860,
+      "verseStart": 5,
+      "attachments": []
+    },
+    {
+      "timeMs": 109429,
+      "verseStart": 6,
+      "attachments": []
+    },
+    {
+      "timeMs": 126180,
+      "verseStart": 7,
+      "attachments": []
+    },
+    {
+      "timeMs": 144251,
+      "verseStart": 8,
+      "attachments": []
+    },
+    {
+      "timeMs": 185738,
+      "verseStart": 9,
+      "attachments": []
+    },
+    {
+      "timeMs": 199747,
+      "verseStart": 10,
+      "attachments": []
+    },
+    {
+      "timeMs": 214956,
+      "verseStart": 11,
+      "attachments": []
+    },
+    {
+      "timeMs": 231887,
+      "verseStart": 12,
+      "attachments": []
+    },
+    {
+      "timeMs": 251820,
+      "verseStart": 13,
+      "attachments": []
+    },
+    {
+      "timeMs": 262947,
+      "verseStart": 14,
+      "attachments": []
+    },
+    {
+      "timeMs": 286442,
+      "verseStart": 15,
+      "attachments": []
+    },
+    {
+      "timeMs": 301271,
+      "verseStart": 16,
+      "attachments": []
+    },
+    {
+      "timeMs": 322064,
+      "verseStart": 17,
+      "attachments": []
+    },
+    {
+      "timeMs": 342817,
+      "verseStart": 18,
+      "attachments": []
+    }
+  ]
+}

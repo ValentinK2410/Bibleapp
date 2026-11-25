@@ -1,0 +1,95 @@
+{
+  "id": "gh_bti_revelation_16",
+  "translationCode": "BTI",
+  "bookId": "revelation",
+  "chapter": 16,
+  "title": "Откровение 16 · Кулаковых",
+  "narratorId": "bti",
+  "audioFileName": "66_16.mp3",
+  "cues": [
+    {
+      "timeMs": 3723,
+      "verseStart": 1
+    },
+    {
+      "timeMs": 20254,
+      "verseStart": 2
+    },
+    {
+      "timeMs": 39487,
+      "verseStart": 3
+    },
+    {
+      "timeMs": 55498,
+      "verseStart": 4
+    },
+    {
+      "timeMs": 68667,
+      "verseStart": 5
+    },
+    {
+      "timeMs": 86199,
+      "verseStart": 6
+    },
+    {
+      "timeMs": 103410,
+      "verseStart": 7
+    },
+    {
+      "timeMs": 117620,
+      "verseStart": 8
+    },
+    {
+      "timeMs": 132770,
+      "verseStart": 9
+    },
+    {
+      "timeMs": 152984,
+      "verseStart": 10
+    },
+    {
+      "timeMs": 168074,
+      "verseStart": 11
+    },
+    {
+      "timeMs": 180623,
+      "verseStart": 12
+    },
+    {
+      "timeMs": 201737,
+      "verseStart": 13
+    },
+    {
+      "timeMs": 219629,
+      "verseStart": 14
+    },
+    {
+      "timeMs": 237261,
+      "verseStart": 15
+    },
+    {
+      "timeMs": 261698,
+      "verseStart": 16
+    },
+    {
+      "timeMs": 273126,
+      "verseStart": 17
+    },
+    {
+      "timeMs": 291518,
+      "verseStart": 18
+    },
+    {
+      "timeMs": 312292,
+      "verseStart": 19
+    },
+    {
+      "timeMs": 335668,
+      "verseStart": 20
+    },
+    {
+      "timeMs": 342793,
+      "verseStart": 21
+    }
+  ]
+}
