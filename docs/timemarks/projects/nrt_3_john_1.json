@@ -1,0 +1,67 @@
+{
+  "id": "gh_nrt_3_john_1",
+  "translationCode": "NRT",
+  "bookId": "3_john",
+  "chapter": 1,
+  "title": "3-е Иоанна 1 · Новый русский",
+  "narratorId": "new-russian",
+  "audioFileName": "50_01.mp3",
+  "cues": [
+    {
+      "timeMs": 681,
+      "verseStart": 1
+    },
+    {
+      "timeMs": 8666,
+      "verseStart": 2
+    },
+    {
+      "timeMs": 18212,
+      "verseStart": 3
+    },
+    {
+      "timeMs": 26898,
+      "verseStart": 4
+    },
+    {
+      "timeMs": 38546,
+      "verseStart": 5
+    },
+    {
+      "timeMs": 46871,
+      "verseStart": 6
+    },
+    {
+      "timeMs": 59960,
+      "verseStart": 7
+    },
+    {
+      "timeMs": 65764,
+      "verseStart": 8
+    },
+    {
+      "timeMs": 71908,
+      "verseStart": 9
+    },
+    {
+      "timeMs": 78372,
+      "verseStart": 10
+    },
+    {
+      "timeMs": 93583,
+      "verseStart": 11
+    },
+    {
+      "timeMs": 103950,
+      "verseStart": 12
+    },
+    {
+      "timeMs": 115737,
+      "verseStart": 13
+    },
+    {
+      "timeMs": 121621,
+      "verseStart": 14
+    }
+  ]
+}

@@ -1,0 +1,81 @@
+{
+  "id": "align-3_john-NRT-01",
+  "translationCode": "NRT",
+  "bookId": "3_john",
+  "chapter": 1,
+  "title": "3-е Иоанна 1 · Новый русский",
+  "audioFilePath": "/data/user/0/com.example.bible.sqlite/files/bible_audio/new-russian/50_01.mp3",
+  "updatedAt": 1795478400000,
+  "cues": [
+    {
+      "timeMs": 681,
+      "verseStart": 1,
+      "attachments": []
+    },
+    {
+      "timeMs": 8666,
+      "verseStart": 2,
+      "attachments": []
+    },
+    {
+      "timeMs": 18212,
+      "verseStart": 3,
+      "attachments": []
+    },
+    {
+      "timeMs": 26898,
+      "verseStart": 4,
+      "attachments": []
+    },
+    {
+      "timeMs": 38546,
+      "verseStart": 5,
+      "attachments": []
+    },
+    {
+      "timeMs": 46871,
+      "verseStart": 6,
+      "attachments": []
+    },
+    {
+      "timeMs": 59960,
+      "verseStart": 7,
+      "attachments": []
+    },
+    {
+      "timeMs": 65764,
+      "verseStart": 8,
+      "attachments": []
+    },
+    {
+      "timeMs": 71908,
+      "verseStart": 9,
+      "attachments": []
+    },
+    {
+      "timeMs": 78372,
+      "verseStart": 10,
+      "attachments": []
+    },
+    {
+      "timeMs": 93583,
+      "verseStart": 11,
+      "attachments": []
+    },
+    {
+      "timeMs": 103950,
+      "verseStart": 12,
+      "attachments": []
+    },
+    {
+      "timeMs": 115737,
+      "verseStart": 13,
+      "attachments": []
+    },
+    {
+      "timeMs": 121621,
+      "verseStart": 14,
+      "attachments": []
+    }
+  ]
+}

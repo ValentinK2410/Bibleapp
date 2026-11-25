@@ -5064,6 +5064,16 @@
       "file": "projects/nrt_2_timothy_4.json"
     },
     {
+      "id": "gh_nrt_3_john_1",
+      "translationCode": "NRT",
+      "bookId": "3_john",
+      "chapter": 1,
+      "title": "3-е Иоанна 1 · Новый русский",
+      "cueCount": 14,
+      "narratorId": "new-russian",
+      "file": "projects/nrt_3_john_1.json"
+    },
+    {
       "id": "gh_nrt_acts_1",
       "translationCode": "NRT",
       "bookId": "acts",
