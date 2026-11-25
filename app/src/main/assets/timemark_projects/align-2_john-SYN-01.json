@@ -1,0 +1,76 @@
+{
+  "id": "align-2_john-SYN-01",
+  "translationCode": "SYN",
+  "bookId": "2_john",
+  "chapter": 1,
+  "title": "2-е Иоанна 1 · Синодальный · Бондаренко",
+  "audioFilePath": "/data/user/0/com.example.bible.sqlite/files/bible_audio/bondarenko/49_01.mp3",
+  "updatedAt": 1795478400000,
+  "cues": [
+    {
+      "timeMs": 20392,
+      "verseStart": 1,
+      "attachments": []
+    },
+    {
+      "timeMs": 33941,
+      "verseStart": 2,
+      "attachments": []
+    },
+    {
+      "timeMs": 41465,
+      "verseStart": 3,
+      "attachments": []
+    },
+    {
+      "timeMs": 55934,
+      "verseStart": 4,
+      "attachments": []
+    },
+    {
+      "timeMs": 66681,
+      "verseStart": 5,
+      "attachments": []
+    },
+    {
+      "timeMs": 79828,
+      "verseStart": 6,
+      "attachments": []
+    },
+    {
+      "timeMs": 92316,
+      "verseStart": 7,
+      "attachments": []
+    },
+    {
+      "timeMs": 108086,
+      "verseStart": 8,
+      "attachments": []
+    },
+    {
+      "timeMs": 117912,
+      "verseStart": 9,
+      "attachments": []
+    },
+    {
+      "timeMs": 134502,
+      "verseStart": 10,
+      "attachments": []
+    },
+    {
+      "timeMs": 144708,
+      "verseStart": 11,
+      "attachments": []
+    },
+    {
+      "timeMs": 151312,
+      "verseStart": 12,
+      "attachments": []
+    },
+    {
+      "timeMs": 169903,
+      "verseStart": 13,
+      "attachments": []
+    }
+  ]
+}
