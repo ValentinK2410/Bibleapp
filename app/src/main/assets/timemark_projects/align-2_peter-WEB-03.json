@@ -1,0 +1,101 @@
+{
+  "id": "align-2_peter-WEB-03",
+  "translationCode": "WEB",
+  "bookId": "2_peter",
+  "chapter": 3,
+  "title": "2-е Петра 3 · WEB (англ.)",
+  "audioFilePath": "/data/user/0/com.example.bible.sqlite/files/bible_audio/web/61_03.mp3",
+  "updatedAt": 1794873600000,
+  "cues": [
+    {
+      "timeMs": 3262,
+      "verseStart": 1,
+      "attachments": []
+    },
+    {
+      "timeMs": 11448,
+      "verseStart": 2,
+      "attachments": []
+    },
+    {
+      "timeMs": 20034,
+      "verseStart": 3,
+      "attachments": []
+    },
+    {
+      "timeMs": 27118,
+      "verseStart": 4,
+      "attachments": []
+    },
+    {
+      "timeMs": 37666,
+      "verseStart": 5,
+      "attachments": []
+    },
+    {
+      "timeMs": 48233,
+      "verseStart": 6,
+      "attachments": []
+    },
+    {
+      "timeMs": 53296,
+      "verseStart": 7,
+      "attachments": []
+    },
+    {
+      "timeMs": 65685,
+      "verseStart": 8,
+      "attachments": []
+    },
+    {
+      "timeMs": 77272,
+      "verseStart": 9,
+      "attachments": []
+    },
+    {
+      "timeMs": 90942,
+      "verseStart": 10,
+      "attachments": []
+    },
+    {
+      "timeMs": 107913,
+      "verseStart": 11,
+      "attachments": []
+    },
+    {
+      "timeMs": 117420,
+      "verseStart": 12,
+      "attachments": []
+    },
+    {
+      "timeMs": 128767,
+      "verseStart": 13,
+      "attachments": []
+    },
+    {
+      "timeMs": 137333,
+      "verseStart": 14,
+      "attachments": []
+    },
+    {
+      "timeMs": 147440,
+      "verseStart": 15,
+      "attachments": []
+    },
+    {
+      "timeMs": 158047,
+      "verseStart": 16,
+      "attachments": []
+    },
+    {
+      "timeMs": 174158,
+      "verseStart": 17,
+      "attachments": []
+    },
+    {
+      "timeMs": 187567,
+      "verseStart": 18,
+      "attachments": []
+    }
+  ]
+}

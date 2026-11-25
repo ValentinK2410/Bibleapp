@@ -1,0 +1,83 @@
+{
+  "id": "gh_web_2_peter_3",
+  "translationCode": "WEB",
+  "bookId": "2_peter",
+  "chapter": 3,
+  "title": "2-е Петра 3 · WEB (англ.)",
+  "narratorId": "web",
+  "audioFileName": "61_03.mp3",
+  "cues": [
+    {
+      "timeMs": 3262,
+      "verseStart": 1
+    },
+    {
+      "timeMs": 11448,
+      "verseStart": 2
+    },
+    {
+      "timeMs": 20034,
+      "verseStart": 3
+    },
+    {
+      "timeMs": 27118,
+      "verseStart": 4
+    },
+    {
+      "timeMs": 37666,
+      "verseStart": 5
+    },
+    {
+      "timeMs": 48233,
+      "verseStart": 6
+    },
+    {
+      "timeMs": 53296,
+      "verseStart": 7
+    },
+    {
+      "timeMs": 65685,
+      "verseStart": 8
+    },
+    {
+      "timeMs": 77272,
+      "verseStart": 9
+    },
+    {
+      "timeMs": 90942,
+      "verseStart": 10
+    },
+    {
+      "timeMs": 107913,
+      "verseStart": 11
+    },
+    {
+      "timeMs": 117420,
+      "verseStart": 12
+    },
+    {
+      "timeMs": 128767,
+      "verseStart": 13
+    },
+    {
+      "timeMs": 137333,
+      "verseStart": 14
+    },
+    {
+      "timeMs": 147440,
+      "verseStart": 15
+    },
+    {
+      "timeMs": 158047,
+      "verseStart": 16
+    },
+    {
+      "timeMs": 174158,
+      "verseStart": 17
+    },
+    {
+      "timeMs": 187567,
+      "verseStart": 18
+    }
+  ]
+}

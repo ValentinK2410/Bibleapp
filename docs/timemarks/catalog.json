@@ -10834,6 +10834,36 @@
       "file": "projects/web_2_corinthians_9.json"
     },
     {
+      "id": "gh_web_2_peter_1",
+      "translationCode": "WEB",
+      "bookId": "2_peter",
+      "chapter": 1,
+      "title": "2-е Петра 1 · WEB (англ.)",
+      "cueCount": 21,
+      "narratorId": "web",
+      "file": "projects/web_2_peter_1.json"
+    },
+    {
+      "id": "gh_web_2_peter_2",
+      "translationCode": "WEB",
+      "bookId": "2_peter",
+      "chapter": 2,
+      "title": "2-е Петра 2 · WEB (англ.)",
+      "cueCount": 22,
+      "narratorId": "web",
+      "file": "projects/web_2_peter_2.json"
+    },
+    {
+      "id": "gh_web_2_peter_3",
+      "translationCode": "WEB",
+      "bookId": "2_peter",
+      "chapter": 3,
+      "title": "2-е Петра 3 · WEB (англ.)",
+      "cueCount": 18,
+      "narratorId": "web",
+      "file": "projects/web_2_peter_3.json"
+    },
+    {
       "id": "gh_web_2_thessalonians_1",
       "translationCode": "WEB",
       "bookId": "2_thessalonians",

@@ -1,0 +1,99 @@
+{
+  "id": "gh_web_2_peter_2",
+  "translationCode": "WEB",
+  "bookId": "2_peter",
+  "chapter": 2,
+  "title": "2-е Петра 2 · WEB (англ.)",
+  "narratorId": "web",
+  "audioFileName": "61_02.mp3",
+  "cues": [
+    {
+      "timeMs": 2201,
+      "verseStart": 1
+    },
+    {
+      "timeMs": 17031,
+      "verseStart": 2
+    },
+    {
+      "timeMs": 24015,
+      "verseStart": 3
+    },
+    {
+      "timeMs": 35862,
+      "verseStart": 4
+    },
+    {
+      "timeMs": 45788,
+      "verseStart": 5
+    },
+    {
+      "timeMs": 56155,
+      "verseStart": 6
+    },
+    {
+      "timeMs": 65340,
+      "verseStart": 7
+    },
+    {
+      "timeMs": 71324,
+      "verseStart": 8
+    },
+    {
+      "timeMs": 80550,
+      "verseStart": 9
+    },
+    {
+      "timeMs": 90316,
+      "verseStart": 10
+    },
+    {
+      "timeMs": 103704,
+      "verseStart": 11
+    },
+    {
+      "timeMs": 111629,
+      "verseStart": 12
+    },
+    {
+      "timeMs": 123776,
+      "verseStart": 13
+    },
+    {
+      "timeMs": 136844,
+      "verseStart": 14
+    },
+    {
+      "timeMs": 151013,
+      "verseStart": 15
+    },
+    {
+      "timeMs": 159939,
+      "verseStart": 16
+    },
+    {
+      "timeMs": 169385,
+      "verseStart": 17
+    },
+    {
+      "timeMs": 178570,
+      "verseStart": 18
+    },
+    {
+      "timeMs": 190378,
+      "verseStart": 19
+    },
+    {
+      "timeMs": 201604,
+      "verseStart": 20
+    },
+    {
+      "timeMs": 214272,
+      "verseStart": 21
+    },
+    {
+      "timeMs": 223818,
+      "verseStart": 22
+    }
+  ]
+}
