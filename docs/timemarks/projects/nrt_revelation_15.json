@@ -1,0 +1,43 @@
+{
+  "id": "gh_nrt_revelation_15",
+  "translationCode": "NRT",
+  "bookId": "revelation",
+  "chapter": 15,
+  "title": "Откровение 15 · Новый русский",
+  "narratorId": "new-russian",
+  "audioFileName": "66_15.mp3",
+  "cues": [
+    {
+      "timeMs": 3903,
+      "verseStart": 1
+    },
+    {
+      "timeMs": 17191,
+      "verseStart": 2
+    },
+    {
+      "timeMs": 32661,
+      "verseStart": 3
+    },
+    {
+      "timeMs": 48211,
+      "verseStart": 4
+    },
+    {
+      "timeMs": 64722,
+      "verseStart": 5
+    },
+    {
+      "timeMs": 71566,
+      "verseStart": 6
+    },
+    {
+      "timeMs": 83514,
+      "verseStart": 7
+    },
+    {
+      "timeMs": 93600,
+      "verseStart": 8
+    }
+  ]
+}

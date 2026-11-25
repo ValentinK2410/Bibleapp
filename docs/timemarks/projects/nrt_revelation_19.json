@@ -1,0 +1,95 @@
+{
+  "id": "gh_nrt_revelation_19",
+  "translationCode": "NRT",
+  "bookId": "revelation",
+  "chapter": 19,
+  "title": "Откровение 19 · Новый русский",
+  "narratorId": "new-russian",
+  "audioFileName": "66_19.mp3",
+  "cues": [
+    {
+      "timeMs": 2522,
+      "verseStart": 1
+    },
+    {
+      "timeMs": 17412,
+      "verseStart": 2
+    },
+    {
+      "timeMs": 29941,
+      "verseStart": 3
+    },
+    {
+      "timeMs": 37246,
+      "verseStart": 4
+    },
+    {
+      "timeMs": 48754,
+      "verseStart": 5
+    },
+    {
+      "timeMs": 59942,
+      "verseStart": 6
+    },
+    {
+      "timeMs": 78576,
+      "verseStart": 7
+    },
+    {
+      "timeMs": 91985,
+      "verseStart": 8
+    },
+    {
+      "timeMs": 101992,
+      "verseStart": 9
+    },
+    {
+      "timeMs": 113920,
+      "verseStart": 10
+    },
+    {
+      "timeMs": 136556,
+      "verseStart": 11
+    },
+    {
+      "timeMs": 149846,
+      "verseStart": 12
+    },
+    {
+      "timeMs": 161194,
+      "verseStart": 13
+    },
+    {
+      "timeMs": 167578,
+      "verseStart": 14
+    },
+    {
+      "timeMs": 178046,
+      "verseStart": 15
+    },
+    {
+      "timeMs": 192976,
+      "verseStart": 16
+    },
+    {
+      "timeMs": 201862,
+      "verseStart": 17
+    },
+    {
+      "timeMs": 214311,
+      "verseStart": 18
+    },
+    {
+      "timeMs": 229622,
+      "verseStart": 19
+    },
+    {
+      "timeMs": 239429,
+      "verseStart": 20
+    },
+    {
+      "timeMs": 260844,
+      "verseStart": 21
+    }
+  ]
+}

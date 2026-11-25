@@ -1,0 +1,55 @@
+{
+  "id": "gh_nrt_revelation_4",
+  "translationCode": "NRT",
+  "bookId": "revelation",
+  "chapter": 4,
+  "title": "Откровение 4 · Новый русский",
+  "narratorId": "new-russian",
+  "audioFileName": "66_04.mp3",
+  "cues": [
+    {
+      "timeMs": 3322,
+      "verseStart": 1
+    },
+    {
+      "timeMs": 20094,
+      "verseStart": 2
+    },
+    {
+      "timeMs": 27519,
+      "verseStart": 3
+    },
+    {
+      "timeMs": 37246,
+      "verseStart": 4
+    },
+    {
+      "timeMs": 48774,
+      "verseStart": 5
+    },
+    {
+      "timeMs": 58521,
+      "verseStart": 6
+    },
+    {
+      "timeMs": 75093,
+      "verseStart": 7
+    },
+    {
+      "timeMs": 86841,
+      "verseStart": 8
+    },
+    {
+      "timeMs": 110298,
+      "verseStart": 9
+    },
+    {
+      "timeMs": 120385,
+      "verseStart": 10
+    },
+    {
+      "timeMs": 132253,
+      "verseStart": 11
+    }
+  ]
+}

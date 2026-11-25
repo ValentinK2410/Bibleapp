@@ -1,0 +1,99 @@
+{
+  "id": "gh_nrt_revelation_3",
+  "translationCode": "NRT",
+  "bookId": "revelation",
+  "chapter": 3,
+  "title": "Откровение 3 · Новый русский",
+  "narratorId": "new-russian",
+  "audioFileName": "66_03.mp3",
+  "cues": [
+    {
+      "timeMs": 340,
+      "verseStart": 1
+    },
+    {
+      "timeMs": 14770,
+      "verseStart": 2
+    },
+    {
+      "timeMs": 25117,
+      "verseStart": 3
+    },
+    {
+      "timeMs": 38786,
+      "verseStart": 4
+    },
+    {
+      "timeMs": 50514,
+      "verseStart": 5
+    },
+    {
+      "timeMs": 62922,
+      "verseStart": 6
+    },
+    {
+      "timeMs": 69226,
+      "verseStart": 7
+    },
+    {
+      "timeMs": 84857,
+      "verseStart": 8
+    },
+    {
+      "timeMs": 100127,
+      "verseStart": 9
+    },
+    {
+      "timeMs": 115897,
+      "verseStart": 10
+    },
+    {
+      "timeMs": 128206,
+      "verseStart": 11
+    },
+    {
+      "timeMs": 134710,
+      "verseStart": 12
+    },
+    {
+      "timeMs": 154723,
+      "verseStart": 13
+    },
+    {
+      "timeMs": 161288,
+      "verseStart": 14
+    },
+    {
+      "timeMs": 172935,
+      "verseStart": 15
+    },
+    {
+      "timeMs": 181981,
+      "verseStart": 16
+    },
+    {
+      "timeMs": 189346,
+      "verseStart": 17
+    },
+    {
+      "timeMs": 202395,
+      "verseStart": 18
+    },
+    {
+      "timeMs": 217745,
+      "verseStart": 19
+    },
+    {
+      "timeMs": 224510,
+      "verseStart": 20
+    },
+    {
+      "timeMs": 234156,
+      "verseStart": 21
+    },
+    {
+      "timeMs": 244783,
+      "verseStart": 22
+    }
+  ]
+}

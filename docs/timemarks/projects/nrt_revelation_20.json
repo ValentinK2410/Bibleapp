@@ -1,0 +1,71 @@
+{
+  "id": "gh_nrt_revelation_20",
+  "translationCode": "NRT",
+  "bookId": "revelation",
+  "chapter": 20,
+  "title": "Откровение 20 · Новый русский",
+  "narratorId": "new-russian",
+  "audioFileName": "66_20.mp3",
+  "cues": [
+    {
+      "timeMs": 2922,
+      "verseStart": 1
+    },
+    {
+      "timeMs": 11108,
+      "verseStart": 2
+    },
+    {
+      "timeMs": 19574,
+      "verseStart": 3
+    },
+    {
+      "timeMs": 34424,
+      "verseStart": 4
+    },
+    {
+      "timeMs": 59262,
+      "verseStart": 5
+    },
+    {
+      "timeMs": 66587,
+      "verseStart": 6
+    },
+    {
+      "timeMs": 85160,
+      "verseStart": 7
+    },
+    {
+      "timeMs": 105155,
+      "verseStart": 8
+    },
+    {
+      "timeMs": 112360,
+      "verseStart": 9
+    },
+    {
+      "timeMs": 116082,
+      "verseStart": 10
+    },
+    {
+      "timeMs": 134355,
+      "verseStart": 11
+    },
+    {
+      "timeMs": 145563,
+      "verseStart": 12
+    },
+    {
+      "timeMs": 164277,
+      "verseStart": 13
+    },
+    {
+      "timeMs": 175885,
+      "verseStart": 14
+    },
+    {
+      "timeMs": 183470,
+      "verseStart": 15
+    }
+  ]
+}

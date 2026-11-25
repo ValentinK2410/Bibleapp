@@ -1,0 +1,79 @@
+{
+  "id": "gh_nrt_revelation_6",
+  "translationCode": "NRT",
+  "bookId": "revelation",
+  "chapter": 6,
+  "title": "Откровение 6 · Новый русский",
+  "narratorId": "new-russian",
+  "audioFileName": "66_06.mp3",
+  "cues": [
+    {
+      "timeMs": 3483,
+      "verseStart": 1
+    },
+    {
+      "timeMs": 15651,
+      "verseStart": 2
+    },
+    {
+      "timeMs": 26799,
+      "verseStart": 3
+    },
+    {
+      "timeMs": 33764,
+      "verseStart": 4
+    },
+    {
+      "timeMs": 45773,
+      "verseStart": 5
+    },
+    {
+      "timeMs": 59402,
+      "verseStart": 6
+    },
+    {
+      "timeMs": 72151,
+      "verseStart": 7
+    },
+    {
+      "timeMs": 81278,
+      "verseStart": 8
+    },
+    {
+      "timeMs": 98850,
+      "verseStart": 9
+    },
+    {
+      "timeMs": 109678,
+      "verseStart": 10
+    },
+    {
+      "timeMs": 120065,
+      "verseStart": 11
+    },
+    {
+      "timeMs": 135576,
+      "verseStart": 12
+    },
+    {
+      "timeMs": 149486,
+      "verseStart": 13
+    },
+    {
+      "timeMs": 157672,
+      "verseStart": 14
+    },
+    {
+      "timeMs": 164016,
+      "verseStart": 15
+    },
+    {
+      "timeMs": 177526,
+      "verseStart": 16
+    },
+    {
+      "timeMs": 187313,
+      "verseStart": 17
+    }
+  ]
+}

@@ -1,0 +1,63 @@
+{
+  "id": "gh_nrt_revelation_8",
+  "translationCode": "NRT",
+  "bookId": "revelation",
+  "chapter": 8,
+  "title": "Откровение 8 · Новый русский",
+  "narratorId": "new-russian",
+  "audioFileName": "66_08.mp3",
+  "cues": [
+    {
+      "timeMs": 3022,
+      "verseStart": 1
+    },
+    {
+      "timeMs": 9667,
+      "verseStart": 2
+    },
+    {
+      "timeMs": 15010,
+      "verseStart": 3
+    },
+    {
+      "timeMs": 33143,
+      "verseStart": 4
+    },
+    {
+      "timeMs": 41648,
+      "verseStart": 5
+    },
+    {
+      "timeMs": 56999,
+      "verseStart": 6
+    },
+    {
+      "timeMs": 61282,
+      "verseStart": 7
+    },
+    {
+      "timeMs": 76452,
+      "verseStart": 8
+    },
+    {
+      "timeMs": 85738,
+      "verseStart": 9
+    },
+    {
+      "timeMs": 92463,
+      "verseStart": 10
+    },
+    {
+      "timeMs": 101950,
+      "verseStart": 11
+    },
+    {
+      "timeMs": 110756,
+      "verseStart": 12
+    },
+    {
+      "timeMs": 127847,
+      "verseStart": 13
+    }
+  ]
+}

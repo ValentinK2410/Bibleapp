@@ -1,0 +1,95 @@
+{
+  "id": "gh_nrt_revelation_16",
+  "translationCode": "NRT",
+  "bookId": "revelation",
+  "chapter": 16,
+  "title": "Откровение 16 · Новый русский",
+  "narratorId": "new-russian",
+  "audioFileName": "66_16.mp3",
+  "cues": [
+    {
+      "timeMs": 4003,
+      "verseStart": 1
+    },
+    {
+      "timeMs": 14169,
+      "verseStart": 2
+    },
+    {
+      "timeMs": 29559,
+      "verseStart": 3
+    },
+    {
+      "timeMs": 41826,
+      "verseStart": 4
+    },
+    {
+      "timeMs": 50352,
+      "verseStart": 5
+    },
+    {
+      "timeMs": 62860,
+      "verseStart": 6
+    },
+    {
+      "timeMs": 70305,
+      "verseStart": 7
+    },
+    {
+      "timeMs": 80671,
+      "verseStart": 8
+    },
+    {
+      "timeMs": 89477,
+      "verseStart": 9
+    },
+    {
+      "timeMs": 102165,
+      "verseStart": 10
+    },
+    {
+      "timeMs": 114252,
+      "verseStart": 11
+    },
+    {
+      "timeMs": 122217,
+      "verseStart": 12
+    },
+    {
+      "timeMs": 133244,
+      "verseStart": 13
+    },
+    {
+      "timeMs": 144511,
+      "verseStart": 14
+    },
+    {
+      "timeMs": 156879,
+      "verseStart": 15
+    },
+    {
+      "timeMs": 169707,
+      "verseStart": 16
+    },
+    {
+      "timeMs": 175491,
+      "verseStart": 17
+    },
+    {
+      "timeMs": 186338,
+      "verseStart": 18
+    },
+    {
+      "timeMs": 207091,
+      "verseStart": 19
+    },
+    {
+      "timeMs": 221620,
+      "verseStart": 20
+    },
+    {
+      "timeMs": 225663,
+      "verseStart": 21
+    }
+  ]
+}

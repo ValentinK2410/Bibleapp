@@ -1,0 +1,66 @@
+{
+  "id": "align-revelation-NRT-04",
+  "translationCode": "NRT",
+  "bookId": "revelation",
+  "chapter": 4,
+  "title": "Откровение 4 · Новый русский",
+  "audioFilePath": "/data/user/0/com.example.bible.sqlite/files/bible_audio/new-russian/66_04.mp3",
+  "updatedAt": 1795478400000,
+  "cues": [
+    {
+      "timeMs": 3322,
+      "verseStart": 1,
+      "attachments": []
+    },
+    {
+      "timeMs": 20094,
+      "verseStart": 2,
+      "attachments": []
+    },
+    {
+      "timeMs": 27519,
+      "verseStart": 3,
+      "attachments": []
+    },
+    {
+      "timeMs": 37246,
+      "verseStart": 4,
+      "attachments": []
+    },
+    {
+      "timeMs": 48774,
+      "verseStart": 5,
+      "attachments": []
+    },
+    {
+      "timeMs": 58521,
+      "verseStart": 6,
+      "attachments": []
+    },
+    {
+      "timeMs": 75093,
+      "verseStart": 7,
+      "attachments": []
+    },
+    {
+      "timeMs": 86841,
+      "verseStart": 8,
+      "attachments": []
+    },
+    {
+      "timeMs": 110298,
+      "verseStart": 9,
+      "attachments": []
+    },
+    {
+      "timeMs": 120385,
+      "verseStart": 10,
+      "attachments": []
+    },
+    {
+      "timeMs": 132253,
+      "verseStart": 11,
+      "attachments": []
+    }
+  ]
+}

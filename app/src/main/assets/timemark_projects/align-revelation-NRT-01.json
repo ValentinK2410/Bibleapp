@@ -1,0 +1,111 @@
+{
+  "id": "align-revelation-NRT-01",
+  "translationCode": "NRT",
+  "bookId": "revelation",
+  "chapter": 1,
+  "title": "Откровение 1 · Новый русский",
+  "audioFilePath": "/data/user/0/com.example.bible.sqlite/files/bible_audio/new-russian/66_01.mp3",
+  "updatedAt": 1795478400000,
+  "cues": [
+    {
+      "timeMs": 3062,
+      "verseStart": 1,
+      "attachments": []
+    },
+    {
+      "timeMs": 18572,
+      "verseStart": 2,
+      "attachments": []
+    },
+    {
+      "timeMs": 28218,
+      "verseStart": 3,
+      "attachments": []
+    },
+    {
+      "timeMs": 38205,
+      "verseStart": 4,
+      "attachments": []
+    },
+    {
+      "timeMs": 52574,
+      "verseStart": 5,
+      "attachments": []
+    },
+    {
+      "timeMs": 67644,
+      "verseStart": 6,
+      "attachments": []
+    },
+    {
+      "timeMs": 77030,
+      "verseStart": 7,
+      "attachments": []
+    },
+    {
+      "timeMs": 89918,
+      "verseStart": 8,
+      "attachments": []
+    },
+    {
+      "timeMs": 103007,
+      "verseStart": 9,
+      "attachments": []
+    },
+    {
+      "timeMs": 118357,
+      "verseStart": 10,
+      "attachments": []
+    },
+    {
+      "timeMs": 124781,
+      "verseStart": 11,
+      "attachments": []
+    },
+    {
+      "timeMs": 138870,
+      "verseStart": 12,
+      "attachments": []
+    },
+    {
+      "timeMs": 145034,
+      "verseStart": 13,
+      "attachments": []
+    },
+    {
+      "timeMs": 155781,
+      "verseStart": 14,
+      "attachments": []
+    },
+    {
+      "timeMs": 164006,
+      "verseStart": 15,
+      "attachments": []
+    },
+    {
+      "timeMs": 172692,
+      "verseStart": 16,
+      "attachments": []
+    },
+    {
+      "timeMs": 182438,
+      "verseStart": 17,
+      "attachments": []
+    },
+    {
+      "timeMs": 193905,
+      "verseStart": 18,
+      "attachments": []
+    },
+    {
+      "timeMs": 202571,
+      "verseStart": 19,
+      "attachments": []
+    },
+    {
+      "timeMs": 208775,
+      "verseStart": 20,
+      "attachments": []
+    }
+  ]
+}

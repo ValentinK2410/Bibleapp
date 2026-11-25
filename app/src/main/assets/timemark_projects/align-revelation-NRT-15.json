@@ -1,0 +1,51 @@
+{
+  "id": "align-revelation-NRT-15",
+  "translationCode": "NRT",
+  "bookId": "revelation",
+  "chapter": 15,
+  "title": "Откровение 15 · Новый русский",
+  "audioFilePath": "/data/user/0/com.example.bible.sqlite/files/bible_audio/new-russian/66_15.mp3",
+  "updatedAt": 1795478400000,
+  "cues": [
+    {
+      "timeMs": 3903,
+      "verseStart": 1,
+      "attachments": []
+    },
+    {
+      "timeMs": 17191,
+      "verseStart": 2,
+      "attachments": []
+    },
+    {
+      "timeMs": 32661,
+      "verseStart": 3,
+      "attachments": []
+    },
+    {
+      "timeMs": 48211,
+      "verseStart": 4,
+      "attachments": []
+    },
+    {
+      "timeMs": 64722,
+      "verseStart": 5,
+      "attachments": []
+    },
+    {
+      "timeMs": 71566,
+      "verseStart": 6,
+      "attachments": []
+    },
+    {
+      "timeMs": 83514,
+      "verseStart": 7,
+      "attachments": []
+    },
+    {
+      "timeMs": 93600,
+      "verseStart": 8,
+      "attachments": []
+    }
+  ]
+}

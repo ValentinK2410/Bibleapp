@@ -1,0 +1,91 @@
+{
+  "id": "gh_nrt_revelation_14",
+  "translationCode": "NRT",
+  "bookId": "revelation",
+  "chapter": 14,
+  "title": "Откровение 14 · Новый русский",
+  "narratorId": "new-russian",
+  "audioFileName": "66_14.mp3",
+  "cues": [
+    {
+      "timeMs": 3922,
+      "verseStart": 1
+    },
+    {
+      "timeMs": 17191,
+      "verseStart": 2
+    },
+    {
+      "timeMs": 30199,
+      "verseStart": 3
+    },
+    {
+      "timeMs": 43847,
+      "verseStart": 4
+    },
+    {
+      "timeMs": 61338,
+      "verseStart": 5
+    },
+    {
+      "timeMs": 68782,
+      "verseStart": 6
+    },
+    {
+      "timeMs": 84232,
+      "verseStart": 7
+    },
+    {
+      "timeMs": 98160,
+      "verseStart": 8
+    },
+    {
+      "timeMs": 110768,
+      "verseStart": 9
+    },
+    {
+      "timeMs": 122916,
+      "verseStart": 10
+    },
+    {
+      "timeMs": 137465,
+      "verseStart": 11
+    },
+    {
+      "timeMs": 152034,
+      "verseStart": 12
+    },
+    {
+      "timeMs": 160439,
+      "verseStart": 13
+    },
+    {
+      "timeMs": 181092,
+      "verseStart": 14
+    },
+    {
+      "timeMs": 194700,
+      "verseStart": 15
+    },
+    {
+      "timeMs": 209629,
+      "verseStart": 16
+    },
+    {
+      "timeMs": 216914,
+      "verseStart": 17
+    },
+    {
+      "timeMs": 224258,
+      "verseStart": 18
+    },
+    {
+      "timeMs": 243690,
+      "verseStart": 19
+    },
+    {
+      "timeMs": 252936,
+      "verseStart": 20
+    }
+  ]
+}

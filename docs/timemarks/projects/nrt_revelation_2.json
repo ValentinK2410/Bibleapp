@@ -1,0 +1,127 @@
+{
+  "id": "gh_nrt_revelation_2",
+  "translationCode": "NRT",
+  "bookId": "revelation",
+  "chapter": 2,
+  "title": "Откровение 2 · Новый русский",
+  "narratorId": "new-russian",
+  "audioFileName": "66_02.mp3",
+  "cues": [
+    {
+      "timeMs": 620,
+      "verseStart": 1
+    },
+    {
+      "timeMs": 12669,
+      "verseStart": 2
+    },
+    {
+      "timeMs": 25778,
+      "verseStart": 3
+    },
+    {
+      "timeMs": 31662,
+      "verseStart": 4
+    },
+    {
+      "timeMs": 37006,
+      "verseStart": 5
+    },
+    {
+      "timeMs": 50175,
+      "verseStart": 6
+    },
+    {
+      "timeMs": 56720,
+      "verseStart": 7
+    },
+    {
+      "timeMs": 69889,
+      "verseStart": 8
+    },
+    {
+      "timeMs": 79676,
+      "verseStart": 9
+    },
+    {
+      "timeMs": 93306,
+      "verseStart": 10
+    },
+    {
+      "timeMs": 109957,
+      "verseStart": 11
+    },
+    {
+      "timeMs": 119764,
+      "verseStart": 12
+    },
+    {
+      "timeMs": 128951,
+      "verseStart": 13
+    },
+    {
+      "timeMs": 146083,
+      "verseStart": 14
+    },
+    {
+      "timeMs": 167958,
+      "verseStart": 15
+    },
+    {
+      "timeMs": 172381,
+      "verseStart": 16
+    },
+    {
+      "timeMs": 179586,
+      "verseStart": 17
+    },
+    {
+      "timeMs": 199500,
+      "verseStart": 18
+    },
+    {
+      "timeMs": 213650,
+      "verseStart": 19
+    },
+    {
+      "timeMs": 224678,
+      "verseStart": 20
+    },
+    {
+      "timeMs": 245893,
+      "verseStart": 21
+    },
+    {
+      "timeMs": 251657,
+      "verseStart": 22
+    },
+    {
+      "timeMs": 263125,
+      "verseStart": 23
+    },
+    {
+      "timeMs": 275193,
+      "verseStart": 24
+    },
+    {
+      "timeMs": 287002,
+      "verseStart": 25
+    },
+    {
+      "timeMs": 292886,
+      "verseStart": 26
+    },
+    {
+      "timeMs": 298990,
+      "verseStart": 27
+    },
+    {
+      "timeMs": 309838,
+      "verseStart": 28
+    },
+    {
+      "timeMs": 314101,
+      "verseStart": 29
+    }
+  ]
+}

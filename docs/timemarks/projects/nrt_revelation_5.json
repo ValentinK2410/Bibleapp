@@ -1,0 +1,67 @@
+{
+  "id": "gh_nrt_revelation_5",
+  "translationCode": "NRT",
+  "bookId": "revelation",
+  "chapter": 5,
+  "title": "Откровение 5 · Новый русский",
+  "narratorId": "new-russian",
+  "audioFileName": "66_05.mp3",
+  "cues": [
+    {
+      "timeMs": 2662,
+      "verseStart": 1
+    },
+    {
+      "timeMs": 11128,
+      "verseStart": 2
+    },
+    {
+      "timeMs": 18834,
+      "verseStart": 3
+    },
+    {
+      "timeMs": 26539,
+      "verseStart": 4
+    },
+    {
+      "timeMs": 33264,
+      "verseStart": 5
+    },
+    {
+      "timeMs": 45653,
+      "verseStart": 6
+    },
+    {
+      "timeMs": 66689,
+      "verseStart": 7
+    },
+    {
+      "timeMs": 72393,
+      "verseStart": 8
+    },
+    {
+      "timeMs": 89225,
+      "verseStart": 9
+    },
+    {
+      "timeMs": 108519,
+      "verseStart": 10
+    },
+    {
+      "timeMs": 115885,
+      "verseStart": 11
+    },
+    {
+      "timeMs": 128054,
+      "verseStart": 12
+    },
+    {
+      "timeMs": 142204,
+      "verseStart": 13
+    },
+    {
+      "timeMs": 159637,
+      "verseStart": 14
+    }
+  ]
+}

@@ -1,0 +1,146 @@
+{
+  "id": "align-revelation-NRT-21",
+  "translationCode": "NRT",
+  "bookId": "revelation",
+  "chapter": 21,
+  "title": "Откровение 21 · Новый русский",
+  "audioFilePath": "/data/user/0/com.example.bible.sqlite/files/bible_audio/new-russian/66_21.mp3",
+  "updatedAt": 1795478400000,
+  "cues": [
+    {
+      "timeMs": 2962,
+      "verseStart": 1,
+      "attachments": []
+    },
+    {
+      "timeMs": 13509,
+      "verseStart": 2,
+      "attachments": []
+    },
+    {
+      "timeMs": 25117,
+      "verseStart": 3,
+      "attachments": []
+    },
+    {
+      "timeMs": 42590,
+      "verseStart": 4,
+      "attachments": []
+    },
+    {
+      "timeMs": 55559,
+      "verseStart": 5,
+      "attachments": []
+    },
+    {
+      "timeMs": 66806,
+      "verseStart": 6,
+      "attachments": []
+    },
+    {
+      "timeMs": 80616,
+      "verseStart": 7,
+      "attachments": []
+    },
+    {
+      "timeMs": 89562,
+      "verseStart": 8,
+      "attachments": []
+    },
+    {
+      "timeMs": 107034,
+      "verseStart": 9,
+      "attachments": []
+    },
+    {
+      "timeMs": 120083,
+      "verseStart": 10,
+      "attachments": []
+    },
+    {
+      "timeMs": 131271,
+      "verseStart": 11,
+      "attachments": []
+    },
+    {
+      "timeMs": 142619,
+      "verseStart": 12,
+      "attachments": []
+    },
+    {
+      "timeMs": 154147,
+      "verseStart": 13,
+      "attachments": []
+    },
+    {
+      "timeMs": 160932,
+      "verseStart": 14,
+      "attachments": []
+    },
+    {
+      "timeMs": 169518,
+      "verseStart": 15,
+      "attachments": []
+    },
+    {
+      "timeMs": 177423,
+      "verseStart": 16,
+      "attachments": []
+    },
+    {
+      "timeMs": 191493,
+      "verseStart": 17,
+      "attachments": []
+    },
+    {
+      "timeMs": 201760,
+      "verseStart": 18,
+      "attachments": []
+    },
+    {
+      "timeMs": 210266,
+      "verseStart": 19,
+      "attachments": []
+    },
+    {
+      "timeMs": 225637,
+      "verseStart": 20,
+      "attachments": []
+    },
+    {
+      "timeMs": 244230,
+      "verseStart": 21,
+      "attachments": []
+    },
+    {
+      "timeMs": 259180,
+      "verseStart": 22,
+      "attachments": []
+    },
+    {
+      "timeMs": 267806,
+      "verseStart": 23,
+      "attachments": []
+    },
+    {
+      "timeMs": 278153,
+      "verseStart": 24,
+      "attachments": []
+    },
+    {
+      "timeMs": 284638,
+      "verseStart": 25,
+      "attachments": []
+    },
+    {
+      "timeMs": 290842,
+      "verseStart": 26,
+      "attachments": []
+    },
+    {
+      "timeMs": 294665,
+      "verseStart": 27,
+      "attachments": []
+    }
+  ]
+}

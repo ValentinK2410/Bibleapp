@@ -1,0 +1,79 @@
+{
+  "id": "gh_nrt_revelation_7",
+  "translationCode": "NRT",
+  "bookId": "revelation",
+  "chapter": 7,
+  "title": "Откровение 7 · Новый русский",
+  "narratorId": "new-russian",
+  "audioFileName": "66_07.mp3",
+  "cues": [
+    {
+      "timeMs": 5764,
+      "verseStart": 1
+    },
+    {
+      "timeMs": 18891,
+      "verseStart": 2
+    },
+    {
+      "timeMs": 31939,
+      "verseStart": 3
+    },
+    {
+      "timeMs": 42386,
+      "verseStart": 4
+    },
+    {
+      "timeMs": 53852,
+      "verseStart": 5
+    },
+    {
+      "timeMs": 64859,
+      "verseStart": 6
+    },
+    {
+      "timeMs": 75205,
+      "verseStart": 7
+    },
+    {
+      "timeMs": 85552,
+      "verseStart": 8
+    },
+    {
+      "timeMs": 101581,
+      "verseStart": 9
+    },
+    {
+      "timeMs": 122694,
+      "verseStart": 10
+    },
+    {
+      "timeMs": 130999,
+      "verseStart": 11
+    },
+    {
+      "timeMs": 142066,
+      "verseStart": 12
+    },
+    {
+      "timeMs": 155654,
+      "verseStart": 13
+    },
+    {
+      "timeMs": 163198,
+      "verseStart": 14
+    },
+    {
+      "timeMs": 175806,
+      "verseStart": 15
+    },
+    {
+      "timeMs": 186953,
+      "verseStart": 16
+    },
+    {
+      "timeMs": 194457,
+      "verseStart": 17
+    }
+  ]
+}

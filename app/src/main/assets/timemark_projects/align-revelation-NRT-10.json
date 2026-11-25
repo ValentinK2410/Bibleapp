@@ -1,0 +1,66 @@
+{
+  "id": "align-revelation-NRT-10",
+  "translationCode": "NRT",
+  "bookId": "revelation",
+  "chapter": 10,
+  "title": "Откровение 10 · Новый русский",
+  "audioFilePath": "/data/user/0/com.example.bible.sqlite/files/bible_audio/new-russian/66_10.mp3",
+  "updatedAt": 1795478400000,
+  "cues": [
+    {
+      "timeMs": 2402,
+      "verseStart": 1,
+      "attachments": []
+    },
+    {
+      "timeMs": 15753,
+      "verseStart": 2,
+      "attachments": []
+    },
+    {
+      "timeMs": 22939,
+      "verseStart": 3,
+      "attachments": []
+    },
+    {
+      "timeMs": 29724,
+      "verseStart": 4,
+      "attachments": []
+    },
+    {
+      "timeMs": 41834,
+      "verseStart": 5,
+      "attachments": []
+    },
+    {
+      "timeMs": 49260,
+      "verseStart": 6,
+      "attachments": []
+    },
+    {
+      "timeMs": 63352,
+      "verseStart": 7,
+      "attachments": []
+    },
+    {
+      "timeMs": 77083,
+      "verseStart": 8,
+      "attachments": []
+    },
+    {
+      "timeMs": 88752,
+      "verseStart": 9,
+      "attachments": []
+    },
+    {
+      "timeMs": 101703,
+      "verseStart": 10,
+      "attachments": []
+    },
+    {
+      "timeMs": 110930,
+      "verseStart": 11,
+      "attachments": []
+    }
+  ]
+}

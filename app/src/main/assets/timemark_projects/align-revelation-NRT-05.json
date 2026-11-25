@@ -1,0 +1,81 @@
+{
+  "id": "align-revelation-NRT-05",
+  "translationCode": "NRT",
+  "bookId": "revelation",
+  "chapter": 5,
+  "title": "Откровение 5 · Новый русский",
+  "audioFilePath": "/data/user/0/com.example.bible.sqlite/files/bible_audio/new-russian/66_05.mp3",
+  "updatedAt": 1795478400000,
+  "cues": [
+    {
+      "timeMs": 2662,
+      "verseStart": 1,
+      "attachments": []
+    },
+    {
+      "timeMs": 11128,
+      "verseStart": 2,
+      "attachments": []
+    },
+    {
+      "timeMs": 18834,
+      "verseStart": 3,
+      "attachments": []
+    },
+    {
+      "timeMs": 26539,
+      "verseStart": 4,
+      "attachments": []
+    },
+    {
+      "timeMs": 33264,
+      "verseStart": 5,
+      "attachments": []
+    },
+    {
+      "timeMs": 45653,
+      "verseStart": 6,
+      "attachments": []
+    },
+    {
+      "timeMs": 66689,
+      "verseStart": 7,
+      "attachments": []
+    },
+    {
+      "timeMs": 72393,
+      "verseStart": 8,
+      "attachments": []
+    },
+    {
+      "timeMs": 89225,
+      "verseStart": 9,
+      "attachments": []
+    },
+    {
+      "timeMs": 108519,
+      "verseStart": 10,
+      "attachments": []
+    },
+    {
+      "timeMs": 115885,
+      "verseStart": 11,
+      "attachments": []
+    },
+    {
+      "timeMs": 128054,
+      "verseStart": 12,
+      "attachments": []
+    },
+    {
+      "timeMs": 142204,
+      "verseStart": 13,
+      "attachments": []
+    },
+    {
+      "timeMs": 159637,
+      "verseStart": 14,
+      "attachments": []
+    }
+  ]
+}

@@ -1,0 +1,83 @@
+{
+  "id": "gh_nrt_revelation_13",
+  "translationCode": "NRT",
+  "bookId": "revelation",
+  "chapter": 13,
+  "title": "Откровение 13 · Новый русский",
+  "narratorId": "new-russian",
+  "audioFileName": "66_13.mp3",
+  "cues": [
+    {
+      "timeMs": 440,
+      "verseStart": 1
+    },
+    {
+      "timeMs": 18514,
+      "verseStart": 2
+    },
+    {
+      "timeMs": 30663,
+      "verseStart": 3
+    },
+    {
+      "timeMs": 40991,
+      "verseStart": 4
+    },
+    {
+      "timeMs": 56342,
+      "verseStart": 5
+    },
+    {
+      "timeMs": 64609,
+      "verseStart": 6
+    },
+    {
+      "timeMs": 72515,
+      "verseStart": 7
+    },
+    {
+      "timeMs": 82662,
+      "verseStart": 8
+    },
+    {
+      "timeMs": 96633,
+      "verseStart": 9
+    },
+    {
+      "timeMs": 99955,
+      "verseStart": 10
+    },
+    {
+      "timeMs": 113746,
+      "verseStart": 11
+    },
+    {
+      "timeMs": 123473,
+      "verseStart": 12
+    },
+    {
+      "timeMs": 135682,
+      "verseStart": 13
+    },
+    {
+      "timeMs": 141666,
+      "verseStart": 14
+    },
+    {
+      "timeMs": 156978,
+      "verseStart": 15
+    },
+    {
+      "timeMs": 171229,
+      "verseStart": 16
+    },
+    {
+      "timeMs": 184319,
+      "verseStart": 17
+    },
+    {
+      "timeMs": 198449,
+      "verseStart": 18
+    }
+  ]
+}

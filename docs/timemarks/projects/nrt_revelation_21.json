@@ -1,0 +1,119 @@
+{
+  "id": "gh_nrt_revelation_21",
+  "translationCode": "NRT",
+  "bookId": "revelation",
+  "chapter": 21,
+  "title": "Откровение 21 · Новый русский",
+  "narratorId": "new-russian",
+  "audioFileName": "66_21.mp3",
+  "cues": [
+    {
+      "timeMs": 2962,
+      "verseStart": 1
+    },
+    {
+      "timeMs": 13509,
+      "verseStart": 2
+    },
+    {
+      "timeMs": 25117,
+      "verseStart": 3
+    },
+    {
+      "timeMs": 42590,
+      "verseStart": 4
+    },
+    {
+      "timeMs": 55559,
+      "verseStart": 5
+    },
+    {
+      "timeMs": 66806,
+      "verseStart": 6
+    },
+    {
+      "timeMs": 80616,
+      "verseStart": 7
+    },
+    {
+      "timeMs": 89562,
+      "verseStart": 8
+    },
+    {
+      "timeMs": 107034,
+      "verseStart": 9
+    },
+    {
+      "timeMs": 120083,
+      "verseStart": 10
+    },
+    {
+      "timeMs": 131271,
+      "verseStart": 11
+    },
+    {
+      "timeMs": 142619,
+      "verseStart": 12
+    },
+    {
+      "timeMs": 154147,
+      "verseStart": 13
+    },
+    {
+      "timeMs": 160932,
+      "verseStart": 14
+    },
+    {
+      "timeMs": 169518,
+      "verseStart": 15
+    },
+    {
+      "timeMs": 177423,
+      "verseStart": 16
+    },
+    {
+      "timeMs": 191493,
+      "verseStart": 17
+    },
+    {
+      "timeMs": 201760,
+      "verseStart": 18
+    },
+    {
+      "timeMs": 210266,
+      "verseStart": 19
+    },
+    {
+      "timeMs": 225637,
+      "verseStart": 20
+    },
+    {
+      "timeMs": 244230,
+      "verseStart": 21
+    },
+    {
+      "timeMs": 259180,
+      "verseStart": 22
+    },
+    {
+      "timeMs": 267806,
+      "verseStart": 23
+    },
+    {
+      "timeMs": 278153,
+      "verseStart": 24
+    },
+    {
+      "timeMs": 284638,
+      "verseStart": 25
+    },
+    {
+      "timeMs": 290842,
+      "verseStart": 26
+    },
+    {
+      "timeMs": 294665,
+      "verseStart": 27
+    }
+  ]
+}

@@ -1,0 +1,101 @@
+{
+  "id": "align-revelation-NRT-17",
+  "translationCode": "NRT",
+  "bookId": "revelation",
+  "chapter": 17,
+  "title": "Откровение 17 · Новый русский",
+  "audioFilePath": "/data/user/0/com.example.bible.sqlite/files/bible_audio/new-russian/66_17.mp3",
+  "updatedAt": 1795478400000,
+  "cues": [
+    {
+      "timeMs": 2782,
+      "verseStart": 1,
+      "attachments": []
+    },
+    {
+      "timeMs": 15370,
+      "verseStart": 2,
+      "attachments": []
+    },
+    {
+      "timeMs": 21514,
+      "verseStart": 3,
+      "attachments": []
+    },
+    {
+      "timeMs": 34942,
+      "verseStart": 4,
+      "attachments": []
+    },
+    {
+      "timeMs": 50092,
+      "verseStart": 5,
+      "attachments": []
+    },
+    {
+      "timeMs": 60258,
+      "verseStart": 6,
+      "attachments": []
+    },
+    {
+      "timeMs": 69204,
+      "verseStart": 7,
+      "attachments": []
+    },
+    {
+      "timeMs": 81092,
+      "verseStart": 8,
+      "attachments": []
+    },
+    {
+      "timeMs": 99283,
+      "verseStart": 9,
+      "attachments": []
+    },
+    {
+      "timeMs": 106368,
+      "verseStart": 10,
+      "attachments": []
+    },
+    {
+      "timeMs": 114493,
+      "verseStart": 11,
+      "attachments": []
+    },
+    {
+      "timeMs": 122058,
+      "verseStart": 12,
+      "attachments": []
+    },
+    {
+      "timeMs": 133165,
+      "verseStart": 13,
+      "attachments": []
+    },
+    {
+      "timeMs": 139028,
+      "verseStart": 14,
+      "attachments": []
+    },
+    {
+      "timeMs": 153738,
+      "verseStart": 15,
+      "attachments": []
+    },
+    {
+      "timeMs": 165785,
+      "verseStart": 16,
+      "attachments": []
+    },
+    {
+      "timeMs": 177993,
+      "verseStart": 17,
+      "attachments": []
+    },
+    {
+      "timeMs": 191342,
+      "verseStart": 18,
+      "attachments": []
+    }
+  ]
+}

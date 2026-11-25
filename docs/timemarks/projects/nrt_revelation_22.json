@@ -1,0 +1,95 @@
+{
+  "id": "gh_nrt_revelation_22",
+  "translationCode": "NRT",
+  "bookId": "revelation",
+  "chapter": 22,
+  "title": "Откровение 22 · Новый русский",
+  "narratorId": "new-russian",
+  "audioFileName": "66_22.mp3",
+  "cues": [
+    {
+      "timeMs": 2662,
+      "verseStart": 1
+    },
+    {
+      "timeMs": 12628,
+      "verseStart": 2
+    },
+    {
+      "timeMs": 29339,
+      "verseStart": 3
+    },
+    {
+      "timeMs": 40586,
+      "verseStart": 4
+    },
+    {
+      "timeMs": 47751,
+      "verseStart": 5
+    },
+    {
+      "timeMs": 61780,
+      "verseStart": 6
+    },
+    {
+      "timeMs": 80692,
+      "verseStart": 7
+    },
+    {
+      "timeMs": 90318,
+      "verseStart": 8
+    },
+    {
+      "timeMs": 103967,
+      "verseStart": 9
+    },
+    {
+      "timeMs": 118516,
+      "verseStart": 10
+    },
+    {
+      "timeMs": 127362,
+      "verseStart": 11
+    },
+    {
+      "timeMs": 149956,
+      "verseStart": 12
+    },
+    {
+      "timeMs": 158282,
+      "verseStart": 13
+    },
+    {
+      "timeMs": 164746,
+      "verseStart": 14
+    },
+    {
+      "timeMs": 175533,
+      "verseStart": 15
+    },
+    {
+      "timeMs": 186680,
+      "verseStart": 16
+    },
+    {
+      "timeMs": 202590,
+      "verseStart": 17
+    },
+    {
+      "timeMs": 218641,
+      "verseStart": 18
+    },
+    {
+      "timeMs": 232630,
+      "verseStart": 19
+    },
+    {
+      "timeMs": 247239,
+      "verseStart": 20
+    },
+    {
+      "timeMs": 256925,
+      "verseStart": 21
+    }
+  ]
+}
