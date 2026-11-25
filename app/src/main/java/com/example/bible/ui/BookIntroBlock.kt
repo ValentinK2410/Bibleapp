@@ -1,6 +1,7 @@
 package com.example.bible.ui
 
 import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -15,6 +16,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.produceState
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -33,6 +35,7 @@ fun BookIntroBlock(
     }
     val info = intro ?: return
     val lines = info.displayLines()
+    val uriHandler = LocalUriHandler.current
     val group = BibleCanon.byId(bookId)?.group
     val accent = if (group != null) groupTextColor(group) else MaterialTheme.colorScheme.primary
     val scheme = MaterialTheme.colorScheme
@@ -69,6 +72,54 @@ fun BookIntroBlock(
                         lineHeight = if (sourceLine) 14.sp else 16.sp,
                         fontWeight = if (sourceLine) FontWeight.Medium else FontWeight.Normal,
                     )
+                }
+                if (info.manuscripts.isNotEmpty()) {
+                    Text(
+                        text = "Древние рукописи",
+                        color = accent,
+                        fontSize = 12.sp,
+                        lineHeight = 16.sp,
+                        fontWeight = FontWeight.SemiBold,
+                        modifier = Modifier.padding(top = 6.dp),
+                    )
+                    info.manuscripts.forEach { manuscript ->
+                        Column(
+                            modifier = Modifier.padding(top = 4.dp),
+                            verticalArrangement = Arrangement.spacedBy(1.dp),
+                        ) {
+                            Text(
+                                text = "${manuscript.name} (${manuscript.siglum})",
+                                color = scheme.onSurface,
+                                fontSize = 12.sp,
+                                lineHeight = 15.sp,
+                                fontWeight = FontWeight.Medium,
+                            )
+                            Text(
+                                text = "${manuscript.date}. ${manuscript.location}",
+                                color = scheme.onSurfaceVariant,
+                                fontSize = 11.sp,
+                                lineHeight = 14.sp,
+                            )
+                            if (manuscript.note.isNotEmpty()) {
+                                Text(
+                                    text = manuscript.note,
+                                    color = scheme.onSurfaceVariant,
+                                    fontSize = 11.sp,
+                                    lineHeight = 14.sp,
+                                )
+                            }
+                            Text(
+                                text = "Смотреть",
+                                color = accent,
+                                fontSize = 12.sp,
+                                lineHeight = 15.sp,
+                                fontWeight = FontWeight.SemiBold,
+                                modifier = Modifier.clickable {
+                                    uriHandler.openUri(manuscript.url)
+                                },
+                            )
+                        }
+                    }
                 }
             }
         }
