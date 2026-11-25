@@ -1,0 +1,87 @@
+{
+  "id": "gh_syn_1_peter_4",
+  "translationCode": "SYN",
+  "bookId": "1_peter",
+  "chapter": 4,
+  "title": "1-е Петра 4 · Синодальный · Бондаренко",
+  "narratorId": "bondarenko",
+  "audioFileName": "46_04.mp3",
+  "cues": [
+    {
+      "timeMs": 5464,
+      "verseStart": 1
+    },
+    {
+      "timeMs": 18454,
+      "verseStart": 2
+    },
+    {
+      "timeMs": 27040,
+      "verseStart": 3
+    },
+    {
+      "timeMs": 45634,
+      "verseStart": 4
+    },
+    {
+      "timeMs": 53439,
+      "verseStart": 5
+    },
+    {
+      "timeMs": 58843,
+      "verseStart": 6
+    },
+    {
+      "timeMs": 71352,
+      "verseStart": 7
+    },
+    {
+      "timeMs": 82421,
+      "verseStart": 8
+    },
+    {
+      "timeMs": 92848,
+      "verseStart": 9
+    },
+    {
+      "timeMs": 98172,
+      "verseStart": 10
+    },
+    {
+      "timeMs": 109020,
+      "verseStart": 11
+    },
+    {
+      "timeMs": 132818,
+      "verseStart": 12
+    },
+    {
+      "timeMs": 143025,
+      "verseStart": 13
+    },
+    {
+      "timeMs": 154113,
+      "verseStart": 14
+    },
+    {
+      "timeMs": 169945,
+      "verseStart": 15
+    },
+    {
+      "timeMs": 179252,
+      "verseStart": 16
+    },
+    {
+      "timeMs": 187218,
+      "verseStart": 17
+    },
+    {
+      "timeMs": 199707,
+      "verseStart": 18
+    },
+    {
+      "timeMs": 207152,
+      "verseStart": 19
+    }
+  ]
+}

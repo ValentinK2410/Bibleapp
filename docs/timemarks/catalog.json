@@ -8254,6 +8254,56 @@
       "file": "projects/syn_1_corinthians_9.json"
     },
     {
+      "id": "gh_syn_1_peter_1",
+      "translationCode": "SYN",
+      "bookId": "1_peter",
+      "chapter": 1,
+      "title": "1-е Петра 1 · Синодальный · Бондаренко",
+      "cueCount": 25,
+      "narratorId": "bondarenko",
+      "file": "projects/syn_1_peter_1.json"
+    },
+    {
+      "id": "gh_syn_1_peter_2",
+      "translationCode": "SYN",
+      "bookId": "1_peter",
+      "chapter": 2,
+      "title": "1-е Петра 2 · Синодальный · Бондаренко",
+      "cueCount": 25,
+      "narratorId": "bondarenko",
+      "file": "projects/syn_1_peter_2.json"
+    },
+    {
+      "id": "gh_syn_1_peter_3",
+      "translationCode": "SYN",
+      "bookId": "1_peter",
+      "chapter": 3,
+      "title": "1-е Петра 3 · Синодальный · Бондаренко",
+      "cueCount": 22,
+      "narratorId": "bondarenko",
+      "file": "projects/syn_1_peter_3.json"
+    },
+    {
+      "id": "gh_syn_1_peter_4",
+      "translationCode": "SYN",
+      "bookId": "1_peter",
+      "chapter": 4,
+      "title": "1-е Петра 4 · Синодальный · Бондаренко",
+      "cueCount": 19,
+      "narratorId": "bondarenko",
+      "file": "projects/syn_1_peter_4.json"
+    },
+    {
+      "id": "gh_syn_1_peter_5",
+      "translationCode": "SYN",
+      "bookId": "1_peter",
+      "chapter": 5,
+      "title": "1-е Петра 5 · Синодальный · Бондаренко",
+      "cueCount": 14,
+      "narratorId": "bondarenko",
+      "file": "projects/syn_1_peter_5.json"
+    },
+    {
       "id": "gh_syn_1_thessalonians_1",
       "translationCode": "SYN",
       "bookId": "1_thessalonians",

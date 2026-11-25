@@ -1,0 +1,67 @@
+{
+  "id": "gh_syn_1_peter_5",
+  "translationCode": "SYN",
+  "bookId": "1_peter",
+  "chapter": 5,
+  "title": "1-е Петра 5 · Синодальный · Бондаренко",
+  "narratorId": "bondarenko",
+  "audioFileName": "46_05.mp3",
+  "cues": [
+    {
+      "timeMs": 4704,
+      "verseStart": 1
+    },
+    {
+      "timeMs": 15732,
+      "verseStart": 2
+    },
+    {
+      "timeMs": 30222,
+      "verseStart": 3
+    },
+    {
+      "timeMs": 36967,
+      "verseStart": 4
+    },
+    {
+      "timeMs": 45514,
+      "verseStart": 5
+    },
+    {
+      "timeMs": 63007,
+      "verseStart": 6
+    },
+    {
+      "timeMs": 69732,
+      "verseStart": 7
+    },
+    {
+      "timeMs": 77257,
+      "verseStart": 8
+    },
+    {
+      "timeMs": 87805,
+      "verseStart": 9
+    },
+    {
+      "timeMs": 97712,
+      "verseStart": 10
+    },
+    {
+      "timeMs": 117106,
+      "verseStart": 11
+    },
+    {
+      "timeMs": 125132,
+      "verseStart": 12
+    },
+    {
+      "timeMs": 143846,
+      "verseStart": 13
+    },
+    {
+      "timeMs": 151492,
+      "verseStart": 14
+    }
+  ]
+}

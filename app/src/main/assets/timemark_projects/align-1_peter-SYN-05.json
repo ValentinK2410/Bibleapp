@@ -1,0 +1,81 @@
+{
+  "id": "align-1_peter-SYN-05",
+  "translationCode": "SYN",
+  "bookId": "1_peter",
+  "chapter": 5,
+  "title": "1-е Петра 5 · Синодальный · Бондаренко",
+  "audioFilePath": "/data/user/0/com.example.bible.sqlite/files/bible_audio/bondarenko/46_05.mp3",
+  "updatedAt": 1795478400000,
+  "cues": [
+    {
+      "timeMs": 4704,
+      "verseStart": 1,
+      "attachments": []
+    },
+    {
+      "timeMs": 15732,
+      "verseStart": 2,
+      "attachments": []
+    },
+    {
+      "timeMs": 30222,
+      "verseStart": 3,
+      "attachments": []
+    },
+    {
+      "timeMs": 36967,
+      "verseStart": 4,
+      "attachments": []
+    },
+    {
+      "timeMs": 45514,
+      "verseStart": 5,
+      "attachments": []
+    },
+    {
+      "timeMs": 63007,
+      "verseStart": 6,
+      "attachments": []
+    },
+    {
+      "timeMs": 69732,
+      "verseStart": 7,
+      "attachments": []
+    },
+    {
+      "timeMs": 77257,
+      "verseStart": 8,
+      "attachments": []
+    },
+    {
+      "timeMs": 87805,
+      "verseStart": 9,
+      "attachments": []
+    },
+    {
+      "timeMs": 97712,
+      "verseStart": 10,
+      "attachments": []
+    },
+    {
+      "timeMs": 117106,
+      "verseStart": 11,
+      "attachments": []
+    },
+    {
+      "timeMs": 125132,
+      "verseStart": 12,
+      "attachments": []
+    },
+    {
+      "timeMs": 143846,
+      "verseStart": 13,
+      "attachments": []
+    },
+    {
+      "timeMs": 151492,
+      "verseStart": 14,
+      "attachments": []
+    }
+  ]
+}

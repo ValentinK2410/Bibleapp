@@ -1,0 +1,106 @@
+{
+  "id": "align-1_peter-SYN-04",
+  "translationCode": "SYN",
+  "bookId": "1_peter",
+  "chapter": 4,
+  "title": "1-е Петра 4 · Синодальный · Бондаренко",
+  "audioFilePath": "/data/user/0/com.example.bible.sqlite/files/bible_audio/bondarenko/46_04.mp3",
+  "updatedAt": 1795478400000,
+  "cues": [
+    {
+      "timeMs": 5464,
+      "verseStart": 1,
+      "attachments": []
+    },
+    {
+      "timeMs": 18454,
+      "verseStart": 2,
+      "attachments": []
+    },
+    {
+      "timeMs": 27040,
+      "verseStart": 3,
+      "attachments": []
+    },
+    {
+      "timeMs": 45634,
+      "verseStart": 4,
+      "attachments": []
+    },
+    {
+      "timeMs": 53439,
+      "verseStart": 5,
+      "attachments": []
+    },
+    {
+      "timeMs": 58843,
+      "verseStart": 6,
+      "attachments": []
+    },
+    {
+      "timeMs": 71352,
+      "verseStart": 7,
+      "attachments": []
+    },
+    {
+      "timeMs": 82421,
+      "verseStart": 8,
+      "attachments": []
+    },
+    {
+      "timeMs": 92848,
+      "verseStart": 9,
+      "attachments": []
+    },
+    {
+      "timeMs": 98172,
+      "verseStart": 10,
+      "attachments": []
+    },
+    {
+      "timeMs": 109020,
+      "verseStart": 11,
+      "attachments": []
+    },
+    {
+      "timeMs": 132818,
+      "verseStart": 12,
+      "attachments": []
+    },
+    {
+      "timeMs": 143025,
+      "verseStart": 13,
+      "attachments": []
+    },
+    {
+      "timeMs": 154113,
+      "verseStart": 14,
+      "attachments": []
+    },
+    {
+      "timeMs": 169945,
+      "verseStart": 15,
+      "attachments": []
+    },
+    {
+      "timeMs": 179252,
+      "verseStart": 16,
+      "attachments": []
+    },
+    {
+      "timeMs": 187218,
+      "verseStart": 17,
+      "attachments": []
+    },
+    {
+      "timeMs": 199707,
+      "verseStart": 18,
+      "attachments": []
+    },
+    {
+      "timeMs": 207152,
+      "verseStart": 19,
+      "attachments": []
+    }
+  ]
+}
