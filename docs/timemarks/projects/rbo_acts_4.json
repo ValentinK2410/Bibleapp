@@ -1,0 +1,159 @@
+{
+  "id": "gh_rbo_acts_4",
+  "translationCode": "RBO",
+  "bookId": "acts",
+  "chapter": 4,
+  "title": "Деяния 4 · РБО",
+  "narratorId": "rbo",
+  "audioFileName": "44_04.mp3",
+  "cues": [
+    {
+      "timeMs": 4423,
+      "verseStart": 1
+    },
+    {
+      "timeMs": 11908,
+      "verseStart": 2
+    },
+    {
+      "timeMs": 23376,
+      "verseStart": 3
+    },
+    {
+      "timeMs": 29580,
+      "verseStart": 4
+    },
+    {
+      "timeMs": 37025,
+      "verseStart": 5
+    },
+    {
+      "timeMs": 43169,
+      "verseStart": 6
+    },
+    {
+      "timeMs": 52395,
+      "verseStart": 7
+    },
+    {
+      "timeMs": 62422,
+      "verseStart": 8
+    },
+    {
+      "timeMs": 70628,
+      "verseStart": 9
+    },
+    {
+      "timeMs": 78353,
+      "verseStart": 10
+    },
+    {
+      "timeMs": 94764,
+      "verseStart": 11
+    },
+    {
+      "timeMs": 101649,
+      "verseStart": 12
+    },
+    {
+      "timeMs": 110315,
+      "verseStart": 13
+    },
+    {
+      "timeMs": 124924,
+      "verseStart": 14
+    },
+    {
+      "timeMs": 132029,
+      "verseStart": 15
+    },
+    {
+      "timeMs": 137033,
+      "verseStart": 16
+    },
+    {
+      "timeMs": 150161,
+      "verseStart": 17
+    },
+    {
+      "timeMs": 159468,
+      "verseStart": 18
+    },
+    {
+      "timeMs": 169595,
+      "verseStart": 19
+    },
+    {
+      "timeMs": 180302,
+      "verseStart": 20
+    },
+    {
+      "timeMs": 184765,
+      "verseStart": 21
+    },
+    {
+      "timeMs": 197553,
+      "verseStart": 22
+    },
+    {
+      "timeMs": 203477,
+      "verseStart": 23
+    },
+    {
+      "timeMs": 212043,
+      "verseStart": 24
+    },
+    {
+      "timeMs": 224612,
+      "verseStart": 25
+    },
+    {
+      "timeMs": 235839,
+      "verseStart": 26
+    },
+    {
+      "timeMs": 243725,
+      "verseStart": 27
+    },
+    {
+      "timeMs": 256013,
+      "verseStart": 28
+    },
+    {
+      "timeMs": 261677,
+      "verseStart": 29
+    },
+    {
+      "timeMs": 270082,
+      "verseStart": 30
+    },
+    {
+      "timeMs": 280850,
+      "verseStart": 31
+    },
+    {
+      "timeMs": 292377,
+      "verseStart": 32
+    },
+    {
+      "timeMs": 305246,
+      "verseStart": 33
+    },
+    {
+      "timeMs": 315213,
+      "verseStart": 34
+    },
+    {
+      "timeMs": 323158,
+      "verseStart": 35
+    },
+    {
+      "timeMs": 329943,
+      "verseStart": 36
+    },
+    {
+      "timeMs": 339169,
+      "verseStart": 37
+    }
+  ]
+}

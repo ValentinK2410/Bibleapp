@@ -6144,6 +6144,286 @@
       "file": "projects/rbo_2_timothy_4.json"
     },
     {
+      "id": "gh_rbo_acts_1",
+      "translationCode": "RBO",
+      "bookId": "acts",
+      "chapter": 1,
+      "title": "Деяния 1 · РБО",
+      "cueCount": 26,
+      "narratorId": "rbo",
+      "file": "projects/rbo_acts_1.json"
+    },
+    {
+      "id": "gh_rbo_acts_10",
+      "translationCode": "RBO",
+      "bookId": "acts",
+      "chapter": 10,
+      "title": "Деяния 10 · РБО",
+      "cueCount": 48,
+      "narratorId": "rbo",
+      "file": "projects/rbo_acts_10.json"
+    },
+    {
+      "id": "gh_rbo_acts_11",
+      "translationCode": "RBO",
+      "bookId": "acts",
+      "chapter": 11,
+      "title": "Деяния 11 · РБО",
+      "cueCount": 30,
+      "narratorId": "rbo",
+      "file": "projects/rbo_acts_11.json"
+    },
+    {
+      "id": "gh_rbo_acts_12",
+      "translationCode": "RBO",
+      "bookId": "acts",
+      "chapter": 12,
+      "title": "Деяния 12 · РБО",
+      "cueCount": 25,
+      "narratorId": "rbo",
+      "file": "projects/rbo_acts_12.json"
+    },
+    {
+      "id": "gh_rbo_acts_13",
+      "translationCode": "RBO",
+      "bookId": "acts",
+      "chapter": 13,
+      "title": "Деяния 13 · РБО",
+      "cueCount": 52,
+      "narratorId": "rbo",
+      "file": "projects/rbo_acts_13.json"
+    },
+    {
+      "id": "gh_rbo_acts_14",
+      "translationCode": "RBO",
+      "bookId": "acts",
+      "chapter": 14,
+      "title": "Деяния 14 · РБО",
+      "cueCount": 28,
+      "narratorId": "rbo",
+      "file": "projects/rbo_acts_14.json"
+    },
+    {
+      "id": "gh_rbo_acts_15",
+      "translationCode": "RBO",
+      "bookId": "acts",
+      "chapter": 15,
+      "title": "Деяния 15 · РБО",
+      "cueCount": 41,
+      "narratorId": "rbo",
+      "file": "projects/rbo_acts_15.json"
+    },
+    {
+      "id": "gh_rbo_acts_16",
+      "translationCode": "RBO",
+      "bookId": "acts",
+      "chapter": 16,
+      "title": "Деяния 16 · РБО",
+      "cueCount": 40,
+      "narratorId": "rbo",
+      "file": "projects/rbo_acts_16.json"
+    },
+    {
+      "id": "gh_rbo_acts_17",
+      "translationCode": "RBO",
+      "bookId": "acts",
+      "chapter": 17,
+      "title": "Деяния 17 · РБО",
+      "cueCount": 34,
+      "narratorId": "rbo",
+      "file": "projects/rbo_acts_17.json"
+    },
+    {
+      "id": "gh_rbo_acts_18",
+      "translationCode": "RBO",
+      "bookId": "acts",
+      "chapter": 18,
+      "title": "Деяния 18 · РБО",
+      "cueCount": 28,
+      "narratorId": "rbo",
+      "file": "projects/rbo_acts_18.json"
+    },
+    {
+      "id": "gh_rbo_acts_19",
+      "translationCode": "RBO",
+      "bookId": "acts",
+      "chapter": 19,
+      "title": "Деяния 19 · РБО",
+      "cueCount": 40,
+      "narratorId": "rbo",
+      "file": "projects/rbo_acts_19.json"
+    },
+    {
+      "id": "gh_rbo_acts_2",
+      "translationCode": "RBO",
+      "bookId": "acts",
+      "chapter": 2,
+      "title": "Деяния 2 · РБО",
+      "cueCount": 47,
+      "narratorId": "rbo",
+      "file": "projects/rbo_acts_2.json"
+    },
+    {
+      "id": "gh_rbo_acts_20",
+      "translationCode": "RBO",
+      "bookId": "acts",
+      "chapter": 20,
+      "title": "Деяния 20 · РБО",
+      "cueCount": 38,
+      "narratorId": "rbo",
+      "file": "projects/rbo_acts_20.json"
+    },
+    {
+      "id": "gh_rbo_acts_21",
+      "translationCode": "RBO",
+      "bookId": "acts",
+      "chapter": 21,
+      "title": "Деяния 21 · РБО",
+      "cueCount": 40,
+      "narratorId": "rbo",
+      "file": "projects/rbo_acts_21.json"
+    },
+    {
+      "id": "gh_rbo_acts_22",
+      "translationCode": "RBO",
+      "bookId": "acts",
+      "chapter": 22,
+      "title": "Деяния 22 · РБО",
+      "cueCount": 30,
+      "narratorId": "rbo",
+      "file": "projects/rbo_acts_22.json"
+    },
+    {
+      "id": "gh_rbo_acts_23",
+      "translationCode": "RBO",
+      "bookId": "acts",
+      "chapter": 23,
+      "title": "Деяния 23 · РБО",
+      "cueCount": 35,
+      "narratorId": "rbo",
+      "file": "projects/rbo_acts_23.json"
+    },
+    {
+      "id": "gh_rbo_acts_24",
+      "translationCode": "RBO",
+      "bookId": "acts",
+      "chapter": 24,
+      "title": "Деяния 24 · РБО",
+      "cueCount": 27,
+      "narratorId": "rbo",
+      "file": "projects/rbo_acts_24.json"
+    },
+    {
+      "id": "gh_rbo_acts_25",
+      "translationCode": "RBO",
+      "bookId": "acts",
+      "chapter": 25,
+      "title": "Деяния 25 · РБО",
+      "cueCount": 27,
+      "narratorId": "rbo",
+      "file": "projects/rbo_acts_25.json"
+    },
+    {
+      "id": "gh_rbo_acts_26",
+      "translationCode": "RBO",
+      "bookId": "acts",
+      "chapter": 26,
+      "title": "Деяния 26 · РБО",
+      "cueCount": 32,
+      "narratorId": "rbo",
+      "file": "projects/rbo_acts_26.json"
+    },
+    {
+      "id": "gh_rbo_acts_27",
+      "translationCode": "RBO",
+      "bookId": "acts",
+      "chapter": 27,
+      "title": "Деяния 27 · РБО",
+      "cueCount": 44,
+      "narratorId": "rbo",
+      "file": "projects/rbo_acts_27.json"
+    },
+    {
+      "id": "gh_rbo_acts_28",
+      "translationCode": "RBO",
+      "bookId": "acts",
+      "chapter": 28,
+      "title": "Деяния 28 · РБО",
+      "cueCount": 31,
+      "narratorId": "rbo",
+      "file": "projects/rbo_acts_28.json"
+    },
+    {
+      "id": "gh_rbo_acts_3",
+      "translationCode": "RBO",
+      "bookId": "acts",
+      "chapter": 3,
+      "title": "Деяния 3 · РБО",
+      "cueCount": 26,
+      "narratorId": "rbo",
+      "file": "projects/rbo_acts_3.json"
+    },
+    {
+      "id": "gh_rbo_acts_4",
+      "translationCode": "RBO",
+      "bookId": "acts",
+      "chapter": 4,
+      "title": "Деяния 4 · РБО",
+      "cueCount": 37,
+      "narratorId": "rbo",
+      "file": "projects/rbo_acts_4.json"
+    },
+    {
+      "id": "gh_rbo_acts_5",
+      "translationCode": "RBO",
+      "bookId": "acts",
+      "chapter": 5,
+      "title": "Деяния 5 · РБО",
+      "cueCount": 42,
+      "narratorId": "rbo",
+      "file": "projects/rbo_acts_5.json"
+    },
+    {
+      "id": "gh_rbo_acts_6",
+      "translationCode": "RBO",
+      "bookId": "acts",
+      "chapter": 6,
+      "title": "Деяния 6 · РБО",
+      "cueCount": 15,
+      "narratorId": "rbo",
+      "file": "projects/rbo_acts_6.json"
+    },
+    {
+      "id": "gh_rbo_acts_7",
+      "translationCode": "RBO",
+      "bookId": "acts",
+      "chapter": 7,
+      "title": "Деяния 7 · РБО",
+      "cueCount": 60,
+      "narratorId": "rbo",
+      "file": "projects/rbo_acts_7.json"
+    },
+    {
+      "id": "gh_rbo_acts_8",
+      "translationCode": "RBO",
+      "bookId": "acts",
+      "chapter": 8,
+      "title": "Деяния 8 · РБО",
+      "cueCount": 40,
+      "narratorId": "rbo",
+      "file": "projects/rbo_acts_8.json"
+    },
+    {
+      "id": "gh_rbo_acts_9",
+      "translationCode": "RBO",
+      "bookId": "acts",
+      "chapter": 9,
+      "title": "Деяния 9 · РБО",
+      "cueCount": 43,
+      "narratorId": "rbo",
+      "file": "projects/rbo_acts_9.json"
+    },
+    {
       "id": "gh_rbo_colossians_1",
       "translationCode": "RBO",
       "bookId": "colossians",

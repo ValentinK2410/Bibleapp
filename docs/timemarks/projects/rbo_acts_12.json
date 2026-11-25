@@ -1,0 +1,111 @@
+{
+  "id": "gh_rbo_acts_12",
+  "translationCode": "RBO",
+  "bookId": "acts",
+  "chapter": 12,
+  "title": "Деяния 12 · РБО",
+  "narratorId": "rbo",
+  "audioFileName": "44_12.mp3",
+  "cues": [
+    {
+      "timeMs": 4483,
+      "verseStart": 1
+    },
+    {
+      "timeMs": 10688,
+      "verseStart": 2
+    },
+    {
+      "timeMs": 14550,
+      "verseStart": 3
+    },
+    {
+      "timeMs": 22896,
+      "verseStart": 4
+    },
+    {
+      "timeMs": 38127,
+      "verseStart": 5
+    },
+    {
+      "timeMs": 45152,
+      "verseStart": 6
+    },
+    {
+      "timeMs": 60583,
+      "verseStart": 7
+    },
+    {
+      "timeMs": 76635,
+      "verseStart": 8
+    },
+    {
+      "timeMs": 86822,
+      "verseStart": 9
+    },
+    {
+      "timeMs": 95308,
+      "verseStart": 10
+    },
+    {
+      "timeMs": 112020,
+      "verseStart": 11
+    },
+    {
+      "timeMs": 126510,
+      "verseStart": 12
+    },
+    {
+      "timeMs": 136077,
+      "verseStart": 13
+    },
+    {
+      "timeMs": 140900,
+      "verseStart": 14
+    },
+    {
+      "timeMs": 148926,
+      "verseStart": 15
+    },
+    {
+      "timeMs": 157572,
+      "verseStart": 16
+    },
+    {
+      "timeMs": 164797,
+      "verseStart": 17
+    },
+    {
+      "timeMs": 179968,
+      "verseStart": 18
+    },
+    {
+      "timeMs": 186873,
+      "verseStart": 19
+    },
+    {
+      "timeMs": 198361,
+      "verseStart": 20
+    },
+    {
+      "timeMs": 216214,
+      "verseStart": 21
+    },
+    {
+      "timeMs": 224139,
+      "verseStart": 22
+    },
+    {
+      "timeMs": 231585,
+      "verseStart": 23
+    },
+    {
+      "timeMs": 242573,
+      "verseStart": 24
+    },
+    {
+      "timeMs": 247916,
+      "verseStart": 25
+    }
+  ]
+}

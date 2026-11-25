@@ -1,0 +1,131 @@
+{
+  "id": "gh_rbo_acts_22",
+  "translationCode": "RBO",
+  "bookId": "acts",
+  "chapter": 22,
+  "title": "Деяния 22 · РБО",
+  "narratorId": "rbo",
+  "audioFileName": "44_22.mp3",
+  "cues": [
+    {
+      "timeMs": 4843,
+      "verseStart": 1
+    },
+    {
+      "timeMs": 11328,
+      "verseStart": 2
+    },
+    {
+      "timeMs": 16951,
+      "verseStart": 3
+    },
+    {
+      "timeMs": 38165,
+      "verseStart": 4
+    },
+    {
+      "timeMs": 47892,
+      "verseStart": 5
+    },
+    {
+      "timeMs": 63903,
+      "verseStart": 6
+    },
+    {
+      "timeMs": 73649,
+      "verseStart": 7
+    },
+    {
+      "timeMs": 82375,
+      "verseStart": 8
+    },
+    {
+      "timeMs": 91961,
+      "verseStart": 9
+    },
+    {
+      "timeMs": 97785,
+      "verseStart": 10
+    },
+    {
+      "timeMs": 109213,
+      "verseStart": 11
+    },
+    {
+      "timeMs": 116658,
+      "verseStart": 12
+    },
+    {
+      "timeMs": 125464,
+      "verseStart": 13
+    },
+    {
+      "timeMs": 135891,
+      "verseStart": 14
+    },
+    {
+      "timeMs": 147458,
+      "verseStart": 15
+    },
+    {
+      "timeMs": 156024,
+      "verseStart": 16
+    },
+    {
+      "timeMs": 162548,
+      "verseStart": 17
+    },
+    {
+      "timeMs": 166271,
+      "verseStart": 18
+    },
+    {
+      "timeMs": 178779,
+      "verseStart": 19
+    },
+    {
+      "timeMs": 186704,
+      "verseStart": 20
+    },
+    {
+      "timeMs": 195630,
+      "verseStart": 21
+    },
+    {
+      "timeMs": 204376,
+      "verseStart": 22
+    },
+    {
+      "timeMs": 215043,
+      "verseStart": 23
+    },
+    {
+      "timeMs": 219586,
+      "verseStart": 24
+    },
+    {
+      "timeMs": 228872,
+      "verseStart": 25
+    },
+    {
+      "timeMs": 241181,
+      "verseStart": 26
+    },
+    {
+      "timeMs": 250807,
+      "verseStart": 27
+    },
+    {
+      "timeMs": 259113,
+      "verseStart": 28
+    },
+    {
+      "timeMs": 267738,
+      "verseStart": 29
+    },
+    {
+      "timeMs": 278305,
+      "verseStart": 30
+    }
+  ]
+}

@@ -1,0 +1,123 @@
+{
+  "id": "gh_rbo_acts_18",
+  "translationCode": "RBO",
+  "bookId": "acts",
+  "chapter": 18,
+  "title": "Деяния 18 · РБО",
+  "narratorId": "rbo",
+  "audioFileName": "44_18.mp3",
+  "cues": [
+    {
+      "timeMs": 4603,
+      "verseStart": 1
+    },
+    {
+      "timeMs": 8727,
+      "verseStart": 2
+    },
+    {
+      "timeMs": 22857,
+      "verseStart": 3
+    },
+    {
+      "timeMs": 36007,
+      "verseStart": 4
+    },
+    {
+      "timeMs": 42291,
+      "verseStart": 5
+    },
+    {
+      "timeMs": 55101,
+      "verseStart": 6
+    },
+    {
+      "timeMs": 69812,
+      "verseStart": 7
+    },
+    {
+      "timeMs": 80120,
+      "verseStart": 8
+    },
+    {
+      "timeMs": 94250,
+      "verseStart": 9
+    },
+    {
+      "timeMs": 102656,
+      "verseStart": 10
+    },
+    {
+      "timeMs": 110162,
+      "verseStart": 11
+    },
+    {
+      "timeMs": 115666,
+      "verseStart": 12
+    },
+    {
+      "timeMs": 125053,
+      "verseStart": 13
+    },
+    {
+      "timeMs": 132038,
+      "verseStart": 14
+    },
+    {
+      "timeMs": 142786,
+      "verseStart": 15
+    },
+    {
+      "timeMs": 151393,
+      "verseStart": 16
+    },
+    {
+      "timeMs": 153954,
+      "verseStart": 17
+    },
+    {
+      "timeMs": 165363,
+      "verseStart": 18
+    },
+    {
+      "timeMs": 178272,
+      "verseStart": 19
+    },
+    {
+      "timeMs": 185538,
+      "verseStart": 20
+    },
+    {
+      "timeMs": 189621,
+      "verseStart": 21
+    },
+    {
+      "timeMs": 197867,
+      "verseStart": 22
+    },
+    {
+      "timeMs": 205913,
+      "verseStart": 23
+    },
+    {
+      "timeMs": 214259,
+      "verseStart": 24
+    },
+    {
+      "timeMs": 222886,
+      "verseStart": 25
+    },
+    {
+      "timeMs": 235275,
+      "verseStart": 26
+    },
+    {
+      "timeMs": 246083,
+      "verseStart": 27
+    },
+    {
+      "timeMs": 259193,
+      "verseStart": 28
+    }
+  ]
+}

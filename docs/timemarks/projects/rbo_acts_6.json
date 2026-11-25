@@ -1,0 +1,71 @@
+{
+  "id": "gh_rbo_acts_6",
+  "translationCode": "RBO",
+  "bookId": "acts",
+  "chapter": 6,
+  "title": "Деяния 6 · РБО",
+  "narratorId": "rbo",
+  "audioFileName": "44_06.mp3",
+  "cues": [
+    {
+      "timeMs": 4343,
+      "verseStart": 1
+    },
+    {
+      "timeMs": 16610,
+      "verseStart": 2
+    },
+    {
+      "timeMs": 26395,
+      "verseStart": 3
+    },
+    {
+      "timeMs": 37442,
+      "verseStart": 4
+    },
+    {
+      "timeMs": 41804,
+      "verseStart": 5
+    },
+    {
+      "timeMs": 57053,
+      "verseStart": 6
+    },
+    {
+      "timeMs": 62657,
+      "verseStart": 7
+    },
+    {
+      "timeMs": 72923,
+      "verseStart": 8
+    },
+    {
+      "timeMs": 81207,
+      "verseStart": 9
+    },
+    {
+      "timeMs": 94015,
+      "verseStart": 10
+    },
+    {
+      "timeMs": 99618,
+      "verseStart": 11
+    },
+    {
+      "timeMs": 108924,
+      "verseStart": 12
+    },
+    {
+      "timeMs": 118529,
+      "verseStart": 13
+    },
+    {
+      "timeMs": 127995,
+      "verseStart": 14
+    },
+    {
+      "timeMs": 139942,
+      "verseStart": 15
+    }
+  ]
+}

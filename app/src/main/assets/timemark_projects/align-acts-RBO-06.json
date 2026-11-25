@@ -1,0 +1,86 @@
+{
+  "id": "align-acts-RBO-06",
+  "translationCode": "RBO",
+  "bookId": "acts",
+  "chapter": 6,
+  "title": "Деяния 6 · РБО",
+  "audioFilePath": "/data/user/0/com.example.bible.sqlite/files/bible_audio/rbo/44_06.mp3",
+  "updatedAt": 1795478400000,
+  "cues": [
+    {
+      "timeMs": 4343,
+      "verseStart": 1,
+      "attachments": []
+    },
+    {
+      "timeMs": 16610,
+      "verseStart": 2,
+      "attachments": []
+    },
+    {
+      "timeMs": 26395,
+      "verseStart": 3,
+      "attachments": []
+    },
+    {
+      "timeMs": 37442,
+      "verseStart": 4,
+      "attachments": []
+    },
+    {
+      "timeMs": 41804,
+      "verseStart": 5,
+      "attachments": []
+    },
+    {
+      "timeMs": 57053,
+      "verseStart": 6,
+      "attachments": []
+    },
+    {
+      "timeMs": 62657,
+      "verseStart": 7,
+      "attachments": []
+    },
+    {
+      "timeMs": 72923,
+      "verseStart": 8,
+      "attachments": []
+    },
+    {
+      "timeMs": 81207,
+      "verseStart": 9,
+      "attachments": []
+    },
+    {
+      "timeMs": 94015,
+      "verseStart": 10,
+      "attachments": []
+    },
+    {
+      "timeMs": 99618,
+      "verseStart": 11,
+      "attachments": []
+    },
+    {
+      "timeMs": 108924,
+      "verseStart": 12,
+      "attachments": []
+    },
+    {
+      "timeMs": 118529,
+      "verseStart": 13,
+      "attachments": []
+    },
+    {
+      "timeMs": 127995,
+      "verseStart": 14,
+      "attachments": []
+    },
+    {
+      "timeMs": 139942,
+      "verseStart": 15,
+      "attachments": []
+    }
+  ]
+}
