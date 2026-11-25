@@ -1,0 +1,99 @@
+{
+  "id": "gh_grk_2_peter_2",
+  "translationCode": "PODSTR",
+  "bookId": "2_peter",
+  "chapter": 2,
+  "title": "2-е Петра 2 · Греческий (Koine)",
+  "narratorId": "greek-nt",
+  "audioFileName": "61_02.mp3",
+  "cues": [
+    {
+      "timeMs": 641,
+      "verseStart": 1
+    },
+    {
+      "timeMs": 17152,
+      "verseStart": 2
+    },
+    {
+      "timeMs": 24458,
+      "verseStart": 3
+    },
+    {
+      "timeMs": 34065,
+      "verseStart": 4
+    },
+    {
+      "timeMs": 42311,
+      "verseStart": 5
+    },
+    {
+      "timeMs": 51858,
+      "verseStart": 6
+    },
+    {
+      "timeMs": 58563,
+      "verseStart": 7
+    },
+    {
+      "timeMs": 65407,
+      "verseStart": 8
+    },
+    {
+      "timeMs": 73553,
+      "verseStart": 9
+    },
+    {
+      "timeMs": 81579,
+      "verseStart": 10
+    },
+    {
+      "timeMs": 93548,
+      "verseStart": 11
+    },
+    {
+      "timeMs": 101033,
+      "verseStart": 12
+    },
+    {
+      "timeMs": 111441,
+      "verseStart": 13
+    },
+    {
+      "timeMs": 122469,
+      "verseStart": 14
+    },
+    {
+      "timeMs": 135218,
+      "verseStart": 15
+    },
+    {
+      "timeMs": 144405,
+      "verseStart": 16
+    },
+    {
+      "timeMs": 154192,
+      "verseStart": 17
+    },
+    {
+      "timeMs": 161977,
+      "verseStart": 18
+    },
+    {
+      "timeMs": 172505,
+      "verseStart": 19
+    },
+    {
+      "timeMs": 180551,
+      "verseStart": 20
+    },
+    {
+      "timeMs": 193380,
+      "verseStart": 21
+    },
+    {
+      "timeMs": 203528,
+      "verseStart": 22
+    }
+  ]
+}

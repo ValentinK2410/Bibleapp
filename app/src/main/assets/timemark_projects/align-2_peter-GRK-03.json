@@ -1,0 +1,101 @@
+{
+  "id": "align-2_peter-GRK-03",
+  "translationCode": "PODSTR",
+  "bookId": "2_peter",
+  "chapter": 3,
+  "title": "2-е Петра 3 · Греческий (Koine)",
+  "audioFilePath": "/data/user/0/com.example.bible.sqlite/files/bible_audio/greek-nt/61_03.mp3",
+  "updatedAt": 1794873600000,
+  "cues": [
+    {
+      "timeMs": 440,
+      "verseStart": 1,
+      "attachments": []
+    },
+    {
+      "timeMs": 8606,
+      "verseStart": 2,
+      "attachments": []
+    },
+    {
+      "timeMs": 17532,
+      "verseStart": 3,
+      "attachments": []
+    },
+    {
+      "timeMs": 27059,
+      "verseStart": 4,
+      "attachments": []
+    },
+    {
+      "timeMs": 36385,
+      "verseStart": 5,
+      "attachments": []
+    },
+    {
+      "timeMs": 45571,
+      "verseStart": 6,
+      "attachments": []
+    },
+    {
+      "timeMs": 49534,
+      "verseStart": 7,
+      "attachments": []
+    },
+    {
+      "timeMs": 59001,
+      "verseStart": 8,
+      "attachments": []
+    },
+    {
+      "timeMs": 67266,
+      "verseStart": 9,
+      "attachments": []
+    },
+    {
+      "timeMs": 78774,
+      "verseStart": 10,
+      "attachments": []
+    },
+    {
+      "timeMs": 90042,
+      "verseStart": 11,
+      "attachments": []
+    },
+    {
+      "timeMs": 96947,
+      "verseStart": 12,
+      "attachments": []
+    },
+    {
+      "timeMs": 107394,
+      "verseStart": 13,
+      "attachments": []
+    },
+    {
+      "timeMs": 115059,
+      "verseStart": 14,
+      "attachments": []
+    },
+    {
+      "timeMs": 122204,
+      "verseStart": 15,
+      "attachments": []
+    },
+    {
+      "timeMs": 132872,
+      "verseStart": 16,
+      "attachments": []
+    },
+    {
+      "timeMs": 145880,
+      "verseStart": 17,
+      "attachments": []
+    },
+    {
+      "timeMs": 155587,
+      "verseStart": 18,
+      "attachments": []
+    }
+  ]
+}

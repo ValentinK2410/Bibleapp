@@ -2444,6 +2444,36 @@
       "file": "projects/grk_2_corinthians_9.json"
     },
     {
+      "id": "gh_grk_2_peter_1",
+      "translationCode": "PODSTR",
+      "bookId": "2_peter",
+      "chapter": 1,
+      "title": "2-е Петра 1 · Греческий (Koine)",
+      "cueCount": 21,
+      "narratorId": "greek-nt",
+      "file": "projects/grk_2_peter_1.json"
+    },
+    {
+      "id": "gh_grk_2_peter_2",
+      "translationCode": "PODSTR",
+      "bookId": "2_peter",
+      "chapter": 2,
+      "title": "2-е Петра 2 · Греческий (Koine)",
+      "cueCount": 22,
+      "narratorId": "greek-nt",
+      "file": "projects/grk_2_peter_2.json"
+    },
+    {
+      "id": "gh_grk_2_peter_3",
+      "translationCode": "PODSTR",
+      "bookId": "2_peter",
+      "chapter": 3,
+      "title": "2-е Петра 3 · Греческий (Koine)",
+      "cueCount": 18,
+      "narratorId": "greek-nt",
+      "file": "projects/grk_2_peter_3.json"
+    },
+    {
       "id": "gh_grk_2_thessalonians_1",
       "translationCode": "PODSTR",
       "bookId": "2_thessalonians",
