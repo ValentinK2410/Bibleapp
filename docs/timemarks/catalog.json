@@ -3544,6 +3544,16 @@
       "file": "projects/grk_john_9.json"
     },
     {
+      "id": "gh_grk_jude_1",
+      "translationCode": "PODSTR",
+      "bookId": "jude",
+      "chapter": 1,
+      "title": "Иуды 1 · Греческий (Koine)",
+      "cueCount": 25,
+      "narratorId": "greek-nt",
+      "file": "projects/grk_jude_1.json"
+    },
+    {
       "id": "gh_grk_luke_1",
       "translationCode": "PODSTR",
       "bookId": "luke",
