@@ -504,6 +504,16 @@
       "file": "projects/bti_2_corinthians_9.json"
     },
     {
+      "id": "gh_bti_2_john_1",
+      "translationCode": "BTI",
+      "bookId": "2_john",
+      "chapter": 1,
+      "title": "2-е Иоанна 1 · Кулаковых",
+      "cueCount": 13,
+      "narratorId": "bti",
+      "file": "projects/bti_2_john_1.json"
+    },
+    {
       "id": "gh_bti_2_peter_1",
       "translationCode": "BTI",
       "bookId": "2_peter",

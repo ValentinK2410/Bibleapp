@@ -1,0 +1,76 @@
+{
+  "id": "align-2_john-BTI-01",
+  "translationCode": "BTI",
+  "bookId": "2_john",
+  "chapter": 1,
+  "title": "2-е Иоанна 1 · Кулаковых",
+  "audioFilePath": "/data/user/0/com.example.bible.sqlite/files/bible_audio/bti/49_01.mp3",
+  "updatedAt": 1795478400000,
+  "cues": [
+    {
+      "timeMs": 6585,
+      "verseStart": 1,
+      "attachments": []
+    },
+    {
+      "timeMs": 24397,
+      "verseStart": 2,
+      "attachments": []
+    },
+    {
+      "timeMs": 34764,
+      "verseStart": 3,
+      "attachments": []
+    },
+    {
+      "timeMs": 48974,
+      "verseStart": 4,
+      "attachments": []
+    },
+    {
+      "timeMs": 61363,
+      "verseStart": 5,
+      "attachments": []
+    },
+    {
+      "timeMs": 83659,
+      "verseStart": 6,
+      "attachments": []
+    },
+    {
+      "timeMs": 98009,
+      "verseStart": 7,
+      "attachments": []
+    },
+    {
+      "timeMs": 114740,
+      "verseStart": 8,
+      "attachments": []
+    },
+    {
+      "timeMs": 125988,
+      "verseStart": 9,
+      "attachments": []
+    },
+    {
+      "timeMs": 145462,
+      "verseStart": 10,
+      "attachments": []
+    },
+    {
+      "timeMs": 156049,
+      "verseStart": 11,
+      "attachments": []
+    },
+    {
+      "timeMs": 165156,
+      "verseStart": 12,
+      "attachments": []
+    },
+    {
+      "timeMs": 188852,
+      "verseStart": 13,
+      "attachments": []
+    }
+  ]
+}

@@ -1,0 +1,63 @@
+{
+  "id": "gh_bti_2_john_1",
+  "translationCode": "BTI",
+  "bookId": "2_john",
+  "chapter": 1,
+  "title": "2-е Иоанна 1 · Кулаковых",
+  "narratorId": "bti",
+  "audioFileName": "49_01.mp3",
+  "cues": [
+    {
+      "timeMs": 6585,
+      "verseStart": 1
+    },
+    {
+      "timeMs": 24397,
+      "verseStart": 2
+    },
+    {
+      "timeMs": 34764,
+      "verseStart": 3
+    },
+    {
+      "timeMs": 48974,
+      "verseStart": 4
+    },
+    {
+      "timeMs": 61363,
+      "verseStart": 5
+    },
+    {
+      "timeMs": 83659,
+      "verseStart": 6
+    },
+    {
+      "timeMs": 98009,
+      "verseStart": 7
+    },
+    {
+      "timeMs": 114740,
+      "verseStart": 8
+    },
+    {
+      "timeMs": 125988,
+      "verseStart": 9
+    },
+    {
+      "timeMs": 145462,
+      "verseStart": 10
+    },
+    {
+      "timeMs": 156049,
+      "verseStart": 11
+    },
+    {
+      "timeMs": 165156,
+      "verseStart": 12
+    },
+    {
+      "timeMs": 188852,
+      "verseStart": 13
+    }
+  ]
+}
