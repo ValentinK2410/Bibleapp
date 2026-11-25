@@ -1,0 +1,76 @@
+{
+  "id": "align-2_john-GRK-01",
+  "translationCode": "PODSTR",
+  "bookId": "2_john",
+  "chapter": 1,
+  "title": "2-е Иоанна 1 · Греческий (Koine)",
+  "audioFilePath": "/data/user/0/com.example.bible.sqlite/files/bible_audio/greek-nt/63_01.mp3",
+  "updatedAt": 1794873600000,
+  "cues": [
+    {
+      "timeMs": 500,
+      "verseStart": 1,
+      "attachments": []
+    },
+    {
+      "timeMs": 11788,
+      "verseStart": 2,
+      "attachments": []
+    },
+    {
+      "timeMs": 17792,
+      "verseStart": 3,
+      "attachments": []
+    },
+    {
+      "timeMs": 28139,
+      "verseStart": 4,
+      "attachments": []
+    },
+    {
+      "timeMs": 36824,
+      "verseStart": 5,
+      "attachments": []
+    },
+    {
+      "timeMs": 46211,
+      "verseStart": 6,
+      "attachments": []
+    },
+    {
+      "timeMs": 57618,
+      "verseStart": 7,
+      "attachments": []
+    },
+    {
+      "timeMs": 69066,
+      "verseStart": 8,
+      "attachments": []
+    },
+    {
+      "timeMs": 76191,
+      "verseStart": 9,
+      "attachments": []
+    },
+    {
+      "timeMs": 86598,
+      "verseStart": 10,
+      "attachments": []
+    },
+    {
+      "timeMs": 95684,
+      "verseStart": 11,
+      "attachments": []
+    },
+    {
+      "timeMs": 101167,
+      "verseStart": 12,
+      "attachments": []
+    },
+    {
+      "timeMs": 113615,
+      "verseStart": 13,
+      "attachments": []
+    }
+  ]
+}

@@ -1,0 +1,63 @@
+{
+  "id": "gh_grk_2_john_1",
+  "translationCode": "PODSTR",
+  "bookId": "2_john",
+  "chapter": 1,
+  "title": "2-е Иоанна 1 · Греческий (Koine)",
+  "narratorId": "greek-nt",
+  "audioFileName": "63_01.mp3",
+  "cues": [
+    {
+      "timeMs": 500,
+      "verseStart": 1
+    },
+    {
+      "timeMs": 11788,
+      "verseStart": 2
+    },
+    {
+      "timeMs": 17792,
+      "verseStart": 3
+    },
+    {
+      "timeMs": 28139,
+      "verseStart": 4
+    },
+    {
+      "timeMs": 36824,
+      "verseStart": 5
+    },
+    {
+      "timeMs": 46211,
+      "verseStart": 6
+    },
+    {
+      "timeMs": 57618,
+      "verseStart": 7
+    },
+    {
+      "timeMs": 69066,
+      "verseStart": 8
+    },
+    {
+      "timeMs": 76191,
+      "verseStart": 9
+    },
+    {
+      "timeMs": 86598,
+      "verseStart": 10
+    },
+    {
+      "timeMs": 95684,
+      "verseStart": 11
+    },
+    {
+      "timeMs": 101167,
+      "verseStart": 12
+    },
+    {
+      "timeMs": 113615,
+      "verseStart": 13
+    }
+  ]
+}
