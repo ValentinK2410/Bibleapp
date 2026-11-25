@@ -1,0 +1,119 @@
+{
+  "id": "gh_bti_acts_25",
+  "translationCode": "BTI",
+  "bookId": "acts",
+  "chapter": 25,
+  "title": "Деяния 25 · Кулаковых",
+  "narratorId": "bti",
+  "audioFileName": "44_25.mp3",
+  "cues": [
+    {
+      "timeMs": 4663,
+      "verseStart": 1
+    },
+    {
+      "timeMs": 11208,
+      "verseStart": 2
+    },
+    {
+      "timeMs": 19373,
+      "verseStart": 3
+    },
+    {
+      "timeMs": 27599,
+      "verseStart": 4
+    },
+    {
+      "timeMs": 37966,
+      "verseStart": 5
+    },
+    {
+      "timeMs": 55018,
+      "verseStart": 6
+    },
+    {
+      "timeMs": 71869,
+      "verseStart": 7
+    },
+    {
+      "timeMs": 86899,
+      "verseStart": 8
+    },
+    {
+      "timeMs": 104531,
+      "verseStart": 9
+    },
+    {
+      "timeMs": 121523,
+      "verseStart": 10
+    },
+    {
+      "timeMs": 139375,
+      "verseStart": 11
+    },
+    {
+      "timeMs": 164052,
+      "verseStart": 12
+    },
+    {
+      "timeMs": 177661,
+      "verseStart": 13
+    },
+    {
+      "timeMs": 187648,
+      "verseStart": 14
+    },
+    {
+      "timeMs": 201618,
+      "verseStart": 15
+    },
+    {
+      "timeMs": 213206,
+      "verseStart": 16
+    },
+    {
+      "timeMs": 230397,
+      "verseStart": 17
+    },
+    {
+      "timeMs": 243947,
+      "verseStart": 18
+    },
+    {
+      "timeMs": 255254,
+      "verseStart": 19
+    },
+    {
+      "timeMs": 270565,
+      "verseStart": 20
+    },
+    {
+      "timeMs": 282713,
+      "verseStart": 21
+    },
+    {
+      "timeMs": 297603,
+      "verseStart": 22
+    },
+    {
+      "timeMs": 311453,
+      "verseStart": 23
+    },
+    {
+      "timeMs": 333968,
+      "verseStart": 24
+    },
+    {
+      "timeMs": 360106,
+      "verseStart": 25
+    },
+    {
+      "timeMs": 383162,
+      "verseStart": 26
+    },
+    {
+      "timeMs": 405417,
+      "verseStart": 27
+    }
+  ]
+}

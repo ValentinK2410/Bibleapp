@@ -1,0 +1,123 @@
+{
+  "id": "gh_bti_acts_18",
+  "translationCode": "BTI",
+  "bookId": "acts",
+  "chapter": 18,
+  "title": "Деяния 18 · Кулаковых",
+  "narratorId": "bti",
+  "audioFileName": "44_18.mp3",
+  "cues": [
+    {
+      "timeMs": 3543,
+      "verseStart": 1
+    },
+    {
+      "timeMs": 9527,
+      "verseStart": 2
+    },
+    {
+      "timeMs": 30541,
+      "verseStart": 3
+    },
+    {
+      "timeMs": 41009,
+      "verseStart": 4
+    },
+    {
+      "timeMs": 51316,
+      "verseStart": 5
+    },
+    {
+      "timeMs": 66747,
+      "verseStart": 6
+    },
+    {
+      "timeMs": 86981,
+      "verseStart": 7
+    },
+    {
+      "timeMs": 98709,
+      "verseStart": 8
+    },
+    {
+      "timeMs": 115901,
+      "verseStart": 9
+    },
+    {
+      "timeMs": 125968,
+      "verseStart": 10
+    },
+    {
+      "timeMs": 136616,
+      "verseStart": 11
+    },
+    {
+      "timeMs": 146483,
+      "verseStart": 12
+    },
+    {
+      "timeMs": 157690,
+      "verseStart": 13
+    },
+    {
+      "timeMs": 168698,
+      "verseStart": 14
+    },
+    {
+      "timeMs": 189553,
+      "verseStart": 15
+    },
+    {
+      "timeMs": 201921,
+      "verseStart": 16
+    },
+    {
+      "timeMs": 205304,
+      "verseStart": 17
+    },
+    {
+      "timeMs": 220434,
+      "verseStart": 18
+    },
+    {
+      "timeMs": 240749,
+      "verseStart": 19
+    },
+    {
+      "timeMs": 251836,
+      "verseStart": 20
+    },
+    {
+      "timeMs": 256660,
+      "verseStart": 21
+    },
+    {
+      "timeMs": 274792,
+      "verseStart": 22
+    },
+    {
+      "timeMs": 284679,
+      "verseStart": 23
+    },
+    {
+      "timeMs": 296648,
+      "verseStart": 24
+    },
+    {
+      "timeMs": 308856,
+      "verseStart": 25
+    },
+    {
+      "timeMs": 323326,
+      "verseStart": 26
+    },
+    {
+      "timeMs": 338197,
+      "verseStart": 27
+    },
+    {
+      "timeMs": 354668,
+      "verseStart": 28
+    }
+  ]
+}

@@ -1,0 +1,151 @@
+{
+  "id": "align-acts-BTI-18",
+  "translationCode": "BTI",
+  "bookId": "acts",
+  "chapter": 18,
+  "title": "Деяния 18 · Кулаковых",
+  "audioFilePath": "/data/user/0/com.example.bible.sqlite/files/bible_audio/bti/44_18.mp3",
+  "updatedAt": 1795478400000,
+  "cues": [
+    {
+      "timeMs": 3543,
+      "verseStart": 1,
+      "attachments": []
+    },
+    {
+      "timeMs": 9527,
+      "verseStart": 2,
+      "attachments": []
+    },
+    {
+      "timeMs": 30541,
+      "verseStart": 3,
+      "attachments": []
+    },
+    {
+      "timeMs": 41009,
+      "verseStart": 4,
+      "attachments": []
+    },
+    {
+      "timeMs": 51316,
+      "verseStart": 5,
+      "attachments": []
+    },
+    {
+      "timeMs": 66747,
+      "verseStart": 6,
+      "attachments": []
+    },
+    {
+      "timeMs": 86981,
+      "verseStart": 7,
+      "attachments": []
+    },
+    {
+      "timeMs": 98709,
+      "verseStart": 8,
+      "attachments": []
+    },
+    {
+      "timeMs": 115901,
+      "verseStart": 9,
+      "attachments": []
+    },
+    {
+      "timeMs": 125968,
+      "verseStart": 10,
+      "attachments": []
+    },
+    {
+      "timeMs": 136616,
+      "verseStart": 11,
+      "attachments": []
+    },
+    {
+      "timeMs": 146483,
+      "verseStart": 12,
+      "attachments": []
+    },
+    {
+      "timeMs": 157690,
+      "verseStart": 13,
+      "attachments": []
+    },
+    {
+      "timeMs": 168698,
+      "verseStart": 14,
+      "attachments": []
+    },
+    {
+      "timeMs": 189553,
+      "verseStart": 15,
+      "attachments": []
+    },
+    {
+      "timeMs": 201921,
+      "verseStart": 16,
+      "attachments": []
+    },
+    {
+      "timeMs": 205304,
+      "verseStart": 17,
+      "attachments": []
+    },
+    {
+      "timeMs": 220434,
+      "verseStart": 18,
+      "attachments": []
+    },
+    {
+      "timeMs": 240749,
+      "verseStart": 19,
+      "attachments": []
+    },
+    {
+      "timeMs": 251836,
+      "verseStart": 20,
+      "attachments": []
+    },
+    {
+      "timeMs": 256660,
+      "verseStart": 21,
+      "attachments": []
+    },
+    {
+      "timeMs": 274792,
+      "verseStart": 22,
+      "attachments": []
+    },
+    {
+      "timeMs": 284679,
+      "verseStart": 23,
+      "attachments": []
+    },
+    {
+      "timeMs": 296648,
+      "verseStart": 24,
+      "attachments": []
+    },
+    {
+      "timeMs": 308856,
+      "verseStart": 25,
+      "attachments": []
+    },
+    {
+      "timeMs": 323326,
+      "verseStart": 26,
+      "attachments": []
+    },
+    {
+      "timeMs": 338197,
+      "verseStart": 27,
+      "attachments": []
+    },
+    {
+      "timeMs": 354668,
+      "verseStart": 28,
+      "attachments": []
+    }
+  ]
+}

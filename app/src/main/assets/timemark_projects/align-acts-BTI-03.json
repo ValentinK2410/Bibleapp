@@ -1,0 +1,141 @@
+{
+  "id": "align-acts-BTI-03",
+  "translationCode": "BTI",
+  "bookId": "acts",
+  "chapter": 3,
+  "title": "Деяния 3 · Кулаковых",
+  "audioFilePath": "/data/user/0/com.example.bible.sqlite/files/bible_audio/bti/44_03.mp3",
+  "updatedAt": 1795478400000,
+  "cues": [
+    {
+      "timeMs": 3322,
+      "verseStart": 1,
+      "attachments": []
+    },
+    {
+      "timeMs": 11247,
+      "verseStart": 2,
+      "attachments": []
+    },
+    {
+      "timeMs": 28919,
+      "verseStart": 3,
+      "attachments": []
+    },
+    {
+      "timeMs": 37104,
+      "verseStart": 4,
+      "attachments": []
+    },
+    {
+      "timeMs": 46690,
+      "verseStart": 5,
+      "attachments": []
+    },
+    {
+      "timeMs": 52834,
+      "verseStart": 6,
+      "attachments": []
+    },
+    {
+      "timeMs": 71786,
+      "verseStart": 7,
+      "attachments": []
+    },
+    {
+      "timeMs": 82653,
+      "verseStart": 8,
+      "attachments": []
+    },
+    {
+      "timeMs": 96542,
+      "verseStart": 9,
+      "attachments": []
+    },
+    {
+      "timeMs": 100604,
+      "verseStart": 10,
+      "attachments": []
+    },
+    {
+      "timeMs": 117435,
+      "verseStart": 11,
+      "attachments": []
+    },
+    {
+      "timeMs": 130644,
+      "verseStart": 12,
+      "attachments": []
+    },
+    {
+      "timeMs": 155480,
+      "verseStart": 13,
+      "attachments": []
+    },
+    {
+      "timeMs": 178394,
+      "verseStart": 14,
+      "attachments": []
+    },
+    {
+      "timeMs": 188341,
+      "verseStart": 15,
+      "attachments": []
+    },
+    {
+      "timeMs": 200008,
+      "verseStart": 16,
+      "attachments": []
+    },
+    {
+      "timeMs": 222903,
+      "verseStart": 17,
+      "attachments": []
+    },
+    {
+      "timeMs": 231588,
+      "verseStart": 18,
+      "attachments": []
+    },
+    {
+      "timeMs": 245037,
+      "verseStart": 19,
+      "attachments": []
+    },
+    {
+      "timeMs": 253642,
+      "verseStart": 20,
+      "attachments": []
+    },
+    {
+      "timeMs": 266651,
+      "verseStart": 21,
+      "attachments": []
+    },
+    {
+      "timeMs": 280260,
+      "verseStart": 22,
+      "attachments": []
+    },
+    {
+      "timeMs": 298171,
+      "verseStart": 23,
+      "attachments": []
+    },
+    {
+      "timeMs": 310599,
+      "verseStart": 24,
+      "attachments": []
+    },
+    {
+      "timeMs": 321146,
+      "verseStart": 25,
+      "attachments": []
+    },
+    {
+      "timeMs": 338537,
+      "verseStart": 26,
+      "attachments": []
+    }
+  ]
+}

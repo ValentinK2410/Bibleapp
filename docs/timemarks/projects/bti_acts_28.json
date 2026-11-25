@@ -1,0 +1,135 @@
+{
+  "id": "gh_bti_acts_28",
+  "translationCode": "BTI",
+  "bookId": "acts",
+  "chapter": 28,
+  "title": "Деяния 28 · Кулаковых",
+  "narratorId": "bti",
+  "audioFileName": "44_28.mp3",
+  "cues": [
+    {
+      "timeMs": 6004,
+      "verseStart": 1
+    },
+    {
+      "timeMs": 13629,
+      "verseStart": 2
+    },
+    {
+      "timeMs": 28259,
+      "verseStart": 3
+    },
+    {
+      "timeMs": 40888,
+      "verseStart": 4
+    },
+    {
+      "timeMs": 61282,
+      "verseStart": 5
+    },
+    {
+      "timeMs": 66806,
+      "verseStart": 6
+    },
+    {
+      "timeMs": 90222,
+      "verseStart": 7
+    },
+    {
+      "timeMs": 108154,
+      "verseStart": 8
+    },
+    {
+      "timeMs": 124005,
+      "verseStart": 9
+    },
+    {
+      "timeMs": 133051,
+      "verseStart": 10
+    },
+    {
+      "timeMs": 142557,
+      "verseStart": 11
+    },
+    {
+      "timeMs": 154205,
+      "verseStart": 12
+    },
+    {
+      "timeMs": 158768,
+      "verseStart": 13
+    },
+    {
+      "timeMs": 171177,
+      "verseStart": 14
+    },
+    {
+      "timeMs": 181664,
+      "verseStart": 15
+    },
+    {
+      "timeMs": 199937,
+      "verseStart": 16
+    },
+    {
+      "timeMs": 210844,
+      "verseStart": 17
+    },
+    {
+      "timeMs": 234780,
+      "verseStart": 18
+    },
+    {
+      "timeMs": 244527,
+      "verseStart": 19
+    },
+    {
+      "timeMs": 256195,
+      "verseStart": 20
+    },
+    {
+      "timeMs": 273187,
+      "verseStart": 21
+    },
+    {
+      "timeMs": 290799,
+      "verseStart": 22
+    },
+    {
+      "timeMs": 305409,
+      "verseStart": 23
+    },
+    {
+      "timeMs": 333868,
+      "verseStart": 24
+    },
+    {
+      "timeMs": 338651,
+      "verseStart": 25
+    },
+    {
+      "timeMs": 353181,
+      "verseStart": 26
+    },
+    {
+      "timeMs": 370273,
+      "verseStart": 27
+    },
+    {
+      "timeMs": 399193,
+      "verseStart": 28
+    },
+    {
+      "timeMs": 399393,
+      "verseStart": 29
+    },
+    {
+      "timeMs": 423029,
+      "verseStart": 30
+    },
+    {
+      "timeMs": 431675,
+      "verseStart": 31
+    }
+  ]
+}

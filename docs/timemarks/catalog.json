@@ -474,6 +474,286 @@
       "file": "projects/bti_2_timothy_4.json"
     },
     {
+      "id": "gh_bti_acts_1",
+      "translationCode": "BTI",
+      "bookId": "acts",
+      "chapter": 1,
+      "title": "Деяния 1 · Кулаковых",
+      "cueCount": 26,
+      "narratorId": "bti",
+      "file": "projects/bti_acts_1.json"
+    },
+    {
+      "id": "gh_bti_acts_10",
+      "translationCode": "BTI",
+      "bookId": "acts",
+      "chapter": 10,
+      "title": "Деяния 10 · Кулаковых",
+      "cueCount": 48,
+      "narratorId": "bti",
+      "file": "projects/bti_acts_10.json"
+    },
+    {
+      "id": "gh_bti_acts_11",
+      "translationCode": "BTI",
+      "bookId": "acts",
+      "chapter": 11,
+      "title": "Деяния 11 · Кулаковых",
+      "cueCount": 30,
+      "narratorId": "bti",
+      "file": "projects/bti_acts_11.json"
+    },
+    {
+      "id": "gh_bti_acts_12",
+      "translationCode": "BTI",
+      "bookId": "acts",
+      "chapter": 12,
+      "title": "Деяния 12 · Кулаковых",
+      "cueCount": 25,
+      "narratorId": "bti",
+      "file": "projects/bti_acts_12.json"
+    },
+    {
+      "id": "gh_bti_acts_13",
+      "translationCode": "BTI",
+      "bookId": "acts",
+      "chapter": 13,
+      "title": "Деяния 13 · Кулаковых",
+      "cueCount": 51,
+      "narratorId": "bti",
+      "file": "projects/bti_acts_13.json"
+    },
+    {
+      "id": "gh_bti_acts_14",
+      "translationCode": "BTI",
+      "bookId": "acts",
+      "chapter": 14,
+      "title": "Деяния 14 · Кулаковых",
+      "cueCount": 27,
+      "narratorId": "bti",
+      "file": "projects/bti_acts_14.json"
+    },
+    {
+      "id": "gh_bti_acts_15",
+      "translationCode": "BTI",
+      "bookId": "acts",
+      "chapter": 15,
+      "title": "Деяния 15 · Кулаковых",
+      "cueCount": 41,
+      "narratorId": "bti",
+      "file": "projects/bti_acts_15.json"
+    },
+    {
+      "id": "gh_bti_acts_16",
+      "translationCode": "BTI",
+      "bookId": "acts",
+      "chapter": 16,
+      "title": "Деяния 16 · Кулаковых",
+      "cueCount": 40,
+      "narratorId": "bti",
+      "file": "projects/bti_acts_16.json"
+    },
+    {
+      "id": "gh_bti_acts_17",
+      "translationCode": "BTI",
+      "bookId": "acts",
+      "chapter": 17,
+      "title": "Деяния 17 · Кулаковых",
+      "cueCount": 34,
+      "narratorId": "bti",
+      "file": "projects/bti_acts_17.json"
+    },
+    {
+      "id": "gh_bti_acts_18",
+      "translationCode": "BTI",
+      "bookId": "acts",
+      "chapter": 18,
+      "title": "Деяния 18 · Кулаковых",
+      "cueCount": 28,
+      "narratorId": "bti",
+      "file": "projects/bti_acts_18.json"
+    },
+    {
+      "id": "gh_bti_acts_19",
+      "translationCode": "BTI",
+      "bookId": "acts",
+      "chapter": 19,
+      "title": "Деяния 19 · Кулаковых",
+      "cueCount": 40,
+      "narratorId": "bti",
+      "file": "projects/bti_acts_19.json"
+    },
+    {
+      "id": "gh_bti_acts_2",
+      "translationCode": "BTI",
+      "bookId": "acts",
+      "chapter": 2,
+      "title": "Деяния 2 · Кулаковых",
+      "cueCount": 47,
+      "narratorId": "bti",
+      "file": "projects/bti_acts_2.json"
+    },
+    {
+      "id": "gh_bti_acts_20",
+      "translationCode": "BTI",
+      "bookId": "acts",
+      "chapter": 20,
+      "title": "Деяния 20 · Кулаковых",
+      "cueCount": 38,
+      "narratorId": "bti",
+      "file": "projects/bti_acts_20.json"
+    },
+    {
+      "id": "gh_bti_acts_21",
+      "translationCode": "BTI",
+      "bookId": "acts",
+      "chapter": 21,
+      "title": "Деяния 21 · Кулаковых",
+      "cueCount": 40,
+      "narratorId": "bti",
+      "file": "projects/bti_acts_21.json"
+    },
+    {
+      "id": "gh_bti_acts_22",
+      "translationCode": "BTI",
+      "bookId": "acts",
+      "chapter": 22,
+      "title": "Деяния 22 · Кулаковых",
+      "cueCount": 30,
+      "narratorId": "bti",
+      "file": "projects/bti_acts_22.json"
+    },
+    {
+      "id": "gh_bti_acts_23",
+      "translationCode": "BTI",
+      "bookId": "acts",
+      "chapter": 23,
+      "title": "Деяния 23 · Кулаковых",
+      "cueCount": 35,
+      "narratorId": "bti",
+      "file": "projects/bti_acts_23.json"
+    },
+    {
+      "id": "gh_bti_acts_24",
+      "translationCode": "BTI",
+      "bookId": "acts",
+      "chapter": 24,
+      "title": "Деяния 24 · Кулаковых",
+      "cueCount": 26,
+      "narratorId": "bti",
+      "file": "projects/bti_acts_24.json"
+    },
+    {
+      "id": "gh_bti_acts_25",
+      "translationCode": "BTI",
+      "bookId": "acts",
+      "chapter": 25,
+      "title": "Деяния 25 · Кулаковых",
+      "cueCount": 27,
+      "narratorId": "bti",
+      "file": "projects/bti_acts_25.json"
+    },
+    {
+      "id": "gh_bti_acts_26",
+      "translationCode": "BTI",
+      "bookId": "acts",
+      "chapter": 26,
+      "title": "Деяния 26 · Кулаковых",
+      "cueCount": 32,
+      "narratorId": "bti",
+      "file": "projects/bti_acts_26.json"
+    },
+    {
+      "id": "gh_bti_acts_27",
+      "translationCode": "BTI",
+      "bookId": "acts",
+      "chapter": 27,
+      "title": "Деяния 27 · Кулаковых",
+      "cueCount": 44,
+      "narratorId": "bti",
+      "file": "projects/bti_acts_27.json"
+    },
+    {
+      "id": "gh_bti_acts_28",
+      "translationCode": "BTI",
+      "bookId": "acts",
+      "chapter": 28,
+      "title": "Деяния 28 · Кулаковых",
+      "cueCount": 31,
+      "narratorId": "bti",
+      "file": "projects/bti_acts_28.json"
+    },
+    {
+      "id": "gh_bti_acts_3",
+      "translationCode": "BTI",
+      "bookId": "acts",
+      "chapter": 3,
+      "title": "Деяния 3 · Кулаковых",
+      "cueCount": 26,
+      "narratorId": "bti",
+      "file": "projects/bti_acts_3.json"
+    },
+    {
+      "id": "gh_bti_acts_4",
+      "translationCode": "BTI",
+      "bookId": "acts",
+      "chapter": 4,
+      "title": "Деяния 4 · Кулаковых",
+      "cueCount": 37,
+      "narratorId": "bti",
+      "file": "projects/bti_acts_4.json"
+    },
+    {
+      "id": "gh_bti_acts_5",
+      "translationCode": "BTI",
+      "bookId": "acts",
+      "chapter": 5,
+      "title": "Деяния 5 · Кулаковых",
+      "cueCount": 42,
+      "narratorId": "bti",
+      "file": "projects/bti_acts_5.json"
+    },
+    {
+      "id": "gh_bti_acts_6",
+      "translationCode": "BTI",
+      "bookId": "acts",
+      "chapter": 6,
+      "title": "Деяния 6 · Кулаковых",
+      "cueCount": 15,
+      "narratorId": "bti",
+      "file": "projects/bti_acts_6.json"
+    },
+    {
+      "id": "gh_bti_acts_7",
+      "translationCode": "BTI",
+      "bookId": "acts",
+      "chapter": 7,
+      "title": "Деяния 7 · Кулаковых",
+      "cueCount": 60,
+      "narratorId": "bti",
+      "file": "projects/bti_acts_7.json"
+    },
+    {
+      "id": "gh_bti_acts_8",
+      "translationCode": "BTI",
+      "bookId": "acts",
+      "chapter": 8,
+      "title": "Деяния 8 · Кулаковых",
+      "cueCount": 40,
+      "narratorId": "bti",
+      "file": "projects/bti_acts_8.json"
+    },
+    {
+      "id": "gh_bti_acts_9",
+      "translationCode": "BTI",
+      "bookId": "acts",
+      "chapter": 9,
+      "title": "Деяния 9 · Кулаковых",
+      "cueCount": 43,
+      "narratorId": "bti",
+      "file": "projects/bti_acts_9.json"
+    },
+    {
       "id": "gh_bti_colossians_1",
       "translationCode": "BTI",
       "bookId": "colossians",

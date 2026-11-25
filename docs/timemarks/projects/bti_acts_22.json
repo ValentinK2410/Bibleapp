@@ -1,0 +1,131 @@
+{
+  "id": "gh_bti_acts_22",
+  "translationCode": "BTI",
+  "bookId": "acts",
+  "chapter": 22,
+  "title": "Деяния 22 · Кулаковых",
+  "narratorId": "bti",
+  "audioFileName": "44_22.mp3",
+  "cues": [
+    {
+      "timeMs": 4583,
+      "verseStart": 1
+    },
+    {
+      "timeMs": 15931,
+      "verseStart": 2
+    },
+    {
+      "timeMs": 23916,
+      "verseStart": 3
+    },
+    {
+      "timeMs": 52295,
+      "verseStart": 4
+    },
+    {
+      "timeMs": 67885,
+      "verseStart": 5
+    },
+    {
+      "timeMs": 93262,
+      "verseStart": 6
+    },
+    {
+      "timeMs": 110314,
+      "verseStart": 7
+    },
+    {
+      "timeMs": 123743,
+      "verseStart": 8
+    },
+    {
+      "timeMs": 138553,
+      "verseStart": 9
+    },
+    {
+      "timeMs": 146998,
+      "verseStart": 10
+    },
+    {
+      "timeMs": 163209,
+      "verseStart": 11
+    },
+    {
+      "timeMs": 174697,
+      "verseStart": 12
+    },
+    {
+      "timeMs": 186745,
+      "verseStart": 13
+    },
+    {
+      "timeMs": 208059,
+      "verseStart": 14
+    },
+    {
+      "timeMs": 224150,
+      "verseStart": 15
+    },
+    {
+      "timeMs": 239260,
+      "verseStart": 16
+    },
+    {
+      "timeMs": 253029,
+      "verseStart": 17
+    },
+    {
+      "timeMs": 263776,
+      "verseStart": 18
+    },
+    {
+      "timeMs": 282569,
+      "verseStart": 19
+    },
+    {
+      "timeMs": 296818,
+      "verseStart": 20
+    },
+    {
+      "timeMs": 313009,
+      "verseStart": 21
+    },
+    {
+      "timeMs": 326558,
+      "verseStart": 22
+    },
+    {
+      "timeMs": 340988,
+      "verseStart": 23
+    },
+    {
+      "timeMs": 349394,
+      "verseStart": 24
+    },
+    {
+      "timeMs": 362622,
+      "verseStart": 25
+    },
+    {
+      "timeMs": 381815,
+      "verseStart": 26
+    },
+    {
+      "timeMs": 395865,
+      "verseStart": 27
+    },
+    {
+      "timeMs": 409174,
+      "verseStart": 28
+    },
+    {
+      "timeMs": 423643,
+      "verseStart": 29
+    },
+    {
+      "timeMs": 437733,
+      "verseStart": 30
+    }
+  ]
+}

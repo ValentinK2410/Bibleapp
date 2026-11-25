@@ -1,0 +1,187 @@
+{
+  "id": "gh_bti_acts_27",
+  "translationCode": "BTI",
+  "bookId": "acts",
+  "chapter": 27,
+  "title": "Деяния 27 · Кулаковых",
+  "narratorId": "bti",
+  "audioFileName": "44_27.mp3",
+  "cues": [
+    {
+      "timeMs": 4043,
+      "verseStart": 1
+    },
+    {
+      "timeMs": 14450,
+      "verseStart": 2
+    },
+    {
+      "timeMs": 28660,
+      "verseStart": 3
+    },
+    {
+      "timeMs": 41549,
+      "verseStart": 4
+    },
+    {
+      "timeMs": 49074,
+      "verseStart": 5
+    },
+    {
+      "timeMs": 60502,
+      "verseStart": 6
+    },
+    {
+      "timeMs": 68807,
+      "verseStart": 7
+    },
+    {
+      "timeMs": 84919,
+      "verseStart": 8
+    },
+    {
+      "timeMs": 95526,
+      "verseStart": 9
+    },
+    {
+      "timeMs": 108535,
+      "verseStart": 10
+    },
+    {
+      "timeMs": 123945,
+      "verseStart": 11
+    },
+    {
+      "timeMs": 131871,
+      "verseStart": 12
+    },
+    {
+      "timeMs": 152525,
+      "verseStart": 13
+    },
+    {
+      "timeMs": 165434,
+      "verseStart": 14
+    },
+    {
+      "timeMs": 175701,
+      "verseStart": 15
+    },
+    {
+      "timeMs": 187749,
+      "verseStart": 16
+    },
+    {
+      "timeMs": 199778,
+      "verseStart": 17
+    },
+    {
+      "timeMs": 215889,
+      "verseStart": 18
+    },
+    {
+      "timeMs": 224435,
+      "verseStart": 19
+    },
+    {
+      "timeMs": 233741,
+      "verseStart": 20
+    },
+    {
+      "timeMs": 249812,
+      "verseStart": 21
+    },
+    {
+      "timeMs": 271247,
+      "verseStart": 22
+    },
+    {
+      "timeMs": 285537,
+      "verseStart": 23
+    },
+    {
+      "timeMs": 296624,
+      "verseStart": 24
+    },
+    {
+      "timeMs": 311395,
+      "verseStart": 25
+    },
+    {
+      "timeMs": 322462,
+      "verseStart": 26
+    },
+    {
+      "timeMs": 329327,
+      "verseStart": 27
+    },
+    {
+      "timeMs": 338874,
+      "verseStart": 28
+    },
+    {
+      "timeMs": 351282,
+      "verseStart": 29
+    },
+    {
+      "timeMs": 362610,
+      "verseStart": 30
+    },
+    {
+      "timeMs": 371776,
+      "verseStart": 31
+    },
+    {
+      "timeMs": 380903,
+      "verseStart": 32
+    },
+    {
+      "timeMs": 386006,
+      "verseStart": 33
+    },
+    {
+      "timeMs": 402257,
+      "verseStart": 34
+    },
+    {
+      "timeMs": 414246,
+      "verseStart": 35
+    },
+    {
+      "timeMs": 425333,
+      "verseStart": 36
+    },
+    {
+      "timeMs": 430577,
+      "verseStart": 37
+    },
+    {
+      "timeMs": 435220,
+      "verseStart": 38
+    },
+    {
+      "timeMs": 444166,
+      "verseStart": 39
+    },
+    {
+      "timeMs": 458636,
+      "verseStart": 40
+    },
+    {
+      "timeMs": 476248,
+      "verseStart": 41
+    },
+    {
+      "timeMs": 491138,
+      "verseStart": 42
+    },
+    {
+      "timeMs": 497343,
+      "verseStart": 43
+    },
+    {
+      "timeMs": 509291,
+      "verseStart": 44
+    }
+  ]
+}

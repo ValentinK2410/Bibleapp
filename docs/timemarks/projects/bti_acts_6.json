@@ -1,0 +1,71 @@
+{
+  "id": "gh_bti_acts_6",
+  "translationCode": "BTI",
+  "bookId": "acts",
+  "chapter": 6,
+  "title": "Деяния 6 · Кулаковых",
+  "narratorId": "bti",
+  "audioFileName": "44_06.mp3",
+  "cues": [
+    {
+      "timeMs": 3963,
+      "verseStart": 1
+    },
+    {
+      "timeMs": 20714,
+      "verseStart": 2
+    },
+    {
+      "timeMs": 34524,
+      "verseStart": 3
+    },
+    {
+      "timeMs": 45951,
+      "verseStart": 4
+    },
+    {
+      "timeMs": 53096,
+      "verseStart": 5
+    },
+    {
+      "timeMs": 74931,
+      "verseStart": 6
+    },
+    {
+      "timeMs": 82416,
+      "verseStart": 7
+    },
+    {
+      "timeMs": 95625,
+      "verseStart": 8
+    },
+    {
+      "timeMs": 104351,
+      "verseStart": 9
+    },
+    {
+      "timeMs": 124285,
+      "verseStart": 10
+    },
+    {
+      "timeMs": 133591,
+      "verseStart": 11
+    },
+    {
+      "timeMs": 144759,
+      "verseStart": 12
+    },
+    {
+      "timeMs": 154606,
+      "verseStart": 13
+    },
+    {
+      "timeMs": 166274,
+      "verseStart": 14
+    },
+    {
+      "timeMs": 180924,
+      "verseStart": 15
+    }
+  ]
+}
