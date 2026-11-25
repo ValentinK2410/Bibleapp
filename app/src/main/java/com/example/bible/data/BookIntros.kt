@@ -5,25 +5,36 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
+import org.json.JSONArray
 import org.json.JSONObject
 
 /**
  * Краткая справка о книге: суть, авторство, повод, дата и откуда взяты сведения.
  * Тексты лежат в assets, не в вёрстке. Файл читается один раз вне главного потока.
  */
+data class AncientManuscript(
+    val name: String,
+    val siglum: String,
+    val date: String,
+    val location: String,
+    val url: String,
+    val note: String = "",
+)
+
 data class BookIntro(
     val genre: String,
     val author: String,
     val occasion: String,
     val date: String,
     val source: String,
+    val manuscripts: List<AncientManuscript> = emptyList(),
 ) {
     fun displayLines(): List<String> = listOf(
         "Суть: $genre",
         "Автор: $author",
         "Повод: $occasion",
         "Время: $date",
-        "Источник: $source",
+        "Источник справки: $source",
     )
 }
 
@@ -62,8 +73,24 @@ object BookIntros {
                 occasion = item.getString("occasion").trim(),
                 date = item.getString("date").trim(),
                 source = item.getString("source").trim(),
+                manuscripts = item.optJSONArray("manuscripts").toManuscripts(),
             )
         }
         return out
+    }
+
+    private fun JSONArray?.toManuscripts(): List<AncientManuscript> {
+        val arr = this ?: return emptyList()
+        return (0 until arr.length()).mapNotNull { index ->
+            val item = arr.optJSONObject(index) ?: return@mapNotNull null
+            AncientManuscript(
+                name = item.optString("name").trim(),
+                siglum = item.optString("siglum").trim(),
+                date = item.optString("date").trim(),
+                location = item.optString("location").trim(),
+                url = item.optString("url").trim(),
+                note = item.optString("note").trim(),
+            )
+        }
     }
 }

@@ -35,7 +35,15 @@ class BookIntrosTest {
             val lines = info.displayLines()
             assertTrue("${book.id} lines", lines.size in 3..6)
             lines.forEach { line -> assertTrue("${book.id} blank line", line.isNotBlank()) }
-            assertTrue(lines.last().startsWith("Источник:"))
+            assertTrue(lines.last().startsWith("Источник справки:"))
+            assertTrue("${book.id} manuscripts", info.manuscripts.isNotEmpty())
+            assertTrue("${book.id} manuscript count", info.manuscripts.size <= 3)
+            info.manuscripts.forEach { manuscript ->
+                assertTrue("${book.id} ms name", manuscript.name.isNotBlank())
+                assertTrue("${book.id} ms date", manuscript.date.isNotBlank())
+                assertTrue("${book.id} ms location", manuscript.location.isNotBlank())
+                assertTrue("${book.id} ms url", manuscript.url.startsWith("https://"))
+            }
         }
     }
 }
