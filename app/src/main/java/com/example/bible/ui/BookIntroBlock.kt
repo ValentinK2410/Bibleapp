@@ -34,7 +34,6 @@ fun BookIntroBlock(
         value = BookIntros.load(context)[bookId]
     }
     val info = intro ?: return
-    val lines = info.displayLines()
     val uriHandler = LocalUriHandler.current
     val group = BibleCanon.byId(bookId)?.group
     val accent = if (group != null) groupTextColor(group) else MaterialTheme.colorScheme.primary
@@ -63,14 +62,19 @@ fun BookIntroBlock(
                     .padding(horizontal = 12.dp, vertical = 8.dp),
                 verticalArrangement = Arrangement.spacedBy(2.dp),
             ) {
-                lines.forEachIndexed { index, line ->
-                    val sourceLine = index == lines.lastIndex
+                Text(
+                    text = info.summary,
+                    color = scheme.onSurface,
+                    fontSize = 13.sp,
+                    lineHeight = 18.sp,
+                )
+                if (info.source.isNotBlank()) {
                     Text(
-                        text = line,
-                        color = if (sourceLine) scheme.onSurfaceVariant else scheme.onSurface,
-                        fontSize = if (sourceLine) 11.sp else 12.5.sp,
-                        lineHeight = if (sourceLine) 14.sp else 16.sp,
-                        fontWeight = if (sourceLine) FontWeight.Medium else FontWeight.Normal,
+                        text = "Источник справки: ${info.source}",
+                        color = scheme.onSurfaceVariant,
+                        fontSize = 11.sp,
+                        lineHeight = 14.sp,
+                        fontWeight = FontWeight.Medium,
                     )
                 }
                 if (info.manuscripts.isNotEmpty()) {

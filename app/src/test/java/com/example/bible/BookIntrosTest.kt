@@ -18,24 +18,24 @@ class BookIntrosTest {
         ).first { it.exists() }
         val intros = BookIntros.parse(file.readText())
         assertEquals(BibleCanon.allBooks.size, intros.size)
-        val knownSource = listOf("Лопухин", "Брокгауз", "РБО")
         BibleCanon.allBooks.forEach { book ->
             val intro = intros[book.id]
             assertNotNull(book.id, intro)
             val info = intro!!
-            assertTrue("${book.id} genre", info.genre.isNotBlank())
-            assertTrue("${book.id} author", info.author.isNotBlank())
-            assertTrue("${book.id} occasion", info.occasion.isNotBlank())
-            assertTrue("${book.id} date", info.date.isNotBlank())
-            assertTrue("${book.id} source", info.source.isNotBlank())
-            assertTrue(
-                "${book.id} source",
-                knownSource.any { info.source.contains(it) },
-            )
+            assertTrue("${book.id} summary", info.summary.isNotBlank())
+            assertTrue("${book.id} lopukhin", !info.summary.contains("Лопухин"))
+            assertTrue("${book.id} brockhaus", !info.summary.contains("Брокгауз"))
+            assertTrue("${book.id} source lopukhin", !info.source.contains("Лопухин"))
+            assertTrue("${book.id} source brockhaus", !info.source.contains("Брокгауз"))
             val lines = info.displayLines()
-            assertTrue("${book.id} lines", lines.size in 3..6)
-            lines.forEach { line -> assertTrue("${book.id} blank line", line.isNotBlank()) }
-            assertTrue(lines.last().startsWith("Источник справки:"))
+            assertTrue("${book.id} lines", lines.isNotEmpty())
+            assertEquals(info.summary, lines.first())
+            if (info.source.isBlank()) {
+                assertEquals(1, lines.size)
+            } else {
+                assertTrue(lines.last().startsWith("Источник справки:"))
+                assertTrue("${book.id} source url", info.source.contains("http"))
+            }
             assertTrue("${book.id} manuscripts", info.manuscripts.isNotEmpty())
             assertTrue("${book.id} manuscript count", info.manuscripts.size <= 3)
             info.manuscripts.forEach { manuscript ->
