@@ -189,6 +189,7 @@ import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import com.example.bible.data.AudioPlaybackState
 import com.example.bible.data.BibleCanon
+import com.example.bible.data.BookIntros
 import com.example.bible.data.BibleCoverage
 import com.example.bible.data.BibleSearchHistoryEntry
 import com.example.bible.data.BibleBook
@@ -5764,6 +5765,10 @@ internal fun ChapterGrid(
     val accent = chapterGridAccentColor(bookId)
     val scheme = MaterialTheme.colorScheme
     val shape = RoundedCornerShape(14.dp)
+    val introContext = LocalContext.current
+    LaunchedEffect(bookId) {
+        BookIntros.load(introContext)
+    }
     Box(modifier.fillMaxSize()) {
         LazyVerticalGrid(
             columns = GridCells.Fixed(5),
@@ -5902,6 +5907,9 @@ internal fun ChapterGrid(
                         }
                     }
                 }
+            }
+            item(key = "book_intro", span = { GridItemSpan(maxLineSpan) }) {
+                BookIntroBlock(bookId = bookId)
             }
         }
         infoChapter?.let { chapterNum ->
