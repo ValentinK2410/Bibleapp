@@ -7014,6 +7014,16 @@
       "file": "projects/rbo_2_corinthians_9.json"
     },
     {
+      "id": "gh_rbo_2_john_1",
+      "translationCode": "RBO",
+      "bookId": "2_john",
+      "chapter": 1,
+      "title": "2-е Иоанна 1 · РБО",
+      "cueCount": 13,
+      "narratorId": "rbo",
+      "file": "projects/rbo_2_john_1.json"
+    },
+    {
       "id": "gh_rbo_2_peter_1",
       "translationCode": "RBO",
       "bookId": "2_peter",
