@@ -1,0 +1,127 @@
+{
+  "id": "gh_rbo_revelation_2",
+  "translationCode": "RBO",
+  "bookId": "revelation",
+  "chapter": 2,
+  "title": "Откровение 2 · РБО",
+  "narratorId": "rbo",
+  "audioFileName": "66_02.mp3",
+  "cues": [
+    {
+      "timeMs": 4303,
+      "verseStart": 1
+    },
+    {
+      "timeMs": 16871,
+      "verseStart": 2
+    },
+    {
+      "timeMs": 33601,
+      "verseStart": 3
+    },
+    {
+      "timeMs": 39865,
+      "verseStart": 4
+    },
+    {
+      "timeMs": 47430,
+      "verseStart": 5
+    },
+    {
+      "timeMs": 64000,
+      "verseStart": 6
+    },
+    {
+      "timeMs": 71765,
+      "verseStart": 7
+    },
+    {
+      "timeMs": 83672,
+      "verseStart": 8
+    },
+    {
+      "timeMs": 92738,
+      "verseStart": 9
+    },
+    {
+      "timeMs": 106587,
+      "verseStart": 10
+    },
+    {
+      "timeMs": 124098,
+      "verseStart": 11
+    },
+    {
+      "timeMs": 134044,
+      "verseStart": 12
+    },
+    {
+      "timeMs": 141529,
+      "verseStart": 13
+    },
+    {
+      "timeMs": 158199,
+      "verseStart": 14
+    },
+    {
+      "timeMs": 176851,
+      "verseStart": 15
+    },
+    {
+      "timeMs": 181314,
+      "verseStart": 16
+    },
+    {
+      "timeMs": 191420,
+      "verseStart": 17
+    },
+    {
+      "timeMs": 211593,
+      "verseStart": 18
+    },
+    {
+      "timeMs": 223320,
+      "verseStart": 19
+    },
+    {
+      "timeMs": 233346,
+      "verseStart": 20
+    },
+    {
+      "timeMs": 251317,
+      "verseStart": 21
+    },
+    {
+      "timeMs": 256921,
+      "verseStart": 22
+    },
+    {
+      "timeMs": 267447,
+      "verseStart": 23
+    },
+    {
+      "timeMs": 282237,
+      "verseStart": 24
+    },
+    {
+      "timeMs": 295425,
+      "verseStart": 25
+    },
+    {
+      "timeMs": 301309,
+      "verseStart": 26
+    },
+    {
+      "timeMs": 312356,
+      "verseStart": 27
+    },
+    {
+      "timeMs": 320421,
+      "verseStart": 28
+    },
+    {
+      "timeMs": 324043,
+      "verseStart": 29
+    }
+  ]
+}

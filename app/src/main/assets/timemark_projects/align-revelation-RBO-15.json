@@ -1,0 +1,51 @@
+{
+  "id": "align-revelation-RBO-15",
+  "translationCode": "RBO",
+  "bookId": "revelation",
+  "chapter": 15,
+  "title": "Откровение 15 · РБО",
+  "audioFilePath": "/data/user/0/com.example.bible.sqlite/files/bible_audio/rbo/66_15.mp3",
+  "updatedAt": 1795478400000,
+  "cues": [
+    {
+      "timeMs": 4583,
+      "verseStart": 1,
+      "attachments": []
+    },
+    {
+      "timeMs": 18552,
+      "verseStart": 2,
+      "attachments": []
+    },
+    {
+      "timeMs": 35464,
+      "verseStart": 3,
+      "attachments": []
+    },
+    {
+      "timeMs": 49873,
+      "verseStart": 4,
+      "attachments": []
+    },
+    {
+      "timeMs": 67425,
+      "verseStart": 5,
+      "attachments": []
+    },
+    {
+      "timeMs": 74750,
+      "verseStart": 6,
+      "attachments": []
+    },
+    {
+      "timeMs": 85237,
+      "verseStart": 7,
+      "attachments": []
+    },
+    {
+      "timeMs": 95944,
+      "verseStart": 8,
+      "attachments": []
+    }
+  ]
+}

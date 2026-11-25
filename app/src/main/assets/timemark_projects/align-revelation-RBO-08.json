@@ -1,0 +1,76 @@
+{
+  "id": "align-revelation-RBO-08",
+  "translationCode": "RBO",
+  "bookId": "revelation",
+  "chapter": 8,
+  "title": "Откровение 8 · РБО",
+  "audioFilePath": "/data/user/0/com.example.bible.sqlite/files/bible_audio/rbo/66_08.mp3",
+  "updatedAt": 1795478400000,
+  "cues": [
+    {
+      "timeMs": 4483,
+      "verseStart": 1,
+      "attachments": []
+    },
+    {
+      "timeMs": 12669,
+      "verseStart": 2,
+      "attachments": []
+    },
+    {
+      "timeMs": 19774,
+      "verseStart": 3,
+      "attachments": []
+    },
+    {
+      "timeMs": 35124,
+      "verseStart": 4,
+      "attachments": []
+    },
+    {
+      "timeMs": 42549,
+      "verseStart": 5,
+      "attachments": []
+    },
+    {
+      "timeMs": 54458,
+      "verseStart": 6,
+      "attachments": []
+    },
+    {
+      "timeMs": 59581,
+      "verseStart": 7,
+      "attachments": []
+    },
+    {
+      "timeMs": 74271,
+      "verseStart": 8,
+      "attachments": []
+    },
+    {
+      "timeMs": 84738,
+      "verseStart": 9,
+      "attachments": []
+    },
+    {
+      "timeMs": 90983,
+      "verseStart": 10,
+      "attachments": []
+    },
+    {
+      "timeMs": 102991,
+      "verseStart": 11,
+      "attachments": []
+    },
+    {
+      "timeMs": 115560,
+      "verseStart": 12,
+      "attachments": []
+    },
+    {
+      "timeMs": 131190,
+      "verseStart": 13,
+      "attachments": []
+    }
+  ]
+}

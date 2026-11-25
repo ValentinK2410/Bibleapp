@@ -1,0 +1,71 @@
+{
+  "id": "gh_rbo_revelation_20",
+  "translationCode": "RBO",
+  "bookId": "revelation",
+  "chapter": 20,
+  "title": "Откровение 20 · РБО",
+  "narratorId": "rbo",
+  "audioFileName": "66_20.mp3",
+  "cues": [
+    {
+      "timeMs": 4543,
+      "verseStart": 1
+    },
+    {
+      "timeMs": 13108,
+      "verseStart": 2
+    },
+    {
+      "timeMs": 20913,
+      "verseStart": 3
+    },
+    {
+      "timeMs": 35402,
+      "verseStart": 4
+    },
+    {
+      "timeMs": 59697,
+      "verseStart": 5
+    },
+    {
+      "timeMs": 67702,
+      "verseStart": 6
+    },
+    {
+      "timeMs": 83192,
+      "verseStart": 7
+    },
+    {
+      "timeMs": 88755,
+      "verseStart": 8
+    },
+    {
+      "timeMs": 102243,
+      "verseStart": 9
+    },
+    {
+      "timeMs": 112570,
+      "verseStart": 10
+    },
+    {
+      "timeMs": 125398,
+      "verseStart": 11
+    },
+    {
+      "timeMs": 136124,
+      "verseStart": 12
+    },
+    {
+      "timeMs": 153735,
+      "verseStart": 13
+    },
+    {
+      "timeMs": 164182,
+      "verseStart": 14
+    },
+    {
+      "timeMs": 172967,
+      "verseStart": 15
+    }
+  ]
+}

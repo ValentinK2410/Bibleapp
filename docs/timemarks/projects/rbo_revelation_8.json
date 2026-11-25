@@ -1,0 +1,63 @@
+{
+  "id": "gh_rbo_revelation_8",
+  "translationCode": "RBO",
+  "bookId": "revelation",
+  "chapter": 8,
+  "title": "Откровение 8 · РБО",
+  "narratorId": "rbo",
+  "audioFileName": "66_08.mp3",
+  "cues": [
+    {
+      "timeMs": 4483,
+      "verseStart": 1
+    },
+    {
+      "timeMs": 12669,
+      "verseStart": 2
+    },
+    {
+      "timeMs": 19774,
+      "verseStart": 3
+    },
+    {
+      "timeMs": 35124,
+      "verseStart": 4
+    },
+    {
+      "timeMs": 42549,
+      "verseStart": 5
+    },
+    {
+      "timeMs": 54458,
+      "verseStart": 6
+    },
+    {
+      "timeMs": 59581,
+      "verseStart": 7
+    },
+    {
+      "timeMs": 74271,
+      "verseStart": 8
+    },
+    {
+      "timeMs": 84738,
+      "verseStart": 9
+    },
+    {
+      "timeMs": 90983,
+      "verseStart": 10
+    },
+    {
+      "timeMs": 102991,
+      "verseStart": 11
+    },
+    {
+      "timeMs": 115560,
+      "verseStart": 12
+    },
+    {
+      "timeMs": 131190,
+      "verseStart": 13
+    }
+  ]
+}

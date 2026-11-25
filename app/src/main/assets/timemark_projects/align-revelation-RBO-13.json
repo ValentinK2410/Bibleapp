@@ -1,0 +1,101 @@
+{
+  "id": "align-revelation-RBO-13",
+  "translationCode": "RBO",
+  "bookId": "revelation",
+  "chapter": 13,
+  "title": "Откровение 13 · РБО",
+  "audioFilePath": "/data/user/0/com.example.bible.sqlite/files/bible_audio/rbo/66_13.mp3",
+  "updatedAt": 1795478400000,
+  "cues": [
+    {
+      "timeMs": 4603,
+      "verseStart": 1,
+      "attachments": []
+    },
+    {
+      "timeMs": 16952,
+      "verseStart": 2,
+      "attachments": []
+    },
+    {
+      "timeMs": 30661,
+      "verseStart": 3,
+      "attachments": []
+    },
+    {
+      "timeMs": 40808,
+      "verseStart": 4,
+      "attachments": []
+    },
+    {
+      "timeMs": 55118,
+      "verseStart": 5,
+      "attachments": []
+    },
+    {
+      "timeMs": 64184,
+      "verseStart": 6,
+      "attachments": []
+    },
+    {
+      "timeMs": 74231,
+      "verseStart": 7,
+      "attachments": []
+    },
+    {
+      "timeMs": 86739,
+      "verseStart": 8,
+      "attachments": []
+    },
+    {
+      "timeMs": 97326,
+      "verseStart": 9,
+      "attachments": []
+    },
+    {
+      "timeMs": 100328,
+      "verseStart": 10,
+      "attachments": []
+    },
+    {
+      "timeMs": 115759,
+      "verseStart": 11,
+      "attachments": []
+    },
+    {
+      "timeMs": 126466,
+      "verseStart": 12,
+      "attachments": []
+    },
+    {
+      "timeMs": 138695,
+      "verseStart": 13,
+      "attachments": []
+    },
+    {
+      "timeMs": 145579,
+      "verseStart": 14,
+      "attachments": []
+    },
+    {
+      "timeMs": 159509,
+      "verseStart": 15,
+      "attachments": []
+    },
+    {
+      "timeMs": 170236,
+      "verseStart": 16,
+      "attachments": []
+    },
+    {
+      "timeMs": 180943,
+      "verseStart": 17,
+      "attachments": []
+    },
+    {
+      "timeMs": 192912,
+      "verseStart": 18,
+      "attachments": []
+    }
+  ]
+}

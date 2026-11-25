@@ -1,0 +1,156 @@
+{
+  "id": "align-revelation-RBO-02",
+  "translationCode": "RBO",
+  "bookId": "revelation",
+  "chapter": 2,
+  "title": "Откровение 2 · РБО",
+  "audioFilePath": "/data/user/0/com.example.bible.sqlite/files/bible_audio/rbo/66_02.mp3",
+  "updatedAt": 1795478400000,
+  "cues": [
+    {
+      "timeMs": 4303,
+      "verseStart": 1,
+      "attachments": []
+    },
+    {
+      "timeMs": 16871,
+      "verseStart": 2,
+      "attachments": []
+    },
+    {
+      "timeMs": 33601,
+      "verseStart": 3,
+      "attachments": []
+    },
+    {
+      "timeMs": 39865,
+      "verseStart": 4,
+      "attachments": []
+    },
+    {
+      "timeMs": 47430,
+      "verseStart": 5,
+      "attachments": []
+    },
+    {
+      "timeMs": 64000,
+      "verseStart": 6,
+      "attachments": []
+    },
+    {
+      "timeMs": 71765,
+      "verseStart": 7,
+      "attachments": []
+    },
+    {
+      "timeMs": 83672,
+      "verseStart": 8,
+      "attachments": []
+    },
+    {
+      "timeMs": 92738,
+      "verseStart": 9,
+      "attachments": []
+    },
+    {
+      "timeMs": 106587,
+      "verseStart": 10,
+      "attachments": []
+    },
+    {
+      "timeMs": 124098,
+      "verseStart": 11,
+      "attachments": []
+    },
+    {
+      "timeMs": 134044,
+      "verseStart": 12,
+      "attachments": []
+    },
+    {
+      "timeMs": 141529,
+      "verseStart": 13,
+      "attachments": []
+    },
+    {
+      "timeMs": 158199,
+      "verseStart": 14,
+      "attachments": []
+    },
+    {
+      "timeMs": 176851,
+      "verseStart": 15,
+      "attachments": []
+    },
+    {
+      "timeMs": 181314,
+      "verseStart": 16,
+      "attachments": []
+    },
+    {
+      "timeMs": 191420,
+      "verseStart": 17,
+      "attachments": []
+    },
+    {
+      "timeMs": 211593,
+      "verseStart": 18,
+      "attachments": []
+    },
+    {
+      "timeMs": 223320,
+      "verseStart": 19,
+      "attachments": []
+    },
+    {
+      "timeMs": 233346,
+      "verseStart": 20,
+      "attachments": []
+    },
+    {
+      "timeMs": 251317,
+      "verseStart": 21,
+      "attachments": []
+    },
+    {
+      "timeMs": 256921,
+      "verseStart": 22,
+      "attachments": []
+    },
+    {
+      "timeMs": 267447,
+      "verseStart": 23,
+      "attachments": []
+    },
+    {
+      "timeMs": 282237,
+      "verseStart": 24,
+      "attachments": []
+    },
+    {
+      "timeMs": 295425,
+      "verseStart": 25,
+      "attachments": []
+    },
+    {
+      "timeMs": 301309,
+      "verseStart": 26,
+      "attachments": []
+    },
+    {
+      "timeMs": 312356,
+      "verseStart": 27,
+      "attachments": []
+    },
+    {
+      "timeMs": 320421,
+      "verseStart": 28,
+      "attachments": []
+    },
+    {
+      "timeMs": 324043,
+      "verseStart": 29,
+      "attachments": []
+    }
+  ]
+}

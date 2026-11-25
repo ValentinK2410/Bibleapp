@@ -1,0 +1,66 @@
+{
+  "id": "align-revelation-RBO-04",
+  "translationCode": "RBO",
+  "bookId": "revelation",
+  "chapter": 4,
+  "title": "Откровение 4 · РБО",
+  "audioFilePath": "/data/user/0/com.example.bible.sqlite/files/bible_audio/rbo/66_04.mp3",
+  "updatedAt": 1795478400000,
+  "cues": [
+    {
+      "timeMs": 4583,
+      "verseStart": 1,
+      "attachments": []
+    },
+    {
+      "timeMs": 25197,
+      "verseStart": 2,
+      "attachments": []
+    },
+    {
+      "timeMs": 35544,
+      "verseStart": 3,
+      "attachments": []
+    },
+    {
+      "timeMs": 47973,
+      "verseStart": 4,
+      "attachments": []
+    },
+    {
+      "timeMs": 60481,
+      "verseStart": 5,
+      "attachments": []
+    },
+    {
+      "timeMs": 72390,
+      "verseStart": 6,
+      "attachments": []
+    },
+    {
+      "timeMs": 86899,
+      "verseStart": 7,
+      "attachments": []
+    },
+    {
+      "timeMs": 98487,
+      "verseStart": 8,
+      "attachments": []
+    },
+    {
+      "timeMs": 120963,
+      "verseStart": 9,
+      "attachments": []
+    },
+    {
+      "timeMs": 128788,
+      "verseStart": 10,
+      "attachments": []
+    },
+    {
+      "timeMs": 140916,
+      "verseStart": 11,
+      "attachments": []
+    }
+  ]
+}

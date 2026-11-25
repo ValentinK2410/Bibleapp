@@ -1,0 +1,43 @@
+{
+  "id": "gh_rbo_revelation_15",
+  "translationCode": "RBO",
+  "bookId": "revelation",
+  "chapter": 15,
+  "title": "Откровение 15 · РБО",
+  "narratorId": "rbo",
+  "audioFileName": "66_15.mp3",
+  "cues": [
+    {
+      "timeMs": 4583,
+      "verseStart": 1
+    },
+    {
+      "timeMs": 18552,
+      "verseStart": 2
+    },
+    {
+      "timeMs": 35464,
+      "verseStart": 3
+    },
+    {
+      "timeMs": 49873,
+      "verseStart": 4
+    },
+    {
+      "timeMs": 67425,
+      "verseStart": 5
+    },
+    {
+      "timeMs": 74750,
+      "verseStart": 6
+    },
+    {
+      "timeMs": 85237,
+      "verseStart": 7
+    },
+    {
+      "timeMs": 95944,
+      "verseStart": 8
+    }
+  ]
+}

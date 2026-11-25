@@ -1,0 +1,111 @@
+{
+  "id": "align-revelation-RBO-01",
+  "translationCode": "RBO",
+  "bookId": "revelation",
+  "chapter": 1,
+  "title": "Откровение 1 · РБО",
+  "audioFilePath": "/data/user/0/com.example.bible.sqlite/files/bible_audio/rbo/66_01.mp3",
+  "updatedAt": 1795478400000,
+  "cues": [
+    {
+      "timeMs": 8667,
+      "verseStart": 1,
+      "attachments": []
+    },
+    {
+      "timeMs": 23918,
+      "verseStart": 2,
+      "attachments": []
+    },
+    {
+      "timeMs": 31784,
+      "verseStart": 3,
+      "attachments": []
+    },
+    {
+      "timeMs": 43252,
+      "verseStart": 4,
+      "attachments": []
+    },
+    {
+      "timeMs": 54801,
+      "verseStart": 5,
+      "attachments": []
+    },
+    {
+      "timeMs": 70092,
+      "verseStart": 6,
+      "attachments": []
+    },
+    {
+      "timeMs": 82161,
+      "verseStart": 7,
+      "attachments": []
+    },
+    {
+      "timeMs": 97032,
+      "verseStart": 8,
+      "attachments": []
+    },
+    {
+      "timeMs": 108541,
+      "verseStart": 9,
+      "attachments": []
+    },
+    {
+      "timeMs": 121711,
+      "verseStart": 10,
+      "attachments": []
+    },
+    {
+      "timeMs": 130377,
+      "verseStart": 11,
+      "attachments": []
+    },
+    {
+      "timeMs": 146329,
+      "verseStart": 12,
+      "attachments": []
+    },
+    {
+      "timeMs": 155396,
+      "verseStart": 13,
+      "attachments": []
+    },
+    {
+      "timeMs": 165003,
+      "verseStart": 14,
+      "attachments": []
+    },
+    {
+      "timeMs": 172428,
+      "verseStart": 15,
+      "attachments": []
+    },
+    {
+      "timeMs": 181595,
+      "verseStart": 16,
+      "attachments": []
+    },
+    {
+      "timeMs": 193984,
+      "verseStart": 17,
+      "attachments": []
+    },
+    {
+      "timeMs": 205933,
+      "verseStart": 18,
+      "attachments": []
+    },
+    {
+      "timeMs": 216781,
+      "verseStart": 19,
+      "attachments": []
+    },
+    {
+      "timeMs": 225288,
+      "verseStart": 20,
+      "attachments": []
+    }
+  ]
+}

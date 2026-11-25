@@ -1,0 +1,55 @@
+{
+  "id": "gh_rbo_revelation_10",
+  "translationCode": "RBO",
+  "bookId": "revelation",
+  "chapter": 10,
+  "title": "Откровение 10 · РБО",
+  "narratorId": "rbo",
+  "audioFileName": "66_10.mp3",
+  "cues": [
+    {
+      "timeMs": 4423,
+      "verseStart": 1
+    },
+    {
+      "timeMs": 18373,
+      "verseStart": 2
+    },
+    {
+      "timeMs": 25838,
+      "verseStart": 3
+    },
+    {
+      "timeMs": 37327,
+      "verseStart": 4
+    },
+    {
+      "timeMs": 51237,
+      "verseStart": 5
+    },
+    {
+      "timeMs": 57521,
+      "verseStart": 6
+    },
+    {
+      "timeMs": 72172,
+      "verseStart": 7
+    },
+    {
+      "timeMs": 83700,
+      "verseStart": 8
+    },
+    {
+      "timeMs": 96409,
+      "verseStart": 9
+    },
+    {
+      "timeMs": 111400,
+      "verseStart": 10
+    },
+    {
+      "timeMs": 123948,
+      "verseStart": 11
+    }
+  ]
+}

@@ -1,0 +1,79 @@
+{
+  "id": "gh_rbo_revelation_6",
+  "translationCode": "RBO",
+  "bookId": "revelation",
+  "chapter": 6,
+  "title": "Откровение 6 · РБО",
+  "narratorId": "rbo",
+  "audioFileName": "66_06.mp3",
+  "cues": [
+    {
+      "timeMs": 4303,
+      "verseStart": 1
+    },
+    {
+      "timeMs": 16471,
+      "verseStart": 2
+    },
+    {
+      "timeMs": 30781,
+      "verseStart": 3
+    },
+    {
+      "timeMs": 38046,
+      "verseStart": 4
+    },
+    {
+      "timeMs": 52776,
+      "verseStart": 5
+    },
+    {
+      "timeMs": 67826,
+      "verseStart": 6
+    },
+    {
+      "timeMs": 84078,
+      "verseStart": 7
+    },
+    {
+      "timeMs": 92763,
+      "verseStart": 8
+    },
+    {
+      "timeMs": 113237,
+      "verseStart": 9
+    },
+    {
+      "timeMs": 121443,
+      "verseStart": 10
+    },
+    {
+      "timeMs": 133792,
+      "verseStart": 11
+    },
+    {
+      "timeMs": 149002,
+      "verseStart": 12
+    },
+    {
+      "timeMs": 161911,
+      "verseStart": 13
+    },
+    {
+      "timeMs": 170016,
+      "verseStart": 14
+    },
+    {
+      "timeMs": 177802,
+      "verseStart": 15
+    },
+    {
+      "timeMs": 189970,
+      "verseStart": 16
+    },
+    {
+      "timeMs": 199236,
+      "verseStart": 17
+    }
+  ]
+}

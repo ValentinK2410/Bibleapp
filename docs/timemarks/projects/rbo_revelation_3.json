@@ -1,0 +1,99 @@
+{
+  "id": "gh_rbo_revelation_3",
+  "translationCode": "RBO",
+  "bookId": "revelation",
+  "chapter": 3,
+  "title": "Откровение 3 · РБО",
+  "narratorId": "rbo",
+  "audioFileName": "66_03.mp3",
+  "cues": [
+    {
+      "timeMs": 4443,
+      "verseStart": 1
+    },
+    {
+      "timeMs": 20715,
+      "verseStart": 2
+    },
+    {
+      "timeMs": 31483,
+      "verseStart": 3
+    },
+    {
+      "timeMs": 47835,
+      "verseStart": 4
+    },
+    {
+      "timeMs": 58283,
+      "verseStart": 5
+    },
+    {
+      "timeMs": 70492,
+      "verseStart": 6
+    },
+    {
+      "timeMs": 76356,
+      "verseStart": 7
+    },
+    {
+      "timeMs": 92368,
+      "verseStart": 8
+    },
+    {
+      "timeMs": 109781,
+      "verseStart": 9
+    },
+    {
+      "timeMs": 126853,
+      "verseStart": 10
+    },
+    {
+      "timeMs": 139002,
+      "verseStart": 11
+    },
+    {
+      "timeMs": 147509,
+      "verseStart": 12
+    },
+    {
+      "timeMs": 167383,
+      "verseStart": 13
+    },
+    {
+      "timeMs": 173508,
+      "verseStart": 14
+    },
+    {
+      "timeMs": 186317,
+      "verseStart": 15
+    },
+    {
+      "timeMs": 197685,
+      "verseStart": 16
+    },
+    {
+      "timeMs": 206372,
+      "verseStart": 17
+    },
+    {
+      "timeMs": 218661,
+      "verseStart": 18
+    },
+    {
+      "timeMs": 237234,
+      "verseStart": 19
+    },
+    {
+      "timeMs": 245601,
+      "verseStart": 20
+    },
+    {
+      "timeMs": 256409,
+      "verseStart": 21
+    },
+    {
+      "timeMs": 267457,
+      "verseStart": 22
+    }
+  ]
+}

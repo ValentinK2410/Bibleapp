@@ -1,0 +1,55 @@
+{
+  "id": "gh_rbo_revelation_4",
+  "translationCode": "RBO",
+  "bookId": "revelation",
+  "chapter": 4,
+  "title": "Откровение 4 · РБО",
+  "narratorId": "rbo",
+  "audioFileName": "66_04.mp3",
+  "cues": [
+    {
+      "timeMs": 4583,
+      "verseStart": 1
+    },
+    {
+      "timeMs": 25197,
+      "verseStart": 2
+    },
+    {
+      "timeMs": 35544,
+      "verseStart": 3
+    },
+    {
+      "timeMs": 47973,
+      "verseStart": 4
+    },
+    {
+      "timeMs": 60481,
+      "verseStart": 5
+    },
+    {
+      "timeMs": 72390,
+      "verseStart": 6
+    },
+    {
+      "timeMs": 86899,
+      "verseStart": 7
+    },
+    {
+      "timeMs": 98487,
+      "verseStart": 8
+    },
+    {
+      "timeMs": 120963,
+      "verseStart": 9
+    },
+    {
+      "timeMs": 128788,
+      "verseStart": 10
+    },
+    {
+      "timeMs": 140916,
+      "verseStart": 11
+    }
+  ]
+}
