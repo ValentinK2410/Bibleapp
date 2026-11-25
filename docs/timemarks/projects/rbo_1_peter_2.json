@@ -1,0 +1,111 @@
+{
+  "id": "gh_rbo_1_peter_2",
+  "translationCode": "RBO",
+  "bookId": "1_peter",
+  "chapter": 2,
+  "title": "1-е Петра 2 · РБО",
+  "narratorId": "rbo",
+  "audioFileName": "46_02.mp3",
+  "cues": [
+    {
+      "timeMs": 4003,
+      "verseStart": 1
+    },
+    {
+      "timeMs": 10948,
+      "verseStart": 2
+    },
+    {
+      "timeMs": 19694,
+      "verseStart": 3
+    },
+    {
+      "timeMs": 23856,
+      "verseStart": 4
+    },
+    {
+      "timeMs": 34043,
+      "verseStart": 5
+    },
+    {
+      "timeMs": 47372,
+      "verseStart": 6
+    },
+    {
+      "timeMs": 62042,
+      "verseStart": 7
+    },
+    {
+      "timeMs": 74471,
+      "verseStart": 8
+    },
+    {
+      "timeMs": 89041,
+      "verseStart": 9
+    },
+    {
+      "timeMs": 104431,
+      "verseStart": 10
+    },
+    {
+      "timeMs": 114879,
+      "verseStart": 11
+    },
+    {
+      "timeMs": 125086,
+      "verseStart": 12
+    },
+    {
+      "timeMs": 139836,
+      "verseStart": 13
+    },
+    {
+      "timeMs": 148582,
+      "verseStart": 14
+    },
+    {
+      "timeMs": 155546,
+      "verseStart": 15
+    },
+    {
+      "timeMs": 163832,
+      "verseStart": 16
+    },
+    {
+      "timeMs": 174699,
+      "verseStart": 17
+    },
+    {
+      "timeMs": 182104,
+      "verseStart": 18
+    },
+    {
+      "timeMs": 192652,
+      "verseStart": 19
+    },
+    {
+      "timeMs": 199476,
+      "verseStart": 20
+    },
+    {
+      "timeMs": 213006,
+      "verseStart": 21
+    },
+    {
+      "timeMs": 220671,
+      "verseStart": 22
+    },
+    {
+      "timeMs": 227095,
+      "verseStart": 23
+    },
+    {
+      "timeMs": 238323,
+      "verseStart": 24
+    },
+    {
+      "timeMs": 251352,
+      "verseStart": 25
+    }
+  ]
+}

@@ -1,0 +1,87 @@
+{
+  "id": "gh_rbo_1_peter_4",
+  "translationCode": "RBO",
+  "bookId": "1_peter",
+  "chapter": 4,
+  "title": "1-е Петра 4 · РБО",
+  "narratorId": "rbo",
+  "audioFileName": "46_04.mp3",
+  "cues": [
+    {
+      "timeMs": 4403,
+      "verseStart": 1
+    },
+    {
+      "timeMs": 15950,
+      "verseStart": 2
+    },
+    {
+      "timeMs": 23275,
+      "verseStart": 3
+    },
+    {
+      "timeMs": 39686,
+      "verseStart": 4
+    },
+    {
+      "timeMs": 46890,
+      "verseStart": 5
+    },
+    {
+      "timeMs": 53454,
+      "verseStart": 6
+    },
+    {
+      "timeMs": 68484,
+      "verseStart": 7
+    },
+    {
+      "timeMs": 75689,
+      "verseStart": 8
+    },
+    {
+      "timeMs": 83934,
+      "verseStart": 9
+    },
+    {
+      "timeMs": 88217,
+      "verseStart": 10
+    },
+    {
+      "timeMs": 98443,
+      "verseStart": 11
+    },
+    {
+      "timeMs": 120097,
+      "verseStart": 12
+    },
+    {
+      "timeMs": 130444,
+      "verseStart": 13
+    },
+    {
+      "timeMs": 140650,
+      "verseStart": 14
+    },
+    {
+      "timeMs": 150777,
+      "verseStart": 15
+    },
+    {
+      "timeMs": 160283,
+      "verseStart": 16
+    },
+    {
+      "timeMs": 169049,
+      "verseStart": 17
+    },
+    {
+      "timeMs": 184539,
+      "verseStart": 18
+    },
+    {
+      "timeMs": 190502,
+      "verseStart": 19
+    }
+  ]
+}

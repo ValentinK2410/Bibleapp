@@ -6364,6 +6364,56 @@
       "file": "projects/rbo_1_corinthians_9.json"
     },
     {
+      "id": "gh_rbo_1_peter_1",
+      "translationCode": "RBO",
+      "bookId": "1_peter",
+      "chapter": 1,
+      "title": "1-е Петра 1 · РБО",
+      "cueCount": 25,
+      "narratorId": "rbo",
+      "file": "projects/rbo_1_peter_1.json"
+    },
+    {
+      "id": "gh_rbo_1_peter_2",
+      "translationCode": "RBO",
+      "bookId": "1_peter",
+      "chapter": 2,
+      "title": "1-е Петра 2 · РБО",
+      "cueCount": 25,
+      "narratorId": "rbo",
+      "file": "projects/rbo_1_peter_2.json"
+    },
+    {
+      "id": "gh_rbo_1_peter_3",
+      "translationCode": "RBO",
+      "bookId": "1_peter",
+      "chapter": 3,
+      "title": "1-е Петра 3 · РБО",
+      "cueCount": 22,
+      "narratorId": "rbo",
+      "file": "projects/rbo_1_peter_3.json"
+    },
+    {
+      "id": "gh_rbo_1_peter_4",
+      "translationCode": "RBO",
+      "bookId": "1_peter",
+      "chapter": 4,
+      "title": "1-е Петра 4 · РБО",
+      "cueCount": 19,
+      "narratorId": "rbo",
+      "file": "projects/rbo_1_peter_4.json"
+    },
+    {
+      "id": "gh_rbo_1_peter_5",
+      "translationCode": "RBO",
+      "bookId": "1_peter",
+      "chapter": 5,
+      "title": "1-е Петра 5 · РБО",
+      "cueCount": 14,
+      "narratorId": "rbo",
+      "file": "projects/rbo_1_peter_5.json"
+    },
+    {
       "id": "gh_rbo_1_thessalonians_1",
       "translationCode": "RBO",
       "bookId": "1_thessalonians",

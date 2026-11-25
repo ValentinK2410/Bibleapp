@@ -1,0 +1,106 @@
+{
+  "id": "align-1_peter-RBO-04",
+  "translationCode": "RBO",
+  "bookId": "1_peter",
+  "chapter": 4,
+  "title": "1-е Петра 4 · РБО",
+  "audioFilePath": "/data/user/0/com.example.bible.sqlite/files/bible_audio/rbo/46_04.mp3",
+  "updatedAt": 1795478400000,
+  "cues": [
+    {
+      "timeMs": 4403,
+      "verseStart": 1,
+      "attachments": []
+    },
+    {
+      "timeMs": 15950,
+      "verseStart": 2,
+      "attachments": []
+    },
+    {
+      "timeMs": 23275,
+      "verseStart": 3,
+      "attachments": []
+    },
+    {
+      "timeMs": 39686,
+      "verseStart": 4,
+      "attachments": []
+    },
+    {
+      "timeMs": 46890,
+      "verseStart": 5,
+      "attachments": []
+    },
+    {
+      "timeMs": 53454,
+      "verseStart": 6,
+      "attachments": []
+    },
+    {
+      "timeMs": 68484,
+      "verseStart": 7,
+      "attachments": []
+    },
+    {
+      "timeMs": 75689,
+      "verseStart": 8,
+      "attachments": []
+    },
+    {
+      "timeMs": 83934,
+      "verseStart": 9,
+      "attachments": []
+    },
+    {
+      "timeMs": 88217,
+      "verseStart": 10,
+      "attachments": []
+    },
+    {
+      "timeMs": 98443,
+      "verseStart": 11,
+      "attachments": []
+    },
+    {
+      "timeMs": 120097,
+      "verseStart": 12,
+      "attachments": []
+    },
+    {
+      "timeMs": 130444,
+      "verseStart": 13,
+      "attachments": []
+    },
+    {
+      "timeMs": 140650,
+      "verseStart": 14,
+      "attachments": []
+    },
+    {
+      "timeMs": 150777,
+      "verseStart": 15,
+      "attachments": []
+    },
+    {
+      "timeMs": 160283,
+      "verseStart": 16,
+      "attachments": []
+    },
+    {
+      "timeMs": 169049,
+      "verseStart": 17,
+      "attachments": []
+    },
+    {
+      "timeMs": 184539,
+      "verseStart": 18,
+      "attachments": []
+    },
+    {
+      "timeMs": 190502,
+      "verseStart": 19,
+      "attachments": []
+    }
+  ]
+}
