@@ -1,0 +1,111 @@
+{
+  "id": "gh_web_1_peter_1",
+  "translationCode": "WEB",
+  "bookId": "1_peter",
+  "chapter": 1,
+  "title": "1-е Петра 1 · WEB (англ.)",
+  "narratorId": "web",
+  "audioFileName": "60_01.mp3",
+  "cues": [
+    {
+      "timeMs": 5444,
+      "verseStart": 1
+    },
+    {
+      "timeMs": 12929,
+      "verseStart": 2
+    },
+    {
+      "timeMs": 26199,
+      "verseStart": 3
+    },
+    {
+      "timeMs": 36927,
+      "verseStart": 4
+    },
+    {
+      "timeMs": 43692,
+      "verseStart": 5
+    },
+    {
+      "timeMs": 50797,
+      "verseStart": 6
+    },
+    {
+      "timeMs": 58823,
+      "verseStart": 7
+    },
+    {
+      "timeMs": 70371,
+      "verseStart": 8
+    },
+    {
+      "timeMs": 79598,
+      "verseStart": 9
+    },
+    {
+      "timeMs": 83801,
+      "verseStart": 10
+    },
+    {
+      "timeMs": 91347,
+      "verseStart": 11
+    },
+    {
+      "timeMs": 102935,
+      "verseStart": 12
+    },
+    {
+      "timeMs": 118887,
+      "verseStart": 13
+    },
+    {
+      "timeMs": 128294,
+      "verseStart": 14
+    },
+    {
+      "timeMs": 134158,
+      "verseStart": 15
+    },
+    {
+      "timeMs": 140583,
+      "verseStart": 16
+    },
+    {
+      "timeMs": 145806,
+      "verseStart": 17
+    },
+    {
+      "timeMs": 154333,
+      "verseStart": 18
+    },
+    {
+      "timeMs": 164040,
+      "verseStart": 19
+    },
+    {
+      "timeMs": 169344,
+      "verseStart": 20
+    },
+    {
+      "timeMs": 176849,
+      "verseStart": 21
+    },
+    {
+      "timeMs": 185996,
+      "verseStart": 22
+    },
+    {
+      "timeMs": 196043,
+      "verseStart": 23
+    },
+    {
+      "timeMs": 204529,
+      "verseStart": 24
+    },
+    {
+      "timeMs": 214156,
+      "verseStart": 25
+    }
+  ]
+}

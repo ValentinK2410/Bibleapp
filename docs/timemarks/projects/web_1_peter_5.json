@@ -1,0 +1,67 @@
+{
+  "id": "gh_web_1_peter_5",
+  "translationCode": "WEB",
+  "bookId": "1_peter",
+  "chapter": 5,
+  "title": "1-е Петра 5 · WEB (англ.)",
+  "narratorId": "web",
+  "audioFileName": "60_05.mp3",
+  "cues": [
+    {
+      "timeMs": 2362,
+      "verseStart": 1
+    },
+    {
+      "timeMs": 13010,
+      "verseStart": 2
+    },
+    {
+      "timeMs": 23398,
+      "verseStart": 3
+    },
+    {
+      "timeMs": 29002,
+      "verseStart": 4
+    },
+    {
+      "timeMs": 36248,
+      "verseStart": 5
+    },
+    {
+      "timeMs": 49618,
+      "verseStart": 6
+    },
+    {
+      "timeMs": 55242,
+      "verseStart": 7
+    },
+    {
+      "timeMs": 60166,
+      "verseStart": 8
+    },
+    {
+      "timeMs": 69073,
+      "verseStart": 9
+    },
+    {
+      "timeMs": 77720,
+      "verseStart": 10
+    },
+    {
+      "timeMs": 89689,
+      "verseStart": 11
+    },
+    {
+      "timeMs": 95954,
+      "verseStart": 12
+    },
+    {
+      "timeMs": 106782,
+      "verseStart": 13
+    },
+    {
+      "timeMs": 114108,
+      "verseStart": 14
+    }
+  ]
+}
