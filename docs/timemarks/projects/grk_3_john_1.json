@@ -1,0 +1,67 @@
+{
+  "id": "gh_grk_3_john_1",
+  "translationCode": "PODSTR",
+  "bookId": "3_john",
+  "chapter": 1,
+  "title": "3-е Иоанна 1 · Греческий (Koine)",
+  "narratorId": "greek-nt",
+  "audioFileName": "64_01.mp3",
+  "cues": [
+    {
+      "timeMs": 1061,
+      "verseStart": 1
+    },
+    {
+      "timeMs": 6484,
+      "verseStart": 2
+    },
+    {
+      "timeMs": 14589,
+      "verseStart": 3
+    },
+    {
+      "timeMs": 22454,
+      "verseStart": 4
+    },
+    {
+      "timeMs": 29639,
+      "verseStart": 5
+    },
+    {
+      "timeMs": 36203,
+      "verseStart": 6
+    },
+    {
+      "timeMs": 43548,
+      "verseStart": 7
+    },
+    {
+      "timeMs": 48851,
+      "verseStart": 8
+    },
+    {
+      "timeMs": 55215,
+      "verseStart": 9
+    },
+    {
+      "timeMs": 61839,
+      "verseStart": 10
+    },
+    {
+      "timeMs": 77589,
+      "verseStart": 11
+    },
+    {
+      "timeMs": 87936,
+      "verseStart": 12
+    },
+    {
+      "timeMs": 98382,
+      "verseStart": 13
+    },
+    {
+      "timeMs": 103846,
+      "verseStart": 14
+    }
+  ]
+}

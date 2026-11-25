@@ -2694,6 +2694,16 @@
       "file": "projects/grk_2_timothy_4.json"
     },
     {
+      "id": "gh_grk_3_john_1",
+      "translationCode": "PODSTR",
+      "bookId": "3_john",
+      "chapter": 1,
+      "title": "3-е Иоанна 1 · Греческий (Koine)",
+      "cueCount": 14,
+      "narratorId": "greek-nt",
+      "file": "projects/grk_3_john_1.json"
+    },
+    {
       "id": "gh_grk_acts_1",
       "translationCode": "PODSTR",
       "bookId": "acts",
