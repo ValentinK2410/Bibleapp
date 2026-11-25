@@ -28,6 +28,7 @@ import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.grid.GridCells
+import androidx.compose.foundation.lazy.grid.GridItemSpan
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items as gridItems
 import androidx.compose.foundation.lazy.items
@@ -106,6 +107,7 @@ import com.example.bible.R
 import com.example.bible.data.ReadingAnchor
 import com.example.bible.data.BibleBook
 import com.example.bible.data.BibleCanon
+import com.example.bible.data.BookIntros
 import com.example.bible.data.BibleChapter
 import com.example.bible.data.BibleLibrary
 import com.example.bible.data.BibleUserAudio
@@ -1962,6 +1964,10 @@ private fun ChapterPickerPane(
     val presence = rememberTimemarkPresenceIndex()
     val tabColors = rememberTranslationTabColorsMap()
     var infoChapter by remember { mutableStateOf<Int?>(null) }
+    val introContext = LocalContext.current
+    LaunchedEffect(bookId) {
+        BookIntros.load(introContext)
+    }
     Column(modifier.fillMaxSize()) {
         if (book.chapters.isEmpty()) {
             Text(
@@ -2032,6 +2038,9 @@ private fun ChapterPickerPane(
                             )
                         }
                     }
+                }
+                item(key = "book_intro", span = { GridItemSpan(maxLineSpan) }) {
+                    BookIntroBlock(bookId = bookId)
                 }
             }
         }
