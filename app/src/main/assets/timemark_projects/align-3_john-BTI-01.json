@@ -1,0 +1,86 @@
+{
+  "id": "align-3_john-BTI-01",
+  "translationCode": "BTI",
+  "bookId": "3_john",
+  "chapter": 1,
+  "title": "3-е Иоанна 1 · Кулаковых",
+  "audioFilePath": "/data/user/0/com.example.bible.sqlite/files/bible_audio/bti/50_01.mp3",
+  "updatedAt": 1795478400000,
+  "cues": [
+    {
+      "timeMs": 5904,
+      "verseStart": 1,
+      "attachments": []
+    },
+    {
+      "timeMs": 14670,
+      "verseStart": 2,
+      "attachments": []
+    },
+    {
+      "timeMs": 24858,
+      "verseStart": 3,
+      "attachments": []
+    },
+    {
+      "timeMs": 39108,
+      "verseStart": 4,
+      "attachments": []
+    },
+    {
+      "timeMs": 48494,
+      "verseStart": 5,
+      "attachments": []
+    },
+    {
+      "timeMs": 58842,
+      "verseStart": 6,
+      "attachments": []
+    },
+    {
+      "timeMs": 72831,
+      "verseStart": 7,
+      "attachments": []
+    },
+    {
+      "timeMs": 81097,
+      "verseStart": 8,
+      "attachments": []
+    },
+    {
+      "timeMs": 91244,
+      "verseStart": 9,
+      "attachments": []
+    },
+    {
+      "timeMs": 99810,
+      "verseStart": 10,
+      "attachments": []
+    },
+    {
+      "timeMs": 124047,
+      "verseStart": 11,
+      "attachments": []
+    },
+    {
+      "timeMs": 141460,
+      "verseStart": 12,
+      "attachments": []
+    },
+    {
+      "timeMs": 159853,
+      "verseStart": 13,
+      "attachments": []
+    },
+    {
+      "timeMs": 168899,
+      "verseStart": 14,
+      "attachments": []
+    },
+    {
+      "timeMs": 175864,
+      "verseStart": 15,
+      "attachments": []
+    }
+  ]
+}

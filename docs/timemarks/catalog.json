@@ -614,6 +614,16 @@
       "file": "projects/bti_2_timothy_4.json"
     },
     {
+      "id": "gh_bti_3_john_1",
+      "translationCode": "BTI",
+      "bookId": "3_john",
+      "chapter": 1,
+      "title": "3-е Иоанна 1 · Кулаковых",
+      "cueCount": 15,
+      "narratorId": "bti",
+      "file": "projects/bti_3_john_1.json"
+    },
+    {
       "id": "gh_bti_acts_1",
       "translationCode": "BTI",
       "bookId": "acts",
