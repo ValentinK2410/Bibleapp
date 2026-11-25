@@ -1,0 +1,71 @@
+{
+  "id": "gh_syn_acts_6",
+  "translationCode": "SYN",
+  "bookId": "acts",
+  "chapter": 6,
+  "title": "Деяния 6 · Синодальный · Бондаренко",
+  "narratorId": "bondarenko",
+  "audioFileName": "44_06.mp3",
+  "cues": [
+    {
+      "timeMs": 3963,
+      "verseStart": 1
+    },
+    {
+      "timeMs": 18573,
+      "verseStart": 2
+    },
+    {
+      "timeMs": 30301,
+      "verseStart": 3
+    },
+    {
+      "timeMs": 41209,
+      "verseStart": 4
+    },
+    {
+      "timeMs": 48034,
+      "verseStart": 5
+    },
+    {
+      "timeMs": 68228,
+      "verseStart": 6
+    },
+    {
+      "timeMs": 76354,
+      "verseStart": 7
+    },
+    {
+      "timeMs": 89443,
+      "verseStart": 8
+    },
+    {
+      "timeMs": 97929,
+      "verseStart": 9
+    },
+    {
+      "timeMs": 109117,
+      "verseStart": 10
+    },
+    {
+      "timeMs": 115882,
+      "verseStart": 11
+    },
+    {
+      "timeMs": 125829,
+      "verseStart": 12
+    },
+    {
+      "timeMs": 134875,
+      "verseStart": 13
+    },
+    {
+      "timeMs": 147024,
+      "verseStart": 14
+    },
+    {
+      "timeMs": 157772,
+      "verseStart": 15
+    }
+  ]
+}

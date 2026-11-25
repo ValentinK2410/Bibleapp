@@ -1,0 +1,135 @@
+{
+  "id": "gh_syn_acts_28",
+  "translationCode": "SYN",
+  "bookId": "acts",
+  "chapter": 28,
+  "title": "Деяния 28 · Синодальный · Бондаренко",
+  "narratorId": "bondarenko",
+  "audioFileName": "44_28.mp3",
+  "cues": [
+    {
+      "timeMs": 5544,
+      "verseStart": 1
+    },
+    {
+      "timeMs": 14770,
+      "verseStart": 2
+    },
+    {
+      "timeMs": 27399,
+      "verseStart": 3
+    },
+    {
+      "timeMs": 39087,
+      "verseStart": 4
+    },
+    {
+      "timeMs": 55799,
+      "verseStart": 5
+    },
+    {
+      "timeMs": 63004,
+      "verseStart": 6
+    },
+    {
+      "timeMs": 81337,
+      "verseStart": 7
+    },
+    {
+      "timeMs": 95107,
+      "verseStart": 8
+    },
+    {
+      "timeMs": 109377,
+      "verseStart": 9
+    },
+    {
+      "timeMs": 116882,
+      "verseStart": 10
+    },
+    {
+      "timeMs": 124107,
+      "verseStart": 11
+    },
+    {
+      "timeMs": 133554,
+      "verseStart": 12
+    },
+    {
+      "timeMs": 138797,
+      "verseStart": 13
+    },
+    {
+      "timeMs": 147884,
+      "verseStart": 14
+    },
+    {
+      "timeMs": 157190,
+      "verseStart": 15
+    },
+    {
+      "timeMs": 173302,
+      "verseStart": 16
+    },
+    {
+      "timeMs": 189153,
+      "verseStart": 17
+    },
+    {
+      "timeMs": 215331,
+      "verseStart": 18
+    },
+    {
+      "timeMs": 224537,
+      "verseStart": 19
+    },
+    {
+      "timeMs": 237306,
+      "verseStart": 20
+    },
+    {
+      "timeMs": 253338,
+      "verseStart": 21
+    },
+    {
+      "timeMs": 266487,
+      "verseStart": 22
+    },
+    {
+      "timeMs": 280577,
+      "verseStart": 23
+    },
+    {
+      "timeMs": 301071,
+      "verseStart": 24
+    },
+    {
+      "timeMs": 306895,
+      "verseStart": 25
+    },
+    {
+      "timeMs": 322866,
+      "verseStart": 26
+    },
+    {
+      "timeMs": 336536,
+      "verseStart": 27
+    },
+    {
+      "timeMs": 359772,
+      "verseStart": 28
+    },
+    {
+      "timeMs": 376144,
+      "verseStart": 29
+    },
+    {
+      "timeMs": 386271,
+      "verseStart": 30
+    },
+    {
+      "timeMs": 394577,
+      "verseStart": 31
+    }
+  ]
+}

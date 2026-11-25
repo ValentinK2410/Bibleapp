@@ -7474,6 +7474,286 @@
       "file": "projects/syn_2_timothy_4.json"
     },
     {
+      "id": "gh_syn_acts_1",
+      "translationCode": "SYN",
+      "bookId": "acts",
+      "chapter": 1,
+      "title": "Деяния 1 · Синодальный · Бондаренко",
+      "cueCount": 26,
+      "narratorId": "bondarenko",
+      "file": "projects/syn_acts_1.json"
+    },
+    {
+      "id": "gh_syn_acts_10",
+      "translationCode": "SYN",
+      "bookId": "acts",
+      "chapter": 10,
+      "title": "Деяния 10 · Синодальный · Бондаренко",
+      "cueCount": 48,
+      "narratorId": "bondarenko",
+      "file": "projects/syn_acts_10.json"
+    },
+    {
+      "id": "gh_syn_acts_11",
+      "translationCode": "SYN",
+      "bookId": "acts",
+      "chapter": 11,
+      "title": "Деяния 11 · Синодальный · Бондаренко",
+      "cueCount": 30,
+      "narratorId": "bondarenko",
+      "file": "projects/syn_acts_11.json"
+    },
+    {
+      "id": "gh_syn_acts_12",
+      "translationCode": "SYN",
+      "bookId": "acts",
+      "chapter": 12,
+      "title": "Деяния 12 · Синодальный · Бондаренко",
+      "cueCount": 25,
+      "narratorId": "bondarenko",
+      "file": "projects/syn_acts_12.json"
+    },
+    {
+      "id": "gh_syn_acts_13",
+      "translationCode": "SYN",
+      "bookId": "acts",
+      "chapter": 13,
+      "title": "Деяния 13 · Синодальный · Бондаренко",
+      "cueCount": 52,
+      "narratorId": "bondarenko",
+      "file": "projects/syn_acts_13.json"
+    },
+    {
+      "id": "gh_syn_acts_14",
+      "translationCode": "SYN",
+      "bookId": "acts",
+      "chapter": 14,
+      "title": "Деяния 14 · Синодальный · Бондаренко",
+      "cueCount": 28,
+      "narratorId": "bondarenko",
+      "file": "projects/syn_acts_14.json"
+    },
+    {
+      "id": "gh_syn_acts_15",
+      "translationCode": "SYN",
+      "bookId": "acts",
+      "chapter": 15,
+      "title": "Деяния 15 · Синодальный · Бондаренко",
+      "cueCount": 41,
+      "narratorId": "bondarenko",
+      "file": "projects/syn_acts_15.json"
+    },
+    {
+      "id": "gh_syn_acts_16",
+      "translationCode": "SYN",
+      "bookId": "acts",
+      "chapter": 16,
+      "title": "Деяния 16 · Синодальный · Бондаренко",
+      "cueCount": 40,
+      "narratorId": "bondarenko",
+      "file": "projects/syn_acts_16.json"
+    },
+    {
+      "id": "gh_syn_acts_17",
+      "translationCode": "SYN",
+      "bookId": "acts",
+      "chapter": 17,
+      "title": "Деяния 17 · Синодальный · Бондаренко",
+      "cueCount": 34,
+      "narratorId": "bondarenko",
+      "file": "projects/syn_acts_17.json"
+    },
+    {
+      "id": "gh_syn_acts_18",
+      "translationCode": "SYN",
+      "bookId": "acts",
+      "chapter": 18,
+      "title": "Деяния 18 · Синодальный · Бондаренко",
+      "cueCount": 28,
+      "narratorId": "bondarenko",
+      "file": "projects/syn_acts_18.json"
+    },
+    {
+      "id": "gh_syn_acts_19",
+      "translationCode": "SYN",
+      "bookId": "acts",
+      "chapter": 19,
+      "title": "Деяния 19 · Синодальный · Бондаренко",
+      "cueCount": 40,
+      "narratorId": "bondarenko",
+      "file": "projects/syn_acts_19.json"
+    },
+    {
+      "id": "gh_syn_acts_2",
+      "translationCode": "SYN",
+      "bookId": "acts",
+      "chapter": 2,
+      "title": "Деяния 2 · Синодальный · Бондаренко",
+      "cueCount": 47,
+      "narratorId": "bondarenko",
+      "file": "projects/syn_acts_2.json"
+    },
+    {
+      "id": "gh_syn_acts_20",
+      "translationCode": "SYN",
+      "bookId": "acts",
+      "chapter": 20,
+      "title": "Деяния 20 · Синодальный · Бондаренко",
+      "cueCount": 38,
+      "narratorId": "bondarenko",
+      "file": "projects/syn_acts_20.json"
+    },
+    {
+      "id": "gh_syn_acts_21",
+      "translationCode": "SYN",
+      "bookId": "acts",
+      "chapter": 21,
+      "title": "Деяния 21 · Синодальный · Бондаренко",
+      "cueCount": 40,
+      "narratorId": "bondarenko",
+      "file": "projects/syn_acts_21.json"
+    },
+    {
+      "id": "gh_syn_acts_22",
+      "translationCode": "SYN",
+      "bookId": "acts",
+      "chapter": 22,
+      "title": "Деяния 22 · Синодальный · Бондаренко",
+      "cueCount": 30,
+      "narratorId": "bondarenko",
+      "file": "projects/syn_acts_22.json"
+    },
+    {
+      "id": "gh_syn_acts_23",
+      "translationCode": "SYN",
+      "bookId": "acts",
+      "chapter": 23,
+      "title": "Деяния 23 · Синодальный · Бондаренко",
+      "cueCount": 35,
+      "narratorId": "bondarenko",
+      "file": "projects/syn_acts_23.json"
+    },
+    {
+      "id": "gh_syn_acts_24",
+      "translationCode": "SYN",
+      "bookId": "acts",
+      "chapter": 24,
+      "title": "Деяния 24 · Синодальный · Бондаренко",
+      "cueCount": 27,
+      "narratorId": "bondarenko",
+      "file": "projects/syn_acts_24.json"
+    },
+    {
+      "id": "gh_syn_acts_25",
+      "translationCode": "SYN",
+      "bookId": "acts",
+      "chapter": 25,
+      "title": "Деяния 25 · Синодальный · Бондаренко",
+      "cueCount": 27,
+      "narratorId": "bondarenko",
+      "file": "projects/syn_acts_25.json"
+    },
+    {
+      "id": "gh_syn_acts_26",
+      "translationCode": "SYN",
+      "bookId": "acts",
+      "chapter": 26,
+      "title": "Деяния 26 · Синодальный · Бондаренко",
+      "cueCount": 32,
+      "narratorId": "bondarenko",
+      "file": "projects/syn_acts_26.json"
+    },
+    {
+      "id": "gh_syn_acts_27",
+      "translationCode": "SYN",
+      "bookId": "acts",
+      "chapter": 27,
+      "title": "Деяния 27 · Синодальный · Бондаренко",
+      "cueCount": 44,
+      "narratorId": "bondarenko",
+      "file": "projects/syn_acts_27.json"
+    },
+    {
+      "id": "gh_syn_acts_28",
+      "translationCode": "SYN",
+      "bookId": "acts",
+      "chapter": 28,
+      "title": "Деяния 28 · Синодальный · Бондаренко",
+      "cueCount": 31,
+      "narratorId": "bondarenko",
+      "file": "projects/syn_acts_28.json"
+    },
+    {
+      "id": "gh_syn_acts_3",
+      "translationCode": "SYN",
+      "bookId": "acts",
+      "chapter": 3,
+      "title": "Деяния 3 · Синодальный · Бондаренко",
+      "cueCount": 26,
+      "narratorId": "bondarenko",
+      "file": "projects/syn_acts_3.json"
+    },
+    {
+      "id": "gh_syn_acts_4",
+      "translationCode": "SYN",
+      "bookId": "acts",
+      "chapter": 4,
+      "title": "Деяния 4 · Синодальный · Бондаренко",
+      "cueCount": 37,
+      "narratorId": "bondarenko",
+      "file": "projects/syn_acts_4.json"
+    },
+    {
+      "id": "gh_syn_acts_5",
+      "translationCode": "SYN",
+      "bookId": "acts",
+      "chapter": 5,
+      "title": "Деяния 5 · Синодальный · Бондаренко",
+      "cueCount": 42,
+      "narratorId": "bondarenko",
+      "file": "projects/syn_acts_5.json"
+    },
+    {
+      "id": "gh_syn_acts_6",
+      "translationCode": "SYN",
+      "bookId": "acts",
+      "chapter": 6,
+      "title": "Деяния 6 · Синодальный · Бондаренко",
+      "cueCount": 15,
+      "narratorId": "bondarenko",
+      "file": "projects/syn_acts_6.json"
+    },
+    {
+      "id": "gh_syn_acts_7",
+      "translationCode": "SYN",
+      "bookId": "acts",
+      "chapter": 7,
+      "title": "Деяния 7 · Синодальный · Бондаренко",
+      "cueCount": 60,
+      "narratorId": "bondarenko",
+      "file": "projects/syn_acts_7.json"
+    },
+    {
+      "id": "gh_syn_acts_8",
+      "translationCode": "SYN",
+      "bookId": "acts",
+      "chapter": 8,
+      "title": "Деяния 8 · Синодальный · Бондаренко",
+      "cueCount": 40,
+      "narratorId": "bondarenko",
+      "file": "projects/syn_acts_8.json"
+    },
+    {
+      "id": "gh_syn_acts_9",
+      "translationCode": "SYN",
+      "bookId": "acts",
+      "chapter": 9,
+      "title": "Деяния 9 · Синодальный · Бондаренко",
+      "cueCount": 43,
+      "narratorId": "bondarenko",
+      "file": "projects/syn_acts_9.json"
+    },
+    {
       "id": "gh_syn_colossians_1",
       "translationCode": "SYN",
       "bookId": "colossians",

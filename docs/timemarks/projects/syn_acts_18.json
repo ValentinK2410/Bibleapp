@@ -1,0 +1,123 @@
+{
+  "id": "gh_syn_acts_18",
+  "translationCode": "SYN",
+  "bookId": "acts",
+  "chapter": 18,
+  "title": "Деяния 18 · Синодальный · Бондаренко",
+  "narratorId": "bondarenko",
+  "audioFileName": "44_18.mp3",
+  "cues": [
+    {
+      "timeMs": 4123,
+      "verseStart": 1
+    },
+    {
+      "timeMs": 10167,
+      "verseStart": 2
+    },
+    {
+      "timeMs": 26779,
+      "verseStart": 3
+    },
+    {
+      "timeMs": 35785,
+      "verseStart": 4
+    },
+    {
+      "timeMs": 44491,
+      "verseStart": 5
+    },
+    {
+      "timeMs": 57540,
+      "verseStart": 6
+    },
+    {
+      "timeMs": 72831,
+      "verseStart": 7
+    },
+    {
+      "timeMs": 83478,
+      "verseStart": 8
+    },
+    {
+      "timeMs": 97408,
+      "verseStart": 9
+    },
+    {
+      "timeMs": 107635,
+      "verseStart": 10
+    },
+    {
+      "timeMs": 118883,
+      "verseStart": 11
+    },
+    {
+      "timeMs": 127109,
+      "verseStart": 12
+    },
+    {
+      "timeMs": 138917,
+      "verseStart": 13
+    },
+    {
+      "timeMs": 145461,
+      "verseStart": 14
+    },
+    {
+      "timeMs": 162373,
+      "verseStart": 15
+    },
+    {
+      "timeMs": 174081,
+      "verseStart": 16
+    },
+    {
+      "timeMs": 177744,
+      "verseStart": 17
+    },
+    {
+      "timeMs": 190132,
+      "verseStart": 18
+    },
+    {
+      "timeMs": 204502,
+      "verseStart": 19
+    },
+    {
+      "timeMs": 212228,
+      "verseStart": 20
+    },
+    {
+      "timeMs": 217331,
+      "verseStart": 21
+    },
+    {
+      "timeMs": 239307,
+      "verseStart": 22
+    },
+    {
+      "timeMs": 247793,
+      "verseStart": 23
+    },
+    {
+      "timeMs": 259561,
+      "verseStart": 24
+    },
+    {
+      "timeMs": 271329,
+      "verseStart": 25
+    },
+    {
+      "timeMs": 282016,
+      "verseStart": 26
+    },
+    {
+      "timeMs": 293064,
+      "verseStart": 27
+    },
+    {
+      "timeMs": 308835,
+      "verseStart": 28
+    }
+  ]
+}

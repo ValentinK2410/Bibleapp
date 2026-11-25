@@ -1,0 +1,201 @@
+{
+  "id": "align-acts-SYN-20",
+  "translationCode": "SYN",
+  "bookId": "acts",
+  "chapter": 20,
+  "title": "Деяния 20 · Синодальный · Бондаренко",
+  "audioFilePath": "/data/user/0/com.example.bible.sqlite/files/bible_audio/bondarenko/44_20.mp3",
+  "updatedAt": 1795478400000,
+  "cues": [
+    {
+      "timeMs": 3923,
+      "verseStart": 1,
+      "attachments": []
+    },
+    {
+      "timeMs": 15971,
+      "verseStart": 2,
+      "attachments": []
+    },
+    {
+      "timeMs": 23917,
+      "verseStart": 3,
+      "attachments": []
+    },
+    {
+      "timeMs": 41529,
+      "verseStart": 4,
+      "attachments": []
+    },
+    {
+      "timeMs": 60302,
+      "verseStart": 5,
+      "attachments": []
+    },
+    {
+      "timeMs": 64985,
+      "verseStart": 6,
+      "attachments": []
+    },
+    {
+      "timeMs": 77394,
+      "verseStart": 7,
+      "attachments": []
+    },
+    {
+      "timeMs": 93305,
+      "verseStart": 8,
+      "attachments": []
+    },
+    {
+      "timeMs": 98909,
+      "verseStart": 9,
+      "attachments": []
+    },
+    {
+      "timeMs": 120644,
+      "verseStart": 10,
+      "attachments": []
+    },
+    {
+      "timeMs": 133993,
+      "verseStart": 11,
+      "attachments": []
+    },
+    {
+      "timeMs": 143840,
+      "verseStart": 12,
+      "attachments": []
+    },
+    {
+      "timeMs": 151425,
+      "verseStart": 13,
+      "attachments": []
+    },
+    {
+      "timeMs": 163974,
+      "verseStart": 14,
+      "attachments": []
+    },
+    {
+      "timeMs": 170138,
+      "verseStart": 15,
+      "attachments": []
+    },
+    {
+      "timeMs": 184008,
+      "verseStart": 16,
+      "attachments": []
+    },
+    {
+      "timeMs": 197937,
+      "verseStart": 17,
+      "attachments": []
+    },
+    {
+      "timeMs": 204082,
+      "verseStart": 18,
+      "attachments": []
+    },
+    {
+      "timeMs": 219412,
+      "verseStart": 19,
+      "attachments": []
+    },
+    {
+      "timeMs": 229880,
+      "verseStart": 20,
+      "attachments": []
+    },
+    {
+      "timeMs": 237545,
+      "verseStart": 21,
+      "attachments": []
+    },
+    {
+      "timeMs": 245090,
+      "verseStart": 22,
+      "attachments": []
+    },
+    {
+      "timeMs": 255517,
+      "verseStart": 23,
+      "attachments": []
+    },
+    {
+      "timeMs": 262322,
+      "verseStart": 24,
+      "attachments": []
+    },
+    {
+      "timeMs": 278773,
+      "verseStart": 25,
+      "attachments": []
+    },
+    {
+      "timeMs": 289161,
+      "verseStart": 26,
+      "attachments": []
+    },
+    {
+      "timeMs": 297947,
+      "verseStart": 27,
+      "attachments": []
+    },
+    {
+      "timeMs": 304191,
+      "verseStart": 28,
+      "attachments": []
+    },
+    {
+      "timeMs": 315959,
+      "verseStart": 29,
+      "attachments": []
+    },
+    {
+      "timeMs": 323625,
+      "verseStart": 30,
+      "attachments": []
+    },
+    {
+      "timeMs": 330609,
+      "verseStart": 31,
+      "attachments": []
+    },
+    {
+      "timeMs": 341977,
+      "verseStart": 32,
+      "attachments": []
+    },
+    {
+      "timeMs": 351604,
+      "verseStart": 33,
+      "attachments": []
+    },
+    {
+      "timeMs": 355006,
+      "verseStart": 34,
+      "attachments": []
+    },
+    {
+      "timeMs": 361171,
+      "verseStart": 35,
+      "attachments": []
+    },
+    {
+      "timeMs": 378082,
+      "verseStart": 36,
+      "attachments": []
+    },
+    {
+      "timeMs": 387289,
+      "verseStart": 37,
+      "attachments": []
+    },
+    {
+      "timeMs": 395494,
+      "verseStart": 38,
+      "attachments": []
+    }
+  ]
+}

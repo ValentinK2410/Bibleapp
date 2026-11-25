@@ -1,0 +1,86 @@
+{
+  "id": "align-acts-SYN-06",
+  "translationCode": "SYN",
+  "bookId": "acts",
+  "chapter": 6,
+  "title": "Деяния 6 · Синодальный · Бондаренко",
+  "audioFilePath": "/data/user/0/com.example.bible.sqlite/files/bible_audio/bondarenko/44_06.mp3",
+  "updatedAt": 1795478400000,
+  "cues": [
+    {
+      "timeMs": 3963,
+      "verseStart": 1,
+      "attachments": []
+    },
+    {
+      "timeMs": 18573,
+      "verseStart": 2,
+      "attachments": []
+    },
+    {
+      "timeMs": 30301,
+      "verseStart": 3,
+      "attachments": []
+    },
+    {
+      "timeMs": 41209,
+      "verseStart": 4,
+      "attachments": []
+    },
+    {
+      "timeMs": 48034,
+      "verseStart": 5,
+      "attachments": []
+    },
+    {
+      "timeMs": 68228,
+      "verseStart": 6,
+      "attachments": []
+    },
+    {
+      "timeMs": 76354,
+      "verseStart": 7,
+      "attachments": []
+    },
+    {
+      "timeMs": 89443,
+      "verseStart": 8,
+      "attachments": []
+    },
+    {
+      "timeMs": 97929,
+      "verseStart": 9,
+      "attachments": []
+    },
+    {
+      "timeMs": 109117,
+      "verseStart": 10,
+      "attachments": []
+    },
+    {
+      "timeMs": 115882,
+      "verseStart": 11,
+      "attachments": []
+    },
+    {
+      "timeMs": 125829,
+      "verseStart": 12,
+      "attachments": []
+    },
+    {
+      "timeMs": 134875,
+      "verseStart": 13,
+      "attachments": []
+    },
+    {
+      "timeMs": 147024,
+      "verseStart": 14,
+      "attachments": []
+    },
+    {
+      "timeMs": 157772,
+      "verseStart": 15,
+      "attachments": []
+    }
+  ]
+}

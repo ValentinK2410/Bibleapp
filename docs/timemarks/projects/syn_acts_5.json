@@ -1,0 +1,179 @@
+{
+  "id": "gh_syn_acts_5",
+  "translationCode": "SYN",
+  "bookId": "acts",
+  "chapter": 5,
+  "title": "Деяния 5 · Синодальный · Бондаренко",
+  "narratorId": "bondarenko",
+  "audioFileName": "44_05.mp3",
+  "cues": [
+    {
+      "timeMs": 2342,
+      "verseStart": 1
+    },
+    {
+      "timeMs": 9246,
+      "verseStart": 2
+    },
+    {
+      "timeMs": 17352,
+      "verseStart": 3
+    },
+    {
+      "timeMs": 33003,
+      "verseStart": 4
+    },
+    {
+      "timeMs": 51996,
+      "verseStart": 5
+    },
+    {
+      "timeMs": 61863,
+      "verseStart": 6
+    },
+    {
+      "timeMs": 69528,
+      "verseStart": 7
+    },
+    {
+      "timeMs": 75392,
+      "verseStart": 8
+    },
+    {
+      "timeMs": 87041,
+      "verseStart": 9
+    },
+    {
+      "timeMs": 102351,
+      "verseStart": 10
+    },
+    {
+      "timeMs": 115981,
+      "verseStart": 11
+    },
+    {
+      "timeMs": 123006,
+      "verseStart": 12
+    },
+    {
+      "timeMs": 132132,
+      "verseStart": 13
+    },
+    {
+      "timeMs": 138136,
+      "verseStart": 14
+    },
+    {
+      "timeMs": 144080,
+      "verseStart": 15
+    },
+    {
+      "timeMs": 155468,
+      "verseStart": 16
+    },
+    {
+      "timeMs": 167156,
+      "verseStart": 17
+    },
+    {
+      "timeMs": 176343,
+      "verseStart": 18
+    },
+    {
+      "timeMs": 184028,
+      "verseStart": 19
+    },
+    {
+      "timeMs": 189091,
+      "verseStart": 20
+    },
+    {
+      "timeMs": 194936,
+      "verseStart": 21
+    },
+    {
+      "timeMs": 214649,
+      "verseStart": 22
+    },
+    {
+      "timeMs": 220233,
+      "verseStart": 23
+    },
+    {
+      "timeMs": 235324,
+      "verseStart": 24
+    },
+    {
+      "timeMs": 247512,
+      "verseStart": 25
+    },
+    {
+      "timeMs": 258380,
+      "verseStart": 26
+    },
+    {
+      "timeMs": 268867,
+      "verseStart": 27
+    },
+    {
+      "timeMs": 277533,
+      "verseStart": 28
+    },
+    {
+      "timeMs": 292323,
+      "verseStart": 29
+    },
+    {
+      "timeMs": 302350,
+      "verseStart": 30
+    },
+    {
+      "timeMs": 310976,
+      "verseStart": 31
+    },
+    {
+      "timeMs": 323485,
+      "verseStart": 32
+    },
+    {
+      "timeMs": 333192,
+      "verseStart": 33
+    },
+    {
+      "timeMs": 340817,
+      "verseStart": 34
+    },
+    {
+      "timeMs": 353326,
+      "verseStart": 35
+    },
+    {
+      "timeMs": 367155,
+      "verseStart": 36
+    },
+    {
+      "timeMs": 387730,
+      "verseStart": 37
+    },
+    {
+      "timeMs": 402320,
+      "verseStart": 38
+    },
+    {
+      "timeMs": 418111,
+      "verseStart": 39
+    },
+    {
+      "timeMs": 430860,
+      "verseStart": 40
+    },
+    {
+      "timeMs": 443048,
+      "verseStart": 41
+    },
+    {
+      "timeMs": 450593,
+      "verseStart": 42
+    }
+  ]
+}
