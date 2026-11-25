@@ -1,0 +1,43 @@
+{
+  "id": "gh_syn_revelation_15",
+  "translationCode": "SYN",
+  "bookId": "revelation",
+  "chapter": 15,
+  "title": "Откровение 15 · Синодальный · Бондаренко",
+  "narratorId": "bondarenko",
+  "audioFileName": "66_15.mp3",
+  "cues": [
+    {
+      "timeMs": 4023,
+      "verseStart": 1
+    },
+    {
+      "timeMs": 24317,
+      "verseStart": 2
+    },
+    {
+      "timeMs": 49634,
+      "verseStart": 3
+    },
+    {
+      "timeMs": 76792,
+      "verseStart": 4
+    },
+    {
+      "timeMs": 104971,
+      "verseStart": 5
+    },
+    {
+      "timeMs": 117160,
+      "verseStart": 6
+    },
+    {
+      "timeMs": 137273,
+      "verseStart": 7
+    },
+    {
+      "timeMs": 154385,
+      "verseStart": 8
+    }
+  ]
+}

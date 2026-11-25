@@ -1,0 +1,87 @@
+{
+  "id": "gh_syn_revelation_11",
+  "translationCode": "SYN",
+  "bookId": "revelation",
+  "chapter": 11,
+  "title": "Откровение 11 · Синодальный · Бондаренко",
+  "narratorId": "bondarenko",
+  "audioFileName": "66_11.mp3",
+  "cues": [
+    {
+      "timeMs": 5684,
+      "verseStart": 1
+    },
+    {
+      "timeMs": 21154,
+      "verseStart": 2
+    },
+    {
+      "timeMs": 39585,
+      "verseStart": 3
+    },
+    {
+      "timeMs": 53514,
+      "verseStart": 4
+    },
+    {
+      "timeMs": 61239,
+      "verseStart": 5
+    },
+    {
+      "timeMs": 75789,
+      "verseStart": 6
+    },
+    {
+      "timeMs": 95701,
+      "verseStart": 7
+    },
+    {
+      "timeMs": 107589,
+      "verseStart": 8
+    },
+    {
+      "timeMs": 120998,
+      "verseStart": 9
+    },
+    {
+      "timeMs": 135007,
+      "verseStart": 10
+    },
+    {
+      "timeMs": 150737,
+      "verseStart": 11
+    },
+    {
+      "timeMs": 169048,
+      "verseStart": 12
+    },
+    {
+      "timeMs": 187320,
+      "verseStart": 13
+    },
+    {
+      "timeMs": 214938,
+      "verseStart": 14
+    },
+    {
+      "timeMs": 227126,
+      "verseStart": 15
+    },
+    {
+      "timeMs": 252582,
+      "verseStart": 16
+    },
+    {
+      "timeMs": 264770,
+      "verseStart": 17
+    },
+    {
+      "timeMs": 280020,
+      "verseStart": 18
+    },
+    {
+      "timeMs": 302854,
+      "verseStart": 19
+    }
+  ]
+}

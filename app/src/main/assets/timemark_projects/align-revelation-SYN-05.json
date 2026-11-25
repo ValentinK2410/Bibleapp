@@ -1,0 +1,81 @@
+{
+  "id": "align-revelation-SYN-05",
+  "translationCode": "SYN",
+  "bookId": "revelation",
+  "chapter": 5,
+  "title": "Откровение 5 · Синодальный · Бондаренко",
+  "audioFilePath": "/data/user/0/com.example.bible.sqlite/files/bible_audio/bondarenko/66_05.mp3",
+  "updatedAt": 1795478400000,
+  "cues": [
+    {
+      "timeMs": 4663,
+      "verseStart": 1,
+      "attachments": []
+    },
+    {
+      "timeMs": 18492,
+      "verseStart": 2,
+      "attachments": []
+    },
+    {
+      "timeMs": 33002,
+      "verseStart": 3,
+      "attachments": []
+    },
+    {
+      "timeMs": 42628,
+      "verseStart": 4,
+      "attachments": []
+    },
+    {
+      "timeMs": 56317,
+      "verseStart": 5,
+      "attachments": []
+    },
+    {
+      "timeMs": 75270,
+      "verseStart": 6,
+      "attachments": []
+    },
+    {
+      "timeMs": 97064,
+      "verseStart": 7,
+      "attachments": []
+    },
+    {
+      "timeMs": 105049,
+      "verseStart": 8,
+      "attachments": []
+    },
+    {
+      "timeMs": 124282,
+      "verseStart": 9,
+      "attachments": []
+    },
+    {
+      "timeMs": 145776,
+      "verseStart": 10,
+      "attachments": []
+    },
+    {
+      "timeMs": 156343,
+      "verseStart": 11,
+      "attachments": []
+    },
+    {
+      "timeMs": 169672,
+      "verseStart": 12,
+      "attachments": []
+    },
+    {
+      "timeMs": 185363,
+      "verseStart": 13,
+      "attachments": []
+    },
+    {
+      "timeMs": 206296,
+      "verseStart": 14,
+      "attachments": []
+    }
+  ]
+}

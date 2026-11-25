@@ -1,0 +1,51 @@
+{
+  "id": "align-revelation-SYN-15",
+  "translationCode": "SYN",
+  "bookId": "revelation",
+  "chapter": 15,
+  "title": "Откровение 15 · Синодальный · Бондаренко",
+  "audioFilePath": "/data/user/0/com.example.bible.sqlite/files/bible_audio/bondarenko/66_15.mp3",
+  "updatedAt": 1795478400000,
+  "cues": [
+    {
+      "timeMs": 4023,
+      "verseStart": 1,
+      "attachments": []
+    },
+    {
+      "timeMs": 24317,
+      "verseStart": 2,
+      "attachments": []
+    },
+    {
+      "timeMs": 49634,
+      "verseStart": 3,
+      "attachments": []
+    },
+    {
+      "timeMs": 76792,
+      "verseStart": 4,
+      "attachments": []
+    },
+    {
+      "timeMs": 104971,
+      "verseStart": 5,
+      "attachments": []
+    },
+    {
+      "timeMs": 117160,
+      "verseStart": 6,
+      "attachments": []
+    },
+    {
+      "timeMs": 137273,
+      "verseStart": 7,
+      "attachments": []
+    },
+    {
+      "timeMs": 154385,
+      "verseStart": 8,
+      "attachments": []
+    }
+  ]
+}

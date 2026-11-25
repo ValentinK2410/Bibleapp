@@ -1,0 +1,55 @@
+{
+  "id": "gh_syn_revelation_10",
+  "translationCode": "SYN",
+  "bookId": "revelation",
+  "chapter": 10,
+  "title": "Откровение 10 · Синодальный · Бондаренко",
+  "narratorId": "bondarenko",
+  "audioFileName": "66_10.mp3",
+  "cues": [
+    {
+      "timeMs": 4303,
+      "verseStart": 1
+    },
+    {
+      "timeMs": 27660,
+      "verseStart": 2
+    },
+    {
+      "timeMs": 41870,
+      "verseStart": 3
+    },
+    {
+      "timeMs": 59782,
+      "verseStart": 4
+    },
+    {
+      "timeMs": 78776,
+      "verseStart": 5
+    },
+    {
+      "timeMs": 88363,
+      "verseStart": 6
+    },
+    {
+      "timeMs": 108517,
+      "verseStart": 7
+    },
+    {
+      "timeMs": 129572,
+      "verseStart": 8
+    },
+    {
+      "timeMs": 148725,
+      "verseStart": 9
+    },
+    {
+      "timeMs": 175064,
+      "verseStart": 10
+    },
+    {
+      "timeMs": 195799,
+      "verseStart": 11
+    }
+  ]
+}

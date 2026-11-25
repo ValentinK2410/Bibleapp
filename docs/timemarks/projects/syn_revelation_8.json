@@ -1,0 +1,63 @@
+{
+  "id": "gh_syn_revelation_8",
+  "translationCode": "SYN",
+  "bookId": "revelation",
+  "chapter": 8,
+  "title": "Откровение 8 · Синодальный · Бондаренко",
+  "narratorId": "bondarenko",
+  "audioFileName": "66_08.mp3",
+  "cues": [
+    {
+      "timeMs": 5164,
+      "verseStart": 1
+    },
+    {
+      "timeMs": 17512,
+      "verseStart": 2
+    },
+    {
+      "timeMs": 29401,
+      "verseStart": 3
+    },
+    {
+      "timeMs": 52356,
+      "verseStart": 4
+    },
+    {
+      "timeMs": 62383,
+      "verseStart": 5
+    },
+    {
+      "timeMs": 82497,
+      "verseStart": 6
+    },
+    {
+      "timeMs": 94706,
+      "verseStart": 7
+    },
+    {
+      "timeMs": 113179,
+      "verseStart": 8
+    },
+    {
+      "timeMs": 128229,
+      "verseStart": 9
+    },
+    {
+      "timeMs": 138056,
+      "verseStart": 10
+    },
+    {
+      "timeMs": 155108,
+      "verseStart": 11
+    },
+    {
+      "timeMs": 170859,
+      "verseStart": 12
+    },
+    {
+      "timeMs": 193415,
+      "verseStart": 13
+    }
+  ]
+}

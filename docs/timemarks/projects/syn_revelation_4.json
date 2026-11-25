@@ -1,0 +1,55 @@
+{
+  "id": "gh_syn_revelation_4",
+  "translationCode": "SYN",
+  "bookId": "revelation",
+  "chapter": 4,
+  "title": "Откровение 4 · Синодальный · Бондаренко",
+  "narratorId": "bondarenko",
+  "audioFileName": "66_04.mp3",
+  "cues": [
+    {
+      "timeMs": 4003,
+      "verseStart": 1
+    },
+    {
+      "timeMs": 27879,
+      "verseStart": 2
+    },
+    {
+      "timeMs": 39047,
+      "verseStart": 3
+    },
+    {
+      "timeMs": 53116,
+      "verseStart": 4
+    },
+    {
+      "timeMs": 70749,
+      "verseStart": 5
+    },
+    {
+      "timeMs": 84058,
+      "verseStart": 6
+    },
+    {
+      "timeMs": 101830,
+      "verseStart": 7
+    },
+    {
+      "timeMs": 118561,
+      "verseStart": 8
+    },
+    {
+      "timeMs": 142538,
+      "verseStart": 9
+    },
+    {
+      "timeMs": 153165,
+      "verseStart": 10
+    },
+    {
+      "timeMs": 169036,
+      "verseStart": 11
+    }
+  ]
+}

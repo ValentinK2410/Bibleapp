@@ -1,0 +1,116 @@
+{
+  "id": "align-revelation-SYN-16",
+  "translationCode": "SYN",
+  "bookId": "revelation",
+  "chapter": 16,
+  "title": "Откровение 16 · Синодальный · Бондаренко",
+  "audioFilePath": "/data/user/0/com.example.bible.sqlite/files/bible_audio/bondarenko/66_16.mp3",
+  "updatedAt": 1795478400000,
+  "cues": [
+    {
+      "timeMs": 5104,
+      "verseStart": 1,
+      "attachments": []
+    },
+    {
+      "timeMs": 20294,
+      "verseStart": 2,
+      "attachments": []
+    },
+    {
+      "timeMs": 39208,
+      "verseStart": 3,
+      "attachments": []
+    },
+    {
+      "timeMs": 52817,
+      "verseStart": 4,
+      "attachments": []
+    },
+    {
+      "timeMs": 61664,
+      "verseStart": 5,
+      "attachments": []
+    },
+    {
+      "timeMs": 72992,
+      "verseStart": 6,
+      "attachments": []
+    },
+    {
+      "timeMs": 82698,
+      "verseStart": 7,
+      "attachments": []
+    },
+    {
+      "timeMs": 95908,
+      "verseStart": 8,
+      "attachments": []
+    },
+    {
+      "timeMs": 106715,
+      "verseStart": 9,
+      "attachments": []
+    },
+    {
+      "timeMs": 123247,
+      "verseStart": 10,
+      "attachments": []
+    },
+    {
+      "timeMs": 137097,
+      "verseStart": 11,
+      "attachments": []
+    },
+    {
+      "timeMs": 148845,
+      "verseStart": 12,
+      "attachments": []
+    },
+    {
+      "timeMs": 164576,
+      "verseStart": 13,
+      "attachments": []
+    },
+    {
+      "timeMs": 178206,
+      "verseStart": 14,
+      "attachments": []
+    },
+    {
+      "timeMs": 194897,
+      "verseStart": 15,
+      "attachments": []
+    },
+    {
+      "timeMs": 209468,
+      "verseStart": 16,
+      "attachments": []
+    },
+    {
+      "timeMs": 218334,
+      "verseStart": 17,
+      "attachments": []
+    },
+    {
+      "timeMs": 237868,
+      "verseStart": 18,
+      "attachments": []
+    },
+    {
+      "timeMs": 258442,
+      "verseStart": 19,
+      "attachments": []
+    },
+    {
+      "timeMs": 277776,
+      "verseStart": 20,
+      "attachments": []
+    },
+    {
+      "timeMs": 284921,
+      "verseStart": 21,
+      "attachments": []
+    }
+  ]
+}

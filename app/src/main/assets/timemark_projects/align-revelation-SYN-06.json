@@ -1,0 +1,96 @@
+{
+  "id": "align-revelation-SYN-06",
+  "translationCode": "SYN",
+  "bookId": "revelation",
+  "chapter": 6,
+  "title": "Откровение 6 · Синодальный · Бондаренко",
+  "audioFilePath": "/data/user/0/com.example.bible.sqlite/files/bible_audio/bondarenko/66_06.mp3",
+  "updatedAt": 1795478400000,
+  "cues": [
+    {
+      "timeMs": 7125,
+      "verseStart": 1,
+      "attachments": []
+    },
+    {
+      "timeMs": 25178,
+      "verseStart": 2,
+      "attachments": []
+    },
+    {
+      "timeMs": 43571,
+      "verseStart": 3,
+      "attachments": []
+    },
+    {
+      "timeMs": 54459,
+      "verseStart": 4,
+      "attachments": []
+    },
+    {
+      "timeMs": 70550,
+      "verseStart": 5,
+      "attachments": []
+    },
+    {
+      "timeMs": 91985,
+      "verseStart": 6,
+      "attachments": []
+    },
+    {
+      "timeMs": 108717,
+      "verseStart": 7,
+      "attachments": []
+    },
+    {
+      "timeMs": 122326,
+      "verseStart": 8,
+      "attachments": []
+    },
+    {
+      "timeMs": 150066,
+      "verseStart": 9,
+      "attachments": []
+    },
+    {
+      "timeMs": 165577,
+      "verseStart": 10,
+      "attachments": []
+    },
+    {
+      "timeMs": 180568,
+      "verseStart": 11,
+      "attachments": []
+    },
+    {
+      "timeMs": 202263,
+      "verseStart": 12,
+      "attachments": []
+    },
+    {
+      "timeMs": 222357,
+      "verseStart": 13,
+      "attachments": []
+    },
+    {
+      "timeMs": 234706,
+      "verseStart": 14,
+      "attachments": []
+    },
+    {
+      "timeMs": 244993,
+      "verseStart": 15,
+      "attachments": []
+    },
+    {
+      "timeMs": 260584,
+      "verseStart": 16,
+      "attachments": []
+    },
+    {
+      "timeMs": 272893,
+      "verseStart": 17,
+      "attachments": []
+    }
+  ]
+}

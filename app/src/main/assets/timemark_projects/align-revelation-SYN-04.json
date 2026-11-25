@@ -1,0 +1,66 @@
+{
+  "id": "align-revelation-SYN-04",
+  "translationCode": "SYN",
+  "bookId": "revelation",
+  "chapter": 4,
+  "title": "Откровение 4 · Синодальный · Бондаренко",
+  "audioFilePath": "/data/user/0/com.example.bible.sqlite/files/bible_audio/bondarenko/66_04.mp3",
+  "updatedAt": 1795478400000,
+  "cues": [
+    {
+      "timeMs": 4003,
+      "verseStart": 1,
+      "attachments": []
+    },
+    {
+      "timeMs": 27879,
+      "verseStart": 2,
+      "attachments": []
+    },
+    {
+      "timeMs": 39047,
+      "verseStart": 3,
+      "attachments": []
+    },
+    {
+      "timeMs": 53116,
+      "verseStart": 4,
+      "attachments": []
+    },
+    {
+      "timeMs": 70749,
+      "verseStart": 5,
+      "attachments": []
+    },
+    {
+      "timeMs": 84058,
+      "verseStart": 6,
+      "attachments": []
+    },
+    {
+      "timeMs": 101830,
+      "verseStart": 7,
+      "attachments": []
+    },
+    {
+      "timeMs": 118561,
+      "verseStart": 8,
+      "attachments": []
+    },
+    {
+      "timeMs": 142538,
+      "verseStart": 9,
+      "attachments": []
+    },
+    {
+      "timeMs": 153165,
+      "verseStart": 10,
+      "attachments": []
+    },
+    {
+      "timeMs": 169036,
+      "verseStart": 11,
+      "attachments": []
+    }
+  ]
+}
