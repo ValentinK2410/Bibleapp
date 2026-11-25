@@ -1,0 +1,67 @@
+{
+  "id": "gh_grk_1_peter_5",
+  "translationCode": "PODSTR",
+  "bookId": "1_peter",
+  "chapter": 5,
+  "title": "1-е Петра 5 · Греческий (Koine)",
+  "narratorId": "greek-nt",
+  "audioFileName": "60_05.mp3",
+  "cues": [
+    {
+      "timeMs": 460,
+      "verseStart": 1
+    },
+    {
+      "timeMs": 11248,
+      "verseStart": 2
+    },
+    {
+      "timeMs": 20113,
+      "verseStart": 3
+    },
+    {
+      "timeMs": 24957,
+      "verseStart": 4
+    },
+    {
+      "timeMs": 30580,
+      "verseStart": 5
+    },
+    {
+      "timeMs": 43629,
+      "verseStart": 6
+    },
+    {
+      "timeMs": 49793,
+      "verseStart": 7
+    },
+    {
+      "timeMs": 55317,
+      "verseStart": 8
+    },
+    {
+      "timeMs": 62922,
+      "verseStart": 9
+    },
+    {
+      "timeMs": 71407,
+      "verseStart": 10
+    },
+    {
+      "timeMs": 82555,
+      "verseStart": 11
+    },
+    {
+      "timeMs": 85837,
+      "verseStart": 12
+    },
+    {
+      "timeMs": 97145,
+      "verseStart": 13
+    },
+    {
+      "timeMs": 101708,
+      "verseStart": 14
+    }
+  ]
+}

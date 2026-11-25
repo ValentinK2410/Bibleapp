@@ -1,0 +1,106 @@
+{
+  "id": "align-1_peter-GRK-04",
+  "translationCode": "PODSTR",
+  "bookId": "1_peter",
+  "chapter": 4,
+  "title": "1-е Петра 4 · Греческий (Koine)",
+  "audioFilePath": "/data/user/0/com.example.bible.sqlite/files/bible_audio/greek-nt/60_04.mp3",
+  "updatedAt": 1794873600000,
+  "cues": [
+    {
+      "timeMs": 941,
+      "verseStart": 1,
+      "attachments": []
+    },
+    {
+      "timeMs": 9847,
+      "verseStart": 2,
+      "attachments": []
+    },
+    {
+      "timeMs": 17633,
+      "verseStart": 3,
+      "attachments": []
+    },
+    {
+      "timeMs": 32444,
+      "verseStart": 4,
+      "attachments": []
+    },
+    {
+      "timeMs": 39889,
+      "verseStart": 5,
+      "attachments": []
+    },
+    {
+      "timeMs": 44733,
+      "verseStart": 6,
+      "attachments": []
+    },
+    {
+      "timeMs": 53139,
+      "verseStart": 7,
+      "attachments": []
+    },
+    {
+      "timeMs": 59063,
+      "verseStart": 8,
+      "attachments": []
+    },
+    {
+      "timeMs": 65968,
+      "verseStart": 9,
+      "attachments": []
+    },
+    {
+      "timeMs": 69170,
+      "verseStart": 10,
+      "attachments": []
+    },
+    {
+      "timeMs": 77236,
+      "verseStart": 11,
+      "attachments": []
+    },
+    {
+      "timeMs": 93128,
+      "verseStart": 12,
+      "attachments": []
+    },
+    {
+      "timeMs": 101093,
+      "verseStart": 13,
+      "attachments": []
+    },
+    {
+      "timeMs": 110700,
+      "verseStart": 14,
+      "attachments": []
+    },
+    {
+      "timeMs": 120287,
+      "verseStart": 15,
+      "attachments": []
+    },
+    {
+      "timeMs": 126051,
+      "verseStart": 16,
+      "attachments": []
+    },
+    {
+      "timeMs": 132296,
+      "verseStart": 17,
+      "attachments": []
+    },
+    {
+      "timeMs": 141703,
+      "verseStart": 18,
+      "attachments": []
+    },
+    {
+      "timeMs": 147807,
+      "verseStart": 19,
+      "attachments": []
+    }
+  ]
+}

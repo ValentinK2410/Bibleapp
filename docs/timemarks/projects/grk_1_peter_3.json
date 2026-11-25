@@ -1,0 +1,99 @@
+{
+  "id": "gh_grk_1_peter_3",
+  "translationCode": "PODSTR",
+  "bookId": "1_peter",
+  "chapter": 3,
+  "title": "1-е Петра 3 · Греческий (Koine)",
+  "narratorId": "greek-nt",
+  "audioFileName": "60_03.mp3",
+  "cues": [
+    {
+      "timeMs": 620,
+      "verseStart": 1
+    },
+    {
+      "timeMs": 11828,
+      "verseStart": 2
+    },
+    {
+      "timeMs": 15991,
+      "verseStart": 3
+    },
+    {
+      "timeMs": 23497,
+      "verseStart": 4
+    },
+    {
+      "timeMs": 33344,
+      "verseStart": 5
+    },
+    {
+      "timeMs": 41409,
+      "verseStart": 6
+    },
+    {
+      "timeMs": 50896,
+      "verseStart": 7
+    },
+    {
+      "timeMs": 64185,
+      "verseStart": 8
+    },
+    {
+      "timeMs": 71651,
+      "verseStart": 9
+    },
+    {
+      "timeMs": 83439,
+      "verseStart": 10
+    },
+    {
+      "timeMs": 92185,
+      "verseStart": 11
+    },
+    {
+      "timeMs": 99030,
+      "verseStart": 12
+    },
+    {
+      "timeMs": 106996,
+      "verseStart": 13
+    },
+    {
+      "timeMs": 110999,
+      "verseStart": 14
+    },
+    {
+      "timeMs": 118464,
+      "verseStart": 15
+    },
+    {
+      "timeMs": 130412,
+      "verseStart": 16
+    },
+    {
+      "timeMs": 139759,
+      "verseStart": 17
+    },
+    {
+      "timeMs": 145823,
+      "verseStart": 18
+    },
+    {
+      "timeMs": 157251,
+      "verseStart": 19
+    },
+    {
+      "timeMs": 161194,
+      "verseStart": 20
+    },
+    {
+      "timeMs": 173703,
+      "verseStart": 21
+    },
+    {
+      "timeMs": 184110,
+      "verseStart": 22
+    }
+  ]
+}

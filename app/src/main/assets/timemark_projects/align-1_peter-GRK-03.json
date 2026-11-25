@@ -1,0 +1,121 @@
+{
+  "id": "align-1_peter-GRK-03",
+  "translationCode": "PODSTR",
+  "bookId": "1_peter",
+  "chapter": 3,
+  "title": "1-е Петра 3 · Греческий (Koine)",
+  "audioFilePath": "/data/user/0/com.example.bible.sqlite/files/bible_audio/greek-nt/60_03.mp3",
+  "updatedAt": 1794873600000,
+  "cues": [
+    {
+      "timeMs": 620,
+      "verseStart": 1,
+      "attachments": []
+    },
+    {
+      "timeMs": 11828,
+      "verseStart": 2,
+      "attachments": []
+    },
+    {
+      "timeMs": 15991,
+      "verseStart": 3,
+      "attachments": []
+    },
+    {
+      "timeMs": 23497,
+      "verseStart": 4,
+      "attachments": []
+    },
+    {
+      "timeMs": 33344,
+      "verseStart": 5,
+      "attachments": []
+    },
+    {
+      "timeMs": 41409,
+      "verseStart": 6,
+      "attachments": []
+    },
+    {
+      "timeMs": 50896,
+      "verseStart": 7,
+      "attachments": []
+    },
+    {
+      "timeMs": 64185,
+      "verseStart": 8,
+      "attachments": []
+    },
+    {
+      "timeMs": 71651,
+      "verseStart": 9,
+      "attachments": []
+    },
+    {
+      "timeMs": 83439,
+      "verseStart": 10,
+      "attachments": []
+    },
+    {
+      "timeMs": 92185,
+      "verseStart": 11,
+      "attachments": []
+    },
+    {
+      "timeMs": 99030,
+      "verseStart": 12,
+      "attachments": []
+    },
+    {
+      "timeMs": 106996,
+      "verseStart": 13,
+      "attachments": []
+    },
+    {
+      "timeMs": 110999,
+      "verseStart": 14,
+      "attachments": []
+    },
+    {
+      "timeMs": 118464,
+      "verseStart": 15,
+      "attachments": []
+    },
+    {
+      "timeMs": 130412,
+      "verseStart": 16,
+      "attachments": []
+    },
+    {
+      "timeMs": 139759,
+      "verseStart": 17,
+      "attachments": []
+    },
+    {
+      "timeMs": 145823,
+      "verseStart": 18,
+      "attachments": []
+    },
+    {
+      "timeMs": 157251,
+      "verseStart": 19,
+      "attachments": []
+    },
+    {
+      "timeMs": 161194,
+      "verseStart": 20,
+      "attachments": []
+    },
+    {
+      "timeMs": 173703,
+      "verseStart": 21,
+      "attachments": []
+    },
+    {
+      "timeMs": 184110,
+      "verseStart": 22,
+      "attachments": []
+    }
+  ]
+}

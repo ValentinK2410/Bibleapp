@@ -2104,6 +2104,56 @@
       "file": "projects/grk_1_corinthians_9.json"
     },
     {
+      "id": "gh_grk_1_peter_1",
+      "translationCode": "PODSTR",
+      "bookId": "1_peter",
+      "chapter": 1,
+      "title": "1-е Петра 1 · Греческий (Koine)",
+      "cueCount": 25,
+      "narratorId": "greek-nt",
+      "file": "projects/grk_1_peter_1.json"
+    },
+    {
+      "id": "gh_grk_1_peter_2",
+      "translationCode": "PODSTR",
+      "bookId": "1_peter",
+      "chapter": 2,
+      "title": "1-е Петра 2 · Греческий (Koine)",
+      "cueCount": 25,
+      "narratorId": "greek-nt",
+      "file": "projects/grk_1_peter_2.json"
+    },
+    {
+      "id": "gh_grk_1_peter_3",
+      "translationCode": "PODSTR",
+      "bookId": "1_peter",
+      "chapter": 3,
+      "title": "1-е Петра 3 · Греческий (Koine)",
+      "cueCount": 22,
+      "narratorId": "greek-nt",
+      "file": "projects/grk_1_peter_3.json"
+    },
+    {
+      "id": "gh_grk_1_peter_4",
+      "translationCode": "PODSTR",
+      "bookId": "1_peter",
+      "chapter": 4,
+      "title": "1-е Петра 4 · Греческий (Koine)",
+      "cueCount": 19,
+      "narratorId": "greek-nt",
+      "file": "projects/grk_1_peter_4.json"
+    },
+    {
+      "id": "gh_grk_1_peter_5",
+      "translationCode": "PODSTR",
+      "bookId": "1_peter",
+      "chapter": 5,
+      "title": "1-е Петра 5 · Греческий (Koine)",
+      "cueCount": 14,
+      "narratorId": "greek-nt",
+      "file": "projects/grk_1_peter_5.json"
+    },
+    {
       "id": "gh_grk_1_thessalonians_1",
       "translationCode": "PODSTR",
       "bookId": "1_thessalonians",
