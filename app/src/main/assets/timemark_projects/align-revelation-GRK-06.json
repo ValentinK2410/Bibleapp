@@ -1,0 +1,96 @@
+{
+  "id": "align-revelation-GRK-06",
+  "translationCode": "PODSTR",
+  "bookId": "revelation",
+  "chapter": 6,
+  "title": "Откровение 6 · Греческий (Koine)",
+  "audioFilePath": "/data/user/0/com.example.bible.sqlite/files/bible_audio/greek-nt/66_06.mp3",
+  "updatedAt": 1794873600000,
+  "cues": [
+    {
+      "timeMs": 560,
+      "verseStart": 1,
+      "attachments": []
+    },
+    {
+      "timeMs": 11327,
+      "verseStart": 2,
+      "attachments": []
+    },
+    {
+      "timeMs": 22195,
+      "verseStart": 3,
+      "attachments": []
+    },
+    {
+      "timeMs": 28559,
+      "verseStart": 4,
+      "attachments": []
+    },
+    {
+      "timeMs": 40707,
+      "verseStart": 5,
+      "attachments": []
+    },
+    {
+      "timeMs": 54316,
+      "verseStart": 6,
+      "attachments": []
+    },
+    {
+      "timeMs": 66524,
+      "verseStart": 7,
+      "attachments": []
+    },
+    {
+      "timeMs": 73548,
+      "verseStart": 8,
+      "attachments": []
+    },
+    {
+      "timeMs": 94542,
+      "verseStart": 9,
+      "attachments": []
+    },
+    {
+      "timeMs": 105769,
+      "verseStart": 10,
+      "attachments": []
+    },
+    {
+      "timeMs": 118177,
+      "verseStart": 11,
+      "attachments": []
+    },
+    {
+      "timeMs": 133087,
+      "verseStart": 12,
+      "attachments": []
+    },
+    {
+      "timeMs": 144615,
+      "verseStart": 13,
+      "attachments": []
+    },
+    {
+      "timeMs": 152800,
+      "verseStart": 14,
+      "attachments": []
+    },
+    {
+      "timeMs": 161245,
+      "verseStart": 15,
+      "attachments": []
+    },
+    {
+      "timeMs": 175115,
+      "verseStart": 16,
+      "attachments": []
+    },
+    {
+      "timeMs": 185842,
+      "verseStart": 17,
+      "attachments": []
+    }
+  ]
+}

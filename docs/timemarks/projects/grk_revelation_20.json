@@ -1,0 +1,71 @@
+{
+  "id": "gh_grk_revelation_20",
+  "translationCode": "PODSTR",
+  "bookId": "revelation",
+  "chapter": 20,
+  "title": "Откровение 20 · Греческий (Koine)",
+  "narratorId": "greek-nt",
+  "audioFileName": "66_20.mp3",
+  "cues": [
+    {
+      "timeMs": 4363,
+      "verseStart": 1
+    },
+    {
+      "timeMs": 14650,
+      "verseStart": 2
+    },
+    {
+      "timeMs": 24116,
+      "verseStart": 3
+    },
+    {
+      "timeMs": 38526,
+      "verseStart": 4
+    },
+    {
+      "timeMs": 65884,
+      "verseStart": 5
+    },
+    {
+      "timeMs": 73469,
+      "verseStart": 6
+    },
+    {
+      "timeMs": 89319,
+      "verseStart": 7
+    },
+    {
+      "timeMs": 94983,
+      "verseStart": 8
+    },
+    {
+      "timeMs": 110233,
+      "verseStart": 9
+    },
+    {
+      "timeMs": 123802,
+      "verseStart": 10
+    },
+    {
+      "timeMs": 138232,
+      "verseStart": 11
+    },
+    {
+      "timeMs": 150040,
+      "verseStart": 12
+    },
+    {
+      "timeMs": 168612,
+      "verseStart": 13
+    },
+    {
+      "timeMs": 180420,
+      "verseStart": 14
+    },
+    {
+      "timeMs": 190447,
+      "verseStart": 15
+    }
+  ]
+}

@@ -1,0 +1,107 @@
+{
+  "id": "gh_grk_revelation_18",
+  "translationCode": "PODSTR",
+  "bookId": "revelation",
+  "chapter": 18,
+  "title": "Откровение 18 · Греческий (Koine)",
+  "narratorId": "greek-nt",
+  "audioFileName": "66_18.mp3",
+  "cues": [
+    {
+      "timeMs": 1301,
+      "verseStart": 1
+    },
+    {
+      "timeMs": 15270,
+      "verseStart": 2
+    },
+    {
+      "timeMs": 33463,
+      "verseStart": 3
+    },
+    {
+      "timeMs": 48253,
+      "verseStart": 4
+    },
+    {
+      "timeMs": 62283,
+      "verseStart": 5
+    },
+    {
+      "timeMs": 71209,
+      "verseStart": 6
+    },
+    {
+      "timeMs": 83857,
+      "verseStart": 7
+    },
+    {
+      "timeMs": 99368,
+      "verseStart": 8
+    },
+    {
+      "timeMs": 112557,
+      "verseStart": 9
+    },
+    {
+      "timeMs": 124505,
+      "verseStart": 10
+    },
+    {
+      "timeMs": 139836,
+      "verseStart": 11
+    },
+    {
+      "timeMs": 147301,
+      "verseStart": 12
+    },
+    {
+      "timeMs": 165633,
+      "verseStart": 13
+    },
+    {
+      "timeMs": 179963,
+      "verseStart": 14
+    },
+    {
+      "timeMs": 191631,
+      "verseStart": 15
+    },
+    {
+      "timeMs": 201137,
+      "verseStart": 16
+    },
+    {
+      "timeMs": 214427,
+      "verseStart": 17
+    },
+    {
+      "timeMs": 226635,
+      "verseStart": 18
+    },
+    {
+      "timeMs": 234200,
+      "verseStart": 19
+    },
+    {
+      "timeMs": 254934,
+      "verseStart": 20
+    },
+    {
+      "timeMs": 264681,
+      "verseStart": 21
+    },
+    {
+      "timeMs": 278470,
+      "verseStart": 22
+    },
+    {
+      "timeMs": 293240,
+      "verseStart": 23
+    },
+    {
+      "timeMs": 308891,
+      "verseStart": 24
+    }
+  ]
+}

@@ -1,0 +1,116 @@
+{
+  "id": "align-revelation-GRK-09",
+  "translationCode": "PODSTR",
+  "bookId": "revelation",
+  "chapter": 9,
+  "title": "Откровение 9 · Греческий (Koine)",
+  "audioFilePath": "/data/user/0/com.example.bible.sqlite/files/bible_audio/greek-nt/66_09.mp3",
+  "updatedAt": 1794873600000,
+  "cues": [
+    {
+      "timeMs": 340,
+      "verseStart": 1,
+      "attachments": []
+    },
+    {
+      "timeMs": 10807,
+      "verseStart": 2,
+      "attachments": []
+    },
+    {
+      "timeMs": 22555,
+      "verseStart": 3,
+      "attachments": []
+    },
+    {
+      "timeMs": 31041,
+      "verseStart": 4,
+      "attachments": []
+    },
+    {
+      "timeMs": 44009,
+      "verseStart": 5,
+      "attachments": []
+    },
+    {
+      "timeMs": 55857,
+      "verseStart": 6,
+      "attachments": []
+    },
+    {
+      "timeMs": 67825,
+      "verseStart": 7,
+      "attachments": []
+    },
+    {
+      "timeMs": 81494,
+      "verseStart": 8,
+      "attachments": []
+    },
+    {
+      "timeMs": 87518,
+      "verseStart": 9,
+      "attachments": []
+    },
+    {
+      "timeMs": 97085,
+      "verseStart": 10,
+      "attachments": []
+    },
+    {
+      "timeMs": 106411,
+      "verseStart": 11,
+      "attachments": []
+    },
+    {
+      "timeMs": 117398,
+      "verseStart": 12,
+      "attachments": []
+    },
+    {
+      "timeMs": 122922,
+      "verseStart": 13,
+      "attachments": []
+    },
+    {
+      "timeMs": 132408,
+      "verseStart": 14,
+      "attachments": []
+    },
+    {
+      "timeMs": 142295,
+      "verseStart": 15,
+      "attachments": []
+    },
+    {
+      "timeMs": 153282,
+      "verseStart": 16,
+      "attachments": []
+    },
+    {
+      "timeMs": 160607,
+      "verseStart": 17,
+      "attachments": []
+    },
+    {
+      "timeMs": 179480,
+      "verseStart": 18,
+      "attachments": []
+    },
+    {
+      "timeMs": 190987,
+      "verseStart": 19,
+      "attachments": []
+    },
+    {
+      "timeMs": 202515,
+      "verseStart": 20,
+      "attachments": []
+    },
+    {
+      "timeMs": 223969,
+      "verseStart": 21,
+      "attachments": []
+    }
+  ]
+}

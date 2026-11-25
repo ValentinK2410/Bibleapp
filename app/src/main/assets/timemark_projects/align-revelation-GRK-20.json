@@ -1,0 +1,86 @@
+{
+  "id": "align-revelation-GRK-20",
+  "translationCode": "PODSTR",
+  "bookId": "revelation",
+  "chapter": 20,
+  "title": "Откровение 20 · Греческий (Koine)",
+  "audioFilePath": "/data/user/0/com.example.bible.sqlite/files/bible_audio/greek-nt/66_20.mp3",
+  "updatedAt": 1794873600000,
+  "cues": [
+    {
+      "timeMs": 4363,
+      "verseStart": 1,
+      "attachments": []
+    },
+    {
+      "timeMs": 14650,
+      "verseStart": 2,
+      "attachments": []
+    },
+    {
+      "timeMs": 24116,
+      "verseStart": 3,
+      "attachments": []
+    },
+    {
+      "timeMs": 38526,
+      "verseStart": 4,
+      "attachments": []
+    },
+    {
+      "timeMs": 65884,
+      "verseStart": 5,
+      "attachments": []
+    },
+    {
+      "timeMs": 73469,
+      "verseStart": 6,
+      "attachments": []
+    },
+    {
+      "timeMs": 89319,
+      "verseStart": 7,
+      "attachments": []
+    },
+    {
+      "timeMs": 94983,
+      "verseStart": 8,
+      "attachments": []
+    },
+    {
+      "timeMs": 110233,
+      "verseStart": 9,
+      "attachments": []
+    },
+    {
+      "timeMs": 123802,
+      "verseStart": 10,
+      "attachments": []
+    },
+    {
+      "timeMs": 138232,
+      "verseStart": 11,
+      "attachments": []
+    },
+    {
+      "timeMs": 150040,
+      "verseStart": 12,
+      "attachments": []
+    },
+    {
+      "timeMs": 168612,
+      "verseStart": 13,
+      "attachments": []
+    },
+    {
+      "timeMs": 180420,
+      "verseStart": 14,
+      "attachments": []
+    },
+    {
+      "timeMs": 190447,
+      "verseStart": 15,
+      "attachments": []
+    }
+  ]
+}

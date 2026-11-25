@@ -1,0 +1,55 @@
+{
+  "id": "gh_grk_revelation_4",
+  "translationCode": "PODSTR",
+  "bookId": "revelation",
+  "chapter": 4,
+  "title": "Откровение 4 · Греческий (Koine)",
+  "narratorId": "greek-nt",
+  "audioFileName": "66_04.mp3",
+  "cues": [
+    {
+      "timeMs": 460,
+      "verseStart": 1
+    },
+    {
+      "timeMs": 16390,
+      "verseStart": 2
+    },
+    {
+      "timeMs": 24735,
+      "verseStart": 3
+    },
+    {
+      "timeMs": 33780,
+      "verseStart": 4
+    },
+    {
+      "timeMs": 47889,
+      "verseStart": 5
+    },
+    {
+      "timeMs": 59095,
+      "verseStart": 6
+    },
+    {
+      "timeMs": 72143,
+      "verseStart": 7
+    },
+    {
+      "timeMs": 85191,
+      "verseStart": 8
+    },
+    {
+      "timeMs": 106203,
+      "verseStart": 9
+    },
+    {
+      "timeMs": 114889,
+      "verseStart": 10
+    },
+    {
+      "timeMs": 129677,
+      "verseStart": 11
+    }
+  ]
+}

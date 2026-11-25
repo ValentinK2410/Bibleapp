@@ -1,0 +1,83 @@
+{
+  "id": "gh_grk_revelation_17",
+  "translationCode": "PODSTR",
+  "bookId": "revelation",
+  "chapter": 17,
+  "title": "Откровение 17 · Греческий (Koine)",
+  "narratorId": "greek-nt",
+  "audioFileName": "66_17.mp3",
+  "cues": [
+    {
+      "timeMs": 3442,
+      "verseStart": 1
+    },
+    {
+      "timeMs": 17452,
+      "verseStart": 2
+    },
+    {
+      "timeMs": 26778,
+      "verseStart": 3
+    },
+    {
+      "timeMs": 40267,
+      "verseStart": 4
+    },
+    {
+      "timeMs": 56778,
+      "verseStart": 5
+    },
+    {
+      "timeMs": 67585,
+      "verseStart": 6
+    },
+    {
+      "timeMs": 78012,
+      "verseStart": 7
+    },
+    {
+      "timeMs": 92062,
+      "verseStart": 8
+    },
+    {
+      "timeMs": 113696,
+      "verseStart": 9
+    },
+    {
+      "timeMs": 123963,
+      "verseStart": 10
+    },
+    {
+      "timeMs": 132729,
+      "verseStart": 11
+    },
+    {
+      "timeMs": 140594,
+      "verseStart": 12
+    },
+    {
+      "timeMs": 152542,
+      "verseStart": 13
+    },
+    {
+      "timeMs": 159727,
+      "verseStart": 14
+    },
+    {
+      "timeMs": 172676,
+      "verseStart": 15
+    },
+    {
+      "timeMs": 180661,
+      "verseStart": 16
+    },
+    {
+      "timeMs": 195251,
+      "verseStart": 17
+    },
+    {
+      "timeMs": 208620,
+      "verseStart": 18
+    }
+  ]
+}

@@ -1,0 +1,51 @@
+{
+  "id": "align-revelation-GRK-15",
+  "translationCode": "PODSTR",
+  "bookId": "revelation",
+  "chapter": 15,
+  "title": "Откровение 15 · Греческий (Koine)",
+  "audioFilePath": "/data/user/0/com.example.bible.sqlite/files/bible_audio/greek-nt/66_15.mp3",
+  "updatedAt": 1794873600000,
+  "cues": [
+    {
+      "timeMs": 4684,
+      "verseStart": 1,
+      "attachments": []
+    },
+    {
+      "timeMs": 18676,
+      "verseStart": 2,
+      "attachments": []
+    },
+    {
+      "timeMs": 36151,
+      "verseStart": 3,
+      "attachments": []
+    },
+    {
+      "timeMs": 56509,
+      "verseStart": 4,
+      "attachments": []
+    },
+    {
+      "timeMs": 72622,
+      "verseStart": 5,
+      "attachments": []
+    },
+    {
+      "timeMs": 79408,
+      "verseStart": 6,
+      "attachments": []
+    },
+    {
+      "timeMs": 93460,
+      "verseStart": 7,
+      "attachments": []
+    },
+    {
+      "timeMs": 105591,
+      "verseStart": 8,
+      "attachments": []
+    }
+  ]
+}

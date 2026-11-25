@@ -1,0 +1,66 @@
+{
+  "id": "align-revelation-GRK-10",
+  "translationCode": "PODSTR",
+  "bookId": "revelation",
+  "chapter": 10,
+  "title": "Откровение 10 · Греческий (Koine)",
+  "audioFilePath": "/data/user/0/com.example.bible.sqlite/files/bible_audio/greek-nt/66_10.mp3",
+  "updatedAt": 1794873600000,
+  "cues": [
+    {
+      "timeMs": 520,
+      "verseStart": 1,
+      "attachments": []
+    },
+    {
+      "timeMs": 14970,
+      "verseStart": 2,
+      "attachments": []
+    },
+    {
+      "timeMs": 25377,
+      "verseStart": 3,
+      "attachments": []
+    },
+    {
+      "timeMs": 34603,
+      "verseStart": 4,
+      "attachments": []
+    },
+    {
+      "timeMs": 46250,
+      "verseStart": 5,
+      "attachments": []
+    },
+    {
+      "timeMs": 54676,
+      "verseStart": 6,
+      "attachments": []
+    },
+    {
+      "timeMs": 68605,
+      "verseStart": 7,
+      "attachments": []
+    },
+    {
+      "timeMs": 81173,
+      "verseStart": 8,
+      "attachments": []
+    },
+    {
+      "timeMs": 95183,
+      "verseStart": 9,
+      "attachments": []
+    },
+    {
+      "timeMs": 108992,
+      "verseStart": 10,
+      "attachments": []
+    },
+    {
+      "timeMs": 120759,
+      "verseStart": 11,
+      "attachments": []
+    }
+  ]
+}

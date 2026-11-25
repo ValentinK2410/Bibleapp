@@ -1,0 +1,66 @@
+{
+  "id": "align-revelation-GRK-04",
+  "translationCode": "PODSTR",
+  "bookId": "revelation",
+  "chapter": 4,
+  "title": "Откровение 4 · Греческий (Koine)",
+  "audioFilePath": "/data/user/0/com.example.bible.sqlite/files/bible_audio/greek-nt/66_04.mp3",
+  "updatedAt": 1794873600000,
+  "cues": [
+    {
+      "timeMs": 460,
+      "verseStart": 1,
+      "attachments": []
+    },
+    {
+      "timeMs": 16390,
+      "verseStart": 2,
+      "attachments": []
+    },
+    {
+      "timeMs": 24735,
+      "verseStart": 3,
+      "attachments": []
+    },
+    {
+      "timeMs": 33780,
+      "verseStart": 4,
+      "attachments": []
+    },
+    {
+      "timeMs": 47889,
+      "verseStart": 5,
+      "attachments": []
+    },
+    {
+      "timeMs": 59095,
+      "verseStart": 6,
+      "attachments": []
+    },
+    {
+      "timeMs": 72143,
+      "verseStart": 7,
+      "attachments": []
+    },
+    {
+      "timeMs": 85191,
+      "verseStart": 8,
+      "attachments": []
+    },
+    {
+      "timeMs": 106203,
+      "verseStart": 9,
+      "attachments": []
+    },
+    {
+      "timeMs": 114889,
+      "verseStart": 10,
+      "attachments": []
+    },
+    {
+      "timeMs": 129677,
+      "verseStart": 11,
+      "attachments": []
+    }
+  ]
+}

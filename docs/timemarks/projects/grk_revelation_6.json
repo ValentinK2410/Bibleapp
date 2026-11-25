@@ -1,0 +1,79 @@
+{
+  "id": "gh_grk_revelation_6",
+  "translationCode": "PODSTR",
+  "bookId": "revelation",
+  "chapter": 6,
+  "title": "Откровение 6 · Греческий (Koine)",
+  "narratorId": "greek-nt",
+  "audioFileName": "66_06.mp3",
+  "cues": [
+    {
+      "timeMs": 560,
+      "verseStart": 1
+    },
+    {
+      "timeMs": 11327,
+      "verseStart": 2
+    },
+    {
+      "timeMs": 22195,
+      "verseStart": 3
+    },
+    {
+      "timeMs": 28559,
+      "verseStart": 4
+    },
+    {
+      "timeMs": 40707,
+      "verseStart": 5
+    },
+    {
+      "timeMs": 54316,
+      "verseStart": 6
+    },
+    {
+      "timeMs": 66524,
+      "verseStart": 7
+    },
+    {
+      "timeMs": 73548,
+      "verseStart": 8
+    },
+    {
+      "timeMs": 94542,
+      "verseStart": 9
+    },
+    {
+      "timeMs": 105769,
+      "verseStart": 10
+    },
+    {
+      "timeMs": 118177,
+      "verseStart": 11
+    },
+    {
+      "timeMs": 133087,
+      "verseStart": 12
+    },
+    {
+      "timeMs": 144615,
+      "verseStart": 13
+    },
+    {
+      "timeMs": 152800,
+      "verseStart": 14
+    },
+    {
+      "timeMs": 161245,
+      "verseStart": 15
+    },
+    {
+      "timeMs": 175115,
+      "verseStart": 16
+    },
+    {
+      "timeMs": 185842,
+      "verseStart": 17
+    }
+  ]
+}

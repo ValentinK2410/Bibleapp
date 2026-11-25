@@ -4294,6 +4294,226 @@
       "file": "projects/grk_philippians_4.json"
     },
     {
+      "id": "gh_grk_revelation_1",
+      "translationCode": "PODSTR",
+      "bookId": "revelation",
+      "chapter": 1,
+      "title": "Откровение 1 · Греческий (Koine)",
+      "cueCount": 20,
+      "narratorId": "greek-nt",
+      "file": "projects/grk_revelation_1.json"
+    },
+    {
+      "id": "gh_grk_revelation_10",
+      "translationCode": "PODSTR",
+      "bookId": "revelation",
+      "chapter": 10,
+      "title": "Откровение 10 · Греческий (Koine)",
+      "cueCount": 11,
+      "narratorId": "greek-nt",
+      "file": "projects/grk_revelation_10.json"
+    },
+    {
+      "id": "gh_grk_revelation_11",
+      "translationCode": "PODSTR",
+      "bookId": "revelation",
+      "chapter": 11,
+      "title": "Откровение 11 · Греческий (Koine)",
+      "cueCount": 19,
+      "narratorId": "greek-nt",
+      "file": "projects/grk_revelation_11.json"
+    },
+    {
+      "id": "gh_grk_revelation_12",
+      "translationCode": "PODSTR",
+      "bookId": "revelation",
+      "chapter": 12,
+      "title": "Откровение 12 · Греческий (Koine)",
+      "cueCount": 17,
+      "narratorId": "greek-nt",
+      "file": "projects/grk_revelation_12.json"
+    },
+    {
+      "id": "gh_grk_revelation_13",
+      "translationCode": "PODSTR",
+      "bookId": "revelation",
+      "chapter": 13,
+      "title": "Откровение 13 · Греческий (Koine)",
+      "cueCount": 18,
+      "narratorId": "greek-nt",
+      "file": "projects/grk_revelation_13.json"
+    },
+    {
+      "id": "gh_grk_revelation_14",
+      "translationCode": "PODSTR",
+      "bookId": "revelation",
+      "chapter": 14,
+      "title": "Откровение 14 · Греческий (Koine)",
+      "cueCount": 20,
+      "narratorId": "greek-nt",
+      "file": "projects/grk_revelation_14.json"
+    },
+    {
+      "id": "gh_grk_revelation_15",
+      "translationCode": "PODSTR",
+      "bookId": "revelation",
+      "chapter": 15,
+      "title": "Откровение 15 · Греческий (Koine)",
+      "cueCount": 8,
+      "narratorId": "greek-nt",
+      "file": "projects/grk_revelation_15.json"
+    },
+    {
+      "id": "gh_grk_revelation_16",
+      "translationCode": "PODSTR",
+      "bookId": "revelation",
+      "chapter": 16,
+      "title": "Откровение 16 · Греческий (Koine)",
+      "cueCount": 21,
+      "narratorId": "greek-nt",
+      "file": "projects/grk_revelation_16.json"
+    },
+    {
+      "id": "gh_grk_revelation_17",
+      "translationCode": "PODSTR",
+      "bookId": "revelation",
+      "chapter": 17,
+      "title": "Откровение 17 · Греческий (Koine)",
+      "cueCount": 18,
+      "narratorId": "greek-nt",
+      "file": "projects/grk_revelation_17.json"
+    },
+    {
+      "id": "gh_grk_revelation_18",
+      "translationCode": "PODSTR",
+      "bookId": "revelation",
+      "chapter": 18,
+      "title": "Откровение 18 · Греческий (Koine)",
+      "cueCount": 24,
+      "narratorId": "greek-nt",
+      "file": "projects/grk_revelation_18.json"
+    },
+    {
+      "id": "gh_grk_revelation_19",
+      "translationCode": "PODSTR",
+      "bookId": "revelation",
+      "chapter": 19,
+      "title": "Откровение 19 · Греческий (Koine)",
+      "cueCount": 21,
+      "narratorId": "greek-nt",
+      "file": "projects/grk_revelation_19.json"
+    },
+    {
+      "id": "gh_grk_revelation_2",
+      "translationCode": "PODSTR",
+      "bookId": "revelation",
+      "chapter": 2,
+      "title": "Откровение 2 · Греческий (Koine)",
+      "cueCount": 29,
+      "narratorId": "greek-nt",
+      "file": "projects/grk_revelation_2.json"
+    },
+    {
+      "id": "gh_grk_revelation_20",
+      "translationCode": "PODSTR",
+      "bookId": "revelation",
+      "chapter": 20,
+      "title": "Откровение 20 · Греческий (Koine)",
+      "cueCount": 15,
+      "narratorId": "greek-nt",
+      "file": "projects/grk_revelation_20.json"
+    },
+    {
+      "id": "gh_grk_revelation_21",
+      "translationCode": "PODSTR",
+      "bookId": "revelation",
+      "chapter": 21,
+      "title": "Откровение 21 · Греческий (Koine)",
+      "cueCount": 27,
+      "narratorId": "greek-nt",
+      "file": "projects/grk_revelation_21.json"
+    },
+    {
+      "id": "gh_grk_revelation_22",
+      "translationCode": "PODSTR",
+      "bookId": "revelation",
+      "chapter": 22,
+      "title": "Откровение 22 · Греческий (Koine)",
+      "cueCount": 21,
+      "narratorId": "greek-nt",
+      "file": "projects/grk_revelation_22.json"
+    },
+    {
+      "id": "gh_grk_revelation_3",
+      "translationCode": "PODSTR",
+      "bookId": "revelation",
+      "chapter": 3,
+      "title": "Откровение 3 · Греческий (Koine)",
+      "cueCount": 22,
+      "narratorId": "greek-nt",
+      "file": "projects/grk_revelation_3.json"
+    },
+    {
+      "id": "gh_grk_revelation_4",
+      "translationCode": "PODSTR",
+      "bookId": "revelation",
+      "chapter": 4,
+      "title": "Откровение 4 · Греческий (Koine)",
+      "cueCount": 11,
+      "narratorId": "greek-nt",
+      "file": "projects/grk_revelation_4.json"
+    },
+    {
+      "id": "gh_grk_revelation_5",
+      "translationCode": "PODSTR",
+      "bookId": "revelation",
+      "chapter": 5,
+      "title": "Откровение 5 · Греческий (Koine)",
+      "cueCount": 14,
+      "narratorId": "greek-nt",
+      "file": "projects/grk_revelation_5.json"
+    },
+    {
+      "id": "gh_grk_revelation_6",
+      "translationCode": "PODSTR",
+      "bookId": "revelation",
+      "chapter": 6,
+      "title": "Откровение 6 · Греческий (Koine)",
+      "cueCount": 17,
+      "narratorId": "greek-nt",
+      "file": "projects/grk_revelation_6.json"
+    },
+    {
+      "id": "gh_grk_revelation_7",
+      "translationCode": "PODSTR",
+      "bookId": "revelation",
+      "chapter": 7,
+      "title": "Откровение 7 · Греческий (Koine)",
+      "cueCount": 17,
+      "narratorId": "greek-nt",
+      "file": "projects/grk_revelation_7.json"
+    },
+    {
+      "id": "gh_grk_revelation_8",
+      "translationCode": "PODSTR",
+      "bookId": "revelation",
+      "chapter": 8,
+      "title": "Откровение 8 · Греческий (Koine)",
+      "cueCount": 13,
+      "narratorId": "greek-nt",
+      "file": "projects/grk_revelation_8.json"
+    },
+    {
+      "id": "gh_grk_revelation_9",
+      "translationCode": "PODSTR",
+      "bookId": "revelation",
+      "chapter": 9,
+      "title": "Откровение 9 · Греческий (Koine)",
+      "cueCount": 21,
+      "narratorId": "greek-nt",
+      "file": "projects/grk_revelation_9.json"
+    },
+    {
       "id": "gh_grk_romans_1",
       "translationCode": "PODSTR",
       "bookId": "romans",

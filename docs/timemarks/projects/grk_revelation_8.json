@@ -1,0 +1,63 @@
+{
+  "id": "gh_grk_revelation_8",
+  "translationCode": "PODSTR",
+  "bookId": "revelation",
+  "chapter": 8,
+  "title": "Откровение 8 · Греческий (Koine)",
+  "narratorId": "greek-nt",
+  "audioFileName": "66_08.mp3",
+  "cues": [
+    {
+      "timeMs": 340,
+      "verseStart": 1
+    },
+    {
+      "timeMs": 8267,
+      "verseStart": 2
+    },
+    {
+      "timeMs": 16133,
+      "verseStart": 3
+    },
+    {
+      "timeMs": 32166,
+      "verseStart": 4
+    },
+    {
+      "timeMs": 40433,
+      "verseStart": 5
+    },
+    {
+      "timeMs": 53964,
+      "verseStart": 6
+    },
+    {
+      "timeMs": 60389,
+      "verseStart": 7
+    },
+    {
+      "timeMs": 75902,
+      "verseStart": 8
+    },
+    {
+      "timeMs": 85630,
+      "verseStart": 9
+    },
+    {
+      "timeMs": 94437,
+      "verseStart": 10
+    },
+    {
+      "timeMs": 106727,
+      "verseStart": 11
+    },
+    {
+      "timeMs": 118757,
+      "verseStart": 12
+    },
+    {
+      "timeMs": 134030,
+      "verseStart": 13
+    }
+  ]
+}

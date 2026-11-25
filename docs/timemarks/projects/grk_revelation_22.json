@@ -1,0 +1,95 @@
+{
+  "id": "gh_grk_revelation_22",
+  "translationCode": "PODSTR",
+  "bookId": "revelation",
+  "chapter": 22,
+  "title": "Откровение 22 · Греческий (Koine)",
+  "narratorId": "greek-nt",
+  "audioFileName": "66_22.mp3",
+  "cues": [
+    {
+      "timeMs": 4623,
+      "verseStart": 1
+    },
+    {
+      "timeMs": 12949,
+      "verseStart": 2
+    },
+    {
+      "timeMs": 28099,
+      "verseStart": 3
+    },
+    {
+      "timeMs": 37405,
+      "verseStart": 4
+    },
+    {
+      "timeMs": 43069,
+      "verseStart": 5
+    },
+    {
+      "timeMs": 56518,
+      "verseStart": 6
+    },
+    {
+      "timeMs": 69106,
+      "verseStart": 7
+    },
+    {
+      "timeMs": 76871,
+      "verseStart": 8
+    },
+    {
+      "timeMs": 88939,
+      "verseStart": 9
+    },
+    {
+      "timeMs": 102108,
+      "verseStart": 10
+    },
+    {
+      "timeMs": 110574,
+      "verseStart": 11
+    },
+    {
+      "timeMs": 122001,
+      "verseStart": 12
+    },
+    {
+      "timeMs": 131288,
+      "verseStart": 13
+    },
+    {
+      "timeMs": 138752,
+      "verseStart": 14
+    },
+    {
+      "timeMs": 151161,
+      "verseStart": 15
+    },
+    {
+      "timeMs": 161528,
+      "verseStart": 16
+    },
+    {
+      "timeMs": 174636,
+      "verseStart": 17
+    },
+    {
+      "timeMs": 188025,
+      "verseStart": 18
+    },
+    {
+      "timeMs": 201354,
+      "verseStart": 19
+    },
+    {
+      "timeMs": 215283,
+      "verseStart": 20
+    },
+    {
+      "timeMs": 223309,
+      "verseStart": 21
+    }
+  ]
+}

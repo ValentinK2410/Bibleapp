@@ -1,0 +1,156 @@
+{
+  "id": "align-revelation-GRK-02",
+  "translationCode": "PODSTR",
+  "bookId": "revelation",
+  "chapter": 2,
+  "title": "Откровение 2 · Греческий (Koine)",
+  "audioFilePath": "/data/user/0/com.example.bible.sqlite/files/bible_audio/greek-nt/66_02.mp3",
+  "updatedAt": 1794873600000,
+  "cues": [
+    {
+      "timeMs": 340,
+      "verseStart": 1,
+      "attachments": []
+    },
+    {
+      "timeMs": 12349,
+      "verseStart": 2,
+      "attachments": []
+    },
+    {
+      "timeMs": 26259,
+      "verseStart": 3,
+      "attachments": []
+    },
+    {
+      "timeMs": 33004,
+      "verseStart": 4,
+      "attachments": []
+    },
+    {
+      "timeMs": 37327,
+      "verseStart": 5,
+      "attachments": []
+    },
+    {
+      "timeMs": 50696,
+      "verseStart": 6,
+      "attachments": []
+    },
+    {
+      "timeMs": 56160,
+      "verseStart": 7,
+      "attachments": []
+    },
+    {
+      "timeMs": 66848,
+      "verseStart": 8,
+      "attachments": []
+    },
+    {
+      "timeMs": 75874,
+      "verseStart": 9,
+      "attachments": []
+    },
+    {
+      "timeMs": 87423,
+      "verseStart": 10,
+      "attachments": []
+    },
+    {
+      "timeMs": 102413,
+      "verseStart": 11,
+      "attachments": []
+    },
+    {
+      "timeMs": 110499,
+      "verseStart": 12,
+      "attachments": []
+    },
+    {
+      "timeMs": 118945,
+      "verseStart": 13,
+      "attachments": []
+    },
+    {
+      "timeMs": 134476,
+      "verseStart": 14,
+      "attachments": []
+    },
+    {
+      "timeMs": 146925,
+      "verseStart": 15,
+      "attachments": []
+    },
+    {
+      "timeMs": 151148,
+      "verseStart": 16,
+      "attachments": []
+    },
+    {
+      "timeMs": 158633,
+      "verseStart": 17,
+      "attachments": []
+    },
+    {
+      "timeMs": 173364,
+      "verseStart": 18,
+      "attachments": []
+    },
+    {
+      "timeMs": 185272,
+      "verseStart": 19,
+      "attachments": []
+    },
+    {
+      "timeMs": 195520,
+      "verseStart": 20,
+      "attachments": []
+    },
+    {
+      "timeMs": 206407,
+      "verseStart": 21,
+      "attachments": []
+    },
+    {
+      "timeMs": 212672,
+      "verseStart": 22,
+      "attachments": []
+    },
+    {
+      "timeMs": 221638,
+      "verseStart": 23,
+      "attachments": []
+    },
+    {
+      "timeMs": 232826,
+      "verseStart": 24,
+      "attachments": []
+    },
+    {
+      "timeMs": 244094,
+      "verseStart": 25,
+      "attachments": []
+    },
+    {
+      "timeMs": 247877,
+      "verseStart": 26,
+      "attachments": []
+    },
+    {
+      "timeMs": 254322,
+      "verseStart": 27,
+      "attachments": []
+    },
+    {
+      "timeMs": 262888,
+      "verseStart": 28,
+      "attachments": []
+    },
+    {
+      "timeMs": 266070,
+      "verseStart": 29,
+      "attachments": []
+    }
+  ]
+}

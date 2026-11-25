@@ -1,0 +1,111 @@
+{
+  "id": "align-revelation-GRK-14",
+  "translationCode": "PODSTR",
+  "bookId": "revelation",
+  "chapter": 14,
+  "title": "Откровение 14 · Греческий (Koine)",
+  "audioFilePath": "/data/user/0/com.example.bible.sqlite/files/bible_audio/greek-nt/66_14.mp3",
+  "updatedAt": 1794873600000,
+  "cues": [
+    {
+      "timeMs": 3562,
+      "verseStart": 1,
+      "attachments": []
+    },
+    {
+      "timeMs": 19493,
+      "verseStart": 2,
+      "attachments": []
+    },
+    {
+      "timeMs": 32241,
+      "verseStart": 3,
+      "attachments": []
+    },
+    {
+      "timeMs": 49433,
+      "verseStart": 4,
+      "attachments": []
+    },
+    {
+      "timeMs": 63862,
+      "verseStart": 5,
+      "attachments": []
+    },
+    {
+      "timeMs": 68665,
+      "verseStart": 6,
+      "attachments": []
+    },
+    {
+      "timeMs": 81394,
+      "verseStart": 7,
+      "attachments": []
+    },
+    {
+      "timeMs": 96264,
+      "verseStart": 8,
+      "attachments": []
+    },
+    {
+      "timeMs": 108332,
+      "verseStart": 9,
+      "attachments": []
+    },
+    {
+      "timeMs": 122081,
+      "verseStart": 10,
+      "attachments": []
+    },
+    {
+      "timeMs": 136690,
+      "verseStart": 11,
+      "attachments": []
+    },
+    {
+      "timeMs": 152821,
+      "verseStart": 12,
+      "attachments": []
+    },
+    {
+      "timeMs": 160086,
+      "verseStart": 13,
+      "attachments": []
+    },
+    {
+      "timeMs": 178158,
+      "verseStart": 14,
+      "attachments": []
+    },
+    {
+      "timeMs": 192307,
+      "verseStart": 15,
+      "attachments": []
+    },
+    {
+      "timeMs": 208078,
+      "verseStart": 16,
+      "attachments": []
+    },
+    {
+      "timeMs": 215162,
+      "verseStart": 17,
+      "attachments": []
+    },
+    {
+      "timeMs": 222227,
+      "verseStart": 18,
+      "attachments": []
+    },
+    {
+      "timeMs": 244802,
+      "verseStart": 19,
+      "attachments": []
+    },
+    {
+      "timeMs": 254849,
+      "verseStart": 20,
+      "attachments": []
+    }
+  ]
+}

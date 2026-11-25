@@ -1,0 +1,127 @@
+{
+  "id": "gh_grk_revelation_2",
+  "translationCode": "PODSTR",
+  "bookId": "revelation",
+  "chapter": 2,
+  "title": "Откровение 2 · Греческий (Koine)",
+  "narratorId": "greek-nt",
+  "audioFileName": "66_02.mp3",
+  "cues": [
+    {
+      "timeMs": 340,
+      "verseStart": 1
+    },
+    {
+      "timeMs": 12349,
+      "verseStart": 2
+    },
+    {
+      "timeMs": 26259,
+      "verseStart": 3
+    },
+    {
+      "timeMs": 33004,
+      "verseStart": 4
+    },
+    {
+      "timeMs": 37327,
+      "verseStart": 5
+    },
+    {
+      "timeMs": 50696,
+      "verseStart": 6
+    },
+    {
+      "timeMs": 56160,
+      "verseStart": 7
+    },
+    {
+      "timeMs": 66848,
+      "verseStart": 8
+    },
+    {
+      "timeMs": 75874,
+      "verseStart": 9
+    },
+    {
+      "timeMs": 87423,
+      "verseStart": 10
+    },
+    {
+      "timeMs": 102413,
+      "verseStart": 11
+    },
+    {
+      "timeMs": 110499,
+      "verseStart": 12
+    },
+    {
+      "timeMs": 118945,
+      "verseStart": 13
+    },
+    {
+      "timeMs": 134476,
+      "verseStart": 14
+    },
+    {
+      "timeMs": 146925,
+      "verseStart": 15
+    },
+    {
+      "timeMs": 151148,
+      "verseStart": 16
+    },
+    {
+      "timeMs": 158633,
+      "verseStart": 17
+    },
+    {
+      "timeMs": 173364,
+      "verseStart": 18
+    },
+    {
+      "timeMs": 185272,
+      "verseStart": 19
+    },
+    {
+      "timeMs": 195520,
+      "verseStart": 20
+    },
+    {
+      "timeMs": 206407,
+      "verseStart": 21
+    },
+    {
+      "timeMs": 212672,
+      "verseStart": 22
+    },
+    {
+      "timeMs": 221638,
+      "verseStart": 23
+    },
+    {
+      "timeMs": 232826,
+      "verseStart": 24
+    },
+    {
+      "timeMs": 244094,
+      "verseStart": 25
+    },
+    {
+      "timeMs": 247877,
+      "verseStart": 26
+    },
+    {
+      "timeMs": 254322,
+      "verseStart": 27
+    },
+    {
+      "timeMs": 262888,
+      "verseStart": 28
+    },
+    {
+      "timeMs": 266070,
+      "verseStart": 29
+    }
+  ]
+}
