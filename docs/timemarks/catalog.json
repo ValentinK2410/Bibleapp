@@ -10794,6 +10794,56 @@
       "file": "projects/web_1_corinthians_9.json"
     },
     {
+      "id": "gh_web_1_john_1",
+      "translationCode": "WEB",
+      "bookId": "1_john",
+      "chapter": 1,
+      "title": "1-е Иоанна 1 · WEB (англ.)",
+      "cueCount": 10,
+      "narratorId": "web",
+      "file": "projects/web_1_john_1.json"
+    },
+    {
+      "id": "gh_web_1_john_2",
+      "translationCode": "WEB",
+      "bookId": "1_john",
+      "chapter": 2,
+      "title": "1-е Иоанна 2 · WEB (англ.)",
+      "cueCount": 29,
+      "narratorId": "web",
+      "file": "projects/web_1_john_2.json"
+    },
+    {
+      "id": "gh_web_1_john_3",
+      "translationCode": "WEB",
+      "bookId": "1_john",
+      "chapter": 3,
+      "title": "1-е Иоанна 3 · WEB (англ.)",
+      "cueCount": 24,
+      "narratorId": "web",
+      "file": "projects/web_1_john_3.json"
+    },
+    {
+      "id": "gh_web_1_john_4",
+      "translationCode": "WEB",
+      "bookId": "1_john",
+      "chapter": 4,
+      "title": "1-е Иоанна 4 · WEB (англ.)",
+      "cueCount": 21,
+      "narratorId": "web",
+      "file": "projects/web_1_john_4.json"
+    },
+    {
+      "id": "gh_web_1_john_5",
+      "translationCode": "WEB",
+      "bookId": "1_john",
+      "chapter": 5,
+      "title": "1-е Иоанна 5 · WEB (англ.)",
+      "cueCount": 21,
+      "narratorId": "web",
+      "file": "projects/web_1_john_5.json"
+    },
+    {
       "id": "gh_web_1_peter_1",
       "translationCode": "WEB",
       "bookId": "1_peter",

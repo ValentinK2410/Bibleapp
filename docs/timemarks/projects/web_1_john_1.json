@@ -1,0 +1,51 @@
+{
+  "id": "gh_web_1_john_1",
+  "translationCode": "WEB",
+  "bookId": "1_john",
+  "chapter": 1,
+  "title": "1-е Иоанна 1 · WEB (англ.)",
+  "narratorId": "web",
+  "audioFileName": "62_01.mp3",
+  "cues": [
+    {
+      "timeMs": 4583,
+      "verseStart": 1
+    },
+    {
+      "timeMs": 15391,
+      "verseStart": 2
+    },
+    {
+      "timeMs": 26099,
+      "verseStart": 3
+    },
+    {
+      "timeMs": 39508,
+      "verseStart": 4
+    },
+    {
+      "timeMs": 44772,
+      "verseStart": 5
+    },
+    {
+      "timeMs": 54979,
+      "verseStart": 6
+    },
+    {
+      "timeMs": 62765,
+      "verseStart": 7
+    },
+    {
+      "timeMs": 73353,
+      "verseStart": 8
+    },
+    {
+      "timeMs": 79017,
+      "verseStart": 9
+    },
+    {
+      "timeMs": 87283,
+      "verseStart": 10
+    }
+  ]
+}

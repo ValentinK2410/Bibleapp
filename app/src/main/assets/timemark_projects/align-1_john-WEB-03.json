@@ -1,0 +1,131 @@
+{
+  "id": "align-1_john-WEB-03",
+  "translationCode": "WEB",
+  "bookId": "1_john",
+  "chapter": 3,
+  "title": "1-е Иоанна 3 · WEB (англ.)",
+  "audioFilePath": "/data/user/0/com.example.bible.sqlite/files/bible_audio/web/62_03.mp3",
+  "updatedAt": 1794873600000,
+  "cues": [
+    {
+      "timeMs": 2842,
+      "verseStart": 1,
+      "attachments": []
+    },
+    {
+      "timeMs": 15351,
+      "verseStart": 2,
+      "attachments": []
+    },
+    {
+      "timeMs": 28680,
+      "verseStart": 3,
+      "attachments": []
+    },
+    {
+      "timeMs": 36245,
+      "verseStart": 4,
+      "attachments": []
+    },
+    {
+      "timeMs": 43430,
+      "verseStart": 5,
+      "attachments": []
+    },
+    {
+      "timeMs": 50716,
+      "verseStart": 6,
+      "attachments": []
+    },
+    {
+      "timeMs": 58681,
+      "verseStart": 7,
+      "attachments": []
+    },
+    {
+      "timeMs": 67667,
+      "verseStart": 8,
+      "attachments": []
+    },
+    {
+      "timeMs": 79556,
+      "verseStart": 9,
+      "attachments": []
+    },
+    {
+      "timeMs": 91064,
+      "verseStart": 10,
+      "attachments": []
+    },
+    {
+      "timeMs": 101411,
+      "verseStart": 11,
+      "attachments": []
+    },
+    {
+      "timeMs": 107515,
+      "verseStart": 12,
+      "attachments": []
+    },
+    {
+      "timeMs": 119924,
+      "verseStart": 13,
+      "attachments": []
+    },
+    {
+      "timeMs": 123106,
+      "verseStart": 14,
+      "attachments": []
+    },
+    {
+      "timeMs": 132072,
+      "verseStart": 15,
+      "attachments": []
+    },
+    {
+      "timeMs": 141059,
+      "verseStart": 16,
+      "attachments": []
+    },
+    {
+      "timeMs": 152287,
+      "verseStart": 17,
+      "attachments": []
+    },
+    {
+      "timeMs": 165075,
+      "verseStart": 18,
+      "attachments": []
+    },
+    {
+      "timeMs": 174722,
+      "verseStart": 19,
+      "attachments": []
+    },
+    {
+      "timeMs": 180066,
+      "verseStart": 20,
+      "attachments": []
+    },
+    {
+      "timeMs": 187411,
+      "verseStart": 21,
+      "attachments": []
+    },
+    {
+      "timeMs": 193415,
+      "verseStart": 22,
+      "attachments": []
+    },
+    {
+      "timeMs": 200941,
+      "verseStart": 23,
+      "attachments": []
+    },
+    {
+      "timeMs": 211068,
+      "verseStart": 24,
+      "attachments": []
+    }
+  ]
+}

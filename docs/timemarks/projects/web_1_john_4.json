@@ -1,0 +1,95 @@
+{
+  "id": "gh_web_1_john_4",
+  "translationCode": "WEB",
+  "bookId": "1_john",
+  "chapter": 4,
+  "title": "1-е Иоанна 4 · WEB (англ.)",
+  "narratorId": "web",
+  "audioFileName": "62_04.mp3",
+  "cues": [
+    {
+      "timeMs": 3202,
+      "verseStart": 1
+    },
+    {
+      "timeMs": 13809,
+      "verseStart": 2
+    },
+    {
+      "timeMs": 22175,
+      "verseStart": 3
+    },
+    {
+      "timeMs": 36365,
+      "verseStart": 4
+    },
+    {
+      "timeMs": 45411,
+      "verseStart": 5
+    },
+    {
+      "timeMs": 52556,
+      "verseStart": 6
+    },
+    {
+      "timeMs": 66185,
+      "verseStart": 7
+    },
+    {
+      "timeMs": 75791,
+      "verseStart": 8
+    },
+    {
+      "timeMs": 81515,
+      "verseStart": 9
+    },
+    {
+      "timeMs": 92322,
+      "verseStart": 10
+    },
+    {
+      "timeMs": 102910,
+      "verseStart": 11
+    },
+    {
+      "timeMs": 110074,
+      "verseStart": 12
+    },
+    {
+      "timeMs": 119000,
+      "verseStart": 13
+    },
+    {
+      "timeMs": 125865,
+      "verseStart": 14
+    },
+    {
+      "timeMs": 132129,
+      "verseStart": 15
+    },
+    {
+      "timeMs": 138834,
+      "verseStart": 16
+    },
+    {
+      "timeMs": 150822,
+      "verseStart": 17
+    },
+    {
+      "timeMs": 160148,
+      "verseStart": 18
+    },
+    {
+      "timeMs": 172857,
+      "verseStart": 19
+    },
+    {
+      "timeMs": 177840,
+      "verseStart": 20
+    },
+    {
+      "timeMs": 191489,
+      "verseStart": 21
+    }
+  ]
+}
