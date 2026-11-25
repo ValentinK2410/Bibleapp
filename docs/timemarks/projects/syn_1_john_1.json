@@ -1,0 +1,51 @@
+{
+  "id": "gh_syn_1_john_1",
+  "translationCode": "SYN",
+  "bookId": "1_john",
+  "chapter": 1,
+  "title": "1-е Иоанна 1 · Синодальный · Бондаренко",
+  "narratorId": "bondarenko",
+  "audioFileName": "48_01.mp3",
+  "cues": [
+    {
+      "timeMs": 19855,
+      "verseStart": 1
+    },
+    {
+      "timeMs": 35807,
+      "verseStart": 2
+    },
+    {
+      "timeMs": 51039,
+      "verseStart": 3
+    },
+    {
+      "timeMs": 69493,
+      "verseStart": 4
+    },
+    {
+      "timeMs": 77199,
+      "verseStart": 5
+    },
+    {
+      "timeMs": 91930,
+      "verseStart": 6
+    },
+    {
+      "timeMs": 103338,
+      "verseStart": 7
+    },
+    {
+      "timeMs": 121192,
+      "verseStart": 8
+    },
+    {
+      "timeMs": 130839,
+      "verseStart": 9
+    },
+    {
+      "timeMs": 144510,
+      "verseStart": 10
+    }
+  ]
+}

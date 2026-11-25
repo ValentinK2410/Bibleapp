@@ -1,0 +1,127 @@
+{
+  "id": "gh_syn_1_john_2",
+  "translationCode": "SYN",
+  "bookId": "1_john",
+  "chapter": 2,
+  "title": "1-е Иоанна 2 · Синодальный · Бондаренко",
+  "narratorId": "bondarenko",
+  "audioFileName": "48_02.mp3",
+  "cues": [
+    {
+      "timeMs": 5204,
+      "verseStart": 1
+    },
+    {
+      "timeMs": 22576,
+      "verseStart": 2
+    },
+    {
+      "timeMs": 33884,
+      "verseStart": 3
+    },
+    {
+      "timeMs": 41489,
+      "verseStart": 4
+    },
+    {
+      "timeMs": 52036,
+      "verseStart": 5
+    },
+    {
+      "timeMs": 63604,
+      "verseStart": 6
+    },
+    {
+      "timeMs": 72370,
+      "verseStart": 7
+    },
+    {
+      "timeMs": 91123,
+      "verseStart": 8
+    },
+    {
+      "timeMs": 108715,
+      "verseStart": 9
+    },
+    {
+      "timeMs": 117141,
+      "verseStart": 10
+    },
+    {
+      "timeMs": 125067,
+      "verseStart": 11
+    },
+    {
+      "timeMs": 141358,
+      "verseStart": 12
+    },
+    {
+      "timeMs": 149263,
+      "verseStart": 13
+    },
+    {
+      "timeMs": 171779,
+      "verseStart": 14
+    },
+    {
+      "timeMs": 190452,
+      "verseStart": 15
+    },
+    {
+      "timeMs": 200819,
+      "verseStart": 16
+    },
+    {
+      "timeMs": 214809,
+      "verseStart": 17
+    },
+    {
+      "timeMs": 227358,
+      "verseStart": 18
+    },
+    {
+      "timeMs": 246971,
+      "verseStart": 19
+    },
+    {
+      "timeMs": 264003,
+      "verseStart": 20
+    },
+    {
+      "timeMs": 271448,
+      "verseStart": 21
+    },
+    {
+      "timeMs": 284737,
+      "verseStart": 22
+    },
+    {
+      "timeMs": 298567,
+      "verseStart": 23
+    },
+    {
+      "timeMs": 311256,
+      "verseStart": 24
+    },
+    {
+      "timeMs": 327807,
+      "verseStart": 25
+    },
+    {
+      "timeMs": 338294,
+      "verseStart": 26
+    },
+    {
+      "timeMs": 344098,
+      "verseStart": 27
+    },
+    {
+      "timeMs": 369636,
+      "verseStart": 28
+    },
+    {
+      "timeMs": 384026,
+      "verseStart": 29
+    }
+  ]
+}

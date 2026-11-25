@@ -1,0 +1,95 @@
+{
+  "id": "gh_syn_1_john_5",
+  "translationCode": "SYN",
+  "bookId": "1_john",
+  "chapter": 5,
+  "title": "1-е Иоанна 5 · Синодальный · Бондаренко",
+  "narratorId": "bondarenko",
+  "audioFileName": "48_05.mp3",
+  "cues": [
+    {
+      "timeMs": 4883,
+      "verseStart": 1
+    },
+    {
+      "timeMs": 20674,
+      "verseStart": 2
+    },
+    {
+      "timeMs": 31281,
+      "verseStart": 3
+    },
+    {
+      "timeMs": 41548,
+      "verseStart": 4
+    },
+    {
+      "timeMs": 54997,
+      "verseStart": 5
+    },
+    {
+      "timeMs": 63763,
+      "verseStart": 6
+    },
+    {
+      "timeMs": 82796,
+      "verseStart": 7
+    },
+    {
+      "timeMs": 96105,
+      "verseStart": 8
+    },
+    {
+      "timeMs": 107252,
+      "verseStart": 9
+    },
+    {
+      "timeMs": 125224,
+      "verseStart": 10
+    },
+    {
+      "timeMs": 144878,
+      "verseStart": 11
+    },
+    {
+      "timeMs": 157246,
+      "verseStart": 12
+    },
+    {
+      "timeMs": 170935,
+      "verseStart": 13
+    },
+    {
+      "timeMs": 186065,
+      "verseStart": 14
+    },
+    {
+      "timeMs": 197053,
+      "verseStart": 15
+    },
+    {
+      "timeMs": 210422,
+      "verseStart": 16
+    },
+    {
+      "timeMs": 236619,
+      "verseStart": 17
+    },
+    {
+      "timeMs": 244885,
+      "verseStart": 18
+    },
+    {
+      "timeMs": 260335,
+      "verseStart": 19
+    },
+    {
+      "timeMs": 267400,
+      "verseStart": 20
+    },
+    {
+      "timeMs": 291656,
+      "verseStart": 21
+    }
+  ]
+}
