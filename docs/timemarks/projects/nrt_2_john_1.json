@@ -1,0 +1,63 @@
+{
+  "id": "gh_nrt_2_john_1",
+  "translationCode": "NRT",
+  "bookId": "2_john",
+  "chapter": 1,
+  "title": "2-е Иоанна 1 · Новый русский",
+  "narratorId": "new-russian",
+  "audioFileName": "49_01.mp3",
+  "cues": [
+    {
+      "timeMs": 3863,
+      "verseStart": 1
+    },
+    {
+      "timeMs": 15090,
+      "verseStart": 2
+    },
+    {
+      "timeMs": 21354,
+      "verseStart": 3
+    },
+    {
+      "timeMs": 35123,
+      "verseStart": 4
+    },
+    {
+      "timeMs": 42828,
+      "verseStart": 5
+    },
+    {
+      "timeMs": 54996,
+      "verseStart": 6
+    },
+    {
+      "timeMs": 66784,
+      "verseStart": 7
+    },
+    {
+      "timeMs": 80613,
+      "verseStart": 8
+    },
+    {
+      "timeMs": 88118,
+      "verseStart": 9
+    },
+    {
+      "timeMs": 102647,
+      "verseStart": 10
+    },
+    {
+      "timeMs": 111473,
+      "verseStart": 11
+    },
+    {
+      "timeMs": 118758,
+      "verseStart": 12
+    },
+    {
+      "timeMs": 133748,
+      "verseStart": 13
+    }
+  ]
+}
