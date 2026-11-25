@@ -1,0 +1,95 @@
+{
+  "id": "gh_web_revelation_19",
+  "translationCode": "WEB",
+  "bookId": "revelation",
+  "chapter": 19,
+  "title": "Откровение 19 · WEB (англ.)",
+  "narratorId": "web",
+  "audioFileName": "66_19.mp3",
+  "cues": [
+    {
+      "timeMs": 2702,
+      "verseStart": 1
+    },
+    {
+      "timeMs": 16091,
+      "verseStart": 2
+    },
+    {
+      "timeMs": 29561,
+      "verseStart": 3
+    },
+    {
+      "timeMs": 38387,
+      "verseStart": 4
+    },
+    {
+      "timeMs": 49375,
+      "verseStart": 5
+    },
+    {
+      "timeMs": 59562,
+      "verseStart": 6
+    },
+    {
+      "timeMs": 72691,
+      "verseStart": 7
+    },
+    {
+      "timeMs": 81918,
+      "verseStart": 8
+    },
+    {
+      "timeMs": 93826,
+      "verseStart": 9
+    },
+    {
+      "timeMs": 109197,
+      "verseStart": 10
+    },
+    {
+      "timeMs": 126309,
+      "verseStart": 11
+    },
+    {
+      "timeMs": 139578,
+      "verseStart": 12
+    },
+    {
+      "timeMs": 148344,
+      "verseStart": 13
+    },
+    {
+      "timeMs": 156870,
+      "verseStart": 14
+    },
+    {
+      "timeMs": 164496,
+      "verseStart": 15
+    },
+    {
+      "timeMs": 177585,
+      "verseStart": 16
+    },
+    {
+      "timeMs": 188212,
+      "verseStart": 17
+    },
+    {
+      "timeMs": 202042,
+      "verseStart": 18
+    },
+    {
+      "timeMs": 219054,
+      "verseStart": 19
+    },
+    {
+      "timeMs": 229621,
+      "verseStart": 20
+    },
+    {
+      "timeMs": 248515,
+      "verseStart": 21
+    }
+  ]
+}

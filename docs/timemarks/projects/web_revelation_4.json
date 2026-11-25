@@ -1,0 +1,55 @@
+{
+  "id": "gh_web_revelation_4",
+  "translationCode": "WEB",
+  "bookId": "revelation",
+  "chapter": 4,
+  "title": "Откровение 4 · WEB (англ.)",
+  "narratorId": "web",
+  "audioFileName": "66_04.mp3",
+  "cues": [
+    {
+      "timeMs": 3382,
+      "verseStart": 1
+    },
+    {
+      "timeMs": 18372,
+      "verseStart": 2
+    },
+    {
+      "timeMs": 25697,
+      "verseStart": 3
+    },
+    {
+      "timeMs": 36183,
+      "verseStart": 4
+    },
+    {
+      "timeMs": 49052,
+      "verseStart": 5
+    },
+    {
+      "timeMs": 60779,
+      "verseStart": 6
+    },
+    {
+      "timeMs": 73527,
+      "verseStart": 7
+    },
+    {
+      "timeMs": 85335,
+      "verseStart": 8
+    },
+    {
+      "timeMs": 101565,
+      "verseStart": 9
+    },
+    {
+      "timeMs": 108690,
+      "verseStart": 10
+    },
+    {
+      "timeMs": 119957,
+      "verseStart": 11
+    }
+  ]
+}

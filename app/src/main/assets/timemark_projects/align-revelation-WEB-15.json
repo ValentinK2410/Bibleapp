@@ -1,0 +1,51 @@
+{
+  "id": "align-revelation-WEB-15",
+  "translationCode": "WEB",
+  "bookId": "revelation",
+  "chapter": 15,
+  "title": "Откровение 15 · WEB (англ.)",
+  "audioFilePath": "/data/user/0/com.example.bible.sqlite/files/bible_audio/web/66_15.mp3",
+  "updatedAt": 1794873600000,
+  "cues": [
+    {
+      "timeMs": 2222,
+      "verseStart": 1,
+      "attachments": []
+    },
+    {
+      "timeMs": 13912,
+      "verseStart": 2,
+      "attachments": []
+    },
+    {
+      "timeMs": 30086,
+      "verseStart": 3,
+      "attachments": []
+    },
+    {
+      "timeMs": 43478,
+      "verseStart": 4,
+      "attachments": []
+    },
+    {
+      "timeMs": 56329,
+      "verseStart": 5,
+      "attachments": []
+    },
+    {
+      "timeMs": 64236,
+      "verseStart": 6,
+      "attachments": []
+    },
+    {
+      "timeMs": 74425,
+      "verseStart": 7,
+      "attachments": []
+    },
+    {
+      "timeMs": 82252,
+      "verseStart": 8,
+      "attachments": []
+    }
+  ]
+}

@@ -1,0 +1,43 @@
+{
+  "id": "gh_web_revelation_15",
+  "translationCode": "WEB",
+  "bookId": "revelation",
+  "chapter": 15,
+  "title": "Откровение 15 · WEB (англ.)",
+  "narratorId": "web",
+  "audioFileName": "66_15.mp3",
+  "cues": [
+    {
+      "timeMs": 2222,
+      "verseStart": 1
+    },
+    {
+      "timeMs": 13912,
+      "verseStart": 2
+    },
+    {
+      "timeMs": 30086,
+      "verseStart": 3
+    },
+    {
+      "timeMs": 43478,
+      "verseStart": 4
+    },
+    {
+      "timeMs": 56329,
+      "verseStart": 5
+    },
+    {
+      "timeMs": 64236,
+      "verseStart": 6
+    },
+    {
+      "timeMs": 74425,
+      "verseStart": 7
+    },
+    {
+      "timeMs": 82252,
+      "verseStart": 8
+    }
+  ]
+}

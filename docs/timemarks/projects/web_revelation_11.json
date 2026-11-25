@@ -1,0 +1,87 @@
+{
+  "id": "gh_web_revelation_11",
+  "translationCode": "WEB",
+  "bookId": "revelation",
+  "chapter": 11,
+  "title": "Откровение 11 · WEB (англ.)",
+  "narratorId": "web",
+  "audioFileName": "66_11.mp3",
+  "cues": [
+    {
+      "timeMs": 2362,
+      "verseStart": 1
+    },
+    {
+      "timeMs": 14390,
+      "verseStart": 2
+    },
+    {
+      "timeMs": 26198,
+      "verseStart": 3
+    },
+    {
+      "timeMs": 36565,
+      "verseStart": 4
+    },
+    {
+      "timeMs": 43209,
+      "verseStart": 5
+    },
+    {
+      "timeMs": 54597,
+      "verseStart": 6
+    },
+    {
+      "timeMs": 67886,
+      "verseStart": 7
+    },
+    {
+      "timeMs": 79174,
+      "verseStart": 8
+    },
+    {
+      "timeMs": 90921,
+      "verseStart": 9
+    },
+    {
+      "timeMs": 102769,
+      "verseStart": 10
+    },
+    {
+      "timeMs": 116759,
+      "verseStart": 11
+    },
+    {
+      "timeMs": 129307,
+      "verseStart": 12
+    },
+    {
+      "timeMs": 140715,
+      "verseStart": 13
+    },
+    {
+      "timeMs": 157366,
+      "verseStart": 14
+    },
+    {
+      "timeMs": 165112,
+      "verseStart": 15
+    },
+    {
+      "timeMs": 179641,
+      "verseStart": 16
+    },
+    {
+      "timeMs": 185686,
+      "verseStart": 17
+    },
+    {
+      "timeMs": 198494,
+      "verseStart": 18
+    },
+    {
+      "timeMs": 220229,
+      "verseStart": 19
+    }
+  ]
+}

@@ -1,0 +1,79 @@
+{
+  "id": "gh_web_revelation_6",
+  "translationCode": "WEB",
+  "bookId": "revelation",
+  "chapter": 6,
+  "title": "Откровение 6 · WEB (англ.)",
+  "narratorId": "web",
+  "audioFileName": "66_06.mp3",
+  "cues": [
+    {
+      "timeMs": 2282,
+      "verseStart": 1
+    },
+    {
+      "timeMs": 14090,
+      "verseStart": 2
+    },
+    {
+      "timeMs": 27639,
+      "verseStart": 3
+    },
+    {
+      "timeMs": 34484,
+      "verseStart": 4
+    },
+    {
+      "timeMs": 49114,
+      "verseStart": 5
+    },
+    {
+      "timeMs": 64364,
+      "verseStart": 6
+    },
+    {
+      "timeMs": 79054,
+      "verseStart": 7
+    },
+    {
+      "timeMs": 86019,
+      "verseStart": 8
+    },
+    {
+      "timeMs": 107874,
+      "verseStart": 9
+    },
+    {
+      "timeMs": 118961,
+      "verseStart": 10
+    },
+    {
+      "timeMs": 130749,
+      "verseStart": 11
+    },
+    {
+      "timeMs": 146560,
+      "verseStart": 12
+    },
+    {
+      "timeMs": 159429,
+      "verseStart": 13
+    },
+    {
+      "timeMs": 168195,
+      "verseStart": 14
+    },
+    {
+      "timeMs": 177001,
+      "verseStart": 15
+    },
+    {
+      "timeMs": 190450,
+      "verseStart": 16
+    },
+    {
+      "timeMs": 198756,
+      "verseStart": 17
+    }
+  ]
+}

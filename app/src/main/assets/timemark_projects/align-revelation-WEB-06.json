@@ -1,0 +1,96 @@
+{
+  "id": "align-revelation-WEB-06",
+  "translationCode": "WEB",
+  "bookId": "revelation",
+  "chapter": 6,
+  "title": "Откровение 6 · WEB (англ.)",
+  "audioFilePath": "/data/user/0/com.example.bible.sqlite/files/bible_audio/web/66_06.mp3",
+  "updatedAt": 1794873600000,
+  "cues": [
+    {
+      "timeMs": 2282,
+      "verseStart": 1,
+      "attachments": []
+    },
+    {
+      "timeMs": 14090,
+      "verseStart": 2,
+      "attachments": []
+    },
+    {
+      "timeMs": 27639,
+      "verseStart": 3,
+      "attachments": []
+    },
+    {
+      "timeMs": 34484,
+      "verseStart": 4,
+      "attachments": []
+    },
+    {
+      "timeMs": 49114,
+      "verseStart": 5,
+      "attachments": []
+    },
+    {
+      "timeMs": 64364,
+      "verseStart": 6,
+      "attachments": []
+    },
+    {
+      "timeMs": 79054,
+      "verseStart": 7,
+      "attachments": []
+    },
+    {
+      "timeMs": 86019,
+      "verseStart": 8,
+      "attachments": []
+    },
+    {
+      "timeMs": 107874,
+      "verseStart": 9,
+      "attachments": []
+    },
+    {
+      "timeMs": 118961,
+      "verseStart": 10,
+      "attachments": []
+    },
+    {
+      "timeMs": 130749,
+      "verseStart": 11,
+      "attachments": []
+    },
+    {
+      "timeMs": 146560,
+      "verseStart": 12,
+      "attachments": []
+    },
+    {
+      "timeMs": 159429,
+      "verseStart": 13,
+      "attachments": []
+    },
+    {
+      "timeMs": 168195,
+      "verseStart": 14,
+      "attachments": []
+    },
+    {
+      "timeMs": 177001,
+      "verseStart": 15,
+      "attachments": []
+    },
+    {
+      "timeMs": 190450,
+      "verseStart": 16,
+      "attachments": []
+    },
+    {
+      "timeMs": 198756,
+      "verseStart": 17,
+      "attachments": []
+    }
+  ]
+}

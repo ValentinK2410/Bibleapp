@@ -1,0 +1,111 @@
+{
+  "id": "align-revelation-WEB-14",
+  "translationCode": "WEB",
+  "bookId": "revelation",
+  "chapter": 14,
+  "title": "Откровение 14 · WEB (англ.)",
+  "audioFilePath": "/data/user/0/com.example.bible.sqlite/files/bible_audio/web/66_14.mp3",
+  "updatedAt": 1794873600000,
+  "cues": [
+    {
+      "timeMs": 3363,
+      "verseStart": 1,
+      "attachments": []
+    },
+    {
+      "timeMs": 14731,
+      "verseStart": 2,
+      "attachments": []
+    },
+    {
+      "timeMs": 23417,
+      "verseStart": 3,
+      "attachments": []
+    },
+    {
+      "timeMs": 36827,
+      "verseStart": 4,
+      "attachments": []
+    },
+    {
+      "timeMs": 51418,
+      "verseStart": 5,
+      "attachments": []
+    },
+    {
+      "timeMs": 59144,
+      "verseStart": 6,
+      "attachments": []
+    },
+    {
+      "timeMs": 70252,
+      "verseStart": 7,
+      "attachments": []
+    },
+    {
+      "timeMs": 83882,
+      "verseStart": 8,
+      "attachments": []
+    },
+    {
+      "timeMs": 97572,
+      "verseStart": 9,
+      "attachments": []
+    },
+    {
+      "timeMs": 107139,
+      "verseStart": 10,
+      "attachments": []
+    },
+    {
+      "timeMs": 122350,
+      "verseStart": 11,
+      "attachments": []
+    },
+    {
+      "timeMs": 136580,
+      "verseStart": 12,
+      "attachments": []
+    },
+    {
+      "timeMs": 146388,
+      "verseStart": 13,
+      "attachments": []
+    },
+    {
+      "timeMs": 164761,
+      "verseStart": 14,
+      "attachments": []
+    },
+    {
+      "timeMs": 178291,
+      "verseStart": 15,
+      "attachments": []
+    },
+    {
+      "timeMs": 191621,
+      "verseStart": 16,
+      "attachments": []
+    },
+    {
+      "timeMs": 197925,
+      "verseStart": 17,
+      "attachments": []
+    },
+    {
+      "timeMs": 203710,
+      "verseStart": 18,
+      "attachments": []
+    },
+    {
+      "timeMs": 219341,
+      "verseStart": 19,
+      "attachments": []
+    },
+    {
+      "timeMs": 229008,
+      "verseStart": 20,
+      "attachments": []
+    }
+  ]
+}

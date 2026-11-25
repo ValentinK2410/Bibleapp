@@ -1,0 +1,63 @@
+{
+  "id": "gh_web_revelation_8",
+  "translationCode": "WEB",
+  "bookId": "revelation",
+  "chapter": 8,
+  "title": "Откровение 8 · WEB (англ.)",
+  "narratorId": "web",
+  "audioFileName": "66_08.mp3",
+  "cues": [
+    {
+      "timeMs": 2582,
+      "verseStart": 1
+    },
+    {
+      "timeMs": 10828,
+      "verseStart": 2
+    },
+    {
+      "timeMs": 18213,
+      "verseStart": 3
+    },
+    {
+      "timeMs": 32524,
+      "verseStart": 4
+    },
+    {
+      "timeMs": 41190,
+      "verseStart": 5
+    },
+    {
+      "timeMs": 54660,
+      "verseStart": 6
+    },
+    {
+      "timeMs": 61344,
+      "verseStart": 7
+    },
+    {
+      "timeMs": 76055,
+      "verseStart": 8
+    },
+    {
+      "timeMs": 86323,
+      "verseStart": 9
+    },
+    {
+      "timeMs": 96330,
+      "verseStart": 10
+    },
+    {
+      "timeMs": 109479,
+      "verseStart": 11
+    },
+    {
+      "timeMs": 123890,
+      "verseStart": 12
+    },
+    {
+      "timeMs": 142944,
+      "verseStart": 13
+    }
+  ]
+}

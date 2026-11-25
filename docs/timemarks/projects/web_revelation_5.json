@@ -1,0 +1,67 @@
+{
+  "id": "gh_web_revelation_5",
+  "translationCode": "WEB",
+  "bookId": "revelation",
+  "chapter": 5,
+  "title": "Откровение 5 · WEB (англ.)",
+  "narratorId": "web",
+  "audioFileName": "66_05.mp3",
+  "cues": [
+    {
+      "timeMs": 2462,
+      "verseStart": 1
+    },
+    {
+      "timeMs": 11668,
+      "verseStart": 2
+    },
+    {
+      "timeMs": 21976,
+      "verseStart": 3
+    },
+    {
+      "timeMs": 30022,
+      "verseStart": 4
+    },
+    {
+      "timeMs": 38067,
+      "verseStart": 5
+    },
+    {
+      "timeMs": 52338,
+      "verseStart": 6
+    },
+    {
+      "timeMs": 70271,
+      "verseStart": 7
+    },
+    {
+      "timeMs": 76015,
+      "verseStart": 8
+    },
+    {
+      "timeMs": 89685,
+      "verseStart": 9
+    },
+    {
+      "timeMs": 107477,
+      "verseStart": 10
+    },
+    {
+      "timeMs": 115603,
+      "verseStart": 11
+    },
+    {
+      "timeMs": 129533,
+      "verseStart": 12
+    },
+    {
+      "timeMs": 142102,
+      "verseStart": 13
+    },
+    {
+      "timeMs": 161296,
+      "verseStart": 14
+    }
+  ]
+}

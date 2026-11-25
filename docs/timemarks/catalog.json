@@ -14074,6 +14074,226 @@
       "file": "projects/web_philippians_4.json"
     },
     {
+      "id": "gh_web_revelation_1",
+      "translationCode": "WEB",
+      "bookId": "revelation",
+      "chapter": 1,
+      "title": "Откровение 1 · WEB (англ.)",
+      "cueCount": 20,
+      "narratorId": "web",
+      "file": "projects/web_revelation_1.json"
+    },
+    {
+      "id": "gh_web_revelation_10",
+      "translationCode": "WEB",
+      "bookId": "revelation",
+      "chapter": 10,
+      "title": "Откровение 10 · WEB (англ.)",
+      "cueCount": 11,
+      "narratorId": "web",
+      "file": "projects/web_revelation_10.json"
+    },
+    {
+      "id": "gh_web_revelation_11",
+      "translationCode": "WEB",
+      "bookId": "revelation",
+      "chapter": 11,
+      "title": "Откровение 11 · WEB (англ.)",
+      "cueCount": 19,
+      "narratorId": "web",
+      "file": "projects/web_revelation_11.json"
+    },
+    {
+      "id": "gh_web_revelation_12",
+      "translationCode": "WEB",
+      "bookId": "revelation",
+      "chapter": 12,
+      "title": "Откровение 12 · WEB (англ.)",
+      "cueCount": 17,
+      "narratorId": "web",
+      "file": "projects/web_revelation_12.json"
+    },
+    {
+      "id": "gh_web_revelation_13",
+      "translationCode": "WEB",
+      "bookId": "revelation",
+      "chapter": 13,
+      "title": "Откровение 13 · WEB (англ.)",
+      "cueCount": 18,
+      "narratorId": "web",
+      "file": "projects/web_revelation_13.json"
+    },
+    {
+      "id": "gh_web_revelation_14",
+      "translationCode": "WEB",
+      "bookId": "revelation",
+      "chapter": 14,
+      "title": "Откровение 14 · WEB (англ.)",
+      "cueCount": 20,
+      "narratorId": "web",
+      "file": "projects/web_revelation_14.json"
+    },
+    {
+      "id": "gh_web_revelation_15",
+      "translationCode": "WEB",
+      "bookId": "revelation",
+      "chapter": 15,
+      "title": "Откровение 15 · WEB (англ.)",
+      "cueCount": 8,
+      "narratorId": "web",
+      "file": "projects/web_revelation_15.json"
+    },
+    {
+      "id": "gh_web_revelation_16",
+      "translationCode": "WEB",
+      "bookId": "revelation",
+      "chapter": 16,
+      "title": "Откровение 16 · WEB (англ.)",
+      "cueCount": 21,
+      "narratorId": "web",
+      "file": "projects/web_revelation_16.json"
+    },
+    {
+      "id": "gh_web_revelation_17",
+      "translationCode": "WEB",
+      "bookId": "revelation",
+      "chapter": 17,
+      "title": "Откровение 17 · WEB (англ.)",
+      "cueCount": 18,
+      "narratorId": "web",
+      "file": "projects/web_revelation_17.json"
+    },
+    {
+      "id": "gh_web_revelation_18",
+      "translationCode": "WEB",
+      "bookId": "revelation",
+      "chapter": 18,
+      "title": "Откровение 18 · WEB (англ.)",
+      "cueCount": 24,
+      "narratorId": "web",
+      "file": "projects/web_revelation_18.json"
+    },
+    {
+      "id": "gh_web_revelation_19",
+      "translationCode": "WEB",
+      "bookId": "revelation",
+      "chapter": 19,
+      "title": "Откровение 19 · WEB (англ.)",
+      "cueCount": 21,
+      "narratorId": "web",
+      "file": "projects/web_revelation_19.json"
+    },
+    {
+      "id": "gh_web_revelation_2",
+      "translationCode": "WEB",
+      "bookId": "revelation",
+      "chapter": 2,
+      "title": "Откровение 2 · WEB (англ.)",
+      "cueCount": 29,
+      "narratorId": "web",
+      "file": "projects/web_revelation_2.json"
+    },
+    {
+      "id": "gh_web_revelation_20",
+      "translationCode": "WEB",
+      "bookId": "revelation",
+      "chapter": 20,
+      "title": "Откровение 20 · WEB (англ.)",
+      "cueCount": 15,
+      "narratorId": "web",
+      "file": "projects/web_revelation_20.json"
+    },
+    {
+      "id": "gh_web_revelation_21",
+      "translationCode": "WEB",
+      "bookId": "revelation",
+      "chapter": 21,
+      "title": "Откровение 21 · WEB (англ.)",
+      "cueCount": 27,
+      "narratorId": "web",
+      "file": "projects/web_revelation_21.json"
+    },
+    {
+      "id": "gh_web_revelation_22",
+      "translationCode": "WEB",
+      "bookId": "revelation",
+      "chapter": 22,
+      "title": "Откровение 22 · WEB (англ.)",
+      "cueCount": 21,
+      "narratorId": "web",
+      "file": "projects/web_revelation_22.json"
+    },
+    {
+      "id": "gh_web_revelation_3",
+      "translationCode": "WEB",
+      "bookId": "revelation",
+      "chapter": 3,
+      "title": "Откровение 3 · WEB (англ.)",
+      "cueCount": 22,
+      "narratorId": "web",
+      "file": "projects/web_revelation_3.json"
+    },
+    {
+      "id": "gh_web_revelation_4",
+      "translationCode": "WEB",
+      "bookId": "revelation",
+      "chapter": 4,
+      "title": "Откровение 4 · WEB (англ.)",
+      "cueCount": 11,
+      "narratorId": "web",
+      "file": "projects/web_revelation_4.json"
+    },
+    {
+      "id": "gh_web_revelation_5",
+      "translationCode": "WEB",
+      "bookId": "revelation",
+      "chapter": 5,
+      "title": "Откровение 5 · WEB (англ.)",
+      "cueCount": 14,
+      "narratorId": "web",
+      "file": "projects/web_revelation_5.json"
+    },
+    {
+      "id": "gh_web_revelation_6",
+      "translationCode": "WEB",
+      "bookId": "revelation",
+      "chapter": 6,
+      "title": "Откровение 6 · WEB (англ.)",
+      "cueCount": 17,
+      "narratorId": "web",
+      "file": "projects/web_revelation_6.json"
+    },
+    {
+      "id": "gh_web_revelation_7",
+      "translationCode": "WEB",
+      "bookId": "revelation",
+      "chapter": 7,
+      "title": "Откровение 7 · WEB (англ.)",
+      "cueCount": 17,
+      "narratorId": "web",
+      "file": "projects/web_revelation_7.json"
+    },
+    {
+      "id": "gh_web_revelation_8",
+      "translationCode": "WEB",
+      "bookId": "revelation",
+      "chapter": 8,
+      "title": "Откровение 8 · WEB (англ.)",
+      "cueCount": 13,
+      "narratorId": "web",
+      "file": "projects/web_revelation_8.json"
+    },
+    {
+      "id": "gh_web_revelation_9",
+      "translationCode": "WEB",
+      "bookId": "revelation",
+      "chapter": 9,
+      "title": "Откровение 9 · WEB (англ.)",
+      "cueCount": 21,
+      "narratorId": "web",
+      "file": "projects/web_revelation_9.json"
+    },
+    {
       "id": "gh_web_romans_1",
       "translationCode": "WEB",
       "bookId": "romans",

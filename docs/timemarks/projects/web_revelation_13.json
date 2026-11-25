@@ -1,0 +1,83 @@
+{
+  "id": "gh_web_revelation_13",
+  "translationCode": "WEB",
+  "bookId": "revelation",
+  "chapter": 13,
+  "title": "Откровение 13 · WEB (англ.)",
+  "narratorId": "web",
+  "audioFileName": "66_13.mp3",
+  "cues": [
+    {
+      "timeMs": 3783,
+      "verseStart": 1
+    },
+    {
+      "timeMs": 17412,
+      "verseStart": 2
+    },
+    {
+      "timeMs": 30401,
+      "verseStart": 3
+    },
+    {
+      "timeMs": 40068,
+      "verseStart": 4
+    },
+    {
+      "timeMs": 50415,
+      "verseStart": 5
+    },
+    {
+      "timeMs": 59561,
+      "verseStart": 6
+    },
+    {
+      "timeMs": 67627,
+      "verseStart": 7
+    },
+    {
+      "timeMs": 76933,
+      "verseStart": 8
+    },
+    {
+      "timeMs": 87120,
+      "verseStart": 9
+    },
+    {
+      "timeMs": 90803,
+      "verseStart": 10
+    },
+    {
+      "timeMs": 103992,
+      "verseStart": 11
+    },
+    {
+      "timeMs": 111657,
+      "verseStart": 12
+    },
+    {
+      "timeMs": 122325,
+      "verseStart": 13
+    },
+    {
+      "timeMs": 128309,
+      "verseStart": 14
+    },
+    {
+      "timeMs": 143880,
+      "verseStart": 15
+    },
+    {
+      "timeMs": 155268,
+      "verseStart": 16
+    },
+    {
+      "timeMs": 164194,
+      "verseStart": 17
+    },
+    {
+      "timeMs": 172560,
+      "verseStart": 18
+    }
+  ]
+}

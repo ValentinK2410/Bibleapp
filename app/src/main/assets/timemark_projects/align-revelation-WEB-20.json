@@ -1,0 +1,86 @@
+{
+  "id": "align-revelation-WEB-20",
+  "translationCode": "WEB",
+  "bookId": "revelation",
+  "chapter": 20,
+  "title": "Откровение 20 · WEB (англ.)",
+  "audioFilePath": "/data/user/0/com.example.bible.sqlite/files/bible_audio/web/66_20.mp3",
+  "updatedAt": 1794873600000,
+  "cues": [
+    {
+      "timeMs": 2782,
+      "verseStart": 1,
+      "attachments": []
+    },
+    {
+      "timeMs": 9847,
+      "verseStart": 2,
+      "attachments": []
+    },
+    {
+      "timeMs": 17412,
+      "verseStart": 3,
+      "attachments": []
+    },
+    {
+      "timeMs": 32783,
+      "verseStart": 4,
+      "attachments": []
+    },
+    {
+      "timeMs": 56960,
+      "verseStart": 5,
+      "attachments": []
+    },
+    {
+      "timeMs": 64625,
+      "verseStart": 6,
+      "attachments": []
+    },
+    {
+      "timeMs": 77715,
+      "verseStart": 7,
+      "attachments": []
+    },
+    {
+      "timeMs": 82578,
+      "verseStart": 8,
+      "attachments": []
+    },
+    {
+      "timeMs": 95187,
+      "verseStart": 9,
+      "attachments": []
+    },
+    {
+      "timeMs": 106275,
+      "verseStart": 10,
+      "attachments": []
+    },
+    {
+      "timeMs": 119444,
+      "verseStart": 11,
+      "attachments": []
+    },
+    {
+      "timeMs": 131252,
+      "verseStart": 12,
+      "attachments": []
+    },
+    {
+      "timeMs": 149605,
+      "verseStart": 13,
+      "attachments": []
+    },
+    {
+      "timeMs": 161453,
+      "verseStart": 14,
+      "attachments": []
+    },
+    {
+      "timeMs": 169059,
+      "verseStart": 15,
+      "attachments": []
+    }
+  ]
+}

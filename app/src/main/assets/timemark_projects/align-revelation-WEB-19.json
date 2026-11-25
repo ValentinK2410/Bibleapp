@@ -1,0 +1,116 @@
+{
+  "id": "align-revelation-WEB-19",
+  "translationCode": "WEB",
+  "bookId": "revelation",
+  "chapter": 19,
+  "title": "Откровение 19 · WEB (англ.)",
+  "audioFilePath": "/data/user/0/com.example.bible.sqlite/files/bible_audio/web/66_19.mp3",
+  "updatedAt": 1794873600000,
+  "cues": [
+    {
+      "timeMs": 2702,
+      "verseStart": 1,
+      "attachments": []
+    },
+    {
+      "timeMs": 16091,
+      "verseStart": 2,
+      "attachments": []
+    },
+    {
+      "timeMs": 29561,
+      "verseStart": 3,
+      "attachments": []
+    },
+    {
+      "timeMs": 38387,
+      "verseStart": 4,
+      "attachments": []
+    },
+    {
+      "timeMs": 49375,
+      "verseStart": 5,
+      "attachments": []
+    },
+    {
+      "timeMs": 59562,
+      "verseStart": 6,
+      "attachments": []
+    },
+    {
+      "timeMs": 72691,
+      "verseStart": 7,
+      "attachments": []
+    },
+    {
+      "timeMs": 81918,
+      "verseStart": 8,
+      "attachments": []
+    },
+    {
+      "timeMs": 93826,
+      "verseStart": 9,
+      "attachments": []
+    },
+    {
+      "timeMs": 109197,
+      "verseStart": 10,
+      "attachments": []
+    },
+    {
+      "timeMs": 126309,
+      "verseStart": 11,
+      "attachments": []
+    },
+    {
+      "timeMs": 139578,
+      "verseStart": 12,
+      "attachments": []
+    },
+    {
+      "timeMs": 148344,
+      "verseStart": 13,
+      "attachments": []
+    },
+    {
+      "timeMs": 156870,
+      "verseStart": 14,
+      "attachments": []
+    },
+    {
+      "timeMs": 164496,
+      "verseStart": 15,
+      "attachments": []
+    },
+    {
+      "timeMs": 177585,
+      "verseStart": 16,
+      "attachments": []
+    },
+    {
+      "timeMs": 188212,
+      "verseStart": 17,
+      "attachments": []
+    },
+    {
+      "timeMs": 202042,
+      "verseStart": 18,
+      "attachments": []
+    },
+    {
+      "timeMs": 219054,
+      "verseStart": 19,
+      "attachments": []
+    },
+    {
+      "timeMs": 229621,
+      "verseStart": 20,
+      "attachments": []
+    },
+    {
+      "timeMs": 248515,
+      "verseStart": 21,
+      "attachments": []
+    }
+  ]
+}

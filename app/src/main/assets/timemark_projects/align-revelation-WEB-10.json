@@ -1,0 +1,66 @@
+{
+  "id": "align-revelation-WEB-10",
+  "translationCode": "WEB",
+  "bookId": "revelation",
+  "chapter": 10,
+  "title": "Откровение 10 · WEB (англ.)",
+  "audioFilePath": "/data/user/0/com.example.bible.sqlite/files/bible_audio/web/66_10.mp3",
+  "updatedAt": 1794873600000,
+  "cues": [
+    {
+      "timeMs": 2702,
+      "verseStart": 1,
+      "attachments": []
+    },
+    {
+      "timeMs": 15370,
+      "verseStart": 2,
+      "attachments": []
+    },
+    {
+      "timeMs": 22235,
+      "verseStart": 3,
+      "attachments": []
+    },
+    {
+      "timeMs": 32061,
+      "verseStart": 4,
+      "attachments": []
+    },
+    {
+      "timeMs": 46031,
+      "verseStart": 5,
+      "attachments": []
+    },
+    {
+      "timeMs": 51894,
+      "verseStart": 6,
+      "attachments": []
+    },
+    {
+      "timeMs": 66404,
+      "verseStart": 7,
+      "attachments": []
+    },
+    {
+      "timeMs": 80033,
+      "verseStart": 8,
+      "attachments": []
+    },
+    {
+      "timeMs": 93762,
+      "verseStart": 9,
+      "attachments": []
+    },
+    {
+      "timeMs": 111754,
+      "verseStart": 10,
+      "attachments": []
+    },
+    {
+      "timeMs": 123662,
+      "verseStart": 11,
+      "attachments": []
+    }
+  ]
+}

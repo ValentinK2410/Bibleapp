@@ -1,0 +1,99 @@
+{
+  "id": "gh_web_revelation_3",
+  "translationCode": "WEB",
+  "bookId": "revelation",
+  "chapter": 3,
+  "title": "Откровение 3 · WEB (англ.)",
+  "narratorId": "web",
+  "audioFileName": "66_03.mp3",
+  "cues": [
+    {
+      "timeMs": 2842,
+      "verseStart": 1
+    },
+    {
+      "timeMs": 17813,
+      "verseStart": 2
+    },
+    {
+      "timeMs": 26779,
+      "verseStart": 3
+    },
+    {
+      "timeMs": 41790,
+      "verseStart": 4
+    },
+    {
+      "timeMs": 50417,
+      "verseStart": 5
+    },
+    {
+      "timeMs": 62405,
+      "verseStart": 6
+    },
+    {
+      "timeMs": 68069,
+      "verseStart": 7
+    },
+    {
+      "timeMs": 83120,
+      "verseStart": 8
+    },
+    {
+      "timeMs": 97471,
+      "verseStart": 9
+    },
+    {
+      "timeMs": 110700,
+      "verseStart": 10
+    },
+    {
+      "timeMs": 122409,
+      "verseStart": 11
+    },
+    {
+      "timeMs": 131175,
+      "verseStart": 12
+    },
+    {
+      "timeMs": 150709,
+      "verseStart": 13
+    },
+    {
+      "timeMs": 156674,
+      "verseStart": 14
+    },
+    {
+      "timeMs": 167762,
+      "verseStart": 15
+    },
+    {
+      "timeMs": 175487,
+      "verseStart": 16
+    },
+    {
+      "timeMs": 182713,
+      "verseStart": 17
+    },
+    {
+      "timeMs": 194861,
+      "verseStart": 18
+    },
+    {
+      "timeMs": 212794,
+      "verseStart": 19
+    },
+    {
+      "timeMs": 220180,
+      "verseStart": 20
+    },
+    {
+      "timeMs": 233069,
+      "verseStart": 21
+    },
+    {
+      "timeMs": 243437,
+      "verseStart": 22
+    }
+  ]
+}

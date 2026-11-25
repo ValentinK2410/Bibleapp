@@ -1,0 +1,119 @@
+{
+  "id": "gh_web_revelation_21",
+  "translationCode": "WEB",
+  "bookId": "revelation",
+  "chapter": 21,
+  "title": "Откровение 21 · WEB (англ.)",
+  "narratorId": "web",
+  "audioFileName": "66_21.mp3",
+  "cues": [
+    {
+      "timeMs": 3943,
+      "verseStart": 1
+    },
+    {
+      "timeMs": 14990,
+      "verseStart": 2
+    },
+    {
+      "timeMs": 26298,
+      "verseStart": 3
+    },
+    {
+      "timeMs": 42048,
+      "verseStart": 4
+    },
+    {
+      "timeMs": 59940,
+      "verseStart": 5
+    },
+    {
+      "timeMs": 73149,
+      "verseStart": 6
+    },
+    {
+      "timeMs": 87638,
+      "verseStart": 7
+    },
+    {
+      "timeMs": 95344,
+      "verseStart": 8
+    },
+    {
+      "timeMs": 114456,
+      "verseStart": 9
+    },
+    {
+      "timeMs": 127725,
+      "verseStart": 10
+    },
+    {
+      "timeMs": 137912,
+      "verseStart": 11
+    },
+    {
+      "timeMs": 148939,
+      "verseStart": 12
+    },
+    {
+      "timeMs": 161808,
+      "verseStart": 13
+    },
+    {
+      "timeMs": 170814,
+      "verseStart": 14
+    },
+    {
+      "timeMs": 178319,
+      "verseStart": 15
+    },
+    {
+      "timeMs": 186384,
+      "verseStart": 16
+    },
+    {
+      "timeMs": 200814,
+      "verseStart": 17
+    },
+    {
+      "timeMs": 209079,
+      "verseStart": 18
+    },
+    {
+      "timeMs": 216945,
+      "verseStart": 19
+    },
+    {
+      "timeMs": 229893,
+      "verseStart": 20
+    },
+    {
+      "timeMs": 244623,
+      "verseStart": 21
+    },
+    {
+      "timeMs": 258452,
+      "verseStart": 22
+    },
+    {
+      "timeMs": 265717,
+      "verseStart": 23
+    },
+    {
+      "timeMs": 274783,
+      "verseStart": 24
+    },
+    {
+      "timeMs": 283489,
+      "verseStart": 25
+    },
+    {
+      "timeMs": 290053,
+      "verseStart": 26
+    },
+    {
+      "timeMs": 293776,
+      "verseStart": 27
+    }
+  ]
+}

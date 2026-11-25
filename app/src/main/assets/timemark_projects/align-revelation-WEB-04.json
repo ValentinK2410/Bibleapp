@@ -1,0 +1,66 @@
+{
+  "id": "align-revelation-WEB-04",
+  "translationCode": "WEB",
+  "bookId": "revelation",
+  "chapter": 4,
+  "title": "Откровение 4 · WEB (англ.)",
+  "audioFilePath": "/data/user/0/com.example.bible.sqlite/files/bible_audio/web/66_04.mp3",
+  "updatedAt": 1794873600000,
+  "cues": [
+    {
+      "timeMs": 3382,
+      "verseStart": 1,
+      "attachments": []
+    },
+    {
+      "timeMs": 18372,
+      "verseStart": 2,
+      "attachments": []
+    },
+    {
+      "timeMs": 25697,
+      "verseStart": 3,
+      "attachments": []
+    },
+    {
+      "timeMs": 36183,
+      "verseStart": 4,
+      "attachments": []
+    },
+    {
+      "timeMs": 49052,
+      "verseStart": 5,
+      "attachments": []
+    },
+    {
+      "timeMs": 60779,
+      "verseStart": 6,
+      "attachments": []
+    },
+    {
+      "timeMs": 73527,
+      "verseStart": 7,
+      "attachments": []
+    },
+    {
+      "timeMs": 85335,
+      "verseStart": 8,
+      "attachments": []
+    },
+    {
+      "timeMs": 101565,
+      "verseStart": 9,
+      "attachments": []
+    },
+    {
+      "timeMs": 108690,
+      "verseStart": 10,
+      "attachments": []
+    },
+    {
+      "timeMs": 119957,
+      "verseStart": 11,
+      "attachments": []
+    }
+  ]
+}

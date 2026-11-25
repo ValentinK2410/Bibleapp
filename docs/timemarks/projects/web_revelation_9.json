@@ -1,0 +1,95 @@
+{
+  "id": "gh_web_revelation_9",
+  "translationCode": "WEB",
+  "bookId": "revelation",
+  "chapter": 9,
+  "title": "Откровение 9 · WEB (англ.)",
+  "narratorId": "web",
+  "audioFileName": "66_09.mp3",
+  "cues": [
+    {
+      "timeMs": 2041,
+      "verseStart": 1
+    },
+    {
+      "timeMs": 11948,
+      "verseStart": 2
+    },
+    {
+      "timeMs": 23536,
+      "verseStart": 3
+    },
+    {
+      "timeMs": 32442,
+      "verseStart": 4
+    },
+    {
+      "timeMs": 44130,
+      "verseStart": 5
+    },
+    {
+      "timeMs": 56438,
+      "verseStart": 6
+    },
+    {
+      "timeMs": 65244,
+      "verseStart": 7
+    },
+    {
+      "timeMs": 76852,
+      "verseStart": 8
+    },
+    {
+      "timeMs": 82016,
+      "verseStart": 9
+    },
+    {
+      "timeMs": 91923,
+      "verseStart": 10
+    },
+    {
+      "timeMs": 101189,
+      "verseStart": 11
+    },
+    {
+      "timeMs": 114338,
+      "verseStart": 12
+    },
+    {
+      "timeMs": 121783,
+      "verseStart": 13
+    },
+    {
+      "timeMs": 128667,
+      "verseStart": 14
+    },
+    {
+      "timeMs": 137574,
+      "verseStart": 15
+    },
+    {
+      "timeMs": 147020,
+      "verseStart": 16
+    },
+    {
+      "timeMs": 154545,
+      "verseStart": 17
+    },
+    {
+      "timeMs": 171977,
+      "verseStart": 18
+    },
+    {
+      "timeMs": 182444,
+      "verseStart": 19
+    },
+    {
+      "timeMs": 191650,
+      "verseStart": 20
+    },
+    {
+      "timeMs": 208202,
+      "verseStart": 21
+    }
+  ]
+}
