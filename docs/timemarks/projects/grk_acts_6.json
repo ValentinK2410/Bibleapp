@@ -1,0 +1,71 @@
+{
+  "id": "gh_grk_acts_6",
+  "translationCode": "PODSTR",
+  "bookId": "acts",
+  "chapter": 6,
+  "title": "Деяния 6 · Греческий (Koine)",
+  "narratorId": "greek-nt",
+  "audioFileName": "44_06.mp3",
+  "cues": [
+    {
+      "timeMs": 901,
+      "verseStart": 1
+    },
+    {
+      "timeMs": 11768,
+      "verseStart": 2
+    },
+    {
+      "timeMs": 20935,
+      "verseStart": 3
+    },
+    {
+      "timeMs": 30122,
+      "verseStart": 4
+    },
+    {
+      "timeMs": 34725,
+      "verseStart": 5
+    },
+    {
+      "timeMs": 49235,
+      "verseStart": 6
+    },
+    {
+      "timeMs": 55120,
+      "verseStart": 7
+    },
+    {
+      "timeMs": 64426,
+      "verseStart": 8
+    },
+    {
+      "timeMs": 70250,
+      "verseStart": 9
+    },
+    {
+      "timeMs": 80998,
+      "verseStart": 10
+    },
+    {
+      "timeMs": 85481,
+      "verseStart": 11
+    },
+    {
+      "timeMs": 92666,
+      "verseStart": 12
+    },
+    {
+      "timeMs": 100912,
+      "verseStart": 13
+    },
+    {
+      "timeMs": 109018,
+      "verseStart": 14
+    },
+    {
+      "timeMs": 117624,
+      "verseStart": 15
+    }
+  ]
+}

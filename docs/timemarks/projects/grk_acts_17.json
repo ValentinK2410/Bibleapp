@@ -1,0 +1,147 @@
+{
+  "id": "gh_grk_acts_17",
+  "translationCode": "PODSTR",
+  "bookId": "acts",
+  "chapter": 17,
+  "title": "Деяния 17 · Греческий (Koine)",
+  "narratorId": "greek-nt",
+  "audioFileName": "44_17.mp3",
+  "cues": [
+    {
+      "timeMs": 500,
+      "verseStart": 1
+    },
+    {
+      "timeMs": 8086,
+      "verseStart": 2
+    },
+    {
+      "timeMs": 15311,
+      "verseStart": 3
+    },
+    {
+      "timeMs": 25518,
+      "verseStart": 4
+    },
+    {
+      "timeMs": 35665,
+      "verseStart": 5
+    },
+    {
+      "timeMs": 48975,
+      "verseStart": 6
+    },
+    {
+      "timeMs": 59382,
+      "verseStart": 7
+    },
+    {
+      "timeMs": 67848,
+      "verseStart": 8
+    },
+    {
+      "timeMs": 71931,
+      "verseStart": 9
+    },
+    {
+      "timeMs": 76914,
+      "verseStart": 10
+    },
+    {
+      "timeMs": 87122,
+      "verseStart": 11
+    },
+    {
+      "timeMs": 98470,
+      "verseStart": 12
+    },
+    {
+      "timeMs": 105315,
+      "verseStart": 13
+    },
+    {
+      "timeMs": 116002,
+      "verseStart": 14
+    },
+    {
+      "timeMs": 124949,
+      "verseStart": 15
+    },
+    {
+      "timeMs": 136016,
+      "verseStart": 16
+    },
+    {
+      "timeMs": 144462,
+      "verseStart": 17
+    },
+    {
+      "timeMs": 153168,
+      "verseStart": 18
+    },
+    {
+      "timeMs": 168499,
+      "verseStart": 19
+    },
+    {
+      "timeMs": 177686,
+      "verseStart": 20
+    },
+    {
+      "timeMs": 184431,
+      "verseStart": 21
+    },
+    {
+      "timeMs": 191836,
+      "verseStart": 22
+    },
+    {
+      "timeMs": 200322,
+      "verseStart": 23
+    },
+    {
+      "timeMs": 213011,
+      "verseStart": 24
+    },
+    {
+      "timeMs": 222177,
+      "verseStart": 25
+    },
+    {
+      "timeMs": 230083,
+      "verseStart": 26
+    },
+    {
+      "timeMs": 240790,
+      "verseStart": 27
+    },
+    {
+      "timeMs": 248696,
+      "verseStart": 28
+    },
+    {
+      "timeMs": 257162,
+      "verseStart": 29
+    },
+    {
+      "timeMs": 266929,
+      "verseStart": 30
+    },
+    {
+      "timeMs": 274414,
+      "verseStart": 31
+    },
+    {
+      "timeMs": 284281,
+      "verseStart": 32
+    },
+    {
+      "timeMs": 291166,
+      "verseStart": 33
+    },
+    {
+      "timeMs": 294148,
+      "verseStart": 34
+    }
+  ]
+}

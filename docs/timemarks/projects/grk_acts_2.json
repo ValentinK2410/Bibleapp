@@ -1,0 +1,199 @@
+{
+  "id": "gh_grk_acts_2",
+  "translationCode": "PODSTR",
+  "bookId": "acts",
+  "chapter": 2,
+  "title": "Деяния 2 · Греческий (Koine)",
+  "narratorId": "greek-nt",
+  "audioFileName": "44_02.mp3",
+  "cues": [
+    {
+      "timeMs": 661,
+      "verseStart": 1
+    },
+    {
+      "timeMs": 6625,
+      "verseStart": 2
+    },
+    {
+      "timeMs": 14950,
+      "verseStart": 3
+    },
+    {
+      "timeMs": 21535,
+      "verseStart": 4
+    },
+    {
+      "timeMs": 30321,
+      "verseStart": 5
+    },
+    {
+      "timeMs": 37746,
+      "verseStart": 6
+    },
+    {
+      "timeMs": 46352,
+      "verseStart": 7
+    },
+    {
+      "timeMs": 52876,
+      "verseStart": 8
+    },
+    {
+      "timeMs": 57800,
+      "verseStart": 9
+    },
+    {
+      "timeMs": 66285,
+      "verseStart": 10
+    },
+    {
+      "timeMs": 75432,
+      "verseStart": 11
+    },
+    {
+      "timeMs": 81416,
+      "verseStart": 12
+    },
+    {
+      "timeMs": 87200,
+      "verseStart": 13
+    },
+    {
+      "timeMs": 92063,
+      "verseStart": 14
+    },
+    {
+      "timeMs": 105873,
+      "verseStart": 15
+    },
+    {
+      "timeMs": 111496,
+      "verseStart": 16
+    },
+    {
+      "timeMs": 115179,
+      "verseStart": 17
+    },
+    {
+      "timeMs": 131470,
+      "verseStart": 18
+    },
+    {
+      "timeMs": 139035,
+      "verseStart": 19
+    },
+    {
+      "timeMs": 146000,
+      "verseStart": 20
+    },
+    {
+      "timeMs": 153985,
+      "verseStart": 21
+    },
+    {
+      "timeMs": 158389,
+      "verseStart": 22
+    },
+    {
+      "timeMs": 172798,
+      "verseStart": 23
+    },
+    {
+      "timeMs": 180444,
+      "verseStart": 24
+    },
+    {
+      "timeMs": 187769,
+      "verseStart": 25
+    },
+    {
+      "timeMs": 196214,
+      "verseStart": 26
+    },
+    {
+      "timeMs": 204360,
+      "verseStart": 27
+    },
+    {
+      "timeMs": 211045,
+      "verseStart": 28
+    },
+    {
+      "timeMs": 216768,
+      "verseStart": 29
+    },
+    {
+      "timeMs": 229177,
+      "verseStart": 30
+    },
+    {
+      "timeMs": 237523,
+      "verseStart": 31
+    },
+    {
+      "timeMs": 246029,
+      "verseStart": 32
+    },
+    {
+      "timeMs": 251112,
+      "verseStart": 33
+    },
+    {
+      "timeMs": 260598,
+      "verseStart": 34
+    },
+    {
+      "timeMs": 267383,
+      "verseStart": 35
+    },
+    {
+      "timeMs": 271226,
+      "verseStart": 36
+    },
+    {
+      "timeMs": 281573,
+      "verseStart": 37
+    },
+    {
+      "timeMs": 290319,
+      "verseStart": 38
+    },
+    {
+      "timeMs": 302427,
+      "verseStart": 39
+    },
+    {
+      "timeMs": 310573,
+      "verseStart": 40
+    },
+    {
+      "timeMs": 318558,
+      "verseStart": 41
+    },
+    {
+      "timeMs": 326584,
+      "verseStart": 42
+    },
+    {
+      "timeMs": 333989,
+      "verseStart": 43
+    },
+    {
+      "timeMs": 340453,
+      "verseStart": 44
+    },
+    {
+      "timeMs": 344616,
+      "verseStart": 45
+    },
+    {
+      "timeMs": 351321,
+      "verseStart": 46
+    },
+    {
+      "timeMs": 361327,
+      "verseStart": 47
+    }
+  ]
+}

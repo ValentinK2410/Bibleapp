@@ -1,0 +1,131 @@
+{
+  "id": "gh_grk_acts_22",
+  "translationCode": "PODSTR",
+  "bookId": "acts",
+  "chapter": 22,
+  "title": "Деяния 22 · Греческий (Koine)",
+  "narratorId": "greek-nt",
+  "audioFileName": "44_22.mp3",
+  "cues": [
+    {
+      "timeMs": 821,
+      "verseStart": 1
+    },
+    {
+      "timeMs": 6524,
+      "verseStart": 2
+    },
+    {
+      "timeMs": 13449,
+      "verseStart": 3
+    },
+    {
+      "timeMs": 29760,
+      "verseStart": 4
+    },
+    {
+      "timeMs": 37204,
+      "verseStart": 5
+    },
+    {
+      "timeMs": 51434,
+      "verseStart": 6
+    },
+    {
+      "timeMs": 60400,
+      "verseStart": 7
+    },
+    {
+      "timeMs": 67504,
+      "verseStart": 8
+    },
+    {
+      "timeMs": 75409,
+      "verseStart": 9
+    },
+    {
+      "timeMs": 81573,
+      "verseStart": 10
+    },
+    {
+      "timeMs": 92401,
+      "verseStart": 11
+    },
+    {
+      "timeMs": 100506,
+      "verseStart": 12
+    },
+    {
+      "timeMs": 107570,
+      "verseStart": 13
+    },
+    {
+      "timeMs": 116857,
+      "verseStart": 14
+    },
+    {
+      "timeMs": 126643,
+      "verseStart": 15
+    },
+    {
+      "timeMs": 131906,
+      "verseStart": 16
+    },
+    {
+      "timeMs": 139291,
+      "verseStart": 17
+    },
+    {
+      "timeMs": 145996,
+      "verseStart": 18
+    },
+    {
+      "timeMs": 153881,
+      "verseStart": 19
+    },
+    {
+      "timeMs": 161946,
+      "verseStart": 20
+    },
+    {
+      "timeMs": 171172,
+      "verseStart": 21
+    },
+    {
+      "timeMs": 176356,
+      "verseStart": 22
+    },
+    {
+      "timeMs": 185542,
+      "verseStart": 23
+    },
+    {
+      "timeMs": 192026,
+      "verseStart": 24
+    },
+    {
+      "timeMs": 202353,
+      "verseStart": 25
+    },
+    {
+      "timeMs": 212219,
+      "verseStart": 26
+    },
+    {
+      "timeMs": 220384,
+      "verseStart": 27
+    },
+    {
+      "timeMs": 226408,
+      "verseStart": 28
+    },
+    {
+      "timeMs": 234854,
+      "verseStart": 29
+    },
+    {
+      "timeMs": 244520,
+      "verseStart": 30
+    }
+  ]
+}

@@ -1,0 +1,123 @@
+{
+  "id": "gh_grk_acts_14",
+  "translationCode": "PODSTR",
+  "bookId": "acts",
+  "chapter": 14,
+  "title": "Деяния 14 · Греческий (Koine)",
+  "narratorId": "greek-nt",
+  "audioFileName": "44_14.mp3",
+  "cues": [
+    {
+      "timeMs": 520,
+      "verseStart": 1
+    },
+    {
+      "timeMs": 11148,
+      "verseStart": 2
+    },
+    {
+      "timeMs": 17572,
+      "verseStart": 3
+    },
+    {
+      "timeMs": 28500,
+      "verseStart": 4
+    },
+    {
+      "timeMs": 34784,
+      "verseStart": 5
+    },
+    {
+      "timeMs": 41829,
+      "verseStart": 6
+    },
+    {
+      "timeMs": 47894,
+      "verseStart": 7
+    },
+    {
+      "timeMs": 50115,
+      "verseStart": 8
+    },
+    {
+      "timeMs": 58361,
+      "verseStart": 9
+    },
+    {
+      "timeMs": 64645,
+      "verseStart": 10
+    },
+    {
+      "timeMs": 71390,
+      "verseStart": 11
+    },
+    {
+      "timeMs": 80917,
+      "verseStart": 12
+    },
+    {
+      "timeMs": 87081,
+      "verseStart": 13
+    },
+    {
+      "timeMs": 95027,
+      "verseStart": 14
+    },
+    {
+      "timeMs": 102672,
+      "verseStart": 15
+    },
+    {
+      "timeMs": 117042,
+      "verseStart": 16
+    },
+    {
+      "timeMs": 122106,
+      "verseStart": 17
+    },
+    {
+      "timeMs": 132753,
+      "verseStart": 18
+    },
+    {
+      "timeMs": 137797,
+      "verseStart": 19
+    },
+    {
+      "timeMs": 148464,
+      "verseStart": 20
+    },
+    {
+      "timeMs": 157070,
+      "verseStart": 21
+    },
+    {
+      "timeMs": 165156,
+      "verseStart": 22
+    },
+    {
+      "timeMs": 175603,
+      "verseStart": 23
+    },
+    {
+      "timeMs": 184449,
+      "verseStart": 24
+    },
+    {
+      "timeMs": 188112,
+      "verseStart": 25
+    },
+    {
+      "timeMs": 192175,
+      "verseStart": 26
+    },
+    {
+      "timeMs": 200040,
+      "verseStart": 27
+    },
+    {
+      "timeMs": 209607,
+      "verseStart": 28
+    }
+  ]
+}

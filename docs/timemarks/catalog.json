@@ -2084,6 +2084,286 @@
       "file": "projects/grk_2_timothy_4.json"
     },
     {
+      "id": "gh_grk_acts_1",
+      "translationCode": "PODSTR",
+      "bookId": "acts",
+      "chapter": 1,
+      "title": "Деяния 1 · Греческий (Koine)",
+      "cueCount": 26,
+      "narratorId": "greek-nt",
+      "file": "projects/grk_acts_1.json"
+    },
+    {
+      "id": "gh_grk_acts_10",
+      "translationCode": "PODSTR",
+      "bookId": "acts",
+      "chapter": 10,
+      "title": "Деяния 10 · Греческий (Koine)",
+      "cueCount": 48,
+      "narratorId": "greek-nt",
+      "file": "projects/grk_acts_10.json"
+    },
+    {
+      "id": "gh_grk_acts_11",
+      "translationCode": "PODSTR",
+      "bookId": "acts",
+      "chapter": 11,
+      "title": "Деяния 11 · Греческий (Koine)",
+      "cueCount": 30,
+      "narratorId": "greek-nt",
+      "file": "projects/grk_acts_11.json"
+    },
+    {
+      "id": "gh_grk_acts_12",
+      "translationCode": "PODSTR",
+      "bookId": "acts",
+      "chapter": 12,
+      "title": "Деяния 12 · Греческий (Koine)",
+      "cueCount": 25,
+      "narratorId": "greek-nt",
+      "file": "projects/grk_acts_12.json"
+    },
+    {
+      "id": "gh_grk_acts_13",
+      "translationCode": "PODSTR",
+      "bookId": "acts",
+      "chapter": 13,
+      "title": "Деяния 13 · Греческий (Koine)",
+      "cueCount": 52,
+      "narratorId": "greek-nt",
+      "file": "projects/grk_acts_13.json"
+    },
+    {
+      "id": "gh_grk_acts_14",
+      "translationCode": "PODSTR",
+      "bookId": "acts",
+      "chapter": 14,
+      "title": "Деяния 14 · Греческий (Koine)",
+      "cueCount": 28,
+      "narratorId": "greek-nt",
+      "file": "projects/grk_acts_14.json"
+    },
+    {
+      "id": "gh_grk_acts_15",
+      "translationCode": "PODSTR",
+      "bookId": "acts",
+      "chapter": 15,
+      "title": "Деяния 15 · Греческий (Koine)",
+      "cueCount": 41,
+      "narratorId": "greek-nt",
+      "file": "projects/grk_acts_15.json"
+    },
+    {
+      "id": "gh_grk_acts_16",
+      "translationCode": "PODSTR",
+      "bookId": "acts",
+      "chapter": 16,
+      "title": "Деяния 16 · Греческий (Koine)",
+      "cueCount": 40,
+      "narratorId": "greek-nt",
+      "file": "projects/grk_acts_16.json"
+    },
+    {
+      "id": "gh_grk_acts_17",
+      "translationCode": "PODSTR",
+      "bookId": "acts",
+      "chapter": 17,
+      "title": "Деяния 17 · Греческий (Koine)",
+      "cueCount": 34,
+      "narratorId": "greek-nt",
+      "file": "projects/grk_acts_17.json"
+    },
+    {
+      "id": "gh_grk_acts_18",
+      "translationCode": "PODSTR",
+      "bookId": "acts",
+      "chapter": 18,
+      "title": "Деяния 18 · Греческий (Koine)",
+      "cueCount": 28,
+      "narratorId": "greek-nt",
+      "file": "projects/grk_acts_18.json"
+    },
+    {
+      "id": "gh_grk_acts_19",
+      "translationCode": "PODSTR",
+      "bookId": "acts",
+      "chapter": 19,
+      "title": "Деяния 19 · Греческий (Koine)",
+      "cueCount": 40,
+      "narratorId": "greek-nt",
+      "file": "projects/grk_acts_19.json"
+    },
+    {
+      "id": "gh_grk_acts_2",
+      "translationCode": "PODSTR",
+      "bookId": "acts",
+      "chapter": 2,
+      "title": "Деяния 2 · Греческий (Koine)",
+      "cueCount": 47,
+      "narratorId": "greek-nt",
+      "file": "projects/grk_acts_2.json"
+    },
+    {
+      "id": "gh_grk_acts_20",
+      "translationCode": "PODSTR",
+      "bookId": "acts",
+      "chapter": 20,
+      "title": "Деяния 20 · Греческий (Koine)",
+      "cueCount": 38,
+      "narratorId": "greek-nt",
+      "file": "projects/grk_acts_20.json"
+    },
+    {
+      "id": "gh_grk_acts_21",
+      "translationCode": "PODSTR",
+      "bookId": "acts",
+      "chapter": 21,
+      "title": "Деяния 21 · Греческий (Koine)",
+      "cueCount": 40,
+      "narratorId": "greek-nt",
+      "file": "projects/grk_acts_21.json"
+    },
+    {
+      "id": "gh_grk_acts_22",
+      "translationCode": "PODSTR",
+      "bookId": "acts",
+      "chapter": 22,
+      "title": "Деяния 22 · Греческий (Koine)",
+      "cueCount": 30,
+      "narratorId": "greek-nt",
+      "file": "projects/grk_acts_22.json"
+    },
+    {
+      "id": "gh_grk_acts_23",
+      "translationCode": "PODSTR",
+      "bookId": "acts",
+      "chapter": 23,
+      "title": "Деяния 23 · Греческий (Koine)",
+      "cueCount": 35,
+      "narratorId": "greek-nt",
+      "file": "projects/grk_acts_23.json"
+    },
+    {
+      "id": "gh_grk_acts_24",
+      "translationCode": "PODSTR",
+      "bookId": "acts",
+      "chapter": 24,
+      "title": "Деяния 24 · Греческий (Koine)",
+      "cueCount": 27,
+      "narratorId": "greek-nt",
+      "file": "projects/grk_acts_24.json"
+    },
+    {
+      "id": "gh_grk_acts_25",
+      "translationCode": "PODSTR",
+      "bookId": "acts",
+      "chapter": 25,
+      "title": "Деяния 25 · Греческий (Koine)",
+      "cueCount": 27,
+      "narratorId": "greek-nt",
+      "file": "projects/grk_acts_25.json"
+    },
+    {
+      "id": "gh_grk_acts_26",
+      "translationCode": "PODSTR",
+      "bookId": "acts",
+      "chapter": 26,
+      "title": "Деяния 26 · Греческий (Koine)",
+      "cueCount": 32,
+      "narratorId": "greek-nt",
+      "file": "projects/grk_acts_26.json"
+    },
+    {
+      "id": "gh_grk_acts_27",
+      "translationCode": "PODSTR",
+      "bookId": "acts",
+      "chapter": 27,
+      "title": "Деяния 27 · Греческий (Koine)",
+      "cueCount": 44,
+      "narratorId": "greek-nt",
+      "file": "projects/grk_acts_27.json"
+    },
+    {
+      "id": "gh_grk_acts_28",
+      "translationCode": "PODSTR",
+      "bookId": "acts",
+      "chapter": 28,
+      "title": "Деяния 28 · Греческий (Koine)",
+      "cueCount": 31,
+      "narratorId": "greek-nt",
+      "file": "projects/grk_acts_28.json"
+    },
+    {
+      "id": "gh_grk_acts_3",
+      "translationCode": "PODSTR",
+      "bookId": "acts",
+      "chapter": 3,
+      "title": "Деяния 3 · Греческий (Koine)",
+      "cueCount": 26,
+      "narratorId": "greek-nt",
+      "file": "projects/grk_acts_3.json"
+    },
+    {
+      "id": "gh_grk_acts_4",
+      "translationCode": "PODSTR",
+      "bookId": "acts",
+      "chapter": 4,
+      "title": "Деяния 4 · Греческий (Koine)",
+      "cueCount": 37,
+      "narratorId": "greek-nt",
+      "file": "projects/grk_acts_4.json"
+    },
+    {
+      "id": "gh_grk_acts_5",
+      "translationCode": "PODSTR",
+      "bookId": "acts",
+      "chapter": 5,
+      "title": "Деяния 5 · Греческий (Koine)",
+      "cueCount": 42,
+      "narratorId": "greek-nt",
+      "file": "projects/grk_acts_5.json"
+    },
+    {
+      "id": "gh_grk_acts_6",
+      "translationCode": "PODSTR",
+      "bookId": "acts",
+      "chapter": 6,
+      "title": "Деяния 6 · Греческий (Koine)",
+      "cueCount": 15,
+      "narratorId": "greek-nt",
+      "file": "projects/grk_acts_6.json"
+    },
+    {
+      "id": "gh_grk_acts_7",
+      "translationCode": "PODSTR",
+      "bookId": "acts",
+      "chapter": 7,
+      "title": "Деяния 7 · Греческий (Koine)",
+      "cueCount": 60,
+      "narratorId": "greek-nt",
+      "file": "projects/grk_acts_7.json"
+    },
+    {
+      "id": "gh_grk_acts_8",
+      "translationCode": "PODSTR",
+      "bookId": "acts",
+      "chapter": 8,
+      "title": "Деяния 8 · Греческий (Koine)",
+      "cueCount": 40,
+      "narratorId": "greek-nt",
+      "file": "projects/grk_acts_8.json"
+    },
+    {
+      "id": "gh_grk_acts_9",
+      "translationCode": "PODSTR",
+      "bookId": "acts",
+      "chapter": 9,
+      "title": "Деяния 9 · Греческий (Koine)",
+      "cueCount": 43,
+      "narratorId": "greek-nt",
+      "file": "projects/grk_acts_9.json"
+    },
+    {
       "id": "gh_grk_colossians_1",
       "translationCode": "PODSTR",
       "bookId": "colossians",

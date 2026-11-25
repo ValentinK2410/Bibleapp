@@ -1,0 +1,201 @@
+{
+  "id": "align-acts-GRK-20",
+  "translationCode": "PODSTR",
+  "bookId": "acts",
+  "chapter": 20,
+  "title": "Деяния 20 · Греческий (Koine)",
+  "audioFilePath": "/data/user/0/com.example.bible.sqlite/files/bible_audio/greek-nt/44_20.mp3",
+  "updatedAt": 1794873600000,
+  "cues": [
+    {
+      "timeMs": 560,
+      "verseStart": 1,
+      "attachments": []
+    },
+    {
+      "timeMs": 10267,
+      "verseStart": 2,
+      "attachments": []
+    },
+    {
+      "timeMs": 16412,
+      "verseStart": 3,
+      "attachments": []
+    },
+    {
+      "timeMs": 26859,
+      "verseStart": 4,
+      "attachments": []
+    },
+    {
+      "timeMs": 38648,
+      "verseStart": 5,
+      "attachments": []
+    },
+    {
+      "timeMs": 42090,
+      "verseStart": 6,
+      "attachments": []
+    },
+    {
+      "timeMs": 52798,
+      "verseStart": 7,
+      "attachments": []
+    },
+    {
+      "timeMs": 63646,
+      "verseStart": 8,
+      "attachments": []
+    },
+    {
+      "timeMs": 67729,
+      "verseStart": 9,
+      "attachments": []
+    },
+    {
+      "timeMs": 81739,
+      "verseStart": 10,
+      "attachments": []
+    },
+    {
+      "timeMs": 89504,
+      "verseStart": 11,
+      "attachments": []
+    },
+    {
+      "timeMs": 96649,
+      "verseStart": 12,
+      "attachments": []
+    },
+    {
+      "timeMs": 100732,
+      "verseStart": 13,
+      "attachments": []
+    },
+    {
+      "timeMs": 111380,
+      "verseStart": 14,
+      "attachments": []
+    },
+    {
+      "timeMs": 117324,
+      "verseStart": 15,
+      "attachments": []
+    },
+    {
+      "timeMs": 127211,
+      "verseStart": 16,
+      "attachments": []
+    },
+    {
+      "timeMs": 140181,
+      "verseStart": 17,
+      "attachments": []
+    },
+    {
+      "timeMs": 146325,
+      "verseStart": 18,
+      "attachments": []
+    },
+    {
+      "timeMs": 156573,
+      "verseStart": 19,
+      "attachments": []
+    },
+    {
+      "timeMs": 165259,
+      "verseStart": 20,
+      "attachments": []
+    },
+    {
+      "timeMs": 171984,
+      "verseStart": 21,
+      "attachments": []
+    },
+    {
+      "timeMs": 178708,
+      "verseStart": 22,
+      "attachments": []
+    },
+    {
+      "timeMs": 186414,
+      "verseStart": 23,
+      "attachments": []
+    },
+    {
+      "timeMs": 193619,
+      "verseStart": 24,
+      "attachments": []
+    },
+    {
+      "timeMs": 206248,
+      "verseStart": 25,
+      "attachments": []
+    },
+    {
+      "timeMs": 214014,
+      "verseStart": 26,
+      "attachments": []
+    },
+    {
+      "timeMs": 219858,
+      "verseStart": 27,
+      "attachments": []
+    },
+    {
+      "timeMs": 224281,
+      "verseStart": 28,
+      "attachments": []
+    },
+    {
+      "timeMs": 235349,
+      "verseStart": 29,
+      "attachments": []
+    },
+    {
+      "timeMs": 242074,
+      "verseStart": 30,
+      "attachments": []
+    },
+    {
+      "timeMs": 249319,
+      "verseStart": 31,
+      "attachments": []
+    },
+    {
+      "timeMs": 257865,
+      "verseStart": 32,
+      "attachments": []
+    },
+    {
+      "timeMs": 268193,
+      "verseStart": 33,
+      "attachments": []
+    },
+    {
+      "timeMs": 272136,
+      "verseStart": 34,
+      "attachments": []
+    },
+    {
+      "timeMs": 277880,
+      "verseStart": 35,
+      "attachments": []
+    },
+    {
+      "timeMs": 290108,
+      "verseStart": 36,
+      "attachments": []
+    },
+    {
+      "timeMs": 295272,
+      "verseStart": 37,
+      "attachments": []
+    },
+    {
+      "timeMs": 301497,
+      "verseStart": 38,
+      "attachments": []
+    }
+  ]
+}

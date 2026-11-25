@@ -1,0 +1,86 @@
+{
+  "id": "align-acts-GRK-06",
+  "translationCode": "PODSTR",
+  "bookId": "acts",
+  "chapter": 6,
+  "title": "Деяния 6 · Греческий (Koine)",
+  "audioFilePath": "/data/user/0/com.example.bible.sqlite/files/bible_audio/greek-nt/44_06.mp3",
+  "updatedAt": 1794873600000,
+  "cues": [
+    {
+      "timeMs": 901,
+      "verseStart": 1,
+      "attachments": []
+    },
+    {
+      "timeMs": 11768,
+      "verseStart": 2,
+      "attachments": []
+    },
+    {
+      "timeMs": 20935,
+      "verseStart": 3,
+      "attachments": []
+    },
+    {
+      "timeMs": 30122,
+      "verseStart": 4,
+      "attachments": []
+    },
+    {
+      "timeMs": 34725,
+      "verseStart": 5,
+      "attachments": []
+    },
+    {
+      "timeMs": 49235,
+      "verseStart": 6,
+      "attachments": []
+    },
+    {
+      "timeMs": 55120,
+      "verseStart": 7,
+      "attachments": []
+    },
+    {
+      "timeMs": 64426,
+      "verseStart": 8,
+      "attachments": []
+    },
+    {
+      "timeMs": 70250,
+      "verseStart": 9,
+      "attachments": []
+    },
+    {
+      "timeMs": 80998,
+      "verseStart": 10,
+      "attachments": []
+    },
+    {
+      "timeMs": 85481,
+      "verseStart": 11,
+      "attachments": []
+    },
+    {
+      "timeMs": 92666,
+      "verseStart": 12,
+      "attachments": []
+    },
+    {
+      "timeMs": 100912,
+      "verseStart": 13,
+      "attachments": []
+    },
+    {
+      "timeMs": 109018,
+      "verseStart": 14,
+      "attachments": []
+    },
+    {
+      "timeMs": 117624,
+      "verseStart": 15,
+      "attachments": []
+    }
+  ]
+}
