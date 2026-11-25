@@ -6764,6 +6764,36 @@
       "file": "projects/rbo_2_corinthians_9.json"
     },
     {
+      "id": "gh_rbo_2_peter_1",
+      "translationCode": "RBO",
+      "bookId": "2_peter",
+      "chapter": 1,
+      "title": "2-е Петра 1 · РБО",
+      "cueCount": 21,
+      "narratorId": "rbo",
+      "file": "projects/rbo_2_peter_1.json"
+    },
+    {
+      "id": "gh_rbo_2_peter_2",
+      "translationCode": "RBO",
+      "bookId": "2_peter",
+      "chapter": 2,
+      "title": "2-е Петра 2 · РБО",
+      "cueCount": 22,
+      "narratorId": "rbo",
+      "file": "projects/rbo_2_peter_2.json"
+    },
+    {
+      "id": "gh_rbo_2_peter_3",
+      "translationCode": "RBO",
+      "bookId": "2_peter",
+      "chapter": 3,
+      "title": "2-е Петра 3 · РБО",
+      "cueCount": 18,
+      "narratorId": "rbo",
+      "file": "projects/rbo_2_peter_3.json"
+    },
+    {
       "id": "gh_rbo_2_thessalonians_1",
       "translationCode": "RBO",
       "bookId": "2_thessalonians",

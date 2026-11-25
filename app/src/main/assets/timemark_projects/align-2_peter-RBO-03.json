@@ -1,0 +1,101 @@
+{
+  "id": "align-2_peter-RBO-03",
+  "translationCode": "RBO",
+  "bookId": "2_peter",
+  "chapter": 3,
+  "title": "2-е Петра 3 · РБО",
+  "audioFilePath": "/data/user/0/com.example.bible.sqlite/files/bible_audio/rbo/47_03.mp3",
+  "updatedAt": 1795478400000,
+  "cues": [
+    {
+      "timeMs": 4363,
+      "verseStart": 1,
+      "attachments": []
+    },
+    {
+      "timeMs": 15930,
+      "verseStart": 2,
+      "attachments": []
+    },
+    {
+      "timeMs": 26457,
+      "verseStart": 3,
+      "attachments": []
+    },
+    {
+      "timeMs": 34483,
+      "verseStart": 4,
+      "attachments": []
+    },
+    {
+      "timeMs": 47171,
+      "verseStart": 5,
+      "attachments": []
+    },
+    {
+      "timeMs": 55056,
+      "verseStart": 6,
+      "attachments": []
+    },
+    {
+      "timeMs": 60820,
+      "verseStart": 7,
+      "attachments": []
+    },
+    {
+      "timeMs": 73328,
+      "verseStart": 8,
+      "attachments": []
+    },
+    {
+      "timeMs": 84135,
+      "verseStart": 9,
+      "attachments": []
+    },
+    {
+      "timeMs": 98945,
+      "verseStart": 10,
+      "attachments": []
+    },
+    {
+      "timeMs": 114215,
+      "verseStart": 11,
+      "attachments": []
+    },
+    {
+      "timeMs": 123641,
+      "verseStart": 12,
+      "attachments": []
+    },
+    {
+      "timeMs": 134928,
+      "verseStart": 13,
+      "attachments": []
+    },
+    {
+      "timeMs": 142593,
+      "verseStart": 14,
+      "attachments": []
+    },
+    {
+      "timeMs": 151399,
+      "verseStart": 15,
+      "attachments": []
+    },
+    {
+      "timeMs": 161606,
+      "verseStart": 16,
+      "attachments": []
+    },
+    {
+      "timeMs": 173753,
+      "verseStart": 17,
+      "attachments": []
+    },
+    {
+      "timeMs": 185241,
+      "verseStart": 18,
+      "attachments": []
+    }
+  ]
+}

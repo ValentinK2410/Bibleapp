@@ -1,0 +1,83 @@
+{
+  "id": "gh_rbo_2_peter_3",
+  "translationCode": "RBO",
+  "bookId": "2_peter",
+  "chapter": 3,
+  "title": "2-е Петра 3 · РБО",
+  "narratorId": "rbo",
+  "audioFileName": "47_03.mp3",
+  "cues": [
+    {
+      "timeMs": 4363,
+      "verseStart": 1
+    },
+    {
+      "timeMs": 15930,
+      "verseStart": 2
+    },
+    {
+      "timeMs": 26457,
+      "verseStart": 3
+    },
+    {
+      "timeMs": 34483,
+      "verseStart": 4
+    },
+    {
+      "timeMs": 47171,
+      "verseStart": 5
+    },
+    {
+      "timeMs": 55056,
+      "verseStart": 6
+    },
+    {
+      "timeMs": 60820,
+      "verseStart": 7
+    },
+    {
+      "timeMs": 73328,
+      "verseStart": 8
+    },
+    {
+      "timeMs": 84135,
+      "verseStart": 9
+    },
+    {
+      "timeMs": 98945,
+      "verseStart": 10
+    },
+    {
+      "timeMs": 114215,
+      "verseStart": 11
+    },
+    {
+      "timeMs": 123641,
+      "verseStart": 12
+    },
+    {
+      "timeMs": 134928,
+      "verseStart": 13
+    },
+    {
+      "timeMs": 142593,
+      "verseStart": 14
+    },
+    {
+      "timeMs": 151399,
+      "verseStart": 15
+    },
+    {
+      "timeMs": 161606,
+      "verseStart": 16
+    },
+    {
+      "timeMs": 173753,
+      "verseStart": 17
+    },
+    {
+      "timeMs": 185241,
+      "verseStart": 18
+    }
+  ]
+}
