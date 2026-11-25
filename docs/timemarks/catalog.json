@@ -7154,6 +7154,16 @@
       "file": "projects/rbo_2_timothy_4.json"
     },
     {
+      "id": "gh_rbo_3_john_1",
+      "translationCode": "RBO",
+      "bookId": "3_john",
+      "chapter": 1,
+      "title": "3-е Иоанна 1 · РБО",
+      "cueCount": 15,
+      "narratorId": "rbo",
+      "file": "projects/rbo_3_john_1.json"
+    },
+    {
       "id": "gh_rbo_acts_1",
       "translationCode": "RBO",
       "bookId": "acts",
